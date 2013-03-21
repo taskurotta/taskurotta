@@ -25,7 +25,7 @@ public class TaskReleaserResource {
 		logger.debug("releaseAction resource called with entity[{}]", resultContainer);
 		
 		try {
-			taskServer.release(resultContainer.getResultContainer());	
+			taskServer.release(resultContainer.getDecisionContainer());
 		} catch(Exception e) {
 			logger.error("Starting of task["+resultContainer+"] failed!", e);
 			return Response.serverError().build();

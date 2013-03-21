@@ -21,7 +21,7 @@ import java.util.UUID;
  * Date: 24.01.13
  * Time: 17:20
  */
-public class SWFRuntimeProcessorTest {
+public class GeneralRuntimeProcessorTest {
     // decider
     // ==================
 

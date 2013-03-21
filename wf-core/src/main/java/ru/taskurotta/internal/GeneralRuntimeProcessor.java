@@ -20,16 +20,16 @@ import java.util.Map;
  * Date: 1/22/13
  * Time: 4:35 PM
  */
-public class SWFRuntimeProcessor implements RuntimeProcessor {
+public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
-    protected final static Logger log = LoggerFactory.getLogger(SWFRuntimeProcessor.class);
+    protected final static Logger log = LoggerFactory.getLogger(GeneralRuntimeProcessor.class);
 
-    private Map<TaskTarget, SWFRuntimeProvider.TargetReference> taskTargetsMap;
+    private Map<TaskTarget, GeneralRuntimeProvider.TargetReference> taskTargetsMap;
 
     protected ThreadLocal<List<Task>> tlTaskList;
 
 
-    public SWFRuntimeProcessor(Map<TaskTarget, SWFRuntimeProvider.TargetReference> taskTargetsMap, ThreadLocal<List<Task>> tlTaskList) {
+    public GeneralRuntimeProcessor(Map<TaskTarget, GeneralRuntimeProvider.TargetReference> taskTargetsMap, ThreadLocal<List<Task>> tlTaskList) {
 
         this.taskTargetsMap = taskTargetsMap;
         this.tlTaskList = tlTaskList;
@@ -41,7 +41,7 @@ public class SWFRuntimeProcessor implements RuntimeProcessor {
         TaskDecision taskDecision = null;
         TaskTarget key = task.getTarget();
 
-        SWFRuntimeProvider.TargetReference targetReference = taskTargetsMap.get(key);
+        GeneralRuntimeProvider.TargetReference targetReference = taskTargetsMap.get(key);
         try {
 
             if (null == targetReference) {

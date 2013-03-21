@@ -10,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.transport.ArgContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.ErrorContainer;
-import ru.taskurotta.server.transport.ResultContainer;
 import ru.taskurotta.server.transport.TaskContainer;
 
 import java.io.IOException;
@@ -20,12 +20,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-public class ResultContainerDeserializer extends JsonDeserializer<ResultContainer> {
+public class ResultContainerDeserializer extends JsonDeserializer<DecisionContainer> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ResultContainerDeserializer.class);
 	
 	@Override
-	public ResultContainer deserialize(JsonParser jp,
+	public DecisionContainer deserialize(JsonParser jp,
 			DeserializationContext ctxt) throws IOException,
 			JsonProcessingException {
 		
@@ -52,7 +52,7 @@ public class ResultContainerDeserializer extends JsonDeserializer<ResultContaine
 			
 		}
 		
-		return new ResultContainer(taskId, value, error, errorContainer, tasks);
+		return new DecisionContainer(taskId, value, error, errorContainer, tasks);
 	}
 	
 	private TaskContainer parseTaskContainer(JsonNode tcNode) {
