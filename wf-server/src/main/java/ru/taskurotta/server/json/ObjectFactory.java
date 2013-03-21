@@ -10,8 +10,8 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.server.transport.ArgContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.ErrorContainer;
-import ru.taskurotta.server.transport.ResultContainer;
 import ru.taskurotta.server.transport.TaskContainer;
 
 import java.io.IOException;
@@ -157,18 +157,18 @@ public class ObjectFactory {
     }
 
 
-    public TaskDecision parseResult(ResultContainer resultContainer) {
+    public TaskDecision parseResult(DecisionContainer decisionContainer) {
 
         // TODO: TaskDecision can be error.
 
-        UUID taskId = resultContainer.getTaskId();
+        UUID taskId = decisionContainer.getTaskId();
         Object value = null;
         Task[] tasks = null;
 
-        ArgContainer argContainer = resultContainer.getValue();
+        ArgContainer argContainer = decisionContainer.getValue();
         value = parseArg(argContainer);
 
-        TaskContainer[] taskContainers = resultContainer.getTasks();
+        TaskContainer[] taskContainers = decisionContainer.getTasks();
 
         if (taskContainers != null) {
             tasks = new Task[taskContainers.length];
@@ -183,7 +183,7 @@ public class ObjectFactory {
     }
 
 
-    public ResultContainer dumpResult(TaskDecision taskDecision) {
+    public DecisionContainer dumpResult(TaskDecision taskDecision) {
         UUID taskId = taskDecision.getId();
         ArgContainer value = dumpArg(taskDecision.getValue());
         boolean isError = false;
@@ -201,6 +201,6 @@ public class ObjectFactory {
             }
         }
 
-        return new ResultContainer(taskId, value, isError, errorContainer, taskContainers);
+        return new DecisionContainer(taskId, value, isError, errorContainer, taskContainers);
     }
 }

@@ -7,7 +7,7 @@ import ru.taskurotta.server.TaskDao;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.Map;
@@ -106,7 +106,7 @@ public class TaskDaoMemory implements TaskDao {
 
 
     @Override
-    public void logTaskResult(ResultContainer taskResult) {
+    public void logTaskResult(DecisionContainer taskResult) {
         // nothing to do, because memory implementation doesn't need recovery functionality
     }
 

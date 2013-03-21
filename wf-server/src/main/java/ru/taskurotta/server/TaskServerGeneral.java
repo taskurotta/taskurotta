@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -43,7 +43,7 @@ public class TaskServerGeneral implements TaskServer {
     }
 
     @Override
-    public void release(ResultContainer taskResult) {
+    public void release(DecisionContainer taskResult) {
         releaseInternal(taskResult);
     }
 
@@ -113,7 +113,7 @@ public class TaskServerGeneral implements TaskServer {
         taskDao.add(taskObj);
     }
 
-    private void releaseInternal(ResultContainer taskResult) {
+    private void releaseInternal(DecisionContainer taskResult) {
 
         taskDao.logTaskResult(taskResult);
 
@@ -123,7 +123,7 @@ public class TaskServerGeneral implements TaskServer {
     }
 
 
-    private void processReleasedTask(ResultContainer taskResult) {
+    private void processReleasedTask(DecisionContainer taskResult) {
 
 
         // 1. Изменить state задачи через Dao

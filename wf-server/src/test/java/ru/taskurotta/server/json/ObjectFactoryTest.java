@@ -10,7 +10,7 @@ import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 
 import java.util.UUID;
 
@@ -90,11 +90,11 @@ public class ObjectFactoryTest {
 
         TaskDecision taskDecision = new TaskDecisionImpl(UUID.randomUUID(), Boolean.TRUE, tasks);
 
-        ResultContainer resultContainer = objectFactory.dumpResult(taskDecision);
+        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision);
 
-        System.err.println("resultContainer = " + resultContainer);
+        System.err.println("decisionContainer = " + decisionContainer);
 
-        TaskDecision newTaskDecision = objectFactory.parseResult(resultContainer);
+        TaskDecision newTaskDecision = objectFactory.parseResult(decisionContainer);
 
         System.err.println("newTaskDecision = " + newTaskDecision);
 

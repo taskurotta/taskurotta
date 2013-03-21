@@ -5,7 +5,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -36,8 +36,8 @@ public class TaskSpreaderCommon implements TaskSpreader {
     @Override
     public void release(TaskDecision taskDecision) {
 
-        ResultContainer resultContainer = objectFactory.dumpResult(taskDecision);
-        taskServer.release(resultContainer);
+        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision);
+        taskServer.release(decisionContainer);
     }
 
 }

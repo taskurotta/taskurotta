@@ -2,31 +2,31 @@ package ru.taskurotta.client.serialization.wrapper;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import ru.taskurotta.client.serialization.ResultContainerDeserializer;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 
 public class ResultContainerWrapper {
 	
-	private ResultContainer resultContainer;
+	private DecisionContainer decisionContainer;
 
 	public ResultContainerWrapper() {
 	}
 	
-	public ResultContainerWrapper(ResultContainer resultContainer) {
-		this.resultContainer = resultContainer;
+	public ResultContainerWrapper(DecisionContainer decisionContainer) {
+		this.decisionContainer = decisionContainer;
 	}	
 	
-	public ResultContainer getResultContainer() {
-		return resultContainer;
+	public DecisionContainer getDecisionContainer() {
+		return decisionContainer;
 	}
 
 	@JsonDeserialize(using=ResultContainerDeserializer.class)
-	public void setResultContainer(ResultContainer resultContainer) {
-		this.resultContainer = resultContainer;
+	public void setDecisionContainer(DecisionContainer decisionContainer) {
+		this.decisionContainer = decisionContainer;
 	}
 
 	@Override
 	public String toString() {
-		return "ResultContainerWrapper [resultContainer=" + resultContainer + "]";
+		return "DecisionContainerWrapper [decisionContainer=" + decisionContainer + "]";
 	}
 	
 }

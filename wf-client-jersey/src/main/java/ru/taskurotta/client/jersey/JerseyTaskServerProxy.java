@@ -1,6 +1,5 @@
 package ru.taskurotta.client.jersey;
 
-import java.util.Date;
 import java.util.Map;
 
 import com.sun.jersey.api.client.Client;
@@ -14,7 +13,7 @@ import ru.taskurotta.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.client.serialization.wrapper.ResultContainerWrapper;
 import ru.taskurotta.client.serialization.wrapper.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -78,7 +77,7 @@ public class JerseyTaskServerProxy implements TaskServer {
 	}
 
 	@Override
-	public void release(ResultContainer taskResult) {
+	public void release(DecisionContainer taskResult) {
 		long start = System.currentTimeMillis();
 		//logger.debug("Client: release([{}])", taskResult);
 		releaseResource.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)

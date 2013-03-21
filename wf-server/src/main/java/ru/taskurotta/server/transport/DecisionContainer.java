@@ -8,7 +8,7 @@ import java.util.UUID;
  * Date: 2/25/13
  * Time: 3:14 PM
  */
-public class ResultContainer {
+public class DecisionContainer {
 
     private UUID taskId;
     private ArgContainer value;
@@ -16,7 +16,7 @@ public class ResultContainer {
     private ErrorContainer errorContainer;
     private TaskContainer[] tasks;
 
-    public ResultContainer(UUID taskId, ArgContainer value, boolean error, ErrorContainer errorContainer, TaskContainer[] tasks) {
+    public DecisionContainer(UUID taskId, ArgContainer value, boolean error, ErrorContainer errorContainer, TaskContainer[] tasks) {
         this.taskId = taskId;
         this.value = value;
         isError = error;
@@ -46,7 +46,7 @@ public class ResultContainer {
 
     @Override
     public String toString() {
-        return "ResultContainer{" +
+        return "DecisionContainer{" +
                 "taskId=" + taskId +
                 ", value=" + value +
                 ", isError=" + isError +

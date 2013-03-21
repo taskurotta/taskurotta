@@ -1,7 +1,7 @@
 package ru.taskurotta.server;
 
 
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -28,6 +28,6 @@ public interface TaskServer {
     /**
      * @param taskResult
      */
-    public void release(ResultContainer taskResult);
+    public void release(DecisionContainer taskResult);
 
 }

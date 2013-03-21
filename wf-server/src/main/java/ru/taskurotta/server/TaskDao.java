@@ -3,7 +3,7 @@ package ru.taskurotta.server;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.ResultContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ public interface TaskDao {
 
     public void decrementCountdown(UUID taskId);
 
-    public void logTaskResult(ResultContainer taskResult);
+    public void logTaskResult(DecisionContainer taskResult);
 
     public void unlogTaskResult(UUID taskId);
 
