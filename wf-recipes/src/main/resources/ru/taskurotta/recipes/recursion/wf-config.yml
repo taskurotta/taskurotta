@@ -1,0 +1,21 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/recursion/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/recursion/SpreaderBeans.xml
+        properties:
+          number: 4
+          count: 1
+
+actor:
+  - FibonacciDecider:
+      actorInterface: ru.taskurotta.recipes.recursion.decider.FibonacciDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1

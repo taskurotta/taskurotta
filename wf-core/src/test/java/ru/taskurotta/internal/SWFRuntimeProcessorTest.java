@@ -1,0 +1,65 @@
+package ru.taskurotta.internal;
+
+import org.junit.Test;
+import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.RuntimeProvider;
+import ru.taskurotta.RuntimeProviderManager;
+import ru.taskurotta.annotation.Decider;
+import ru.taskurotta.annotation.Execute;
+import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.core.TaskType;
+import ru.taskurotta.exception.TargetException;
+import ru.taskurotta.exception.UndefinedActorException;
+import ru.taskurotta.internal.core.TaskImpl;
+import ru.taskurotta.internal.core.TaskTargetImpl;
+
+import java.util.UUID;
+
+/**
+ * User: stukushin
+ * Date: 24.01.13
+ * Time: 17:20
+ */
+public class SWFRuntimeProcessorTest {
+    // decider
+    // ==================
+
+    @Decider
+    public static interface SimpleDecider {
+        @Execute
+        public void start();
+    }
+
+
+    public static class SimpleDeciderImpl implements SimpleDecider {
+        @Override
+        public void start() {
+            throw new RuntimeException("test exception");
+        }
+    }
+
+    @Test(expected = UndefinedActorException.class)
+    public void testUndefinedExecuteTask() throws Exception {
+        RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
+
+        RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new SimpleDeciderImpl());
+
+        TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start1");
+        Task task = new TaskImpl(UUID.randomUUID(), taskTarget, null);
+
+        runtimeProcessor.execute(task);
+    }
+
+    @Test(expected = TargetException.class)
+    public void testExecuteTaskWithException() throws Exception {
+        RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
+
+        RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new SimpleDeciderImpl());
+
+        TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start");
+        Task task = new TaskImpl(UUID.randomUUID(), taskTarget, null);
+
+        runtimeProcessor.execute(task);
+    }
+}

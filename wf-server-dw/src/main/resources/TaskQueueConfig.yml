@@ -1,0 +1,10 @@
+contextLocation: "classpath*:context/appContext.xml"
+logging:
+    level: WARN
+    loggers:
+        ru.taskurotta: DEBUG
+        com.yammer: DEBUG
+    file:
+        enabled: true
+        currentLogFilename: ./target/logs/requests.log
+        archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz

@@ -1,0 +1,27 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/parallel/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/parallel/SpreaderBeans.xml
+        properties:
+          cycles: 10
+          accuracy: 1000
+
+actor:
+  - PiDecider:
+      actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+
+  - PiWorker:
+      actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 10

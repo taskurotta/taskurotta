@@ -1,0 +1,21 @@
+runtime:
+  - mainRuntime:
+      class: ru.taskurotta.poc.TestRuntimeConfig
+      instance:
+        context: RuntimeBeans.xml #todo use uri notation
+        properties:
+          key1: value1
+          key2: value2
+
+spreader:
+  - mainSpreader:
+      class: ru.taskurotta.poc.TestSpreaderConfig
+      instance:
+        context: TaskSpreaderBeans.xml
+
+actor:
+  - simpleDecider:
+      actorInterface: ru.taskurotta.example.SimpleDecider
+      runtimeConfig: mainRuntime
+      spreaderConfig: mainSpreader
+      count: 10
