@@ -16,7 +16,7 @@ import ru.taskurotta.exception.TaskTargetRequiredException;
  * Date: 24.01.13
  * Time: 14:32
  */
-public class SWFRuntimeProviderTest {
+public class GeneralRuntimeProviderTest {
 
     RuntimeProvider runtimeProvider;
 

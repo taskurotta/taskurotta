@@ -1,6 +1,6 @@
 package ru.taskurotta;
 
-import ru.taskurotta.internal.SWFRuntimeProvider;
+import ru.taskurotta.internal.GeneralRuntimeProvider;
 
 /**
  * User: romario
@@ -14,7 +14,7 @@ public final class RuntimeProviderManager {
      */
     public static RuntimeProvider getRuntimeProvider() {
 
-        return new SWFRuntimeProvider();
+        return new GeneralRuntimeProvider();
     }
 
     /**
@@ -22,6 +22,6 @@ public final class RuntimeProviderManager {
      * @return
      */
     public static RuntimeProvider getRuntimeProvider(TaskHandler taskHandler) {
-       return  new SWFRuntimeProvider(taskHandler);
+       return  new GeneralRuntimeProvider(taskHandler);
     }
 }

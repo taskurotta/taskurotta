@@ -35,9 +35,9 @@ import java.util.Map;
  * Date: 1/22/13
  * Time: 4:33 PM
  */
-public class SWFRuntimeProvider implements RuntimeProvider {
+public class GeneralRuntimeProvider implements RuntimeProvider {
 
-    protected final static Logger log = LoggerFactory.getLogger(SWFRuntimeProvider.class);
+    protected final static Logger log = LoggerFactory.getLogger(GeneralRuntimeProvider.class);
 
     private WorkerProxyFactory workerProxyFactory = new WorkerProxyFactory();
     private DeciderProxyFactory deciderProxyFactory = new DeciderProxyFactory();
@@ -66,7 +66,7 @@ public class SWFRuntimeProvider implements RuntimeProvider {
     }
 
 
-    public SWFRuntimeProvider() {
+    public GeneralRuntimeProvider() {
 
         taskHandler = new TaskHandler() {
             @Override
@@ -83,7 +83,7 @@ public class SWFRuntimeProvider implements RuntimeProvider {
         };
     }
 
-    public SWFRuntimeProvider(TaskHandler taskHandler) {
+    public GeneralRuntimeProvider(TaskHandler taskHandler) {
 
         this.taskHandler = taskHandler;
     }
@@ -98,7 +98,7 @@ public class SWFRuntimeProvider implements RuntimeProvider {
 
         if (workerInterface != null) {
             taskTargetsMap = extractTargetsFromWorker(actorBean, workerInterface);
-            return new SWFRuntimeProcessor(taskTargetsMap, tlTaskList);
+            return new GeneralRuntimeProcessor(taskTargetsMap, tlTaskList);
         }
 
 
@@ -106,7 +106,7 @@ public class SWFRuntimeProvider implements RuntimeProvider {
 
         if (deciderInterface != null) {
             taskTargetsMap = extractTargetsFromDecider(actorBean, deciderInterface);
-            return new SWFRuntimeProcessor(taskTargetsMap, tlTaskList);
+            return new GeneralRuntimeProcessor(taskTargetsMap, tlTaskList);
         }
 
         throw new TaskTargetRequiredException(actorBean.getClass().getName());
