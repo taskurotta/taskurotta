@@ -1,19 +1,12 @@
 package ru.taskurotta.bootstrap;
 
-import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.Timer;
-import com.yammer.metrics.core.TimerContext;
 import ru.taskurotta.RuntimeProcessor;
-import ru.taskurotta.annotation.Decider;
-import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.exception.ActorRuntimeException;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -33,8 +26,9 @@ public class ActorExecutor implements Runnable {
 
     public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
         this.profiler = profiler;
-        this.runtimeProcessor = runtimeProcessor;
-        this.taskSpreader = taskSpreader;
+
+        this.runtimeProcessor = profiler.decorate(runtimeProcessor);
+        this.taskSpreader = profiler.decorate(taskSpreader);
 
     }
 
@@ -45,33 +39,26 @@ public class ActorExecutor implements Runnable {
 
             profiler.cycleStart();
 
-            profiler.pullStart();
-            Task task = taskSpreader.pull();
+            try {
 
-            if (task == null) {
-                profiler.pullFinish(false);
-                profiler.cycleFinish(false, false);
+                Task task = taskSpreader.pull();
 
-                // TODO: sleep one or few seconds? Or implement sleep policy?
-                continue;
+                if (task == null) {
+                    profiler.cycleFinish();
+
+                    // TODO: sleep one or few seconds? Or implement sleep policy?
+                    continue;
+                }
+
+                // TODO: catch all exceptions and send it to server
+                TaskDecision taskDecision = runtimeProcessor.execute(task);
+
+                taskSpreader.release(taskDecision);
+
+            } finally {
+                profiler.cycleFinish();
             }
 
-            profiler.pullFinish(true);
-
-
-            profiler.executeStart();
-
-            // TODO: catch all exceptions and send it to server
-            TaskDecision taskDecision = runtimeProcessor.execute(task);
-
-            profiler.executeFinish(task.getTarget(), false);
-
-            profiler.releaseStart();
-            taskSpreader.release(taskDecision);
-
-            profiler.releaseFinish();
-
-            profiler.cycleFinish(true, false);
         }
     }
 }

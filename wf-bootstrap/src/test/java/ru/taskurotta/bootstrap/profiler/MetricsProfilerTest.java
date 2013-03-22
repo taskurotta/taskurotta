@@ -2,8 +2,6 @@ package ru.taskurotta.bootstrap.profiler;
 
 import org.junit.Test;
 import ru.taskurotta.annotation.Worker;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskDecision;
 
 /**
  * User: romario
@@ -24,15 +22,6 @@ public class MetricsProfilerTest {
 
         profiler.cycleStart();
 
-        profiler.pullStart();
-        profiler.pullFinish(true);
-
-        profiler.executeStart();
-        profiler.executeFinish(null, false);
-
-        profiler.releaseStart();
-        profiler.releaseFinish();
-
-        profiler.cycleFinish(true, false);
+        profiler.cycleFinish();
     }
 }

@@ -3,9 +3,13 @@ package ru.taskurotta.bootstrap.profiler;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.Timer;
-import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.client.TaskSpreader;
+import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,17 +38,8 @@ public class MetricsProfiler implements Profiler {
     private boolean isTrackRelease = false;
     private boolean isTrackError = false;
 
-    private boolean isTrack = false;
+    private ThreadLocal<Long> cycleStartTime = new ThreadLocal<Long>();
 
-    private ThreadLocal<Times> threadLocalTimes = new ThreadLocal<Times>();
-
-    private static class Times {
-        long startCycle;
-        long startPull;
-        long startExecute;
-        long startRelease;
-        long startError;
-    }
 
     public MetricsProfiler(Class actorClass) {
 
@@ -60,16 +55,85 @@ public class MetricsProfiler implements Profiler {
             timerExecute = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
-        isTrack = isTrackCycle || isTrackPull || isTrackExecute || isTrackRelease || isTrackError;
+    }
+
+    @Override
+    public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
+
+        if (!isTrackExecute) {
+            return runtimeProcessor;
+        }
+
+        return new RuntimeProcessor() {
+
+            @Override
+            public TaskDecision execute(Task task) {
+
+                long startTime = System.nanoTime();
+
+                try {
+                    return runtimeProcessor.execute(task);
+                } finally {
+                    timerExecute.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+                }
+
+            }
+
+            @Override
+            public List<Task> execute(Runnable runnable) {
+                throw new IllegalAccessError("Method not supported yet");
+            }
+        };
 
     }
 
     @Override
-    public void cycleStart() {
+    public TaskSpreader decorate(final TaskSpreader taskSpreader) {
 
-        if (isTrack) {
-            threadLocalTimes.set(new Times());
+        if (!(isTrackPull || isTrackRelease || isTrackError)) {
+            return taskSpreader;
         }
+
+        return new TaskSpreader() {
+
+            @Override
+            public Task pull() {
+
+                if (!isTrackPull) {
+                    return taskSpreader.pull();
+                }
+
+                long startTime = System.nanoTime();
+
+                try {
+                    return taskSpreader.pull();
+                } finally {
+                    timerPull.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+                }
+
+            }
+
+            @Override
+            public void release(TaskDecision taskDecision) {
+
+                if (!isTrackPull) {
+                    taskSpreader.release(taskDecision);
+                    return;
+                }
+
+                long startTime = System.nanoTime();
+
+                try {
+                    taskSpreader.release(taskDecision);
+                } finally {
+                    timerRelease.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+                }
+            }
+        };
+    }
+
+    @Override
+    public void cycleStart() {
 
         if (isMeterCycle) {
             meterCycle.mark();
@@ -78,89 +142,18 @@ public class MetricsProfiler implements Profiler {
         if (!isTrackCycle) {
             return;
         }
+
+        cycleStartTime.set(System.nanoTime());
     }
 
     @Override
-    public void cycleFinish(boolean withTask, boolean withError) {
+    public void cycleFinish() {
 
-        if (!isTrack) {
+        if (!isTrackCycle) {
             return;
         }
 
-        if (isTrackCycle) {
-        }
-
-        // should we remove it? or can reuse object late?
-        threadLocalTimes.remove();
+        timerCycle.update(System.nanoTime() - cycleStartTime.get(), TimeUnit.NANOSECONDS);
     }
 
-    @Override
-    public void pullStart() {
-
-        if (!isTrackPull) {
-            return;
-        }
-    }
-
-    @Override
-    public void pullFinish(boolean withTask) {
-
-        if (!isTrackPull) {
-            return;
-        }
-    }
-
-    @Override
-    public void executeStart() {
-
-        if (!isTrackExecute) {
-            return;
-        }
-
-        Times times = threadLocalTimes.get();
-        times.startExecute = System.nanoTime();
-    }
-
-    @Override
-    public void executeFinish(TaskTarget taskTarget, boolean withError) {
-
-        if (!isTrackExecute) {
-            return;
-        }
-
-        Times times = threadLocalTimes.get();
-        timerExecute.update(System.nanoTime() - times.startExecute, TimeUnit.NANOSECONDS);
-    }
-
-    @Override
-    public void releaseStart() {
-
-        if (!isTrackRelease) {
-            return;
-        }
-    }
-
-    @Override
-    public void releaseFinish() {
-
-        if (!isTrackRelease) {
-            return;
-        }
-    }
-
-    @Override
-    public void errorStart() {
-
-        if (!isTrackError) {
-            return;
-        }
-    }
-
-    @Override
-    public void errorFinish() {
-
-        if (!isTrackError) {
-            return;
-        }
-    }
 }
