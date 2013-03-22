@@ -29,11 +29,11 @@ public class TestSelectTask implements Runnable {
         final UUID threadId = UUID.randomUUID();
         System.out.println(String.format("Thread started for %s", threadId));
         int count = 0;
+        final DbDAO dbDAO = new DbDAO(dataSource);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         while (count < OPERATION_COUNT) {
             count++;
-            final DbDAO dbDAO = new DbDAO(dataSource);
             try {
                 dbDAO.selectLastTaskWithTypeImproved(jobType);
             } catch (SQLException e) {

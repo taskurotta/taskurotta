@@ -10,13 +10,16 @@ public class SimpleTask {
     private int taskId;
     private int typeId;
     private Date date;
-    private int userId;
+    private int statusId;
+    private String actorId;
 
-    public SimpleTask(int taskId, int typeId, Date date, int userId) {
+
+    public SimpleTask(int taskId, int typeId, Date date, int statusId, String actorId) {
         this.taskId = taskId;
         this.typeId = typeId;
         this.date = date;
-        this.userId = userId;
+        this.statusId = statusId;
+        this.actorId = actorId;
     }
 
     public int getTaskId() {
@@ -43,11 +46,19 @@ public class SimpleTask {
         this.date = date;
     }
 
-    public int getUserId() {
-        return userId;
+    public int getStatusId() {
+        return statusId;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setStatusId(int statusId) {
+        this.statusId = statusId;
+    }
+
+    public String getActorId() {
+        return actorId;
+    }
+
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
     }
 }
