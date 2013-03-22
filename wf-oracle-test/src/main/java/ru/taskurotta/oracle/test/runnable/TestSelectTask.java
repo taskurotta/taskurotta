@@ -5,7 +5,6 @@ import org.springframework.util.StopWatch;
 import ru.taskurotta.oracle.test.DbDAO;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -28,7 +27,7 @@ public class TestSelectTask implements Runnable {
     @Override
     public void run() {
         final UUID threadId = UUID.randomUUID();
-        System.out.println("Thread started for " + threadId + ": " + new Date());
+        System.out.println(String.format("Thread started for %s", threadId));
         int count = 0;
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -44,7 +43,8 @@ public class TestSelectTask implements Runnable {
         stopWatch.stop();
         countDownLatch.countDown();
         double operPerSecond = OPERATION_COUNT / stopWatch.getTotalTimeSeconds();
-        System.out.println("Thread ID:" + threadId + " finished for " + stopWatch.getTotalTimeSeconds() + " exprox: " + operPerSecond + " operations per second");
+        String message = String.format("Thread ID: %s finished for %s exprox: %s operations per second", threadId, stopWatch.getTotalTimeSeconds(), operPerSecond);
+        System.out.println(message);
 
     }
 }
