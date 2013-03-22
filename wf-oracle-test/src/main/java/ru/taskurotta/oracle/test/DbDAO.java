@@ -5,7 +5,6 @@ import ru.taskurotta.oracle.test.domain.SimpleTask;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -33,21 +32,34 @@ public class DbDAO {
 
     public boolean selectLastTaskWithTypeImproved(int typeJob) throws SQLException {
         final Connection connection = dataSource.getConnection();
-        connection.setAutoCommit(false);
-		PreparedStatement ps = connection.prepareStatement(
-				"select * from queue_bus where type_job=? and user_id=0 and rownum=1 order by data_update desc for update skip locked");
-		ps.setInt(1, typeJob);
-        ResultSet rs = ps.executeQuery();
-        boolean updated = false;
-        if (rs.next()) {
-            updateJob(rs.getInt("job_id"), connection);
-            updated = true;
-        }
-        connection.commit();
+        PreparedStatement ps = connection.prepareStatement(
+                "UPDATE queue_bus q\n" +
+                        "SET q.user_id = 1\n" +
+                        "WHERE\n" +
+                        "  q.job_id IN (\n" +
+                        "    SELECT\n" +
+                        "      job_id\n" +
+                        "    FROM\n" +
+                        "      (\n" +
+                        "        SELECT\n" +
+                        "          job_id\n" +
+                        "        FROM\n" +
+                        "          queue_bus\n" +
+                        "        WHERE\n" +
+                        "          type_job = 0\n" +
+                        "          AND user_id = ?\n" +
+                        "        ORDER BY\n" +
+                        "          data_update DESC\n" +
+                        "      )\n" +
+                        "    WHERE\n" +
+                        "      ROWNUM = 1\n" +
+                        "  )");
+        ps.setInt(1, typeJob);
+        ps.executeUpdate();
         ps.close();
-		connection.setAutoCommit(true);
+        connection.commit();
         connection.close();
-        return updated;
+        return true;
     }
 
     private void updateJob(int job_id, Connection connection) throws SQLException {
