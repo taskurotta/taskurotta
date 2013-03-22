@@ -33,7 +33,8 @@
 		<module>wf-recipes</module>
 		<module>wf-client-jersey</module>
 		<module>wf-server-dw</module>
-	</modules>
+        <module>wf-oracle-test</module>
+    </modules>
 
 	<dependencies>
 
