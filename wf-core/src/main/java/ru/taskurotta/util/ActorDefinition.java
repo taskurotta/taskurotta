@@ -75,4 +75,8 @@ public class ActorDefinition {
     public String getVersion() {
         return version;
     }
+
+    public String getFullName() {
+        return name + "#" + version;
+    }
 }
