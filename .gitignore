@@ -10,3 +10,7 @@
 .idea/
 target/
 */target/
+
+# Eclipse
+/.project
+/.settings
