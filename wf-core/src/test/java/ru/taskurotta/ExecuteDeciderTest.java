@@ -190,36 +190,36 @@ public class ExecuteDeciderTest {
         RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
 
         SimpleDeciderImpl simpleDeciderImpl = new SimpleDeciderImpl();
-        simpleDeciderImpl.async = runtimeProvider.getAsynchronousClient(SimpleDeciderImpl.class);
-        simpleDeciderImpl.simpleSubDeciderClient = runtimeProvider.getDeciderClient(SimpleSubDeciderClient.class);
-        simpleDeciderImpl.simpleWorkerClient = runtimeProvider.getWorkerClient(SimpleWorkerClient.class);
+        simpleDeciderImpl.async = ProxyFactory.getAsynchronousClient(SimpleDeciderImpl.class);
+        simpleDeciderImpl.simpleSubDeciderClient = ProxyFactory.getDeciderClient(SimpleSubDeciderClient.class);
+        simpleDeciderImpl.simpleWorkerClient = ProxyFactory.getWorkerClient(SimpleWorkerClient.class);
 
         runtimeProcessorSimpleDeciderImpl = runtimeProvider.getRuntimeProcessor(simpleDeciderImpl);
 
         SimpleDeciderWithAsynchronousMethodImpl simpleDeciderWithAsynchronousMethodImpl = new SimpleDeciderWithAsynchronousMethodImpl();
-        simpleDeciderWithAsynchronousMethodImpl.async = runtimeProvider.getAsynchronousClient(SimpleDeciderWithAsynchronousMethodImpl.class);
+        simpleDeciderWithAsynchronousMethodImpl.async = ProxyFactory.getAsynchronousClient(SimpleDeciderWithAsynchronousMethodImpl.class);
 
         runtimeProcessorSimpleDeciderWithAsynchronousMethodImpl = runtimeProvider.getRuntimeProcessor(simpleDeciderWithAsynchronousMethodImpl);
 
         FibonacciDeciderImpl fibonacciDeciderImpl =  new FibonacciDeciderImpl();
-        fibonacciDeciderImpl.async = runtimeProvider.getAsynchronousClient(FibonacciDeciderImpl.class);
+        fibonacciDeciderImpl.async = ProxyFactory.getAsynchronousClient(FibonacciDeciderImpl.class);
 
         runtimeProcessorFibonacciDeciderImpl = runtimeProvider.getRuntimeProcessor(fibonacciDeciderImpl);
 
         SimpleDeciderStartMethodReturnPromiseImpl simpleDeciderStartMethodReturnPromiseImpl = new SimpleDeciderStartMethodReturnPromiseImpl();
-        simpleDeciderStartMethodReturnPromiseImpl.simpleWorkerClient = runtimeProvider.getWorkerClient(SimpleWorkerClient.class);
+        simpleDeciderStartMethodReturnPromiseImpl.simpleWorkerClient = ProxyFactory.getWorkerClient(SimpleWorkerClient.class);
 
         runtimeProcessorSimpleDeciderStartMethodReturnPromiseImpl = runtimeProvider.getRuntimeProcessor(simpleDeciderStartMethodReturnPromiseImpl);
 
         // get references to decider actors
         //==================================
 
-        this.simpleWorkerClient = runtimeProvider.getWorkerClient(SimpleWorkerClient.class);
-        this.simpleSubDeciderClient = runtimeProvider.getDeciderClient(SimpleSubDeciderClient.class);
-        this.simpleDecider = runtimeProvider.getAsynchronousClient(SimpleDeciderImpl.class);
-        this.simpleDeciderWithAsyncMethod = runtimeProvider.getAsynchronousClient(SimpleDeciderWithAsynchronousMethodImpl.class);
-        this.fibonacciDecider = runtimeProvider.getAsynchronousClient(FibonacciDeciderImpl.class);
-        this.simpleDeciderStartMethodReturnPromise = runtimeProvider.getAsynchronousClient(SimpleDeciderStartMethodReturnPromiseImpl.class);
+        this.simpleWorkerClient = ProxyFactory.getWorkerClient(SimpleWorkerClient.class);
+        this.simpleSubDeciderClient = ProxyFactory.getDeciderClient(SimpleSubDeciderClient.class);
+        this.simpleDecider = ProxyFactory.getAsynchronousClient(SimpleDeciderImpl.class);
+        this.simpleDeciderWithAsyncMethod = ProxyFactory.getAsynchronousClient(SimpleDeciderWithAsynchronousMethodImpl.class);
+        this.fibonacciDecider = ProxyFactory.getAsynchronousClient(FibonacciDeciderImpl.class);
+        this.simpleDeciderStartMethodReturnPromise = ProxyFactory.getAsynchronousClient(SimpleDeciderStartMethodReturnPromiseImpl.class);
     }
 
 

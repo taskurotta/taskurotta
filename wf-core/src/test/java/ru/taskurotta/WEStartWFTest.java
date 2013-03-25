@@ -101,9 +101,9 @@ public class WEStartWFTest {
 
         RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
         SimpleDeciderImpl simpleDeciderImpl = new SimpleDeciderImpl();
-        simpleDeciderImpl.async = runtimeProvider.getAsynchronousClient(SimpleDeciderImpl.class);
-        simpleDeciderImpl.simpleSubDeciderClient = runtimeProvider.getDeciderClient(SimpleSubDeciderClient.class);
-        simpleDeciderImpl.simpleWorkerClient = runtimeProvider.getWorkerClient(SimpleWorkerClient.class);
+        simpleDeciderImpl.async = ProxyFactory.getAsynchronousClient(SimpleDeciderImpl.class);
+        simpleDeciderImpl.simpleSubDeciderClient = ProxyFactory.getDeciderClient(SimpleSubDeciderClient.class);
+        simpleDeciderImpl.simpleWorkerClient = ProxyFactory.getWorkerClient(SimpleWorkerClient.class);
 
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(simpleDeciderImpl);
 

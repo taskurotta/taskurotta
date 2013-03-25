@@ -17,11 +17,4 @@ public final class RuntimeProviderManager {
         return new GeneralRuntimeProvider();
     }
 
-    /**
-     * @param taskHandler
-     * @return
-     */
-    public static RuntimeProvider getRuntimeProvider(TaskHandler taskHandler) {
-       return  new GeneralRuntimeProvider(taskHandler);
-    }
 }

@@ -103,18 +103,18 @@ public class SupportUnitTest {
         RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
 
         SimpleTestDeciderImpl simpleTestDeciderImpl = new SimpleTestDeciderImpl();
-        simpleTestDeciderImpl.async = runtimeProvider.getAsynchronousClient(SimpleTestDeciderImpl.class);
-        simpleTestDeciderImpl.simpleSubDeciderClient = runtimeProvider.getDeciderClient(SimpleSubDeciderClient.class);
-        simpleTestDeciderImpl.simpleWorkerClient = runtimeProvider.getWorkerClient(SimpleWorkerClient.class);
+        simpleTestDeciderImpl.async = ProxyFactory.getAsynchronousClient(SimpleTestDeciderImpl.class);
+        simpleTestDeciderImpl.simpleSubDeciderClient = ProxyFactory.getDeciderClient(SimpleSubDeciderClient.class);
+        simpleTestDeciderImpl.simpleWorkerClient = ProxyFactory.getWorkerClient(SimpleWorkerClient.class);
 
         runtimeProcessor = runtimeProvider.getRuntimeProcessor(simpleTestDeciderImpl);
 
         // get references to decider actors
         //==================================
 
-        this.simpleWorkerClient = runtimeProvider.getWorkerClient(SimpleWorkerClient.class);
-        this.simpleSubDeciderClient = runtimeProvider.getDeciderClient(SimpleSubDeciderClient.class);
-        this.simpleDecider = runtimeProvider.getAsynchronousClient(SimpleTestDeciderImpl.class);
+        this.simpleWorkerClient = ProxyFactory.getWorkerClient(SimpleWorkerClient.class);
+        this.simpleSubDeciderClient = ProxyFactory.getDeciderClient(SimpleSubDeciderClient.class);
+        this.simpleDecider = ProxyFactory.getAsynchronousClient(SimpleTestDeciderImpl.class);
 
     }
 

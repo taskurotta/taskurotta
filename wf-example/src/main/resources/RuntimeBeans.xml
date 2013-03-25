@@ -16,24 +16,24 @@
 
     <bean id="smsWorker" class="ru.taskurotta.example.workers.SMSWorkerImpl"/>
 
-    <bean id="profileWorkerClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.example.workers.ProfileWorkerClient"/>
-    </bean>
-
-    <bean id="emailWorkerClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.example.workers.EmailWorkerClient"/>
-    </bean>
-
-    <bean id="smsWorkerClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.example.workers.SMSWorkerClient"/>
-    </bean>
-
     <bean id="notificationDecider" class="ru.taskurotta.example.decider.NotificationDeciderImpl">
-        <property name="userProfile" ref="profileWorkerClient"/>
-        <property name="emailTransport" ref="emailWorkerClient"/>
-        <property name="smsTransport" ref="smsWorkerClient"/>
+        <property name="userProfile">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.example.workers.ProfileWorkerClient"/>
+            </bean>
+        </property>
+        <property name="emailTransport">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.example.workers.EmailWorkerClient"/>
+            </bean>
+        </property>
+        <property name="smsTransport">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.example.workers.SMSWorkerClient"/>
+            </bean>
+        </property>
         <property name="asynchronous">
-            <bean factory-bean="runtimeProvider" factory-method="getAsynchronousClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
                 <constructor-arg value="ru.taskurotta.example.decider.NotificationDeciderImpl"/>
             </bean>
         </property>

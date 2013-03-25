@@ -80,7 +80,7 @@ public class MetricsProfiler implements Profiler {
             }
 
             @Override
-            public List<Task> execute(Runnable runnable) {
+            public Task[] execute(Runnable runnable) {
                 throw new IllegalAccessError("Method not supported yet");
             }
         };
