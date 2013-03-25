@@ -8,17 +8,32 @@
 
     <context:property-placeholder/>
     <context:annotation-config />
-
-    <bean id="clientServiceManager" class="ru.taskurotta.client.jersey.JerseyClientServiceManager">
+	
+	<bean id = "taskServer" class="ru.taskurotta.example.calculate.taskserver.ProfiledJerseyTaskServer" >
     	<property name="connectTimeout" value="${connectTimeout}" />
     	<property name="readTimeout" value = "${readTimeout}" />
     	<property name="threadPoolSize" value = "${threadPoolSize}" />
     	<property name="endpoint" value = "${endpoint}" />
-    </bean>
+    	<constructor-arg name="loggingPeriod" value = "${loggerPeriod}" />
+	</bean>
 
+<!--     <bean id = "taskServer" class="ru.taskurotta.example.calculate.taskserver.ProfiledJerseyHttpTaskServer"> -->
+<!--     	<property name="connectTimeout" value = "${connectTimeout}" /> -->
+<!--     	<property name="readTimeout" value = "${readTimeout}" /> -->
+<!--     	<property name="threadPoolSize" value = "${threadPoolSize}" /> -->
+<!--     	<property name="endpoint" value = "${endpoint}" /> -->
+<!--     	<property name="maxConnectionsPerHost" value = "${maxConnectionsPerHost}" /> -->
+<!--     	<constructor-arg name="loggingPeriod" value = "${loggerPeriod}" /> -->
+<!--     </bean> -->
+	
     <bean id="taskCreator" class="ru.taskurotta.example.calculate.WorkflowStarter" init-method="startWork">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>
     </bean>
-
+    
+    <bean id="clientServiceManager" class="ru.taskurotta.client.jersey.JerseyClientServiceManager">
+    	<property name="taskServer" ref="taskServer" />
+    </bean>
+    
+    
 </beans>

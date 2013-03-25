@@ -8,14 +8,14 @@ import ru.taskurotta.util.ActorDefinition;
 
 import java.io.IOException;
 
-public class ActorDefinitionSerializer extends JsonSerializer<ActorDefinition>{
+public class ActorDefinitionSerializer extends JsonSerializer<ActorDefinition> implements Constants {
 
 	@Override
 	public void serialize(ActorDefinition actorDefinition, JsonGenerator jgen, SerializerProvider provider) throws IOException,
 			JsonProcessingException {
 		jgen.writeStartObject();
-		jgen.writeStringField("name", actorDefinition.getName());
-		jgen.writeStringField("version", actorDefinition.getVersion());
+		jgen.writeStringField(ACTOR_DEFINITION_NAME, actorDefinition.getName());
+		jgen.writeStringField(ACTOR_DEFINITION_VERSION, actorDefinition.getVersion());
 		jgen.writeEndObject();
 	}
 

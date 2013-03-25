@@ -10,7 +10,7 @@ import ru.taskurotta.util.ActorDefinition;
 
 import java.io.IOException;
 
-public class ActorDefinitionDeserializer extends JsonDeserializer<ActorDefinition>{
+public class ActorDefinitionDeserializer extends JsonDeserializer<ActorDefinition> implements Constants{
 
 	@Override
 	public ActorDefinition deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
@@ -18,8 +18,8 @@ public class ActorDefinitionDeserializer extends JsonDeserializer<ActorDefinitio
 		ObjectCodec oc = jp.getCodec();
 		JsonNode rootNode = oc.readTree(jp);
 		
-		String name = rootNode.get("name").textValue();
-		String version = rootNode.get("version").textValue();
+		String name = rootNode.get(ACTOR_DEFINITION_NAME).textValue();
+		String version = rootNode.get(ACTOR_DEFINITION_VERSION).textValue();
 		
 		return ActorDefinition.valueOf(name, version);
 	}

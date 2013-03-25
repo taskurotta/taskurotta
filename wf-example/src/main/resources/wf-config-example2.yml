@@ -12,29 +12,34 @@ spreader:
       instance:
         context: example2/SpreaderBeansExample2.xml
         properties:
-          count: 10
+          count: 150
+          loggingPeriod: 10000
 
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.example.calculate.decider.MathActionDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      holdOnError: 5000
       count: 1
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      holdOnError: 5000
       count: 1
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      holdOnError: 5000
       count: 1
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      holdOnError: 5000
       count: 1
