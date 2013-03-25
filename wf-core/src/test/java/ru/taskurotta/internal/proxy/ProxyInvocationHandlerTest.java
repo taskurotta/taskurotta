@@ -8,6 +8,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.IllegalReturnTypeException;
+import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 
 import java.lang.reflect.Method;
@@ -43,9 +44,9 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
 
         Method[] methods = clazz.getMethods();
-        Map<Method, TaskTarget> method2TaskTargetCache = new HashMap<Method, TaskTarget>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
         for (Method method : methods) {
-            method2TaskTargetCache.put(method, new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, "testActorName", "1.0", method.getName()));
+			method2TaskTargetCache.put(method, new MethodDescriptor(TaskType.DECIDER_ASYNCHRONOUS, "testActorName", "1.0", method.getName()));
         }
 
         proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, new TaskHandler() {

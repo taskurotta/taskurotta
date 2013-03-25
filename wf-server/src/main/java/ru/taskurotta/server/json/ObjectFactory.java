@@ -13,6 +13,7 @@ import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.ErrorContainer;
 import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.server.transport.TaskOptions;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -153,7 +154,9 @@ public class ObjectFactory {
             }
         }
 
-        return new TaskContainer(taskId, target, argContainers);
+		TaskOptions options = new TaskOptions(task.getArgTypes());
+
+        return new TaskContainer(taskId, target, argContainers, options);
     }
 
 

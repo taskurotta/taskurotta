@@ -1,5 +1,6 @@
 package ru.taskurotta.internal.core;
 
+import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 
@@ -16,9 +17,14 @@ public class TaskImpl implements Task {
     private UUID uuid;
     private TaskTarget taskTarget;
     private Object[] args;
+	private ArgType[] argTypes;
 
 
     public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args) {
+		this(uuid, taskTarget, args, null);
+	}
+
+    public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args, ArgType[] argTypes) {
 
         if (uuid == null) {
             throw new IllegalArgumentException("uuid can not be null!");
@@ -33,8 +39,13 @@ public class TaskImpl implements Task {
         this.taskTarget = taskTarget;
 
         this.args = args;
+		this.argTypes = argTypes;
     }
 
+
+    public TaskImpl(TaskTarget taskTarget, Object[] args, ArgType[] argTypes) {
+		this(UUID.randomUUID(), taskTarget, args, argTypes);
+	}
 
     public TaskImpl(TaskTarget taskTarget, Object[] args) {
         this(UUID.randomUUID(), taskTarget, args);
@@ -58,8 +69,11 @@ public class TaskImpl implements Task {
         return args;
     }
 
+	public ArgType[] getArgTypes() {
+		return argTypes;
+	}
 
-    @Override
+	@Override
     public boolean equals(Object o) {
 
         if (this == o) return true;
@@ -76,18 +90,20 @@ public class TaskImpl implements Task {
         if ((args == null && thatArgs != null)
                 || (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
 
+		if (!Arrays.equals(argTypes, that.getArgTypes())) return false;
         return true;
     }
-
 
     @Override
     public int hashCode() {
         int result = uuid.hashCode();
         result = 31 * result + taskTarget.hashCode();
         result = 31 * result + Arrays.deepHashCode(args);
+        result = 31 * result + Arrays.deepHashCode(argTypes);
 
         return result;
     }
+
 
 
     @Override

@@ -11,6 +11,7 @@ import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
+import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.AnnotationUtils;
 
@@ -28,7 +29,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(proxyType);
 
-        final Map<Method, TaskTarget> method2TaskTargetCache = createMethodCache(proxyType);
+        final Map<Method, MethodDescriptor> method2TaskTargetCache = createMethodCache(proxyType);
 
         ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, taskHandler);
         Callback[] callbacks = createCallbacks(proxyInvocationHandler);
@@ -73,7 +74,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
             public Object intercept(Object object, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
 
                 throw new IllegalAccessError(
-                        "Access denied to methods without Asynchronous annotation: "
+                        "Access denied to methods without Asynchronous ann	otation: "
                                 + object.getClass().getName() + "." + method.getName() + "()");
             }
         };
@@ -81,8 +82,8 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
         return new Callback[]{allowCallback, disallowCallback};
     }
 
-    private Map<Method, TaskTarget> createMethodCache(Class target) {
-        Map<Method, TaskTarget> method2TaskTargetCache = new HashMap<Method, TaskTarget>();
+    private Map<Method, MethodDescriptor> createMethodCache(Class target) {
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
 
         Class<?> deciderInterface = AnnotationUtils.findAnnotatedClass(target, Decider.class);
 
@@ -94,8 +95,9 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
         for (Method method : targetMethods) {
 
             if (method.isAnnotationPresent(Asynchronous.class)) {
-                TaskTarget value = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
-                method2TaskTargetCache.put(method, value);
+                TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
+				MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+                method2TaskTargetCache.put(method, descriptor);
             }
 
         }
@@ -113,8 +115,9 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 for (Method implementationMethod : targetMethods) {
 
                     if (implementationMethod.getName().equals(interfaceMethod)) {
-                        TaskTarget value = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
-                        method2TaskTargetCache.put(implementationMethod, value);
+                        TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
+							MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+							method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }
                 }

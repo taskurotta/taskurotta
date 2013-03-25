@@ -5,6 +5,7 @@ import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.IllegalReturnTypeException;
+import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskImpl;
 
 import java.lang.reflect.InvocationHandler;
@@ -18,11 +19,11 @@ import java.util.Map;
  */
 public class ProxyInvocationHandler implements InvocationHandler {
 
-    private Map<Method, TaskTarget> method2TaskTargetCache;
+    private Map<Method, MethodDescriptor> method2TaskTargetCache;
 
     private TaskHandler taskHandler;
 
-    public ProxyInvocationHandler(Map<Method, TaskTarget> method2TaskTargetCache, TaskHandler taskHandler) {
+    public ProxyInvocationHandler(Map<Method, MethodDescriptor> method2TaskTargetCache, TaskHandler taskHandler) {
 
         this.method2TaskTargetCache = method2TaskTargetCache;
         this.taskHandler = taskHandler;
@@ -33,9 +34,9 @@ public class ProxyInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-        TaskTarget taskTarget = method2TaskTargetCache.get(method);
+		MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
 
-        Task task = new TaskImpl(taskTarget, args);
+        Task task = new TaskImpl(methodDescriptor.getTaskTarget(), args, methodDescriptor.getArgTypes());
 
         taskHandler.handle(task);
 

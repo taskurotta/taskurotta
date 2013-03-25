@@ -3,6 +3,7 @@ package ru.taskurotta.internal.proxy;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 
 import java.lang.annotation.Annotation;
@@ -35,7 +36,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
                 clientAnnotationClass, annotationExplorer);
         ClientCheckerUtil.checkInterfaceMatching(clientInterface, actorInterface);
 
-        Map<Method, TaskTarget> method2TaskTargetCache = createMethodCache(clientInterface, actorInterface,
+        Map<Method, MethodDescriptor> method2TaskTargetCache = createMethodCache(clientInterface, actorInterface,
                 actorAnnotationClass, annotationExplorer);
         ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, taskHandler);
 
@@ -53,7 +54,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
      * @param annotationExplorer - actor annotation explorer
      * @return method to task target cache
      */
-    public static Map<Method, TaskTarget> createMethodCache(Class clientInterface, Class<?> actorInterface,
+    private Map<Method, MethodDescriptor> createMethodCache(Class clientInterface, Class<?> actorInterface,
                                                             Class<? extends Annotation> actorAnnotationClass,
                                                             ProxyFactory.AnnotationExplorer annotationExplorer) {
 
@@ -66,12 +67,13 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
 
         String actorVersion = annotationExplorer.getActorVersion(actorAnnotation);
 
-        Map<Method, TaskTarget> method2TaskTargetCache = new HashMap<Method, TaskTarget>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
 
         Method[] targetMethods = clientInterface.getMethods();
         for (Method method : targetMethods) {
-            TaskTarget value = new TaskTargetImpl(annotationExplorer.getTaskType(), actorName, actorVersion, method.getName());
-            method2TaskTargetCache.put(method, value);
+            TaskTarget taskTarget = new TaskTargetImpl(annotationExplorer.getTaskType(), actorName, actorVersion, method.getName());
+			MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+            method2TaskTargetCache.put(method, descriptor);
         }
         return method2TaskTargetCache;
     }

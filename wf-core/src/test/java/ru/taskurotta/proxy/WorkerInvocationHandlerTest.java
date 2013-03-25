@@ -5,8 +5,8 @@ import org.junit.Test;
 import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
+import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.proxy.ProxyInvocationHandler;
 
@@ -28,9 +28,10 @@ public class WorkerInvocationHandlerTest {
     private Method methodSum;
     private Method methodAVoid;
 
+	@SuppressWarnings("UnusedDeclaration")
     public static class SimpleProxy {
 
-        public Promise<Integer> sum(int a, int b) {
+		public Promise<Integer> sum(int a, int b) {
             return Promise.asPromise(a + b);
         }
 
@@ -43,13 +44,15 @@ public class WorkerInvocationHandlerTest {
     @Before
     public void before() throws NoSuchMethodException {
         simpleProxy = new SimpleProxy();
-        Map<Method,TaskTarget> method2TaskTargetCache = new HashMap<Method, TaskTarget>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
 
         methodSum = SimpleProxy.class.getMethod("sum", new Class[]{int.class, int.class});
-        method2TaskTargetCache.put(methodSum, new TaskTargetImpl(TaskType.WORKER, "testName", "1.0", methodSum.getName()));
+		TaskTargetImpl target = new TaskTargetImpl(TaskType.WORKER, "testName", "1.0", methodSum.getName());
+		method2TaskTargetCache.put(methodSum, new MethodDescriptor(target));
 
         methodAVoid = SimpleProxy.class.getMethod("aVoid", new Class[]{});
-        method2TaskTargetCache.put(methodAVoid, new TaskTargetImpl(TaskType.WORKER, "testName", "1.0", methodAVoid.getName()));
+		target = new TaskTargetImpl(TaskType.WORKER, "testName", "1.0", methodAVoid.getName());
+		method2TaskTargetCache.put(methodAVoid, new MethodDescriptor(target));
 
         workerInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, new TaskHandler() {
             @Override
