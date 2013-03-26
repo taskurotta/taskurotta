@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.server.transport.TaskOptions;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -30,8 +31,9 @@ public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> i
 		UUID taskId = DeserializationHelper.extractId(rootNode.get(TASK_ID), null);
 		TaskTarget target = DeserializationHelper.extractTaskTarget(rootNode.get(TASK_TARGET), null);
 		ArgContainer[] args = DeserializationHelper.extractArgs(rootNode.get(TASK_ARGS), null);
+		TaskOptions options = DeserializationHelper.extractOptions(rootNode.get("options"), null);
 		
-		return new TaskContainer(taskId, target, args);
+		return new TaskContainer(taskId, target, args, options);
 	}
 	
 }

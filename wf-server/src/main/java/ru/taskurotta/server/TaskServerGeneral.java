@@ -2,11 +2,14 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.annotation.NoWait;
+import ru.taskurotta.core.ArgType;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.server.transport.TaskOptions;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
@@ -167,17 +170,21 @@ public class TaskServerGeneral implements TaskServer {
                 for (TaskContainer otherTask : childTasks) {
                     ArgContainer args[] = otherTask.getArgs();
                     if (args != null) {
-                        for (ArgContainer arg : args) {
-                            if (arg.isPromise()) {
-                                if (arg.getTaskId().equals(task.getTaskId())) {
-                                    if (waitingId == null) {
-                                        waitingId = new ArrayList<UUID>();
-                                    }
+						for (int j = 0; j < args.length; j++) {
+							ArgContainer arg = args[j];
+							if (needWait(arg, otherTask.getOptions(), j)) {
+								if (arg.getTaskId().equals(task.getTaskId())) {
+									if (waitingId == null) {
+										waitingId = new ArrayList<UUID>();
+									}
 
-                                    waitingId.add(otherTask.getTaskId());
-                                }
-                            }
-                        }
+									waitingId.add(otherTask.getTaskId());
+								}
+							}
+//							if (isPromiseCollection()) {
+//								for (Object obj : (Collection)arg.getObject())
+//							}
+						}
                     }
                 }
 
@@ -193,6 +200,19 @@ public class TaskServerGeneral implements TaskServer {
         }
 
     }
+
+	private boolean needWait(ArgContainer arg, TaskOptions options, int position) {
+		boolean result = arg.isPromise();
+		if (result && null != options) {
+			ArgType[] argTypes = options.getArgTypes();
+			if (null != argTypes && position < argTypes.length) {
+				if (ArgType.NO_WAIT.equals(argTypes[position])) {
+					result = false;
+				}
+			}
+		}
+		return result;
+	}
 
     private void resolveDependency(TaskObject taskObj) {
 
