@@ -9,6 +9,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,7 +46,9 @@ public class MetricsProfiler implements Profiler {
 
     private ThreadLocal<Long> cycleStartTime = new ThreadLocal<Long>();
 
-    public MetricsProfiler(Class actorClass) {
+    public MetricsProfiler(Class actorClass, Properties properties) {
+
+        parseProperties(properties);
 
         ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
 
@@ -177,6 +180,15 @@ public class MetricsProfiler implements Profiler {
         }
 
         timerCycle.update(System.nanoTime() - cycleStartTime.get(), TimeUnit.NANOSECONDS);
+    }
+
+    private void parseProperties(Properties properties) {
+        isMeterCycle = !properties.containsKey("meterCycle") || Boolean.parseBoolean(String.valueOf(properties.get("meterCycle")));
+        isTrackExecute = !properties.containsKey("trackExecute") || Boolean.parseBoolean(String.valueOf(properties.get("trackExecute")));
+        isTrackCycle = !properties.containsKey("trackCycle") || Boolean.parseBoolean(String.valueOf(properties.get("trackCycle")));
+        isTrackPull = !properties.containsKey("trackPull") || Boolean.parseBoolean(String.valueOf(properties.get("trackPull")));
+        isTrackRelease = !properties.containsKey("trackRelease") || Boolean.parseBoolean(String.valueOf(properties.get("trackRelease")));
+        isTrackError = !properties.containsKey("trackError") || Boolean.parseBoolean(String.valueOf(properties.get("trackError")));
     }
 
     public void setMeterCycle(boolean meterCycle) {

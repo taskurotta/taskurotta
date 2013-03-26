@@ -20,17 +20,7 @@ public class DefaultProfilerConfig implements ProfilerConfig {
         Profiler profiler = null;
 
         try {
-            profiler = (Profiler) Class.forName(className).getConstructor(Class.class).newInstance(actorInterface);
-
-            // ToDo переписать во что-нибудь приличное
-//            Method[] methods = profiler.getClass().getDeclaredMethods();
-//            for (Method method : methods) {
-//                String propertyName = StringUtils.uncapitalize(method.getName().replaceAll("set", ""));
-//                if (properties.containsKey(propertyName)) {
-//                    method.invoke(profiler, properties.get(propertyName));
-//                }
-//            }
-
+            profiler = (Profiler) Class.forName(className).getConstructor(Class.class, Properties.class).newInstance(actorInterface, properties);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {

@@ -13,15 +13,30 @@ spreader:
           cycles: 10
           accuracy: 1000
 
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: false
+          trackRelease: false
+          trackError: false
+
 actor:
   - PiDecider:
       actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - PiWorker:
       actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 10

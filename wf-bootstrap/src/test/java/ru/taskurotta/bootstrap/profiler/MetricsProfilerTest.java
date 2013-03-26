@@ -3,6 +3,8 @@ package ru.taskurotta.bootstrap.profiler;
 import org.junit.Test;
 import ru.taskurotta.annotation.Worker;
 
+import java.util.Properties;
+
 /**
  * User: romario
  * Date: 3/22/13
@@ -18,7 +20,7 @@ public class MetricsProfilerTest {
     @Test
     public void test() {
 
-        Profiler profiler = new MetricsProfiler(SimpleWorker.class);
+        Profiler profiler = new MetricsProfiler(SimpleWorker.class, new Properties());
 
         profiler.cycleStart();
 
