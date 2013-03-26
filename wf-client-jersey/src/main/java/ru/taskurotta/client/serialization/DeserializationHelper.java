@@ -7,11 +7,13 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ArgType;
 
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.server.transport.ArgContainer;
+import ru.taskurotta.server.transport.TaskOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -61,6 +63,22 @@ public class DeserializationHelper implements Constants {
 			logger.debug("Cannot extract task args from node[{}]", argsNode);
 		}
 		
+		return result;
+	}
+
+	public static TaskOptions extractOptions(JsonNode optionsNode, TaskOptions defValue) {
+		TaskOptions result = null;
+		if (optionsNode != null && !optionsNode.isNull()) {
+			JsonNode typesNode = optionsNode.get("argTypes");
+			if (typesNode != null && !typesNode.isNull() && typesNode.isArray()) {
+				Iterator<JsonNode> typesIterator = typesNode.elements();
+				List<ArgType> argTypes = new ArrayList<ArgType>(typesNode.size());
+				while (typesIterator.hasNext()) {
+					argTypes.add(ArgType.fromInt(typesIterator.next().intValue()));
+				}
+				result = new TaskOptions(argTypes.toArray(new ArgType[argTypes.size()]));
+			}
+		}
 		return result;
 	}
 	
