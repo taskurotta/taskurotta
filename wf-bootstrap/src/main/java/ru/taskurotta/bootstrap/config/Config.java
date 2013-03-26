@@ -91,8 +91,7 @@ public class Config {
             if (profilersNode != null) {
                 parseProfilerConfigs(profilersNode, oc, config);
             } else {
-                logger.error("Not found ProfilerConfigs in configuration");
-                throw new RuntimeException("Not found ProfilerConfigs in configuration file");
+                logger.warn("Not found ProfilerConfigs in configuration");
             }
 
             JsonNode actorsNode = rootNode.get(YAML_ACTOR);

@@ -9,7 +9,6 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.util.ActorDefinition;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,15 +30,20 @@ public class MetricsProfiler implements Profiler {
 
     // ?? what is default config values ??
 
+    // meter task cycle
     private boolean isMeterCycle = true;
-    private boolean isTrackCycle = false;
-    private boolean isTrackPull = false;
+    // track RuntimeProcessor
     private boolean isTrackExecute = true;
-    private boolean isTrackRelease = false;
-    private boolean isTrackError = false;
+    // track full Task cycle from pull to release
+    private boolean isTrackCycle = true;
+    // track task pull
+    private boolean isTrackPull = true;
+    // track task decision release
+    private boolean isTrackRelease = true;
+    // track task error
+    private boolean isTrackError = true;
 
     private ThreadLocal<Long> cycleStartTime = new ThreadLocal<Long>();
-
 
     public MetricsProfiler(Class actorClass) {
 
@@ -55,6 +59,25 @@ public class MetricsProfiler implements Profiler {
             timerExecute = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
+        if (isTrackCycle) {
+            String timerName = actorDefinition.getFullName() + "#timerCycle";
+            timerCycle = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+        }
+
+        if (isTrackPull) {
+            String timerName = actorDefinition.getFullName() + "#timerPull";
+            timerPull = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+        }
+
+        if (isTrackRelease) {
+            String timerName = actorDefinition.getFullName() + "#timerRelease";
+            timerRelease = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+        }
+
+        if (isTrackError) {
+            String timerName = actorDefinition.getFullName() + "#timerError";
+            timerError = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+        }
     }
 
     @Override
@@ -156,4 +179,27 @@ public class MetricsProfiler implements Profiler {
         timerCycle.update(System.nanoTime() - cycleStartTime.get(), TimeUnit.NANOSECONDS);
     }
 
+    public void setMeterCycle(boolean meterCycle) {
+        this.isMeterCycle = meterCycle;
+    }
+
+    public void setTrackExecute(boolean trackExecute) {
+        this.isTrackExecute = trackExecute;
+    }
+
+    public void setTrackCycle(boolean trackCycle) {
+        this.isTrackCycle = trackCycle;
+    }
+
+    public void setTrackPull(boolean trackPull) {
+        this.isTrackPull = trackPull;
+    }
+
+    public void setTrackRelease(boolean trackRelease) {
+        this.isTrackRelease = trackRelease;
+    }
+
+    public void setTrackError(boolean trackError) {
+        this.isTrackError = trackError;
+    }
 }
