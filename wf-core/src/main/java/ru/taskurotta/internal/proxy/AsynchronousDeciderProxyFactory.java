@@ -74,7 +74,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
             public Object intercept(Object object, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
 
                 throw new IllegalAccessError(
-                        "Access denied to methods without Asynchronous ann	otation: "
+                        "Access denied to methods without Asynchronous annotation: "
                                 + object.getClass().getName() + "." + method.getName() + "()");
             }
         };

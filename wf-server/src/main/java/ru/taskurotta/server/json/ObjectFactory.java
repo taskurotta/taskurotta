@@ -154,7 +154,7 @@ public class ObjectFactory {
             }
         }
 
-		TaskOptions options = new TaskOptions(task.getArgTypes());
+		TaskOptions options = new TaskOptions(task.getSchedulingOptions().getArgTypes());
 
         return new TaskContainer(taskId, target, argContainers, options);
     }

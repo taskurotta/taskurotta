@@ -38,19 +38,22 @@ abstract public class CachedProxyFactory implements ProxyFactory {
 	protected ArgType[] getArgTypes(Method method) {
 		Annotation[][] parametersAnnotations = method.getParameterAnnotations();
 		ArgType[] result = new ArgType[parametersAnnotations.length];
+		boolean annotationFound = false;
 
 		for (int i = 0; i < parametersAnnotations.length; i++) {
 			Annotation[] parameterAnnotations = parametersAnnotations[i];
 			for (Annotation annotation : parameterAnnotations) {
 				if (annotation instanceof NoWait) {
 					result[i] = ArgType.NO_WAIT;
+					annotationFound = true;
 				} else if (annotation instanceof Wait) {
 					result[i] = ArgType.WAIT;
+					annotationFound = true;
 				}
 			}
 		}
 
-		return result;
+		return annotationFound? result : null;
 	}
 
 }

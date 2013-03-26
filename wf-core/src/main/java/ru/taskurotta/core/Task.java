@@ -40,9 +40,5 @@ public interface Task {
      */
     public Object[] getArgs();
 
-	/**
-	 *
-	 * @return array of argument annotation types.
-	 */
-	public ArgType[] getArgTypes();
+	public SchedulingOptions getSchedulingOptions();
 }
