@@ -9,10 +9,12 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.config.ActorConfig;
 import ru.taskurotta.bootstrap.config.Config;
+import ru.taskurotta.bootstrap.config.ProfilerConfig;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.bootstrap.profiler.MetricsProfiler;
 import ru.taskurotta.bootstrap.profiler.Profiler;
+import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 
 import java.io.File;
@@ -100,7 +102,9 @@ public abstract class Bootstrap {
 
             RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
             RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
-            Profiler profiler = new MetricsProfiler(actorClass);
+
+            ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
+            Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
             ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
 
