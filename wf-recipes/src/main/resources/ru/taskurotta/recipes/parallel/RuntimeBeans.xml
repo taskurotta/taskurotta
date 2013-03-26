@@ -12,14 +12,14 @@
 
     <bean id="piWorker" class="ru.taskurotta.recipes.parallel.workers.PiWorkerImpl"/>
 
-    <bean id="piWorkerClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.recipes.parallel.workers.PiWorkerClient"/>
-    </bean>
-
     <bean id="piDecider" class="ru.taskurotta.recipes.parallel.decider.PiDeciderImpl">
-        <property name="piWorker" ref="piWorkerClient"/>
+        <property name="piWorker">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.recipes.parallel.workers.PiWorkerClient"/>
+            </bean>
+        </property>
         <property name="asynchronous">
-            <bean factory-bean="runtimeProvider" factory-method="getAsynchronousClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
                 <constructor-arg value="ru.taskurotta.recipes.parallel.decider.PiDeciderImpl"/>
             </bean>
         </property>

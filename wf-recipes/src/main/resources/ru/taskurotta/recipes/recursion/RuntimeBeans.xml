@@ -12,8 +12,8 @@
 
     <bean id="fibonacciDecider" class="ru.taskurotta.recipes.recursion.decider.FibonacciDeciderImpl">
         <property name="asynchronous">
-            <bean factory-bean="runtimeProvider" factory-method="getAsynchronousClient">
-                <constructor-arg value="ru.taskurotta.recipes.recursion.decider.FibonacciDeciderImpl"/>
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
+                <constructor-arg value="ru.taskurotta.recipes.recursion.decider.FibonacciDeciderImpl" />
             </bean>
         </property>
     </bean>
