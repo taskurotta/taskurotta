@@ -9,7 +9,13 @@
 	</appender>
 
 	<logger name="ru.taskurotta" level="INFO" />
+<!-- 	<logger name="ru.taskurotta.server.support" level="DEBUG" /> -->
     <logger name="org.springframework" level="OFF"/>
+    <logger name="com.sun.jersey.client.apache" level="OFF" />
+    <logger name="org.apache.commons" level="OFF" />
+    <logger name="httpclient.wire" level="OFF" />
+    
+    
 
 	<root>
 		<appender-ref ref="STDOUT" />

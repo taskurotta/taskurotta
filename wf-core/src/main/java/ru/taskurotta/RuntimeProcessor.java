@@ -25,7 +25,7 @@ public interface RuntimeProcessor {
      * Record all intercepted tasks
      *
      * @param runnable
-     * @return List af intercepted tasks
+     * @return Array af intercepted tasks
      */
-    public List<Task> execute(Runnable runnable);
+    public Task[] execute(Runnable runnable);
 }

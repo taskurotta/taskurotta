@@ -6,6 +6,7 @@ import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskType;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.proxy.ProxyInvocationHandler;
@@ -43,6 +44,7 @@ public class WorkerInvocationHandlerTest {
 
     @Before
     public void before() throws NoSuchMethodException {
+		RuntimeContext.create();
         simpleProxy = new SimpleProxy();
         Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
 
@@ -54,10 +56,7 @@ public class WorkerInvocationHandlerTest {
 		target = new TaskTargetImpl(TaskType.WORKER, "testName", "1.0", methodAVoid.getName());
 		method2TaskTargetCache.put(methodAVoid, new MethodDescriptor(target));
 
-        workerInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, new TaskHandler() {
-            @Override
-            public void handle(Task task) {}
-        });
+        workerInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, null);
     }
 
     @Test

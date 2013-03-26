@@ -24,10 +24,16 @@ abstract public class CachedProxyFactory implements ProxyFactory {
 
     @Override
     public <TargetInterface> TargetInterface create(Class<TargetInterface> targetInterface, TaskHandler taskHandler) {
+
+        // should be not cached
+        if (taskHandler != null) {
+            return (TargetInterface) createProxy(targetInterface, taskHandler);
+        }
+
         Object proxyClient = clientToProxy.get(targetInterface);
 
         if (proxyClient == null) {
-            proxyClient = createProxy(targetInterface, taskHandler);
+            proxyClient = createProxy(targetInterface, null);
 
             clientToProxy.put(targetInterface, proxyClient);
         }

@@ -16,7 +16,7 @@ import ru.taskurotta.server.transport.TaskOptions;
 import java.io.IOException;
 import java.util.UUID;
 
-public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> {
+public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> implements Constants {
 	
 	private static final Logger logger = LoggerFactory.getLogger(TaskContainerDeserializer.class);
 	
@@ -26,11 +26,11 @@ public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> {
 		ObjectCodec oc = jp.getCodec();
 		JsonNode rootNode = oc.readTree(jp);
 				
-		logger.debug("Deserializing Task from JSON[{}]", rootNode.asText());
+		logger.debug("Deserializing Task from JSON[{}]", rootNode);
 		
-		UUID taskId = DeserializationHelper.extractId(rootNode.get("taskId"), null);
-		TaskTarget target = DeserializationHelper.extractTaskTarget(rootNode.get("target"), null);
-		ArgContainer[] args = DeserializationHelper.extractArgs(rootNode.get("args"), null);
+		UUID taskId = DeserializationHelper.extractId(rootNode.get(TASK_ID), null);
+		TaskTarget target = DeserializationHelper.extractTaskTarget(rootNode.get(TASK_TARGET), null);
+		ArgContainer[] args = DeserializationHelper.extractArgs(rootNode.get(TASK_ARGS), null);
 		TaskOptions options = DeserializationHelper.extractOptions(rootNode.get("options"), null);
 		
 		return new TaskContainer(taskId, target, args, options);

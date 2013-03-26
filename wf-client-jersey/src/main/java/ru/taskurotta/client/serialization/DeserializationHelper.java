@@ -1,34 +1,26 @@
 package ru.taskurotta.client.serialization;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.ArgType;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.TaskImpl;
-import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.TaskOptions;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-public class DeserializationHelper {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ArgType;
+
+import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.core.TaskType;
+import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.server.transport.ArgContainer;
+import ru.taskurotta.server.transport.TaskOptions;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
+public class DeserializationHelper implements Constants {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DeserializationHelper.class);
-	
-	public static Task extractTask(JsonNode taskNode, Task defVal) {
-		UUID uuid = DeserializationHelper.extractId(taskNode.get("id"), null);
-		TaskTarget taskTarget = DeserializationHelper.extractTaskTarget(taskNode.get("target"), null);
-		Object[] args = DeserializationHelper.extractArgs(taskNode.get("args"), null);
-				
-		return new TaskImpl(uuid, taskTarget, args);
-	} 
-	
+		
 	public static UUID extractId(JsonNode idNode, UUID defVal) {
 		UUID result = defVal;
 		if(idNode!=null && !idNode.isNull()) {
@@ -43,11 +35,11 @@ public class DeserializationHelper {
 		TaskTarget result = defVal;
 		if(targetNode!=null && !targetNode.isNull()) {
 
-			String taskType = targetNode.get("type").textValue();
+			String taskType = targetNode.get(TASK_TARGET_TYPE).textValue();
 			TaskType tasktypeEnumVal = TaskType.valueOf(taskType);
-			String taskMethod = targetNode.get("method").textValue();
-			String taskName = targetNode.get("name").textValue();
-			String taskVersion = targetNode.get("version").textValue();
+			String taskMethod = targetNode.get(TASK_TARGET_METHOD).textValue();
+			String taskName = targetNode.get(TASK_TARGET_NAME).textValue();
+			String taskVersion = targetNode.get(TASK_TARGET_VERSION).textValue();
 			
 			result = new TaskTargetImpl(tasktypeEnumVal, taskName, taskVersion, taskMethod);
 		} else {
@@ -95,11 +87,11 @@ public class DeserializationHelper {
 		if(arg==null || arg.isNull()) {
 			return result;
 		} else {
-			String className = arg.get("className").textValue();
-			Boolean isPromise = arg.get("promise").booleanValue();
-			UUID taskId = extractId(arg.get("taskId"), null);
-			Boolean isReady = arg.get("ready").booleanValue();
-			String json = arg.get("jsonvalue").textValue();
+			String className = arg.get(ARG_CLASSNAME).textValue();
+			Boolean isPromise = arg.get(ARG_IS_PROMISE).booleanValue();
+			UUID taskId = extractId(arg.get(ARG_TASK_ID), null);
+			Boolean isReady = arg.get(ARG_IS_READY).booleanValue();
+			String json = arg.get(ARG_JSON_VALUE).textValue();
 			
 			return new ArgContainer(className, isPromise, taskId, isReady, json);
 		}

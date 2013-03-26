@@ -12,7 +12,8 @@ spreader:
       instance:
         context: example2/SpreaderBeansExample2.xml
         properties:
-          count: 10
+          count: 150
+          loggingPeriod: 10000
 
 actor:
   - MathActionDecider:

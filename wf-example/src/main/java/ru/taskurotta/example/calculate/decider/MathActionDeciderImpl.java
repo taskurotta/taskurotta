@@ -14,7 +14,7 @@ import ru.taskurotta.example.calculate.worker.client.SummarizerClient;
 
 public class MathActionDeciderImpl implements MathActionDecider {
 
-	private NumberGeneratorClient numberGeneartorClient;
+	private NumberGeneratorClient numberGeneratorClient;
 	private MultiplierClient multiplierClient;
 	private SummarizerClient summarizerClient;
 	private MathActionDeciderImpl selfAsync;
@@ -25,7 +25,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
 	@Execute
 	public void performAction() {
 		long start = System.currentTimeMillis();
-		Promise<Integer> a = numberGeneartorClient.getNumber();
+		Promise<Integer> a = numberGeneratorClient.getNumber();
 		
 		selfAsync.callExecutor(a, start);
 		
@@ -58,8 +58,8 @@ public class MathActionDeciderImpl implements MathActionDecider {
 		logger.info(sdf.format(new Date()) + ": " + action + result.get() + " in["+(System.currentTimeMillis()-startTime)+"]ms, started at["+sdf.format(new Date(startTime))+"]");
 	}
 
-	public void setNumberGeneartorClient(NumberGeneratorClient numberGeneartorClient) {
-		this.numberGeneartorClient = numberGeneartorClient;
+	public void setNumberGeneratorClient(NumberGeneratorClient numberGeneratorClient) {
+		this.numberGeneratorClient = numberGeneratorClient;
 	}
 
 	public void setMultiplierClient(MultiplierClient multiplierClient) {

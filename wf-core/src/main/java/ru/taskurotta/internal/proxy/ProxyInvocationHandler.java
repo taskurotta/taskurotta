@@ -4,9 +4,9 @@ import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.SchedulingOptions;
 import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.core.MethodDescriptor;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.TaskImpl;
 
 import java.lang.reflect.InvocationHandler;
@@ -39,7 +39,11 @@ public class ProxyInvocationHandler implements InvocationHandler {
 
         Task task = new TaskImpl(methodDescriptor.getTaskTarget(), args, new SchedulingOptions(methodDescriptor.getArgTypes()));
 
-        taskHandler.handle(task);
+        if (taskHandler == null) {
+            RuntimeContext.getCurrent().handle(task);
+        } else {
+            taskHandler.handle(task);
+        }
 
         // First of all check return type
         Class<?> returnType = method.getReturnType();

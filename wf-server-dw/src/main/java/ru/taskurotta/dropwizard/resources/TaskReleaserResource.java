@@ -2,7 +2,10 @@ package ru.taskurotta.dropwizard.resources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.client.serialization.wrapper.ResultContainerWrapper;
+
+import com.yammer.metrics.annotation.Timed;
+
+import ru.taskurotta.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.server.TaskServer;
 
 import javax.ws.rs.Consumes;
@@ -21,11 +24,12 @@ public class TaskReleaserResource {
 	private TaskServer taskServer;
 
 	@POST
-	public Response releaseAction(ResultContainerWrapper resultContainer) {
+	@Timed
+	public Response releaseAction(DecisionContainerWrapper resultContainer) {
 		logger.debug("releaseAction resource called with entity[{}]", resultContainer);
 		
 		try {
-			taskServer.release(resultContainer.getDecisionContainer());
+			taskServer.release(resultContainer.getResultContainer());	
 		} catch(Exception e) {
 			logger.error("Starting of task["+resultContainer+"] failed!", e);
 			return Response.serverError().build();

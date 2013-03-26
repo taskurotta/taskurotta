@@ -5,28 +5,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
-import ru.taskurotta.TaskHandler;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.exception.TaskTargetRequiredException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.internal.proxy.AsynchronousDeciderProxyFactory;
 import ru.taskurotta.internal.proxy.DeciderProxyFactory;
-import ru.taskurotta.internal.proxy.WorkerProxyFactory;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -38,14 +32,6 @@ import java.util.Map;
 public class GeneralRuntimeProvider implements RuntimeProvider {
 
     protected final static Logger log = LoggerFactory.getLogger(GeneralRuntimeProvider.class);
-
-    private WorkerProxyFactory workerProxyFactory = new WorkerProxyFactory();
-    private DeciderProxyFactory deciderProxyFactory = new DeciderProxyFactory();
-    private AsynchronousDeciderProxyFactory asynchronousDeciderProxyFactory = new AsynchronousDeciderProxyFactory();
-
-    private ThreadLocal<List<Task>> tlTaskList = new ThreadLocal<List<Task>>();
-    private TaskHandler taskHandler;
-
 
     protected static class TargetReference {
         private Object actorObject;
@@ -68,24 +54,6 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
     public GeneralRuntimeProvider() {
 
-        taskHandler = new TaskHandler() {
-            @Override
-            public void handle(Task task) {
-
-                List<Task> taskList = tlTaskList.get();
-                if (taskList == null) {
-                    taskList = new ArrayList<Task>();
-                    tlTaskList.set(taskList);
-                }
-
-                taskList.add(task);
-            }
-        };
-    }
-
-    public GeneralRuntimeProvider(TaskHandler taskHandler) {
-
-        this.taskHandler = taskHandler;
     }
 
 
@@ -98,7 +66,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
         if (workerInterface != null) {
             taskTargetsMap = extractTargetsFromWorker(actorBean, workerInterface);
-            return new GeneralRuntimeProcessor(taskTargetsMap, tlTaskList);
+            return new GeneralRuntimeProcessor(taskTargetsMap);
         }
 
 
@@ -106,26 +74,10 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
         if (deciderInterface != null) {
             taskTargetsMap = extractTargetsFromDecider(actorBean, deciderInterface);
-            return new GeneralRuntimeProcessor(taskTargetsMap, tlTaskList);
+            return new GeneralRuntimeProcessor(taskTargetsMap);
         }
 
         throw new TaskTargetRequiredException(actorBean.getClass().getName());
-    }
-
-
-    @Override
-    public <ClientType> ClientType getWorkerClient(Class<ClientType> type) {
-        return workerProxyFactory.create(type, taskHandler);
-    }
-
-    @Override
-    public <ClientType> ClientType getDeciderClient(Class<ClientType> type) {
-        return deciderProxyFactory.create(type, taskHandler);
-    }
-
-    @Override
-    public <DeciderType> DeciderType getAsynchronousClient(Class<DeciderType> type) {
-        return asynchronousDeciderProxyFactory.create(type, taskHandler);
     }
 
 

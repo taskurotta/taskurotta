@@ -50,7 +50,7 @@ public interface ProxyFactory {
 	 * 4. Create InvocationHandler
 	 * 5. Create Proxy client
 	 * @param targetInterface 		- target type for proxy
-	 * @param taskHandler		- handler for method invocation of proxy objec
+	 * @param taskHandler		- handler for method invocation of proxy object
 	 * @param <TargetInterface> - interface definition
 	 * @return created proxy object
 	 */

@@ -6,9 +6,6 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * User: romario
  * Date: 1/22/13
@@ -36,7 +33,7 @@ public abstract class AssertFlow {
 
         final Box<Promise> box = new Box<Promise>();
 
-        List<Task> expectedTaskList = runtimeProcessor.execute(new Runnable() {
+        Task[] expectedTaskList = runtimeProcessor.execute(new Runnable() {
             @Override
             public void run() {
                 Promise promise = expectedFlow();
@@ -51,7 +48,7 @@ public abstract class AssertFlow {
         // 2. run all task sequentially
         // ============================
 
-        List<Task> startTaskList = runtimeProcessor.execute(new Runnable() {
+        Task[] startTasks = runtimeProcessor.execute(new Runnable() {
             @Override
             public void run() {
                 execute();
@@ -59,11 +56,11 @@ public abstract class AssertFlow {
         });
 
 
-        if (startTaskList.size() == 0 || startTaskList.size() > 1) {
+        if (startTasks.length == 0 || startTasks.length > 1) {
             throw new TestFailedError("Decider can have only one start method");
         }
 
-        Task startTask = startTaskList.get(0);
+        Task startTask = startTasks[0];
 
         if (startTask.getTarget().getType() != TaskType.DECIDER_START &&
                 startTask.getTarget().getType() != TaskType.DECIDER_ASYNCHRONOUS) {
@@ -71,17 +68,16 @@ public abstract class AssertFlow {
             throw new TestFailedError("Only DECIDER_START and DECIDER_ASYNCHRONOUS types of Task supported!");
         }
 
-        TaskDecision taskDecision = runtimeProcessor.execute(startTaskList.get(0));
+        TaskDecision taskDecision = runtimeProcessor.execute(startTasks[0]);
 
-        Task[] tasks = taskDecision.getTasks();
-        List<Task> interceptedTaskList = (tasks == null) ? null : Arrays.asList(tasks);
+        Task[] interceptedTasks = taskDecision.getTasks();
         Promise interceptedPromise = (Promise) taskDecision.getValue();
 
         // compare results
         // ============================
 
 
-        AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, expectedPromise, interceptedPromise);
+        AssertFlowComparator.assertEquals(expectedTaskList, interceptedTasks, expectedPromise, interceptedPromise);
     }
 
     public abstract void execute();

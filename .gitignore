@@ -10,3 +10,14 @@
 .idea/
 target/
 */target/
+
+# Eclipse
+/.project
+/.settings
+*/.project
+*/.settings
+.classpath
+*/.classpath
+.springBeans
+*./springBeans
+

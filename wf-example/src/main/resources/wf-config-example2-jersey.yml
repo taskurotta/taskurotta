@@ -13,33 +13,35 @@ spreader:
       instance:
         context: example2/SpreaderBeansExample2-jersey.xml
         properties:
-          count: 10
+          count: 150
           endpoint: "http://localhost:8080"
-          threadPoolSize: 10
-          readTimeout: 10000
-          connectTimeout: 10000
+          threadPoolSize: 0
+          readTimeout: 0
+          connectTimeout: 0
+          loggerPeriod: 8000
+          maxConnectionsPerHost: 0
 
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.example.calculate.decider.MathActionDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
-      count: 1
+      count: 5
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
-      count: 1
+      count: 2
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
-      count: 1
+      count: 2
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
-      count: 1
+      count: 2
