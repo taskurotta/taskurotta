@@ -16,11 +16,6 @@ public class DefaultProfilerConfig implements ProfilerConfig {
     private Properties properties;
 
     @Override
-    public void init() {
-
-    }
-
-    @Override
     public Profiler getProfiler(Class actorInterface) {
         Profiler profiler = null;
 
