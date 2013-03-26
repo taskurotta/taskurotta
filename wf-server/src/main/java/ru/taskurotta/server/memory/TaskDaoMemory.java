@@ -32,7 +32,7 @@ public class TaskDaoMemory implements TaskDao {
     private static final int queueCapacity = 1000;
 
     private Map<String, BlockingQueue<TaskObject>> queues = new ConcurrentHashMap<String, BlockingQueue<TaskObject>>();
-    private Map<UUID, TaskObject> taskMap = new ConcurrentHashMap<UUID, TaskObject>();
+    protected Map<UUID, TaskObject> taskMap = new ConcurrentHashMap<UUID, TaskObject>();
     private Map<UUID, AtomicInteger> atomicCountdownMap = new ConcurrentHashMap<UUID, AtomicInteger>();
 
     public TaskDaoMemory() {
@@ -177,7 +177,7 @@ public class TaskDaoMemory implements TaskDao {
     }
 
 
-    private String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
+    protected String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
         return actorDefinitionName + '#' + actorDefinitionVersion;
     }
 

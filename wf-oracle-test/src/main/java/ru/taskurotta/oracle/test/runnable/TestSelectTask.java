@@ -37,7 +37,7 @@ public class TestSelectTask implements Runnable {
 			while (count < OPERATION_COUNT) {
 				count++;
 
-				dbDAO.pullTask(jobType, "QUEUE_BUS");
+				dbDAO.pullTask("QUEUE_BUS");
 
 			}
 		} catch (SQLException e) {

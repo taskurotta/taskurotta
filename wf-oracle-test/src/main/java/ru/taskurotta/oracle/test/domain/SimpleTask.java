@@ -1,20 +1,23 @@
 package ru.taskurotta.oracle.test.domain;
 
+import ru.taskurotta.server.model.TaskObject;
+
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * User: greg
  */
 public class SimpleTask {
 
-    private int taskId;
+    private UUID taskId;
     private int typeId;
     private Date date;
     private int statusId;
     private String actorId;
 
 
-    public SimpleTask(int taskId, int typeId, Date date, int statusId, String actorId) {
+    public SimpleTask(UUID taskId, int typeId, Date date, int statusId, String actorId) {
         this.taskId = taskId;
         this.typeId = typeId;
         this.date = date;
@@ -22,11 +25,11 @@ public class SimpleTask {
         this.actorId = actorId;
     }
 
-    public int getTaskId() {
+    public UUID getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(int taskId) {
+    public void setTaskId(UUID taskId) {
         this.taskId = taskId;
     }
 
@@ -60,5 +63,15 @@ public class SimpleTask {
 
     public void setActorId(String actorId) {
         this.actorId = actorId;
+    }
+
+    public static SimpleTask createFromTaskObject(TaskObject taskObject){
+       return new SimpleTask(
+               taskObject.getTaskId(),   //temporal solution
+               taskObject.getTarget().getType().ordinal(),
+               new Date(taskObject.getState().getTime()),
+               taskObject.getState().getState().ordinal(),
+               ""
+       );
     }
 }

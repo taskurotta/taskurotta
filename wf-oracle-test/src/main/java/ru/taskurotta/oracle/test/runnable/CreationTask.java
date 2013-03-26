@@ -2,6 +2,7 @@ package ru.taskurotta.oracle.test.runnable;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.UUID;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import ru.taskurotta.oracle.test.DbDAO;
@@ -28,7 +29,7 @@ public class CreationTask implements Runnable {
 			System.out.println("Starting adding data");
 			while (count < 1000000) {
 				count++;
-				dbDAO.enqueueTask(new SimpleTask(count, GenerationTools.getRandomType(), new Date(), TaskStatus.CREATED, ""), "QUEUE_BUS");
+				dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), GenerationTools.getRandomType(), new Date(), TaskStatus.CREATED, ""), "QUEUE_BUS");
 			}
 			System.out.println("Stopped adding data");
 		} catch (SQLException ex) {

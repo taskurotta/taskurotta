@@ -7,25 +7,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.UUID;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import ru.taskurotta.oracle.test.domain.SimpleTask;
+
+import javax.sql.DataSource;
 
 /**
  * User: greg
  */
 
 public class DbDAO {
-	private BasicDataSource dataSource;
+	private DataSource dataSource;
 
-	public DbDAO(BasicDataSource dataSource) {
+	public DbDAO(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
 	public void enqueueTask(SimpleTask task, String queueName) throws SQLException {
 		final Connection connection = dataSource.getConnection();
 		final PreparedStatement ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, type_id, data_update, actor_id) values (?,?,?,?,?)");
-		ps.setInt(1, task.getTaskId());
+		ps.setObject(1, task.getTaskId());
 		ps.setInt(2, task.getStatusId());
 		ps.setInt(3, task.getTypeId());
 		ps.setDate(4, new java.sql.Date(task.getDate().getTime()));
@@ -84,7 +87,7 @@ public class DbDAO {
 		connection.close();
 	}
 
-	public int pullTask(int typeJob, String queueName) throws SQLException {
+	public UUID pullTask(String queueName) throws SQLException {
 		final Connection connection = dataSource.getConnection();
 		String query = "begin\n" +
 				"UPDATE %s\n" +
@@ -95,12 +98,10 @@ public class DbDAO {
 				"AND data_update <= CURRENT_TIMESTAMP\n" +
 				"AND ROWNUM = 1\n" +
 				"RETURNING TASK_ID INTO ?;END;";
-
 		CallableStatement cs = connection.prepareCall(String.format(query, queueName));
-		cs.setInt(1, typeJob);
-		cs.registerOutParameter(2, Types.BIGINT);
+		cs.registerOutParameter(1, Types.JAVA_OBJECT);
 		cs.execute();
-		int job_id = cs.getInt(2);
+		UUID job_id = (UUID) cs.getObject(1);
 		cs.close();
 		connection.close();
 		return job_id;
