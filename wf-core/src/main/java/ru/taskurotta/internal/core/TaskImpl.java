@@ -1,6 +1,6 @@
 package ru.taskurotta.internal.core;
 
-import ru.taskurotta.core.SchedulingOptions;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 
@@ -17,14 +17,14 @@ public class TaskImpl implements Task {
     private UUID uuid;
     private TaskTarget taskTarget;
     private Object[] args;
-	private SchedulingOptions schedulingOptions;
+	private TaskOptions taskOptions;
 
 
     public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args) {
 		this(uuid, taskTarget, args, null);
 	}
 
-    public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args, SchedulingOptions schedulingOptions) {
+    public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
 
         if (uuid == null) {
             throw new IllegalArgumentException("uuid can not be null!");
@@ -40,16 +40,16 @@ public class TaskImpl implements Task {
 
         this.args = args;
 
-		if (schedulingOptions == null) {
-			this.schedulingOptions = new SchedulingOptions(null);
+		if (taskOptions == null) {
+			this.taskOptions = new TaskOptions(null);
 		} else {
-			this.schedulingOptions = schedulingOptions;
+			this.taskOptions = taskOptions;
 		}
     }
 
 
-    public TaskImpl(TaskTarget taskTarget, Object[] args, SchedulingOptions schedulingOptions) {
-		this(UUID.randomUUID(), taskTarget, args, schedulingOptions);
+    public TaskImpl(TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
+		this(UUID.randomUUID(), taskTarget, args, taskOptions);
 	}
 
     public TaskImpl(TaskTarget taskTarget, Object[] args) {
@@ -74,8 +74,8 @@ public class TaskImpl implements Task {
         return args;
     }
 
-	public SchedulingOptions getSchedulingOptions() {
-		return schedulingOptions;
+	public TaskOptions getTaskOptions() {
+		return taskOptions;
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class TaskImpl implements Task {
         if ((args == null && thatArgs != null)
                 || (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
 
-		if (!schedulingOptions.equals(that.getSchedulingOptions()))
+		if (!taskOptions.equals(that.getTaskOptions()))
 			return false;
         return true;
     }
@@ -105,7 +105,7 @@ public class TaskImpl implements Task {
         int result = uuid.hashCode();
         result = 31 * result + taskTarget.hashCode();
         result = 31 * result + Arrays.deepHashCode(args);
-		result = 31 * result + schedulingOptions.hashCode();
+		result = 31 * result + taskOptions.hashCode();
 
         return result;
     }

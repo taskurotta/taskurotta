@@ -13,7 +13,7 @@ import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.ErrorContainer;
 import ru.taskurotta.server.transport.TaskContainer;
-import ru.taskurotta.server.transport.TaskOptions;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -119,6 +119,11 @@ public class ObjectFactory {
 
 
     public Task parseTask(TaskContainer taskContainer) {
+
+        if (taskContainer == null) {
+            return null;
+        }
+
         UUID taskId = taskContainer.getTaskId();
         TaskTarget taskTarget = taskContainer.getTarget();
         Object[] args = null;
@@ -154,7 +159,7 @@ public class ObjectFactory {
             }
         }
 
-		TaskOptions options = new TaskOptions(task.getSchedulingOptions().getArgTypes());
+		TaskOptionsContainer options = new TaskOptionsContainer(task.getTaskOptions().getArgTypes());
 
         return new TaskContainer(taskId, target, argContainers, options);
     }

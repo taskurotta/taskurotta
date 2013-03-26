@@ -15,13 +15,13 @@ public class TaskContainer {
     private UUID taskId;
     private TaskTarget target;
     private ArgContainer[] args;
-	private TaskOptions options;
+	private TaskOptionsContainer options;
 
     public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args) {
 		this(taskId, target, args, null);
 	}
 
-    public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args, TaskOptions options) {
+    public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args, TaskOptionsContainer options) {
         this.taskId = taskId;
         this.target = target;
         this.args = args;
@@ -40,7 +40,7 @@ public class TaskContainer {
         return args;
     }
 
-	public TaskOptions getOptions() {
+	public TaskOptionsContainer getOptions() {
 		return options;
 	}
 

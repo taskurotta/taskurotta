@@ -40,5 +40,5 @@ public interface Task {
      */
     public Object[] getArgs();
 
-	public SchedulingOptions getSchedulingOptions();
+	public TaskOptions getTaskOptions();
 }

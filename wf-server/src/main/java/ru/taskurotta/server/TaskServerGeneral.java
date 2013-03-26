@@ -2,18 +2,19 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
-import ru.taskurotta.server.transport.TaskOptions;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -37,7 +38,7 @@ public class TaskServerGeneral implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
-        addTask(task, null, null, false);
+        addTask(task, null, null, null, false);
     }
 
     @Override
@@ -54,6 +55,10 @@ public class TaskServerGeneral implements TaskServer {
 
         TaskObject task = taskDao.pull(actorDefinition);
 
+        if (task == null) {
+            return null;
+        }
+
         ArgContainer[] args = task.getArgs();
 
         if (args != null) {
@@ -61,9 +66,14 @@ public class TaskServerGeneral implements TaskServer {
             for (ArgContainer arg : args) {
                 if (arg.isPromise() && arg.getJSONValue() == null) {
                     ArgContainer value = taskDao.getTaskValue((arg).getTaskId());
-                    arg.setJSONValue(value.getJSONValue());
-                    arg.setClassName(value.getClassName());
-                    arg.setReady(true);
+
+                    // resolved Promise. value may be null for NoWait promises
+                    if (value != null) {
+                        arg.setJSONValue(value.getJSONValue());
+                        arg.setClassName(value.getClassName());
+                        arg.setReady(true);
+                    }
+
                 }
             }
 
@@ -77,17 +87,19 @@ public class TaskServerGeneral implements TaskServer {
     }
 
 
-    public void addTask(TaskContainer task, UUID parentTaskId, List<UUID> waitingId, boolean isDependTask) {
+    public void addTask(TaskContainer task, UUID parentTaskId, List<UUID> waitingId, Set<UUID> externalWaitForTasks,
+                        boolean isDependTask) {
 
         log.debug("Add task = [{}]", task);
 
         TaskObject taskObj = new TaskObject(task);
+        UUID taskId = taskObj.getTaskId();
 
         taskObj.setParentId(parentTaskId);
         taskObj.setWaitingId(waitingId);
         taskObj.setDependTask(isDependTask);
 
-        log.debug("Add task [{}]. waitingId = [{}]", taskObj.getTaskId(), waitingId);
+        log.debug("Add task [{}]. waitingId = [{}]", taskId, waitingId);
 
         TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, TaskStateObject.STATE.wait, System.currentTimeMillis());
         taskObj.setState(taskStateObj);
@@ -95,25 +107,57 @@ public class TaskServerGeneral implements TaskServer {
 
         int countdown = 0;
 
-        if (task.getArgs() != null) {
+        ArgContainer[] argContainers = task.getArgs();
 
-            for (ArgContainer arg : task.getArgs()) {
+        if (argContainers != null) {
 
-                if (arg != null && arg.isPromise()) {
-                    if (!arg.isReady()) {
-                        countdown++;
-                    }
+            TaskOptionsContainer taskOptionsContainer = task.getOptions();
+            ArgType[] argTypes = null;
+
+            if (taskOptionsContainer != null) {
+                argTypes = taskOptionsContainer.getArgTypes();
+            }
+
+
+            for (int i = 0; i < argContainers.length; i++) {
+
+                // skip NoWait
+                if (argTypes != null && argTypes[i].equals(ArgType.NO_WAIT)) {
+                    continue;
+                }
+
+                ArgContainer argContainer = argContainers[i];
+
+                if (argContainer != null && argContainer.isPromise() && !argContainer.isReady()) {
+                    countdown++;
                 }
             }
         }
 
-        log.debug("Add task id [{}]. countdown = {}", task.getTaskId(), countdown);
+        log.debug("Add task id [{}]. countdown = {}", taskId, countdown);
 
         if (countdown != 0) {
             taskObj.setCountdown(countdown);
         }
 
         taskDao.add(taskObj);
+
+        // TODO: register task id in external tasks and decrement countdown if not success
+        if (externalWaitForTasks != null) {
+
+            int decrementValue = 0;
+
+            for (UUID externalWaitForTaskId: externalWaitForTasks) {
+                if (!taskDao.registerExternalWaitFor(taskId, externalWaitForTaskId)) {
+                    decrementValue ++;
+                }
+            }
+
+            if (decrementValue > 0) {
+                taskDao.decrementCountdown(taskId, decrementValue);
+            }
+        }
+
     }
 
     private void releaseInternal(DecisionContainer taskResult) {
@@ -132,13 +176,15 @@ public class TaskServerGeneral implements TaskServer {
         // 1. Изменить state задачи через Dao
         // 2. Подабовлять все задачи в хранилище через Dao
 
-        // set to Done\Depend state first! Cause task can be in Depend state and its dependent task can finish before.
+        // set to Done\Depend state first! Task can be in Depend state and its dependent task can finish before.
 
         UUID taskId = taskResult.getTaskId();
         ArgContainer value = taskResult.getValue();
 
         UUID dependTaskId = null;
         TaskStateObject.STATE currentState = TaskStateObject.STATE.done;
+
+        log.debug("processReleasedTask taskId = [{}]", taskId);
 
         // calculate new state
         if (value != null && value.isPromise()) {
@@ -156,39 +202,112 @@ public class TaskServerGeneral implements TaskServer {
         taskDao.saveTaskValue(taskId, value, taskStateObj);
 
 
-        // - registration  of all new tasks
+        // - registration of all new tasks
         TaskContainer[] childTasks = taskResult.getTasks();
         if (childTasks != null) {
 
             // iterate in reverse order cause independent task can be released too early.
             for (int i = childTasks.length - 1; i >= 0; i--) {
 
-                TaskContainer task = childTasks[i];
+                TaskContainer childTask = childTasks[i];
+                UUID childTaskId = childTask.getTaskId();
 
                 List<UUID> waitingId = null;
 
-                for (TaskContainer otherTask : childTasks) {
-                    ArgContainer args[] = otherTask.getArgs();
-                    if (args != null) {
-						for (int j = 0; j < args.length; j++) {
-							ArgContainer arg = args[j];
-							if (needWait(arg, otherTask.getOptions(), j)) {
-								if (arg.getTaskId().equals(task.getTaskId())) {
-									if (waitingId == null) {
-										waitingId = new ArrayList<UUID>();
-									}
+                // go throw all tasks and find Promise argument with childTaskId
+                for (TaskContainer otherChildTask : childTasks) {
 
-									waitingId.add(otherTask.getTaskId());
-								}
-							}
+                    // skip the same task
+                    if (otherChildTask.getTaskId().equals(childTaskId)) {
+                        continue;
+                    }
+
+                    ArgContainer args[] = otherChildTask.getArgs();
+
+                    TaskOptionsContainer taskOptionsContainer = otherChildTask.getOptions();
+                    ArgType[] argTypes = taskOptionsContainer != null ? taskOptionsContainer.getArgTypes() : null;
+
+                    if (args != null) {
+                        for (int j = 0; j < args.length; j++) {
+                            ArgContainer arg = args[j];
+
+                            boolean isPromise = arg.isPromise();
+
+                            // skip not promises or resolved promises
+                            if (!isPromise || (isPromise && arg.isReady())) {
+                                continue;
+                            }
+
+                            // skip @NoWait promises
+                            if (argTypes != null) {
+                                if (argTypes[j].equals(ArgType.NO_WAIT)) {
+                                    continue;
+                                }
+                            }
+
+                            UUID otherChildTaskTaskId = otherChildTask.getTaskId();
+
+                            if (arg.getTaskId().equals(childTaskId)) {
+                                if (waitingId == null) {
+                                    waitingId = new ArrayList<UUID>();
+                                }
+
+                                waitingId.add(otherChildTaskTaskId);
+                            }
+
+                            // @Wait stuff
 //							if (isPromiseCollection()) {
 //								for (Object obj : (Collection)arg.getObject())
 //							}
-						}
+                        }
                     }
                 }
 
-                addTask(task, taskId, waitingId, dependTaskId != null && dependTaskId.equals(task.getTaskId()));
+
+                // find external dependencies
+                Set externalWaitForTasks = null;
+                ArgContainer args[] = childTask.getArgs();
+
+                if (args != null) {
+
+                    Set internalDepsIds = null;
+
+                    for (ArgContainer arg : args) {
+
+                        boolean isPromise = arg.isPromise();
+
+                        // skip not promises or resolved promises
+                        if (!isPromise || (isPromise && arg.isReady())) {
+                            continue;
+                        }
+
+                        // lazy initialization of Set
+                        if (internalDepsIds == null) {
+
+                            // create hash set of internal dependencies (list of task id)
+                            internalDepsIds = new HashSet(childTasks.length);
+                            for (TaskContainer otherChildTask : childTasks) {
+                                internalDepsIds.add(otherChildTask.getTaskId());
+                            }
+
+                        }
+
+                        // Is it external promise?
+                        if (!internalDepsIds.contains(arg.getTaskId())) {
+                            if (externalWaitForTasks == null) {
+                                externalWaitForTasks = new HashSet();
+                            }
+
+                            externalWaitForTasks.add(arg.getTaskId());
+                        }
+
+                    }
+
+                }
+
+
+                addTask(childTask, taskId, waitingId, externalWaitForTasks,
+                        dependTaskId != null && dependTaskId.equals(childTaskId));
             }
         }
 
@@ -201,18 +320,6 @@ public class TaskServerGeneral implements TaskServer {
 
     }
 
-	private boolean needWait(ArgContainer arg, TaskOptions options, int position) {
-		boolean result = arg.isPromise();
-		if (result && null != options) {
-			ArgType[] argTypes = options.getArgTypes();
-			if (null != argTypes && position < argTypes.length) {
-				if (ArgType.NO_WAIT.equals(argTypes[position])) {
-					result = false;
-				}
-			}
-		}
-		return result;
-	}
 
     private void resolveDependency(TaskObject taskObj) {
 
@@ -226,7 +333,7 @@ public class TaskServerGeneral implements TaskServer {
 
                 log.debug("task for countdown decrement [{}]", uuid);
 
-                taskDao.decrementCountdown(uuid);
+                taskDao.decrementCountdown(uuid, 1);
 
             }
         }

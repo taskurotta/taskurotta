@@ -10,12 +10,15 @@ import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,10 +33,17 @@ public class TaskDaoMemory implements TaskDao {
 
     private static final String ACTOR_ID = "InMemoryActor";
     private static final int queueCapacity = 1000;
+    private int pollDelay = 60;
 
     private Map<String, BlockingQueue<TaskObject>> queues = new ConcurrentHashMap<String, BlockingQueue<TaskObject>>();
     private Map<UUID, TaskObject> taskMap = new ConcurrentHashMap<UUID, TaskObject>();
     private Map<UUID, AtomicInteger> atomicCountdownMap = new ConcurrentHashMap<UUID, AtomicInteger>();
+
+    public TaskDaoMemory(int pollDelay) {
+        this();
+
+        this.pollDelay = pollDelay;
+    }
 
     public TaskDaoMemory() {
 
@@ -87,13 +97,14 @@ public class TaskDaoMemory implements TaskDao {
 
 
     @Override
-    public void decrementCountdown(UUID taskId) {
+    public void decrementCountdown(UUID taskId, int decrementValue) {
 
         AtomicInteger atomicCountdown = atomicCountdownMap.get(taskId);
 
-        int taskCountdown = atomicCountdown.decrementAndGet();
+        int taskCountdown = atomicCountdown.addAndGet(-decrementValue);
         log.debug("task [{}] countdown value is [{}] after decrement", taskId, taskCountdown);
 
+        // ?? Is it really needed?
         TaskObject taskObj = taskMap.get(taskId);
         taskObj.setCountdown(taskCountdown);
 
@@ -104,6 +115,31 @@ public class TaskDaoMemory implements TaskDao {
 
     }
 
+    public boolean registerExternalWaitFor(UUID taskId, UUID externalWaitForTaskId) {
+
+        TaskObject taskObj = taskMap.get(externalWaitForTaskId);
+
+        boolean result = false;
+
+        // task state can be switched to done concurrently
+        synchronized (taskObj) {
+            if (!taskObj.getState().getValue().equals(TaskStateObject.STATE.done)) {
+                List<UUID> waitingId = taskObj.getWaitingId();
+
+                if (waitingId == null) {
+                    waitingId = new ArrayList<UUID>();
+                }
+
+                waitingId.add(taskId);
+                taskObj.setWaitingId(waitingId);
+
+                result = true;
+            }
+        }
+
+        return result;
+
+    }
 
     @Override
     public void logTaskResult(DecisionContainer taskResult) {
@@ -120,7 +156,11 @@ public class TaskDaoMemory implements TaskDao {
 
         TaskObject taskObj = taskMap.get(taskId);
         taskObj.setValue(value);
-        taskObj.setState(taskStateMemory);
+
+        // waitingId list can be modified concurrently for not finished (done) tasks
+        synchronized (taskObj) {
+            taskObj.setState(taskStateMemory);
+        }
     }
 
 
@@ -154,7 +194,7 @@ public class TaskDaoMemory implements TaskDao {
 
         TaskObject task = null;
         try {
-            task = queue.take();
+            task = queue.poll(pollDelay, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
             // TODO: General policy about exceptions
@@ -165,7 +205,10 @@ public class TaskDaoMemory implements TaskDao {
             }
         }
 
-        setProgressSate(task);
+        if (task != null) {
+            setProgressSate(task);
+        }
+
         return task;
     }
 
@@ -195,6 +238,8 @@ public class TaskDaoMemory implements TaskDao {
     }
 
     private void addTaskToQueue(TaskObject taskMemory) {
+
+        log.debug("addTaskToQueue taskId = [{}]", taskMemory.getTaskId());
 
         TaskTarget taskTarget = taskMemory.getTarget();
 

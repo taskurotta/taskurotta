@@ -2,7 +2,7 @@ package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.SchedulingOptions;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.core.MethodDescriptor;
@@ -37,7 +37,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
 
 		MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
 
-        Task task = new TaskImpl(methodDescriptor.getTaskTarget(), args, new SchedulingOptions(methodDescriptor.getArgTypes()));
+        Task task = new TaskImpl(methodDescriptor.getTaskTarget(), args, new TaskOptions(methodDescriptor.getArgTypes()));
 
         if (taskHandler == null) {
             RuntimeContext.getCurrent().handle(task);

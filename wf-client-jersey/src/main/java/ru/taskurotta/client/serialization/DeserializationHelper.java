@@ -13,7 +13,7 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.TaskOptions;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -66,8 +66,8 @@ public class DeserializationHelper implements Constants {
 		return result;
 	}
 
-	public static TaskOptions extractOptions(JsonNode optionsNode, TaskOptions defValue) {
-		TaskOptions result = null;
+	public static TaskOptionsContainer extractOptions(JsonNode optionsNode, TaskOptionsContainer defValue) {
+		TaskOptionsContainer result = null;
 		if (optionsNode != null && !optionsNode.isNull()) {
 			JsonNode typesNode = optionsNode.get("argTypes");
 			if (typesNode != null && !typesNode.isNull() && typesNode.isArray()) {
@@ -76,7 +76,7 @@ public class DeserializationHelper implements Constants {
 				while (typesIterator.hasNext()) {
 					argTypes.add(ArgType.fromInt(typesIterator.next().intValue()));
 				}
-				result = new TaskOptions(argTypes.toArray(new ArgType[argTypes.size()]));
+				result = new TaskOptionsContainer(argTypes.toArray(new ArgType[argTypes.size()]));
 			}
 		}
 		return result;

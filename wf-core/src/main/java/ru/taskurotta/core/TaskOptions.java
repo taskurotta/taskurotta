@@ -5,10 +5,10 @@ import java.util.Arrays;
 /**
  * Created by void 26.03.13 10:03
  */
-public class SchedulingOptions {
+public class TaskOptions {
 	private ArgType[] argTypes;
 
-	public SchedulingOptions(ArgType[] argTypes) {
+	public TaskOptions(ArgType[] argTypes) {
 		this.argTypes = argTypes;
 	}
 
@@ -21,7 +21,7 @@ public class SchedulingOptions {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 
-		SchedulingOptions that = (SchedulingOptions) o;
+		TaskOptions that = (TaskOptions) o;
 
 		if (!Arrays.equals(argTypes, that.argTypes)) return false;
 

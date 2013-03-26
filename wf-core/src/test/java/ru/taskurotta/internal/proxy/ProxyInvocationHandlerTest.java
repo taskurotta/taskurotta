@@ -5,8 +5,8 @@ import org.junit.Test;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.IllegalReturnTypeException;
-import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.RuntimeContext;
+import ru.taskurotta.internal.core.MethodDescriptor;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -25,11 +25,12 @@ public class ProxyInvocationHandlerTest {
     private ProxyInvocationHandler proxyInvocationHandler;
 
     class TestProxy {
-        public int incorrectMethod (int a, int b) {
+        public int incorrectMethod(int a, int b) {
             return a + b;
         }
 
-        public void voidMethod() {}
+        public void voidMethod() {
+        }
 
         public Promise<Integer> correctMethod(int a, int b) {
             return Promise.asPromise(a + b);
@@ -43,7 +44,7 @@ public class ProxyInvocationHandlerTest {
         Method[] methods = clazz.getMethods();
         Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
         for (Method method : methods) {
-			method2TaskTargetCache.put(method, new MethodDescriptor(TaskType.DECIDER_ASYNCHRONOUS, "testActorName", "1.0", method.getName()));
+            method2TaskTargetCache.put(method, new MethodDescriptor(TaskType.DECIDER_ASYNCHRONOUS, "testActorName", "1.0", method.getName()));
         }
 
         proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, null);
@@ -55,9 +56,16 @@ public class ProxyInvocationHandlerTest {
         Method method = clazz.getMethod("correctMethod", int.class, int.class);
 
         RuntimeContext.create();
-        Object object = proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
 
-        assertSame(object.getClass(), Promise.class);
+        try {
+
+            Object object = proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
+
+            assertSame(object.getClass(), Promise.class);
+
+        } finally {
+            RuntimeContext.remove();
+        }
     }
 
     @Test
@@ -66,9 +74,16 @@ public class ProxyInvocationHandlerTest {
         Method method = clazz.getMethod("voidMethod");
 
         RuntimeContext.create();
-        Object object = proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
 
-        assertNull(object);
+        try {
+
+            Object object = proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
+
+            assertNull(object);
+
+        } finally {
+            RuntimeContext.remove();
+        }
     }
 
     @Test(expected = IllegalReturnTypeException.class)
@@ -77,6 +92,11 @@ public class ProxyInvocationHandlerTest {
         Method method = clazz.getMethod("incorrectMethod", int.class, int.class);
 
         RuntimeContext.create();
-        proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
+
+        try {
+            proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
+        } finally {
+            RuntimeContext.remove();
+        }
     }
 }

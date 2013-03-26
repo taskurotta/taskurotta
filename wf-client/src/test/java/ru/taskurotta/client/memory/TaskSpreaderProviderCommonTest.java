@@ -91,8 +91,6 @@ public class TaskSpreaderProviderCommonTest {
      * - Get it from queue
      * - release simple task result
      * - compare with original task
-     *
-     * @throws Exception
      */
     @Test
     public void testAddTask() {
@@ -104,7 +102,7 @@ public class TaskSpreaderProviderCommonTest {
         TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
 
         // task should be in "wait" state
-        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(taskId).getState().getState());
+        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(taskId).getState().getValue());
 
         Task taskFromQueue = workerTaskSpreader.pull();
 
@@ -112,13 +110,13 @@ public class TaskSpreaderProviderCommonTest {
         assertEquals(taskId, taskFromQueue.getId());
 
         // task should be in "process" state
-        assertEquals(TaskStateObject.STATE.process, taskDao.findById(taskId).getState().getState());
+        assertEquals(TaskStateObject.STATE.process, taskDao.findById(taskId).getState().getValue());
 
         TaskDecision taskDecision = new TaskDecisionImpl(taskId, null, null);
         workerTaskSpreader.release(taskDecision);
 
         // task should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskId).getState().getState());
+        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskId).getState().getValue());
 
     }
 
@@ -168,10 +166,10 @@ public class TaskSpreaderProviderCommonTest {
         deciderTaskSpreader.release(taskAResult);
 
         // task A should be in "depend" state
-        assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdA).getState().getState());
+        assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdA).getState().getValue());
 
         // workTaskA should be in "wait" state
-        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getState());
+        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
         assertEquals(1, taskDao.findById(workerTaskIdA).getCountdown());
 
         // pull task from queue
@@ -189,7 +187,7 @@ public class TaskSpreaderProviderCommonTest {
         deciderTaskSpreader.release(taskBResult);
 
         // task B should be in "depend" state
-        assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdB).getState().getState());
+        assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdB).getState().getValue());
 
         // pull task from queue
         // pulled task should be the same as added (as TaskDecision) above
@@ -202,18 +200,18 @@ public class TaskSpreaderProviderCommonTest {
 
         // check all in done state
         // task A should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdA).getState().getState());
+        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdA).getState().getValue());
         // task B should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdB).getState().getState());
+        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdB).getState().getValue());
         // task C should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getState());
+        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getValue());
         // workTaskA should be in "wait" state
-        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getState());
+        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
         assertEquals(0, taskDao.findById(workerTaskIdA).getCountdown());
 
         Task workerQueueTaskA = workerTaskSpreader.pull();
 
-        assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getState());
+        assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getValue());
     }
 
     /**
