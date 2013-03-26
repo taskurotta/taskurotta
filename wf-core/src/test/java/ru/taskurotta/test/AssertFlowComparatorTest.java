@@ -58,40 +58,27 @@ public class AssertFlowComparatorTest {
     @Test(expected = TestFailedError.class)
     public void testEqualsWithDifferentSizeOfLists() {
 
-        List<Task> expectedTaskList = new ArrayList<Task>();
-        List<Task> interceptedTaskList = new ArrayList<Task>();
+        Task[] expectedTasks = new Task[] {task1_1, task1_1};
+        Task[] interceptedTasks = new Task[] {task1_1};
 
-        expectedTaskList.add(task1_1);
-        expectedTaskList.add(task1_1);
-
-        interceptedTaskList.add(task1_1);
-
-        AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, promise1, promise1);
+        AssertFlowComparator.assertEquals(expectedTasks, interceptedTasks, promise1, promise1);
     }
 
     @Test(expected = TestFailedError.class)
     public void testEqualsWithDifferentTaskTargets() {
 
-        List<Task> expectedTaskList = new ArrayList<Task>();
-        List<Task> interceptedTaskList = new ArrayList<Task>();
+        Task[] expectedTasks = new Task[] {task1_1};
+        Task[] interceptedTasks = new Task[] {task2_1};
 
-        expectedTaskList.add(task1_1);
-
-        interceptedTaskList.add(task2_1);
-
-        AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, promise1, promise1);
+        AssertFlowComparator.assertEquals(expectedTasks, interceptedTasks, promise1, promise1);
     }
 
 
     @Test()
     public void testEqualsWithEqualsTaskTargets() {
 
-        List<Task> expectedTaskList = new ArrayList<Task>();
-        List<Task> interceptedTaskList = new ArrayList<Task>();
-
-        expectedTaskList.add(task1_1);
-
-        interceptedTaskList.add(task1_2);
+        Task[] expectedTaskList = new Task[] {task1_1};
+        Task[] interceptedTaskList = new Task[] {task1_2};
 
         AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, promise1, promise1);
     }
@@ -99,12 +86,8 @@ public class AssertFlowComparatorTest {
     @Test(expected = TestFailedError.class)
     public void testEqualsWithDifferentTaskArguments() {
 
-        List<Task> expectedTaskList = new ArrayList<Task>();
-        List<Task> interceptedTaskList = new ArrayList<Task>();
-
-        expectedTaskList.add(task2_1);
-
-        interceptedTaskList.add(task2_2);
+        Task[] expectedTaskList = new Task[] {task2_1};
+        Task[] interceptedTaskList = new Task[] {task2_2};
 
         AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, promise1, promise1);
     }

@@ -51,10 +51,7 @@ public class WorkerInvocationHandlerTest {
         methodAVoid = SimpleProxy.class.getMethod("aVoid", new Class[]{});
         method2TaskTargetCache.put(methodAVoid, new TaskTargetImpl(TaskType.WORKER, "testName", "1.0", methodAVoid.getName()));
 
-        workerInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, new TaskHandler() {
-            @Override
-            public void handle(Task task) {}
-        });
+        workerInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, null);
     }
 
     @Test

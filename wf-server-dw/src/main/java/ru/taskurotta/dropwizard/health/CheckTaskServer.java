@@ -2,6 +2,7 @@ package ru.taskurotta.dropwizard.health;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
 
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.util.ActorDefinition;
@@ -28,6 +29,11 @@ public class CheckTaskServer extends HealthCheck {
 			return Result.unhealthy(e);
 		}
 		
+	}
+
+	@Required
+	public void setTaskServer(TaskServer taskServer) {
+		this.taskServer = taskServer;
 	}
 
 }

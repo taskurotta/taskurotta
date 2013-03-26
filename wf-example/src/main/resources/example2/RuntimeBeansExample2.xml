@@ -5,46 +5,46 @@
        xsi:schemaLocation="
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-	
+
     <context:annotation-config/>
     <context:property-placeholder/>
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
     <bean id="multiplierWorker" class="ru.taskurotta.example.calculate.worker.impl.MultiplierImpl">
-    	<property name="sleep" value = "${sleep}" />
+        <property name="sleep" value="${sleep}"/>
     </bean>
 
     <bean id="numberGenerator" class="ru.taskurotta.example.calculate.worker.impl.NumberGeneratorImpl">
-    	<property name="maxNumber" value = "20" />
-    	<property name="sleep" value = "${sleep}" />
+        <property name="maxNumber" value="20"/>
+        <property name="sleep" value="${sleep}"/>
     </bean>
 
     <bean id="summarizer" class="ru.taskurotta.example.calculate.worker.impl.SummarizerImpl">
-    	<property name="sleep" value = "${sleep}" />
-    </bean>
-
-    <bean id="multiplierClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.example.calculate.worker.client.MultiplierClient"/>
-    </bean>
-
-    <bean id="summaeiserClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.example.calculate.worker.client.SummarizerClient"/>
-    </bean>
-
-    <bean id="numberGeneratorClient" factory-bean="runtimeProvider" factory-method="getWorkerClient">
-        <constructor-arg value="ru.taskurotta.example.calculate.worker.client.NumberGeneratorClient"/>
+        <property name="sleep" value="${sleep}"/>
     </bean>
 
     <bean id="mathActionDecider" class="ru.taskurotta.example.calculate.decider.MathActionDeciderImpl">
-        <property name="multiplierClient" ref="multiplierClient"/>
-        <property name="numberGeneartorClient" ref="numberGeneratorClient"/>
-        <property name="summarizerClient" ref="summaeiserClient"/>
+        <property name="multiplierClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.example.calculate.worker.client.MultiplierClient"/>
+            </bean>
+        </property>
+        <property name="numberGeneratorClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.example.calculate.worker.client.NumberGeneratorClient"/>
+            </bean>
+        </property>
+        <property name="summarizerClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.example.calculate.worker.client.SummarizerClient"/>
+            </bean>
+        </property>
         <property name="selfAsync">
-            <bean factory-bean="runtimeProvider" factory-method="getAsynchronousClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
                 <constructor-arg value="ru.taskurotta.example.calculate.decider.MathActionDeciderImpl"/>
             </bean>
         </property>
     </bean>
-    
+
 </beans>

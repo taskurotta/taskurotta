@@ -26,18 +26,17 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
     private Map<TaskTarget, GeneralRuntimeProvider.TargetReference> taskTargetsMap;
 
-    protected ThreadLocal<List<Task>> tlTaskList;
-
-
-    public GeneralRuntimeProcessor(Map<TaskTarget, GeneralRuntimeProvider.TargetReference> taskTargetsMap, ThreadLocal<List<Task>> tlTaskList) {
+    public GeneralRuntimeProcessor(Map<TaskTarget, GeneralRuntimeProvider.TargetReference> taskTargetsMap) {
 
         this.taskTargetsMap = taskTargetsMap;
-        this.tlTaskList = tlTaskList;
     }
 
 
     @Override
     public TaskDecision execute(Task task) {
+
+        RuntimeContext.create();
+
         TaskDecision taskDecision = null;
         TaskTarget key = task.getTarget();
 
@@ -48,19 +47,9 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 throw new UndefinedActorException(key);
             } else {
 
-                // Better safe than sorry :)
-                tlTaskList.remove();
-
                 Object value = targetReference.invoke(task.getArgs());
 
-                List<Task> taskList = tlTaskList.get();
-                Task[] tasks;
-                if (taskList == null) {
-                    tasks = null;
-                } else {
-                    tasks = new Task[taskList.size()];
-                    taskList.toArray(tasks);
-                }
+                Task[] tasks = RuntimeContext.getCurrent().getTasks();
                 taskDecision = new TaskDecisionImpl(task.getId(), value, tasks);
             }
         } catch (IllegalAccessException e) {
@@ -70,7 +59,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             log.error("Can't call method [" + targetReference + "]", e);
             throw new TargetException(targetReference.toString(), e);
         } finally {
-            tlTaskList.remove();
+            RuntimeContext.remove();
         }
 
         return taskDecision;
@@ -78,20 +67,20 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
 
     @Override
-    public List<Task> execute(Runnable runnable) {
+    public Task[] execute(Runnable runnable) {
 
-        // Better safe than sorry :)
-        tlTaskList.remove();
+        RuntimeContext.create();
 
-        List<Task> taskList;
+        Task[] tasks;
 
         try {
             runnable.run();
-            taskList = tlTaskList.get();
+            tasks = RuntimeContext.getCurrent().getTasks();
+
         } finally {
-            tlTaskList.remove();
+            RuntimeContext.remove();
         }
 
-        return taskList;
+        return tasks;
     }
 }

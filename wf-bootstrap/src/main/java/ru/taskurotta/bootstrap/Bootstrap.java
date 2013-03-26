@@ -11,6 +11,8 @@ import ru.taskurotta.bootstrap.config.ActorConfig;
 import ru.taskurotta.bootstrap.config.Config;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
+import ru.taskurotta.bootstrap.profiler.MetricsProfiler;
+import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
 
 import java.io.File;
@@ -98,8 +100,9 @@ public abstract class Bootstrap {
 
             RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
             RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
+            Profiler profiler = new MetricsProfiler(actorClass);
 
-            ActorExecutor actorExecutor = new ActorExecutor(actorClass, runtimeProcessor, taskSpreader);
+            ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
 
             int count = actorConfig.getCount();
             ExecutorService executorService = Executors.newFixedThreadPool(count);

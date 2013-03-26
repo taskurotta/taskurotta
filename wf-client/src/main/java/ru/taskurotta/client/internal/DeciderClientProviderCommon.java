@@ -1,7 +1,6 @@
 package ru.taskurotta.client.internal;
 
-import ru.taskurotta.RuntimeProvider;
-import ru.taskurotta.RuntimeProviderManager;
+import ru.taskurotta.ProxyFactory;
 import ru.taskurotta.TaskHandler;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.core.Task;
@@ -16,18 +15,11 @@ import ru.taskurotta.server.transport.TaskContainer;
  */
 public class DeciderClientProviderCommon implements DeciderClientProvider {
 
-    private RuntimeProvider runtimeProvider;
     private TaskServer taskServerCommon;
     private ObjectFactory objectFactory;
 
     public DeciderClientProviderCommon(TaskServer taskServerCommon) {
         this.taskServerCommon = taskServerCommon;
-        this.runtimeProvider = RuntimeProviderManager.getRuntimeProvider(new TaskHandler() {
-            @Override
-            public void handle(Task task) {
-                startProcess(task);
-            }
-        });
         // TODO: receive from constructor args
         this.objectFactory = new ObjectFactory();
 
@@ -36,7 +28,12 @@ public class DeciderClientProviderCommon implements DeciderClientProvider {
 
     @Override
     public <DeciderClientType> DeciderClientType getDeciderClient(Class<DeciderClientType> type) {
-        return runtimeProvider.getDeciderClient(type);
+        return ProxyFactory.getDeciderClient(type, new TaskHandler() {
+            @Override
+            public void handle(Task task) {
+                startProcess(task);
+            }
+        });
     }
 
 

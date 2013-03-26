@@ -2,8 +2,8 @@ contextLocation: "classpath*:context/appContext.xml"
 logging:
     level: WARN
     loggers:
-        ru.taskurotta: DEBUG
-        com.yammer: DEBUG
+        ru.taskurotta: INFO
+        com.yammer: INFO
     file:
         enabled: true
         currentLogFilename: ./target/logs/requests.log

@@ -7,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,32 +18,32 @@ public class AssertFlowComparator {
     /**
      * Test two lists of Task arguments
      *
-     * @param expectedTaskList
-     * @param interceptedTaskList
+     * @param expectedTasks
+     * @param interceptedTasks
      * @return
      */
-    public static void assertEquals(List<Task> expectedTaskList, List<Task> interceptedTaskList,
+    public static void assertEquals(Task[] expectedTasks, Task[] interceptedTasks,
                                     Promise expectedPromise, Promise interceptedPromise) {
 
         // There are two distinguished map, but please notice: Better safe than sorry!
         Map<UUID, Integer> expectedTaskUuidToSequenceMap = new HashMap<UUID, Integer>();
         Map<UUID, Integer> interceptedTaskUuidToSequenceMap = new HashMap<UUID, Integer>();
 
-        if (expectedTaskList == null && interceptedTaskList != null) {
-            throw new TestFailedError(createErrorMessage(expectedTaskList, interceptedTaskList,
+        if (expectedTasks == null && interceptedTasks != null) {
+            throw new TestFailedError(createErrorMessage(expectedTasks, interceptedTasks,
                     "Excepted task list is empty, but intercepted task list are not"));
         }
 
-        if (expectedTaskList != null && interceptedTaskList == null) {
-            throw new TestFailedError(createErrorMessage(expectedTaskList, interceptedTaskList,
+        if (expectedTasks != null && interceptedTasks == null) {
+            throw new TestFailedError(createErrorMessage(expectedTasks, interceptedTasks,
                     "Intercepted task list is empty, but Excepted task list are not"));
         }
 
 
-        if (expectedTaskList != null) {
+        if (expectedTasks != null) {
 
-            if (expectedTaskList.size() != interceptedTaskList.size()) {
-                throw new TestFailedError(createErrorMessage(expectedTaskList, interceptedTaskList,
+            if (expectedTasks.length != interceptedTasks.length) {
+                throw new TestFailedError(createErrorMessage(expectedTasks, interceptedTasks,
                         "Different size of recorded and expected task lists detected"));
             }
 
@@ -52,10 +51,10 @@ public class AssertFlowComparator {
 
 
             // check task lists
-            for (int i = 0; i < expectedTaskList.size(); i++) {
+            for (int i = 0; i < expectedTasks.length; i++) {
 
-                Task expected = expectedTaskList.get(i);
-                Task intercepted = interceptedTaskList.get(i);
+                Task expected = expectedTasks[i];
+                Task intercepted = interceptedTasks[i];
 
                 if (!expected.getTarget().equals(intercepted.getTarget())) {
                     throw new TestFailedError("Different taskTarget detected expected:[" + expected + "], intercepted:["
@@ -195,29 +194,29 @@ public class AssertFlowComparator {
     /**
      * create error message with detailed list of tasks
      *
-     * @param expectedTaskList -
-     * @param executedTaskList -
-     * @param errorMessage     -
+     * @param expectedTasks -
+     * @param executedTasks -
+     * @param errorMessage  -
      */
-    public static String createErrorMessage(List<Task> expectedTaskList, List<Task> executedTaskList, String errorMessage) {
+    public static String createErrorMessage(Task[] expectedTasks, Task[] executedTasks, String errorMessage) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(baos);
 
         printStream.println(errorMessage);
-        printTaskLists(printStream, "Expected tasks:", expectedTaskList);
-        printTaskLists(printStream, "Executed tasks:", executedTaskList);
+        printTaskLists(printStream, "Expected tasks:", expectedTasks);
+        printTaskLists(printStream, "Executed tasks:", executedTasks);
 
         return baos.toString();
     }
 
-    public static void printTaskLists(PrintStream printStream, String message, List<Task> taskList) {
+    public static void printTaskLists(PrintStream printStream, String message, Task[] tasks) {
         printStream.println(message);
 
-        if (taskList == null) {
+        if (tasks == null) {
             return;
         }
 
-        for (Task task : taskList) {
+        for (Task task : tasks) {
             printStream.print("\t");
             printStream.println(task);
         }

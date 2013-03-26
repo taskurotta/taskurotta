@@ -1,18 +1,12 @@
 package ru.taskurotta.bootstrap;
 
-import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.Timer;
-import com.yammer.metrics.core.TimerContext;
 import ru.taskurotta.RuntimeProcessor;
-import ru.taskurotta.annotation.Decider;
-import ru.taskurotta.annotation.Worker;
+import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.exception.ActorRuntimeException;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -24,51 +18,47 @@ public class ActorExecutor implements Runnable {
     private Meter meter;
     private Timer timer;
 
-    private Class actorClass;
+    private Profiler profiler;
     private RuntimeProcessor runtimeProcessor;
     private TaskSpreader taskSpreader;
 
     boolean shutdown = false;
 
-    public ActorExecutor(Class actorClass, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
-        this.actorClass = actorClass;
-        this.runtimeProcessor = runtimeProcessor;
-        this.taskSpreader = taskSpreader;
+    public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
+        this.profiler = profiler;
 
-        String actorVersion;
-        if (actorClass.isAnnotationPresent(Decider.class)) {
-            actorVersion = ((Decider) actorClass.getAnnotation(Decider.class)).version();
-        } else if (actorClass.isAnnotationPresent(Worker.class)) {
-            actorVersion = ((Worker) actorClass.getAnnotation(Worker.class)).version();
-        } else {
-            throw new ActorRuntimeException(actorClass.getCanonicalName() + "don't have @Decider or @Worker annotation");
-        }
+        this.runtimeProcessor = profiler.decorate(runtimeProcessor);
+        this.taskSpreader = profiler.decorate(taskSpreader);
 
-        String meterName = actorClass.getCanonicalName() + "#" + actorVersion + "#meter";
-        meter = Metrics.newMeter(actorClass, meterName, "requests", TimeUnit.SECONDS);
-
-        String timerName = actorClass.getCanonicalName() + "#" + actorVersion + "#timer";
-        timer = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     }
 
     @Override
     public void run() {
-        TimerContext timerContext;
 
         while (!shutdown) {
-            meter.mark();
 
-            Task task = taskSpreader.pull();
+            profiler.cycleStart();
 
-            if (task == null) {
-                continue;
+            try {
+
+                Task task = taskSpreader.pull();
+
+                if (task == null) {
+                    profiler.cycleFinish();
+
+                    // TODO: sleep one or few seconds? Or implement sleep policy?
+                    continue;
+                }
+
+                // TODO: catch all exceptions and send it to server
+                TaskDecision taskDecision = runtimeProcessor.execute(task);
+
+                taskSpreader.release(taskDecision);
+
+            } finally {
+                profiler.cycleFinish();
             }
 
-            timerContext = timer.time();
-            TaskDecision taskDecision = runtimeProcessor.execute(task);
-            timerContext.stop();
-
-            taskSpreader.release(taskDecision);
         }
     }
 }

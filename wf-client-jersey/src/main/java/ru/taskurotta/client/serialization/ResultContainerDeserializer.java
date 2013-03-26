@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-public class ResultContainerDeserializer extends JsonDeserializer<DecisionContainer> {
+public class ResultContainerDeserializer extends JsonDeserializer<DecisionContainer> implements Constants {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ResultContainerDeserializer.class);
 	
@@ -34,13 +34,13 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
 				
 		logger.debug("Deserializing Task from JSON[{}]", rootNode);
 
-		UUID taskId = DeserializationHelper.extractId(rootNode.get("taskId"), null);
-		ArgContainer value = DeserializationHelper.parseArgument(rootNode.get("value"));
-		Boolean error = rootNode.get("error").booleanValue();
+		UUID taskId = DeserializationHelper.extractId(rootNode.get(RESULT_TASK_ID), null);
+		ArgContainer value = DeserializationHelper.parseArgument(rootNode.get(RESULT_VALUE));
+		Boolean error = rootNode.get(RESULT_IS_ERROR).booleanValue();
 		ErrorContainer errorContainer = null;
 		TaskContainer[] tasks = null;
 		
-		JsonNode tasksNode = rootNode.get("tasks");
+		JsonNode tasksNode = rootNode.get(RESULT_TASKS);
 		if(tasksNode!=null && !tasksNode.isNull() && tasksNode.isArray()) {
 			List<TaskContainer> taskList = new ArrayList<TaskContainer>();
 			
@@ -56,9 +56,9 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
 	}
 	
 	private TaskContainer parseTaskContainer(JsonNode tcNode) {
-		UUID taskId = DeserializationHelper.extractId(tcNode.get("taskId"), null);
-		TaskTarget target = DeserializationHelper.extractTaskTarget(tcNode.get("target"), null);
-		ArgContainer[] args = DeserializationHelper.extractArgs(tcNode.get("args"), null);
+		UUID taskId = DeserializationHelper.extractId(tcNode.get(TASK_ID), null);
+		TaskTarget target = DeserializationHelper.extractTaskTarget(tcNode.get(TASK_TARGET), null);
+		ArgContainer[] args = DeserializationHelper.extractArgs(tcNode.get(TASK_ARGS), null);
 		
 		return new TaskContainer(taskId, target, args);		
 	}

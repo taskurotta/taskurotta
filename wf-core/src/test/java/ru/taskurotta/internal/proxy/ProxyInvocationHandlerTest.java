@@ -8,6 +8,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.IllegalReturnTypeException;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 
 import java.lang.reflect.Method;
@@ -48,11 +49,7 @@ public class ProxyInvocationHandlerTest {
             method2TaskTargetCache.put(method, new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, "testActorName", "1.0", method.getName()));
         }
 
-        proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, new TaskHandler() {
-            @Override
-            public void handle(Task task) {
-            }
-        });
+        proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, null);
     }
 
     @Test
@@ -60,6 +57,7 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
         Method method = clazz.getMethod("correctMethod", int.class, int.class);
 
+        RuntimeContext.create();
         Object object = proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
 
         assertSame(object.getClass(), Promise.class);
@@ -70,6 +68,7 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
         Method method = clazz.getMethod("voidMethod");
 
+        RuntimeContext.create();
         Object object = proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
 
         assertNull(object);
@@ -80,6 +79,7 @@ public class ProxyInvocationHandlerTest {
         Class clazz = TestProxy.class;
         Method method = clazz.getMethod("incorrectMethod", int.class, int.class);
 
+        RuntimeContext.create();
         proxyInvocationHandler.invoke(new TestProxy(), method, new Object[]{1, 2});
     }
 }

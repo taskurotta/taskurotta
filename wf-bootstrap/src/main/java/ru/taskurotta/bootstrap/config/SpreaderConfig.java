@@ -9,7 +9,7 @@ import ru.taskurotta.client.TaskSpreader;
  */
 public interface SpreaderConfig {
 
-    public abstract void init();
+    public void init();
 
     public TaskSpreader getTaskSpreader(Class clazz);
 }
