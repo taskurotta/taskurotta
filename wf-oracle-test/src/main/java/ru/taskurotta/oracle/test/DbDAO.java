@@ -48,7 +48,7 @@ public class DbDAO {
 	}
 
 	public boolean queueExists(String queueName) throws SQLException {
-		boolean result = false;
+		boolean result;
 		final Connection connection = dataSource.getConnection();
 		String query = "SELECT COUNT(*) cnt FROM dba_tables where table_name = ?";
 		final PreparedStatement ps = connection.prepareStatement(query);
