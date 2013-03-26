@@ -1,7 +1,5 @@
 package ru.taskurotta.bootstrap;
 
-import com.yammer.metrics.core.Meter;
-import com.yammer.metrics.core.Timer;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -15,9 +13,6 @@ import ru.taskurotta.core.TaskDecision;
  */
 public class ActorExecutor implements Runnable {
 
-    private Meter meter;
-    private Timer timer;
-
     private Profiler profiler;
     private RuntimeProcessor runtimeProcessor;
     private TaskSpreader taskSpreader;
@@ -26,10 +21,8 @@ public class ActorExecutor implements Runnable {
 
     public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
         this.profiler = profiler;
-
         this.runtimeProcessor = profiler.decorate(runtimeProcessor);
         this.taskSpreader = profiler.decorate(taskSpreader);
-
     }
 
     @Override
