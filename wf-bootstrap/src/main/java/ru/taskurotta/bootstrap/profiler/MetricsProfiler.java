@@ -46,11 +46,11 @@ public class MetricsProfiler implements Profiler {
     private boolean isTrackError = true;
 
     // output metrics to log
-    private boolean isOutputToLog = false;
+    private boolean isLogOutput = false;
     private int logOutputPeriod = 3;
 
     // output metrics to console
-    private boolean isOutputToConsole = false;
+    private boolean isConsoleOutput = false;
     private int consoleOutputPeriod = 3;
 
     private ThreadLocal<Long> cycleStartTime = new ThreadLocal<Long>();
@@ -91,11 +91,11 @@ public class MetricsProfiler implements Profiler {
             timerError = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
-        if (isOutputToLog) {
+        if (isLogOutput) {
             LoggerReporter.enable(logOutputPeriod, TimeUnit.SECONDS);
         }
 
-        if (isOutputToConsole) {
+        if (isConsoleOutput) {
             ConsoleReporter.enable(consoleOutputPeriod, TimeUnit.SECONDS);
         }
     }
@@ -207,12 +207,12 @@ public class MetricsProfiler implements Profiler {
         isTrackRelease = !properties.containsKey("trackRelease") || Boolean.parseBoolean(String.valueOf(properties.get("trackRelease")));
         isTrackError = !properties.containsKey("trackError") || Boolean.parseBoolean(String.valueOf(properties.get("trackError")));
 
-        isOutputToLog = !properties.containsKey("outputToLog") || Boolean.parseBoolean(String.valueOf(properties.get("outputToLog")));
+        isLogOutput = !properties.containsKey("logOutput") || Boolean.parseBoolean(String.valueOf(properties.get("logOutput")));
         if (properties.containsKey("logOutputPeriod")) {
             logOutputPeriod = Integer.parseInt(String.valueOf(properties.get("logOutputPeriod")));
         }
 
-        isOutputToConsole = !properties.containsKey("outputToConsole") || Boolean.parseBoolean(String.valueOf(properties.get("outputToConsole")));
+        isConsoleOutput = !properties.containsKey("consoleOutput") || Boolean.parseBoolean(String.valueOf(properties.get("consoleOutput")));
         if (properties.containsKey("consoleOutputPeriod")) {
             consoleOutputPeriod = Integer.parseInt(String.valueOf(properties.get("consoleOutputPeriod")));
         }
@@ -242,19 +242,42 @@ public class MetricsProfiler implements Profiler {
         this.isTrackError = trackError;
     }
 
-    public void setOutputToLog(boolean outputToLog) {
-        this.isOutputToLog = outputToLog;
+    public void setLogOutput(boolean logOutput) {
+        this.isLogOutput = logOutput;
     }
 
     public void setLogOutputPeriod(int logOutputPeriod) {
         this.logOutputPeriod = logOutputPeriod;
     }
 
-    public void setOutputToConsole(boolean outputToConsole) {
-        this.isOutputToConsole = outputToConsole;
+    public void setConsoleOutput(boolean consoleOutput) {
+        this.isConsoleOutput = consoleOutput;
     }
 
     public void setConsoleOutputPeriod(int consoleOutputPeriod) {
         this.consoleOutputPeriod = consoleOutputPeriod;
+    }
+
+    @Override
+    public String toString() {
+        return "MetricsProfiler{" +
+                "meterCycle=" + meterCycle +
+                ", timerCycle=" + timerCycle +
+                ", timerPull=" + timerPull +
+                ", timerExecute=" + timerExecute +
+                ", timerRelease=" + timerRelease +
+                ", timerError=" + timerError +
+                ", isMeterCycle=" + isMeterCycle +
+                ", isTrackExecute=" + isTrackExecute +
+                ", isTrackCycle=" + isTrackCycle +
+                ", isTrackPull=" + isTrackPull +
+                ", isTrackRelease=" + isTrackRelease +
+                ", isTrackError=" + isTrackError +
+                ", isLogOutput=" + isLogOutput +
+                ", logOutputPeriod=" + logOutputPeriod +
+                ", isConsoleOutput=" + isConsoleOutput +
+                ", consoleOutputPeriod=" + consoleOutputPeriod +
+                ", cycleStartTime=" + cycleStartTime +
+                '}';
     }
 }
