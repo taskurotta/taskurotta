@@ -69,7 +69,7 @@ public class DeserializationHelper implements Constants {
 	public static TaskOptionsContainer extractOptions(JsonNode optionsNode, TaskOptionsContainer defValue) {
 		TaskOptionsContainer result = null;
 		if (optionsNode != null && !optionsNode.isNull()) {
-			JsonNode typesNode = optionsNode.get("argTypes");
+			JsonNode typesNode = optionsNode.get(OPTIONS_ARG_TYPES);
 			if (typesNode != null && !typesNode.isNull() && typesNode.isArray()) {
 				Iterator<JsonNode> typesIterator = typesNode.elements();
 				List<ArgType> argTypes = new ArrayList<ArgType>(typesNode.size());
