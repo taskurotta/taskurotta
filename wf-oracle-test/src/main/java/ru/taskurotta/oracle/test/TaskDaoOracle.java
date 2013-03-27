@@ -54,4 +54,9 @@ public class TaskDaoOracle extends TaskDaoMemory {
         }
 
     }
+
+    @Override
+    protected String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
+        return super.getQueueName(actorDefinitionName, actorDefinitionVersion).replace("#", "_");
+    }
 }
