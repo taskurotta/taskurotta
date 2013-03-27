@@ -8,11 +8,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.UUID;
-
-import org.apache.commons.dbcp.BasicDataSource;
-import ru.taskurotta.oracle.test.domain.SimpleTask;
-
 import javax.sql.DataSource;
+
+import ru.taskurotta.oracle.test.domain.SimpleTask;
 
 /**
  * User: greg
@@ -70,7 +68,7 @@ public class DbDAO {
 
 		String createQuery = "CREATE TABLE :queue_name \n" +
 				"   (\n" +
-				" TASK_ID VARCHAR(16) NOT NULL ENABLE, \n" +
+				" TASK_ID VARCHAR(36) NOT NULL ENABLE, \n" +
 				" STATUS_ID NUMBER NOT NULL ENABLE, \n" +
 				" TYPE_ID NUMBER NOT NULL ENABLE, \n" +
 				" DATA_UPDATE DATE, \n" +
