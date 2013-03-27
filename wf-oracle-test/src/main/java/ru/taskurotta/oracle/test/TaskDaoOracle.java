@@ -7,6 +7,7 @@ import ru.taskurotta.server.memory.TaskDaoMemory;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class TaskDaoOracle extends TaskDaoMemory {
         super.add(taskObj);
         try {
             final String taskName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
-            final String queueName = getMD5(taskName);
+            final String queueName = getMd5(taskName);
             if (!queueNames.contains(queueName) || !dbDAO.queueExists(queueName)) {
                 dbDAO.createQueue(queueName);
                 queueNames.add(queueName);
@@ -56,22 +57,26 @@ public class TaskDaoOracle extends TaskDaoMemory {
 
     }
 
-    private String getMD5(String md5) {
+    private static String getMd5(String value) {
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-            byte[] array = md.digest(md5.getBytes());
-            StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
-            }
-            return sb.toString();
+            final java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(value.getBytes("UTF-8"));
+            return org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString(array);
         } catch (java.security.NoSuchAlgorithmException e) {
+            log.error("MD5 is not supported", e);
+            throw new IllegalStateException(e);
+        } catch (UnsupportedEncodingException ex) {
+            log.error("UTF-8 is not supported", ex);
+            throw new IllegalStateException(ex);
         }
-        return null;
     }
 
     @Override
     protected String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
         return super.getQueueName(actorDefinitionName, actorDefinitionVersion).replace("#", "_");
+    }
+
+    public static void main(String... args) {
+        System.out.println(getMd5("Hello!").length());
     }
 }
