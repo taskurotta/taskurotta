@@ -33,6 +33,7 @@ public class Config {
     public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<String, RuntimeConfig>();
     public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<String, SpreaderConfig>();
     public Map<String, ProfilerConfig> profilerConfigs = new HashMap<String, ProfilerConfig>();
+    public Map<String, LoggingConfig> loggingConfigs = new HashMap<String, LoggingConfig>();
     public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
 
     public static Config valueOf(File configFile) throws IOException {
@@ -56,6 +57,7 @@ public class Config {
         public static final String YAML_SPREADER = "spreader";
         public static final String YAML_ACTOR = "actor";
         public static final String YAML_RPOFILER = "profiler";
+        public static final String YAML_LOGGING = "logging";
 
         @Override
         public Config deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
@@ -92,6 +94,13 @@ public class Config {
                 parseProfilerConfigs(profilersNode, oc, config);
             } else {
                 logger.warn("Not found ProfilerConfigs in configuration");
+            }
+
+            JsonNode loggingsNode = rootNode.get(YAML_LOGGING);
+            if (loggingsNode == null) {
+                logger.warn("Not found LoggingConfig in configuration");
+            } else {
+                parseLoggingConfig(loggingsNode, oc, config);
             }
 
             JsonNode actorsNode = rootNode.get(YAML_ACTOR);
@@ -206,6 +215,40 @@ public class Config {
                 }
 
                 config.profilerConfigs.put(profilerConfigName, profilerConfig);
+            }
+        }
+
+        private void parseLoggingConfig(JsonNode loggingsNode, ObjectCodec oc, Config config) {
+            for (Iterator loggingElements = loggingsNode.elements(); loggingElements.hasNext(); ) {
+
+                JsonNode loggingElement = (JsonNode) loggingElements.next();
+                logger.debug("loggingElement [{}]", loggingElement);
+
+                String loggingConfigName = loggingElement.fieldNames().next();
+                logger.debug("loggingConfigName [{}]", loggingConfigName);
+
+                JsonNode instanceDescriptionNode = loggingElement.elements().next();
+                JsonNode loggingConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
+                logger.debug("loggingConfigNode [{}]", loggingConfigNode);
+
+                String loggingConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
+                logger.debug("loggingConfigClassName [{}]", loggingConfigClassName);
+
+                Class loggingConfigClass;
+                try {
+                    loggingConfigClass = Class.forName(loggingConfigClassName);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("Can not find LoggingConfig class: " + loggingConfigClassName, e);
+                }
+
+                LoggingConfig loggingConfig;
+                try {
+                    loggingConfig = (LoggingConfig) oc.treeToValue(loggingConfigNode, loggingConfigClass);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can not deserialize LoggingConfig object: " + loggingConfigClassName, e);
+                }
+
+                config.loggingConfigs.put(loggingConfigName, loggingConfig);
             }
         }
 
