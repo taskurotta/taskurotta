@@ -32,6 +32,7 @@
 		<module>wf-server</module>
 		<module>wf-recipes</module>
 		<module>wf-dropwizard</module>
+		<module>wf-dropwizard-assemble</module>
 	</modules>
 
 	<dependencies>
