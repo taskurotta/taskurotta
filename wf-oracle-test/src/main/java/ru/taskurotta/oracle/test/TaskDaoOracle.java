@@ -76,7 +76,4 @@ public class TaskDaoOracle extends TaskDaoMemory {
         return super.getQueueName(actorDefinitionName, actorDefinitionVersion).replace("#", "_");
     }
 
-    public static void main(String... args) {
-        System.out.println(getMd5("Hello!").length());
-    }
 }
