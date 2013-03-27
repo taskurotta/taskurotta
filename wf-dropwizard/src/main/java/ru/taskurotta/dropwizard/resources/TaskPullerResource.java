@@ -1,20 +1,20 @@
 package ru.taskurotta.dropwizard.resources;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.yammer.metrics.annotation.Timed;
-
-import ru.taskurotta.client.serialization.wrapper.ActorDefinitionWrapper;
-import ru.taskurotta.client.serialization.wrapper.TaskContainerWrapper;
-import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.server.transport.TaskContainer;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
+import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
+import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.transport.TaskContainer;
+
+import com.yammer.metrics.annotation.Timed;
 
 @Path("/tasks/pull")
 @Consumes(MediaType.APPLICATION_JSON)

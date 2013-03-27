@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taskurotta.client.serialization.wrapper.TaskContainerWrapper;
+import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
 
 import com.yammer.metrics.annotation.Timed;

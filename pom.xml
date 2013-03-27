@@ -31,8 +31,7 @@
 		<module>wf-spring</module>
 		<module>wf-server</module>
 		<module>wf-recipes</module>
-		<module>wf-client-jersey</module>
-		<module>wf-server-dw</module>
+		<module>wf-dropwizard</module>
 	</modules>
 
 	<dependencies>
