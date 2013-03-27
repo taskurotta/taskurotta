@@ -28,7 +28,7 @@ public class DbDAO {
 	public void enqueueTask(SimpleTask task, String queueName) throws SQLException {
 		final Connection connection = dataSource.getConnection();
 		final PreparedStatement ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, type_id, data_update, actor_id) values (?,?,?,?,?)");
-		ps.setObject(1, task.getTaskId());
+		ps.setString(1, task.getTaskId().toString());
 		ps.setInt(2, task.getStatusId());
 		ps.setInt(3, task.getTypeId());
 		ps.setDate(4, new java.sql.Date(task.getDate().getTime()));
@@ -70,7 +70,7 @@ public class DbDAO {
 
 		String createQuery = "CREATE TABLE :queue_name \n" +
 				"   (\n" +
-				" TASK_ID NUMBER NOT NULL ENABLE, \n" +
+				" TASK_ID VARCHAR(16) NOT NULL ENABLE, \n" +
 				" STATUS_ID NUMBER NOT NULL ENABLE, \n" +
 				" TYPE_ID NUMBER NOT NULL ENABLE, \n" +
 				" DATA_UPDATE DATE, \n" +
@@ -93,15 +93,14 @@ public class DbDAO {
 				"UPDATE %s\n" +
 				"SET STATUS_ID = 1\n" +
 				"WHERE\n" +
-				"\tTYPE_ID = ?\n" +
-				"AND STATUS_ID = 0\n" +
+				"STATUS_ID = 0\n" +
 				"AND data_update <= CURRENT_TIMESTAMP\n" +
 				"AND ROWNUM = 1\n" +
 				"RETURNING TASK_ID INTO ?;END;";
 		CallableStatement cs = connection.prepareCall(String.format(query, queueName));
-		cs.registerOutParameter(1, Types.JAVA_OBJECT);
+		cs.registerOutParameter(1, Types.VARCHAR);
 		cs.execute();
-		UUID job_id = (UUID) cs.getObject(1);
+		UUID job_id = UUID.fromString(cs.getString(1));
 		cs.close();
 		connection.close();
 		return job_id;

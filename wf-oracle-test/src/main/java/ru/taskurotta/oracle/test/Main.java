@@ -1,5 +1,6 @@
 package ru.taskurotta.oracle.test;
 
+import ru.taskurotta.oracle.test.runnable.CreationTask;
 import ru.taskurotta.oracle.test.runnable.TestSelectTask;
 
 import java.util.concurrent.CountDownLatch;
@@ -14,16 +15,16 @@ public class Main {
     public static void main(String... args) throws Exception {
         final DbConnect dbConnect = new DbConnect();
         final Executor exec = Executors.newFixedThreadPool(9);
-        final CountDownLatch countDownLatch = new CountDownLatch(8);
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
 //        exec.execute(new CreationTask(dbConnect.getDataSource()));
         exec.execute(new TestSelectTask(dbConnect.getDataSource(), 0, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 1, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 2, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 3, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 0, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 1, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 2, countDownLatch));
-        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 3, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 1, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 2, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 3, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 0, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 1, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 2, countDownLatch));
+//        exec.execute(new TestSelectTask(dbConnect.getDataSource(), 3, countDownLatch));
         countDownLatch.await();
         System.exit(0);
     }

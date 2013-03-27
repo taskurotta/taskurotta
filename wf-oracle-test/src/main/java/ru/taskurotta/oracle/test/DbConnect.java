@@ -21,9 +21,9 @@ public class DbConnect {
     public DbConnect() {
         dataSource = new BasicDataSource();
         dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-        dataSource.setUsername("taskurotta");
-        dataSource.setPassword("taskurotta");
-        dataSource.setUrl("jdbc:oracle:thin:@//taskurotta-db:1521/orcl");
+        dataSource.setUsername("system");
+        dataSource.setPassword("oracle");
+        dataSource.setUrl("jdbc:oracle:thin:@//192.168.1.7:1521/orcl");
     }
 
     public BasicDataSource getDataSource() {

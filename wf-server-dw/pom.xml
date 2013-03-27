@@ -37,6 +37,11 @@
 			<artifactId>wf-client-jersey</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-oracle-test</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>

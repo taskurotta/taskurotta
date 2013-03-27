@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wf-oracle-test</artifactId>
+    <name>Taskurotta :: Oracle DAO test</name>
 
     <dependencies>
         <dependency>
