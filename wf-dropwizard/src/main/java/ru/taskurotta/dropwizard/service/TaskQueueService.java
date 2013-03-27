@@ -30,7 +30,7 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 	public void run(TaskQueueConfig configuration, Environment environment)
 			throws Exception {
 		
-		logger.info("Properties getted["+configuration.getProperties()+"]");
+		logger.debug("YAML config properties getted[{}]", configuration.getProperties());
 		
 		String contextLocation = configuration.getContextLocation();
 		AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(new String[]{contextLocation}, false);

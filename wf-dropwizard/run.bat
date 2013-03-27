@@ -1,1 +1,1 @@
-start java -jar target/wf-server-dw-0.1.0-SNAPSHOT.jar server target/classes/TaskQueueConfig.yml
+start java -jar target/wf-dropwizard-0.1.0-SNAPSHOT.jar server target/classes/TaskQueueConfig.yml
