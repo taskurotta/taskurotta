@@ -9,7 +9,7 @@
 	</appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>recipes.log</file>
+        <file>./logs/recipes.log</file>
         <append>true</append>
         <encoder>
             <pattern>%-4r [%t] %-5p %c - %m%n</pattern>

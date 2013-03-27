@@ -30,12 +30,39 @@ profiler:
           consoleOutput: false
           consoleOutputPeriod: 10
 
+logging:
+  - FileLoggingConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultLoggingConfig
+      instance:
+        class: ru.taskurotta.bootstrap.logging.FileLoggingOutput
+        loggers:
+          ru.taskurotta: DEBUG
+          org.springframework: OFF
+        properties:
+          threshold: ALL
+          currentLogFilename: ./logs/output.log
+          archive: true
+          archivedLogFilenamePattern: ./logs/output-%d.log.gz
+          archivedFileCount: 10
+          logFormat: \%-4r [\%t] \%-5p \%c - \%m\%n
+
+  - ConsoleLoggingConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultLoggingConfig
+      instance:
+        class: ru.taskurotta.bootstrap.logging.ConsoleLoggingOutput
+        loggers:
+          ru.taskurotta: TRACE
+        properties:
+          threshold: ALL
+          logFormat: \%-4r [\%t] \%-5p \%c - \%m\%n
+
 actor:
   - PiDecider:
       actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
+      loggingConfig: ConsoleLoggingConfig
       count: 1
 
   - PiWorker:
@@ -43,4 +70,5 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
+      loggingConfig: ConsoleLoggingConfig
       count: 10
