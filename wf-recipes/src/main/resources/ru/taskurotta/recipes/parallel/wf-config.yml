@@ -25,9 +25,9 @@ profiler:
           trackPull: true
           trackRelease: true
           trackError: false
-          outputToLog: true
+          logOutput: true
           logOutputPeriod: 10
-          outputToConsole: true
+          consoleOutput: false
           consoleOutputPeriod: 10
 
 actor:
