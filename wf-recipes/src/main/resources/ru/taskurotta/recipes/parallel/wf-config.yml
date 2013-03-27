@@ -25,6 +25,8 @@ profiler:
           trackPull: false
           trackRelease: false
           trackError: false
+          outputToLog: true
+          logOutputPeriod: 10
 
 actor:
   - PiDecider:

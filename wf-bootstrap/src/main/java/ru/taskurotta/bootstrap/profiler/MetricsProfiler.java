@@ -3,7 +3,9 @@ package ru.taskurotta.bootstrap.profiler;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.Timer;
+import com.yammer.metrics.reporting.ConsoleReporter;
 import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.bootstrap.profiler.logback.LoggerReporter;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -18,7 +20,6 @@ import java.util.concurrent.TimeUnit;
  * Time: 1:37 PM
  */
 public class MetricsProfiler implements Profiler {
-
 
     // TODO create all timers and use yaml config
 
@@ -43,6 +44,14 @@ public class MetricsProfiler implements Profiler {
     private boolean isTrackRelease = true;
     // track task error
     private boolean isTrackError = true;
+
+    // output metrics to log
+    private boolean isOutputToLog = false;
+    private int logOutputPeriod = 3;
+
+    // output metrics to console
+    private boolean isOutputToConsole = false;
+    private int consoleOutputPeriod = 3;
 
     private ThreadLocal<Long> cycleStartTime = new ThreadLocal<Long>();
 
@@ -80,6 +89,14 @@ public class MetricsProfiler implements Profiler {
         if (isTrackError) {
             String timerName = actorDefinition.getFullName() + "#timerError";
             timerError = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+        }
+
+        if (isOutputToLog) {
+            LoggerReporter.enable(logOutputPeriod, TimeUnit.SECONDS);
+        }
+
+        if (isOutputToConsole) {
+            ConsoleReporter.enable(consoleOutputPeriod, TimeUnit.SECONDS);
         }
     }
 
@@ -189,6 +206,16 @@ public class MetricsProfiler implements Profiler {
         isTrackPull = !properties.containsKey("trackPull") || Boolean.parseBoolean(String.valueOf(properties.get("trackPull")));
         isTrackRelease = !properties.containsKey("trackRelease") || Boolean.parseBoolean(String.valueOf(properties.get("trackRelease")));
         isTrackError = !properties.containsKey("trackError") || Boolean.parseBoolean(String.valueOf(properties.get("trackError")));
+
+        isOutputToLog = !properties.containsKey("outputToLog") || Boolean.parseBoolean(String.valueOf(properties.get("outputToLog")));
+        if (properties.containsKey("logOutputPeriod")) {
+            logOutputPeriod = Integer.parseInt(String.valueOf(properties.get("logOutputPeriod")));
+        }
+
+        isOutputToConsole = !properties.containsKey("outputToConsole") || Boolean.parseBoolean(String.valueOf(properties.get("outputToConsole")));
+        if (properties.containsKey("consoleOutputPeriod")) {
+            consoleOutputPeriod = Integer.parseInt(String.valueOf(properties.get("consoleOutputPeriod")));
+        }
     }
 
     public void setMeterCycle(boolean meterCycle) {
@@ -213,5 +240,21 @@ public class MetricsProfiler implements Profiler {
 
     public void setTrackError(boolean trackError) {
         this.isTrackError = trackError;
+    }
+
+    public void setOutputToLog(boolean outputToLog) {
+        this.isOutputToLog = outputToLog;
+    }
+
+    public void setLogOutputPeriod(int logOutputPeriod) {
+        this.logOutputPeriod = logOutputPeriod;
+    }
+
+    public void setOutputToConsole(boolean outputToConsole) {
+        this.isOutputToConsole = outputToConsole;
+    }
+
+    public void setConsoleOutputPeriod(int consoleOutputPeriod) {
+        this.consoleOutputPeriod = consoleOutputPeriod;
     }
 }
