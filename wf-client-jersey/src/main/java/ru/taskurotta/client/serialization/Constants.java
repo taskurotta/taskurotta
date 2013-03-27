@@ -8,6 +8,7 @@ public interface Constants {
 	public static final String TASK_ID = "taskId";
 	public static final String TASK_TARGET = "target";
 	public static final String TASK_ARGS = "args";
+	public static final String TASK_OPTIONS = "options";
 	
 	
 	public static final String TASK_TARGET_NAME = "name";
@@ -25,6 +26,10 @@ public interface Constants {
 	public static final String RESULT_VALUE = "value";
 	public static final String RESULT_IS_ERROR = "error";
 	public static final String RESULT_TASKS = "tasks";
+	
+	public static final String OPTIONS_ARG_TYPES = "argTypes";
+	
+	
 	
 	
 }

@@ -13,12 +13,20 @@
     	<constructor-arg name="taskServer" ref = "taskServerGeneral" />
     </bean>
     
-    <bean id = "taskServerGeneral" class="ru.taskurotta.example.calculate.taskserver.ProfiledTaskServerGeneral" >
-    	<constructor-arg name="loggingPeriod" value = "${loggingPeriod}" />
-    	<constructor-arg name="taskDao">
-    		<bean class="ru.taskurotta.server.memory.TaskDaoMemory" />
-    	</constructor-arg>
+    <bean id = "taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral" >
+    	<constructor-arg name="taskDao" ref="taskDaoMemory" />
     </bean>
+    
+    <bean id = "taskDaoMemory" class="ru.taskurotta.server.memory.TaskDaoMemory" >
+    	<constructor-arg name = "pollDelay" value = "${taskPollDelay}" />
+    </bean>
+
+<!--     <bean id = "taskServerGeneral" class="ru.taskurotta.example.calculate.taskserver.ProfiledTaskServerGeneral" > -->
+<!--     	<constructor-arg name="loggingPeriod" value = "${loggingPeriod}" /> -->
+<!--     	<constructor-arg name="taskDao"> -->
+<!--     		<bean class="ru.taskurotta.server.memory.TaskDaoMemory" /> -->
+<!--     	</constructor-arg> -->
+<!--     </bean> -->
 
     <bean id="taskCreator" class="ru.taskurotta.example.calculate.WorkflowStarter" init-method="startWork">
         <property name="clientServiceManager" ref="clientServiceManager"/>

@@ -1,17 +1,21 @@
 package ru.taskurotta.dropwizard.service;
 
+import java.util.Map;
+
+import javax.ws.rs.Path;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.env.PropertiesPropertySource;
+
+import ru.taskurotta.dropwizard.TaskQueueConfig;
+
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.metrics.core.HealthCheck;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import ru.taskurotta.dropwizard.TaskQueueConfig;
-
-import javax.ws.rs.Path;
-import java.util.Map;
 
 public class TaskQueueService extends Service<TaskQueueConfig> {
 	
@@ -25,8 +29,15 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 	@Override
 	public void run(TaskQueueConfig configuration, Environment environment)
 			throws Exception {
+		
+		logger.info("Properties getted["+configuration.getProperties()+"]");
+		
 		String contextLocation = configuration.getContextLocation();
-		ApplicationContext appContext = new ClassPathXmlApplicationContext(contextLocation);
+		AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(new String[]{contextLocation}, false);
+		if(configuration.getProperties()!=null && !configuration.getProperties().isEmpty()) {
+			appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", configuration.getProperties()));
+		}
+		appContext.refresh();
 		
 		//Register resources
 		Map<String, Object> resources = appContext.getBeansWithAnnotation(Path.class);
