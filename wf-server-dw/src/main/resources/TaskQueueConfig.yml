@@ -1,4 +1,6 @@
 contextLocation: "classpath*:context/appContext.xml"
+properties:
+  pollDelay: 1  
 logging:
     level: WARN
     loggers:

@@ -22,8 +22,8 @@ profiler:
           meterCycle: true
           trackExecute: true
           trackCycle: false
-          trackPull: false
-          trackRelease: false
+          trackPull: true
+          trackRelease: true
           trackError: false
           outputToLog: true
           logOutputPeriod: 10
