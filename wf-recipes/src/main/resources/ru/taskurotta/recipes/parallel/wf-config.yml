@@ -27,6 +27,8 @@ profiler:
           trackError: false
           outputToLog: true
           logOutputPeriod: 10
+          outputToConsole: true
+          consoleOutputPeriod: 10
 
 actor:
   - PiDecider:
