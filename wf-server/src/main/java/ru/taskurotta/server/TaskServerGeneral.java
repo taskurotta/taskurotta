@@ -27,7 +27,6 @@ public class TaskServerGeneral implements TaskServer {
     private final static Logger log = LoggerFactory.getLogger(TaskServerGeneral.class);
 
     private static final String ACTOR_ID = "InMemoryActor";
-    private static final int queueCapacity = 1000;
 
     private TaskDao taskDao;
 
