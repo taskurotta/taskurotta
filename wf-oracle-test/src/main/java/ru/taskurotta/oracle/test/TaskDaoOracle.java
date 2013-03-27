@@ -31,7 +31,8 @@ public class TaskDaoOracle extends TaskDaoMemory {
     public void add(TaskObject taskObj) {
         super.add(taskObj);
         try {
-            final String queueName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
+            final String taskName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
+            final String queueName = getMD5(taskName);
             if (!queueNames.contains(queueName) || !dbDAO.queueExists(queueName)) {
                 dbDAO.createQueue(queueName);
                 queueNames.add(queueName);
@@ -53,6 +54,20 @@ public class TaskDaoOracle extends TaskDaoMemory {
             return null;
         }
 
+    }
+
+    private String getMD5(String md5) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(md5.getBytes());
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < array.length; ++i) {
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+        }
+        return null;
     }
 
     @Override
