@@ -8,14 +8,22 @@
 
     <context:property-placeholder/>
     <context:annotation-config />
-	
-	<bean id = "taskServer" class="ru.taskurotta.example.calculate.taskserver.ProfiledJerseyTaskServer" >
+
+	<bean id = "taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy" >
     	<property name="connectTimeout" value="${connectTimeout}" />
     	<property name="readTimeout" value = "${readTimeout}" />
     	<property name="threadPoolSize" value = "${threadPoolSize}" />
     	<property name="endpoint" value = "${endpoint}" />
-    	<constructor-arg name="loggingPeriod" value = "${loggerPeriod}" />
+    	<property name="maxConnectionsPerHost" value="${maxConnectionsPerHost}" />
 	</bean>
+	
+<!-- 	<bean id = "taskServer" class="ru.taskurotta.example.calculate.taskserver.ProfiledJerseyTaskServer" > -->
+<!--     	<property name="connectTimeout" value="${connectTimeout}" /> -->
+<!--     	<property name="readTimeout" value = "${readTimeout}" /> -->
+<!--     	<property name="threadPoolSize" value = "${threadPoolSize}" /> -->
+<!--     	<property name="endpoint" value = "${endpoint}" /> -->
+<!--     	<constructor-arg name="loggingPeriod" value = "${loggerPeriod}" /> -->
+<!-- 	</bean> -->
 
 <!--     <bean id = "taskServer" class="ru.taskurotta.example.calculate.taskserver.ProfiledJerseyHttpTaskServer"> -->
 <!--     	<property name="connectTimeout" value = "${connectTimeout}" /> -->
