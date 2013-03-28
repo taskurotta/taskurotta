@@ -1,9 +1,9 @@
 package ru.taskurotta.bootstrap.profiler;
 
+import java.util.Properties;
+
 import org.junit.Test;
 import ru.taskurotta.annotation.Worker;
-
-import java.util.Properties;
 
 /**
  * User: romario
@@ -12,18 +12,18 @@ import java.util.Properties;
  */
 public class MetricsProfilerTest {
 
-    @Worker
-    public static class SimpleWorker {
+	@Worker
+	public static class SimpleWorker {
 
-    }
+	}
 
-    @Test
-    public void test() {
+	@Test
+	public void test() {
 
-        Profiler profiler = new MetricsProfiler(SimpleWorker.class, new Properties());
+		Profiler profiler = new MetricsProfiler(SimpleWorker.class, new Properties());
 
-        profiler.cycleStart();
+		profiler.cycleStart();
 
-        profiler.cycleFinish();
-    }
+		profiler.cycleFinish();
+	}
 }

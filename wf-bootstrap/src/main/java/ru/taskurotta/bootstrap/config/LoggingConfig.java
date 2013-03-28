@@ -7,6 +7,6 @@ package ru.taskurotta.bootstrap.config;
  */
 public interface LoggingConfig {
 
-    public void init();
+	public void init();
 
 }

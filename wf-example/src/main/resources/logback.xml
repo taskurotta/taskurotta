@@ -2,23 +2,22 @@
 
 <configuration>
 
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>%-4r [%t] %-5p %c - %m%n</pattern>
-		</encoder>
-	</appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-4r [%t] %-5p %c - %m%n</pattern>
+        </encoder>
+    </appender>
 
-	<logger name="ru.taskurotta" level="INFO" />
-<!-- 	<logger name="ru.taskurotta.server.support" level="DEBUG" /> -->
+    <logger name="ru.taskurotta" level="DEBUG"/>
+    <!-- 	<logger name="ru.taskurotta.server.support" level="DEBUG" /> -->
     <logger name="org.springframework" level="OFF"/>
-    <logger name="com.sun.jersey.client.apache" level="OFF" />
-    <logger name="org.apache.commons" level="OFF" />
-    <logger name="httpclient.wire" level="OFF" />
-    
-    
+    <logger name="com.sun.jersey.client.apache" level="OFF"/>
+    <logger name="org.apache.commons" level="OFF"/>
+    <logger name="httpclient.wire" level="OFF"/>
 
-	<root>
-		<appender-ref ref="STDOUT" />
-	</root>
+
+    <root>
+        <appender-ref ref="STDOUT"/>
+    </root>
 
 </configuration>

@@ -1,5 +1,11 @@
 package ru.taskurotta.bootstrap;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -13,17 +19,9 @@ import ru.taskurotta.bootstrap.config.LoggingConfig;
 import ru.taskurotta.bootstrap.config.ProfilerConfig;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
-import ru.taskurotta.bootstrap.logging.FileLoggingOutput;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * User: stukushin
@@ -31,97 +29,97 @@ import java.util.concurrent.Executors;
  * Time: 14:53
  */
 public abstract class Bootstrap {
-    private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
+	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
-    protected void run(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
-        ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
-        parser.addArgument("-f", "--file")
-                .required(false)
-                .help("Specify config file to use");
+	protected void run(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+		ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
+		parser.addArgument("-f", "--file")
+				.required(false)
+				.help("Specify config file to use");
 
-        parser.addArgument("-r", "--resource")
-                .required(false)
-                .help("Specify resource file (in classpath) to use");
+		parser.addArgument("-r", "--resource")
+				.required(false)
+				.help("Specify resource file (in classpath) to use");
 
-        Namespace namespace = parser.parseArgs(args);
+		Namespace namespace = parser.parseArgs(args);
 
-        Config config = null;
+		Config config = null;
 
-        String configFileName = namespace.getString("file");
+		String configFileName = namespace.getString("file");
 
-        if (configFileName != null) {
+		if (configFileName != null) {
 
-            File configFile = new File(configFileName);
-            if (configFile.exists()) {
+			File configFile = new File(configFileName);
+			if (configFile.exists()) {
 
-                config = Config.valueOf(configFile);
-            } else {
+				config = Config.valueOf(configFile);
+			} else {
 
-                System.out.println("File doesn't exist: " + configFileName);
-                parser.printHelp();
-                return;
-            }
+				System.out.println("File doesn't exist: " + configFileName);
+				parser.printHelp();
+				return;
+			}
 
-        }
+		}
 
-        String resourceFileName = namespace.getString("resource");
+		String resourceFileName = namespace.getString("resource");
 
-        if (resourceFileName != null) {
+		if (resourceFileName != null) {
 
-            URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
-            logger.debug("Config file URL is [{}]", configPath);
+			URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
+			logger.debug("Config file URL is [{}]", configPath);
 
-            if (configPath != null) {
-                config = Config.valueOf(configPath);
-            } else {
+			if (configPath != null) {
+				config = Config.valueOf(configPath);
+			} else {
 
-                System.out.println("Resource file (in classpath) doesn't exist: " + configFileName);
-                parser.printHelp();
-                return;
-            }
-        }
+				System.out.println("Resource file (in classpath) doesn't exist: " + configFileName);
+				parser.printHelp();
+				return;
+			}
+		}
 
-        if (config == null) {
-            System.out.println("Config file doesn't specified");
-            parser.printHelp();
-            return;
-        }
+		if (config == null) {
+			System.out.println("Config file doesn't specified");
+			parser.printHelp();
+			return;
+		}
 
 
-        for (ActorConfig actorConfig : config.actorConfigs) {
+		for (ActorConfig actorConfig : config.actorConfigs) {
 
-            Class actorClass;
+			Class actorClass;
 
-            try {
-                actorClass = Class.forName(actorConfig.getActorInterface());
-            } catch (ClassNotFoundException e) {
-                logger.error("Not found class [{}]", actorConfig.getActorInterface());
-                throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
-            }
+			try {
+				actorClass = Class.forName(actorConfig.getActorInterface());
+			} catch (ClassNotFoundException e) {
+				logger.error("Not found class [{}]", actorConfig.getActorInterface());
+				throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
+			}
 
-            SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
-            TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+			SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
+			TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
 
-            RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
-            RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
+			RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
+			RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
 
-            LoggingConfig loggingConfig = config.loggingConfigs.get(actorConfig.getLoggingConfig());
-            if (loggingConfig != null) {
-                loggingConfig.init();
-            }
+			LoggingConfig loggingConfig = config.loggingConfigs.get(actorConfig.getLoggingConfig());
+			if (loggingConfig != null) {
+				loggingConfig.init();
+			}
 
-            ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
-            Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
+			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
+			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
-            ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
+			ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
 
-            int count = actorConfig.getCount();
-            ExecutorService executorService = Executors.newFixedThreadPool(count);
+			int count = actorConfig.getCount();
+			ExecutorService executorService = Executors.newFixedThreadPool(count);
 
-            for (int i = 0; i < count; i++) {
-                executorService.execute(actorExecutor);
-            }
-        }
-    }
+			for (int i = 0; i < count; i++) {
+				executorService.execute(actorExecutor);
+			}
+		}
+	}
 
 }

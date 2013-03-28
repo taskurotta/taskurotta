@@ -7,58 +7,58 @@ package ru.taskurotta.bootstrap.config;
  */
 public class ActorConfig {
 
-    private String actorInterface;
-    private String runtimeConfig;
-    private String spreaderConfig;
-    private String profilerConfig;
-    private String loggingConfig;
-    private int count = 1;
+	private String actorInterface;
+	private String runtimeConfig;
+	private String spreaderConfig;
+	private String profilerConfig;
+	private String loggingConfig;
+	private int count = 1;
 
-    public String getActorInterface() {
-        return actorInterface;
-    }
+	public String getActorInterface() {
+		return actorInterface;
+	}
 
-    public void setActorInterface(String actorInterface) {
-        this.actorInterface = actorInterface;
-    }
+	public void setActorInterface(String actorInterface) {
+		this.actorInterface = actorInterface;
+	}
 
-    public String getRuntimeConfig() {
-        return runtimeConfig;
-    }
+	public String getRuntimeConfig() {
+		return runtimeConfig;
+	}
 
-    public void setRuntimeConfig(String runtimeConfig) {
-        this.runtimeConfig = runtimeConfig;
-    }
+	public void setRuntimeConfig(String runtimeConfig) {
+		this.runtimeConfig = runtimeConfig;
+	}
 
-    public String getSpreaderConfig() {
-        return spreaderConfig;
-    }
+	public String getSpreaderConfig() {
+		return spreaderConfig;
+	}
 
-    public void setSpreaderConfig(String spreaderConfig) {
-        this.spreaderConfig = spreaderConfig;
-    }
+	public void setSpreaderConfig(String spreaderConfig) {
+		this.spreaderConfig = spreaderConfig;
+	}
 
-    public String getProfilerConfig() {
-        return profilerConfig;
-    }
+	public String getProfilerConfig() {
+		return profilerConfig;
+	}
 
-    public void setProfilerConfig(String profilerConfig) {
-        this.profilerConfig = profilerConfig;
-    }
+	public void setProfilerConfig(String profilerConfig) {
+		this.profilerConfig = profilerConfig;
+	}
 
-    public String getLoggingConfig() {
-        return loggingConfig;
-    }
+	public String getLoggingConfig() {
+		return loggingConfig;
+	}
 
-    public void setLoggingConfig(String loggingConfig) {
-        this.loggingConfig = loggingConfig;
-    }
+	public void setLoggingConfig(String loggingConfig) {
+		this.loggingConfig = loggingConfig;
+	}
 
-    public int getCount() {
-        return count;
-    }
+	public int getCount() {
+		return count;
+	}
 
-    public void setCount(int count) {
-        this.count = count;
-    }
+	public void setCount(int count) {
+		this.count = count;
+	}
 }

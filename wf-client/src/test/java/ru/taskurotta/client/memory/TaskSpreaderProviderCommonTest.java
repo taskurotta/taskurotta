@@ -1,5 +1,9 @@
 package ru.taskurotta.client.memory;
 
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.annotation.Decider;
@@ -22,10 +26,6 @@ import ru.taskurotta.server.memory.TaskDaoMemory;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.util.ActorDefinition;
 
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-
 /**
  * User: stukushin
  * Date: 13.02.13
@@ -33,192 +33,192 @@ import static org.junit.Assert.assertEquals;
  */
 public class TaskSpreaderProviderCommonTest {
 
-    private TaskDao taskDao;
-    private TaskServer taskServer;
-    private TaskSpreaderProviderCommon taskSpreaderProvider;
-    private ObjectFactory objectFactory;
+	private TaskDao taskDao;
+	private TaskServer taskServer;
+	private TaskSpreaderProviderCommon taskSpreaderProvider;
+	private ObjectFactory objectFactory;
 
-    @Decider(name = "testDecider")
-    private static interface TestDecider {
-    }
+	@Decider(name = "testDecider")
+	private static interface TestDecider {
+	}
 
-    @Worker(name = "testWorker")
-    private static interface TestWorker {
-    }
+	@Worker(name = "testWorker")
+	private static interface TestWorker {
+	}
 
-    private static final String DECIDER_NAME;
-    private static final String DECIDER_VERSION;
-    private static final String WORKER_NAME;
-    private static final String WORKER_VERSION;
+	private static final String DECIDER_NAME;
+	private static final String DECIDER_VERSION;
+	private static final String WORKER_NAME;
+	private static final String WORKER_VERSION;
 
-    static {
-        ActorDefinition actorDefinition = ActorDefinition.valueOf(TestDecider.class);
-        DECIDER_NAME = actorDefinition.getName();
-        DECIDER_VERSION = actorDefinition.getVersion();
+	static {
+		ActorDefinition actorDefinition = ActorDefinition.valueOf(TestDecider.class);
+		DECIDER_NAME = actorDefinition.getName();
+		DECIDER_VERSION = actorDefinition.getVersion();
 
-        actorDefinition = ActorDefinition.valueOf(TestWorker.class);
-        WORKER_NAME = actorDefinition.getName();
-        WORKER_VERSION = actorDefinition.getVersion();
-    }
+		actorDefinition = ActorDefinition.valueOf(TestWorker.class);
+		WORKER_NAME = actorDefinition.getName();
+		WORKER_VERSION = actorDefinition.getVersion();
+	}
 
-    @Before
-    public void setUp() throws Exception {
-        taskDao = new TaskDaoMemory();
-        taskServer = new TaskServerGeneral(taskDao);
-        taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
-        objectFactory = new ObjectFactory();
-    }
+	@Before
+	public void setUp() throws Exception {
+		taskDao = new TaskDaoMemory();
+		taskServer = new TaskServerGeneral(taskDao);
+		taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
+		objectFactory = new ObjectFactory();
+	}
 
-    public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
-        TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = new TaskImpl(id, taskTarget, args);
-        return task;
-    }
+	public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
+		TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
+		Task task = new TaskImpl(id, taskTarget, args);
+		return task;
+	}
 
-    public static Task workerTask(UUID id, TaskType type, String methodName, Object[] args) {
-        TaskTarget taskTarget = new TaskTargetImpl(type, WORKER_NAME, WORKER_VERSION, methodName);
-        Task task = new TaskImpl(id, taskTarget, args);
-        return task;
-    }
+	public static Task workerTask(UUID id, TaskType type, String methodName, Object[] args) {
+		TaskTarget taskTarget = new TaskTargetImpl(type, WORKER_NAME, WORKER_VERSION, methodName);
+		Task task = new TaskImpl(id, taskTarget, args);
+		return task;
+	}
 
-    public static Promise promise(Task task) {
-        return Promise.createInstance(task.getId());
-    }
-
-
-    /**
-     * - Put new task to queue
-     * - Get it from queue
-     * - release simple task result
-     * - compare with original task
-     */
-    @Test
-    public void testAddTask() {
-
-        UUID taskId = UUID.randomUUID();
-        Task deciderTask = deciderTask(taskId, TaskType.DECIDER_START, "start", null);
-        taskServer.startProcess(objectFactory.dumpTask(deciderTask));
-
-        TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
-
-        // task should be in "wait" state
-        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(taskId).getState().getValue());
-
-        Task taskFromQueue = workerTaskSpreader.pull();
-
-        // pulled task should be the same as added above
-        assertEquals(taskId, taskFromQueue.getId());
-
-        // task should be in "process" state
-        assertEquals(TaskStateObject.STATE.process, taskDao.findById(taskId).getState().getValue());
-
-        TaskDecision taskDecision = new TaskDecisionImpl(taskId, null, null);
-        workerTaskSpreader.release(taskDecision);
-
-        // task should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskId).getState().getValue());
-
-    }
+	public static Promise promise(Task task) {
+		return Promise.createInstance(task.getId());
+	}
 
 
-    /**
-     * - create taskA
-     * - create taskB
-     * - create workerTaskA(promiseB)
-     * - release taskA with return (promiseB) and task list (taskB, workerTaskA(promiseB)
-     * - create taskC
-     * - release taskB with return (promiseC) and task list (taskC)
-     * - release taskC with return (1) and task list ()
-     * - check all in done state
-     */
-    @Test
-    public void testABCResultDependency() {
+	/**
+	 * - Put new task to queue
+	 * - Get it from queue
+	 * - release simple task result
+	 * - compare with original task
+	 */
+	@Test
+	public void testAddTask() {
 
-        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
-        TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestWorker.class));
+		UUID taskId = UUID.randomUUID();
+		Task deciderTask = deciderTask(taskId, TaskType.DECIDER_START, "start", null);
+		taskServer.startProcess(objectFactory.dumpTask(deciderTask));
 
-        // create taskA
+		TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
 
-        UUID taskIdA = UUID.randomUUID();
-        System.err.println("taskIdA = " + taskIdA);
-        Task taskA = deciderTask(taskIdA, TaskType.DECIDER_START, "start", null);
+		// task should be in "wait" state
+		assertEquals(TaskStateObject.STATE.wait, taskDao.findById(taskId).getState().getValue());
 
-        // create taskB
+		Task taskFromQueue = workerTaskSpreader.pull();
 
-        UUID taskIdB = UUID.randomUUID();
-        Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "asynchronousB", null);
+		// pulled task should be the same as added above
+		assertEquals(taskId, taskFromQueue.getId());
 
-        // create workerTaskA(promiseB)
+		// task should be in "process" state
+		assertEquals(TaskStateObject.STATE.process, taskDao.findById(taskId).getState().getValue());
 
-        UUID workerTaskIdA = UUID.randomUUID();
-        Task workerTaskA = workerTask(workerTaskIdA, TaskType.WORKER, "workA", new Object[]{promise(taskB)});
+		TaskDecision taskDecision = new TaskDecisionImpl(taskId, null, null);
+		workerTaskSpreader.release(taskDecision);
 
-        // Add taskA to queue
-        taskServer.startProcess(objectFactory.dumpTask(taskA));
+		// task should be in "done" state
+		assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskId).getState().getValue());
 
-        // pull task from queue
-        // pulled task should be the same as added (as TaskDecision) above
-        Task taskQueueA = deciderTaskSpreader.pull();
-        assertEquals(taskIdA, taskQueueA.getId());
+	}
 
-        // release taskA with return (promiseB) and task list (taskB, workerTaskA(promiseB)
-        TaskDecision taskAResult = new TaskDecisionImpl(taskIdA, promise(taskB), new Task[]{taskB, workerTaskA});
-        deciderTaskSpreader.release(taskAResult);
 
-        // task A should be in "depend" state
-        assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdA).getState().getValue());
+	/**
+	 * - create taskA
+	 * - create taskB
+	 * - create workerTaskA(promiseB)
+	 * - release taskA with return (promiseB) and task list (taskB, workerTaskA(promiseB)
+	 * - create taskC
+	 * - release taskB with return (promiseC) and task list (taskC)
+	 * - release taskC with return (1) and task list ()
+	 * - check all in done state
+	 */
+	@Test
+	public void testABCResultDependency() {
 
-        // workTaskA should be in "wait" state
-        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
-        assertEquals(1, taskDao.findById(workerTaskIdA).getCountdown());
+		TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
+		TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestWorker.class));
 
-        // pull task from queue
-        // pulled task should be the same as added (as TaskDecision) above
-        System.err.println("PULL TASK " + taskIdB);
-        Task taskQueueB = deciderTaskSpreader.pull();
-        assertEquals(taskIdB, taskQueueB.getId());
+		// create taskA
 
-        // create taskC
-        UUID taskIdC = UUID.randomUUID();
-        Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "asynchronousC", null);
+		UUID taskIdA = UUID.randomUUID();
+		System.err.println("taskIdA = " + taskIdA);
+		Task taskA = deciderTask(taskIdA, TaskType.DECIDER_START, "start", null);
 
-        // release taskB with return (promiseC) and task list (taskC)
-        TaskDecision taskBResult = new TaskDecisionImpl(taskIdB, promise(taskC), new Task[]{taskC});
-        deciderTaskSpreader.release(taskBResult);
+		// create taskB
 
-        // task B should be in "depend" state
-        assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdB).getState().getValue());
+		UUID taskIdB = UUID.randomUUID();
+		Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "asynchronousB", null);
 
-        // pull task from queue
-        // pulled task should be the same as added (as TaskDecision) above
-        Task taskQueueC = deciderTaskSpreader.pull();
-        assertEquals(taskIdC, taskQueueC.getId());
+		// create workerTaskA(promiseB)
 
-        // release taskC with return (1) and task list ()
-        TaskDecision taskCResult = new TaskDecisionImpl(taskIdC, Promise.asPromise(1), null);
-        deciderTaskSpreader.release(taskCResult);
+		UUID workerTaskIdA = UUID.randomUUID();
+		Task workerTaskA = workerTask(workerTaskIdA, TaskType.WORKER, "workA", new Object[]{promise(taskB)});
 
-        // check all in done state
-        // task A should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdA).getState().getValue());
-        // task B should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdB).getState().getValue());
-        // task C should be in "done" state
-        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getValue());
-        // workTaskA should be in "wait" state
-        assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
-        assertEquals(0, taskDao.findById(workerTaskIdA).getCountdown());
+		// Add taskA to queue
+		taskServer.startProcess(objectFactory.dumpTask(taskA));
 
-        Task workerQueueTaskA = workerTaskSpreader.pull();
+		// pull task from queue
+		// pulled task should be the same as added (as TaskDecision) above
+		Task taskQueueA = deciderTaskSpreader.pull();
+		assertEquals(taskIdA, taskQueueA.getId());
 
-        assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getValue());
-    }
+		// release taskA with return (promiseB) and task list (taskB, workerTaskA(promiseB)
+		TaskDecision taskAResult = new TaskDecisionImpl(taskIdA, promise(taskB), new Task[]{taskB, workerTaskA});
+		deciderTaskSpreader.release(taskAResult);
 
-    /**
-     * Сценарии которые еще нужно протестировать (возможно объекдинить можно несколько тестов)
-     * 4. вызов асинхронного метода координатора зависит от результата работы другого исполнителя и (или) координатора
-     * 6. старт subworkflow (второго координатора нагляднее сделать) и получение результата от него
-     */
+		// task A should be in "depend" state
+		assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdA).getState().getValue());
+
+		// workTaskA should be in "wait" state
+		assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
+		assertEquals(1, taskDao.findById(workerTaskIdA).getCountdown());
+
+		// pull task from queue
+		// pulled task should be the same as added (as TaskDecision) above
+		System.err.println("PULL TASK " + taskIdB);
+		Task taskQueueB = deciderTaskSpreader.pull();
+		assertEquals(taskIdB, taskQueueB.getId());
+
+		// create taskC
+		UUID taskIdC = UUID.randomUUID();
+		Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "asynchronousC", null);
+
+		// release taskB with return (promiseC) and task list (taskC)
+		TaskDecision taskBResult = new TaskDecisionImpl(taskIdB, promise(taskC), new Task[]{taskC});
+		deciderTaskSpreader.release(taskBResult);
+
+		// task B should be in "depend" state
+		assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdB).getState().getValue());
+
+		// pull task from queue
+		// pulled task should be the same as added (as TaskDecision) above
+		Task taskQueueC = deciderTaskSpreader.pull();
+		assertEquals(taskIdC, taskQueueC.getId());
+
+		// release taskC with return (1) and task list ()
+		TaskDecision taskCResult = new TaskDecisionImpl(taskIdC, Promise.asPromise(1), null);
+		deciderTaskSpreader.release(taskCResult);
+
+		// check all in done state
+		// task A should be in "done" state
+		assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdA).getState().getValue());
+		// task B should be in "done" state
+		assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdB).getState().getValue());
+		// task C should be in "done" state
+		assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getValue());
+		// workTaskA should be in "wait" state
+		assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
+		assertEquals(0, taskDao.findById(workerTaskIdA).getCountdown());
+
+		Task workerQueueTaskA = workerTaskSpreader.pull();
+
+		assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getValue());
+	}
+
+	/**
+	 * Сценарии которые еще нужно протестировать (возможно объекдинить можно несколько тестов)
+	 * 4. вызов асинхронного метода координатора зависит от результата работы другого исполнителя и (или) координатора
+	 * 6. старт subworkflow (второго координатора нагляднее сделать) и получение результата от него
+	 */
 
 //    @Test
 //    public void testAddTask() throws Exception {

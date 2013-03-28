@@ -13,46 +13,46 @@ import ru.taskurotta.core.TaskDecision;
  */
 public class ActorExecutor implements Runnable {
 
-    private Profiler profiler;
-    private RuntimeProcessor runtimeProcessor;
-    private TaskSpreader taskSpreader;
+	private Profiler profiler;
+	private RuntimeProcessor runtimeProcessor;
+	private TaskSpreader taskSpreader;
 
-    boolean shutdown = false;
+	boolean shutdown = false;
 
-    public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
-        this.profiler = profiler;
-        this.runtimeProcessor = profiler.decorate(runtimeProcessor);
-        this.taskSpreader = profiler.decorate(taskSpreader);
-    }
+	public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
+		this.profiler = profiler;
+		this.runtimeProcessor = profiler.decorate(runtimeProcessor);
+		this.taskSpreader = profiler.decorate(taskSpreader);
+	}
 
-    @Override
-    public void run() {
+	@Override
+	public void run() {
 
-        while (!shutdown) {
+		while (!shutdown) {
 
-            profiler.cycleStart();
+			profiler.cycleStart();
 
-            try {
+			try {
 
-                Task task = taskSpreader.pull();
+				Task task = taskSpreader.pull();
 
-                if (task == null) {
-                    profiler.cycleFinish();
+				if (task == null) {
+					profiler.cycleFinish();
 
-                    // TODO: sleep one or few seconds? Or implement sleep policy?
-                    continue;
-                }
+					// TODO: sleep one or few seconds? Or implement sleep policy?
+					continue;
+				}
 
-                // TODO: catch all exceptions and send it to server
-                TaskDecision taskDecision = runtimeProcessor.execute(task);
+				// TODO: catch all exceptions and send it to server
+				TaskDecision taskDecision = runtimeProcessor.execute(task);
 
-                taskSpreader.release(taskDecision);
+				taskSpreader.release(taskDecision);
 
-            } finally {
-                profiler.cycleFinish();
-            }
+			} finally {
+				profiler.cycleFinish();
+			}
 
-        }
-    }
+		}
+	}
 }
 

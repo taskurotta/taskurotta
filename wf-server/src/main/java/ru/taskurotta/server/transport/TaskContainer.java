@@ -1,9 +1,9 @@
 package ru.taskurotta.server.transport;
 
-import ru.taskurotta.core.TaskTarget;
-
 import java.util.Arrays;
 import java.util.UUID;
+
+import ru.taskurotta.core.TaskTarget;
 
 /**
  * User: romario
@@ -12,33 +12,33 @@ import java.util.UUID;
  */
 public class TaskContainer {
 
-    private UUID taskId;
-    private TaskTarget target;
-    private ArgContainer[] args;
+	private UUID taskId;
+	private TaskTarget target;
+	private ArgContainer[] args;
 	private TaskOptionsContainer options;
 
-    public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args) {
+	public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args) {
 		this(taskId, target, args, null);
 	}
 
-    public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args, TaskOptionsContainer options) {
-        this.taskId = taskId;
-        this.target = target;
-        this.args = args;
+	public TaskContainer(UUID taskId, TaskTarget target, ArgContainer[] args, TaskOptionsContainer options) {
+		this.taskId = taskId;
+		this.target = target;
+		this.args = args;
 		this.options = options;
-    }
+	}
 
-    public UUID getTaskId() {
-        return taskId;
-    }
+	public UUID getTaskId() {
+		return taskId;
+	}
 
-    public TaskTarget getTarget() {
-        return target;
-    }
+	public TaskTarget getTarget() {
+		return target;
+	}
 
-    public ArgContainer[] getArgs() {
-        return args;
-    }
+	public ArgContainer[] getArgs() {
+		return args;
+	}
 
 	public TaskOptionsContainer getOptions() {
 		return options;

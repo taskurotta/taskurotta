@@ -10,16 +10,15 @@ import ru.taskurotta.util.ActorDefinition;
 
 /**
  * Represents TaskServer interface methods as Callable tasks
- *
  */
 public class AsyncTaskServer {
-	
+
 	private TaskServer taskServer;
 
 	public AsyncTaskServer(TaskServer taskServer) {
 		this.taskServer = taskServer;
 	}
-	
+
 	public Callable<TaskContainer> callPull(final ActorDefinition actorDefinition) {
 		return new Callable<TaskContainer>() {
 			@Override
@@ -28,7 +27,7 @@ public class AsyncTaskServer {
 			}
 		};
 	}
-	
+
 	public Callable<Boolean> callRelease(final DecisionContainer decisionContainer) {
 		return new Callable<Boolean>() {
 			@Override
@@ -38,7 +37,7 @@ public class AsyncTaskServer {
 			}
 		};
 	}
-	
+
 	public Callable<Boolean> callStartTask(final TaskContainer taskContainer) {
 		return new Callable<Boolean>() {
 			@Override
@@ -47,5 +46,5 @@ public class AsyncTaskServer {
 				return Boolean.TRUE;
 			}
 		};
-	}	
+	}
 }

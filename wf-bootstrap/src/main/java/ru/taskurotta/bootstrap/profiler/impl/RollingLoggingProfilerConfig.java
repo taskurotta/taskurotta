@@ -4,11 +4,11 @@ import ru.taskurotta.bootstrap.config.ProfilerConfig;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 
 public class RollingLoggingProfilerConfig implements ProfilerConfig {
-	
+
 	private RollingLoggingProfiler singleton;
 	private long logPeriod = -1l;
 	private boolean isSingleton = true;
-	
+
 	public boolean isSingleton() {
 		return isSingleton;
 	}
@@ -20,8 +20,8 @@ public class RollingLoggingProfilerConfig implements ProfilerConfig {
 	@Override
 	public Profiler getProfiler(Class actorInterface) {
 		RollingLoggingProfiler result = null;
-		if(isSingleton) {
-			if(singleton == null) {
+		if (isSingleton) {
+			if (singleton == null) {
 				instantiate();
 			}
 			result = singleton;
@@ -31,12 +31,12 @@ public class RollingLoggingProfilerConfig implements ProfilerConfig {
 		}
 		return result;
 	}
-	
+
 	private synchronized RollingLoggingProfiler instantiate() {
 		singleton = new RollingLoggingProfiler(getLogPeriod());
 		return singleton;
 	}
-	
+
 	public void setLogPeriod(long logPeriod) {
 		this.logPeriod = logPeriod;
 	}

@@ -1,14 +1,14 @@
 package ru.taskurotta.internal.proxy;
 
-import ru.taskurotta.TaskHandler;
-import ru.taskurotta.annotation.NoWait;
-import ru.taskurotta.annotation.Wait;
-import ru.taskurotta.core.ArgType;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import ru.taskurotta.TaskHandler;
+import ru.taskurotta.annotation.NoWait;
+import ru.taskurotta.annotation.Wait;
+import ru.taskurotta.core.ArgType;
 
 /**
  * User: romario
@@ -18,28 +18,28 @@ import java.util.Map;
 abstract public class CachedProxyFactory implements ProxyFactory {
 
 
-    private Map<Class, Object> clientToProxy = new HashMap<Class, Object>();
+	private Map<Class, Object> clientToProxy = new HashMap<Class, Object>();
 
-    abstract public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, TaskHandler taskHandler);
+	abstract public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, TaskHandler taskHandler);
 
-    @Override
-    public <TargetInterface> TargetInterface create(Class<TargetInterface> targetInterface, TaskHandler taskHandler) {
+	@Override
+	public <TargetInterface> TargetInterface create(Class<TargetInterface> targetInterface, TaskHandler taskHandler) {
 
-        // should be not cached
-        if (taskHandler != null) {
-            return (TargetInterface) createProxy(targetInterface, taskHandler);
-        }
+		// should be not cached
+		if (taskHandler != null) {
+			return (TargetInterface) createProxy(targetInterface, taskHandler);
+		}
 
-        Object proxyClient = clientToProxy.get(targetInterface);
+		Object proxyClient = clientToProxy.get(targetInterface);
 
-        if (proxyClient == null) {
-            proxyClient = createProxy(targetInterface, null);
+		if (proxyClient == null) {
+			proxyClient = createProxy(targetInterface, null);
 
-            clientToProxy.put(targetInterface, proxyClient);
-        }
+			clientToProxy.put(targetInterface, proxyClient);
+		}
 
-        return (TargetInterface) proxyClient;
-    }
+		return (TargetInterface) proxyClient;
+	}
 
 	protected ArgType[] getArgTypes(Method method) {
 		Annotation[][] parametersAnnotations = method.getParameterAnnotations();
@@ -59,7 +59,7 @@ abstract public class CachedProxyFactory implements ProxyFactory {
 			}
 		}
 
-		return annotationFound? result : null;
+		return annotationFound ? result : null;
 	}
 
 }
