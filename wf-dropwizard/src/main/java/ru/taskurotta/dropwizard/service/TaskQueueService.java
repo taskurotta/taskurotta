@@ -1,6 +1,7 @@
 package ru.taskurotta.dropwizard.service;
 
 import java.util.Map;
+import java.util.Properties;
 
 import javax.ws.rs.Path;
 
@@ -30,12 +31,18 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 	public void run(TaskQueueConfig configuration, Environment environment)
 			throws Exception {
 		
-		logger.debug("YAML config properties getted[{}]", configuration.getProperties());
+		logger.debug("YAML config custom properties getted[{}]", configuration.getProperties());
 		
 		String contextLocation = configuration.getContextLocation();
 		AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(new String[]{contextLocation}, false);
 		if(configuration.getProperties()!=null && !configuration.getProperties().isEmpty()) {
 			appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", configuration.getProperties()));
+			if(configuration.getInternalPoolConfig()!=null) {
+				Properties internalPoolProperties = configuration.getInternalPoolConfig().asProperties();
+				logger.debug("YAML config internal pool properties getted[{}]", internalPoolProperties);
+				appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("internalPoolConfigProperties", internalPoolProperties));
+			}
+			
 		}
 		appContext.refresh();
 		

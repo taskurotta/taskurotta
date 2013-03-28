@@ -9,17 +9,29 @@
     <context:property-placeholder/>
         
 	<bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
-		<property name="taskServer" ref="taskServerGeneral" />
+		<property name="taskServer" ref="taskServer" />
 	</bean>
 
 	<bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
-		<property name="taskServer" ref="taskServerGeneral" />
+		<property name="taskServer" ref="taskServer" />
 	</bean>
 	
 	<bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
-		<property name="taskServer" ref="taskServerGeneral"></property>
+		<property name="taskServer" ref="taskServer" />
 	</bean>
-		
+	
+	<bean id = "taskServer" class="ru.taskurotta.dropwizard.internal.pooling.ThreadPooledTaskServer">
+	   <constructor-arg name="taskServer" ref="taskServerGeneral" />
+   	   <property name="executorService">
+   	       <bean factory-bean="executorServiceFactory" factory-method="getFixedThreadPool" />
+	   </property>
+	   <property name="timeout" value = "${internalPool.threadTimeout}" />
+	</bean>
+	
+	<bean id = "executorServiceFactory" class="ru.taskurotta.dropwizard.internal.pooling.ExecutorServiceFactory">
+	   <property name="threads" value = "${internalPool.poolSize}" />
+	</bean>
+	
 	<bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral">
 		<constructor-arg name="taskDao" ref="taskDao" />
 	</bean>
