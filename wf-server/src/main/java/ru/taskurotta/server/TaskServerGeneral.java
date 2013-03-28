@@ -3,6 +3,7 @@ package ru.taskurotta.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.TaskType;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
@@ -62,19 +63,26 @@ public class TaskServerGeneral implements TaskServer {
 
         if (args != null) {
 
-            for (ArgContainer arg : args) {
-                if (arg.isPromise() && arg.getJSONValue() == null) {
-                    ArgContainer value = taskDao.getTaskValue((arg).getTaskId());
+			for (int i = 0; i < args.length; i++) {
+				ArgContainer arg = args[i];
+				if (arg.isPromise()) {
+					if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
+						ArgContainer value = taskDao.getTaskValue(arg.getTaskId());
+						args[i] = value;
+					} else {
+						if (arg.getJSONValue() == null) {
+							// resolved Promise. value may be null for NoWait promises
 
-                    // resolved Promise. value may be null for NoWait promises
-                    if (value != null) {
-                        arg.setJSONValue(value.getJSONValue());
-                        arg.setClassName(value.getClassName());
-                        arg.setReady(true);
-                    }
-
-                }
-            }
+							ArgContainer value = taskDao.getTaskValue(arg.getTaskId());
+							if (value != null) {
+								arg.setJSONValue(value.getJSONValue());
+								arg.setClassName(value.getClassName());
+								arg.setReady(true);
+							}
+						}
+					}
+				}
+			}
 
         }
 
