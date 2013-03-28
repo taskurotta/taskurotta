@@ -2,8 +2,18 @@ package ru.taskurotta.dropwizard.internal.pooling;
 
 import java.util.Properties;
 
+/**
+ * Internal pool feature config
+ */
 public class InternalPoolConfig {
+	/**
+	 * Size of the fixed thread pool
+	 */
 	public int poolSize = 10;
+	
+	/**
+	 * Timeout for thread to wait for pooled task to complete
+	 */
 	public long threadTimeout = 5000;
 	
 	public int getPoolSize() {
@@ -19,6 +29,7 @@ public class InternalPoolConfig {
 		this.threadTimeout = threadTimeout;
 	}
 	
+	//Properties exposed to spring application context
 	public Properties asProperties() {
 		Properties result = new Properties();
 		
