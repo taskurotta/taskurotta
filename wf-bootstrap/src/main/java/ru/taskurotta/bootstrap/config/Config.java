@@ -1,5 +1,8 @@
 package ru.taskurotta.bootstrap.config;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.joran.spi.JoranException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -10,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,19 +37,31 @@ public class Config {
     public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<String, RuntimeConfig>();
     public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<String, SpreaderConfig>();
     public Map<String, ProfilerConfig> profilerConfigs = new HashMap<String, ProfilerConfig>();
-    public Map<String, LoggingConfig> loggingConfigs = new HashMap<String, LoggingConfig>();
     public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
 
     public static Config valueOf(File configFile) throws IOException {
-
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+        if (System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY) == null) {
+            LoggingConfig loggingConfig = mapper.readValue(configFile, LoggingConfig.class);
+            if (loggingConfig != null) {
+                initLogging(loggingConfig.getConfigFile());
+            }
+        }
+
         return mapper.readValue(configFile, Config.class);
     }
 
-
     public static Config valueOf(URL configURL) throws IOException {
-
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+        if (System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY) == null) {
+            LoggingConfig loggingConfig = mapper.readValue(configURL, LoggingConfig.class);
+            if (loggingConfig != null) {
+                initLogging(loggingConfig.getConfigFile());
+            }
+        }
+
         return mapper.readValue(configURL, Config.class);
     }
 
@@ -57,7 +73,6 @@ public class Config {
         public static final String YAML_SPREADER = "spreader";
         public static final String YAML_ACTOR = "actor";
         public static final String YAML_RPOFILER = "profiler";
-        public static final String YAML_LOGGING = "logging";
 
         @Override
         public Config deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
@@ -94,13 +109,6 @@ public class Config {
                 parseProfilerConfigs(profilersNode, oc, config);
             } else {
                 logger.warn("Not found ProfilerConfigs in configuration");
-            }
-
-            JsonNode loggingsNode = rootNode.get(YAML_LOGGING);
-            if (loggingsNode == null) {
-                logger.warn("Not found LoggingConfig in configuration");
-            } else {
-                parseLoggingConfig(loggingsNode, oc, config);
             }
 
             JsonNode actorsNode = rootNode.get(YAML_ACTOR);
@@ -218,40 +226,6 @@ public class Config {
             }
         }
 
-        private void parseLoggingConfig(JsonNode loggingsNode, ObjectCodec oc, Config config) {
-            for (Iterator loggingElements = loggingsNode.elements(); loggingElements.hasNext(); ) {
-
-                JsonNode loggingElement = (JsonNode) loggingElements.next();
-                logger.debug("loggingElement [{}]", loggingElement);
-
-                String loggingConfigName = loggingElement.fieldNames().next();
-                logger.debug("loggingConfigName [{}]", loggingConfigName);
-
-                JsonNode instanceDescriptionNode = loggingElement.elements().next();
-                JsonNode loggingConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
-                logger.debug("loggingConfigNode [{}]", loggingConfigNode);
-
-                String loggingConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
-                logger.debug("loggingConfigClassName [{}]", loggingConfigClassName);
-
-                Class loggingConfigClass;
-                try {
-                    loggingConfigClass = Class.forName(loggingConfigClassName);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Can not find LoggingConfig class: " + loggingConfigClassName, e);
-                }
-
-                LoggingConfig loggingConfig;
-                try {
-                    loggingConfig = (LoggingConfig) oc.treeToValue(loggingConfigNode, loggingConfigClass);
-                } catch (IOException e) {
-                    throw new RuntimeException("Can not deserialize LoggingConfig object: " + loggingConfigClassName, e);
-                }
-
-                config.loggingConfigs.put(loggingConfigName, loggingConfig);
-            }
-        }
-
         private void parseActorConfigs(JsonNode actorsNode, ObjectCodec oc, Config config) {
             for (Iterator actorElements = actorsNode.elements(); actorElements.hasNext(); ) {
 
@@ -272,6 +246,18 @@ public class Config {
 
                 config.actorConfigs.add(actorConfig);
             }
+        }
+    }
+
+    private static void initLogging(File configFile) {
+        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, configFile.getAbsolutePath());
+        try {
+            final ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            root.getLoggerContext().reset();
+
+            new ContextInitializer((LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory()).autoConfig();
+        } catch (JoranException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -94,6 +94,12 @@
 			<version>0.3.1</version>
 		</dependency>
 
+        <dependency>
+            <groupId>jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>1.1</version>
+        </dependency>
+
 		<!-- logger -->
 		<dependency>
 			<groupId>org.slf4j</groupId>

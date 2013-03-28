@@ -9,11 +9,9 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.config.ActorConfig;
 import ru.taskurotta.bootstrap.config.Config;
-import ru.taskurotta.bootstrap.config.LoggingConfig;
 import ru.taskurotta.bootstrap.config.ProfilerConfig;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
-import ru.taskurotta.bootstrap.logging.FileLoggingOutput;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -21,7 +19,6 @@ import ru.taskurotta.client.TaskSpreader;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -87,7 +84,6 @@ public abstract class Bootstrap {
             return;
         }
 
-
         for (ActorConfig actorConfig : config.actorConfigs) {
 
             Class actorClass;
@@ -104,11 +100,6 @@ public abstract class Bootstrap {
 
             RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
             RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
-
-            LoggingConfig loggingConfig = config.loggingConfigs.get(actorConfig.getLoggingConfig());
-            if (loggingConfig != null) {
-                loggingConfig.init();
-            }
 
             ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
             Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
