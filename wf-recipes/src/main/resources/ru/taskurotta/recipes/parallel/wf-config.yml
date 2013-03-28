@@ -65,11 +65,11 @@ logback:
              \@level: DEBUG
         - org.springframework:
              key: name
-             \@level: DEBUG
+             \@level: !!!str OFF
     root:
         appender-ref:
             - STDOUT:
-                key: \@ref
+                key: ref
             - FILE:
-                key: \@ref
+                key: ref
 
