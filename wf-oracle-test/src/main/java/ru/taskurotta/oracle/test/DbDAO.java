@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 
@@ -50,7 +52,7 @@ public class DbDAO {
 		final Connection connection = dataSource.getConnection();
 		String query = "SELECT COUNT(*) cnt FROM dba_tables where table_name = ?";
 		final PreparedStatement ps = connection.prepareStatement(query);
-		ps.setString(1, queueName);
+		ps.setString(1, queueName.toUpperCase());
 		ResultSet rs = ps.executeQuery();
 		int count = 0;
 		if (rs.next()) {
@@ -102,6 +104,34 @@ public class DbDAO {
 		cs.close();
 		connection.close();
 		return job_id;
+	}
+
+	public Map<String, Long> getQueueNames() throws SQLException {
+		Map<String, Long> result = new HashMap<String, Long>();
+		final Connection connection = dataSource.getConnection();
+		String query = "SELECT * FROM QB$QUEUE_NAMES";
+		final PreparedStatement ps = connection.prepareStatement(query);
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			result.put(rs.getString("queue_name"), rs.getLong("queue_id"));
+		}
+		ps.close();
+		connection.close();
+		return result;
+	}
+
+	public long registerQueue(String queueName) throws SQLException {
+		long result = -1;
+		final Connection connection = dataSource.getConnection();
+		String query = "begin\n INSERT INTO QB$QUEUE_NAMES (QUEUE_ID, QUEUE_NAME) VALUES (QB$SEQUENCE.nextval,?) RETURNING QUEUE_ID INTO ?;END;";
+		final CallableStatement ps = connection.prepareCall(query);
+		ps.setString(1, queueName);
+		ps.registerOutParameter(2, Types.BIGINT);
+		ps.execute();
+		result = ps.getLong(2);
+		ps.close();
+		connection.close();
+		return result;
 	}
 
 }

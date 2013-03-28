@@ -34,6 +34,7 @@ public class TestSelectTask implements Runnable {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 		try {
+
 			while (count < OPERATION_COUNT) {
 				count++;
 

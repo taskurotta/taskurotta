@@ -1,9 +1,8 @@
 package ru.taskurotta.oracle.test;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -21,24 +20,33 @@ public class TaskDaoOracle extends TaskDaoMemory {
 	private final static Logger log = LoggerFactory.getLogger(TaskDaoOracle.class);
 
 	private final DbDAO dbDAO;
-	private final Set<String> queueNames;
+	private final Map<String, Long> queueNames = new HashMap<String, Long>();
 
 	public TaskDaoOracle(DbConnect dbConnect) {
 		dbDAO = new DbDAO(dbConnect.getDataSource());
-		queueNames = new HashSet<String>();
+		try {
+			queueNames.putAll(dbDAO.getQueueNames());
+		} catch (SQLException e) {
+			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+		}
+	}
+
+	private void init() {
+
 	}
 
 	@Override
 	public void add(TaskObject taskObj) {
 		super.add(taskObj);
 		try {
-			final String taskName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
-			final String queueName = "qb$" + getMd5(taskName);
-			if (!queueNames.contains(queueName) || !dbDAO.queueExists(queueName)) {
-				dbDAO.createQueue(queueName);
-				queueNames.add(queueName);
+			final String queueName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
+			if (!queueNames.keySet().contains(queueName)) {
+				long queueId = dbDAO.registerQueue(queueName);
+				queueNames.put(queueName, queueId);
+				dbDAO.createQueue("qb$" + queueId);
+
 			}
-			dbDAO.enqueueTask(SimpleTask.createFromTaskObject(taskObj), queueName);
+			dbDAO.enqueueTask(SimpleTask.createFromTaskObject(taskObj), getTableName(queueName));
 		} catch (SQLException ex) {
 			log.error("Database error", ex);
 		}
@@ -46,7 +54,8 @@ public class TaskDaoOracle extends TaskDaoMemory {
 
 	@Override
 	public TaskObject pull(ActorDefinition actorDefinition) {
-		String queueName = getQueueName(actorDefinition.getName(), actorDefinition.getVersion());
+		String queueName = getTableName(getQueueName(actorDefinition.getName(), actorDefinition.getVersion()));
+
 		try {
 			final UUID taskId = dbDAO.pullTask(queueName);
 			return taskMap.get(taskId);
@@ -57,23 +66,13 @@ public class TaskDaoOracle extends TaskDaoMemory {
 
 	}
 
-	private static String getMd5(String value) {
-		try {
-			final java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
-			byte[] array = md.digest(value.getBytes("UTF-8"));
-			return org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString(array);
-		} catch (java.security.NoSuchAlgorithmException e) {
-			log.error("MD5 is not supported", e);
-			throw new IllegalStateException(e);
-		} catch (UnsupportedEncodingException ex) {
-			log.error("UTF-8 is not supported", ex);
-			throw new IllegalStateException(ex);
+	private String getTableName(String queueName) {
+		Long id = queueNames.get(queueName);
+		if (id != null) {
+			return "qb$" + id;
 		}
+		return null;
 	}
 
-	@Override
-	protected String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
-		return super.getQueueName(actorDefinitionName, actorDefinitionVersion).replace("#", "_");
-	}
 
 }
