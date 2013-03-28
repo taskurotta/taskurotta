@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
+        <property name="taskServer" ref="taskServerGeneral"/>
+    </bean>
+
+    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServerGeneral"/>
+    </bean>
+
+    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServerGeneral"></property>
+    </bean>
+
+    <bean id="dbConnect" class="ru.taskurotta.oracle.test.DbConnect"/>
+
+    <bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral">
+        <constructor-arg name="taskDao" ref="taskDao"/>
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.oracle.test.TaskDaoOracle">
+    <constructor-arg name="dbConnect" ref="dbConnect"/>
+    </bean>
+
+    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+        <constructor-arg name="name" value="check task server"/>
+        <property name="taskServer" ref="taskServerGeneral"/>
+    </bean>
+
+</beans>

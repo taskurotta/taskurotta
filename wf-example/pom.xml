@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-client-jersey</artifactId>
+            <artifactId>wf-dropwizard</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -10,6 +10,8 @@ public class ActorConfig {
     private String actorInterface;
     private String runtimeConfig;
     private String spreaderConfig;
+    private String profilerConfig;
+    private String loggingConfig;
     private int count = 1;
 
     public String getActorInterface() {
@@ -34,6 +36,22 @@ public class ActorConfig {
 
     public void setSpreaderConfig(String spreaderConfig) {
         this.spreaderConfig = spreaderConfig;
+    }
+
+    public String getProfilerConfig() {
+        return profilerConfig;
+    }
+
+    public void setProfilerConfig(String profilerConfig) {
+        this.profilerConfig = profilerConfig;
+    }
+
+    public String getLoggingConfig() {
+        return loggingConfig;
+    }
+
+    public void setLoggingConfig(String loggingConfig) {
+        this.loggingConfig = loggingConfig;
     }
 
     public int getCount() {

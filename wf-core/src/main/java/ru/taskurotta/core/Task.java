@@ -23,7 +23,7 @@ public interface Task {
      * Target of task consumer.
      * Can not be null.
      *
-     * @return
+     * @return Target of task consumer
      */
     public TaskTarget getTarget();
 
@@ -36,7 +36,9 @@ public interface Task {
      * appropriate primitive wrapper class, such as
      * <code>java.lang.Integer</code> or <code>java.lang.Boolean</code>.
      *
-     * @return
+     * @return array of arguments
      */
     public Object[] getArgs();
+
+	public TaskOptions getTaskOptions();
 }

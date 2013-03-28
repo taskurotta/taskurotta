@@ -14,28 +14,40 @@ spreader:
         properties:
           count: 150
           loggingPeriod: 10000
+          taskPollDelay: 1
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
+      instance:
+        singleton: true
+        logPeriod: 6000
 
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.example.calculate.decider.MathActionDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1

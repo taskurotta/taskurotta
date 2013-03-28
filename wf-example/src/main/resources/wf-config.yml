@@ -14,27 +14,44 @@ spreader:
           message: "Hello!"
           count: 1
 
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: true
+          trackPull: true
+          trackRelease: true
+          trackError: false
+
 actor:
   - NotificationDecider:
       actorInterface: ru.taskurotta.example.decider.NotificationDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - ProfileWorker:
       actorInterface: ru.taskurotta.example.workers.ProfileWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - EmailWorker:
       actorInterface: ru.taskurotta.example.workers.EmailWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
   - SMSWorker:
       actorInterface: ru.taskurotta.example.workers.SMSWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1

@@ -1,0 +1,15 @@
+contextLocation: "classpath*:context/appContext.xml"
+internalPoolConfig:
+  poolSize: 100
+  threadTimeout: 2000
+properties:
+  pollDelay: 1  
+logging:
+    level: WARN
+    loggers:
+        ru.taskurotta: DEBUG
+        com.yammer: INFO
+    file:
+        enabled: true
+        currentLogFilename: ./target/logs/requests.log
+        archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz

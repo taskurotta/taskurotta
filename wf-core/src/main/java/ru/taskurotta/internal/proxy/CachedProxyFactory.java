@@ -1,7 +1,12 @@
 package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.TaskHandler;
+import ru.taskurotta.annotation.NoWait;
+import ru.taskurotta.annotation.Wait;
+import ru.taskurotta.core.ArgType;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,5 +40,26 @@ abstract public class CachedProxyFactory implements ProxyFactory {
 
         return (TargetInterface) proxyClient;
     }
+
+	protected ArgType[] getArgTypes(Method method) {
+		Annotation[][] parametersAnnotations = method.getParameterAnnotations();
+		ArgType[] result = new ArgType[parametersAnnotations.length];
+		boolean annotationFound = false;
+
+		for (int i = 0; i < parametersAnnotations.length; i++) {
+			Annotation[] parameterAnnotations = parametersAnnotations[i];
+			for (Annotation annotation : parameterAnnotations) {
+				if (annotation instanceof NoWait) {
+					result[i] = ArgType.NO_WAIT;
+					annotationFound = true;
+				} else if (annotation instanceof Wait) {
+					result[i] = ArgType.WAIT;
+					annotationFound = true;
+				}
+			}
+		}
+
+		return annotationFound? result : null;
+	}
 
 }

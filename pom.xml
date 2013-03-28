@@ -17,7 +17,8 @@
 		<spring.version>3.1.3.RELEASE</spring.version>
 		<activemq.version>5.5.1-fuse-01-13</activemq.version>
 		<jackson.version>2.1.1</jackson.version>
-		<logback.version>1.0.9</logback.version>
+		<logback.version>1.0.11</logback.version>
+        <yammer.metrics.version>2.2.0</yammer.metrics.version>
 	</properties>
 
 
@@ -31,10 +32,9 @@
 		<module>wf-spring</module>
 		<module>wf-server</module>
 		<module>wf-recipes</module>
-		<module>wf-client-jersey</module>
-		<module>wf-server-dw</module>
-        <module>wf-oracle-test</module>
-    </modules>
+		<module>wf-dropwizard</module>
+		<module>wf-dropwizard-assemble</module>
+	</modules>
 
 	<dependencies>
 
@@ -105,6 +105,11 @@
 			<artifactId>jcl-over-slf4j</artifactId>
 			<version>${slf4j.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -118,11 +123,18 @@
 		</dependency>
 		<!-- /logger -->
 
+        <!-- metrics -->
 		<dependency>
 			<groupId>com.yammer.metrics</groupId>
 			<artifactId>metrics-core</artifactId>
-			<version>2.2.0</version>
+			<version>${yammer.metrics.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.yammer.metrics</groupId>
+            <artifactId>metrics-logback</artifactId>
+            <version>${yammer.metrics.version}</version>
+        </dependency>
+        <!-- /metrics -->
 
 	</dependencies>
 

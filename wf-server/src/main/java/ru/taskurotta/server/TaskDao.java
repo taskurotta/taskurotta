@@ -21,7 +21,7 @@ public interface TaskDao {
 
     public ArgContainer getTaskValue(UUID taskId);
 
-    public void decrementCountdown(UUID taskId);
+    public void decrementCountdown(UUID taskId, int decrementValue);
 
     public void logTaskResult(DecisionContainer taskResult);
 
@@ -30,4 +30,12 @@ public interface TaskDao {
     public void saveTaskValue(UUID taskId, ArgContainer value, TaskStateObject taskState);
 
     public TaskObject findById(UUID taskId);
+
+    /**
+     * @param taskId
+     * @param externalWaitForTaskId
+     * @return true if registration successfully processed
+     */
+    public boolean registerExternalWaitFor(UUID taskId, UUID externalWaitForTaskId);
+
 }

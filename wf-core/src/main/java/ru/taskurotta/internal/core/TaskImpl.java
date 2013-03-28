@@ -1,5 +1,6 @@
 package ru.taskurotta.internal.core;
 
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 
@@ -16,9 +17,14 @@ public class TaskImpl implements Task {
     private UUID uuid;
     private TaskTarget taskTarget;
     private Object[] args;
+	private TaskOptions taskOptions;
 
 
     public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args) {
+		this(uuid, taskTarget, args, null);
+	}
+
+    public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
 
         if (uuid == null) {
             throw new IllegalArgumentException("uuid can not be null!");
@@ -33,8 +39,18 @@ public class TaskImpl implements Task {
         this.taskTarget = taskTarget;
 
         this.args = args;
+
+		if (taskOptions == null) {
+			this.taskOptions = new TaskOptions(null);
+		} else {
+			this.taskOptions = taskOptions;
+		}
     }
 
+
+    public TaskImpl(TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
+		this(UUID.randomUUID(), taskTarget, args, taskOptions);
+	}
 
     public TaskImpl(TaskTarget taskTarget, Object[] args) {
         this(UUID.randomUUID(), taskTarget, args);
@@ -58,8 +74,11 @@ public class TaskImpl implements Task {
         return args;
     }
 
+	public TaskOptions getTaskOptions() {
+		return taskOptions;
+	}
 
-    @Override
+	@Override
     public boolean equals(Object o) {
 
         if (this == o) return true;
@@ -76,21 +95,23 @@ public class TaskImpl implements Task {
         if ((args == null && thatArgs != null)
                 || (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
 
+		if (!taskOptions.equals(that.getTaskOptions()))
+			return false;
         return true;
     }
-
 
     @Override
     public int hashCode() {
         int result = uuid.hashCode();
         result = 31 * result + taskTarget.hashCode();
         result = 31 * result + Arrays.deepHashCode(args);
+		result = 31 * result + taskOptions.hashCode();
 
         return result;
     }
 
 
-    @Override
+	@Override
     public String toString() {
         return "TaskImpl{" +
                 "uuid=" + uuid +

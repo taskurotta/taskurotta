@@ -13,15 +13,62 @@ spreader:
           cycles: 10
           accuracy: 1000
 
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: true
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
+
+logging:
+  - FileLoggingConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultLoggingConfig
+      instance:
+        class: ru.taskurotta.bootstrap.logging.FileLoggingOutput
+        loggers:
+          ru.taskurotta: DEBUG
+          org.springframework: OFF
+        properties:
+          threshold: ALL
+          currentLogFilename: ./logs/output.log
+          archive: true
+          archivedLogFilenamePattern: ./logs/output-%d.log.gz
+          archivedFileCount: 10
+          logFormat: \%-4r [\%t] \%-5p \%c - \%m\%n
+
+  - ConsoleLoggingConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultLoggingConfig
+      instance:
+        class: ru.taskurotta.bootstrap.logging.ConsoleLoggingOutput
+        loggers:
+          ru.taskurotta: TRACE
+        properties:
+          threshold: ALL
+          logFormat: \%-4r [\%t] \%-5p \%c - \%m\%n
+
 actor:
   - PiDecider:
       actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      loggingConfig: ConsoleLoggingConfig
       count: 1
 
   - PiWorker:
       actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      loggingConfig: ConsoleLoggingConfig
       count: 10

@@ -15,33 +15,44 @@ spreader:
         properties:
           count: 150
           endpoint: "http://localhost:8080"
-          threadPoolSize: 0
-          readTimeout: 0
-          connectTimeout: 0
+          threadPoolSize: 10
+          readTimeout: 3000
+          connectTimeout: 3000
           loggerPeriod: 8000
-          maxConnectionsPerHost: 0
+          maxConnectionsPerHost: 10
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
+      instance:
+        singleton: true
+        logPeriod: 6000
 
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.example.calculate.decider.MathActionDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 5
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 2
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 2
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 2

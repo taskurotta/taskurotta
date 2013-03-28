@@ -1,17 +1,21 @@
 package ru.taskurotta.server;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ArgType;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -20,222 +24,343 @@ import ru.taskurotta.util.ActorDefinition;
  */
 public class TaskServerGeneral implements TaskServer {
 
-	private final static Logger log = LoggerFactory.getLogger(TaskServerGeneral.class);
+    private final static Logger log = LoggerFactory.getLogger(TaskServerGeneral.class);
 
-	private static final String ACTOR_ID = "InMemoryActor";
-	private static final int queueCapacity = 1000;
+    private static final String ACTOR_ID = "InMemoryActor";
 
-	private TaskDao taskDao;
+    private TaskDao taskDao;
 
-	public TaskServerGeneral(TaskDao taskDao) {
+    public TaskServerGeneral(TaskDao taskDao) {
 
-		this.taskDao = taskDao;
-	}
+        this.taskDao = taskDao;
+    }
 
-	@Override
-	public void startProcess(TaskContainer task) {
-		addTask(task, null, null, false);
-	}
+    @Override
+    public void startProcess(TaskContainer task) {
+        addTask(task, null, null, null, false);
+    }
 
-	@Override
-	public TaskContainer pull(ActorDefinition actorDefinition) {
-		return pullInternal(actorDefinition);
-	}
+    @Override
+    public TaskContainer pull(ActorDefinition actorDefinition) {
+        return pullInternal(actorDefinition);
+    }
 
-	@Override
-	public void release(DecisionContainer taskResult) {
-		releaseInternal(taskResult);
-	}
+    @Override
+    public void release(DecisionContainer taskResult) {
+        releaseInternal(taskResult);
+    }
 
-	private TaskContainer pullInternal(ActorDefinition actorDefinition) {
+    private TaskContainer pullInternal(ActorDefinition actorDefinition) {
 
-		TaskObject task = taskDao.pull(actorDefinition);
-		if (task != null) {
-			ArgContainer[] args = task.getArgs();
+        TaskObject task = taskDao.pull(actorDefinition);
 
-			if (args != null) {
+        if (task == null) {
+            return null;
+        }
 
-				for (ArgContainer arg : args) {
-					if (arg.isPromise() && arg.getJSONValue() == null) {
-						ArgContainer value = taskDao.getTaskValue((arg).getTaskId());
-						arg.setJSONValue(value.getJSONValue());
-						arg.setClassName(value.getClassName());
-						arg.setReady(true);
-					}
-				}
+        ArgContainer[] args = task.getArgs();
 
-			}
-		}
+        if (args != null) {
 
-		return task;
-	}
+            for (ArgContainer arg : args) {
+                if (arg.isPromise() && arg.getJSONValue() == null) {
+                    ArgContainer value = taskDao.getTaskValue((arg).getTaskId());
 
-	protected TaskObject getTaskById(UUID taskId) {
-		return taskDao.findById(taskId);
-	}
+                    // resolved Promise. value may be null for NoWait promises
+                    if (value != null) {
+                        arg.setJSONValue(value.getJSONValue());
+                        arg.setClassName(value.getClassName());
+                        arg.setReady(true);
+                    }
 
+                }
+            }
 
-	public void addTask(TaskContainer task, UUID parentTaskId, List<UUID> waitingId, boolean isDependTask) {
+        }
 
-		log.debug("Add task = [{}]", task);
+        return task;
+    }
 
-		TaskObject taskObj = new TaskObject(task);
+    protected TaskObject getTaskById(UUID taskId) {
+        return taskDao.findById(taskId);
+    }
 
-		taskObj.setParentId(parentTaskId);
-		taskObj.setWaitingId(waitingId);
-		taskObj.setDependTask(isDependTask);
 
-		log.debug("Add task [{}]. waitingId = [{}]", taskObj.getTaskId(), waitingId);
+    public void addTask(TaskContainer task, UUID parentTaskId, List<UUID> waitingId, Set<UUID> externalWaitForTasks,
+                        boolean isDependTask) {
 
-		TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, TaskStateObject.STATE.wait, System.currentTimeMillis());
-		taskObj.setState(taskStateObj);
+        log.debug("Add task = [{}]", task);
 
+        TaskObject taskObj = new TaskObject(task);
+        UUID taskId = taskObj.getTaskId();
 
-		int countdown = 0;
+        taskObj.setParentId(parentTaskId);
+        taskObj.setWaitingId(waitingId);
+        taskObj.setDependTask(isDependTask);
 
-		if (task.getArgs() != null) {
+        log.debug("Add task [{}]. waitingId = [{}]", taskId, waitingId);
 
-			for (ArgContainer arg : task.getArgs()) {
+        TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, TaskStateObject.STATE.wait, System.currentTimeMillis());
+        taskObj.setState(taskStateObj);
 
-				if (arg != null && arg.isPromise()) {
-					if (!arg.isReady()) {
-						countdown++;
-					}
-				}
-			}
-		}
 
-		log.debug("Add task id [{}]. countdown = {}", task.getTaskId(), countdown);
+        int countdown = 0;
 
-		if (countdown != 0) {
-			taskObj.setCountdown(countdown);
-		}
+        ArgContainer[] argContainers = task.getArgs();
 
-		taskDao.add(taskObj);
-	}
+        if (argContainers != null) {
 
-	private void releaseInternal(DecisionContainer taskResult) {
+            TaskOptionsContainer taskOptionsContainer = task.getOptions();
+            ArgType[] argTypes = null;
 
-		taskDao.logTaskResult(taskResult);
+            if (taskOptionsContainer != null) {
+                argTypes = taskOptionsContainer.getArgTypes();
+            }
 
-		processReleasedTask(taskResult);
 
-		taskDao.unlogTaskResult(taskResult.getTaskId());
-	}
+            for (int i = 0; i < argContainers.length; i++) {
 
+                // skip NoWait
+                if (argTypes != null && argTypes[i].equals(ArgType.NO_WAIT)) {
+                    continue;
+                }
 
-	private void processReleasedTask(DecisionContainer taskResult) {
+                ArgContainer argContainer = argContainers[i];
 
+                if (argContainer != null && argContainer.isPromise() && !argContainer.isReady()) {
+                    countdown++;
+                }
+            }
+        }
 
-		// 1. Изменить state задачи через Dao
-		// 2. Подабовлять все задачи в хранилище через Dao
+        log.debug("Add task id [{}]. countdown = {}", taskId, countdown);
 
-		// set to Done\Depend state first! Cause task can be in Depend state and its dependent task can finish before.
+        if (countdown != 0) {
+            taskObj.setCountdown(countdown);
+        }
 
-		UUID taskId = taskResult.getTaskId();
-		ArgContainer value = taskResult.getValue();
+        taskDao.add(taskObj);
 
-		UUID dependTaskId = null;
-		TaskStateObject.STATE currentState = TaskStateObject.STATE.done;
+        // TODO: register task id in external tasks and decrement countdown if not success
+        if (externalWaitForTasks != null) {
 
-		// calculate new state
-		if (value != null && value.isPromise()) {
+            int decrementValue = 0;
 
-			log.debug("Task id [{}] has promise isReady = {} state", value.getTaskId(), value.isReady());
+            for (UUID externalWaitForTaskId: externalWaitForTasks) {
+                if (!taskDao.registerExternalWaitFor(taskId, externalWaitForTaskId)) {
+                    decrementValue ++;
+                }
+            }
 
-			if (!value.isReady()) {
-				currentState = TaskStateObject.STATE.depend;
-				dependTaskId = value.getTaskId();
-			}
-		}
+            if (decrementValue > 0) {
+                taskDao.decrementCountdown(taskId, decrementValue);
+            }
+        }
 
-		TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, currentState, System.currentTimeMillis());
+    }
 
-		taskDao.saveTaskValue(taskId, value, taskStateObj);
+    private void releaseInternal(DecisionContainer taskResult) {
 
+        taskDao.logTaskResult(taskResult);
 
-		// - registration  of all new tasks
-		TaskContainer[] childTasks = taskResult.getTasks();
-		if (childTasks != null) {
+        processReleasedTask(taskResult);
 
-			// iterate in reverse order cause independent task can be released too early.
-			for (int i = childTasks.length - 1; i >= 0; i--) {
+        taskDao.unlogTaskResult(taskResult.getTaskId());
+    }
 
-				TaskContainer task = childTasks[i];
 
-				List<UUID> waitingId = null;
+    private void processReleasedTask(DecisionContainer taskResult) {
 
-				for (TaskContainer otherTask : childTasks) {
-					ArgContainer args[] = otherTask.getArgs();
-					if (args != null) {
-						for (ArgContainer arg : args) {
-							if (arg.isPromise()) {
-								if (arg.getTaskId().equals(task.getTaskId())) {
-									if (waitingId == null) {
-										waitingId = new ArrayList<UUID>();
-									}
 
-									waitingId.add(otherTask.getTaskId());
-								}
-							}
-						}
-					}
-				}
+        // 1. Изменить state задачи через Dao
+        // 2. Подабовлять все задачи в хранилище через Dao
 
-				addTask(task, taskId, waitingId, dependTaskId != null && dependTaskId.equals(task.getTaskId()));
-			}
-		}
+        // set to Done\Depend state first! Task can be in Depend state and its dependent task can finish before.
 
-		// recursion start compileDoneTask(taskMemory)
-		if (currentState == TaskStateObject.STATE.done) {
+        UUID taskId = taskResult.getTaskId();
+        ArgContainer value = taskResult.getValue();
 
-			TaskObject taskObj = taskDao.findById(taskId);
-			resolveDependency(taskObj);
-		}
+        UUID dependTaskId = null;
+        TaskStateObject.STATE currentState = TaskStateObject.STATE.done;
 
-	}
+        log.debug("processReleasedTask taskId = [{}]", taskId);
 
-	private void resolveDependency(TaskObject taskObj) {
+        // calculate new state
+        if (value != null && value.isPromise()) {
 
-		log.debug("resolveDependency taskId = [{}]", taskObj.getTaskId());
+            log.debug("Task id [{}] has promise isReady = {} state", value.getTaskId(), value.isReady());
 
-		// analise all waiting tasks
-		// - decrement task.countdown for all tasks in taskMemory.waitingId list
-		List<UUID> waitingUUIDs = taskObj.getWaitingId();
-		if (waitingUUIDs != null && !waitingUUIDs.isEmpty()) {
-			for (UUID uuid : waitingUUIDs) {
+            if (!value.isReady()) {
+                currentState = TaskStateObject.STATE.depend;
+                dependTaskId = value.getTaskId();
+            }
+        }
 
-				log.debug("task for countdown decrement [{}]", uuid);
+        TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, currentState, System.currentTimeMillis());
 
-				taskDao.decrementCountdown(uuid);
+        taskDao.saveTaskValue(taskId, value, taskStateObj);
 
-			}
-		}
 
-		// analise parent and its "depend" state
-		if (taskObj.isDependTask()) {
+        // - registration of all new tasks
+        TaskContainer[] childTasks = taskResult.getTasks();
+        if (childTasks != null) {
 
-			log.debug("task has parent task [{}]", taskObj.getParentId());
+            // iterate in reverse order cause independent task can be released too early.
+            for (int i = childTasks.length - 1; i >= 0; i--) {
 
-			TaskObject parentTask = taskDao.findById(taskObj.getParentId());
+                TaskContainer childTask = childTasks[i];
+                UUID childTaskId = childTask.getTaskId();
 
-			log.debug("parent task state is [{}]", parentTask.getState());
+                List<UUID> waitingId = null;
 
-			ArgContainer taskValue = taskObj.getValue();
+                // go throw all tasks and find Promise argument with childTaskId
+                for (TaskContainer otherChildTask : childTasks) {
 
-			// - prepare new state
-			TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, TaskStateObject.STATE.done, System.currentTimeMillis());
+                    // skip the same task
+                    if (otherChildTask.getTaskId().equals(childTaskId)) {
+                        continue;
+                    }
 
+                    ArgContainer args[] = otherChildTask.getArgs();
 
-			taskDao.saveTaskValue(taskObj.getParentId(), taskValue, taskStateObj);
+                    TaskOptionsContainer taskOptionsContainer = otherChildTask.getOptions();
+                    ArgType[] argTypes = taskOptionsContainer != null ? taskOptionsContainer.getArgTypes() : null;
 
-			// decrement countdown on waiting tasks
-			// check its parent and its "depend" state"
-			// set to done state
-			//compileDoneTask(taskMemory)
-			resolveDependency(parentTask);
-		}
+                    if (args != null) {
+                        for (int j = 0; j < args.length; j++) {
+                            ArgContainer arg = args[j];
 
-	}
+                            boolean isPromise = arg.isPromise();
+
+                            // skip not promises or resolved promises
+                            if (!isPromise || (isPromise && arg.isReady())) {
+                                continue;
+                            }
+
+                            // skip @NoWait promises
+                            if (argTypes != null) {
+                                if (argTypes[j].equals(ArgType.NO_WAIT)) {
+                                    continue;
+                                }
+                            }
+
+                            UUID otherChildTaskTaskId = otherChildTask.getTaskId();
+
+                            if (arg.getTaskId().equals(childTaskId)) {
+                                if (waitingId == null) {
+                                    waitingId = new ArrayList<UUID>();
+                                }
+
+                                waitingId.add(otherChildTaskTaskId);
+                            }
+
+                            // @Wait stuff
+//							if (isPromiseCollection()) {
+//								for (Object obj : (Collection)arg.getObject())
+//							}
+                        }
+                    }
+                }
+
+
+                // find external dependencies
+                Set externalWaitForTasks = null;
+                ArgContainer args[] = childTask.getArgs();
+
+                if (args != null) {
+
+                    Set internalDepsIds = null;
+
+                    for (ArgContainer arg : args) {
+
+                        boolean isPromise = arg.isPromise();
+
+                        // skip not promises or resolved promises
+                        if (!isPromise || (isPromise && arg.isReady())) {
+                            continue;
+                        }
+
+                        // lazy initialization of Set
+                        if (internalDepsIds == null) {
+
+                            // create hash set of internal dependencies (list of task id)
+                            internalDepsIds = new HashSet(childTasks.length);
+                            for (TaskContainer otherChildTask : childTasks) {
+                                internalDepsIds.add(otherChildTask.getTaskId());
+                            }
+
+                        }
+
+                        // Is it external promise?
+                        if (!internalDepsIds.contains(arg.getTaskId())) {
+                            if (externalWaitForTasks == null) {
+                                externalWaitForTasks = new HashSet();
+                            }
+
+                            externalWaitForTasks.add(arg.getTaskId());
+                        }
+
+                    }
+
+                }
+
+
+                addTask(childTask, taskId, waitingId, externalWaitForTasks,
+                        dependTaskId != null && dependTaskId.equals(childTaskId));
+            }
+        }
+
+        // recursion start compileDoneTask(taskMemory)
+        if (currentState == TaskStateObject.STATE.done) {
+
+            TaskObject taskObj = taskDao.findById(taskId);
+            resolveDependency(taskObj);
+        }
+
+    }
+
+
+    private void resolveDependency(TaskObject taskObj) {
+
+        log.debug("resolveDependency taskId = [{}]", taskObj.getTaskId());
+
+        // analise all waiting tasks
+        // - decrement task.countdown for all tasks in taskMemory.waitingId list
+        List<UUID> waitingUUIDs = taskObj.getWaitingId();
+        if (waitingUUIDs != null && !waitingUUIDs.isEmpty()) {
+            for (UUID uuid : waitingUUIDs) {
+
+                log.debug("task for countdown decrement [{}]", uuid);
+
+                taskDao.decrementCountdown(uuid, 1);
+
+            }
+        }
+
+        // analise parent and its "depend" state
+        if (taskObj.isDependTask()) {
+
+            log.debug("task has parent task [{}]", taskObj.getParentId());
+
+            TaskObject parentTask = taskDao.findById(taskObj.getParentId());
+
+            log.debug("parent task state is [{}]", parentTask.getState());
+
+            ArgContainer taskValue = taskObj.getValue();
+
+            // - prepare new state
+            TaskStateObject taskStateObj = new TaskStateObject(ACTOR_ID, TaskStateObject.STATE.done, System.currentTimeMillis());
+
+
+            taskDao.saveTaskValue(taskObj.getParentId(), taskValue, taskStateObj);
+
+            // decrement countdown on waiting tasks
+            // check its parent and its "depend" state"
+            // set to done state
+            //compileDoneTask(taskMemory)
+            resolveDependency(parentTask);
+        }
+
+    }
 
 }

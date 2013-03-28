@@ -25,7 +25,7 @@ public class TaskStateObject {
         return time;
     }
 
-    public STATE getState() {
+    public STATE getValue() {
         return state;
     }
 
