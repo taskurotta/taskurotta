@@ -31,9 +31,11 @@ public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> i
 		UUID taskId = DeserializationHelper.extractId(rootNode.get(TASK_ID), null);
 		TaskTarget target = DeserializationHelper.extractTaskTarget(rootNode.get(TASK_TARGET), null);
 		ArgContainer[] args = DeserializationHelper.extractArgs(rootNode.get(TASK_ARGS), null);
-		TaskOptionsContainer options = DeserializationHelper.extractOptions(rootNode.get("options"), null);
-		
-		return new TaskContainer(taskId, target, args, options);
+		TaskOptionsContainer options = DeserializationHelper.extractOptions(rootNode.get(TASK_OPTIONS), null);
+
+        //TODO: deserialize startTime and numberOfAttempt
+
+		return new TaskContainer(taskId, target, 0, 1, args, options);
 	}
 	
 }

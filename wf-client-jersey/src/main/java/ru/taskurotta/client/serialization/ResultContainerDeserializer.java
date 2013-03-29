@@ -13,6 +13,7 @@ import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
 import ru.taskurotta.server.transport.ErrorContainer;
 import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,13 +55,18 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
 		
 		return new DecisionContainer(taskId, value, error, errorContainer, tasks);
 	}
-	
+
+    // TODO: reuse TaskContainerDeserializer logic
 	private TaskContainer parseTaskContainer(JsonNode tcNode) {
 		UUID taskId = DeserializationHelper.extractId(tcNode.get(TASK_ID), null);
 		TaskTarget target = DeserializationHelper.extractTaskTarget(tcNode.get(TASK_TARGET), null);
 		ArgContainer[] args = DeserializationHelper.extractArgs(tcNode.get(TASK_ARGS), null);
-		
-		return new TaskContainer(taskId, target, args);		
+        TaskOptionsContainer options = DeserializationHelper.extractOptions(tcNode.get(TASK_OPTIONS), null);
+
+        //TODO: deserialize startTime, numberOfAttempt
+
+
+		return new TaskContainer(taskId, target, 0, 0, args, options);
 	}
 
 }
