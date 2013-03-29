@@ -32,8 +32,9 @@
 	   <property name="threads" value = "${internalPool.poolSize}" />
 	</bean>
 	
-	<bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral">
+	<bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral" init-method="runExpiredTaskScheduler">
 		<constructor-arg name="taskDao" ref="taskDao" />
+		<property name="expirationCheckSchedule" value = "${expirationCheckSchedule}" />
 	</bean>
 	
 	<bean id = "taskDao" class="ru.taskurotta.server.memory.TaskDaoMemory" >

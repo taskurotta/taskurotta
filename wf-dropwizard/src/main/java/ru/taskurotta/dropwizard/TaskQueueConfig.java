@@ -7,6 +7,7 @@ import com.yammer.dropwizard.config.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import ru.taskurotta.dropwizard.internal.pooling.InternalPoolConfig;
+import ru.taskurotta.server.config.ServerConfig;
 
 public class TaskQueueConfig extends Configuration {
 	
@@ -14,6 +15,8 @@ public class TaskQueueConfig extends Configuration {
 	private Properties properties;
 	
 	@JsonProperty
+	private ServerConfig serverConfig;
+	
 	private InternalPoolConfig internalPoolConfig;
 	
 	@NotEmpty
@@ -43,5 +46,14 @@ public class TaskQueueConfig extends Configuration {
 	public void setInternalPoolConfig(InternalPoolConfig internalPoolConfig) {
 		this.internalPoolConfig = internalPoolConfig;
 	}
+
+	public ServerConfig getServerConfig() {
+		return serverConfig;
+	}
+
+	public void setServerConfig(ServerConfig serverConfig) {
+		this.serverConfig = serverConfig;
+	}
+	
 	
 }
