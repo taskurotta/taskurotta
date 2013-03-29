@@ -1,17 +1,19 @@
 package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.TaskHandler;
+import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.exception.IllegalReturnTypeException;
-import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.RuntimeContext;
+import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskImpl;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -35,9 +37,17 @@ public class ProxyInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-		MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
+        MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
 
-        Task task = new TaskImpl(methodDescriptor.getTaskTarget(), args, new TaskOptions(methodDescriptor.getArgTypes()));
+        ArgType[] argTypes = methodDescriptor.getArgTypes();
+        TaskOptions taskOptions = null;
+
+        if (argTypes != null) {
+            taskOptions = new TaskOptions(argTypes);
+        }
+
+        Task task = new TaskImpl(UUID.randomUUID(), methodDescriptor.getTaskTarget(), System.currentTimeMillis(), 0,
+                args, taskOptions);
 
         if (taskHandler == null) {
             RuntimeContext.getCurrent().handle(task);

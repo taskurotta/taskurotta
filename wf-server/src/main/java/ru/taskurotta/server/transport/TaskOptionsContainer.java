@@ -8,6 +8,7 @@ import java.util.Arrays;
  * Created by void 22.03.13 16:42
  */
 public class TaskOptionsContainer {
+
 	private ArgType[] argTypes;
 
 	public TaskOptionsContainer(ArgType[] argTypes) {
@@ -17,6 +18,7 @@ public class TaskOptionsContainer {
 	public ArgType[] getArgTypes() {
 		return argTypes;
 	}
+
 
     @Override
     public String toString() {
