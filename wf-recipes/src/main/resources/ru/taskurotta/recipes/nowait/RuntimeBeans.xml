@@ -10,7 +10,11 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
-    <bean id="worker" class="ru.taskurotta.recipes.nowait.workers.FastWorkerImpl"/>
+    <bean id="arbiter" class="ru.taskurotta.recipes.nowait.NoWaitArbiter"/>
+
+    <bean id="worker" class="ru.taskurotta.recipes.nowait.workers.FastWorkerImpl">
+        <property name="arbiter" ref="arbiter"/>
+    </bean>
 
     <bean id="nowaitDecider" class="ru.taskurotta.recipes.nowait.decider.NoWaitDeciderImpl">
         <property name="async">
@@ -23,6 +27,7 @@
                 <constructor-arg value="ru.taskurotta.recipes.nowait.workers.FastWorkerClient"/>
             </bean>
         </property>
+        <property name="arbiter" ref="arbiter"/>
     </bean>
 
 </beans>
