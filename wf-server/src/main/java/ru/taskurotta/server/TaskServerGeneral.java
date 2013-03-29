@@ -125,6 +125,7 @@ public class TaskServerGeneral implements TaskServer {
                 argTypes = taskOptionsContainer.getArgTypes();
             }
 
+            log.debug("Add task id [{}]. arg types = {}", taskId, argTypes);
 
             for (int i = 0; i < argContainers.length; i++) {
 

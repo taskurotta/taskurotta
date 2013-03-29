@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
@@ -102,7 +103,7 @@ public class ObjectFactory {
             }
         }
 
-        if(arg!=null) {
+        if (arg != null) {
 
             className = arg.getClass().getName();
 
@@ -139,7 +140,7 @@ public class ObjectFactory {
             }
         }
 
-        return new TaskImpl(taskId, taskTarget, args);
+        return new TaskImpl(taskId, taskTarget, taskContainer.getStartTime(), taskContainer.getNumberOfAttempts(), args, null);
     }
 
 
@@ -159,9 +160,20 @@ public class ObjectFactory {
             }
         }
 
-		TaskOptionsContainer options = new TaskOptionsContainer(task.getTaskOptions().getArgTypes());
+        TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
-        return new TaskContainer(taskId, target, argContainers, options);
+        return new TaskContainer(taskId, target, task.getStartTime(), task.getNumberOfAttempts(), argContainers,
+                taskOptionsContainer);
+    }
+
+
+    public TaskOptionsContainer dumpTaskOptions(TaskOptions taskOptions) {
+
+        if (taskOptions == null) {
+            return null;
+        }
+
+        return new TaskOptionsContainer(taskOptions.getArgTypes());
     }
 
 
