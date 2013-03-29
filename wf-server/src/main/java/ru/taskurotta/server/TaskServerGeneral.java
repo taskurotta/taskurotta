@@ -130,7 +130,7 @@ public class TaskServerGeneral implements TaskServer {
             for (int i = 0; i < argContainers.length; i++) {
 
                 // skip NoWait
-                if (argTypes != null && argTypes[i].equals(ArgType.NO_WAIT)) {
+                if (argTypes != null && ArgType.NO_WAIT.equals(argTypes[i])) {
                     continue;
                 }
 
@@ -248,7 +248,7 @@ public class TaskServerGeneral implements TaskServer {
 
                             // skip @NoWait promises
                             if (argTypes != null) {
-                                if (argTypes[j].equals(ArgType.NO_WAIT)) {
+                                if (ArgType.NO_WAIT.equals(argTypes[j])) {
                                     continue;
                                 }
                             }

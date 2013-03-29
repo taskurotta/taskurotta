@@ -10,5 +10,5 @@ import ru.taskurotta.core.Promise;
 public interface FastWorkerClient {
 	public Promise<Integer> taskB();
 	public Promise<Integer> taskC();
-	public Promise<Integer> taskE(int b);
+	public Promise<Integer> taskE(Promise<Integer> b);
 }
