@@ -1,5 +1,8 @@
 package ru.taskurotta.bootstrap.config;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.core.joran.spi.JoranException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -10,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,15 +40,28 @@ public class Config {
     public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
 
     public static Config valueOf(File configFile) throws IOException {
-
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+        if (System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY) == null) {
+            LoggingConfig loggingConfig = mapper.readValue(configFile, LoggingConfig.class);
+            if (loggingConfig != null) {
+                initLogging(loggingConfig.getConfigFile());
+            }
+        }
+
         return mapper.readValue(configFile, Config.class);
     }
 
-
     public static Config valueOf(URL configURL) throws IOException {
-
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+        if (System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY) == null) {
+            LoggingConfig loggingConfig = mapper.readValue(configURL, LoggingConfig.class);
+            if (loggingConfig != null) {
+                initLogging(loggingConfig.getConfigFile());
+            }
+        }
+
         return mapper.readValue(configURL, Config.class);
     }
 
@@ -229,6 +246,18 @@ public class Config {
 
                 config.actorConfigs.add(actorConfig);
             }
+        }
+    }
+
+    private static void initLogging(File configFile) {
+        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, configFile.getAbsolutePath());
+        try {
+            final ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+            root.getLoggerContext().reset();
+
+            new ContextInitializer((LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory()).autoConfig();
+        } catch (JoranException e) {
+            e.printStackTrace();
         }
     }
 }

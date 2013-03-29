@@ -16,15 +16,13 @@ public class TaskImpl implements Task {
 
     private UUID uuid;
     private TaskTarget taskTarget;
+    private long startTime;
+    private int numberOfAttempts = 0;
     private Object[] args;
 	private TaskOptions taskOptions;
 
 
-    public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args) {
-		this(uuid, taskTarget, args, null);
-	}
-
-    public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
+    public TaskImpl(UUID uuid, TaskTarget taskTarget, long startTime, int numberOfAttempts, Object[] args, TaskOptions taskOptions) {
 
         if (uuid == null) {
             throw new IllegalArgumentException("uuid can not be null!");
@@ -37,6 +35,8 @@ public class TaskImpl implements Task {
         }
 
         this.taskTarget = taskTarget;
+        this.startTime = startTime;
+        this.numberOfAttempts = numberOfAttempts;
 
         this.args = args;
 
@@ -45,15 +45,6 @@ public class TaskImpl implements Task {
 		} else {
 			this.taskOptions = taskOptions;
 		}
-    }
-
-
-    public TaskImpl(TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
-		this(UUID.randomUUID(), taskTarget, args, taskOptions);
-	}
-
-    public TaskImpl(TaskTarget taskTarget, Object[] args) {
-        this(UUID.randomUUID(), taskTarget, args);
     }
 
 
@@ -74,7 +65,17 @@ public class TaskImpl implements Task {
         return args;
     }
 
-	public TaskOptions getTaskOptions() {
+    @Override
+    public long getStartTime() {
+        return startTime;
+    }
+
+    @Override
+    public int getNumberOfAttempts() {
+        return numberOfAttempts;
+    }
+
+    public TaskOptions getTaskOptions() {
 		return taskOptions;
 	}
 

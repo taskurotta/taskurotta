@@ -12,7 +12,6 @@ import ru.taskurotta.bootstrap.config.Config;
 import ru.taskurotta.bootstrap.config.ProfilerConfig;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
-import ru.taskurotta.bootstrap.profiler.MetricsProfiler;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -84,7 +83,6 @@ public abstract class Bootstrap {
             parser.printHelp();
             return;
         }
-
 
         for (ActorConfig actorConfig : config.actorConfigs) {
 

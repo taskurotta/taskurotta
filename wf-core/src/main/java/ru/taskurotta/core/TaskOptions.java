@@ -6,6 +6,7 @@ import java.util.Arrays;
  * Created by void 26.03.13 10:03
  */
 public class TaskOptions {
+
 	private ArgType[] argTypes;
 
 	public TaskOptions(ArgType[] argTypes) {

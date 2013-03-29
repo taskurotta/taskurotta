@@ -8,18 +8,19 @@ import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
 import ru.taskurotta.server.transport.DecisionContainer;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.UUID;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import ch.qos.logback.core.FileAppender;
 
 /**
  * User: romario
@@ -35,9 +36,10 @@ public class TaskDaoMemory implements TaskDao {
     private static final int queueCapacity = 1000;
     private int pollDelay = 60;
 
-    private Map<String, BlockingQueue<TaskObject>> queues = new ConcurrentHashMap<String, BlockingQueue<TaskObject>>();
+    private Map<String, DelayQueue<DelayedTaskObject>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskObject>>();
     private Map<UUID, TaskObject> taskMap = new ConcurrentHashMap<UUID, TaskObject>();
     private Map<UUID, AtomicInteger> atomicCountdownMap = new ConcurrentHashMap<UUID, AtomicInteger>();
+
 
     public TaskDaoMemory(int pollDelay) {
         this();
@@ -63,7 +65,7 @@ public class TaskDaoMemory implements TaskDao {
                         log.trace("#### queues.size() = [{}] ", queues.size());
 
                         for (String queueId : queues.keySet()) {
-                            BlockingQueue<TaskObject> queue = queues.get(queueId);
+                            DelayQueue<DelayedTaskObject> queue = queues.get(queueId);
                             log.trace("#### [{}] size = [{}]", queueId, queue.size());
 
                         }
@@ -110,7 +112,8 @@ public class TaskDaoMemory implements TaskDao {
 
         // push task to work (to queue)
         if (taskCountdown == 0) {
-            addTaskToQueue(taskMap.get(taskId));
+            TaskObject taskObject = taskMap.get(taskId);
+            addTaskToQueue(taskObject);
         }
 
     }
@@ -190,11 +193,16 @@ public class TaskDaoMemory implements TaskDao {
 
         String queueId = getQueueName(actorDefinition.getName(), actorDefinition.getVersion());
 
-        BlockingQueue<TaskObject> queue = getQueue(queueId);
+        DelayQueue<DelayedTaskObject> queue = getQueue(queueId);
 
         TaskObject task = null;
         try {
-            task = queue.poll(pollDelay, TimeUnit.SECONDS);
+
+            DelayedTaskObject delayedTaskObject = queue.poll(pollDelay, TimeUnit.SECONDS);
+
+            if (delayedTaskObject != null) {
+                task = delayedTaskObject.taskObject;
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
             // TODO: General policy about exceptions
@@ -224,12 +232,12 @@ public class TaskDaoMemory implements TaskDao {
         return actorDefinitionName + '#' + actorDefinitionVersion;
     }
 
-    private BlockingQueue<TaskObject> getQueue(String queueName) {
+    private DelayQueue<DelayedTaskObject> getQueue(String queueName) {
 
-        BlockingQueue<TaskObject> queue = queues.get(queueName);
+        DelayQueue<DelayedTaskObject> queue = queues.get(queueName);
         if (queue == null) {
             synchronized (this) {
-                queue = new ArrayBlockingQueue<TaskObject>(queueCapacity);
+                queue = new DelayQueue<DelayedTaskObject>();
                 queues.put(queueName, queue);
             }
         }
@@ -244,7 +252,8 @@ public class TaskDaoMemory implements TaskDao {
         TaskTarget taskTarget = taskMemory.getTarget();
 
         String queueName = getQueueName(taskTarget.getName(), taskTarget.getVersion());
-        Queue<TaskObject> queue = getQueue(queueName);
-        queue.add(taskMemory);
+        DelayQueue<DelayedTaskObject> queue = getQueue(queueName);
+
+        queue.add(new DelayedTaskObject(taskMemory));
     }
 }

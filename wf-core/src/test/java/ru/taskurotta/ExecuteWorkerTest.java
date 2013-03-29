@@ -7,8 +7,8 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.test.TestTasks;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -62,7 +62,7 @@ public class ExecuteWorkerTest {
     @Test
     public void testSimpleMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "max");
-        Task task = new TaskImpl(taskTarget, new Object[]{5, 6});
+        Task task = TestTasks.newInstance(taskTarget, new Object[]{5, 6});
         TaskDecision taskDecision = runtimeProcessor.execute(task);
         assertEquals(taskDecision.getValue(), 6);
     }
@@ -70,7 +70,7 @@ public class ExecuteWorkerTest {
     @Test
     public void testRecursiveMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "fibonacci");
-        Task task = new TaskImpl(taskTarget, new Object[]{4});
+        Task task = TestTasks.newInstance(taskTarget, new Object[]{4});
         TaskDecision taskDecision = runtimeProcessor.execute(task);
         assertEquals(taskDecision.getValue(), 3);
     }
@@ -78,7 +78,7 @@ public class ExecuteWorkerTest {
     @Test
     public void testVoidMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "voidMethod");
-        Task task = new TaskImpl(taskTarget, new Object[]{});
+        Task task = TestTasks.newInstance(taskTarget, new Object[]{});
 
         assertFalse(flag);
         TaskDecision taskDecision = runtimeProcessor.execute(task);

@@ -20,6 +20,7 @@ import ru.taskurotta.server.TaskServerGeneral;
 import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.server.memory.TaskDaoMemory;
 import ru.taskurotta.server.model.TaskStateObject;
+import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;
@@ -31,60 +32,7 @@ import static org.junit.Assert.assertEquals;
  * Date: 13.02.13
  * Time: 17:04
  */
-public class TaskSpreaderProviderCommonTest {
-
-    private TaskDao taskDao;
-    private TaskServer taskServer;
-    private TaskSpreaderProviderCommon taskSpreaderProvider;
-    private ObjectFactory objectFactory;
-
-    @Decider(name = "testDecider")
-    private static interface TestDecider {
-    }
-
-    @Worker(name = "testWorker")
-    private static interface TestWorker {
-    }
-
-    private static final String DECIDER_NAME;
-    private static final String DECIDER_VERSION;
-    private static final String WORKER_NAME;
-    private static final String WORKER_VERSION;
-
-    static {
-        ActorDefinition actorDefinition = ActorDefinition.valueOf(TestDecider.class);
-        DECIDER_NAME = actorDefinition.getName();
-        DECIDER_VERSION = actorDefinition.getVersion();
-
-        actorDefinition = ActorDefinition.valueOf(TestWorker.class);
-        WORKER_NAME = actorDefinition.getName();
-        WORKER_VERSION = actorDefinition.getVersion();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        taskDao = new TaskDaoMemory();
-        taskServer = new TaskServerGeneral(taskDao);
-        taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
-        objectFactory = new ObjectFactory();
-    }
-
-    public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
-        TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = new TaskImpl(id, taskTarget, args);
-        return task;
-    }
-
-    public static Task workerTask(UUID id, TaskType type, String methodName, Object[] args) {
-        TaskTarget taskTarget = new TaskTargetImpl(type, WORKER_NAME, WORKER_VERSION, methodName);
-        Task task = new TaskImpl(id, taskTarget, args);
-        return task;
-    }
-
-    public static Promise promise(Task task) {
-        return Promise.createInstance(task.getId());
-    }
-
+public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
     /**
      * - Put new task to queue
