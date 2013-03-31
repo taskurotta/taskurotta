@@ -19,7 +19,7 @@ public class IncorrectFlowException extends RuntimeException {
 		super(cause);
 	}
 
-	public IncorrectFlowException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+//	public IncorrectFlowException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+//		super(message, cause, enableSuppression, writableStackTrace);
+//	}
 }
