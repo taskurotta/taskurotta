@@ -10,7 +10,17 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
-    <bean id="arbiter" class="ru.taskurotta.recipes.nowait.NoWaitArbiter"/>
+    <bean id="arbiter" class="ru.taskurotta.recipes.nowait.NoWaitArbiter">
+        <constructor-arg name="tags">
+            <list>
+                <value>start</value>
+                <value>taskC</value>
+                <value>taskB</value>
+                <value>process</value>
+                <value>taskE</value>
+            </list>
+        </constructor-arg>
+    </bean>
 
     <bean id="worker" class="ru.taskurotta.recipes.nowait.workers.FastWorkerImpl">
         <property name="arbiter" ref="arbiter"/>
