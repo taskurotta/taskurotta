@@ -1,12 +1,13 @@
 contextLocation: "classpath*:context/appContext.xml"
 serverConfig:
   actorConfigs:
-    - actorName: "first"
-      timeout: -1
-      expirationPolicy: "none"
-    - actorName: "second"
-      timeout: -1
-      expirationPolicy: "error"
+    - actorQueueId: "first"
+      expirationPolicy:
+        className: "ru.taskurotta.server.config.expiration.FixedRetryPolicy"
+        properties:
+          retry: 5
+          timeout: 1
+          timeUnit: "SECONDS"
 internalPoolConfig:
   poolSize: 100
   threadTimeout: 2000
