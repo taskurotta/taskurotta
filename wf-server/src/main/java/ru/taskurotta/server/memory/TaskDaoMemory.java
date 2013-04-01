@@ -254,6 +254,10 @@ public class TaskDaoMemory implements TaskDao {
 	public int reScheduleTasks(String actorQueueId, ExpirationPolicy expPolicy) {
 		int result = 0;
 		Date nextExpirationDate = expPolicy.getNextExpirationDate();
+		if(nextExpirationDate == null) {
+			return result;
+		}
+		
 		long expirationTime = nextExpirationDate.getTime();
 		
 		for(TaskObject task: taskMap.values()) {
@@ -262,7 +266,7 @@ public class TaskDaoMemory implements TaskDao {
 			TaskStateObject state = task.getState();
 			String taskActorQueueId = getQueueName(taskTarget.getName(), taskTarget.getVersion());
 			
-			if(actorQueueId.equalsIgnoreCase(taskActorQueueId)//Target actor id
+			if(isTargetActor(actorQueueId, taskActorQueueId)//Target actor id
 					&& TaskStateObject.STATE.process.equals(state.getValue()) //Task still has "process" state
 					&& state.getTime() < expirationTime//Current state is expired
 					&& expPolicy.isScheduleAgain(task)//Policy require schedule
@@ -272,6 +276,11 @@ public class TaskDaoMemory implements TaskDao {
 			}
 		}
 		return result;
+	}
+	
+	private static boolean isTargetActor(String actorId, String taskTargetActorId) {
+		
+		return actorId.equalsIgnoreCase(taskTargetActorId) || actorId.equalsIgnoreCase("default");
 	}
 	
 }

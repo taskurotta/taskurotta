@@ -1,6 +1,5 @@
 package ru.taskurotta.server.service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.server.TaskDao;
 import ru.taskurotta.server.config.ActorConfig;
-import ru.taskurotta.server.config.ActorConfig.ExpirationPolicyConfig;
 import ru.taskurotta.server.config.ServerConfig;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 

@@ -53,8 +53,6 @@ public abstract class Bootstrap {
 
                 config = Config.valueOf(configFile);
             } else {
-
-                System.out.println("File doesn't exist: " + configFileName);
                 parser.printHelp();
                 return;
             }

@@ -381,6 +381,7 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
 			service.setServerConfig(serverConfig);
 			service.setTaskDao(taskDao);
 			service.setSchedule(expirationCheckSchedule);
+			service.init();
 			
 			Thread runner = new Thread(service);
 			runner.setDaemon(true);

@@ -7,12 +7,17 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taskurotta.server.model.TaskObject;
 
 /**
  *  Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
  */
 public class FixedRetryPolicy implements ExpirationPolicy {
+	
+	private static final Logger logger = LoggerFactory.getLogger(FixedRetryPolicy.class);
 	
 	public static final String RETRY = "retry";
 	public static final String TIMEOUT = "timeout";
@@ -26,26 +31,27 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 	
 	
 	public FixedRetryPolicy(Properties props) {
-		if(props!=null && props.isEmpty()) {
-			if(props.contains(RETRY)) {
-				retry = Integer.valueOf(props.getProperty(RETRY));
+		if(props!=null && !props.isEmpty()) {
+			if(props.containsKey(RETRY)) {
+				this.retry = Integer.valueOf(props.get(RETRY).toString());
 			}
 
-			if(props.contains(TIMEOUT)) {
-				timeout = Integer.valueOf(props.getProperty(TIMEOUT));
+			if(props.containsKey(TIMEOUT)) {
+				this.timeout = Integer.valueOf(props.get(TIMEOUT).toString());
 			}
 
-			if(props.contains(TIME_UNIT)) {
-				timeUnit = TimeUnit.valueOf(props.getProperty(TIME_UNIT).toUpperCase());
+			if(props.containsKey(TIME_UNIT)) {
+				this.timeUnit = TimeUnit.valueOf(props.get(TIME_UNIT).toString().toUpperCase());
 			}
 			
 		}
-		
+		logger.debug("FixedRetryPolicy created. retry[{}], timeout[{}], timeUnit[{}], props[{}]", this.retry, this.timeout, this.timeUnit, props);
 	}
 	
 	@Override
 	public boolean isScheduleAgain(TaskObject task) {
-		return false;
+		//TODO: some additional checks?
+		return needRetry(task);
 	}
 
 	
@@ -71,7 +77,7 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 			long cur = System.currentTimeMillis();
 			long expirationTime = timeUnit.toMillis(timeout);
 			
-			result = new Date(cur+expirationTime);			
+			result = new Date(cur+expirationTime);
 		}
 		
 		return result;
