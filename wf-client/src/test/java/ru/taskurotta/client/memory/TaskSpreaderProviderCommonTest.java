@@ -104,7 +104,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         // Add taskA to queue
         taskServer.startProcess(objectFactory.dumpTask(taskA));
 
-        // pull task from queue
+        // poll task from queue
         // pulled task should be the same as added (as TaskDecision) above
         Task taskQueueA = deciderTaskSpreader.pull();
         assertEquals(taskIdA, taskQueueA.getId());
@@ -120,7 +120,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         assertEquals(TaskStateObject.STATE.wait, taskDao.findById(workerTaskIdA).getState().getValue());
         assertEquals(1, taskDao.findById(workerTaskIdA).getCountdown());
 
-        // pull task from queue
+        // poll task from queue
         // pulled task should be the same as added (as TaskDecision) above
         System.err.println("PULL TASK " + taskIdB);
         Task taskQueueB = deciderTaskSpreader.pull();
@@ -137,7 +137,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         // task B should be in "depend" state
         assertEquals(TaskStateObject.STATE.depend, taskDao.findById(taskIdB).getState().getValue());
 
-        // pull task from queue
+        // poll task from queue
         // pulled task should be the same as added (as TaskDecision) above
         Task taskQueueC = deciderTaskSpreader.pull();
         assertEquals(taskIdC, taskQueueC.getId());
@@ -182,7 +182,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 //
 //        assertEquals(1, queue.size());
 //        assertEquals(taskDeciderStart, queue.element());
-//        assertEquals(taskDeciderStart, taskSpreader.pull());
+//        assertEquals(taskDeciderStart, taskSpreader.poll());
 //        assertEquals(0, queue.size());
 //    }
 //
@@ -205,8 +205,8 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 //        assertTrue(queue.contains(taskDeciderStart));
 //        assertTrue(queue.contains(taskDeciderAsync));
 //
-//        assertEquals(taskDeciderStart, taskSpreader.pull());
-//        assertEquals(taskDeciderAsync, taskSpreader.pull());
+//        assertEquals(taskDeciderStart, taskSpreader.poll());
+//        assertEquals(taskDeciderAsync, taskSpreader.poll());
 //
 //        assertEquals(0, queue.size());
 //    }

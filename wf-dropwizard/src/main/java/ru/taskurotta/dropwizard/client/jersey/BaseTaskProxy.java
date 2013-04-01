@@ -20,7 +20,7 @@ public class BaseTaskProxy implements TaskServer {
 	
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	public static final String PULLER_RESOURCE = "/tasks/pull";
+	public static final String PULLER_RESOURCE = "/tasks/poll";
 	public static final String START_RESOURCE = "/tasks/start";
 	public static final String RELEASER_RESOURCE = "/tasks/release";
 	
@@ -51,7 +51,7 @@ public class BaseTaskProxy implements TaskServer {
 	}
 	
 	@Override
-	public TaskContainer pull(ActorDefinition actorDefinition) {
+	public TaskContainer poll(ActorDefinition actorDefinition) {
 		TaskContainer result = null;
 		try {
 			result =  pullResource.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
@@ -61,7 +61,7 @@ public class BaseTaskProxy implements TaskServer {
 				logger.debug("Read timeout pulling task for [{}]", actorDefinition);
 				//Just return null as if no task getted
 			} else {
-				logger.error("Unexpected error at pull task["+actorDefinition+"] ", ex);	
+				logger.error("Unexpected error at poll task["+actorDefinition+"] ", ex);
 				throw new RuntimeException(ex);
 			}
 

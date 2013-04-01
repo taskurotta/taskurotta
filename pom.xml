@@ -34,7 +34,8 @@
 		<module>wf-recipes</module>
 		<module>wf-dropwizard</module>
 		<module>wf-dropwizard-assemble</module>
-	</modules>
+        <module>wf-backend</module>
+    </modules>
 
 	<dependencies>
 

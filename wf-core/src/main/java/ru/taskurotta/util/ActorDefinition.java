@@ -6,6 +6,8 @@ import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.exception.ActorRuntimeException;
 
 /**
+ * // TODO: add taskList field
+ *
  * User: romario
  * Date: 2/12/13
  * Time: 9:06 PM

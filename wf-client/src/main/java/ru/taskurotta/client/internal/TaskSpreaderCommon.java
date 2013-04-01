@@ -29,7 +29,7 @@ public class TaskSpreaderCommon implements TaskSpreader {
 
     @Override
     public Task pull() {
-        TaskContainer taskContainer = taskServer.pull(actorDefinition);
+        TaskContainer taskContainer = taskServer.poll(actorDefinition);
         return objectFactory.parseTask(taskContainer);
     }
 

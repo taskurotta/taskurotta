@@ -24,7 +24,7 @@ public class AsyncTaskServer {
 		return new Callable<TaskContainer>() {
 			@Override
 			public TaskContainer call() throws Exception {
-				return taskServer.pull(actorDefinition);
+				return taskServer.poll(actorDefinition);
 			}
 		};
 	}
