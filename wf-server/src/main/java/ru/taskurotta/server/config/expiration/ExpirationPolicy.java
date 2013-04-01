@@ -1,5 +1,7 @@
 package ru.taskurotta.server.config.expiration;
 
+import java.util.Date;
+
 import ru.taskurotta.server.model.TaskObject;
 
 /**
@@ -11,6 +13,6 @@ public interface ExpirationPolicy {
 	
 	public boolean isScheduleAgain(TaskObject task);
 	
-	public String getPolicyName();
+	public Date getNextExpirationDate();
 	
 }

@@ -1,6 +1,6 @@
 package ru.taskurotta.server.config;
 
-import java.util.concurrent.TimeUnit;
+import java.util.Properties;
 
 
 /**
@@ -8,39 +8,51 @@ import java.util.concurrent.TimeUnit;
  */
 public class ActorConfig {
 	
-	private String actorName;
-	private long timeout = -1;
-	private TimeUnit timeoutTimeUnit = TimeUnit.SECONDS;
-	private String expirationPolicy;
+	private String actorQueueId;
+		
+	private ExpirationPolicyConfig expirationPolicy;
 	
-	public String getExpirationPolicy() {
+	public String getActorQueueId() {
+		return actorQueueId;
+	}
+	public void setActorQueueId(String actorQueueId) {
+		this.actorQueueId = actorQueueId;
+	}	
+	public ExpirationPolicyConfig getExpirationPolicy() {
 		return expirationPolicy;
 	}
-	public void setExpirationPolicy(String expirationPolicy) {
+	public void setExpirationPolicy(ExpirationPolicyConfig expirationPolicy) {
 		this.expirationPolicy = expirationPolicy;
 	}
-	public String getActorName() {
-		return actorName;
+
+	public class ExpirationPolicyConfig {
+		
+		private String className;
+		private Properties properties;
+		
+		public String getClassName() {
+			return className;
+		}
+		public void setClassName(String className) {
+			this.className = className;
+		}
+		public Properties getProperties() {
+			return properties;
+		}
+		public void setProperties(Properties properties) {
+			this.properties = properties;
+		}
+		
+		@Override
+		public String toString() {
+			return "ExpirationPolicy [className=" + className + ", properties="
+					+ properties + "]";
+		}
 	}
-	public void setActorName(String actorName) {
-		this.actorName = actorName;
-	}
-	public long getTimeout() {
-		return timeout;
-	}
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
-	public TimeUnit getTimeoutTimeUnit() {
-		return timeoutTimeUnit;
-	}
-	public void setTimeoutTimeUnit(TimeUnit timeoutTimeUnit) {
-		this.timeoutTimeUnit = timeoutTimeUnit;
-	}
+	
 	@Override
 	public String toString() {
-		return "ActorConfig [actorName=" + actorName + ", timeout=" + timeout
-				+ ", timeoutTimeUnit=" + timeoutTimeUnit
+		return "ActorConfig [actorQueueId=" + actorQueueId
 				+ ", expirationPolicy=" + expirationPolicy + "]";
 	}
 		
