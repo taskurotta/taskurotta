@@ -13,7 +13,7 @@ spreader:
       instance:
         context: example2/SpreaderBeansExample2-jersey.xml
         properties:
-          count: 150
+          count: 185
           endpoint: "http://localhost:8080"
           threadPoolSize: 10
           readTimeout: 3000
