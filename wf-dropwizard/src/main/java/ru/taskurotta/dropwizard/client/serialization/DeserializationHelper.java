@@ -96,5 +96,21 @@ public class DeserializationHelper implements Constants {
 			return new ArgContainer(className, isPromise, taskId, isReady, json);
 		}
 	}
+
+	public static long extractStartTime(JsonNode jsonNode, long defVal) {
+		long result = defVal;
+		if(jsonNode!=null && !jsonNode.isNull()) {
+			result = jsonNode.longValue();
+		}
+		return result;
+	}
+
+	public static int extractNumberOfAttempts(JsonNode jsonNode, int defVal) {
+		int result = defVal;
+		if(jsonNode!=null && !jsonNode.isNull()) {
+			result = jsonNode.intValue(); 
+		}
+		return result;
+	}
 		
 }

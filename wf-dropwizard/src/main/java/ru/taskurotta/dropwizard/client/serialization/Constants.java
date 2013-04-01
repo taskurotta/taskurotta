@@ -9,6 +9,8 @@ public interface Constants {
 	public static final String TASK_TARGET = "target";
 	public static final String TASK_ARGS = "args";
     public static final String TASK_OPTIONS = "options";
+    public static final String TASK_START_TIME = "startTime";
+    public static final String TASK_NUMBER_OF_ATTEMPTS = "numberOfAttempts";
 
 	public static final String TASK_TARGET_NAME = "name";
 	public static final String TASK_TARGET_TYPE = "type";
