@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.oracle.test.domain.SimpleTask;
 
 /**
@@ -19,6 +21,9 @@ import ru.taskurotta.oracle.test.domain.SimpleTask;
  */
 
 public class DbDAO {
+
+	private final static Logger log = LoggerFactory.getLogger(DbDAO.class);
+
 	private DataSource dataSource;
 
 	public DbDAO(DataSource dataSource) {
@@ -65,6 +70,7 @@ public class DbDAO {
 	}
 
 	public void createQueue(String queueName) throws SQLException {
+		log.warn("!!!!! Creating queue = " + queueName);
 		final Connection connection = dataSource.getConnection();
 		connection.setAutoCommit(false);
 

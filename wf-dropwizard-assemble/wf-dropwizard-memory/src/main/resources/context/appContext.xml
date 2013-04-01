@@ -20,13 +20,18 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="taskServer" class="ru.taskurotta.dropwizard.internal.pooling.ThreadPooledTaskServer">
-        <constructor-arg name="taskServer" ref="taskServerGeneral"/>
-        <property name="executorService">
-            <bean factory-bean="executorServiceFactory" factory-method="getFixedThreadPool"/>
-        </property>
-        <property name="timeout" value="${internalPool.threadTimeout}"/>
+    <!--<bean id="taskServer" class="ru.taskurotta.dropwizard.internal.pooling.ThreadPooledTaskServer">-->
+    <!--<constructor-arg name="taskServer" ref="taskServerGeneral"/>-->
+    <!--<property name="executorService">-->
+    <!--<bean factory-bean="executorServiceFactory" factory-method="getFixedThreadPool"/>-->
+    <!--</property>-->
+    <!--<property name="timeout" value="${internalPool.threadTimeout}"/>-->
+    <!--</bean>-->
+
+    <bean id="taskServer" class="ru.taskurotta.server.TaskServerGeneral">
+        <constructor-arg name="taskDao" ref="taskDao"/>
     </bean>
+
 
     <bean id="executorServiceFactory" class="ru.taskurotta.dropwizard.internal.pooling.ExecutorServiceFactory">
         <property name="threads" value="${internalPool.poolSize}"/>

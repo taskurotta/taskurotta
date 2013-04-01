@@ -1,8 +1,8 @@
 package ru.taskurotta.oracle.test;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +19,13 @@ public class TaskDaoOracle extends TaskDaoMemory {
 	private final static Logger log = LoggerFactory.getLogger(TaskDaoOracle.class);
 
 	private final DbDAO dbDAO;
-	private final HashMap<String, Long> queueNames = new HashMap<String, Long>();
+	private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
 
 	public TaskDaoOracle(DbConnect dbConnect) {
 		dbDAO = new DbDAO(dbConnect.getDataSource());
 		try {
 			queueNames.putAll(dbDAO.getQueueNames());
+			log.warn("!!!!! Initial queue size = " + queueNames.size());
 		} catch (SQLException e) {
 			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 		}
@@ -39,12 +40,15 @@ public class TaskDaoOracle extends TaskDaoMemory {
 		//super.add(taskObj);
 		try {
 			String queueName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
+			log.debug("addTaskToQueue taskId = [{}]", taskObj.getTaskId());
 
-			if (!queueNames.containsKey(queueName)) {
-				long queueId = dbDAO.registerQueue(queueName);
-				queueNames.put(queueName, queueId);
-				dbDAO.createQueue("qb$" + queueId);
-
+			synchronized (queueNames) {
+				if (!queueNames.containsKey(queueName)) {
+					log.warn("Create queue for target [{}]", taskObj.getTarget().getName());
+					long queueId = dbDAO.registerQueue(queueName);
+					queueNames.put(queueName, queueId);
+					dbDAO.createQueue("qb$" + queueId);
+				}
 			}
 
 			dbDAO.enqueueTask(SimpleTask.createFromTaskObject(taskObj), getTableName(queueName));
@@ -56,14 +60,15 @@ public class TaskDaoOracle extends TaskDaoMemory {
 	@Override
 	public TaskObject pull(ActorDefinition actorDefinition) {
 		String queueName = getTableName(getQueueName(actorDefinition.getName(), actorDefinition.getVersion()));
-
-		try {
-			final UUID taskId = dbDAO.pullTask(queueName);
-			return taskMap.get(taskId);
-		} catch (SQLException ex) {
-			log.error("Database error", ex);
-			return null;
+		if (queueName != null) {
+			try {
+				final UUID taskId = dbDAO.pullTask(queueName);
+				return taskMap.get(taskId);
+			} catch (SQLException ex) {
+				log.error("Database error", ex);
+			}
 		}
+		return null;
 
 	}
 
