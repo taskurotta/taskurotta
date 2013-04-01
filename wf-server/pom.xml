@@ -11,11 +11,17 @@
 	<artifactId>wf-server</artifactId>
 	<name>Taskurotta :: Server</name>
 
-	<dependencies>
-		<dependency>
-			<groupId>ru.taskurotta</groupId>
-			<artifactId>wf-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>		
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-backend</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
 </project>

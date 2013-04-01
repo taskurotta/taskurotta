@@ -22,7 +22,7 @@ public interface TaskServer {
      * @param actorDefinition
      * @return
      */
-    public TaskContainer pull(ActorDefinition actorDefinition);
+    public TaskContainer poll(ActorDefinition actorDefinition);
 
 
     /**

@@ -52,7 +52,7 @@ public class ThreadPooledTaskServer implements TaskServer {
 	}
 
 	@Override
-	public TaskContainer pull(ActorDefinition actorDefinition) {
+	public TaskContainer poll(ActorDefinition actorDefinition) {
 		TaskContainer result = null;
 		try {
 			Future<TaskContainer> futureResult = executorService.submit(asyncTaskServer.callPull(actorDefinition));
@@ -62,9 +62,9 @@ public class ThreadPooledTaskServer implements TaskServer {
 				result = futureResult.get();
 			}
 		} catch (TimeoutException e) {
-			logger.debug("pull(["+actorDefinition+"]) timed out", e);
+			logger.debug("poll(["+actorDefinition+"]) timed out", e);
 		} catch (Exception e) {
-			logger.error("pull(["+actorDefinition+"]) failed", e);
+			logger.error("poll(["+actorDefinition+"]) failed", e);
 		}
 		return result;
 	}

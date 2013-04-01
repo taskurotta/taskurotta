@@ -53,7 +53,7 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
     }
 
     @Override
-    public TaskContainer pull(ActorDefinition actorDefinition) {
+    public TaskContainer poll(ActorDefinition actorDefinition) {
         return pullInternal(actorDefinition);
     }
 

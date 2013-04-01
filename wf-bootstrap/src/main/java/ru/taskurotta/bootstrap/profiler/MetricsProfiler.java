@@ -36,9 +36,9 @@ public class MetricsProfiler implements Profiler {
     private boolean isMeterCycle = true;
     // track RuntimeProcessor
     private boolean isTrackExecute = true;
-    // track full Task cycle from pull to release
+    // track full Task cycle from poll to release
     private boolean isTrackCycle = true;
-    // track task pull
+    // track task poll
     private boolean isTrackPull = true;
     // track task decision release
     private boolean isTrackRelease = true;

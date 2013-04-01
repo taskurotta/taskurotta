@@ -22,7 +22,7 @@ public class CheckTaskServer extends HealthCheck {
 	@Override
 	protected Result check() throws Exception {
 		try {
-			taskServer.pull( ActorDefinition.valueOf("testme", "testme"));
+			taskServer.poll(ActorDefinition.valueOf("testme", "testme"));
 			return Result.healthy();	
 		} catch(Exception e) {
 			logger.error("CheckTaskServer failed!", e);
