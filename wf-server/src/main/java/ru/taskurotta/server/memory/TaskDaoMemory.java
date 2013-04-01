@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.TaskDao;
+import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.server.model.TaskStateObject;
 import ru.taskurotta.server.transport.ArgContainer;
@@ -12,6 +13,7 @@ import ru.taskurotta.server.transport.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -256,4 +258,38 @@ public class TaskDaoMemory implements TaskDao {
 
         queue.add(new DelayedTaskObject(taskMemory));
     }
+
+	@Override
+	public int reScheduleTasks(String actorQueueId, ExpirationPolicy expPolicy) {
+		int result = 0;
+		Date nextExpirationDate = expPolicy.getNextExpirationDate(new Date());
+		if(nextExpirationDate == null) {
+			return result;
+		}
+		
+		long expirationTime = nextExpirationDate.getTime();
+		
+		for(TaskObject task: taskMap.values()) {
+
+			TaskTarget taskTarget = task.getTarget();
+			TaskStateObject state = task.getState();
+			String taskActorQueueId = getQueueName(taskTarget.getName(), taskTarget.getVersion());
+			
+			if(isTargetActor(actorQueueId, taskActorQueueId)//Target actor id
+					&& TaskStateObject.STATE.process.equals(state.getValue()) //Task still has "process" state
+					&& state.getTime() < expirationTime//Current state is expired || TODO: implement inside ExpirationPolicy?
+					&& expPolicy.isScheduleAgain(task)//Policy check for require schedule
+					&& !getQueue(taskActorQueueId).contains(task)) {//Not already enqueued
+				addTaskToQueue(task);
+				log.debug("TASK RESCHEDULED [{}]", task.getTaskId());
+				result++;
+			}
+		}
+		return result;
+	}
+	
+	private static boolean isTargetActor(String actorId, String taskTargetActorId) {
+		return actorId.equalsIgnoreCase(taskTargetActorId) || actorId.equalsIgnoreCase("default");
+	}
+	
 }

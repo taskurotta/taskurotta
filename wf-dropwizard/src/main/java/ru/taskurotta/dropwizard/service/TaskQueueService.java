@@ -7,11 +7,16 @@ import javax.ws.rs.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
 import ru.taskurotta.dropwizard.TaskQueueConfig;
+import ru.taskurotta.server.config.ServerConfigAware;
 
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -28,7 +33,7 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 	}
 
 	@Override
-	public void run(TaskQueueConfig configuration, Environment environment)
+	public void run(final TaskQueueConfig configuration, Environment environment)
 			throws Exception {
 		
 		logger.debug("YAML config custom properties getted[{}]", configuration.getProperties());
@@ -42,9 +47,43 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 				logger.debug("YAML config internal pool properties getted[{}]", internalPoolProperties);
 				appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("internalPoolConfigProperties", internalPoolProperties));
 			}
-			
+						
+		}
+		
+		
+		if(configuration.getServerConfig() != null) {
+			appContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
+				@Override
+				public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+					beanFactory.addBeanPostProcessor(new BeanPostProcessor() {
+						@Override
+						public Object postProcessBeforeInitialization(Object bean, String beanName)
+								throws BeansException {
+							if(bean instanceof ServerConfigAware) {
+								((ServerConfigAware)bean).setServerConfig(configuration.getServerConfig());
+							}
+							return bean;
+						}
+						@Override
+						public Object postProcessAfterInitialization(Object bean, String beanName)
+								throws BeansException {
+							return bean;
+						}
+					});
+				}
+			});			
 		}
 		appContext.refresh();
+		
+//		if(configuration.getServerConfig() != null) {
+//			Map<String, ServerConfigAware> serverConfigAwareBeans = appContext.getBeansOfType(ServerConfigAware.class);
+//			if(serverConfigAwareBeans!=null && !serverConfigAwareBeans.isEmpty()) {
+//				for(ServerConfigAware sca: serverConfigAwareBeans.values()) {
+//					sca.setServerConfig(configuration.getServerConfig());
+//				}
+//			}
+//		}
+		
 		
 		//Register resources
 		Map<String, Object> resources = appContext.getBeansWithAnnotation(Path.class);

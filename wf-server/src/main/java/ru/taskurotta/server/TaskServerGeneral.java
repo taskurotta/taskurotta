@@ -1,37 +1,48 @@
 package ru.taskurotta.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.ArgType;
-import ru.taskurotta.core.TaskType;
-import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.server.model.TaskStateObject;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.TaskContainer;
-import ru.taskurotta.server.transport.TaskOptionsContainer;
-import ru.taskurotta.util.ActorDefinition;
-
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.TaskType;
+import ru.taskurotta.server.config.ServerConfig;
+import ru.taskurotta.server.config.ServerConfigAware;
+import ru.taskurotta.server.model.TaskObject;
+import ru.taskurotta.server.model.TaskStateObject;
+import ru.taskurotta.server.service.ExpiredTaskProcessorService;
+import ru.taskurotta.server.transport.ArgContainer;
+import ru.taskurotta.server.transport.DecisionContainer;
+import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.server.transport.TaskOptionsContainer;
+import ru.taskurotta.util.ActorDefinition;
+
 /**
  * User: romario
  * Date: 2/25/13
  * Time: 1:09 PM
  */
-public class TaskServerGeneral implements TaskServer {
+public class TaskServerGeneral implements TaskServer, ServerConfigAware {
 
     private final static Logger log = LoggerFactory.getLogger(TaskServerGeneral.class);
 
     private static final String ACTOR_ID = "InMemoryActor";
 
     private TaskDao taskDao;
-
-    public TaskServerGeneral(TaskDao taskDao) {
+    
+    private ServerConfig serverConfig;
+    
+    private String expirationCheckSchedule;
+    
+	public TaskServerGeneral(TaskDao taskDao) {
 
         this.taskDao = taskDao;
     }
@@ -181,7 +192,7 @@ public class TaskServerGeneral implements TaskServer {
     private void processReleasedTask(DecisionContainer taskResult) {
 
 
-        // 1. Изменить state задачи через Dao
+        // 1. �?зменить state задачи через Dao
         // 2. Подабовлять все задачи в хранилище через Dao
 
         // set to Done\Depend state first! Task can be in Depend state and its dependent task can finish before.
@@ -371,5 +382,29 @@ public class TaskServerGeneral implements TaskServer {
         }
 
     }
+    
+    @PostConstruct
+    public void runExpiredTaskScheduler() throws ParseException {
+		if(expirationCheckSchedule!=null && expirationCheckSchedule.trim().length()>0) {
+			ExpiredTaskProcessorService service = new ExpiredTaskProcessorService();
+			service.setServerConfig(serverConfig);
+			service.setTaskDao(taskDao);
+			service.setSchedule(expirationCheckSchedule);
+			service.init();
+			
+			Thread runner = new Thread(service);
+			runner.setDaemon(true);
+			runner.start();
+	    }
+	}
+
+	public void setServerConfig(ServerConfig serverConfig) {
+		this.serverConfig = serverConfig;
+	}
+	
+	public void setExpirationCheckSchedule(String expirationCheckSchedule) {
+		this.expirationCheckSchedule = expirationCheckSchedule;
+	}
+
 
 }
