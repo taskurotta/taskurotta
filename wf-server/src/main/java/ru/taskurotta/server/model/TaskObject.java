@@ -27,7 +27,8 @@ public class TaskObject extends TaskContainer {
     protected ErrorContainer errorContainer;
 
     public TaskObject(TaskContainer taskContainer) {
-        super(taskContainer.getTaskId(), taskContainer.getTarget(), taskContainer.getArgs());
+        super(taskContainer.getTaskId(), taskContainer.getTarget(), taskContainer.getStartTime(),
+                taskContainer.getNumberOfAttempts(), taskContainer.getArgs(), taskContainer.getOptions());
     }
 
     public int getCountdown() {
