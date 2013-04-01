@@ -71,10 +71,10 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 	}
 	
 	@Override
-	public Date getNextExpirationDate() {
+	public Date getNextExpirationDate(Date forDate) {
 		Date result = null;
 		if(timeout > 0) {
-			long cur = System.currentTimeMillis();
+			long cur = forDate!=null? forDate.getTime(): 0;
 			long expirationTime = timeUnit.toMillis(timeout);
 			
 			result = new Date(cur+expirationTime);

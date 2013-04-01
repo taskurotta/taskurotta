@@ -13,6 +13,6 @@ public interface ExpirationPolicy {
 	
 	public boolean isScheduleAgain(TaskObject task);
 	
-	public Date getNextExpirationDate();
+	public Date getNextExpirationDate(Date forDate);
 	
 }

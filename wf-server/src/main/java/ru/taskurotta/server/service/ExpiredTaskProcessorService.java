@@ -57,7 +57,11 @@ public class ExpiredTaskProcessorService implements Runnable {
 		while(repeat(schedule)) {
 			for(String actorQueueId: expirationPolicyMap.keySet()) {
 				ExpirationPolicy ePolicy =  expirationPolicyMap.get(actorQueueId);
-				taskDao.reScheduleTasks(actorQueueId, ePolicy);
+				int reScheduled = taskDao.reScheduleTasks(actorQueueId, ePolicy);
+				if(reScheduled > 0) {
+					logger.info("[{}] tasks reScheduled due to expiration policy of actorId[{}]", reScheduled, actorQueueId);	
+				}
+				
 			}
 		}
 	}
