@@ -17,7 +17,7 @@ public class ActorExecutor implements Runnable {
     private RuntimeProcessor runtimeProcessor;
     private TaskSpreader taskSpreader;
 
-    boolean shutdown = false;
+    private boolean shutdown = false;
 
     public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
         this.profiler = profiler;
@@ -54,5 +54,9 @@ public class ActorExecutor implements Runnable {
 
         }
     }
+
+	public void stop() {
+		shutdown = true;
+	}
 }
 
