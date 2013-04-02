@@ -14,7 +14,7 @@ public class TaskDependency {
 
     private List<UUID> thatWaitThis;
     private List<UUID> thisWaitThat;
-    private boolean isDependTask = false;
+    private boolean parentWaitIt = false;
     private UUID parentId;
     private int countdown;
 
@@ -37,12 +37,12 @@ public class TaskDependency {
         this.thatWaitThis = thatWaitThis;
     }
 
-    public boolean isDependTask() {
-        return isDependTask;
+    public boolean isParentWaitIt() {
+        return parentWaitIt;
     }
 
-    public void setDependTask(boolean dependTask) {
-        isDependTask = dependTask;
+    public void setParentWaitIt(boolean parentWaitIt) {
+        this.parentWaitIt = parentWaitIt;
     }
 
     public UUID getParentId() {

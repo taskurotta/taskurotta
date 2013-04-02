@@ -88,4 +88,12 @@ public class ActorDefinition {
 
         return fullName = name + "#" + version;
     }
+
+    @Override
+    public String toString() {
+        return "ActorDefinition{" +
+                "name='" + name + '\'' +
+                ", version='" + version + '\'' +
+                '}';
+    }
 }

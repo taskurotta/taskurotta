@@ -13,11 +13,11 @@
     	<constructor-arg name="taskServer" ref = "taskServerGeneral" />
     </bean>
     
-    <bean id = "taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral" >
-    	<constructor-arg name="taskDao" ref="taskDaoMemory" />
+    <bean id = "taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer" >
+    	<constructor-arg name="backendBundle" ref="memoryBackendBundle" />
     </bean>
     
-    <bean id = "taskDaoMemory" class="ru.taskurotta.server.memory.TaskDaoMemory" >
+    <bean id = "memoryBackendBundle" class="ru.taskurotta.backend.MemoryBackendBundle" >
     	<constructor-arg name = "pollDelay" value = "${taskPollDelay}" />
     </bean>
     

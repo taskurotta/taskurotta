@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.Map;
@@ -15,6 +17,8 @@ import java.util.concurrent.TimeUnit;
  * Time: 4:11 PM
  */
 public class MemoryQueueBackend implements QueueBackend {
+
+    private final static Logger logger = LoggerFactory.getLogger(MemoryQueueBackend.class);
 
     private int pollDelay = 60;
     private Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
@@ -50,6 +54,31 @@ public class MemoryQueueBackend implements QueueBackend {
         public int compareTo(Delayed o) {
             return Long.valueOf(((DelayedTaskElement) o).startTime).compareTo(startTime);
         }
+
+        /**
+         * startTime not used because we assume than no duplication in queue
+         * @param o
+         * @return
+         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof DelayedTaskElement)) return false;
+
+            DelayedTaskElement that = (DelayedTaskElement) o;
+
+            if (!taskId.equals(that.taskId)) return false;
+
+            return true;
+        }
+
+        /**
+         * startTime not used because we assume than no duplication in queue
+         */
+        @Override
+        public int hashCode() {
+            return taskId.hashCode();
+        }
     }
 
     @Override
@@ -57,13 +86,13 @@ public class MemoryQueueBackend implements QueueBackend {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
 
-        DelayedTaskElement task = null;
+        UUID taskId = null;
         try {
 
             DelayedTaskElement delayedTaskObject = queue.poll(pollDelay, TimeUnit.SECONDS);
 
             if (delayedTaskObject != null) {
-                return delayedTaskObject.taskId;
+                taskId = delayedTaskObject.taskId;
             }
 
         } catch (InterruptedException e) {
@@ -77,7 +106,9 @@ public class MemoryQueueBackend implements QueueBackend {
             }
         }
 
-        return null;
+        logger.debug("poll() returns taskId [{}]", taskId);
+
+        return taskId;
 
     }
 
@@ -88,6 +119,8 @@ public class MemoryQueueBackend implements QueueBackend {
 
     @Override
     public void enqueueItem(ActorDefinition actorDefinition, UUID taskId, long startTime) {
+
+        logger.debug("enqueueItem() actorDefinition [{}], taskId [{}], startTime [{}]", actorDefinition, taskId, startTime);
 
         DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
         queue.add(new DelayedTaskElement(taskId, startTime));
@@ -105,6 +138,14 @@ public class MemoryQueueBackend implements QueueBackend {
         }
 
         return queue;
+    }
+
+    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
+        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+
+        DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, 0);
+
+        return queue.contains(delayedTaskElement);
     }
 
 }
