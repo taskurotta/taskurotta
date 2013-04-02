@@ -1,5 +1,7 @@
-package ru.taskurotta.server.transport;
+package ru.taskurotta.backend.storage.model;
 
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.TaskTarget;
 
 import java.util.Arrays;

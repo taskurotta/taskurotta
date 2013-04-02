@@ -1,6 +1,7 @@
 package ru.taskurotta.spring.configs;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
@@ -21,9 +22,11 @@ public class RuntimeConfigPathXmlApplicationContextTest {
         runtimeConfigPathXmlApplicationContext = new RuntimeConfigPathXmlApplicationContext();
         runtimeConfigPathXmlApplicationContext.setContext(pathToXmlContext);
         runtimeConfigPathXmlApplicationContext.init();
+
     }
 
     @Test
+    @Ignore
     public void testGetRuntimeProcessor() throws Exception {
         assertNotNull(runtimeConfigPathXmlApplicationContext.getRuntimeProcessor(TestActor.class));
     }

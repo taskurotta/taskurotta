@@ -1,26 +1,13 @@
 package ru.taskurotta.client.memory;
 
-import org.junit.Before;
 import org.junit.Test;
-import ru.taskurotta.annotation.Decider;
-import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.client.TaskSpreader;
-import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
-import ru.taskurotta.internal.core.TaskImpl;
-import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.server.TaskDao;
-import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.server.TaskServerGeneral;
-import ru.taskurotta.server.json.ObjectFactory;
-import ru.taskurotta.server.memory.TaskDaoMemory;
-import ru.taskurotta.server.model.TaskStateObject;
-import ru.taskurotta.test.TestTasks;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;

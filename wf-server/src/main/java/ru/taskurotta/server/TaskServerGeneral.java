@@ -17,12 +17,12 @@ import ru.taskurotta.core.TaskType;
 import ru.taskurotta.server.config.ServerConfig;
 import ru.taskurotta.server.config.ServerConfigAware;
 import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.server.model.TaskStateObject;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
 import ru.taskurotta.server.service.ExpiredTaskProcessorService;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.TaskContainer;
-import ru.taskurotta.server.transport.TaskOptionsContainer;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 /**

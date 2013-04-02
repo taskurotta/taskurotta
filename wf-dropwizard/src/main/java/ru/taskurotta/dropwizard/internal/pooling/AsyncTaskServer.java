@@ -3,8 +3,8 @@ package ru.taskurotta.dropwizard.internal.pooling;
 import java.util.concurrent.Callable;
 
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 

@@ -1,21 +1,19 @@
 package ru.taskurotta.server;
 
+import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.queue.model.QueuedItem;
 import ru.taskurotta.backend.storage.StorageBackend;
-import ru.taskurotta.backend.storage.model.AsyncProcess;
-import ru.taskurotta.backend.storage.model.AsyncTask;
-import ru.taskurotta.backend.storage.model.AsyncTaskError;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.server.transport.BackendConverter;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.ErrorContainer;
-import ru.taskurotta.server.transport.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -30,6 +28,15 @@ public class GeneralTaskServer implements TaskServer {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
+
+    public GeneralTaskServer(BackendBundle backendBundle) {
+        this.storageBackend = backendBundle.getStorageBackend();
+        this.queueBackend = backendBundle.getQueueBackend();
+        this.dependencyBackend = backendBundle.getDependencyBackend();
+        this.configBackend = backendBundle.getConfigBackend();
+    }
+
+
     @Override
     public void startProcess(TaskContainer task) {
 
@@ -40,26 +47,16 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // registration of new process
-        final AsyncProcess asyncProcess = BackendConverter.toAsyncProcess(task);
-        storageBackend.createNewProcess(asyncProcess);
+        storageBackend.addProcess(task);
 
         final TaskTarget taskTarget = task.getTarget();
 
+        // idempotent statement
+        dependencyBackend.startProcess(task);
+
         // we assume that new process task has no dependencies and it is ready to enqueue.
-        enqueueTask(taskTarget.getName(), taskTarget.getVersion(), task.getTaskId(), task.getStartTime());
-    }
-
-
-    private void enqueueTask(String actorName, String actorVersion, UUID taskId, long startTime) {
-
-        final ActorDefinition actorDefinition = ActorDefinition.valueOf(actorName, actorVersion);
-
-        // set it to current time for precisely repeat
-        if (startTime == 0L) {
-            startTime = System.currentTimeMillis();
-        }
-        final QueuedItem queuedItem = new QueuedItem(taskId, startTime);
-        queueBackend.enqueueItem(actorDefinition, queuedItem);
+        // idempotent statement
+        enqueueTask(task.getTaskId(), taskTarget.getName(), taskTarget.getVersion(), task.getStartTime());
     }
 
 
@@ -72,47 +69,80 @@ public class GeneralTaskServer implements TaskServer {
             return null;
         }
 
-        QueuedItem queuedItem = queueBackend.poll(actorDefinition);
+        // Task can be polled but not marked to "process" state (storageBackend.getTaskToExecute(taskId))
+        // Should we use pollCommit ?
+        UUID taskId = queueBackend.poll(actorDefinition);
 
-        if (queuedItem == null) {
+        if (taskId == null) {
             return null;
         }
 
-        final AsyncTask asyncTask = storageBackend.getTaskToExecute(queuedItem.getTaskId());
-        final TaskContainer taskContainer = BackendConverter.toTaskContainer(asyncTask);
+        // idempotent statement
+        final TaskContainer taskContainer = storageBackend.getTaskToExecute(taskId);
 
         return taskContainer;
     }
 
+
     @Override
-    public void release(DecisionContainer taskResult) {
+    public void release(DecisionContainer taskDecision) {
 
         // ? should full DecisionContainer be logged ?
 
-        if (taskResult.isError()) {
-            final ErrorContainer errorContainer = taskResult.getErrorContainer();
-            final AsyncTaskError asyncTaskError = BackendConverter.toAsyncTaskError(taskResult.getTaskId(),
-                    errorContainer);
+        UUID taskId = taskDecision.getTaskId();
+
+        // if Error
+        if (taskDecision.isError()) {
+            final ErrorContainer errorContainer = taskDecision.getErrorContainer();
             final boolean isShouldBeRestarted = errorContainer.isShouldBeRestarted();
 
-            storageBackend.logError(asyncTaskError, isShouldBeRestarted);
+            storageBackend.addError(taskId, errorContainer, isShouldBeRestarted);
 
             // enqueue task immediately if needed
             if (isShouldBeRestarted) {
 
-                UUID taskId = taskResult.getTaskId();
-
-                // WARNING: This id not optimal code. We are getting whole task only for name and version values.
-                AsyncTask asyncTask = storageBackend.getTask(taskId);
-                enqueueTask(asyncTask.getName(), asyncTask.getVersion(), taskResult.getTaskId(),
+                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
+                TaskContainer asyncTask = storageBackend.getTask(taskId);
+                enqueueTask(taskId, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
                         errorContainer.getRestartTime());
             }
+
+            storageBackend.addErrorCommit(taskId);
 
             return;
         }
 
-        // storageBackend: register result and new tasks
-        // dependencyBackend: getReadyTasks
-        // queueBackend: enqueueItem
+        // if Success
+        storageBackend.addDecision(taskDecision);
+
+        // idempotent statement
+        DependencyDecision dependencyDecision = dependencyBackend.analiseDecision(taskDecision);
+        List<UUID> readyTasks = dependencyDecision.getReadyTasks();
+
+        if (readyTasks != null) {
+
+            for (UUID taskId2Queue : readyTasks) {
+
+                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
+                TaskContainer asyncTask = storageBackend.getTask(taskId);
+                enqueueTask(taskId, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
+                        asyncTask.getStartTime());
+            }
+
+        }
+
+        storageBackend.addDecisionCommit(taskId, dependencyDecision.isProcessFinished());
     }
+
+    private void enqueueTask(UUID taskId, String actorName, String actorVersion, long startTime) {
+
+        final ActorDefinition actorDefinition = ActorDefinition.valueOf(actorName, actorVersion);
+
+        // set it to current time for precisely repeat
+        if (startTime == 0L) {
+            startTime = System.currentTimeMillis();
+        }
+        queueBackend.enqueueItem(actorDefinition, taskId, startTime);
+    }
+
 }

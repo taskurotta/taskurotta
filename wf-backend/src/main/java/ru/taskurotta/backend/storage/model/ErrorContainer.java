@@ -1,4 +1,4 @@
-package ru.taskurotta.server.transport;
+package ru.taskurotta.backend.storage.model;
 
 /**
  * User: romario

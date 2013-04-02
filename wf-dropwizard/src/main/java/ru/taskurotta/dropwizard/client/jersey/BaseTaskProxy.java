@@ -12,8 +12,8 @@ import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrap
 import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 public class BaseTaskProxy implements TaskServer {

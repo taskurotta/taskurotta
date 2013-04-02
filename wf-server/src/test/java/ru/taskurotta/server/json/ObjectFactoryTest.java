@@ -8,8 +8,8 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.DecisionContainer;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.test.TestTasks;
 
 import java.util.UUID;

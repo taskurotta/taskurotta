@@ -3,6 +3,7 @@ package ru.taskurotta.client.memory;
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
+import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -10,6 +11,7 @@ import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskDao;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.TaskServerGeneral;
@@ -59,6 +61,7 @@ public class AbstractTestStub {
     public void setUp() throws Exception {
         taskDao = new TaskDaoMemory(0);
         taskServer = new TaskServerGeneral(taskDao);
+//        taskServer = new GeneralTaskServer(new MemoryBackendBundle(0));
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
         objectFactory = new ObjectFactory();
     }

@@ -10,11 +10,11 @@ import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.ErrorContainer;
-import ru.taskurotta.server.transport.TaskContainer;
-import ru.taskurotta.server.transport.TaskOptionsContainer;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 
 import java.io.IOException;
 import java.util.UUID;

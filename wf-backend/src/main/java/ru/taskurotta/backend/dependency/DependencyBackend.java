@@ -1,19 +1,24 @@
 package ru.taskurotta.backend.dependency;
 
-import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.StorageBackend;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario
  * Date: 4/1/13
  * Time: 12:47 PM
  */
-public class DependencyBackend {
+public interface DependencyBackend {
 
-    private StorageBackend storageBackend;
-    private QueueBackend queueBackend;
 
-    public void checkoutNewProcess() {
+    /**
+     * @return tasks to start
+     */
+    public DependencyDecision analiseDecision(DecisionContainer taskDecision);
 
-    }
+    public void startProcess(TaskContainer task);
 }

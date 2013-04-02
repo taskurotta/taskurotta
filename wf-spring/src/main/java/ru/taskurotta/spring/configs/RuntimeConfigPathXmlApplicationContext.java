@@ -31,6 +31,9 @@ public class RuntimeConfigPathXmlApplicationContext implements RuntimeConfig {
 
     @Override
     public void init() {
+
+        logger.debug("context [{}]", context);
+
         if (applicationContext == null) {
             applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
 

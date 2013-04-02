@@ -1,4 +1,4 @@
-package ru.taskurotta.server.model;
+package ru.taskurotta.backend.storage.model;
 
 /**
  * User: romario
@@ -35,11 +35,10 @@ public class TaskStateObject {
 
     @Override
     public String toString() {
-        return "TaskStateMemory{" +
+        return "TaskStateObject{" +
                 "time=" + time +
                 ", state=" + state +
                 ", actorId='" + actorId + '\'' +
                 '}';
     }
-
 }
