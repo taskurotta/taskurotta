@@ -124,8 +124,8 @@ public class GeneralTaskServer implements TaskServer {
             for (UUID taskId2Queue : readyTasks) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = storageBackend.getTask(taskId);
-                enqueueTask(taskId, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
+                TaskContainer asyncTask = storageBackend.getTask(taskId2Queue);
+                enqueueTask(taskId2Queue, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
                         asyncTask.getStartTime());
             }
 

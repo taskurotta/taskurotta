@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
@@ -18,8 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MemoryStorageBackend implements StorageBackend {
 
+    private final static Logger logger = LoggerFactory.getLogger(MemoryStorageBackend.class);
+
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
+    private Map<UUID, Boolean> id2ProgressMap = new ConcurrentHashMap<UUID, Boolean>();
 
     @Override
     public void addProcess(TaskContainer taskContainer) {
@@ -28,6 +33,8 @@ public class MemoryStorageBackend implements StorageBackend {
 
     @Override
     public TaskContainer getTaskToExecute(UUID taskId) {
+
+        logger.debug("getTaskToExecute() taskId = [{}]", taskId);
 
         TaskContainer task = getTask(taskId);
 
@@ -58,13 +65,22 @@ public class MemoryStorageBackend implements StorageBackend {
 
         }
 
+        id2ProgressMap.put(taskId, true);
+
         return task;
     }
 
 
     private ArgContainer getTaskValue(UUID taskId) {
 
+        logger.debug("getTaskValue() taskId = [{}]", taskId);
+
         DecisionContainer taskDecision = id2TaskDecisionMap.get(taskId);
+
+        if (taskDecision == null) {
+            return null;
+        }
+
         ArgContainer argContainer = taskDecision.getValue();
 
         if (argContainer == null) {
@@ -95,7 +111,13 @@ public class MemoryStorageBackend implements StorageBackend {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+
+        logger.debug("addDecision() taskDecision = [{}]", taskDecision);
+
+        UUID taskId = taskDecision.getTaskId();
+
+        id2ProgressMap.remove(taskId);
+        id2TaskDecisionMap.put(taskId, taskDecision);
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
         if (taskContainers == null) {
@@ -125,5 +147,13 @@ public class MemoryStorageBackend implements StorageBackend {
     @Override
     public List<DecisionContainer> getAllTaskDecisions(UUID processId) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean isTaskInProgress(UUID taskId) {
+        return id2ProgressMap.containsKey(taskId);
+    }
+
+    public boolean isTaskReleased(UUID taskId) {
+        return id2TaskDecisionMap.containsKey(taskId);
     }
 }

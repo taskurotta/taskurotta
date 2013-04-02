@@ -45,7 +45,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
         // calculate new state
         if (value != null && value.isPromise()) {
 
-            logger.debug("Task id [{}] has promise isReady = {} state", value.getTaskId(), value.isReady());
+            logger.debug("analiseDecision() taskId = [{}] has promise value = {}", taskDecision.getTaskId(), value);
 
             if (!value.isReady()) {
                 dependTaskId = value.getTaskId();
@@ -159,6 +159,8 @@ public class MemoryDependencyBackend implements DependencyBackend {
                         dependTaskId != null && dependTaskId.equals(childTaskId));
 
                 if (isReady) {
+                    logger.debug("analiseDecision() add new ready taskId() because addDependency() returns true. new taskId [{}]", childTaskId);
+
                     dependencyDecision.addReadyTask(childTaskId);
                 }
             }
@@ -192,7 +194,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
 
         UUID taskId = taskDependency.getTaskId();
 
-        logger.debug("removeFinishedTasks taskId = [{}]", taskId);
+        logger.debug("removeFinishedTasks() taskId = [{}]", taskId);
 
         synchronized (taskDependency) {
 
@@ -204,7 +206,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
             if (thatWaitThis != null && !thatWaitThis.isEmpty()) {
                 for (UUID thatTaskId : thatWaitThis) {
 
-                    logger.debug("task for countdown decrement [{}]", thatTaskId);
+                    logger.debug("removeFinishedTasks() remove taskId [{}] from thisWaitThat list on [{}]", taskId, thatTaskId);
 
                     TaskDependency thatTaskDependency = id2depMap.get(thatTaskId);
                     List<UUID> thisWaitThat = thatTaskDependency.getThisWaitThat();
@@ -214,6 +216,8 @@ public class MemoryDependencyBackend implements DependencyBackend {
                     boolean isReady = thisWaitThat.isEmpty();
 
                     if (isReady) {
+                        logger.debug("removeFinishedTasks() add new ready taskId = [{}]", thatTaskId);
+
                         dependencyDecision.addReadyTask(thatTaskId);
                     }
                 }
@@ -221,7 +225,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
         }
 
         // analise parent and its "depend" state
-        if (taskDependency.isDependTask()) {
+        if (taskDependency.isParentWaitIt()) {
 
             logger.debug("task has parent task [{}]", taskDependency.getParentId());
 
@@ -233,10 +237,10 @@ public class MemoryDependencyBackend implements DependencyBackend {
     }
 
     private boolean addDependency(TaskContainer task, UUID parentTaskId, List<UUID> thatWaitThis, Set<UUID> externalThatWaitThis,
-                                  boolean isDependTask) {
+                                  boolean isParentWaitIt) {
 
-        logger.debug("addDependency taskId = [{}]", task.getTaskId());
-        logger.debug("addDependency task = [{}]", task);
+        logger.debug("addDependency() task = [{}], parentTaskId[{}], thatWaitThis = [{}], externalThatWaitThis = [{}], isParentWaitIt = [{}]",
+                task, parentTaskId, thatWaitThis, externalThatWaitThis, isParentWaitIt);
 
         UUID taskId = task.getTaskId();
 
@@ -245,10 +249,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
         taskDependency.setTaskId(taskId);
         taskDependency.setParentId(parentTaskId);
         taskDependency.setThatWaitThis(thatWaitThis);
-        taskDependency.setDependTask(isDependTask);
-
-        logger.debug("addDependency task [{}]. thatWaitThis = [{}]", taskId, thatWaitThis);
-
+        taskDependency.setParentWaitIt(isParentWaitIt);
 
         List<UUID> thisWaitThat = null;
 
@@ -263,7 +264,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
                 argTypes = taskOptionsContainer.getArgTypes();
             }
 
-            logger.debug("addDependency task id [{}]. arg types = {}", taskId, argTypes);
+            logger.debug("addDependency() taskId [{}]. arg types = {}", taskId, argTypes);
 
             for (int i = 0; i < argContainers.length; i++) {
 
@@ -283,7 +284,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
             }
         }
 
-        logger.debug("addDependency task id [{}]. thisWaitThat.size() = {}", taskId, thisWaitThat == null ? 0 : thisWaitThat.size());
+        logger.debug("addDependency() taskId [{}]. thisWaitThat.size() = {}", taskId, thisWaitThat == null ? 0 : thisWaitThat.size());
 
         boolean isReady = false;
 
@@ -318,7 +319,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
 
     private boolean registerExternalWaitFor(UUID taskId, UUID externalWaitForTaskId) {
 
-        logger.debug("registerExternalWaitFor taskId = [{}]", taskId);
+        logger.debug("registerExternalWaitFor() taskId = [{}], externalWaitForTaskId = [{}]", taskId, externalWaitForTaskId);
 
         TaskDependency taskDependency = id2depMap.get(externalWaitForTaskId);
 
@@ -348,5 +349,9 @@ public class MemoryDependencyBackend implements DependencyBackend {
 
         return true;
 
+    }
+
+    public TaskDependency getTaskDependency(UUID taskId) {
+        return id2depMap.get(taskId);
     }
 }

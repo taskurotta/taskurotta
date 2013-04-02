@@ -16,6 +16,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * User: romario
@@ -46,7 +47,7 @@ public class NoWaitTest extends AbstractTestStub {
         assertEquals(taskAId, taskAFromQueue.getId());
 
         // task should be in "process" state
-//        assertEquals(TaskStateObject.STATE.process, taskDao.findById(taskAId).getState().getValue());
+        assertTrue(isTaskInProgress(taskAId));
 
         // create B, C, D tasks
         UUID taskBId = UUID.randomUUID();
@@ -63,12 +64,27 @@ public class NoWaitTest extends AbstractTestStub {
         TaskDecision taskADecision = new TaskDecisionImpl(taskAId, null, new Task[]{deciderTaskB, deciderTaskC, deciderTaskD});
         deciderTaskSpreader.release(taskADecision);
 
-        // TODO: taskC and taskB may be pooled in different order
+        // taskC and taskB may be pooled in different order
 
-        Task taskCFromQueue = deciderTaskSpreader.pull();
+        Task taskCFromQueue = null;
+        Task taskBFromQueue = null;
+
+        Task task1 = deciderTaskSpreader.pull();
+        Task task2 = deciderTaskSpreader.pull();
+        if (task1.getId().equals(taskCId)) {
+            taskCFromQueue = task1;
+        }
+        if (task1.getId().equals(taskBId)) {
+            taskBFromQueue = task1;
+        }
+        if (task2.getId().equals(taskCId)) {
+            taskCFromQueue = task2;
+        }
+        if (task2.getId().equals(taskBId)) {
+            taskBFromQueue = task2;
+        }
+
         assertEquals(taskCId, taskCFromQueue.getId());
-
-        Task taskBFromQueue = deciderTaskSpreader.pull();
         assertEquals(taskBId, taskBFromQueue.getId());
 
         Task taskDFromQueue = deciderTaskSpreader.pull();
