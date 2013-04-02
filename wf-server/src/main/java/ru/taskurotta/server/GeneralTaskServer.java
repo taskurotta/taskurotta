@@ -116,7 +116,7 @@ public class GeneralTaskServer implements TaskServer {
         storageBackend.addDecision(taskDecision);
 
         // idempotent statement
-        DependencyDecision dependencyDecision = dependencyBackend.analiseDecision(taskDecision);
+        DependencyDecision dependencyDecision = dependencyBackend.analyzeDecision(taskDecision);
         List<UUID> readyTasks = dependencyDecision.getReadyTasks();
 
         if (readyTasks != null) {

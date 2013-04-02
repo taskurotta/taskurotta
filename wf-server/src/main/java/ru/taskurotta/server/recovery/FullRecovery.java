@@ -48,7 +48,7 @@ public class FullRecovery {
                 // remove resolved task
                 tasksToQueueList.remove(decisionContainer.getTaskId());
                 // add all new ready tasks to queue
-                DependencyDecision dependencyDecision = dependencyBackend.analiseDecision(decisionContainer);
+                DependencyDecision dependencyDecision = dependencyBackend.analyzeDecision(decisionContainer);
 
                 List<UUID> readyTasks = dependencyDecision.getReadyTasks();
                 if (readyTasks != null) {
