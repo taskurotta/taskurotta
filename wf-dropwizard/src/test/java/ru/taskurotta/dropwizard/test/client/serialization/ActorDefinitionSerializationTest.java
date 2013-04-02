@@ -42,10 +42,10 @@ public class ActorDefinitionSerializationTest {
 			ActorDefinition validating = resultWrapper.getActorDefinition();
 			Assert.assertNotNull(validating);
 			if(validating!=null) {
-				Assert.
+				Assert.assertEquals("ActorDefinition names must be equal", original.getName(), validating.getName());
+				Assert.assertEquals("ActorDefinition versions must be equal", original.getVersion(), validating.getVersion());
 			}
 		}
-		
 
 	}
 	
