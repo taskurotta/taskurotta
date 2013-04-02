@@ -75,7 +75,13 @@ public class DeserializationHelper implements Constants {
 				Iterator<JsonNode> typesIterator = typesNode.elements();
 				List<ArgType> argTypes = new ArrayList<ArgType>(typesNode.size());
 				while (typesIterator.hasNext()) {
-					argTypes.add(ArgType.valueOf(typesIterator.next().textValue()));
+					JsonNode item = typesIterator.next();
+					if(item.isNumber()) {
+						argTypes.add(ArgType.fromInt(Integer.valueOf(item.intValue())));
+					} else{
+						argTypes.add(ArgType.valueOf(item.textValue()));	
+					}
+					
 				}
 				result = new TaskOptionsContainer(argTypes.toArray(new ArgType[argTypes.size()]));
 			}
