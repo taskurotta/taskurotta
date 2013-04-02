@@ -8,7 +8,7 @@ import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.dependency.model.TaskDependency;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
-import ru.taskurotta.backend.storage.MemoryStorageBackend;
+import ru.taskurotta.backend.storage.MemoryTaskBackend;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -33,7 +33,7 @@ import java.util.UUID;
 public class AbstractTestStub {
 
     protected MemoryQueueBackend memoryQueueBackend;
-    protected MemoryStorageBackend memoryStorageBackend;
+    protected MemoryTaskBackend memoryStorageBackend;
     protected MemoryDependencyBackend memoryDependencyBackend;
 
     protected TaskServer taskServer;
@@ -75,7 +75,7 @@ public class AbstractTestStub {
 //        taskServer = new TaskServerGeneral(taskDao);
         BackendBundle backendBundle = new MemoryBackendBundle(0);
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
-        memoryStorageBackend = (MemoryStorageBackend) backendBundle.getStorageBackend();
+        memoryStorageBackend = (MemoryTaskBackend) backendBundle.getTaskBackend();
         memoryDependencyBackend = (MemoryDependencyBackend) backendBundle.getDependencyBackend();
 
         taskServer = new GeneralTaskServer(backendBundle);

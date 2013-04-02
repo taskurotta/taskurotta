@@ -5,8 +5,10 @@ import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.MemoryStorageBackend;
-import ru.taskurotta.backend.storage.StorageBackend;
+import ru.taskurotta.backend.storage.MemoryProcessBackend;
+import ru.taskurotta.backend.storage.MemoryTaskBackend;
+import ru.taskurotta.backend.storage.ProcessBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 
 /**
  * User: romario
@@ -15,22 +17,29 @@ import ru.taskurotta.backend.storage.StorageBackend;
  */
 public class MemoryBackendBundle implements BackendBundle {
 
-    private StorageBackend storageBackend;
+    private ProcessBackend processBackend;
+    private TaskBackend taskBackend;
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
 
     public MemoryBackendBundle(int pollDelay) {
-        this.storageBackend = new MemoryStorageBackend();
+        this.processBackend = new MemoryProcessBackend();
+        this.taskBackend = new MemoryTaskBackend();
         this.queueBackend = new MemoryQueueBackend(pollDelay);
         this.dependencyBackend = new MemoryDependencyBackend();
         this.configBackend = new ConfigBackend();
     }
 
     @Override
-    public StorageBackend getStorageBackend() {
-        return storageBackend;
+    public ProcessBackend getProcessBackend() {
+        return processBackend;
+    }
+
+    @Override
+    public TaskBackend getTaskBackend() {
+        return taskBackend;
     }
 
     @Override

@@ -18,16 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date: 4/1/13
  * Time: 9:34 PM
  */
-public class MemoryStorageBackend implements StorageBackend {
+public class MemoryTaskBackend implements TaskBackend {
 
-    private final static Logger logger = LoggerFactory.getLogger(MemoryStorageBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(MemoryTaskBackend.class);
 
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
     private Map<UUID, Boolean> id2ProgressMap = new ConcurrentHashMap<UUID, Boolean>();
 
     @Override
-    public void addProcess(TaskContainer taskContainer) {
+    public void startProcess(TaskContainer taskContainer) {
         id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
     }
 
@@ -130,8 +130,7 @@ public class MemoryStorageBackend implements StorageBackend {
     }
 
     @Override
-    public void addDecisionCommit(UUID taskId, boolean processFinished) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void addDecisionCommit(UUID taskId) {
     }
 
     @Override
