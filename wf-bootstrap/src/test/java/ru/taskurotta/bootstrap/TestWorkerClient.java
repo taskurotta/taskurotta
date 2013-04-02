@@ -9,5 +9,5 @@ import ru.taskurotta.annotation.WorkerClient;
  */
 @WorkerClient(worker = TestWorker.class)
 public interface TestWorkerClient {
-
+    public int sum(int a, int b);
 }
