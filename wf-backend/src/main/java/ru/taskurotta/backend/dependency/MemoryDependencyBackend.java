@@ -31,7 +31,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
     private Map<UUID, TaskDependency> id2depMap = new ConcurrentHashMap<UUID, TaskDependency>();
 
     @Override
-    public DependencyDecision analiseDecision(DecisionContainer taskDecision) {
+    public DependencyDecision analyzeDecision(DecisionContainer taskDecision) {
 
         DependencyDecision dependencyDecision = new DependencyDecision();
 

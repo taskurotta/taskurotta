@@ -18,7 +18,7 @@ public interface DependencyBackend {
     /**
      * @return tasks to start
      */
-    public DependencyDecision analiseDecision(DecisionContainer taskDecision);
+    public DependencyDecision analyzeDecision(DecisionContainer taskDecision);
 
     public void startProcess(TaskContainer task);
 }
