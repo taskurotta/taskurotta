@@ -6,7 +6,7 @@ import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
-import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 
 /**
  * User: romario

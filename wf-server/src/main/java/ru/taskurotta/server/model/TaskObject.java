@@ -1,8 +1,9 @@
 package ru.taskurotta.server.model;
 
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.ErrorContainer;
-import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
 
 import java.util.List;
 import java.util.UUID;

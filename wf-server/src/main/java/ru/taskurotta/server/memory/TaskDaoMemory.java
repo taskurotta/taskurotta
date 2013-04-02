@@ -6,10 +6,9 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.TaskDao;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.server.model.TaskStateObject;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.TaskOptionsContainer;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
@@ -21,8 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import ch.qos.logback.core.FileAppender;
 
 /**
  * User: romario

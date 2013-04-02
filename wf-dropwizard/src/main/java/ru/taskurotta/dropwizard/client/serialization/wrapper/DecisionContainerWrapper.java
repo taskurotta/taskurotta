@@ -1,7 +1,7 @@
 package ru.taskurotta.dropwizard.client.serialization.wrapper;
 
 import ru.taskurotta.dropwizard.client.serialization.ResultContainerDeserializer;
-import ru.taskurotta.server.transport.DecisionContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 

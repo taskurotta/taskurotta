@@ -7,33 +7,32 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
-import ru.taskurotta.RuntimeProcessor;
-import ru.taskurotta.RuntimeProvider;
-import ru.taskurotta.RuntimeProviderManager;
-import ru.taskurotta.bootstrap.config.RuntimeConfig;
+import ru.taskurotta.bootstrap.config.SpreaderConfig;
+import ru.taskurotta.client.ClientServiceManager;
+import ru.taskurotta.client.TaskSpreader;
+import ru.taskurotta.client.TaskSpreaderProvider;
+import ru.taskurotta.client.memory.ClientServiceManagerMemory;
+import ru.taskurotta.util.ActorDefinition;
 
 import java.util.Properties;
 
 /**
  * User: stukushin
  * Date: 06.02.13
- * Time: 15:08
+ * Time: 17:54
  */
-public class RuntimeConfigPathXmlApplicationContext implements RuntimeConfig {
+public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(RuntimeConfigPathXmlApplicationContext.class);
 
     private AbstractApplicationContext applicationContext;
-    private RuntimeProvider runtimeProvider;
+    private TaskSpreaderProvider taskSpreaderProvider;
 
     private String context;
     private Properties properties;
 
     @Override
     public void init() {
-
-        logger.debug("context [{}]", context);
-
         if (applicationContext == null) {
             applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
 
@@ -44,30 +43,29 @@ public class RuntimeConfigPathXmlApplicationContext implements RuntimeConfig {
             applicationContext.refresh();
         }
 
-        Class<RuntimeProvider> runtimeProviderClass = RuntimeProvider.class;
+        Class taskSpreaderProviderClass = TaskSpreaderProvider.class;
 
         try {
             try {
-                runtimeProvider = applicationContext.getBean(runtimeProviderClass);
+                ClientServiceManager clientServiceManager = (ClientServiceManager) applicationContext.getBean(ClientServiceManager.class);
+                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
             } catch (NoSuchBeanDefinitionException e) {
-                logger.debug("Not found bean of [{}]", runtimeProviderClass);
+                logger.debug("Not found bean of [{}]", taskSpreaderProviderClass);
             }
 
-            if (runtimeProvider == null) {
-                runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
+            if (taskSpreaderProvider == null) {
+                ClientServiceManager clientServiceManager = new ClientServiceManagerMemory();
+                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
             }
         } catch (BeansException e) {
-            logger.error("Not found bean of class [{}]", runtimeProviderClass);
+            logger.error("Not found bean of class [{}]", taskSpreaderProviderClass);
             throw new RuntimeException("Not found bean of class", e);
         }
     }
 
     @Override
-    public RuntimeProcessor getRuntimeProcessor(Class actorInterface) {
-
-        Object bean = applicationContext.getBean(actorInterface);
-
-        return runtimeProvider.getRuntimeProcessor(bean);
+    public TaskSpreader getTaskSpreader(Class clazz) {
+        return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz));
     }
 
     public void setContext(String context) {

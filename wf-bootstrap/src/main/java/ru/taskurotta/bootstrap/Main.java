@@ -1,6 +1,7 @@
 package ru.taskurotta.bootstrap;
 
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import ru.taskurotta.bootstrap.config.Config;
 
 import java.io.IOException;
 
@@ -9,9 +10,11 @@ import java.io.IOException;
  * Date: 2/12/13
  * Time: 5:38 PM
  */
-public class Main extends Bootstrap {
+public class Main {
 
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
-        new Main().run(args);
-    }
+		Bootstrap bootstrap = new Bootstrap();
+		Config config = bootstrap.parseArgs(args);
+		bootstrap.start(config);
+	}
 }

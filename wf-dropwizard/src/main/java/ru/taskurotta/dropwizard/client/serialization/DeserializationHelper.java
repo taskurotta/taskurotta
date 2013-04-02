@@ -12,8 +12,8 @@ import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.server.transport.ArgContainer;
-import ru.taskurotta.server.transport.TaskOptionsContainer;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

@@ -17,6 +17,8 @@ public class ActorDefinition {
     private String name;
 
     private String version;
+
+    private String fullName;
     
     private ActorDefinition() {
     }    
@@ -79,6 +81,11 @@ public class ActorDefinition {
     }
 
     public String getFullName() {
-        return name + "#" + version;
+
+        if (fullName != null) {
+            return fullName;
+        }
+
+        return fullName = name + "#" + version;
     }
 }
