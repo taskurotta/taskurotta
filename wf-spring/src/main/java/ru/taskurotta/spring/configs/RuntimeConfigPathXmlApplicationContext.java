@@ -77,4 +77,8 @@ public class RuntimeConfigPathXmlApplicationContext implements RuntimeConfig {
     public void setProperties(Properties properties) {
         this.properties = properties;
     }
+
+	public AbstractApplicationContext getApplicationContext() {
+		return applicationContext;
+	}
 }

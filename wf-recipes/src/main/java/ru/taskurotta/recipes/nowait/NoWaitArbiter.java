@@ -18,7 +18,7 @@ public class NoWaitArbiter extends BasicFlowArbiter {
 
 		if ("taskB".equals(tag)) {
 			String before = getCurrentStage();
-			pause(10000);
+			waitForTag("process", 10000);
 			String after = getCurrentStage();
 
 			if (before.equals(after)) {
@@ -26,8 +26,5 @@ public class NoWaitArbiter extends BasicFlowArbiter {
 			}
 		}
 
-		if ("process".equals(tag)) {
-			resume();
-		}
 	}
 }

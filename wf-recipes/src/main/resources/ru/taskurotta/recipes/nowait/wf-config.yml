@@ -13,7 +13,7 @@ spreader:
           foo: bar
 
 actor:
-  - FibonacciDecider:
+  - NoWaitDecider:
       actorInterface: ru.taskurotta.recipes.nowait.decider.NoWaitDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
