@@ -32,6 +32,7 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 	public Promise<Integer> process(@NoWait Promise<Integer> b, Promise<Integer> c) {
 		log.info("process({}, {})", b, c.get());
 		arbiter.notify("process");
+		log.info("process done");
 		return worker.taskE(b);
 	}
 

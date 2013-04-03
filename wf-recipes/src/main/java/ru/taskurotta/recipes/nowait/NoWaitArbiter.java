@@ -2,6 +2,7 @@ package ru.taskurotta.recipes.nowait;
 
 import ru.taskurotta.test.BasicFlowArbiter;
 import ru.taskurotta.test.IncorrectFlowException;
+import ru.taskurotta.test.Stage;
 
 import java.util.List;
 
@@ -17,13 +18,7 @@ public class NoWaitArbiter extends BasicFlowArbiter {
 	protected void process(String tag) {
 
 		if ("taskB".equals(tag)) {
-			String before = getCurrentStage();
 			waitForTag("process", 10000);
-			String after = getCurrentStage();
-
-			if (before.equals(after)) {
-				throw new IncorrectFlowException("Task with @NoWait doesn't started");
-			}
 		}
 
 	}
