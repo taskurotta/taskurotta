@@ -1,0 +1,25 @@
+contextLocation: "classpath*:context/appContext.xml"
+serverConfig:
+  actorConfigs:
+    - actorQueueId: "default"
+      expirationPolicy:
+        className: "ru.taskurotta.server.config.expiration.FixedRetryPolicy"
+        properties:
+          retry: 5
+          timeout: 3
+          timeUnit: "SECONDS"
+internalPoolConfig:
+  poolSize: 100
+  threadTimeout: 2000
+properties:
+  pollDelay: 1
+  expirationCheckSchedule: "30 SECONDS"
+logging:
+    level: WARN
+    loggers:
+        ru.taskurotta: DEBUG
+        com.yammer: INFO
+    file:
+        enabled: true
+        currentLogFilename: ./target/logs/requests.log
+        archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
