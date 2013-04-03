@@ -14,9 +14,7 @@
         <constructor-arg name="tags">
             <list>
                 <value>start</value>
-                <value>taskC</value>
-                <value>taskB</value>
-                <value>process</value>
+                <value>taskB, taskC, process</value>
                 <value>taskE</value>
             </list>
         </constructor-arg>
