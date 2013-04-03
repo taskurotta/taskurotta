@@ -1,29 +1,19 @@
 package ru.taskurotta.bootstrap.profiler;
 
-import org.junit.Test;
-import ru.taskurotta.annotation.Worker;
+import org.junit.BeforeClass;
+import ru.taskurotta.bootstrap.TestWorker;
 
 import java.util.Properties;
 
 /**
- * User: romario
+ * User: romario, stukushin
  * Date: 3/22/13
  * Time: 2:52 PM
  */
-public class MetricsProfilerTest {
+public class MetricsProfilerTest extends ProfilerTest {
 
-    @Worker
-    public static class SimpleWorker {
-
-    }
-
-    @Test
-    public void test() {
-
-        Profiler profiler = new MetricsProfiler(SimpleWorker.class, new Properties());
-
-        profiler.cycleStart();
-
-        profiler.cycleFinish();
+    @BeforeClass
+    public static void setUp() throws Exception {
+        profiler = new MetricsProfiler(TestWorker.class, new Properties());
     }
 }

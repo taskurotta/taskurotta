@@ -140,16 +140,16 @@ public class MetricsProfiler implements Profiler {
         return new TaskSpreader() {
 
             @Override
-            public Task pull() {
+            public Task poll() {
 
                 if (!isTrackPull) {
-                    return taskSpreader.pull();
+                    return taskSpreader.poll();
                 }
 
                 long startTime = System.nanoTime();
 
                 try {
-                    return taskSpreader.pull();
+                    return taskSpreader.poll();
                 } finally {
                     timerPull.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
                 }

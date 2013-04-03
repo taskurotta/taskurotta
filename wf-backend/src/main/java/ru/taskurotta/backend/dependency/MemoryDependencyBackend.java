@@ -232,14 +232,28 @@ public class MemoryDependencyBackend implements DependencyBackend {
             TaskDependency parentTaskDependency = id2depMap.get(taskDependency.getParentId());
 
             removeFinishedTasks(parentTaskDependency, dependencyDecision);
+        } else {
+
+            if (taskDependency.getParentId() == null) {
+
+                dependencyDecision.setProcessFinished(true);
+                dependencyDecision.setFinishedProcessId(taskDependency.getTaskId());
+                // TODO: set real process value
+                //dependencyDecision.setFinishedProcessValue(null);
+            }
+
+            // TODO: task may be not marked as isParentWaitIt but has parent task
+            // So we can trigger finish of process only when all not daemon task will be finished.
         }
 
     }
 
-    private boolean addDependency(TaskContainer task, UUID parentTaskId, List<UUID> thatWaitThis, Set<UUID> externalThatWaitThis,
+    private boolean addDependency(TaskContainer task, UUID parentTaskId, List<UUID> thatWaitThis,
+                                  Set<UUID> externalThatWaitThis,
                                   boolean isParentWaitIt) {
 
-        logger.debug("addDependency() task = [{}], parentTaskId[{}], thatWaitThis = [{}], externalThatWaitThis = [{}], isParentWaitIt = [{}]",
+        logger.debug("addDependency() task = [{}], parentTaskId[{}], thatWaitThis = [{}], " +
+                "externalThatWaitThis = [{}], isParentWaitIt = [{}]",
                 task, parentTaskId, thatWaitThis, externalThatWaitThis, isParentWaitIt);
 
         UUID taskId = task.getTaskId();
@@ -284,7 +298,8 @@ public class MemoryDependencyBackend implements DependencyBackend {
             }
         }
 
-        logger.debug("addDependency() taskId [{}]. thisWaitThat.size() = {}", taskId, thisWaitThat == null ? 0 : thisWaitThat.size());
+        logger.debug("addDependency() taskId [{}]. thisWaitThat.size() = {}", taskId,
+                thisWaitThat == null ? 0 : thisWaitThat.size());
 
         boolean isReady = false;
 

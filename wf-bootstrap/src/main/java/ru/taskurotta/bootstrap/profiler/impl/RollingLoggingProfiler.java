@@ -113,9 +113,9 @@ public class RollingLoggingProfiler implements Profiler {
 		return new TaskSpreader() {
 
 			@Override
-			public Task pull() {
+			public Task poll() {
 				Date date = new Date();
-				Task result = taskSpreader.pull();
+				Task result = taskSpreader.poll();
 				if(result != null) {
 					taskMeterMap.put(START+result.getId().toString(), date);
 				}

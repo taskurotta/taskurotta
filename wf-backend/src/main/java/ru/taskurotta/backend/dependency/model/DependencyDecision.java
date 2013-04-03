@@ -13,6 +13,8 @@ public class DependencyDecision {
 
     private List<UUID> readyTasks;
     private boolean isProcessFinished;
+    private UUID finishedProcessId;
+    private String finishedProcessValue;
 
     public void addReadyTask(UUID taskId) {
 
@@ -34,4 +36,21 @@ public class DependencyDecision {
     public void setProcessFinished(boolean processFinished) {
         isProcessFinished = processFinished;
     }
+
+    public UUID getFinishedProcessId() {
+        return finishedProcessId;
+    }
+
+    public String getFinishedProcessValue() {
+        return finishedProcessValue;
+    }
+
+    public void setFinishedProcessId(UUID finishedProcessId) {
+        this.finishedProcessId = finishedProcessId;
+    }
+
+    public void setFinishedProcessValue(String finishedProcessValue) {
+        this.finishedProcessValue = finishedProcessValue;
+    }
 }
+

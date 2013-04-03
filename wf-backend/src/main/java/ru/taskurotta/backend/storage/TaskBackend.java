@@ -14,9 +14,9 @@ import java.util.UUID;
  * Date: 4/1/13
  * Time: 12:11 PM
  */
-public interface StorageBackend {
+public interface TaskBackend {
 
-    public void addProcess(TaskContainer taskContainer);
+    public void startProcess(TaskContainer taskContainer);
 
 
     /**
@@ -39,27 +39,32 @@ public interface StorageBackend {
 
 
     /**
+     * Create RELEASE_ERROR_TIMEOUT checkpoint
+     *
      * @param asyncTaskError
      * @param shouldBeRestarted retry counter should be incremented
      */
     public void addError(UUID taskId, ErrorContainer asyncTaskError, boolean shouldBeRestarted);
 
 
+    /**
+     * Create RELEASE_TIMEOUT checkpoint
+     *
+     * @param taskDecision
+     */
     public void addDecision(DecisionContainer taskDecision);
 
 
     /**
-     * Task should be marked as successfully analysed.
-     * Process should be marked as finished.
+     * Delete RELEASE_TIMEOUT checkpoint
      *
      * @param taskId
-     * @param processFinished
      */
-    public void addDecisionCommit(UUID taskId, boolean processFinished);
+    public void addDecisionCommit(UUID taskId);
 
 
     /**
-     * Task should be marked as successfully analysed.
+     * Delete RELEASE_ERROR_TIMEOUT
      *
      * @param taskId
      */
@@ -94,5 +99,5 @@ public interface StorageBackend {
      * Removing lock from task
      */
     public boolean unlockTask(UUID taskId, String lockerId);
-    
+
 }

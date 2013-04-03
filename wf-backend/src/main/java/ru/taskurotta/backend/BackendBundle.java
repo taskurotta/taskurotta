@@ -3,7 +3,8 @@ package ru.taskurotta.backend;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.StorageBackend;
+import ru.taskurotta.backend.storage.ProcessBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 
 /**
  * User: romario
@@ -12,7 +13,9 @@ import ru.taskurotta.backend.storage.StorageBackend;
  */
 public interface BackendBundle {
 
-    public StorageBackend getStorageBackend();
+    public ProcessBackend getProcessBackend();
+
+    public TaskBackend getTaskBackend();
 
     public QueueBackend getQueueBackend();
 

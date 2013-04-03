@@ -11,7 +11,7 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.StorageBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.GeneralTaskServer;
@@ -24,16 +24,16 @@ public class SpringGeneralTaskServer implements TaskServer, ConfigBackendAware {
 	
 	private GeneralTaskServer taskServer;
 	
-    private StorageBackend storageBackend;
+    private TaskBackend taskBackend;
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 	
-    private Map<String, Runnable> daemonTasks; 
+    private Map<String, Runnable> daemonTasks;
     
 	@PostConstruct
     public void init() {
-    	taskServer = new GeneralTaskServer(storageBackend, queueBackend, dependencyBackend, configBackend);
+    	taskServer = new GeneralTaskServer(taskBackend, queueBackend, dependencyBackend, configBackend);
     	
     	if(daemonTasks!=null && !daemonTasks.isEmpty()) {
     		for(String daemonName: daemonTasks.keySet()) {
@@ -46,10 +46,6 @@ public class SpringGeneralTaskServer implements TaskServer, ConfigBackendAware {
     	}
     }
     
-	public void setStorageBackend(StorageBackend storageBackend) {
-		this.storageBackend = storageBackend;
-	}
-
 	public void setQueueBackend(QueueBackend queueBackend) {
 		this.queueBackend = queueBackend;
 	}
@@ -71,6 +67,10 @@ public class SpringGeneralTaskServer implements TaskServer, ConfigBackendAware {
 	@Override
 	public void release(DecisionContainer taskResult) {
 		taskServer.release(taskResult);
+	}
+
+	public void setTaskBackend(TaskBackend taskBackend) {
+		this.taskBackend = taskBackend;
 	}
 
 	@Override

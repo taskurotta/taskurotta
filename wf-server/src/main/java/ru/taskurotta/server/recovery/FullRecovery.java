@@ -3,7 +3,7 @@ package ru.taskurotta.server.recovery;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.StorageBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
@@ -21,14 +21,14 @@ import java.util.UUID;
  */
 public class FullRecovery {
 
-    private StorageBackend storageBackend;
+    private TaskBackend taskBackend;
     private DependencyBackend dependencyBackend;
     private QueueBackend queueBackend;
 
     public void run() {
 
         // This is stupid but good for pre-mega-supa-alfa :)
-        List<TaskContainer> allRunProcesses = storageBackend.getAllRunProcesses();
+        List<TaskContainer> allRunProcesses = taskBackend.getAllRunProcesses();
 
         for (TaskContainer taskContainer : allRunProcesses) {
 
@@ -39,7 +39,7 @@ public class FullRecovery {
             tasksToQueueList.add(taskContainer.getTaskId());
 
             // Also stupid :)
-            List<DecisionContainer> decisionContainers = storageBackend.getAllTaskDecisions(taskContainer.getTaskId());
+            List<DecisionContainer> decisionContainers = taskBackend.getAllTaskDecisions(taskContainer.getTaskId());
 
             // ? Should we put start task to dependencyBackend firstly ?
 
@@ -58,7 +58,7 @@ public class FullRecovery {
 
             for (UUID taskToQueueId : tasksToQueueList) {
 
-                TaskContainer task2Queue = storageBackend.getTask(taskToQueueId);
+                TaskContainer task2Queue = taskBackend.getTask(taskToQueueId);
 
                 queueBackend.enqueueItem(
                         ActorDefinition.valueOf(

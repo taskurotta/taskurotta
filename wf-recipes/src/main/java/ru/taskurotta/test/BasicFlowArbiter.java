@@ -13,6 +13,8 @@ public abstract class BasicFlowArbiter implements FlowArbiter {
 
 	private final List<String> stages;
 
+	private String lastTag;
+
 	public BasicFlowArbiter(List<String> stages) {
 		this.stages = stages;
 	}
@@ -24,12 +26,13 @@ public abstract class BasicFlowArbiter implements FlowArbiter {
 		synchronized (stages) {
 			String current = stages.get(0);
 			if (current.equals(tag)) {
-				stages.remove(0);
+				lastTag = stages.remove(0);
 			} else {
 				throw new IncorrectFlowException("Wrong tag: expected ["+ current +"] but found ["+ tag +"]");
 			}
 
 			process(tag);
+			stages.notifyAll();
 		}
 
 	}
@@ -38,17 +41,33 @@ public abstract class BasicFlowArbiter implements FlowArbiter {
 		return stages.get(0);
 	}
 
-	protected void pause(long millis) {
+	protected void waitForTag(String tag, long timeToWait) {
 		try {
-			stages.wait(millis);
+			long endTime = System.currentTimeMillis() + timeToWait;
+			while (!lastTag.equals(tag) && timeToWait > 0) {
+				stages.wait(timeToWait);
+				timeToWait = endTime - System.currentTimeMillis();
+			}
 		} catch (InterruptedException e) {
-			// ignore
+			// just go away
 		}
 	}
 
-	protected void resume() {
-		stages.notifyAll();
-	}
-
 	protected abstract void process(String tag);
+
+	public boolean waitForFinish(long timeToWait) {
+		long endTime = System.currentTimeMillis() + timeToWait;
+		synchronized (stages) {
+			try {
+				while (stages.size() > 0 && timeToWait > 0) {
+
+					stages.wait(timeToWait);
+					timeToWait = endTime - System.currentTimeMillis();
+				}
+			} catch (InterruptedException e) {
+				// just go away
+			}
+			return stages.size() == 0;
+		}
+	}
 }

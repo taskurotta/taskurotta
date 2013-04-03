@@ -13,8 +13,7 @@ import java.util.UUID;
 public interface QueueBackend {
 
     /**
-     * Task should be polled and marked as "fly" until pollCommit or until specified timeout.
-     * If timeout has occur than task should be returned to queue
+     * Create TASK_POLL_TIMEOUT checkpoint.
      *
      * @param actorDefinition
      * @return
@@ -23,7 +22,8 @@ public interface QueueBackend {
 
 
     /**
-     * Remove "fly" marker from the task
+     * Create TASK_TIMEOUT checkpoint
+     * Delete TASK_POLL_TIMEOUT checkpoint
      *
      * @param taskId
      */

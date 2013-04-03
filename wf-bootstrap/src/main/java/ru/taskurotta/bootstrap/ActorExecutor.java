@@ -34,7 +34,7 @@ public class ActorExecutor implements Runnable {
 
             try {
 
-                Task task = taskSpreader.pull();
+                Task task = taskSpreader.poll();
 
                 if (task == null) {
                     profiler.cycleFinish();

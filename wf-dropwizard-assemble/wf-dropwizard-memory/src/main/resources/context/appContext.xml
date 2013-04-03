@@ -29,20 +29,20 @@
 	   </property>
 	   <property name="dependencyBackend" ref="dependencyBackend" />
 	   <property name="queueBackend" ref="queueBackend" />
-	   <property name="storageBackend" ref="storageBackend" />
+	   <property name="taskBackend" ref="taskBackend" />
 	</bean>
     
     <bean id = "taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskExpirationRecovery">
         <property name="limit" value = "${expirationCheckLimit}" />
         <property name="schedule" value = "${expirationCheckSchedule}" />
         <property name="queueBackend" ref="queueBackend" />
-        <property name="storageBackend" ref="storageBackend" />
+        <property name="taskBackend" ref="taskBackend" />
     </bean>
     
     <bean id = "queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend" >
         <constructor-arg name="pollDelay" value = "${pollDelay}" />
     </bean>
-    <bean id = "storageBackend" class="ru.taskurotta.backend.storage.MemoryStorageBackend" />
+    <bean id = "taskBackend" class="ru.taskurotta.backend.storage.MemoryTaskBackend" />
     <bean id = "dependencyBackend" class="ru.taskurotta.backend.dependency.MemoryDependencyBackend" />
     
 	<bean id = "checkTaskServer" class = "ru.taskurotta.dropwizard.health.CheckTaskServer">

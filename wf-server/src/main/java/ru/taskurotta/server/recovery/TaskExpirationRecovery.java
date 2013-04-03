@@ -15,7 +15,7 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.StorageBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
@@ -26,7 +26,7 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 	private static final Logger logger = LoggerFactory.getLogger(TaskExpirationRecovery.class);
 
 	private QueueBackend queueBackend;
-	private StorageBackend storageBackend;
+	private TaskBackend taskBackend;
 
 	private String schedule;
 	private int limit;
@@ -49,21 +49,21 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 					ExpirationPolicy ePolicy =  expirationPolicyMap.get(actorDef);
 					long timeout = ePolicy.getExpirationTimeout(new Date());
 
-					List<TaskContainer> expiredTasks = storageBackend.getExpiredTasks(actorDef, timeout, limit);
+					List<TaskContainer> expiredTasks = taskBackend.getExpiredTasks(actorDef, timeout, limit);
 					if(expiredTasks!=null && !expiredTasks.isEmpty()) {
 						logger.debug("Try to recover [{}] tasks", expiredTasks.size());
 						int counter = 0;
 						for(TaskContainer task: expiredTasks) {
 							if(ePolicy.readyToRecover(task.getTaskId())) {
 								try {
-									storageBackend.lockTask(task.getTaskId(), lockingGuid, new Date(new Date().getTime()+timeout));
+									taskBackend.lockTask(task.getTaskId(), lockingGuid, new Date(new Date().getTime()+timeout));
 									TaskTarget taskTarget = task.getTarget();
 									queueBackend.enqueueItem(ActorDefinition.valueOf(taskTarget.getName(), taskTarget.getVersion()), task.getTaskId(), ePolicy.getNextStartTime(task.getTaskId(), task.getStartTime()));
 									counter++;
 								} catch(Exception e) {
 									logger.error("Cannot recover task["+task.getTaskId()+"]", e);
 								} finally {
-									storageBackend.unlockTask(task.getTaskId(), lockingGuid);
+									taskBackend.unlockTask(task.getTaskId(), lockingGuid);
 									//TODO: is all this locking/unlocking really required?
 								}
 
@@ -139,8 +139,8 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 		this.queueBackend = queueBackend;
 	}
 
-	public void setStorageBackend(StorageBackend storageBackend) {
-		this.storageBackend = storageBackend;
+	public void setTaskBackend(TaskBackend taskBackend) {
+		this.taskBackend = taskBackend;
 	}
 
 	public void setConfigBackend(ConfigBackend configBackend) {
