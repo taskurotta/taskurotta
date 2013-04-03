@@ -39,7 +39,8 @@ public class GeneralTaskServer implements TaskServer{
         this.configBackend = backendBundle.getConfigBackend();
     }
 
-    public GeneralTaskServer(TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+    public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+    	this.processBackend = processBackend;
         this.taskBackend = taskBackend;
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;

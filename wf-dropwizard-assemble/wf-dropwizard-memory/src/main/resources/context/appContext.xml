@@ -30,6 +30,7 @@
 	   <property name="dependencyBackend" ref="dependencyBackend" />
 	   <property name="queueBackend" ref="queueBackend" />
 	   <property name="taskBackend" ref="taskBackend" />
+	   <property name="processBackend" ref="processBackend" />
 	</bean>
     
     <bean id = "taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskExpirationRecovery">
@@ -44,6 +45,8 @@
     </bean>
     <bean id = "taskBackend" class="ru.taskurotta.backend.storage.MemoryTaskBackend" />
     <bean id = "dependencyBackend" class="ru.taskurotta.backend.dependency.MemoryDependencyBackend" />
+    <bean id = "processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
+    
     
 	<bean id = "checkTaskServer" class = "ru.taskurotta.dropwizard.health.CheckTaskServer">
 		<constructor-arg name="name" value="check task server" />

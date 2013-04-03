@@ -11,6 +11,7 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
@@ -28,12 +29,13 @@ public class SpringGeneralTaskServer implements TaskServer, ConfigBackendAware {
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
+    private ProcessBackend processBackend;
 	
     private Map<String, Runnable> daemonTasks;
     
 	@PostConstruct
     public void init() {
-    	taskServer = new GeneralTaskServer(taskBackend, queueBackend, dependencyBackend, configBackend);
+    	taskServer = new GeneralTaskServer(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
     	
     	if(daemonTasks!=null && !daemonTasks.isEmpty()) {
     		for(String daemonName: daemonTasks.keySet()) {
@@ -81,5 +83,10 @@ public class SpringGeneralTaskServer implements TaskServer, ConfigBackendAware {
 	public void setDaemonTasks(Map<String, Runnable> daemonTasks) {
 		this.daemonTasks = daemonTasks;
 	}
+
+	public void setProcessBackend(ProcessBackend processBackend) {
+		this.processBackend = processBackend;
+	}
+	
 	
 }

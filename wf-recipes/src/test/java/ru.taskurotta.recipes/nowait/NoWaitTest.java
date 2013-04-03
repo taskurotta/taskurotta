@@ -22,7 +22,7 @@ public class NoWaitTest {
 		Bootstrap bootstrap = new Bootstrap();
 		Config config = bootstrap.parseArgs(new String[]{"-r", "ru/taskurotta/recipes/nowait/wf-config.yml"});
 		RuntimeConfigPathXmlApplicationContext mainRuntimeConfig = (RuntimeConfigPathXmlApplicationContext)config.runtimeConfigs.get("MainRuntimeConfig");
-		BasicFlowArbiter arbiter = mainRuntimeConfig.getAbstractApplicationContext().getBean("arbiter", BasicFlowArbiter.class);
+		BasicFlowArbiter arbiter = mainRuntimeConfig.getApplicationContext().getBean("arbiter", BasicFlowArbiter.class);
 		bootstrap.start(config);
 
 		assertTrue(arbiter.waitForFinish(20000));
