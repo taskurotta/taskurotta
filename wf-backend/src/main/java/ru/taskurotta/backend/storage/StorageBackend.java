@@ -3,7 +3,9 @@ package ru.taskurotta.backend.storage;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.util.ActorDefinition;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,4 +76,25 @@ public interface StorageBackend {
      * @return
      */
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
+    
+    /**
+     * @param actorDefinition - targeting tasks for actors of this kind
+     * @param timeout - tasks wait for release timeout
+     * @param limit - limited result list if value greater then 0
+     * @return list of expired tasks. Meaning tasks which were taken to be processed by actors, but wasn't released by timeout expiration time
+     */
+    public List<TaskContainer> getExpiredTasks(ActorDefinition actorDefinition, long timeout, int limit);
+    
+    /**
+     * Sets lock on task with given UUID, preventing it from getting to execution
+     */
+    public boolean lockTask(UUID taskId, String lockerId, Date releaseDate);
+    
+    /**
+     * Removing lock from task
+     */
+    public boolean unlockTask(UUID taskId, String lockerId);
+    
+    public void resetTask(UUID taskId);
+
 }

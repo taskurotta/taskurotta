@@ -15,8 +15,8 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
+import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.dropwizard.TaskQueueConfig;
-import ru.taskurotta.server.config.ServerConfigAware;
 
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -51,7 +51,7 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 		}
 		
 		
-		if(configuration.getServerConfig() != null) {
+		if(configuration.getActorConfig() != null) {
 			appContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
 				@Override
 				public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -59,8 +59,8 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 						@Override
 						public Object postProcessBeforeInitialization(Object bean, String beanName)
 								throws BeansException {
-							if(bean instanceof ServerConfigAware) {
-								((ServerConfigAware)bean).setServerConfig(configuration.getServerConfig());
+							if(bean instanceof ConfigBackendAware) {
+								((ConfigBackendAware)bean).setConfigBackend(configuration.getActorConfig());
 							}
 							return bean;
 						}

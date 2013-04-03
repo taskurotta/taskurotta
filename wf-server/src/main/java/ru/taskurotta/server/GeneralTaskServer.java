@@ -1,5 +1,8 @@
 package ru.taskurotta.server;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -13,15 +16,12 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
  * User: romario
  * Date: 4/1/13
  * Time: 12:04 PM
  */
-public class GeneralTaskServer implements TaskServer {
+public class GeneralTaskServer implements TaskServer{
 
     private StorageBackend storageBackend;
     private QueueBackend queueBackend;
@@ -36,8 +36,14 @@ public class GeneralTaskServer implements TaskServer {
         this.configBackend = backendBundle.getConfigBackend();
     }
 
-
-    @Override
+    public GeneralTaskServer(StorageBackend storageBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+        this.storageBackend = storageBackend;
+        this.queueBackend = queueBackend;
+        this.dependencyBackend = dependencyBackend;
+        this.configBackend = configBackend;
+    }    
+    
+	@Override
     public void startProcess(TaskContainer task) {
 
         // some consistence check

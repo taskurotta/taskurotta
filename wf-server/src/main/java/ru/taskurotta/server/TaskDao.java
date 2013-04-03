@@ -46,6 +46,6 @@ public interface TaskDao {
      * @param expPolicy
      * @return
      */
-    public int reScheduleTasks(String actorQueueId, ExpirationPolicy expPolicy);
+    public int reScheduleTasks(ActorDefinition actorQueueId, ExpirationPolicy expPolicy);
 
 }

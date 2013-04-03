@@ -7,6 +7,7 @@
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
     
     <context:property-placeholder/>
+    <context:annotation-config />
         
 	<bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
 		<property name="taskServer" ref="taskServer" />
@@ -20,30 +21,33 @@
 		<property name="taskServer" ref="taskServer" />
 	</bean>
 	
-	<bean id = "taskServer" class="ru.taskurotta.dropwizard.internal.pooling.ThreadPooledTaskServer">
-	   <constructor-arg name="taskServer" ref="taskServerGeneral" />
-   	   <property name="executorService">
-   	       <bean factory-bean="executorServiceFactory" factory-method="getFixedThreadPool" />
+	<bean id = "taskServer" class="ru.taskurotta.dropwizard.internal.SpringGeneralTaskServer">
+	   <property name="daemonTasks">
+	       <map>
+	           <entry key="TaskExpirationRecovery" value-ref="taskExpirationRecoveryDaemon" />
+	       </map>
 	   </property>
-	   <property name="timeout" value = "${internalPool.threadTimeout}" />
+	   <property name="dependencyBackend" ref="dependencyBackend" />
+	   <property name="queueBackend" ref="queueBackend" />
+	   <property name="storageBackend" ref="storageBackend" />
 	</bean>
-	
-	<bean id = "executorServiceFactory" class="ru.taskurotta.dropwizard.internal.pooling.ExecutorServiceFactory">
-	   <property name="threads" value = "${internalPool.poolSize}" />
-	</bean>
-	
-	<bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral" init-method="runExpiredTaskScheduler">
-		<constructor-arg name="taskDao" ref="taskDao" />
-		<property name="expirationCheckSchedule" value = "${expirationCheckSchedule}" />
-	</bean>
-	
-	<bean id = "taskDao" class="ru.taskurotta.server.memory.TaskDaoMemory" >
-	   <constructor-arg name="pollDelay" value = "${pollDelay}" />
-	</bean>
-	
+    
+    <bean id = "taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskExpirationRecovery">
+        <property name="limit" value = "100" />
+        <property name="schedule" value = "${expirationCheckSchedule}" />
+        <property name="queueBackend" ref="queueBackend" />
+        <property name="storageBackend" ref="storageBackend" />
+    </bean>
+    
+    <bean id = "queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend" >
+        <constructor-arg name="pollDelay" value = "${pollDelay}" />
+    </bean>
+    <bean id = "storageBackend" class="ru.taskurotta.backend.storage.MemoryStorageBackend" />
+    <bean id = "dependencyBackend" class="ru.taskurotta.backend.dependency.MemoryDependencyBackend" />
+    
 	<bean id = "checkTaskServer" class = "ru.taskurotta.dropwizard.health.CheckTaskServer">
 		<constructor-arg name="name" value="check task server" />
-		<property name="taskServer" ref="taskServerGeneral" />
+		<property name="taskServer" ref="taskServer" />
 	</bean>
 	
 </beans>

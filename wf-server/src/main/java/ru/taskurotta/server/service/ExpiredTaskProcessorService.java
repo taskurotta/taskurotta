@@ -8,27 +8,28 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taskurotta.backend.config.ConfigBackend;
+import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.server.TaskDao;
-import ru.taskurotta.server.config.ActorConfig;
-import ru.taskurotta.server.config.ServerConfig;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
+import ru.taskurotta.util.ActorDefinition;
 
 public class ExpiredTaskProcessorService implements Runnable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ExpiredTaskProcessorService.class);
 	
-	private ServerConfig serverConfig;
+	private ConfigBackend configBackend;
 	private TaskDao taskDao;
 	private String schedule;
-	private Map<String, ExpirationPolicy> expirationPolicyMap = new HashMap<String, ExpirationPolicy>();
+	private final Map<ActorDefinition, ExpirationPolicy> expirationPolicyMap = new HashMap<ActorDefinition, ExpirationPolicy>();
 	
 	
 	public void init() {
-		if(serverConfig != null) {
+		if(configBackend != null) {
 			try {
-				for(ActorConfig actorConfig: serverConfig.getActorConfigs()) {
+				for(ActorPreferences actorPrefs: configBackend.getActorPreferences()) {
 					ExpirationPolicy expPolicy = null;
-					ActorConfig.ExpirationPolicyConfig expPolicyConf = actorConfig.getExpirationPolicy();
+					ActorPreferences.ExpirationPolicyConfig expPolicyConf = actorPrefs.getExpirationPolicy();
 
 					if(expPolicyConf!=null) {
 						Class<?> expPolicyClass = Class.forName(expPolicyConf.getClassName());
@@ -40,13 +41,14 @@ public class ExpiredTaskProcessorService implements Runnable {
 							expPolicy = (ExpirationPolicy) expPolicyClass.newInstance();
 						}
 						
-						expirationPolicyMap.put(actorConfig.getActorQueueId(), expPolicy);
+						ActorDefinition actorDefinition = ActorDefinition.valueOf(actorPrefs.getClassName(), actorPrefs.getVersion()); 
+						expirationPolicyMap.put(actorDefinition, expPolicy);
 					}
 					
 				}
 				
 			} catch(Exception e) {
-				logger.error("ExpiredTaskProcessorService#init invocation exception! ServerConfig["+serverConfig+"]", e);
+				logger.error("ExpiredTaskProcessorService#init invocation exception! configBackend["+configBackend+"]", e);
 				throw new RuntimeException(e);
 			}
 		}		
@@ -55,19 +57,18 @@ public class ExpiredTaskProcessorService implements Runnable {
 	@Override
 	public void run() {
 		while(repeat(schedule)) {
-			for(String actorQueueId: expirationPolicyMap.keySet()) {
-				ExpirationPolicy ePolicy =  expirationPolicyMap.get(actorQueueId);
-				int reScheduled = taskDao.reScheduleTasks(actorQueueId, ePolicy);
+			for(ActorDefinition actorDef: expirationPolicyMap.keySet()) {
+				ExpirationPolicy ePolicy =  expirationPolicyMap.get(actorDef);
+				int reScheduled = taskDao.reScheduleTasks(actorDef, ePolicy);
 				if(reScheduled > 0) {
-					logger.info("[{}] tasks reScheduled due to expiration policy of actorId[{}]", reScheduled, actorQueueId);	
+					logger.info("[{}] tasks reScheduled due to expiration policy of actorId[{}]", reScheduled, actorDef);	
 				}
-				
 			}
 		}
 	}
 
-	public void setServerConfig(ServerConfig serverConfig) {
-		this.serverConfig = serverConfig;
+	public void setConfigBackend(ConfigBackend configBackend) {
+		this.configBackend = configBackend;
 	}
 
 	public void setTaskDao(TaskDao taskDao) {

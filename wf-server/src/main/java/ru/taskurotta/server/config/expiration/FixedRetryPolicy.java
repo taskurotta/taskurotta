@@ -10,8 +10,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taskurotta.server.model.TaskObject;
-
 /**
  *  Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
  */
@@ -47,40 +45,34 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 		}
 		logger.debug("FixedRetryPolicy created. retry[{}], timeout[{}], timeUnit[{}], props[{}]", this.retry, this.timeout, this.timeUnit, props);
 	}
-	
+		
 	@Override
-	public boolean isScheduleAgain(TaskObject task) {
-		//TODO: some additional checks?
-		return needRetry(task);
+	public long getExpirationTimeout(Date forDate) {
+		//Same timeout for any date
+		return timeout;
 	}
 
-	
-	private boolean needRetry(TaskObject task) {
+	@Override
+	public long getNextStartTime(UUID taskUuid, long taskStartTime) {
+		return new Date().getTime();//start retried tasks right away
+	}
+
+	@Override
+	public boolean readyToRecover(UUID uuid) {
 		boolean result = true;
 		if(retry > 0) {
-			Integer taskRetry = expirations.get(task.getTaskId());
+			Integer taskRetry = expirations.get(uuid);
 			
 			if(taskRetry == null || taskRetry < retry) {
-				expirations.put(task.getTaskId(), Integer.valueOf(taskRetry==null?1: taskRetry.intValue()+1));
+				expirations.put(uuid, Integer.valueOf(taskRetry==null?1: taskRetry.intValue()+1));
 			} else {
 				result = false;
+				logger.error("Task[{}] expiration policy commit failed: Task has been already retried for [{}]/[{}] times", uuid, taskRetry, retry);
 			}
 			
 		}
-		return result;		
-	}
-	
-	@Override
-	public Date getNextExpirationDate(Date forDate) {
-		Date result = null;
-		if(timeout > 0) {
-			long cur = forDate!=null? forDate.getTime(): 0;
-			long expirationTime = timeUnit.toMillis(timeout);
-			
-			result = new Date(cur+expirationTime);
-		}
-		
 		return result;
+		
 	}
 
 

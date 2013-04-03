@@ -12,17 +12,17 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taskurotta.core.ArgType;
-import ru.taskurotta.core.TaskType;
-import ru.taskurotta.server.config.ServerConfig;
-import ru.taskurotta.server.config.ServerConfigAware;
-import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.backend.storage.model.TaskStateObject;
-import ru.taskurotta.server.service.ExpiredTaskProcessorService;
+import ru.taskurotta.backend.config.ConfigBackend;
+import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
+import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.TaskType;
+import ru.taskurotta.server.model.TaskObject;
+import ru.taskurotta.server.service.ExpiredTaskProcessorService;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -30,7 +30,7 @@ import ru.taskurotta.util.ActorDefinition;
  * Date: 2/25/13
  * Time: 1:09 PM
  */
-public class TaskServerGeneral implements TaskServer, ServerConfigAware {
+public class TaskServerGeneral implements TaskServer, ConfigBackendAware {
 
     private final static Logger log = LoggerFactory.getLogger(TaskServerGeneral.class);
 
@@ -38,9 +38,9 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
 
     private TaskDao taskDao;
     
-    private ServerConfig serverConfig;
+    private ConfigBackend configBackend;
     
-    private String expirationCheckSchedule;
+	private String expirationCheckSchedule;
     
 	public TaskServerGeneral(TaskDao taskDao) {
 
@@ -387,7 +387,7 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
     public void runExpiredTaskScheduler() throws ParseException {
 		if(expirationCheckSchedule!=null && expirationCheckSchedule.trim().length()>0) {
 			ExpiredTaskProcessorService service = new ExpiredTaskProcessorService();
-			service.setServerConfig(serverConfig);
+			service.setConfigBackend(configBackend);
 			service.setTaskDao(taskDao);
 			service.setSchedule(expirationCheckSchedule);
 			service.init();
@@ -397,14 +397,13 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
 			runner.start();
 	    }
 	}
-
-	public void setServerConfig(ServerConfig serverConfig) {
-		this.serverConfig = serverConfig;
-	}
 	
 	public void setExpirationCheckSchedule(String expirationCheckSchedule) {
 		this.expirationCheckSchedule = expirationCheckSchedule;
 	}
-
+	
+    public void setConfigBackend(ConfigBackend configBackend) {
+		this.configBackend = configBackend;
+	}
 
 }
