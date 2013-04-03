@@ -15,7 +15,8 @@
             <list>
                 <value>start</value>
                 <value>taskB, taskC, process</value>
-                <value>taskE</value>
+                <value>taskD</value>
+                <value>finish</value>
             </list>
         </constructor-arg>
     </bean>

@@ -9,5 +9,5 @@ import ru.taskurotta.annotation.Worker;
 public interface FastWorker {
 	public int taskB();
 	public int taskC();
-	public int taskE(int b);
+	public int taskD(int b);
 }

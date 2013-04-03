@@ -30,9 +30,9 @@ public class FastWorkerImpl implements FastWorker {
 	}
 
 	@Override
-	public int taskE(int b) {
-		log.info("taskE({})", b);
-		arbiter.notify("taskE");
+	public int taskD(int b) {
+		log.info("taskD({})", b);
+		arbiter.notify("taskD");
 		return 3;
 	}
 

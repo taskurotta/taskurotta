@@ -25,7 +25,8 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 		arbiter.notify("start");
 		Promise<Integer> pB = worker.taskB();
 		Promise<Integer> pC = worker.taskC();
-		async.process(pB, pC);
+		Promise<Integer> pProcess = async.process(pB, pC);
+		async.finish(pProcess);
 	}
 
 	@Asynchronous
@@ -33,7 +34,13 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 		log.info("process({}, {})", b, c.get());
 		arbiter.notify("process");
 		log.info("process done");
-		return worker.taskE(b);
+		return worker.taskD(b);
+	}
+
+	@Asynchronous
+	public void finish(Promise<Integer> p) {
+		log.info("finish: {}", p.get());
+		arbiter.notify("finish");
 	}
 
 	public void setWorker(FastWorkerClient worker) {

@@ -25,7 +25,7 @@ public class NoWaitTest {
 		BasicFlowArbiter arbiter = mainRuntimeConfig.getApplicationContext().getBean("arbiter", BasicFlowArbiter.class);
 		bootstrap.start(config);
 
-		assertTrue(arbiter.waitForFinish(20000));
+		assertTrue(arbiter.waitForFinish(10000));
 
 	}
 }
