@@ -33,8 +33,8 @@ public class SimpleProfiler implements Profiler {
     public TaskSpreader decorate(final TaskSpreader taskSpreader) {
         return new TaskSpreader() {
             @Override
-            public Task pull() {
-                return taskSpreader.pull();
+            public Task poll() {
+                return taskSpreader.poll();
             }
 
             @Override

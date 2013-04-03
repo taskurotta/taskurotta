@@ -51,10 +51,10 @@ public abstract class ProfilerTest {
 
     @Test
     public void testDecorateTaskSpreader() throws Exception {
-        Task task = getTaskSpreader().pull();
+        Task task = getTaskSpreader().poll();
 
         TaskSpreader decorateTaskSpreader = profiler.decorate(getTaskSpreader());
-        Task taskFromDecorateTaskSpreader = decorateTaskSpreader.pull();
+        Task taskFromDecorateTaskSpreader = decorateTaskSpreader.poll();
 
         assertEquals(task.getTarget(), taskFromDecorateTaskSpreader.getTarget());
     }

@@ -13,7 +13,7 @@ public interface TaskSpreader {
     /**
      * @return then return polled task or null if queue was empty
      */
-    public Task pull();
+    public Task poll();
 
 
     /**
