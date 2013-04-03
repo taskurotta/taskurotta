@@ -54,7 +54,8 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 
 	@Override
 	public long getNextStartTime(UUID taskUuid, long taskStartTime) {
-		return new Date().getTime();//start retried tasks right away
+		//TODO: implement some nextStartTime = nextStartTime(retry) function feature?
+		return taskStartTime;//start retried tasks right away
 	}
 
 	@Override

@@ -46,6 +46,7 @@ public class MemoryStorageBackend implements StorageBackend {
 
 		logger.debug("getTaskToExecute() taskId = [{}]", taskId);
 		if(isLocked(taskId)) {
+			logger.debug("Cannot getTaskToExecute([{}]), it is locked", taskId);
 			return null;
 		}
 		
@@ -202,12 +203,14 @@ public class MemoryStorageBackend implements StorageBackend {
 
 	@Override
 	public boolean lockTask(UUID taskId, String lockerId, Date releaseDate) {
+		boolean result = false;
 		if(!isLocked(taskId)) {
 			locksMap.put(taskId, new Lock(lockerId, releaseDate));
-			return true;
-		} else {
-			return false;	
+			result =  true;
 		}
+		
+		logger.debug("Locking task[{}] result is[{}]", taskId, result);
+		return result;
 	}
 	
 	@Override
@@ -222,7 +225,7 @@ public class MemoryStorageBackend implements StorageBackend {
 				result = false;
 			}
 		}
-		
+		logger.debug("Unlocking task[{}] result is[{}]", taskId, result);
 		return result;
 	}
 
@@ -236,11 +239,5 @@ public class MemoryStorageBackend implements StorageBackend {
 		}
 		return result;
 	}
-
-	@Override
-	public void resetTask(UUID taskId) {
-		id2ProgressMap.remove(taskId);
-	}
-		
 	
 }

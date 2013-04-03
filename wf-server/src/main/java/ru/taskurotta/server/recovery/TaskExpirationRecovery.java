@@ -17,6 +17,7 @@ import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.StorageBackend;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -41,6 +42,7 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 
 	@Override
 	public void run() {
+		logger.debug("TaskExpirationRecovery daemon started. Schedule[{}], limit[{}], expirationPolicies for[{}]", schedule, limit, expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
 		while(repeat(schedule)) {
 			if(expirationPolicyMap!=null && !expirationPolicyMap.isEmpty()) {
 				for(ActorDefinition actorDef: expirationPolicyMap.keySet()) {
@@ -49,19 +51,20 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 
 					List<TaskContainer> expiredTasks = storageBackend.getExpiredTasks(actorDef, timeout, limit);
 					if(expiredTasks!=null && !expiredTasks.isEmpty()) {
+						logger.debug("Try to recover [{}] tasks", expiredTasks.size());
 						int counter = 0;
 						for(TaskContainer task: expiredTasks) {
 							if(ePolicy.readyToRecover(task.getTaskId())) {
-
 								try {
 									storageBackend.lockTask(task.getTaskId(), lockingGuid, new Date(new Date().getTime()+timeout));
-									queueBackend.enqueueItem(actorDef, task.getTaskId(), ePolicy.getNextStartTime(task.getTaskId(), task.getStartTime()));
-									storageBackend.resetTask(task.getTaskId());
+									TaskTarget taskTarget = task.getTarget();
+									queueBackend.enqueueItem(ActorDefinition.valueOf(taskTarget.getName(), taskTarget.getVersion()), task.getTaskId(), ePolicy.getNextStartTime(task.getTaskId(), task.getStartTime()));
 									counter++;
 								} catch(Exception e) {
 									logger.error("Cannot recover task["+task.getTaskId()+"]", e);
 								} finally {
 									storageBackend.unlockTask(task.getTaskId(), lockingGuid);
+									//TODO: is all this locking/unlocking really required?
 								}
 
 							} else {
@@ -71,12 +74,7 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 
 						}
 						
-						String message = "Recovered [{}] tasks due to expiration policy of actor[{}]"; 
-						if(counter > 0) {
-							logger.info(message, counter, actorDef);	
-						} else {
-							logger.debug(message, counter, actorDef);
-						}
+						logger.info("Recovered [{}]/[{}] tasks due to expiration policy of actor[{}]", counter, expiredTasks.size(), actorDef);	
 						
 					}
 				}				
@@ -85,6 +83,7 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 	}
 
 	private void initConfigs(ActorPreferences[] actorPrefs) {
+		logger.debug("Initializing recovery config with actorPrefs[{}]", actorPrefs);
 		if(actorPrefs!=null) {
 			try {
 				expirationPolicyMap = new HashMap<ActorDefinition, ExpirationPolicy>();

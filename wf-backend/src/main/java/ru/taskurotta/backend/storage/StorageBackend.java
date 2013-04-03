@@ -95,6 +95,4 @@ public interface StorageBackend {
      */
     public boolean unlockTask(UUID taskId, String lockerId);
     
-    public void resetTask(UUID taskId);
-
 }

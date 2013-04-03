@@ -33,7 +33,7 @@
 	</bean>
     
     <bean id = "taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskExpirationRecovery">
-        <property name="limit" value = "100" />
+        <property name="limit" value = "${expirationCheckLimit}" />
         <property name="schedule" value = "${expirationCheckSchedule}" />
         <property name="queueBackend" ref="queueBackend" />
         <property name="storageBackend" ref="storageBackend" />
