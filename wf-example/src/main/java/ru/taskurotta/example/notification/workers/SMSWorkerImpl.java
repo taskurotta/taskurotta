@@ -1,4 +1,4 @@
-package ru.taskurotta.example.workers;
+package ru.taskurotta.example.notification.workers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

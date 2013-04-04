@@ -1,4 +1,4 @@
-package ru.taskurotta.example.decider;
+package ru.taskurotta.example.notification.decider;
 
 import ru.taskurotta.annotation.DeciderClient;
 
