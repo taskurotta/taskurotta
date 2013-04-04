@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
@@ -21,7 +20,7 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 import ru.taskurotta.util.ActorDefinition;
 
-public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
+public class TaskExpirationRecovery implements Runnable {
 
 	private static final Logger logger = LoggerFactory.getLogger(TaskExpirationRecovery.class);
 
@@ -101,7 +100,7 @@ public class TaskExpirationRecovery implements Runnable, ConfigBackendAware {
 							expPolicy = (ExpirationPolicy) expPolicyClass.newInstance();
 						}
 
-						expirationPolicyMap.put(ActorDefinition.valueOf(actorConfig.getClassName(), actorConfig.getVersion()), expPolicy);
+						expirationPolicyMap.put(actorConfig.getActorDefinition(), expPolicy);
 					}
 
 				}

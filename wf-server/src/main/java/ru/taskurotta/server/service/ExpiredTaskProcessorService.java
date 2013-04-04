@@ -41,8 +41,7 @@ public class ExpiredTaskProcessorService implements Runnable {
 							expPolicy = (ExpirationPolicy) expPolicyClass.newInstance();
 						}
 						
-						ActorDefinition actorDefinition = ActorDefinition.valueOf(actorPrefs.getClassName(), actorPrefs.getVersion()); 
-						expirationPolicyMap.put(actorDefinition, expPolicy);
+						expirationPolicyMap.put(actorPrefs.getActorDefinition(), expPolicy);
 					}
 					
 				}

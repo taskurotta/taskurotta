@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.impl.ConfigBackendAware;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
@@ -30,7 +29,7 @@ import ru.taskurotta.util.ActorDefinition;
  * Date: 2/25/13
  * Time: 1:09 PM
  */
-public class TaskServerGeneral implements TaskServer, ConfigBackendAware {
+public class TaskServerGeneral implements TaskServer {
 
     private final static Logger log = LoggerFactory.getLogger(TaskServerGeneral.class);
 
