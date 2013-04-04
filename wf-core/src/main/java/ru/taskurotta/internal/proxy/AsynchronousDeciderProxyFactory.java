@@ -11,11 +11,14 @@ import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
+import ru.taskurotta.exception.IncorrectAsynchronousMethodDefinition;
+import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,10 +94,15 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
         String deciderVersion = DeciderProxyFactory.deciderVersion(deciderInterface);
 
         // find @Asynchronous methods
-        Method[] targetMethods = target.getMethods();
+        Method[] targetMethods = target.getDeclaredMethods();
         for (Method method : targetMethods) {
 
             if (method.isAnnotationPresent(Asynchronous.class)) {
+
+                if (!isPublicMethod(method)) {
+                    throw new IncorrectAsynchronousMethodDefinition("Asynchronous method must be public", target);
+                }
+
                 TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
 				MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
                 method2TaskTargetCache.put(method, descriptor);
@@ -105,10 +113,14 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
         /**
          * Find @Execute method
          */
-        for (Method method : deciderInterface.getMethods()) {
+        for (Method method : deciderInterface.getDeclaredMethods()) {
 
             Execute executeAnnotation = method.getAnnotation(Execute.class);
             if (null != executeAnnotation) {
+
+                if (!isPublicMethod(method)) {
+                    throw new IncorrectExecuteMethodDefinition("@Execute method must be public", target);
+                }
 
                 String interfaceMethod = method.getName();
 
@@ -129,5 +141,9 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
 
         return method2TaskTargetCache;
+    }
+
+    private boolean isPublicMethod(Method method) {
+        return Modifier.isPublic(method.getModifiers());
     }
 }
