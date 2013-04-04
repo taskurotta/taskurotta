@@ -16,11 +16,7 @@ public class Main {
 		Bootstrap bootstrap = new Bootstrap();
 		Config config;
 		if(args.length == 0) {
-			config = bootstrap.parseArgs(new String[]{"-r", "wf-config.yml"});
-//    		new Main().run(new String[]{"-r", "wf-config-example2.yml"});
-    		
-//    		Для работы теста сначала нужно запустить DW сервер (wf-server-dw/run.bat)
-//    		new Main().run(new String[]{"-r", "wf-config-example2-jersey.yml"});
+			config = bootstrap.parseArgs(new String[]{"-r", "ru/taskurotta/example/notification/wf-config.yml"});
     	} else {
     		config = bootstrap.parseArgs(args);
     	}

@@ -1,13 +1,13 @@
-package ru.taskurotta.example.decider;
+package ru.taskurotta.example.notification.decider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.example.Profile;
-import ru.taskurotta.example.workers.EmailWorkerClient;
-import ru.taskurotta.example.workers.ProfileWorkerClient;
-import ru.taskurotta.example.workers.SMSWorkerClient;
+import ru.taskurotta.example.notification.Profile;
+import ru.taskurotta.example.notification.workers.EmailWorkerClient;
+import ru.taskurotta.example.notification.workers.ProfileWorkerClient;
+import ru.taskurotta.example.notification.workers.SMSWorkerClient;
 
 /**
  * User: stukushin

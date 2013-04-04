@@ -1,8 +1,8 @@
-package ru.taskurotta.example.workers;
+package ru.taskurotta.example.notification.workers;
 
 import ru.taskurotta.annotation.WorkerClient;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.example.Profile;
+import ru.taskurotta.example.notification.Profile;
 
 /**
  * User: stukushin
