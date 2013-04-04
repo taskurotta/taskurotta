@@ -125,7 +125,7 @@ public class TaskExpirationRecovery implements Runnable {
 		try {
 			Thread.sleep(unit.toMillis(number));
 		} catch (InterruptedException e) {
-			logger.error("ExpiredTaskProcessorService schedule interrupted", e);
+			logger.error("TaskExpirationRecovery schedule interrupted", e);
 		}
 		return true;
 	}
