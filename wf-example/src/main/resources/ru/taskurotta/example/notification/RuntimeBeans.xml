@@ -10,31 +10,31 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
-    <bean id="profileWorker" class="ru.taskurotta.example.workers.ProfileWorkerImpl"/>
+    <bean id="profileWorker" class="ru.taskurotta.example.notification.workers.ProfileWorkerImpl"/>
 
-    <bean id="emailWorker" class="ru.taskurotta.example.workers.EmailWorkerImpl"/>
+    <bean id="emailWorker" class="ru.taskurotta.example.notification.workers.EmailWorkerImpl"/>
 
-    <bean id="smsWorker" class="ru.taskurotta.example.workers.SMSWorkerImpl"/>
+    <bean id="smsWorker" class="ru.taskurotta.example.notification.workers.SMSWorkerImpl"/>
 
-    <bean id="notificationDecider" class="ru.taskurotta.example.decider.NotificationDeciderImpl">
+    <bean id="notificationDecider" class="ru.taskurotta.example.notification.decider.NotificationDeciderImpl">
         <property name="userProfile">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
-                <constructor-arg value="ru.taskurotta.example.workers.ProfileWorkerClient"/>
+                <constructor-arg value="ru.taskurotta.example.notification.workers.ProfileWorkerClient"/>
             </bean>
         </property>
         <property name="emailTransport">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
-                <constructor-arg value="ru.taskurotta.example.workers.EmailWorkerClient"/>
+                <constructor-arg value="ru.taskurotta.example.notification.workers.EmailWorkerClient"/>
             </bean>
         </property>
         <property name="smsTransport">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
-                <constructor-arg value="ru.taskurotta.example.workers.SMSWorkerClient"/>
+                <constructor-arg value="ru.taskurotta.example.notification.workers.SMSWorkerClient"/>
             </bean>
         </property>
         <property name="asynchronous">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
-                <constructor-arg value="ru.taskurotta.example.decider.NotificationDeciderImpl"/>
+                <constructor-arg value="ru.taskurotta.example.notification.decider.NotificationDeciderImpl"/>
             </bean>
         </property>
     </bean>

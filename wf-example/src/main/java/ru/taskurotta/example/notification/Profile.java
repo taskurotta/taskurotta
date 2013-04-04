@@ -1,4 +1,4 @@
-package ru.taskurotta.example;
+package ru.taskurotta.example.notification;
 
 /**
  * User: stukushin

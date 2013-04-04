@@ -1,8 +1,8 @@
-package ru.taskurotta.example;
+package ru.taskurotta.example.notification;
 
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
-import ru.taskurotta.example.decider.NotificationDeciderClient;
+import ru.taskurotta.example.notification.decider.NotificationDeciderClient;
 
 /**
  * User: stukushin

@@ -2,13 +2,13 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: RuntimeBeans.xml
+        context: /ru/taskurotta/example/notification/RuntimeBeans.xml
 
 spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: SpreaderBeans.xml
+        context: ru/taskurotta/example/notification/SpreaderBeans.xml
         properties:
           userId: 10
           message: "Hello!"
@@ -31,28 +31,28 @@ profiler:
 
 actor:
   - NotificationDecider:
-      actorInterface: ru.taskurotta.example.decider.NotificationDecider
+      actorInterface: ru.taskurotta.example.notification.decider.NotificationDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       count: 1
 
   - ProfileWorker:
-      actorInterface: ru.taskurotta.example.workers.ProfileWorker
+      actorInterface: ru.taskurotta.example.notification.workers.ProfileWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       count: 1
 
   - EmailWorker:
-      actorInterface: ru.taskurotta.example.workers.EmailWorker
+      actorInterface: ru.taskurotta.example.notification.workers.EmailWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       count: 1
 
   - SMSWorker:
-      actorInterface: ru.taskurotta.example.workers.SMSWorker
+      actorInterface: ru.taskurotta.example.notification.workers.SMSWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig

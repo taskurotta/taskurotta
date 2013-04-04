@@ -1,7 +1,7 @@
 contextLocation: "classpath*:context/appContext.xml"
 actorConfig:
   actorPreferences:
-    - className: "default"
+    - name: "default"
       version: "default"
       expirationPolicy:
         className: "ru.taskurotta.server.config.expiration.FixedRetryPolicy"

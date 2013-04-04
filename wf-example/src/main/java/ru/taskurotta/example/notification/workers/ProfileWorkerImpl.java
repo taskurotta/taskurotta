@@ -1,8 +1,8 @@
-package ru.taskurotta.example.workers;
+package ru.taskurotta.example.notification.workers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.example.Profile;
+import ru.taskurotta.example.notification.Profile;
 
 /**
  * User: stukushin

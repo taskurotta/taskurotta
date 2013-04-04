@@ -2,7 +2,7 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: example2/RuntimeBeansExample2.xml
+        context: ru/taskurotta/example/calculate/RuntimeBeans.xml
         properties:
           sleep: -1
 
@@ -10,7 +10,7 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: example2/SpreaderBeansExample2.xml
+        context: ru/taskurotta/example/calculate/SpreaderBeans.xml
         properties:
           count: 150
           loggingPeriod: 10000

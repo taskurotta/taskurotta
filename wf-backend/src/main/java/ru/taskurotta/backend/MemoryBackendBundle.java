@@ -1,7 +1,7 @@
 package ru.taskurotta.backend;
 
 import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.impl.YamlConfigBackend;
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
@@ -30,7 +30,7 @@ public class MemoryBackendBundle implements BackendBundle {
         this.taskBackend = new MemoryTaskBackend();
         this.queueBackend = new MemoryQueueBackend(pollDelay);
         this.dependencyBackend = new MemoryDependencyBackend();
-        this.configBackend = new YamlConfigBackend();
+        this.configBackend = new MemoryConfigBackend();
     }
 
     @Override
