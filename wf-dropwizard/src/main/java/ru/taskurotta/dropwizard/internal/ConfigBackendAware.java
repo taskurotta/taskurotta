@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.config.impl;
+package ru.taskurotta.dropwizard.internal;
 
 import ru.taskurotta.backend.config.ConfigBackend;
 

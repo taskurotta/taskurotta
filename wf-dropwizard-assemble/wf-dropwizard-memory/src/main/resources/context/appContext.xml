@@ -21,16 +21,21 @@
 		<property name="taskServer" ref="taskServer" />
 	</bean>
 	
-	<bean id = "taskServer" class="ru.taskurotta.dropwizard.internal.SpringGeneralTaskServer">
-	   <property name="daemonTasks">
-	       <map>
-	           <entry key="TaskExpirationRecovery" value-ref="taskExpirationRecoveryDaemon" />
-	       </map>
-	   </property>
-	   <property name="dependencyBackend" ref="dependencyBackend" />
-	   <property name="queueBackend" ref="queueBackend" />
-	   <property name="taskBackend" ref="taskBackend" />
-	   <property name="processBackend" ref="processBackend" />
+	<bean id = "taskServer" class="ru.taskurotta.dropwizard.internal.TaskServerWrapper" >
+	   <property name="taskServer" ref="taskServerGeneral" />
+       <property name="daemonTasks">
+           <map>
+               <entry key="TaskExpirationRecovery" value-ref="taskExpirationRecoveryDaemon" />
+           </map>
+       </property>    
+	</bean>
+	
+	<bean id = "taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer" >
+	   <constructor-arg name="configBackend" ref="configBackend" />
+	   <constructor-arg name="dependencyBackend" ref="dependencyBackend" />
+	   <constructor-arg name="processBackend" ref="processBackend" />
+	   <constructor-arg name="queueBackend" ref="queueBackend" />
+	   <constructor-arg name="taskBackend" ref="taskBackend" />
 	</bean>
     
     <bean id = "taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskExpirationRecovery">
@@ -38,6 +43,7 @@
         <property name="schedule" value = "${expirationCheckSchedule}" />
         <property name="queueBackend" ref="queueBackend" />
         <property name="taskBackend" ref="taskBackend" />
+        <property name="configBackend" ref="configBackend" />
     </bean>
     
     <bean id = "queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend" >
@@ -46,7 +52,7 @@
     <bean id = "taskBackend" class="ru.taskurotta.backend.storage.MemoryTaskBackend" />
     <bean id = "dependencyBackend" class="ru.taskurotta.backend.dependency.MemoryDependencyBackend" />
     <bean id = "processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
-    
+    <bean id = "configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend" />
     
 	<bean id = "checkTaskServer" class = "ru.taskurotta.dropwizard.health.CheckTaskServer">
 		<constructor-arg name="name" value="check task server" />

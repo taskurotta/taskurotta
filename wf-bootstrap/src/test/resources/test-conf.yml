@@ -1,12 +1,12 @@
 runtime:
   - TestRuntimeConfig:
-      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      class: ru.taskurotta.spring.test.configs.RuntimeConfigPathXmlApplicationContext
       instance:
         context: RuntimeBeans.xml
 
 spreader:
   - TestTaskSpreaderConfig:
-      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      class: ru.taskurotta.spring.test.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         context: SpreaderBeans.xml
         properties:

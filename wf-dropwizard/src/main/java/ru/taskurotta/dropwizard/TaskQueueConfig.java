@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import ru.taskurotta.backend.config.impl.YamlConfigBackend;
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.dropwizard.internal.pooling.InternalPoolConfig;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +16,7 @@ public class TaskQueueConfig extends Configuration {
 	private Properties properties;
 	
 	@JsonProperty
-	private YamlConfigBackend actorConfig;
+	private MemoryConfigBackend actorConfig;
 	
 	@JsonProperty
 	private InternalPoolConfig internalPoolConfig;
@@ -49,11 +49,11 @@ public class TaskQueueConfig extends Configuration {
 		this.internalPoolConfig = internalPoolConfig;
 	}
 
-	public YamlConfigBackend getActorConfig() {
+	public MemoryConfigBackend getActorConfig() {
 		return actorConfig;
 	}
 
-	public void setActorConfig(YamlConfigBackend actorConfig) {
+	public void setActorConfig(MemoryConfigBackend actorConfig) {
 		this.actorConfig = actorConfig;
 	}
 	
