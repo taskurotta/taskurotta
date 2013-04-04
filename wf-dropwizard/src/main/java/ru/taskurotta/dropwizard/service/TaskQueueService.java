@@ -15,7 +15,6 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
-import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.dropwizard.TaskQueueConfig;
 import ru.taskurotta.dropwizard.internal.ConfigBackendAware;
 
