@@ -1,11 +1,11 @@
 package ru.taskurotta.internal.core;
 
+import ru.taskurotta.core.TaskOptions;
+import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskTarget;
+
 import java.util.Arrays;
 import java.util.UUID;
-
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.core.TaskTarget;
 
 /**
  * User: stukushin, romario
@@ -14,110 +14,111 @@ import ru.taskurotta.core.TaskTarget;
  */
 public class TaskImpl implements Task {
 
-	private UUID uuid;
-	private TaskTarget taskTarget;
-	private Object[] args;
+    private UUID uuid;
+    private TaskTarget taskTarget;
+    private long startTime;
+    private int numberOfAttempts = 0;
+    private Object[] args;
 	private TaskOptions taskOptions;
 
 
-	public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args) {
-		this(uuid, taskTarget, args, null);
-	}
+    public TaskImpl(UUID uuid, TaskTarget taskTarget, long startTime, int numberOfAttempts, Object[] args, TaskOptions taskOptions) {
 
-	public TaskImpl(UUID uuid, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
+        if (uuid == null) {
+            throw new IllegalArgumentException("uuid can not be null!");
+        }
 
-		if (uuid == null) {
-			throw new IllegalArgumentException("uuid can not be null!");
-		}
+        this.uuid = uuid;
 
-		this.uuid = uuid;
+        if (taskTarget == null) {
+            throw new IllegalArgumentException("taskTarget can not be null!");
+        }
 
-		if (taskTarget == null) {
-			throw new IllegalArgumentException("taskTarget can not be null!");
-		}
+        this.taskTarget = taskTarget;
+        this.startTime = startTime;
+        this.numberOfAttempts = numberOfAttempts;
 
-		this.taskTarget = taskTarget;
-
-		this.args = args;
+        this.args = args;
 
 		if (taskOptions == null) {
 			this.taskOptions = new TaskOptions(null);
 		} else {
 			this.taskOptions = taskOptions;
 		}
-	}
+    }
 
 
-	public TaskImpl(TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
-		this(UUID.randomUUID(), taskTarget, args, taskOptions);
-	}
-
-	public TaskImpl(TaskTarget taskTarget, Object[] args) {
-		this(UUID.randomUUID(), taskTarget, args);
-	}
+    @Override
+    public UUID getId() {
+        return uuid;
+    }
 
 
-	@Override
-	public UUID getId() {
-		return uuid;
-	}
+    @Override
+    public TaskTarget getTarget() {
+        return taskTarget;
+    }
 
 
-	@Override
-	public TaskTarget getTarget() {
-		return taskTarget;
-	}
+    @Override
+    public Object[] getArgs() {
+        return args;
+    }
 
+    @Override
+    public long getStartTime() {
+        return startTime;
+    }
 
-	@Override
-	public Object[] getArgs() {
-		return args;
-	}
+    @Override
+    public int getNumberOfAttempts() {
+        return numberOfAttempts;
+    }
 
-	public TaskOptions getTaskOptions() {
+    public TaskOptions getTaskOptions() {
 		return taskOptions;
 	}
 
 	@Override
-	public boolean equals(Object o) {
+    public boolean equals(Object o) {
 
-		if (this == o) return true;
-		if (!(o instanceof Task)) return false;
+        if (this == o) return true;
+        if (!(o instanceof Task)) return false;
 
-		Task that = (Task) o;
+        Task that = (Task) o;
 
-		if (!uuid.equals(that.getId())) return false;
-		if (!taskTarget.equals(that.getTarget())) return false;
+        if (!uuid.equals(that.getId())) return false;
+        if (!taskTarget.equals(that.getTarget())) return false;
 
-		Object[] thatArgs = that.getArgs();
+        Object[] thatArgs = that.getArgs();
 
-		// if (args == null && thatArgs) we assume that it is empty
-		if ((args == null && thatArgs != null)
-				|| (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
+        // if (args == null && thatArgs) we assume that it is empty
+        if ((args == null && thatArgs != null)
+                || (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
 
 		if (!taskOptions.equals(that.getTaskOptions()))
 			return false;
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public int hashCode() {
-		int result = uuid.hashCode();
-		result = 31 * result + taskTarget.hashCode();
-		result = 31 * result + Arrays.deepHashCode(args);
+    @Override
+    public int hashCode() {
+        int result = uuid.hashCode();
+        result = 31 * result + taskTarget.hashCode();
+        result = 31 * result + Arrays.deepHashCode(args);
 		result = 31 * result + taskOptions.hashCode();
 
-		return result;
-	}
+        return result;
+    }
 
 
 	@Override
-	public String toString() {
-		return "TaskImpl{" +
-				"uuid=" + uuid +
-				", taskTarget='" + taskTarget + '\'' +
-				", args=" + (args == null ? "null" : Arrays.toString(args)) +
-				"}";
-	}
+    public String toString() {
+        return "TaskImpl{" +
+                "uuid=" + uuid +
+                ", taskTarget='" + taskTarget + '\'' +
+                ", args=" + (args == null ? "null" : Arrays.toString(args)) +
+                "}";
+    }
 
 }

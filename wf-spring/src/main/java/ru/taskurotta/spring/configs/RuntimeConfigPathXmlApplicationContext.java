@@ -31,6 +31,9 @@ public class RuntimeConfigPathXmlApplicationContext implements RuntimeConfig {
 
     @Override
     public void init() {
+
+        logger.debug("context [{}]", context);
+
         if (applicationContext == null) {
             applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
 
@@ -41,11 +44,11 @@ public class RuntimeConfigPathXmlApplicationContext implements RuntimeConfig {
             applicationContext.refresh();
         }
 
-        Class runtimeProviderClass = RuntimeProvider.class;
+        Class<RuntimeProvider> runtimeProviderClass = RuntimeProvider.class;
 
         try {
             try {
-                runtimeProvider = (RuntimeProvider) applicationContext.getBean(runtimeProviderClass);
+                runtimeProvider = applicationContext.getBean(runtimeProviderClass);
             } catch (NoSuchBeanDefinitionException e) {
                 logger.debug("Not found bean of [{}]", runtimeProviderClass);
             }

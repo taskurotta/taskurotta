@@ -1,11 +1,5 @@
 package ru.taskurotta.bootstrap;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -15,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.config.ActorConfig;
 import ru.taskurotta.bootstrap.config.Config;
-import ru.taskurotta.bootstrap.config.LoggingConfig;
 import ru.taskurotta.bootstrap.config.ProfilerConfig;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
@@ -23,69 +16,80 @@ import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * User: stukushin
  * Date: 06.02.13
  * Time: 14:53
  */
-public abstract class Bootstrap {
-	private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
+public class Bootstrap {
+    private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
-	protected void run(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
-		ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
-		parser.addArgument("-f", "--file")
-				.required(false)
-				.help("Specify config file to use");
+	private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
 
-		parser.addArgument("-r", "--resource")
-				.required(false)
-				.help("Specify resource file (in classpath) to use");
+    public Config parseArgs(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+        ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
+        parser.addArgument("-f", "--file")
+                .required(false)
+                .help("Specify config file to use");
 
-		Namespace namespace = parser.parseArgs(args);
+        parser.addArgument("-r", "--resource")
+                .required(false)
+                .help("Specify resource file (in classpath) to use");
 
-		Config config = null;
+        Namespace namespace = parser.parseArgs(args);
 
-		String configFileName = namespace.getString("file");
+        Config config = null;
 
-		if (configFileName != null) {
+        String configFileName = namespace.getString("file");
 
-			File configFile = new File(configFileName);
-			if (configFile.exists()) {
+        if (configFileName != null) {
+			logger.debug("Config file is [{}]", configFileName);
 
-				config = Config.valueOf(configFile);
-			} else {
+            File configFile = new File(configFileName);
+            if (configFile.exists()) {
+                config = Config.valueOf(configFile);
+            } else {
+				System.out.println("Configuration file doesn't exist: " + configFileName);
+                parser.printHelp();
+                return null;
+            }
 
-				System.out.println("File doesn't exist: " + configFileName);
-				parser.printHelp();
-				return;
-			}
+        }
 
-		}
+        String resourceFileName = namespace.getString("resource");
 
-		String resourceFileName = namespace.getString("resource");
+        if (resourceFileName != null) {
 
-		if (resourceFileName != null) {
+            URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
+            logger.debug("Config file URL is [{}]", configPath);
 
-			URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
-			logger.debug("Config file URL is [{}]", configPath);
+            if (configPath != null) {
+                config = Config.valueOf(configPath);
+            } else {
+                System.out.println("Resource file (in classpath) doesn't exist: " + resourceFileName);
+                parser.printHelp();
+                return null;
+            }
+        }
 
-			if (configPath != null) {
-				config = Config.valueOf(configPath);
-			} else {
+        if (config == null) {
+            System.out.println("Config file doesn't specified");
+            parser.printHelp();
+            return null;
+        }
 
-				System.out.println("Resource file (in classpath) doesn't exist: " + configFileName);
-				parser.printHelp();
-				return;
-			}
-		}
+		return config;
+	}
 
-		if (config == null) {
-			System.out.println("Config file doesn't specified");
-			parser.printHelp();
-			return;
-		}
-
-
+	public void start(Config config) {
 		for (ActorConfig actorConfig : config.actorConfigs) {
 
 			Class actorClass;
@@ -103,15 +107,11 @@ public abstract class Bootstrap {
 			RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
 			RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
 
-			LoggingConfig loggingConfig = config.loggingConfigs.get(actorConfig.getLoggingConfig());
-			if (loggingConfig != null) {
-				loggingConfig.init();
-			}
-
 			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
 			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
 			ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
+			executors.add(actorExecutor);
 
 			int count = actorConfig.getCount();
 			ExecutorService executorService = Executors.newFixedThreadPool(count);
@@ -119,6 +119,12 @@ public abstract class Bootstrap {
 			for (int i = 0; i < count; i++) {
 				executorService.execute(actorExecutor);
 			}
+		}
+	}
+
+	public void stop() {
+		for (ActorExecutor executor : executors) {
+			executor.stop();
 		}
 	}
 

@@ -1,14 +1,13 @@
 package ru.taskurotta.client.memory;
 
+import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.client.internal.DeciderClientProviderCommon;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
-import ru.taskurotta.server.TaskDao;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.server.TaskServerGeneral;
-import ru.taskurotta.server.memory.TaskDaoMemory;
 
 /**
  * User: romario
@@ -20,8 +19,8 @@ public class ClientServiceManagerMemory implements ClientServiceManager {
     private TaskServer taskServer;
 
     public ClientServiceManagerMemory() {
-        TaskDao taskDao = new TaskDaoMemory();
-        taskServer = new TaskServerGeneral(taskDao);
+        MemoryBackendBundle memoryBackendBundle = new MemoryBackendBundle(60);
+        taskServer = new GeneralTaskServer(memoryBackendBundle);
     }
 
     public ClientServiceManagerMemory(TaskServer taskServer) {

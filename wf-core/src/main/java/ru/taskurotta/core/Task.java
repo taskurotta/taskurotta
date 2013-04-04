@@ -40,5 +40,23 @@ public interface Task {
 	 */
 	public Object[] getArgs();
 
+    /**
+     * Time in milliseconds when task should be started.
+     * @return
+     */
+    public long getStartTime();
+
+    /**
+     * Returns number of attempts to perform the task.
+     * @return
+     */
+    public int getNumberOfAttempts();
+
+    /**
+     * Several options of task scheduling. This field always null on tasks received from server because this information
+     * not needed on client side.
+     *
+     * @return
+     */
 	public TaskOptions getTaskOptions();
 }

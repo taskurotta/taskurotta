@@ -1,0 +1,26 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/nowait/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/nowait/SpreaderBeans.xml
+        properties:
+          foo: bar
+
+actor:
+  - FibonacciDecider:
+      actorInterface: ru.taskurotta.recipes.nowait.decider.NoWaitDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+  - FastWorker:
+      actorInterface: ru.taskurotta.recipes.nowait.workers.FastWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 2

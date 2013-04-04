@@ -7,20 +7,20 @@
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder/>
-    <context:annotation-config/>
+    <context:annotation-config />
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory">
-        <constructor-arg name="taskServer" ref="taskServerGeneral"/>
+    	<constructor-arg name="taskServer" ref = "taskServerGeneral" />
     </bean>
-
-    <bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral">
-        <constructor-arg name="taskDao" ref="taskDaoMemory"/>
+    
+    <bean id = "taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer" >
+    	<constructor-arg name="backendBundle" ref="memoryBackendBundle" />
     </bean>
-
-    <bean id="taskDaoMemory" class="ru.taskurotta.server.memory.TaskDaoMemory">
-        <constructor-arg name="pollDelay" value="${taskPollDelay}"/>
+    
+    <bean id = "memoryBackendBundle" class="ru.taskurotta.backend.MemoryBackendBundle" >
+    	<constructor-arg name = "pollDelay" value = "${taskPollDelay}" />
     </bean>
-
+    
     <bean id="taskCreator" class="ru.taskurotta.example.calculate.WorkflowStarter" init-method="startWork">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>

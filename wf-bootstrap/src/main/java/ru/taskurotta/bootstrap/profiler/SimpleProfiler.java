@@ -12,44 +12,41 @@ import ru.taskurotta.core.TaskDecision;
  */
 public class SimpleProfiler implements Profiler {
 
-	public SimpleProfiler(Class actorClass) {
-	}
+    public SimpleProfiler(Class actorClass) {}
 
-	@Override
-	public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
-		return new RuntimeProcessor() {
-			@Override
-			public TaskDecision execute(Task task) {
-				return runtimeProcessor.execute(task);
-			}
+    @Override
+    public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
+        return new RuntimeProcessor() {
+            @Override
+            public TaskDecision execute(Task task) {
+                return runtimeProcessor.execute(task);
+            }
 
-			@Override
-			public Task[] execute(Runnable runnable) {
-				return runtimeProcessor.execute(runnable);
-			}
-		};
-	}
+            @Override
+            public Task[] execute(Runnable runnable) {
+                return runtimeProcessor.execute(runnable);
+            }
+        };
+    }
 
-	@Override
-	public TaskSpreader decorate(final TaskSpreader taskSpreader) {
-		return new TaskSpreader() {
-			@Override
-			public Task pull() {
-				return taskSpreader.pull();
-			}
+    @Override
+    public TaskSpreader decorate(final TaskSpreader taskSpreader) {
+        return new TaskSpreader() {
+            @Override
+            public Task pull() {
+                return taskSpreader.pull();
+            }
 
-			@Override
-			public void release(TaskDecision taskDecision) {
-				taskSpreader.release(taskDecision);
-			}
-		};
-	}
+            @Override
+            public void release(TaskDecision taskDecision) {
+                taskSpreader.release(taskDecision);
+            }
+        };
+    }
 
-	@Override
-	public void cycleStart() {
-	}
+    @Override
+    public void cycleStart() {}
 
-	@Override
-	public void cycleFinish() {
-	}
+    @Override
+    public void cycleFinish() {}
 }

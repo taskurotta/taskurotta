@@ -5,12 +5,9 @@ import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,18 +45,18 @@ public class AssertFlowComparatorTest {
         Object[] args2_1 = new Object[]{10, true, "string"};
         Object[] args2_2 = new Object[]{10, false, "string"};
 
-        task1_1 = new TaskImpl(taskTarget1_1, args1_1);
-        task1_2 = new TaskImpl(taskTarget1_2, args1_2);
-        task2_1 = new TaskImpl(taskTarget2, args2_1);
-        task2_2 = new TaskImpl(taskTarget2, args2_2);
+        task1_1 = TestTasks.newInstance(taskTarget1_1, args1_1);
+        task1_2 = TestTasks.newInstance(taskTarget1_2, args1_2);
+        task2_1 = TestTasks.newInstance(taskTarget2, args2_1);
+        task2_2 = TestTasks.newInstance(taskTarget2, args2_2);
     }
 
 
     @Test(expected = TestFailedError.class)
     public void testEqualsWithDifferentSizeOfLists() {
 
-        Task[] expectedTasks = new Task[] {task1_1, task1_1};
-        Task[] interceptedTasks = new Task[] {task1_1};
+        Task[] expectedTasks = new Task[]{task1_1, task1_1};
+        Task[] interceptedTasks = new Task[]{task1_1};
 
         AssertFlowComparator.assertEquals(expectedTasks, interceptedTasks, promise1, promise1);
     }
@@ -67,8 +64,8 @@ public class AssertFlowComparatorTest {
     @Test(expected = TestFailedError.class)
     public void testEqualsWithDifferentTaskTargets() {
 
-        Task[] expectedTasks = new Task[] {task1_1};
-        Task[] interceptedTasks = new Task[] {task2_1};
+        Task[] expectedTasks = new Task[]{task1_1};
+        Task[] interceptedTasks = new Task[]{task2_1};
 
         AssertFlowComparator.assertEquals(expectedTasks, interceptedTasks, promise1, promise1);
     }
@@ -77,8 +74,8 @@ public class AssertFlowComparatorTest {
     @Test()
     public void testEqualsWithEqualsTaskTargets() {
 
-        Task[] expectedTaskList = new Task[] {task1_1};
-        Task[] interceptedTaskList = new Task[] {task1_2};
+        Task[] expectedTaskList = new Task[]{task1_1};
+        Task[] interceptedTaskList = new Task[]{task1_2};
 
         AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, promise1, promise1);
     }
@@ -86,8 +83,8 @@ public class AssertFlowComparatorTest {
     @Test(expected = TestFailedError.class)
     public void testEqualsWithDifferentTaskArguments() {
 
-        Task[] expectedTaskList = new Task[] {task2_1};
-        Task[] interceptedTaskList = new Task[] {task2_2};
+        Task[] expectedTaskList = new Task[]{task2_1};
+        Task[] interceptedTaskList = new Task[]{task2_2};
 
         AssertFlowComparator.assertEquals(expectedTaskList, interceptedTaskList, promise1, promise1);
     }
@@ -147,8 +144,8 @@ public class AssertFlowComparatorTest {
         Object[] a1 = new Object[]{1, p1, 2};
         Object[] a2 = new Object[]{1, p2, 2};
 
-		boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
-		assertTrue(result);
+        boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
+        assertTrue(result);
     }
 
     @Test
@@ -159,8 +156,8 @@ public class AssertFlowComparatorTest {
         Object[] a1 = new Object[]{1, p1, 2};
         Object[] a2 = new Object[]{1, p2, 2};
 
-		boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
-		assertFalse(result);
+        boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
+        assertFalse(result);
     }
 
     @Test
@@ -171,8 +168,8 @@ public class AssertFlowComparatorTest {
         Object[] a1 = new Object[]{1, p1, 2};
         Object[] a2 = new Object[]{1, p2, 2};
 
-		boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
-		assertFalse(result);
+        boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
+        assertFalse(result);
     }
 
     @Test
@@ -183,9 +180,9 @@ public class AssertFlowComparatorTest {
         Object[] a1 = new Object[]{1, p1, 2};
         Object[] a2 = new Object[]{1, p2, 2};
 
-		boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
-		assertFalse(!result);
-	}
+        boolean result = AssertFlowComparator.deepEquals(a1, a2, emptyTaskUuidToSequenceMap, emptyTaskUuidToSequenceMap);
+        assertFalse(!result);
+    }
 
 
     @Test

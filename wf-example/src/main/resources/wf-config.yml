@@ -26,6 +26,8 @@ profiler:
           trackPull: true
           trackRelease: true
           trackError: false
+          logOutput: false
+          consoleOutput: false
 
 actor:
   - NotificationDecider:

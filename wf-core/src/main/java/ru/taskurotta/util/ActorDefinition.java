@@ -6,6 +6,8 @@ import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.exception.ActorRuntimeException;
 
 /**
+ * // TODO: add taskList field
+ *
  * User: romario
  * Date: 2/12/13
  * Time: 9:06 PM
@@ -15,6 +17,8 @@ public class ActorDefinition {
     private String name;
 
     private String version;
+
+    private String fullName;
     
     private ActorDefinition() {
     }    
@@ -77,6 +81,19 @@ public class ActorDefinition {
     }
 
     public String getFullName() {
-        return name + "#" + version;
+
+        if (fullName != null) {
+            return fullName;
+        }
+
+        return fullName = name + "#" + version;
+    }
+
+    @Override
+    public String toString() {
+        return "ActorDefinition{" +
+                "name='" + name + '\'' +
+                ", version='" + version + '\'' +
+                '}';
     }
 }

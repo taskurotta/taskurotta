@@ -1,21 +1,68 @@
 runtime:
-  - mainRuntime:
-      class: ru.taskurotta.poc.TestRuntimeConfig
+  - TestRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: RuntimeBeans.xml #todo use uri notation
-        properties:
-          key1: value1
-          key2: value2
+        context: RuntimeBeans.xml
 
 spreader:
-  - mainSpreader:
-      class: ru.taskurotta.poc.TestSpreaderConfig
+  - TestTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: TaskSpreaderBeans.xml
+        context: SpreaderBeans.xml
+        properties:
+          cycles: 10
+          accuracy: 1000
+
+profiler:
+  - TestProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: true
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
 
 actor:
-  - simpleDecider:
-      actorInterface: ru.taskurotta.example.SimpleDecider
-      runtimeConfig: mainRuntime
-      spreaderConfig: mainSpreader
+  - TestWorker:
+      actorInterface: ru.taskurotta.bootstrap.TestWorker
+      runtimeConfig: TestRuntimeConfig
+      spreaderConfig: TestTaskSpreaderConfig
+      profilerConfig: TestProfilerConfig
       count: 10
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/recipes-parallel.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: DEBUG
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

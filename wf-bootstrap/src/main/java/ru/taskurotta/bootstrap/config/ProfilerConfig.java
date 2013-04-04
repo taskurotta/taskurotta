@@ -9,5 +9,5 @@ import ru.taskurotta.bootstrap.profiler.Profiler;
  */
 public interface ProfilerConfig {
 
-	public Profiler getProfiler(Class actorInterface);
+    public Profiler getProfiler(Class actorInterface);
 }

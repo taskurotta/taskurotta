@@ -1,8 +1,8 @@
 package ru.taskurotta.server;
 
 
-import ru.taskurotta.server.transport.DecisionContainer;
-import ru.taskurotta.server.transport.TaskContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -22,12 +22,13 @@ public interface TaskServer {
      * @param actorDefinition
      * @return
      */
-    public TaskContainer pull(ActorDefinition actorDefinition);
+    public TaskContainer poll(ActorDefinition actorDefinition);
 
 
     /**
      * @param taskResult
      */
     public void release(DecisionContainer taskResult);
+    
 
 }
