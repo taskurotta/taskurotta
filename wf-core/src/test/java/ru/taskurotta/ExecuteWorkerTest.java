@@ -1,5 +1,7 @@
 package ru.taskurotta;
 
+import static junit.framework.Assert.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.annotation.Worker;
@@ -9,11 +11,6 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.test.TestTasks;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * User: stukushin

@@ -1,5 +1,9 @@
 package ru.taskurotta.bootstrap.profiler;
 
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
@@ -20,10 +24,6 @@ import ru.taskurotta.internal.GeneralRuntimeProvider;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * User: stukushin

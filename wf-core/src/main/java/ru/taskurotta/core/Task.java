@@ -11,43 +11,45 @@ import java.util.UUID;
  */
 public interface Task {
 
-	/**
-	 * Unique task id.
-	 * Can not be null.
-	 */
+    /**
+     * Unique task id.
+     * Can not be null.
+     */
 
-	public UUID getId();
-
-
-	/**
-	 * Target of task consumer.
-	 * Can not be null.
-	 *
-	 * @return Target of task consumer
-	 */
-	public TaskTarget getTarget();
+    public UUID getId();
 
 
-	/**
-	 * Args an array of objects containing the values of the
-	 * arguments passed in the method invocation on the proxy instance,
-	 * or <code>null</code> if interface method takes no arguments.
-	 * Arguments of primitive types are wrapped in instances of the
-	 * appropriate primitive wrapper class, such as
-	 * <code>java.lang.Integer</code> or <code>java.lang.Boolean</code>.
-	 *
-	 * @return array of arguments
-	 */
-	public Object[] getArgs();
+    /**
+     * Target of task consumer.
+     * Can not be null.
+     *
+     * @return Target of task consumer
+     */
+    public TaskTarget getTarget();
+
+
+    /**
+     * Args an array of objects containing the values of the
+     * arguments passed in the method invocation on the proxy instance,
+     * or <code>null</code> if interface method takes no arguments.
+     * Arguments of primitive types are wrapped in instances of the
+     * appropriate primitive wrapper class, such as
+     * <code>java.lang.Integer</code> or <code>java.lang.Boolean</code>.
+     *
+     * @return array of arguments
+     */
+    public Object[] getArgs();
 
     /**
      * Time in milliseconds when task should be started.
+     *
      * @return
      */
     public long getStartTime();
 
     /**
      * Returns number of attempts to perform the task.
+     *
      * @return
      */
     public int getNumberOfAttempts();
@@ -58,5 +60,5 @@ public interface Task {
      *
      * @return
      */
-	public TaskOptions getTaskOptions();
+    public TaskOptions getTaskOptions();
 }

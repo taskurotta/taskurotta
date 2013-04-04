@@ -1,5 +1,10 @@
 package ru.taskurotta.backend.storage;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.storage.model.ArgContainer;
@@ -7,11 +12,6 @@ import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskType;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario

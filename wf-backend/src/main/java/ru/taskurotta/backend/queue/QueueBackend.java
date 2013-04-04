@@ -1,9 +1,8 @@
 package ru.taskurotta.backend.queue;
 
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.util.ActorDefinition;
-
 import java.util.UUID;
+
+import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario

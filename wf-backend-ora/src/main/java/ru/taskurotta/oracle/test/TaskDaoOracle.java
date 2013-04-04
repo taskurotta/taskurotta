@@ -16,69 +16,69 @@ import ru.taskurotta.util.ActorDefinition;
  */
 public class TaskDaoOracle extends TaskDaoMemory {
 
-	private final static Logger log = LoggerFactory.getLogger(TaskDaoOracle.class);
+    private final static Logger log = LoggerFactory.getLogger(TaskDaoOracle.class);
 
-	private final DbDAO dbDAO;
-	private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
+    private final DbDAO dbDAO;
+    private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
 
-	public TaskDaoOracle(DbConnect dbConnect) {
-		dbDAO = new DbDAO(dbConnect.getDataSource());
-		try {
-			queueNames.putAll(dbDAO.getQueueNames());
-			log.warn("!!!!! Initial queue size = " + queueNames.size());
-		} catch (SQLException e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-		}
-	}
+    public TaskDaoOracle(DbConnect dbConnect) {
+        dbDAO = new DbDAO(dbConnect.getDataSource());
+        try {
+            queueNames.putAll(dbDAO.getQueueNames());
+            log.warn("!!!!! Initial queue size = " + queueNames.size());
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+    }
 
-	private void init() {
+    private void init() {
 
-	}
+    }
 
-	@Override
-	protected void addTaskToQueue(TaskObject taskObj) {
-		//super.add(taskObj);
-		try {
-			String queueName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
-			log.debug("addTaskToQueue taskId = [{}]", taskObj.getTaskId());
+    @Override
+    protected void addTaskToQueue(TaskObject taskObj) {
+        //super.add(taskObj);
+        try {
+            String queueName = getQueueName(taskObj.getTarget().getName(), taskObj.getTarget().getVersion());
+            log.debug("addTaskToQueue taskId = [{}]", taskObj.getTaskId());
 
-			synchronized (queueNames) {
-				if (!queueNames.containsKey(queueName)) {
-					log.warn("Create queue for target [{}]", taskObj.getTarget().getName());
-					long queueId = dbDAO.registerQueue(queueName);
-					queueNames.put(queueName, queueId);
-					dbDAO.createQueue("qb$" + queueId);
-				}
-			}
+            synchronized (queueNames) {
+                if (!queueNames.containsKey(queueName)) {
+                    log.warn("Create queue for target [{}]", taskObj.getTarget().getName());
+                    long queueId = dbDAO.registerQueue(queueName);
+                    queueNames.put(queueName, queueId);
+                    dbDAO.createQueue("qb$" + queueId);
+                }
+            }
 
-			dbDAO.enqueueTask(SimpleTask.createFromTaskObject(taskObj), getTableName(queueName));
-		} catch (SQLException ex) {
-			log.error("Database error", ex);
-		}
-	}
+            dbDAO.enqueueTask(SimpleTask.createFromTaskObject(taskObj), getTableName(queueName));
+        } catch (SQLException ex) {
+            log.error("Database error", ex);
+        }
+    }
 
-	@Override
-	public TaskObject pull(ActorDefinition actorDefinition) {
-		String queueName = getTableName(getQueueName(actorDefinition.getName(), actorDefinition.getVersion()));
-		if (queueName != null) {
-			try {
-				final UUID taskId = dbDAO.pullTask(queueName);
-				return taskMap.get(taskId);
-			} catch (SQLException ex) {
-				log.error("Database error", ex);
-			}
-		}
-		return null;
+    @Override
+    public TaskObject pull(ActorDefinition actorDefinition) {
+        String queueName = getTableName(getQueueName(actorDefinition.getName(), actorDefinition.getVersion()));
+        if (queueName != null) {
+            try {
+                final UUID taskId = dbDAO.pullTask(queueName);
+                return taskMap.get(taskId);
+            } catch (SQLException ex) {
+                log.error("Database error", ex);
+            }
+        }
+        return null;
 
-	}
+    }
 
-	private String getTableName(String queueName) {
-		Long id = queueNames.get(queueName);
-		if (id != null) {
-			return "qb$" + id;
-		}
-		return null;
-	}
+    private String getTableName(String queueName) {
+        Long id = queueNames.get(queueName);
+        if (id != null) {
+            return "qb$" + id;
+        }
+        return null;
+    }
 
 
 }

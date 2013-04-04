@@ -1,5 +1,13 @@
 package ru.taskurotta.bootstrap;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -16,14 +24,6 @@ import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
  * User: stukushin
  * Date: 06.02.13
@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 public class Bootstrap {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
-	private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
+    private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
 
     public Config parseArgs(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
         ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
@@ -51,13 +51,13 @@ public class Bootstrap {
         String configFileName = namespace.getString("file");
 
         if (configFileName != null) {
-			logger.debug("Config file is [{}]", configFileName);
+            logger.debug("Config file is [{}]", configFileName);
 
             File configFile = new File(configFileName);
             if (configFile.exists()) {
                 config = Config.valueOf(configFile);
             } else {
-				System.out.println("Configuration file doesn't exist: " + configFileName);
+                System.out.println("Configuration file doesn't exist: " + configFileName);
                 parser.printHelp();
                 return null;
             }
@@ -86,46 +86,46 @@ public class Bootstrap {
             return null;
         }
 
-		return config;
-	}
+        return config;
+    }
 
-	public void start(Config config) {
-		for (ActorConfig actorConfig : config.actorConfigs) {
+    public void start(Config config) {
+        for (ActorConfig actorConfig : config.actorConfigs) {
 
-			Class actorClass;
+            Class actorClass;
 
-			try {
-				actorClass = Class.forName(actorConfig.getActorInterface());
-			} catch (ClassNotFoundException e) {
-				logger.error("Not found class [{}]", actorConfig.getActorInterface());
-				throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
-			}
+            try {
+                actorClass = Class.forName(actorConfig.getActorInterface());
+            } catch (ClassNotFoundException e) {
+                logger.error("Not found class [{}]", actorConfig.getActorInterface());
+                throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
+            }
 
-			SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
-			TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+            SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
+            TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
 
-			RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
-			RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
+            RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
+            RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
 
-			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
-			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
+            ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
+            Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
-			ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
-			executors.add(actorExecutor);
+            ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
+            executors.add(actorExecutor);
 
-			int count = actorConfig.getCount();
-			ExecutorService executorService = Executors.newFixedThreadPool(count);
+            int count = actorConfig.getCount();
+            ExecutorService executorService = Executors.newFixedThreadPool(count);
 
-			for (int i = 0; i < count; i++) {
-				executorService.execute(actorExecutor);
-			}
-		}
-	}
+            for (int i = 0; i < count; i++) {
+                executorService.execute(actorExecutor);
+            }
+        }
+    }
 
-	public void stop() {
-		for (ActorExecutor executor : executors) {
-			executor.stop();
-		}
-	}
+    public void stop() {
+        for (ActorExecutor executor : executors) {
+            executor.stop();
+        }
+    }
 
 }

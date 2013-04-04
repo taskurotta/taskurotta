@@ -4,9 +4,6 @@ import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
  * User: romario
  * Date: 4/1/13

@@ -2,11 +2,11 @@ package ru.taskurotta.client.internal;
 
 import ru.taskurotta.ProxyFactory;
 import ru.taskurotta.TaskHandler;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 
 /**
  * User: romario

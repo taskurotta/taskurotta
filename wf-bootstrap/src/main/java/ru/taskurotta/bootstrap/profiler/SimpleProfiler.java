@@ -12,7 +12,8 @@ import ru.taskurotta.core.TaskDecision;
  */
 public class SimpleProfiler implements Profiler {
 
-    public SimpleProfiler(Class actorClass) {}
+    public SimpleProfiler(Class actorClass) {
+    }
 
     @Override
     public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
@@ -45,8 +46,10 @@ public class SimpleProfiler implements Profiler {
     }
 
     @Override
-    public void cycleStart() {}
+    public void cycleStart() {
+    }
 
     @Override
-    public void cycleFinish() {}
+    public void cycleFinish() {
+    }
 }

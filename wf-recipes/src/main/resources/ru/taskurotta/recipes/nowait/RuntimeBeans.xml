@@ -29,7 +29,7 @@
     <bean id="nowaitDecider" class="ru.taskurotta.recipes.nowait.decider.NoWaitDeciderImpl">
         <property name="async">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
-                <constructor-arg value="ru.taskurotta.recipes.nowait.decider.NoWaitDeciderImpl" />
+                <constructor-arg value="ru.taskurotta.recipes.nowait.decider.NoWaitDeciderImpl"/>
             </bean>
         </property>
         <property name="worker">

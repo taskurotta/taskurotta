@@ -1,12 +1,12 @@
 package ru.taskurotta.server.model;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskStateObject;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario

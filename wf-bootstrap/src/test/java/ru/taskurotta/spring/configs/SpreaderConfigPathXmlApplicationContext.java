@@ -1,5 +1,7 @@
 package ru.taskurotta.spring.configs;
 
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -13,8 +15,6 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.client.memory.ClientServiceManagerMemory;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.Properties;
 
 /**
  * User: stukushin

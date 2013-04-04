@@ -1,11 +1,9 @@
 package ru.taskurotta.backend.storage.model;
 
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.core.TaskTarget;
-
 import java.util.Arrays;
 import java.util.UUID;
+
+import ru.taskurotta.core.TaskTarget;
 
 /**
  * User: romario
@@ -19,7 +17,7 @@ public class TaskContainer {
     private long startTime;
     private int numberOfAttempts;
     private ArgContainer[] args;
-	private TaskOptionsContainer options;
+    private TaskOptionsContainer options;
 
     public TaskContainer(UUID taskId, TaskTarget target, long startTime, int numberOfAttempts, ArgContainer[] args,
                          TaskOptionsContainer options) {
@@ -28,7 +26,7 @@ public class TaskContainer {
         this.startTime = startTime;
         this.numberOfAttempts = numberOfAttempts;
         this.args = args;
-		this.options = options;
+        this.options = options;
     }
 
     public UUID getTaskId() {
@@ -51,9 +49,9 @@ public class TaskContainer {
         return numberOfAttempts;
     }
 
-	public TaskOptionsContainer getOptions() {
-		return options;
-	}
+    public TaskOptionsContainer getOptions() {
+        return options;
+    }
 
     @Override
     public String toString() {

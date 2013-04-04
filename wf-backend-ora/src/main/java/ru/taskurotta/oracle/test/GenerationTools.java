@@ -9,7 +9,7 @@ public final class GenerationTools {
 
     private static Random rnd = new Random();
 
-    private GenerationTools(){
+    private GenerationTools() {
     }
 
     public static synchronized int getRandomType() {

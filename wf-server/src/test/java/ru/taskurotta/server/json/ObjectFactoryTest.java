@@ -1,20 +1,20 @@
 package ru.taskurotta.server.json;
 
+import java.util.UUID;
+
+import static junit.framework.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Test;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.test.TestTasks;
-
-import java.util.UUID;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * User: romario

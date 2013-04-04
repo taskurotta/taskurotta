@@ -1,16 +1,5 @@
 package ru.taskurotta.server.memory;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.server.TaskDao;
-import ru.taskurotta.server.config.expiration.ExpirationPolicy;
-import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.backend.storage.model.TaskStateObject;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.util.ActorDefinition;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +9,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
+import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.server.TaskDao;
+import ru.taskurotta.server.config.expiration.ExpirationPolicy;
+import ru.taskurotta.server.model.TaskObject;
+import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario
@@ -36,7 +36,7 @@ public class TaskDaoMemory implements TaskDao {
     private int pollDelay = 60;
 
     private Map<String, DelayQueue<DelayedTaskObject>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskObject>>();
-    private Map<UUID, TaskObject> taskMap = new ConcurrentHashMap<UUID, TaskObject>();
+    protected Map<UUID, TaskObject> taskMap = new ConcurrentHashMap<UUID, TaskObject>();
     private Map<UUID, AtomicInteger> atomicCountdownMap = new ConcurrentHashMap<UUID, AtomicInteger>();
 
 
@@ -227,7 +227,7 @@ public class TaskDaoMemory implements TaskDao {
     }
 
 
-    private String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
+    protected String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
         return actorDefinitionName + '#' + actorDefinitionVersion;
     }
 
@@ -244,7 +244,7 @@ public class TaskDaoMemory implements TaskDao {
         return queue;
     }
 
-    private void addTaskToQueue(TaskObject taskMemory) {
+    protected void addTaskToQueue(TaskObject taskMemory) {
 
         log.debug("addTaskToQueue taskId = [{}]", taskMemory.getTaskId());
 
@@ -256,37 +256,37 @@ public class TaskDaoMemory implements TaskDao {
         queue.add(new DelayedTaskObject(taskMemory));
     }
 
-	@Override
-	public int reScheduleTasks(String actorQueueId, ExpirationPolicy expPolicy) {
-		int result = 0;
-		Date nextExpirationDate = expPolicy.getNextExpirationDate(new Date());
-		if(nextExpirationDate == null) {
-			return result;
-		}
-		
-		long expirationTime = nextExpirationDate.getTime();
-		
-		for(TaskObject task: taskMap.values()) {
+    @Override
+    public int reScheduleTasks(String actorQueueId, ExpirationPolicy expPolicy) {
+        int result = 0;
+        Date nextExpirationDate = expPolicy.getNextExpirationDate(new Date());
+        if (nextExpirationDate == null) {
+            return result;
+        }
 
-			TaskTarget taskTarget = task.getTarget();
-			TaskStateObject state = task.getState();
-			String taskActorQueueId = getQueueName(taskTarget.getName(), taskTarget.getVersion());
-			
-			if(isTargetActor(actorQueueId, taskActorQueueId)//Target actor id
-					&& TaskStateObject.STATE.process.equals(state.getValue()) //Task still has "process" state
-					&& state.getTime() < expirationTime//Current state is expired || TODO: implement inside ExpirationPolicy?
-					&& expPolicy.isScheduleAgain(task)//Policy check for require schedule
-					&& !getQueue(taskActorQueueId).contains(task)) {//Not already enqueued
-				addTaskToQueue(task);
-				log.debug("TASK RESCHEDULED [{}]", task.getTaskId());
-				result++;
-			}
-		}
-		return result;
-	}
-	
-	private static boolean isTargetActor(String actorId, String taskTargetActorId) {
-		return actorId.equalsIgnoreCase(taskTargetActorId) || actorId.equalsIgnoreCase("default");
-	}
-	
+        long expirationTime = nextExpirationDate.getTime();
+
+        for (TaskObject task : taskMap.values()) {
+
+            TaskTarget taskTarget = task.getTarget();
+            TaskStateObject state = task.getState();
+            String taskActorQueueId = getQueueName(taskTarget.getName(), taskTarget.getVersion());
+
+            if (isTargetActor(actorQueueId, taskActorQueueId)//Target actor id
+                    && TaskStateObject.STATE.process.equals(state.getValue()) //Task still has "process" state
+                    && state.getTime() < expirationTime//Current state is expired || TODO: implement inside ExpirationPolicy?
+                    && expPolicy.isScheduleAgain(task)//Policy check for require schedule
+                    && !getQueue(taskActorQueueId).contains(task)) {//Not already enqueued
+                addTaskToQueue(task);
+                log.debug("TASK RESCHEDULED [{}]", task.getTaskId());
+                result++;
+            }
+        }
+        return result;
+    }
+
+    private static boolean isTargetActor(String actorId, String taskTargetActorId) {
+        return actorId.equalsIgnoreCase(taskTargetActorId) || actorId.equalsIgnoreCase("default");
+    }
+
 }

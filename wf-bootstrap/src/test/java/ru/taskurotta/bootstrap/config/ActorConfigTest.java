@@ -1,11 +1,11 @@
 package ru.taskurotta.bootstrap.config;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * User: stukushin
@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ActorConfigTest {
 
-     private static ActorConfig actorConfig;
+    private static ActorConfig actorConfig;
 
     @BeforeClass
     public static void setUp() throws Exception {

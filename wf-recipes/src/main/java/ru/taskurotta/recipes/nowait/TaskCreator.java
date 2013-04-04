@@ -8,15 +8,15 @@ import ru.taskurotta.recipes.nowait.decider.NoWaitDeciderClient;
  * Created by void 27.03.13 20:22
  */
 public class TaskCreator {
-	private ClientServiceManager clientServiceManager;
+    private ClientServiceManager clientServiceManager;
 
-	public void createStartTask() {
-		DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
-		NoWaitDeciderClient nowaitDecider = deciderClientProvider.getDeciderClient(NoWaitDeciderClient.class);
-		nowaitDecider.start();
-	}
+    public void createStartTask() {
+        DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
+        NoWaitDeciderClient nowaitDecider = deciderClientProvider.getDeciderClient(NoWaitDeciderClient.class);
+        nowaitDecider.start();
+    }
 
-	public void setClientServiceManager(ClientServiceManager clientServiceManager) {
-		this.clientServiceManager = clientServiceManager;
-	}
+    public void setClientServiceManager(ClientServiceManager clientServiceManager) {
+        this.clientServiceManager = clientServiceManager;
+    }
 }

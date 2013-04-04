@@ -15,25 +15,25 @@ import ru.taskurotta.oracle.test.domain.TaskStatus;
  */
 public class CreationTask implements Runnable {
 
-	private BasicDataSource dataSource;
+    private BasicDataSource dataSource;
 
-	public CreationTask(BasicDataSource dataSource) {
-		this.dataSource = dataSource;
-	}
+    public CreationTask(BasicDataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
-	@Override
-	public void run() {
-		DbDAO dbDAO = new DbDAO(dataSource);
-		int count = 0;
-		try {
-			System.out.println("Starting adding data");
-			while (count < 1000000) {
-				count++;
-				dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), GenerationTools.getRandomType(), new Date(), TaskStatus.CREATED, ""), "QUEUE_BUS");
-			}
-			System.out.println("Stopped adding data");
-		} catch (SQLException ex) {
-			ex.printStackTrace();
-		}
-	}
+    @Override
+    public void run() {
+        DbDAO dbDAO = new DbDAO(dataSource);
+        int count = 0;
+        try {
+            System.out.println("Starting adding data");
+            while (count < 1000000) {
+                count++;
+                dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), GenerationTools.getRandomType(), new Date(), TaskStatus.CREATED, ""), "QUEUE_BUS");
+            }
+            System.out.println("Stopped adding data");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
 }

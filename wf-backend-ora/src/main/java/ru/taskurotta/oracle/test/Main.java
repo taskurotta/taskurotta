@@ -1,11 +1,10 @@
 package ru.taskurotta.oracle.test;
 
-import ru.taskurotta.oracle.test.runnable.CreationTask;
-import ru.taskurotta.oracle.test.runnable.TestSelectTask;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import ru.taskurotta.oracle.test.runnable.TestSelectTask;
 
 /**
  * User: greg

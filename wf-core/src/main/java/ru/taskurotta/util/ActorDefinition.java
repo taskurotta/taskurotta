@@ -7,7 +7,7 @@ import ru.taskurotta.exception.ActorRuntimeException;
 
 /**
  * // TODO: add taskList field
- *
+ * <p/>
  * User: romario
  * Date: 2/12/13
  * Time: 9:06 PM
@@ -19,17 +19,17 @@ public class ActorDefinition {
     private String version;
 
     private String fullName;
-    
+
     private ActorDefinition() {
-    }    
-    
-    public static ActorDefinition valueOf(String name, String version) {
-    	ActorDefinition actorDefinition = new ActorDefinition();
-    	actorDefinition.name = name;
-    	actorDefinition.version = version;
-    	return actorDefinition;
     }
-    
+
+    public static ActorDefinition valueOf(String name, String version) {
+        ActorDefinition actorDefinition = new ActorDefinition();
+        actorDefinition.name = name;
+        actorDefinition.version = version;
+        return actorDefinition;
+    }
+
     public static ActorDefinition valueOf(Class actorClass) {
 
         Class<?> workerInterface = AnnotationUtils.findAnnotatedClass(actorClass, Worker.class);

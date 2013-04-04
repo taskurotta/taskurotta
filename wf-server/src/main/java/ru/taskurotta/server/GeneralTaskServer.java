@@ -1,5 +1,8 @@
 package ru.taskurotta.server;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -13,9 +16,6 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario

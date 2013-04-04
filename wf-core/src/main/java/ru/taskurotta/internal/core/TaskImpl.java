@@ -1,11 +1,11 @@
 package ru.taskurotta.internal.core;
 
-import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskTarget;
-
 import java.util.Arrays;
 import java.util.UUID;
+
+import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskOptions;
+import ru.taskurotta.core.TaskTarget;
 
 /**
  * User: stukushin, romario
@@ -19,7 +19,7 @@ public class TaskImpl implements Task {
     private long startTime;
     private int numberOfAttempts = 0;
     private Object[] args;
-	private TaskOptions taskOptions;
+    private TaskOptions taskOptions;
 
 
     public TaskImpl(UUID uuid, TaskTarget taskTarget, long startTime, int numberOfAttempts, Object[] args, TaskOptions taskOptions) {
@@ -40,11 +40,11 @@ public class TaskImpl implements Task {
 
         this.args = args;
 
-		if (taskOptions == null) {
-			this.taskOptions = new TaskOptions(null);
-		} else {
-			this.taskOptions = taskOptions;
-		}
+        if (taskOptions == null) {
+            this.taskOptions = new TaskOptions(null);
+        } else {
+            this.taskOptions = taskOptions;
+        }
     }
 
 
@@ -76,10 +76,10 @@ public class TaskImpl implements Task {
     }
 
     public TaskOptions getTaskOptions() {
-		return taskOptions;
-	}
+        return taskOptions;
+    }
 
-	@Override
+    @Override
     public boolean equals(Object o) {
 
         if (this == o) return true;
@@ -96,8 +96,8 @@ public class TaskImpl implements Task {
         if ((args == null && thatArgs != null)
                 || (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
 
-		if (!taskOptions.equals(that.getTaskOptions()))
-			return false;
+        if (!taskOptions.equals(that.getTaskOptions()))
+            return false;
         return true;
     }
 
@@ -106,13 +106,13 @@ public class TaskImpl implements Task {
         int result = uuid.hashCode();
         result = 31 * result + taskTarget.hashCode();
         result = 31 * result + Arrays.deepHashCode(args);
-		result = 31 * result + taskOptions.hashCode();
+        result = 31 * result + taskOptions.hashCode();
 
         return result;
     }
 
 
-	@Override
+    @Override
     public String toString() {
         return "TaskImpl{" +
                 "uuid=" + uuid +

@@ -4,9 +4,9 @@ import ru.taskurotta.annotation.WorkerClient;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.example.calculate.worker.NumberGenerator;
 
-@WorkerClient(worker=NumberGenerator.class)
+@WorkerClient(worker = NumberGenerator.class)
 public interface NumberGeneratorClient {
-	
-	public Promise<Integer> getNumber();
-	
+
+    public Promise<Integer> getNumber();
+
 }

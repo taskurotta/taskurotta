@@ -1,9 +1,9 @@
 package ru.taskurotta.server.memory;
 
-import ru.taskurotta.server.model.TaskObject;
-
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+
+import ru.taskurotta.server.model.TaskObject;
 
 /**
  * User: romario

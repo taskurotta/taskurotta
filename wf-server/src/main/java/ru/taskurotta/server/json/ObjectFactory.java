@@ -1,8 +1,16 @@
 package ru.taskurotta.server.json;
 
+import java.io.IOException;
+import java.util.UUID;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -10,14 +18,6 @@ import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-
-import java.io.IOException;
-import java.util.UUID;
 
 /**
  * User: romario

@@ -6,23 +6,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.server.config.ServerConfig;
 import ru.taskurotta.server.config.ServerConfigAware;
 import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.backend.storage.model.TaskStateObject;
 import ru.taskurotta.server.service.ExpiredTaskProcessorService;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -37,12 +35,12 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
     private static final String ACTOR_ID = "InMemoryActor";
 
     private TaskDao taskDao;
-    
+
     private ServerConfig serverConfig;
-    
+
     private String expirationCheckSchedule;
-    
-	public TaskServerGeneral(TaskDao taskDao) {
+
+    public TaskServerGeneral(TaskDao taskDao) {
 
         this.taskDao = taskDao;
     }
@@ -74,26 +72,26 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
 
         if (args != null) {
 
-			for (int i = 0; i < args.length; i++) {
-				ArgContainer arg = args[i];
-				if (arg.isPromise()) {
-					if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
-						ArgContainer value = taskDao.getTaskValue(arg.getTaskId());
-						args[i] = value;
-					} else {
-						if (arg.getJSONValue() == null) {
-							// resolved Promise. value may be null for NoWait promises
+            for (int i = 0; i < args.length; i++) {
+                ArgContainer arg = args[i];
+                if (arg.isPromise()) {
+                    if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
+                        ArgContainer value = taskDao.getTaskValue(arg.getTaskId());
+                        args[i] = value;
+                    } else {
+                        if (arg.getJSONValue() == null) {
+                            // resolved Promise. value may be null for NoWait promises
 
-							ArgContainer value = taskDao.getTaskValue(arg.getTaskId());
-							if (value != null) {
-								arg.setJSONValue(value.getJSONValue());
-								arg.setClassName(value.getClassName());
-								arg.setReady(true);
-							}
-						}
-					}
-				}
-			}
+                            ArgContainer value = taskDao.getTaskValue(arg.getTaskId());
+                            if (value != null) {
+                                arg.setJSONValue(value.getJSONValue());
+                                arg.setClassName(value.getClassName());
+                                arg.setReady(true);
+                            }
+                        }
+                    }
+                }
+            }
 
         }
 
@@ -166,9 +164,9 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
 
             int decrementValue = 0;
 
-            for (UUID externalWaitForTaskId: externalWaitForTasks) {
+            for (UUID externalWaitForTaskId : externalWaitForTasks) {
                 if (!taskDao.registerExternalWaitFor(taskId, externalWaitForTaskId)) {
-                    decrementValue ++;
+                    decrementValue++;
                 }
             }
 
@@ -382,29 +380,29 @@ public class TaskServerGeneral implements TaskServer, ServerConfigAware {
         }
 
     }
-    
+
     @PostConstruct
     public void runExpiredTaskScheduler() throws ParseException {
-		if(expirationCheckSchedule!=null && expirationCheckSchedule.trim().length()>0) {
-			ExpiredTaskProcessorService service = new ExpiredTaskProcessorService();
-			service.setServerConfig(serverConfig);
-			service.setTaskDao(taskDao);
-			service.setSchedule(expirationCheckSchedule);
-			service.init();
-			
-			Thread runner = new Thread(service);
-			runner.setDaemon(true);
-			runner.start();
-	    }
-	}
+        if (expirationCheckSchedule != null && expirationCheckSchedule.trim().length() > 0) {
+            ExpiredTaskProcessorService service = new ExpiredTaskProcessorService();
+            service.setServerConfig(serverConfig);
+            service.setTaskDao(taskDao);
+            service.setSchedule(expirationCheckSchedule);
+            service.init();
 
-	public void setServerConfig(ServerConfig serverConfig) {
-		this.serverConfig = serverConfig;
-	}
-	
-	public void setExpirationCheckSchedule(String expirationCheckSchedule) {
-		this.expirationCheckSchedule = expirationCheckSchedule;
-	}
+            Thread runner = new Thread(service);
+            runner.setDaemon(true);
+            runner.start();
+        }
+    }
+
+    public void setServerConfig(ServerConfig serverConfig) {
+        this.serverConfig = serverConfig;
+    }
+
+    public void setExpirationCheckSchedule(String expirationCheckSchedule) {
+        this.expirationCheckSchedule = expirationCheckSchedule;
+    }
 
 
 }

@@ -1,5 +1,10 @@
 package ru.taskurotta.internal.proxy;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.UUID;
+
 import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Promise;
@@ -9,11 +14,6 @@ import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskImpl;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * User: romario

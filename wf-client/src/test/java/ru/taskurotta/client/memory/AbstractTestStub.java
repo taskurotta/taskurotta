@@ -1,5 +1,8 @@
 package ru.taskurotta.client.memory;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
@@ -21,9 +24,6 @@ import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario

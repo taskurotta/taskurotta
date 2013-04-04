@@ -1,18 +1,18 @@
 package ru.taskurotta.test;
 
-import org.junit.Test;
-import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.TaskTargetImpl;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+
+import org.junit.Test;
+import ru.taskurotta.core.Promise;
+import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.core.TaskType;
+import ru.taskurotta.internal.core.TaskTargetImpl;
 
 /**
  * TODO: Test (Promise expectedPromise, Promise interceptedPromise)

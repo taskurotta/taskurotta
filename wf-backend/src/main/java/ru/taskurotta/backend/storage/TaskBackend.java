@@ -1,11 +1,11 @@
 package ru.taskurotta.backend.storage;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario

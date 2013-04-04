@@ -7,30 +7,30 @@ import java.util.Arrays;
  */
 public class TaskOptions {
 
-	private ArgType[] argTypes;
+    private ArgType[] argTypes;
 
-	public TaskOptions(ArgType[] argTypes) {
-		this.argTypes = argTypes;
-	}
+    public TaskOptions(ArgType[] argTypes) {
+        this.argTypes = argTypes;
+    }
 
-	public ArgType[] getArgTypes() {
-		return argTypes;
-	}
+    public ArgType[] getArgTypes() {
+        return argTypes;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-		TaskOptions that = (TaskOptions) o;
+        TaskOptions that = (TaskOptions) o;
 
-		if (!Arrays.equals(argTypes, that.argTypes)) return false;
+        if (!Arrays.equals(argTypes, that.argTypes)) return false;
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public int hashCode() {
-		return argTypes != null ? Arrays.hashCode(argTypes) : 0;
-	}
+    @Override
+    public int hashCode() {
+        return argTypes != null ? Arrays.hashCode(argTypes) : 0;
+    }
 }

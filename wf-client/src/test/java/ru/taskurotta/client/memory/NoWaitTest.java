@@ -1,5 +1,9 @@
 package ru.taskurotta.client.memory;
 
+import java.util.UUID;
+
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.ArgType;
@@ -8,15 +12,7 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
-import ru.taskurotta.backend.storage.model.TaskStateObject;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * User: romario

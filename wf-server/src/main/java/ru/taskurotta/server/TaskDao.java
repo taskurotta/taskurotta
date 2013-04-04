@@ -1,13 +1,13 @@
 package ru.taskurotta.server;
 
-import ru.taskurotta.server.config.expiration.ExpirationPolicy;
-import ru.taskurotta.server.model.TaskObject;
-import ru.taskurotta.backend.storage.model.TaskStateObject;
+import java.util.UUID;
+
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskStateObject;
+import ru.taskurotta.server.config.expiration.ExpirationPolicy;
+import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.UUID;
 
 /**
  * User: romario
@@ -38,10 +38,11 @@ public interface TaskDao {
      * @return true if registration successfully processed
      */
     public boolean registerExternalWaitFor(UUID taskId, UUID externalWaitForTaskId);
-    
+
     /**
      * Method should find all tasks with given actorId and expired "process" state
      * and send them to queue
+     *
      * @param actorQueueId
      * @param expPolicy
      * @return

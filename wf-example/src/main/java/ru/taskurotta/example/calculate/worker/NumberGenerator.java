@@ -4,7 +4,7 @@ import ru.taskurotta.annotation.Worker;
 
 @Worker
 public interface NumberGenerator {
-	
-	public Integer getNumber();
-	
+
+    public Integer getNumber();
+
 }
