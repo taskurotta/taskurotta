@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by void 01.04.13 12:04
  */
-public abstract class BasicFlowArbiter implements FlowArbiter {
+public class BasicFlowArbiter implements FlowArbiter {
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final List<Stage> stages;
@@ -68,7 +68,9 @@ public abstract class BasicFlowArbiter implements FlowArbiter {
 		}
 	}
 
-	protected abstract void process(String tag);
+	protected void process(String tag){
+		// nothing to do here
+	}
 
 	public boolean waitForFinish(long timeToWait) {
 		long endTime = System.currentTimeMillis() + timeToWait;

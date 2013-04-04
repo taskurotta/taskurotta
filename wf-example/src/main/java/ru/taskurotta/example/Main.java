@@ -13,13 +13,10 @@ import java.io.IOException;
  */
 public class Main {
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
-		Bootstrap bootstrap = new Bootstrap();
-		Config config;
 		if(args.length == 0) {
-			config = bootstrap.parseArgs(new String[]{"-r", "ru/taskurotta/example/notification/wf-config.yml"});
+			new Bootstrap("ru/taskurotta/example/notification/wf-config.yml").start();
     	} else {
-    		config = bootstrap.parseArgs(args);
+    		new Bootstrap(args).start();
     	}
-		bootstrap.start(config);
     }
 }

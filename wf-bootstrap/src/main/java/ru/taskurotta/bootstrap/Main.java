@@ -13,8 +13,6 @@ import java.io.IOException;
 public class Main {
 
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
-		Bootstrap bootstrap = new Bootstrap();
-		Config config = bootstrap.parseArgs(args);
-		bootstrap.start(config);
+		new Bootstrap(args).start();
 	}
 }

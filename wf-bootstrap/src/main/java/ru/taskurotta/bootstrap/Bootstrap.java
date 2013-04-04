@@ -32,9 +32,18 @@ import java.util.concurrent.Executors;
 public class Bootstrap {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
+	private Config config;
 	private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
 
-    public Config parseArgs(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+	public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+		config = parseArgs(args);
+	}
+
+	public Bootstrap(String configResourceName) throws ArgumentParserException, IOException, ClassNotFoundException {
+		config = parseArgs(new String[]{"-r", configResourceName});
+	}
+
+	public Config parseArgs(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
         ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
         parser.addArgument("-f", "--file")
                 .required(false)
@@ -87,6 +96,10 @@ public class Bootstrap {
         }
 
 		return config;
+	}
+
+	public void start() {
+		start(config);
 	}
 
 	public void start(Config config) {
