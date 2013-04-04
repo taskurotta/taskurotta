@@ -1,4 +1,4 @@
-package ru.taskurotta.spring.configs;
+package ru.taskurotta.spring.test.configs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
