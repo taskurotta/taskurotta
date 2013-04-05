@@ -67,6 +67,7 @@ public class TaskContainerSerializationTest {
 	
 	private TaskContainer createTaskContainer() {
 		UUID originalUuid = UUID.randomUUID();
+        UUID processUuid = UUID.randomUUID();
 		TaskType originalTaskType = TaskType.WORKER;
 		String originalName = "test.me.worker";
 		String originalVersion = "7.6.5";
@@ -87,7 +88,8 @@ public class TaskContainerSerializationTest {
 		ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
 		TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
 		
-		return new TaskContainer(originalUuid, originalTaskTarget, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
+		return new TaskContainer(originalUuid, processUuid, originalTaskTarget, originalStartTime,
+                originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
 	}
 	
 	private void validateTaskTarget(TaskTarget original, TaskTarget validating) {
