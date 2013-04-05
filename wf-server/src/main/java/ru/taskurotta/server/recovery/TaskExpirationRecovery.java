@@ -1,11 +1,11 @@
 package ru.taskurotta.server.recovery;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -15,10 +15,10 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.backend.storage.model.TaskDefinition;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 public class TaskExpirationRecovery implements Runnable {
 
@@ -28,59 +28,79 @@ public class TaskExpirationRecovery implements Runnable {
 	private TaskBackend taskBackend;
 
 	private String schedule;
-	private int limit;
+	private long timeIterationStep = 10000;
+	private int recoveryPeriod = 60;
+	private TimeUnit recoveryPeriodUnit = TimeUnit.MINUTES;
+	
 
 	private Map<ActorDefinition, ExpirationPolicy> expirationPolicyMap;
 
-	private String lockingGuid;
-
-
-	public TaskExpirationRecovery() {
-		lockingGuid = "TaskExpirationRecovery#" + UUID.randomUUID().toString();
-	}
-
 	@Override
 	public void run() {
-		logger.debug("TaskExpirationRecovery daemon started. Schedule[{}], limit[{}], expirationPolicies for[{}]", schedule, limit, expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
+		logger.debug("TaskExpirationRecovery daemon started. Schedule[{}], expirationPolicies for[{}]", schedule, expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
 		while(repeat(schedule)) {
 			if(expirationPolicyMap!=null && !expirationPolicyMap.isEmpty()) {
 				for(ActorDefinition actorDef: expirationPolicyMap.keySet()) {
 					ExpirationPolicy ePolicy =  expirationPolicyMap.get(actorDef);
-					long timeout = ePolicy.getExpirationTimeout(new Date());
-
-					List<TaskContainer> expiredTasks = taskBackend.getExpiredTasks(actorDef, timeout, limit);
-					if(expiredTasks!=null && !expiredTasks.isEmpty()) {
-						logger.debug("Try to recover [{}] tasks", expiredTasks.size());
-						int counter = 0;
-						for(TaskContainer task: expiredTasks) {
-							if(ePolicy.readyToRecover(task.getTaskId())) {
-								try {
-									taskBackend.lockTask(task.getTaskId(), lockingGuid, new Date(new Date().getTime()+timeout));
-									TaskTarget taskTarget = task.getTarget();
-									queueBackend.enqueueItem(ActorDefinition.valueOf(taskTarget.getName(), taskTarget.getVersion()), task.getTaskId(), ePolicy.getNextStartTime(task.getTaskId(), task.getStartTime()));
-									counter++;
-								} catch(Exception e) {
-									logger.error("Cannot recover task["+task.getTaskId()+"]", e);
-								} finally {
-									taskBackend.unlockTask(task.getTaskId(), lockingGuid);
-									//TODO: is all this locking/unlocking really required?
-								}
-
-							} else {
-								logger.error("Cannot perform expired task recovery. Task[{}]", task);
-								//TODO: execute error processing in backends
-							}
-
-						}
-						
-						logger.info("Recovered [{}]/[{}] tasks due to expiration policy of actor[{}]", counter, expiredTasks.size(), actorDef);	
-						
+					int counter = 0;
+					long timeFrom = System.currentTimeMillis() - recoveryPeriodUnit.toMillis(recoveryPeriod);
+					while(timeFrom < System.currentTimeMillis()) {
+						long timeTill =  timeFrom+timeIterationStep;
+						counter += processStep(ActorUtils.getActorId(actorDef), timeFrom, timeTill, ePolicy);
+						timeFrom = timeTill;
 					}
+					
+					logger.info("Recovered [{}] tasks due to expiration policy of actor[{}]", counter,  actorDef);
 				}				
 			}
 		}
 	}
+	
+	private static List<TaskDefinition> filterNonExpired(List<TaskDefinition> activeTasks, long timeout) {
+		if(activeTasks!=null && activeTasks.isEmpty()) {
+			Iterator<TaskDefinition> iterator = activeTasks.iterator();
+			long latestExecutionStartBoundary = System.currentTimeMillis()-timeout;
+			while(iterator.hasNext()) {
+				TaskDefinition item = iterator.next();
+				if(item.getExecutionStarted() > latestExecutionStartBoundary) {//not expired
+					iterator.remove();
+				}
+			}
+		}
+		return activeTasks;
+	}
+	
+	private int processStep(String actorId, long timeFrom, long timeTill, ExpirationPolicy expPolicy) {
+		long timeout = expPolicy.getExpirationTimeout(System.currentTimeMillis());
+		List<TaskDefinition> expiredTasks = filterNonExpired(taskBackend.getActiveTasks(actorId, timeFrom, timeTill), timeout);
+		int counter = 0;
+		
+		if(expiredTasks!=null && !expiredTasks.isEmpty()) {
+			
+			logger.debug("Try to recover [{}] expired tasks", expiredTasks.size());
+			List<TaskDefinition> tasksToReset = new ArrayList<TaskDefinition>();
+			for(TaskDefinition task: expiredTasks) {
+				if(expPolicy.readyToRecover(task.getTaskId())) {
+					try {
+						queueBackend.enqueueItem(ActorUtils.getActorDefinition(task.getActorId()), task.getTaskId(), task.getStartTime());
+						tasksToReset.add(task);
+						counter++;
+					} catch(Exception e) {
+						logger.error("Cannot recover task["+task.getTaskId()+"]", e);
+					}
+				} else {
+					logger.error("Cannot perform expired task recovery. Task[{}]", task);
+					//TODO: execute error processing in backends
+				}
 
+			}
+			taskBackend.resetActiveTasks(tasksToReset);
+			
+		}
+		
+		return counter;
+	}
+	
 	private void initConfigs(ActorPreferences[] actorPrefs) {
 		logger.debug("Initializing recovery config with actorPrefs[{}]", actorPrefs);
 		if(actorPrefs!=null) {
@@ -130,20 +150,23 @@ public class TaskExpirationRecovery implements Runnable {
 		return true;
 	}
 
-	public void setLimit(int limit) {
-		this.limit = limit;
-	}
-
 	public void setQueueBackend(QueueBackend queueBackend) {
 		this.queueBackend = queueBackend;
 	}
-
 	public void setTaskBackend(TaskBackend taskBackend) {
 		this.taskBackend = taskBackend;
 	}
-
 	public void setConfigBackend(ConfigBackend configBackend) {
 		initConfigs(configBackend.getActorPreferences());
+	}
+	public void setTimeIterationStep(long timeIterationStep) {
+		this.timeIterationStep = timeIterationStep;
+	}
+	public void setRecoveryPeriod(int recoveryPeriod) {
+		this.recoveryPeriod = recoveryPeriod;
+	}
+	public void setRecoveryPeriodUnit(TimeUnit recoveryPeriodUnit) {
+		this.recoveryPeriodUnit = recoveryPeriodUnit;
 	}
 
 }

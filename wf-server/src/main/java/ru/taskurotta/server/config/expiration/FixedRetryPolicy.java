@@ -47,7 +47,7 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 	}
 		
 	@Override
-	public long getExpirationTimeout(Date forDate) {
+	public long getExpirationTimeout(long forTime) {
 		//Same timeout for any date
 		return timeout;
 	}

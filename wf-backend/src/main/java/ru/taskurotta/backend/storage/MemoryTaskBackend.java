@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.storage;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -10,14 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taskurotta.backend.Lock;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.backend.storage.model.TaskDefinition;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 /**
  * User: romario
@@ -30,10 +28,10 @@ public class MemoryTaskBackend implements TaskBackend {
 
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
-    private Map<UUID, Date> id2ProgressMap = new ConcurrentHashMap<UUID, Date>();
+    private Map<TaskDefinition, Long> id2ProgressMap = new ConcurrentHashMap<TaskDefinition, Long>();
     
 	//recovery process locks
-	private Map<UUID, Lock> locksMap = new ConcurrentHashMap<UUID, Lock>();
+//	private Map<UUID, Lock> locksMap = new ConcurrentHashMap<UUID, Lock>();
     
     @Override
     public void startProcess(TaskContainer taskContainer) {
@@ -73,8 +71,10 @@ public class MemoryTaskBackend implements TaskBackend {
             }
 
         }
-
-        id2ProgressMap.put(taskId, new Date());
+        
+        Long executionStarted = System.currentTimeMillis(); 
+        TaskDefinition td = new TaskDefinition(taskId, ActorUtils.getActorId(task.getTarget()), task.getStartTime(), null, executionStarted); 
+        id2ProgressMap.put(td, executionStarted);//Always create new entry due to Long executionStarted parameter
 
         return task;
     }
@@ -164,70 +164,75 @@ public class MemoryTaskBackend implements TaskBackend {
     public boolean isTaskReleased(UUID taskId) {
         return id2TaskDecisionMap.containsKey(taskId);
     }
-    
+
+// TODO: delete commented block
+//	private static boolean hasTargetActorDefinition(ActorDefinition actorDefinition, TaskTarget taskTarget) {
+//		return "default".equalsIgnoreCase(actorDefinition.getName()) 
+//				|| (actorDefinition.getName().equals(taskTarget.getName()) && actorDefinition.getVersion().equals(taskTarget.getVersion()));
+//	}
+//
+//	@Override
+//	public boolean lockTask(UUID taskId, String lockerId, Date releaseDate) {
+//		boolean result = false;
+//		if(!isLocked(taskId)) {
+//			locksMap.put(taskId, new Lock(lockerId, releaseDate));
+//			result =  true;
+//		}
+//		
+//		logger.debug("Locking task[{}] result is[{}]", taskId, result);
+//		return result;
+//	}
+//	
+//	@Override
+//	public boolean unlockTask(UUID taskId, String lockerId) {
+//		boolean result = true;
+//		Lock lock = locksMap.get(taskId);
+//		if(lock!=null) {
+//			if(lockerId.equals(lock.getLockerId()) || lock.isExpired()) {
+//				locksMap.remove(taskId);
+//			} else {
+//				logger.debug("LockerId[{}] cannot unlock task[{}], it has active lock till[{}] by [{}]", lockerId, taskId, lock.getExpires(), lock.getLockerId());
+//				result = false;
+//			}
+//		}
+//		logger.debug("Unlocking task[{}] result is[{}]", taskId, result);
+//		return result;
+//	}
+//
+//	private boolean isLocked(UUID taskId) {
+//		boolean result =  locksMap.containsKey(taskId);
+//		if(result) {
+//			Lock lock = locksMap.get(taskId);
+//			if(lock.isExpired()) {
+//				result = !unlockTask(taskId, lock.getLockerId());
+//			}
+//		}
+//		return result;
+//	}
+
 	@Override
-	public List<TaskContainer> getExpiredTasks(ActorDefinition actorDefinition, long timeout, int limit) {
-		List<TaskContainer> result = new ArrayList<TaskContainer>();
-		int limitCounter = 0;
-		for(UUID uuid: id2ProgressMap.keySet()) {
-			if((limit>0) && limitCounter >= limit) {
-				break;
-			} else if(isLocked(uuid)) {
-				continue;
-			} else {
-				Date expirationDate = new Date(id2ProgressMap.get(uuid).getTime() + timeout);
-				if(expirationDate.before(new Date())) {
-					TaskContainer task = getTask(uuid);
-					if(hasTargetActorDefinition(actorDefinition, task.getTarget())) {
-						result.add(task);
-						limitCounter++;
-					}
+	public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill) {
+		List<TaskDefinition> result = new ArrayList<TaskDefinition>();
+		for(TaskDefinition taskDef: id2ProgressMap.keySet()) {
+			Long taskAcceptedDate = id2ProgressMap.get(taskDef);
+			if(taskAcceptedDate>timeFrom && taskAcceptedDate<timeTill) {
+				result.add(taskDef);
+			}
+		}
+		logger.debug("Found[{}] active task for actorId[{}] in period from[{}] till[{}]", result.size(), actorId, timeFrom, timeTill);
+		return result;
+	}
+
+	@Override
+	public int resetActiveTasks(List<TaskDefinition> tasks) {
+		int result = 0;
+		if(tasks!=null && !tasks.isEmpty()) {
+			for(TaskDefinition task: tasks) {
+				if(id2ProgressMap.remove(task) != null) {
+					result++;
+				} else {
+					logger.debug("Cannot reset task[{}]", task);
 				}
-			}
-		}
-
-		return result;
-	}
-
-	private static boolean hasTargetActorDefinition(ActorDefinition actorDefinition, TaskTarget taskTarget) {
-		return "default".equalsIgnoreCase(actorDefinition.getName()) 
-				|| (actorDefinition.getName().equals(taskTarget.getName()) && actorDefinition.getVersion().equals(taskTarget.getVersion()));
-	}
-
-	@Override
-	public boolean lockTask(UUID taskId, String lockerId, Date releaseDate) {
-		boolean result = false;
-		if(!isLocked(taskId)) {
-			locksMap.put(taskId, new Lock(lockerId, releaseDate));
-			result =  true;
-		}
-		
-		logger.debug("Locking task[{}] result is[{}]", taskId, result);
-		return result;
-	}
-	
-	@Override
-	public boolean unlockTask(UUID taskId, String lockerId) {
-		boolean result = true;
-		Lock lock = locksMap.get(taskId);
-		if(lock!=null) {
-			if(lockerId.equals(lock.getLockerId()) || lock.isExpired()) {
-				locksMap.remove(taskId);
-			} else {
-				logger.debug("LockerId[{}] cannot unlock task[{}], it has active lock till[{}] by [{}]", lockerId, taskId, lock.getExpires(), lock.getLockerId());
-				result = false;
-			}
-		}
-		logger.debug("Unlocking task[{}] result is[{}]", taskId, result);
-		return result;
-	}
-
-	private boolean isLocked(UUID taskId) {
-		boolean result =  locksMap.containsKey(taskId);
-		if(result) {
-			Lock lock = locksMap.get(taskId);
-			if(lock.isExpired()) {
-				result = !unlockTask(taskId, lock.getLockerId());
 			}
 		}
 		return result;
