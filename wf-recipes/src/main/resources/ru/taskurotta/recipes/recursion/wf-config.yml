@@ -13,9 +13,16 @@ spreader:
           number: 4
           count: 1
 
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.FlowArbiterProfiler
+
 actor:
   - FibonacciDecider:
       actorInterface: ru.taskurotta.recipes.recursion.decider.FibonacciDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1

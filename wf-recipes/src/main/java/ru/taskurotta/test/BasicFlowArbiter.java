@@ -13,6 +13,7 @@ public class BasicFlowArbiter implements FlowArbiter {
 	protected final Logger log = LoggerFactory.getLogger(getClass());
 
 	private final List<Stage> stages;
+	private boolean strictFlowCheck = true;
 
 	private String lastTag;
 
@@ -34,7 +35,7 @@ public class BasicFlowArbiter implements FlowArbiter {
 				throw new IncorrectFlowException("Expected flow finished. Called with " + tag);
 			}
 
-			if (!current.remove(tag)) {
+			if (!current.remove(tag) && isStrictFlowCheck()) {
 				throw new IncorrectFlowException("Wrong tag: expected "+ current +" but found {"+ tag +"}");
 			}
 			if (current.isEmpty()) {
@@ -47,10 +48,6 @@ public class BasicFlowArbiter implements FlowArbiter {
 			stages.notifyAll();
 		}
 
-	}
-
-	public Stage getCurrentStage() {
-		return stages.get(0);
 	}
 
 	protected void waitForTag(String tag, long timeToWait) {
@@ -95,4 +92,11 @@ public class BasicFlowArbiter implements FlowArbiter {
 		return stage != null && stage.contains(tag);
 	}
 
+	public boolean isStrictFlowCheck() {
+		return strictFlowCheck;
+	}
+
+	public void setStrictFlowCheck(boolean strictFlowCheck) {
+		this.strictFlowCheck = strictFlowCheck;
+	}
 }

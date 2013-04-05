@@ -17,6 +17,7 @@ actor:
       actorInterface: ru.taskurotta.recipes.nowait.decider.NoWaitDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
   - FastWorker:
       actorInterface: ru.taskurotta.recipes.nowait.workers.FastWorker

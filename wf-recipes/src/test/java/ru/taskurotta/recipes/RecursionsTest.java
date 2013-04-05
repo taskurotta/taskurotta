@@ -1,4 +1,4 @@
-package ru.taskurotta.recipes.nowait;
+package ru.taskurotta.recipes;
 
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import org.junit.Test;
@@ -11,14 +11,14 @@ import java.io.IOException;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by void 02.04.13 13:22
+ * Created by void 04.04.13 20:18
  */
-public class NoWaitTest {
+public class RecursionsTest {
 
 	//@org.junit.Ignore
 	@Test
-	public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
-		new Bootstrap("ru/taskurotta/recipes/nowait/wf-config.yml").start();
+	public void testRecursion() throws ArgumentParserException, IOException, ClassNotFoundException {
+		new Bootstrap("ru/taskurotta/recipes/recursion/wf-config.yml").start();
 
 		BasicFlowArbiter arbiter = (BasicFlowArbiter) new FlowArbiterFactory().getInstance(); // created in spring context
 		assertTrue(arbiter.waitForFinish(10000));
