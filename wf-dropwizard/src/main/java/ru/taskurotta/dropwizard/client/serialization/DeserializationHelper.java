@@ -13,6 +13,7 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +21,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class DeserializationHelper implements Constants {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DeserializationHelper.class);
-		
+	
+	public static String getStringValue(JsonNode node, String defVal) {
+		String result = defVal;
+		if(node!=null && !node.isNull()) {
+			if(node.isTextual()) {
+				result = node.textValue();
+			} else if(node.isNumber()) {
+				result = String.valueOf(node.longValue());
+			}
+		}
+		return result;
+	}
+	
 	public static UUID extractId(JsonNode idNode, UUID defVal) {
 		UUID result = defVal;
 		if(idNode!=null && !idNode.isNull()) {
@@ -30,7 +43,7 @@ public class DeserializationHelper implements Constants {
 		}
 		return result;
 	}
-	
+		
 	public static TaskTarget extractTaskTarget(JsonNode targetNode, TaskTarget defVal) {
 		TaskTarget result = defVal;
 		if(targetNode!=null && !targetNode.isNull()) {
@@ -119,5 +132,24 @@ public class DeserializationHelper implements Constants {
 		}
 		return result;
 	}
+	
+	public static TaskContainer parseTaskContainer(JsonNode rootNode) {
+		logger.debug("Deserializing Task from JSON[{}]", rootNode);
+		
+		UUID taskId = extractId(rootNode.get(TASK_ID), null);
+		
+		String method = getStringValue(rootNode.get(TASK_METHOD), null);
+		String actorId = getStringValue(rootNode.get(TASK_ACTOR_ID), null);
+		TaskType type = TaskType.valueOf(getStringValue(rootNode.get(TASK_TYPE), null));
+		
+		ArgContainer[] args = extractArgs(rootNode.get(TASK_ARGS), null);
+		TaskOptionsContainer options = extractOptions(rootNode.get(TASK_OPTIONS), null);
+		
+        long startTime = extractStartTime(rootNode.get(TASK_START_TIME), -1);
+        int numberOfAttempts = extractNumberOfAttempts(rootNode.get(TASK_NUMBER_OF_ATTEMPTS), -1);
+		
+		return new TaskContainer(taskId, method, actorId, type, startTime, numberOfAttempts, args, options);
+	}
+
 		
 }

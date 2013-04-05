@@ -15,7 +15,6 @@ import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskDefinition;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.util.ActorUtils;
 
 /**
  * User: romario
@@ -52,7 +51,7 @@ public class MemoryTaskBackend implements TaskBackend {
             for (int i = 0; i < args.length; i++) {
                 ArgContainer arg = args[i];
                 if (arg.isPromise()) {
-                    if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
+                    if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getType())) {
                         ArgContainer value = getTaskValue(arg.getTaskId());
                         args[i] = value;
                     } else {
@@ -73,7 +72,7 @@ public class MemoryTaskBackend implements TaskBackend {
         }
         
         Long executionStarted = System.currentTimeMillis(); 
-        TaskDefinition td = new TaskDefinition(taskId, ActorUtils.getActorId(task.getTarget()), task.getStartTime(), null, executionStarted); 
+        TaskDefinition td = new TaskDefinition(taskId, task.getActorId(), task.getStartTime(), null, executionStarted); 
         id2ProgressMap.put(td, executionStarted);//Always create new entry due to Long executionStarted parameter
 
         return task;

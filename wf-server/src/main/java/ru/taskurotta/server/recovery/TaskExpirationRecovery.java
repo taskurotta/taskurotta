@@ -86,7 +86,7 @@ public class TaskExpirationRecovery implements Runnable {
 			for(TaskDefinition task: expiredTasks) {
 				if(expPolicy.readyToRecover(task.getTaskId())) {
 					try {
-						queueBackend.enqueueItem(ActorUtils.getActorDefinition(task.getActorId()), task.getTaskId(), task.getStartTime());
+						queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime());
 						tasksToReset.add(task);
 						counter++;
 					} catch(Exception e) {
