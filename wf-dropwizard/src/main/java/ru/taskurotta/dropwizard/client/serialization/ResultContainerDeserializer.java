@@ -59,6 +59,7 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
     // TODO: reuse TaskContainerDeserializer logic
 	private TaskContainer parseTaskContainer(JsonNode tcNode) {
 		UUID taskId = DeserializationHelper.extractId(tcNode.get(TASK_ID), null);
+        UUID processId = DeserializationHelper.extractId(tcNode.get(TASK_PROCESS_ID), null);
 		TaskTarget target = DeserializationHelper.extractTaskTarget(tcNode.get(TASK_TARGET), null);
 		ArgContainer[] args = DeserializationHelper.extractArgs(tcNode.get(TASK_ARGS), null);
         TaskOptionsContainer options = DeserializationHelper.extractOptions(tcNode.get(TASK_OPTIONS), null);
@@ -66,7 +67,7 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
         //TODO: deserialize startTime, numberOfAttempt
 
 
-		return new TaskContainer(taskId, target, 0, 0, args, options);
+		return new TaskContainer(taskId, processId, target, 0, 0, args, options);
 	}
 
 }

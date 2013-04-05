@@ -1,6 +1,5 @@
 package ru.taskurotta.internal.proxy;
 
-import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -24,12 +23,12 @@ public class ProxyInvocationHandler implements InvocationHandler {
 
     private Map<Method, MethodDescriptor> method2TaskTargetCache;
 
-    private TaskHandler taskHandler;
+    private RuntimeContext injectedRuntimeProcess;
 
-    public ProxyInvocationHandler(Map<Method, MethodDescriptor> method2TaskTargetCache, TaskHandler taskHandler) {
+    public ProxyInvocationHandler(Map<Method, MethodDescriptor> method2TaskTargetCache, RuntimeContext injectedRuntimeProcess) {
 
         this.method2TaskTargetCache = method2TaskTargetCache;
-        this.taskHandler = taskHandler;
+        this.injectedRuntimeProcess = injectedRuntimeProcess;
 
     }
 
@@ -46,14 +45,25 @@ public class ProxyInvocationHandler implements InvocationHandler {
             taskOptions = new TaskOptions(argTypes);
         }
 
-        Task task = new TaskImpl(UUID.randomUUID(), methodDescriptor.getTaskTarget(), System.currentTimeMillis(), 0,
+        RuntimeContext runtimeContext = null;
+
+        if (injectedRuntimeProcess != null) {
+            runtimeContext = injectedRuntimeProcess;
+        } else {
+            runtimeContext = RuntimeContext.getCurrent();
+        }
+
+        if (runtimeContext == null) {
+            throw new IllegalAccessError("There is no RuntimeContext!");
+        }
+
+        UUID processId = runtimeContext.getProcessId();
+
+        Task task = new TaskImpl(UUID.randomUUID(), processId, methodDescriptor.getTaskTarget(),
+                System.currentTimeMillis(), 0,
                 args, taskOptions);
 
-        if (taskHandler == null) {
-            RuntimeContext.getCurrent().handle(task);
-        } else {
-            taskHandler.handle(task);
-        }
+        runtimeContext.handle(task);
 
         // First of all check return type
         Class<?> returnType = method.getReturnType();

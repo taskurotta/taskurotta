@@ -12,8 +12,8 @@ import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -35,7 +35,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
     @Override
     public TaskDecision execute(Task task) {
 
-        RuntimeContext.create();
+        RuntimeContext.start(task.getProcessId());
 
         TaskDecision taskDecision = null;
         TaskTarget key = task.getTarget();
@@ -59,7 +59,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             log.error("Can't call method [" + targetReference + "]", e);
             throw new TargetException(targetReference.toString(), e);
         } finally {
-            RuntimeContext.remove();
+            RuntimeContext.finish();
         }
 
         return taskDecision;
@@ -67,9 +67,9 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
 
     @Override
-    public Task[] execute(Runnable runnable) {
+    public Task[] execute(UUID processId, Runnable runnable) {
 
-        RuntimeContext.create();
+        RuntimeContext.start(processId);
 
         Task[] tasks;
 
@@ -78,7 +78,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             tasks = RuntimeContext.getCurrent().getTasks();
 
         } finally {
-            RuntimeContext.remove();
+            RuntimeContext.finish();
         }
 
         return tasks;

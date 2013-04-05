@@ -29,6 +29,7 @@ public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> i
 		logger.debug("Deserializing Task from JSON[{}]", rootNode);
 		
 		UUID taskId = DeserializationHelper.extractId(rootNode.get(TASK_ID), null);
+        UUID processId = DeserializationHelper.extractId(rootNode.get(TASK_PROCESS_ID), null);
 		TaskTarget target = DeserializationHelper.extractTaskTarget(rootNode.get(TASK_TARGET), null);
 		ArgContainer[] args = DeserializationHelper.extractArgs(rootNode.get(TASK_ARGS), null);
 		TaskOptionsContainer options = DeserializationHelper.extractOptions(rootNode.get(TASK_OPTIONS), null);
@@ -36,7 +37,7 @@ public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> i
         long startTime = DeserializationHelper.extractStartTime(rootNode.get(TASK_START_TIME), -1);
         int numberOfAttempts = DeserializationHelper.extractNumberOfAttempts(rootNode.get(TASK_NUMBER_OF_ATTEMPTS), -1);
 		
-		return new TaskContainer(taskId, target, startTime, numberOfAttempts, args, options);
+		return new TaskContainer(taskId, processId, target, startTime, numberOfAttempts, args, options);
 	}
 	
 }

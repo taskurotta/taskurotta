@@ -14,25 +14,25 @@ import java.util.UUID;
  */
 public class TestTasks {
 
-    public static Task newInstance(UUID taskId, TaskTarget taskTarget, Object[] args) {
-        return new TaskImpl(taskId, taskTarget, 0, 0, args, null);
+    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, Object[] args) {
+        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, null);
     }
 
-    public static Task newInstance(TaskTarget taskTarget, Object[] args) {
-        return new TaskImpl(UUID.randomUUID(), taskTarget, 0, 0, args, null);
+    public static Task newInstance(UUID processId, TaskTarget taskTarget, Object[] args) {
+        return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, null);
     }
 
-    public static Task newInstance(UUID taskId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(taskId, taskTarget, 0, 0, args, taskOptions);
+    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
+        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, taskOptions);
     }
 
-    public static Task newInstance(TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(UUID.randomUUID(), taskTarget, 0, 0, args, taskOptions);
+    public static Task newInstance(UUID processId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
+        return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, taskOptions);
     }
 
-    public static Task newInstance(UUID taskId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
+    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
                                    Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(taskId, taskTarget, startTime, numberOfAttempts, args, taskOptions);
+        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions);
     }
 
 }

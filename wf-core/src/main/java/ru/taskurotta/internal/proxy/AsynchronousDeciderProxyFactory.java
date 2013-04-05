@@ -5,7 +5,6 @@ import net.sf.cglib.proxy.CallbackFilter;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import ru.taskurotta.TaskHandler;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
@@ -13,6 +12,7 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.IncorrectAsynchronousMethodDefinition;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.AnnotationUtils;
@@ -28,13 +28,14 @@ import java.util.Map;
 public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
     @Override
-    public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, TaskHandler taskHandler) {
+    public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType,
+                                                RuntimeContext injectedRuntimeContext) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(proxyType);
 
         final Map<Method, MethodDescriptor> method2TaskTargetCache = createMethodCache(proxyType);
 
-        ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, taskHandler);
+        ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, injectedRuntimeContext);
         Callback[] callbacks = createCallbacks(proxyInvocationHandler);
 
         enhancer.setCallbacks(callbacks);
@@ -104,7 +105,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 }
 
                 TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
-				MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -128,8 +129,8 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
                     if (implementationMethod.getName().equals(interfaceMethod)) {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
-							MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
-							method2TaskTargetCache.put(implementationMethod, descriptor);
+                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+                        method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }
                 }

@@ -14,6 +14,8 @@ import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.test.TestTasks;
 
+import java.util.UUID;
+
 /**
  * User: stukushin
  * Date: 24.01.13
@@ -44,7 +46,7 @@ public class GeneralRuntimeProcessorTest {
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new SimpleDeciderImpl());
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start1");
-        Task task = TestTasks.newInstance(taskTarget, null);
+        Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
         runtimeProcessor.execute(task);
     }
@@ -56,7 +58,7 @@ public class GeneralRuntimeProcessorTest {
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new SimpleDeciderImpl());
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start");
-        Task task = TestTasks.newInstance(taskTarget, null);
+        Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
         runtimeProcessor.execute(task);
     }

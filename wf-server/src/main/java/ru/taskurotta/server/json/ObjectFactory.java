@@ -126,6 +126,7 @@ public class ObjectFactory {
         }
 
         UUID taskId = taskContainer.getTaskId();
+        UUID processId = taskContainer.getProcessId();
         TaskTarget taskTarget = taskContainer.getTarget();
         Object[] args = null;
 
@@ -140,12 +141,14 @@ public class ObjectFactory {
             }
         }
 
-        return new TaskImpl(taskId, taskTarget, taskContainer.getStartTime(), taskContainer.getNumberOfAttempts(), args, null);
+        return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
+                taskContainer.getNumberOfAttempts(), args, null);
     }
 
 
     public TaskContainer dumpTask(Task task) {
         UUID taskId = task.getId();
+        UUID processId = task.getProcessId();
         TaskTarget target = task.getTarget();
         ArgContainer[] argContainers = null;
 
@@ -162,7 +165,8 @@ public class ObjectFactory {
 
         TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
-        return new TaskContainer(taskId, target, task.getStartTime(), task.getNumberOfAttempts(), argContainers,
+        return new TaskContainer(taskId, processId, target, task.getStartTime(), task.getNumberOfAttempts(),
+                argContainers,
                 taskOptionsContainer);
     }
 

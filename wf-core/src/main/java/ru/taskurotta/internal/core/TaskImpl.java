@@ -15,6 +15,7 @@ import java.util.UUID;
 public class TaskImpl implements Task {
 
     private UUID uuid;
+    private UUID processId;
     private TaskTarget taskTarget;
     private long startTime;
     private int numberOfAttempts = 0;
@@ -22,7 +23,10 @@ public class TaskImpl implements Task {
 	private TaskOptions taskOptions;
 
 
-    public TaskImpl(UUID uuid, TaskTarget taskTarget, long startTime, int numberOfAttempts, Object[] args, TaskOptions taskOptions) {
+    public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
+                    Object[] args,
+                    TaskOptions taskOptions) {
+        this.processId = processId;
 
         if (uuid == null) {
             throw new IllegalArgumentException("uuid can not be null!");
@@ -53,6 +57,10 @@ public class TaskImpl implements Task {
         return uuid;
     }
 
+    public UUID getProcessId() {
+        return processId;
+    }
+
 
     @Override
     public TaskTarget getTarget() {
@@ -79,46 +87,47 @@ public class TaskImpl implements Task {
 		return taskOptions;
 	}
 
-	@Override
+    @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
-        if (!(o instanceof Task)) return false;
+        if (!(o instanceof TaskImpl)) return false;
 
-        Task that = (Task) o;
+        TaskImpl task = (TaskImpl) o;
 
-        if (!uuid.equals(that.getId())) return false;
-        if (!taskTarget.equals(that.getTarget())) return false;
+        if (numberOfAttempts != task.numberOfAttempts) return false;
+        if (startTime != task.startTime) return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if (!Arrays.equals(args, task.args)) return false;
+        if (!processId.equals(task.processId)) return false;
+        if (taskOptions != null ? !taskOptions.equals(task.taskOptions) : task.taskOptions != null) return false;
+        if (!taskTarget.equals(task.taskTarget)) return false;
+        if (!uuid.equals(task.uuid)) return false;
 
-        Object[] thatArgs = that.getArgs();
-
-        // if (args == null && thatArgs) we assume that it is empty
-        if ((args == null && thatArgs != null)
-                || (args != null && (thatArgs == null || !Arrays.deepEquals(args, thatArgs)))) return false;
-
-		if (!taskOptions.equals(that.getTaskOptions()))
-			return false;
         return true;
     }
 
     @Override
     public int hashCode() {
         int result = uuid.hashCode();
+        result = 31 * result + processId.hashCode();
         result = 31 * result + taskTarget.hashCode();
-        result = 31 * result + Arrays.deepHashCode(args);
-		result = 31 * result + taskOptions.hashCode();
-
+        result = 31 * result + (int) (startTime ^ (startTime >>> 32));
+        result = 31 * result + numberOfAttempts;
+        result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
+        result = 31 * result + (taskOptions != null ? taskOptions.hashCode() : 0);
         return result;
     }
 
-
-	@Override
+    @Override
     public String toString() {
         return "TaskImpl{" +
                 "uuid=" + uuid +
-                ", taskTarget='" + taskTarget + '\'' +
-                ", args=" + (args == null ? "null" : Arrays.toString(args)) +
-                "}";
+                ", processId=" + processId +
+                ", taskTarget=" + taskTarget +
+                ", startTime=" + startTime +
+                ", numberOfAttempts=" + numberOfAttempts +
+                ", args=" + (args == null ? null : Arrays.asList(args)) +
+                ", taskOptions=" + taskOptions +
+                '}';
     }
-
 }

@@ -56,6 +56,8 @@ public class AbstractTestStub {
     protected static final ActorDefinition DECIDER_ACTOR_DEF;
     protected static final ActorDefinition WORKER_ACTOR_DEF;
 
+    protected static final UUID processId = UUID.randomUUID();
+
     static {
         ActorDefinition actorDefinition = ActorDefinition.valueOf(TestDecider.class);
         DECIDER_NAME = actorDefinition.getName();
@@ -115,7 +117,7 @@ public class AbstractTestStub {
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, startTime, 0, null, null);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, startTime, 0, null, null);
         return task;
     }
 
@@ -125,19 +127,19 @@ public class AbstractTestStub {
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, args, null);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
         return task;
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args, TaskOptions taskOptions) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, args, taskOptions);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions);
         return task;
     }
 
     public static Task workerTask(UUID id, TaskType type, String methodName, Object[] args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, WORKER_NAME, WORKER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, args);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args);
         return task;
     }
 

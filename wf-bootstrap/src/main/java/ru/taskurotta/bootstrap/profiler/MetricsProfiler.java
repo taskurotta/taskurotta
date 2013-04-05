@@ -12,6 +12,7 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -123,7 +124,7 @@ public class MetricsProfiler implements Profiler {
             }
 
             @Override
-            public Task[] execute(Runnable runnable) {
+            public Task[] execute(UUID processId,  Runnable runnable) {
                 throw new IllegalAccessError("Method not supported yet");
             }
         };

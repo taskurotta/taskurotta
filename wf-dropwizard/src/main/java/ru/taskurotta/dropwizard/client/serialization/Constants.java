@@ -6,6 +6,7 @@ public interface Constants {
 	public static final String ACTOR_DEFINITION_VERSION = "version";
 	
 	public static final String TASK_ID = "taskId";
+    public static final String TASK_PROCESS_ID = "processId";
 	public static final String TASK_TARGET = "target";
 	public static final String TASK_ARGS = "args";
     public static final String TASK_OPTIONS = "options";

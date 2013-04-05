@@ -84,6 +84,7 @@ public class ObjectFactoryTest {
     public void resultContainerSimple() {
         Task[] tasks = new Task[]{
                 TestTasks.newInstance(
+                        UUID.randomUUID(),
                         new TaskTargetImpl(TaskType.DECIDER_START, "ru.example.Decider", "1.0", "start"),
                         new Object[]{true, "Hello!", 10})
         };

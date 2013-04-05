@@ -17,6 +17,8 @@ import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.test.TestTasks;
 
+import java.util.UUID;
+
 /**
  * User: romario
  * Date: 1/11/13
@@ -106,7 +108,7 @@ public class WEStartWFTest {
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(simpleDeciderImpl);
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start");
-        Task task = TestTasks.newInstance(taskTarget, null);
+        Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
         TaskDecision taskDecision = runtimeProcessor.execute(task);
 

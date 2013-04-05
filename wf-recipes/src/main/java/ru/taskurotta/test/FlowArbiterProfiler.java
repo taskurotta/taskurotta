@@ -9,6 +9,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.Properties;
+import java.util.UUID;
 
 /**
  * User: stukushin
@@ -40,8 +41,8 @@ public class FlowArbiterProfiler implements Profiler {
             }
 
             @Override
-            public Task[] execute(Runnable runnable) {
-                return runtimeProcessor.execute(runnable);
+            public Task[] execute(UUID processId, Runnable runnable) {
+                return runtimeProcessor.execute(processId, runnable);
             }
         };
     }

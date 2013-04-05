@@ -12,6 +12,7 @@ import ru.taskurotta.internal.proxy.ProxyInvocationHandler;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -59,23 +60,23 @@ public class WorkerInvocationHandlerTest {
     @Test
     public void testSum() throws Throwable {
 
-        RuntimeContext.create();
+        RuntimeContext.start(UUID.randomUUID());
 
         try {
             assertEquals(Promise.class, workerInvocationHandler.invoke(simpleProxy, methodSum, new Object[]{1, 2}).getClass());
         } finally {
-            RuntimeContext.remove();
+            RuntimeContext.finish();
         }
     }
 
     @Test
     public void testAVoid() throws Throwable {
-        RuntimeContext.create();
+        RuntimeContext.start(UUID.randomUUID());
 
         try {
             assertNull(workerInvocationHandler.invoke(simpleProxy, methodAVoid, new Object[]{}));
         } finally {
-            RuntimeContext.remove();
+            RuntimeContext.finish();
         }
     }
 }

@@ -1,5 +1,6 @@
 package ru.taskurotta;
 
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.proxy.AsynchronousDeciderProxyFactory;
 import ru.taskurotta.internal.proxy.DeciderProxyFactory;
 import ru.taskurotta.internal.proxy.WorkerProxyFactory;
@@ -41,12 +42,12 @@ public class ProxyFactory {
      * get cached decider client proxy object with specified TaskHandler
      *
      * @param type
-     * @param taskHandler
+     * @param injectedRuntimeContext
      * @param <DeciderClientType>
      * @return
      */
-    public static <DeciderClientType> DeciderClientType getDeciderClient(Class<DeciderClientType> type, TaskHandler taskHandler) {
-        return deciderProxyFactory.create(type, taskHandler);
+    public static <DeciderClientType> DeciderClientType getDeciderClient(Class<DeciderClientType> type, RuntimeContext injectedRuntimeContext) {
+        return deciderProxyFactory.create(type, injectedRuntimeContext);
     }
 
     /**

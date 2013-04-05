@@ -35,6 +35,8 @@ public class AssertFlowComparatorTest {
 
     public static Map<UUID, Integer> emptyTaskUuidToSequenceMap = new HashMap<UUID, Integer>();
 
+    private static final UUID processId = UUID.randomUUID();
+
     static {
         TaskTarget taskTarget1_1 = new TaskTargetImpl(TaskType.DECIDER_START, "taskName", "2.0", "methodName");
         TaskTarget taskTarget1_2 = new TaskTargetImpl(TaskType.DECIDER_START, "taskName", "2.0", "methodName");
@@ -45,10 +47,10 @@ public class AssertFlowComparatorTest {
         Object[] args2_1 = new Object[]{10, true, "string"};
         Object[] args2_2 = new Object[]{10, false, "string"};
 
-        task1_1 = TestTasks.newInstance(taskTarget1_1, args1_1);
-        task1_2 = TestTasks.newInstance(taskTarget1_2, args1_2);
-        task2_1 = TestTasks.newInstance(taskTarget2, args2_1);
-        task2_2 = TestTasks.newInstance(taskTarget2, args2_2);
+        task1_1 = TestTasks.newInstance(processId, taskTarget1_1, args1_1);
+        task1_2 = TestTasks.newInstance(processId, taskTarget1_2, args1_2);
+        task2_1 = TestTasks.newInstance(processId, taskTarget2, args2_1);
+        task2_2 = TestTasks.newInstance(processId, taskTarget2, args2_2);
     }
 
 

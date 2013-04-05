@@ -2,15 +2,16 @@ package ru.taskurotta.client.internal;
 
 import org.junit.Test;
 import ru.taskurotta.ProxyFactory;
-import ru.taskurotta.TaskHandler;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
-import ru.taskurotta.core.Task;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
+
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
@@ -36,11 +37,7 @@ public class DeciderClientProviderCommonTest {
     @Test
     public void testGetDeciderClient() throws Exception {
         TestDeciderClient testDeciderClientOrig = ProxyFactory.getDeciderClient(TestDeciderClient.class,
-                new TaskHandler() {
-                    @Override
-                    public void handle(Task task) {
-                    }
-                });
+                new RuntimeContext(UUID.randomUUID()));
 
         BackendBundle backendBundle = new MemoryBackendBundle(0);
         TaskServer taskServer = new GeneralTaskServer(backendBundle);

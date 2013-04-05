@@ -1,8 +1,8 @@
 package ru.taskurotta.internal.proxy;
 
 import org.springframework.util.StringUtils;
-import ru.taskurotta.TaskHandler;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 
@@ -30,7 +30,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
     }
 
     @Override
-    public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, TaskHandler taskHandler) {
+    public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext) {
         Class clientInterface = ClientCheckerUtil.checkClientDefinition(proxyType, clientAnnotationClass);
         Class actorInterface = ClientCheckerUtil.checkActorDefinition(clientInterface, actorAnnotationClass,
                 clientAnnotationClass, annotationExplorer);
@@ -38,7 +38,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
 
         Map<Method, MethodDescriptor> method2TaskTargetCache = createMethodCache(clientInterface, actorInterface,
                 actorAnnotationClass, annotationExplorer);
-        ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, taskHandler);
+        ProxyInvocationHandler proxyInvocationHandler = new ProxyInvocationHandler(method2TaskTargetCache, injectedRuntimeContext);
 
         return createProxy(proxyType, proxyInvocationHandler);
 
@@ -51,7 +51,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
      * @param clientInterface      - client interface. The source of methods
      * @param actorInterface       - actor interface. Source of the name and version
      * @param actorAnnotationClass - actor annotation
-     * @param annotationExplorer - actor annotation explorer
+     * @param annotationExplorer   - actor annotation explorer
      * @return method to task target cache
      */
     private Map<Method, MethodDescriptor> createMethodCache(Class clientInterface, Class<?> actorInterface,
@@ -72,7 +72,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
         Method[] targetMethods = clientInterface.getMethods();
         for (Method method : targetMethods) {
             TaskTarget taskTarget = new TaskTargetImpl(annotationExplorer.getTaskType(), actorName, actorVersion, method.getName());
-			MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+            MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
             method2TaskTargetCache.put(method, descriptor);
         }
         return method2TaskTargetCache;

@@ -10,6 +10,8 @@ import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.test.TestTasks;
 
+import java.util.UUID;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
@@ -24,6 +26,7 @@ public class ExecuteWorkerTest {
 
     private RuntimeProcessor runtimeProcessor;
     private static boolean flag = false;
+    private static UUID processId = UUID.randomUUID();
 
     @Worker
     public static interface SimpleWorker {
@@ -62,7 +65,7 @@ public class ExecuteWorkerTest {
     @Test
     public void testSimpleMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "max");
-        Task task = TestTasks.newInstance(taskTarget, new Object[]{5, 6});
+        Task task = TestTasks.newInstance(processId, taskTarget, new Object[]{5, 6});
         TaskDecision taskDecision = runtimeProcessor.execute(task);
         assertEquals(taskDecision.getValue(), 6);
     }
@@ -70,7 +73,7 @@ public class ExecuteWorkerTest {
     @Test
     public void testRecursiveMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "fibonacci");
-        Task task = TestTasks.newInstance(taskTarget, new Object[]{4});
+        Task task = TestTasks.newInstance(processId, taskTarget, new Object[]{4});
         TaskDecision taskDecision = runtimeProcessor.execute(task);
         assertEquals(taskDecision.getValue(), 3);
     }
@@ -78,7 +81,7 @@ public class ExecuteWorkerTest {
     @Test
     public void testVoidMethod() {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, SimpleWorker.class.getName(), "1.0", "voidMethod");
-        Task task = TestTasks.newInstance(taskTarget, new Object[]{});
+        Task task = TestTasks.newInstance(processId, taskTarget, new Object[]{});
 
         assertFalse(flag);
         TaskDecision taskDecision = runtimeProcessor.execute(task);
