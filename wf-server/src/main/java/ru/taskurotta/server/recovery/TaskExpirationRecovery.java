@@ -57,15 +57,19 @@ public class TaskExpirationRecovery implements Runnable {
 	}
 	
 	private static List<TaskDefinition> filterNonExpired(List<TaskDefinition> activeTasks, long timeout) {
-		if(activeTasks!=null && activeTasks.isEmpty()) {
+		if(activeTasks!=null && !activeTasks.isEmpty()) {
+			int removed = 0;
+			int initialSize = activeTasks.size();
 			Iterator<TaskDefinition> iterator = activeTasks.iterator();
-			long latestExecutionStartBoundary = System.currentTimeMillis()-timeout;
 			while(iterator.hasNext()) {
 				TaskDefinition item = iterator.next();
-				if(item.getExecutionStarted() > latestExecutionStartBoundary) {//not expired
+				logger.debug("Validating item[{}], ExecutionStarted[{}], timeout[{}], currentTime[{}]", item.getTaskId(), item.getExecutionStarted(), timeout, System.currentTimeMillis());
+				if(item.getExecutionStarted()+timeout > System.currentTimeMillis()) {//not expired
 					iterator.remove();
+					removed++;
 				}
 			}
+			logger.debug("Removed [{}] items from active task list sized[{}] with timeout[{}]", removed, initialSize, timeout);
 		}
 		return activeTasks;
 	}

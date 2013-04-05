@@ -11,7 +11,7 @@ actorConfig:
           timeUnit: "SECONDS"
 properties:
   pollDelay: 1
-  expirationCheckSchedule: "50 SECONDS"
+  expirationCheckSchedule: "20 SECONDS"
   expirationCheckLimit: 100
 logging:
     level: WARN

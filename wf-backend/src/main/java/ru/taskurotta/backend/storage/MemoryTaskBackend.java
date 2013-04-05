@@ -125,7 +125,8 @@ public class MemoryTaskBackend implements TaskBackend {
 
         UUID taskId = taskDecision.getTaskId();
 
-        id2ProgressMap.remove(taskId);
+        removeProgressedTask(taskId);
+        
         id2TaskDecisionMap.put(taskId, taskDecision);
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
@@ -137,7 +138,16 @@ public class MemoryTaskBackend implements TaskBackend {
             id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
         }
     }
-
+    
+    private void removeProgressedTask(UUID taskId) {
+    	for(TaskDefinition td: id2ProgressMap.keySet()) {
+    		if(taskId.equals(td.getTaskId())) {
+    			id2ProgressMap.remove(td);
+    			break;
+    		}
+    	}
+    }
+    
     @Override
     public void addDecisionCommit(UUID taskId) {
     }
@@ -158,7 +168,14 @@ public class MemoryTaskBackend implements TaskBackend {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        return id2ProgressMap.containsKey(taskId);
+    	boolean result = false;
+    	for(TaskDefinition td: id2ProgressMap.keySet()) {
+    		if(taskId.equals(td.getTaskId())) {
+    			result = true;
+    			break;
+    		}
+    	}
+    	return result;
     }
 
     public boolean isTaskReleased(UUID taskId) {
@@ -219,7 +236,7 @@ public class MemoryTaskBackend implements TaskBackend {
 				result.add(taskDef);
 			}
 		}
-		logger.debug("Found[{}] active task for actorId[{}] in period from[{}] till[{}]", result.size(), actorId, timeFrom, timeTill);
+		//logger.debug("Found[{}] active task for actorId[{}] in period from[{}] till[{}]", result.size(), actorId, timeFrom, timeTill);
 		return result;
 	}
 

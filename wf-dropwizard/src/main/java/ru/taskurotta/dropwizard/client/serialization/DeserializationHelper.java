@@ -26,7 +26,7 @@ public class DeserializationHelper implements Constants {
 		if(idNode!=null && !idNode.isNull()) {
 			result = UUID.fromString(idNode.textValue());
 		} else {
-			logger.debug("Cannot extract UUID from node [{}]", idNode);
+			logger.trace("Cannot extract UUID from node [{}]", idNode);
 		}
 		return result;
 	}
@@ -43,7 +43,7 @@ public class DeserializationHelper implements Constants {
 			
 			result = new TaskTargetImpl(tasktypeEnumVal, taskName, taskVersion, taskMethod);
 		} else {
-			logger.debug("Cannot extract TaskTarget from node [{}]", targetNode);
+			logger.trace("Cannot extract TaskTarget from node [{}]", targetNode);
 		}
 		return result;
 	}
@@ -60,7 +60,7 @@ public class DeserializationHelper implements Constants {
 			}
 			result = argumentsList.toArray(new ArgContainer[argumentsList.size()]);
 		} else {
-			logger.debug("Cannot extract task args from node[{}]", argsNode);
+			logger.trace("Cannot extract task args from node[{}]", argsNode);
 		}
 		
 		return result;
