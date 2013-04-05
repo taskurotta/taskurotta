@@ -15,24 +15,6 @@
     <dependencies>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-bootstrap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
             <artifactId>wf-spring</artifactId>
             <version>${project.version}</version>
         </dependency>

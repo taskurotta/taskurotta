@@ -56,7 +56,10 @@ public class TaskContainerSerializationTest {
 				Assert.assertEquals("Start times must be the same", original.getStartTime(), result.getStartTime());
 				Assert.assertEquals("Number of attempts must be the same", original.getNumberOfAttempts(), result.getNumberOfAttempts());
 				
-				validateTaskTarget(original.getTarget(), result.getTarget());
+				//validateTaskTarget(original.getTarget(), result.getTarget());
+				Assert.assertEquals("Task methods must be the same", original.getMethod(), result.getMethod());
+				Assert.assertEquals("Task actorIds must be the same", original.getActorId(), result.getActorId());
+				Assert.assertEquals("Task types must be the same", original.getType(), result.getType());
 				validateTaskArgs(original.getArgs(), result.getArgs());
 				validateTaskOptions(original.getOptions(), result.getOptions());
 				
@@ -72,6 +75,7 @@ public class TaskContainerSerializationTest {
 		String originalName = "test.me.worker";
 		String originalVersion = "7.6.5";
 		String originalMethod = "doSomeWork";
+		String originalActorId = originalName + "#" + originalVersion; 
 		TaskTarget originalTaskTarget = new TaskTargetImpl(originalTaskType, originalName, originalVersion, originalMethod);
 		long originalStartTime = System.currentTimeMillis();
 		int originalNumberOfAttempts = 5;
@@ -88,22 +92,21 @@ public class TaskContainerSerializationTest {
 		ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
 		TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
 		
-		return new TaskContainer(originalUuid, processUuid, originalTaskTarget, originalStartTime,
-                originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
+		return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
 	}
 	
-	private void validateTaskTarget(TaskTarget original, TaskTarget validating) {
-		if(original != null) {
-			Assert.assertNotNull(validating);
-			if(validating != null) {
-				Assert.assertEquals("Task Target methods must be the same", original.getMethod(), validating.getMethod());
-				Assert.assertEquals("Task Target names must be the same", original.getName(), validating.getName());
-				Assert.assertEquals("Task Target types must be the same", original.getType(), validating.getType());
-				Assert.assertEquals("Task Target versions must be the same", original.getVersion(), validating.getVersion());
-			}
-			
-		}
-	}
+//	private void validateTaskTarget(TaskTarget original, TaskTarget validating) {
+//		if(original != null) {
+//			Assert.assertNotNull(validating);
+//			if(validating != null) {
+//				Assert.assertEquals("Task Target methods must be the same", original.getMethod(), validating.getMethod());
+//				Assert.assertEquals("Task Target names must be the same", original.getName(), validating.getName());
+//				Assert.assertEquals("Task Target types must be the same", original.getType(), validating.getType());
+//				Assert.assertEquals("Task Target versions must be the same", original.getVersion(), validating.getVersion());
+//			}
+//			
+//		}
+//	}
 	
 	private void validateTaskArgs(ArgContainer[] original, ArgContainer[] validating) {
 		if(original!=null) {

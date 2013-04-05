@@ -13,7 +13,6 @@ import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -51,7 +50,7 @@ public class GeneralTaskServer implements TaskServer{
     public void startProcess(TaskContainer task) {
 
         // some consistence check
-        if (!task.getTarget().getType().equals(TaskType.DECIDER_START)) {
+        if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
             throw new IllegalStateException("Can not start process. Task should be type of " + TaskType.DECIDER_START);
         }
@@ -64,15 +63,13 @@ public class GeneralTaskServer implements TaskServer{
         // idempotent statement
         taskBackend.startProcess(task);
 
-        final TaskTarget taskTarget = task.getTarget();
-
         // inform dependencyBackend about new process
         // idempotent statement
         dependencyBackend.startProcess(task);
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
-        enqueueTask(task.getTaskId(), taskTarget.getName(), taskTarget.getVersion(), task.getStartTime());
+        enqueueTask(task.getTaskId(), task.getActorId(), task.getStartTime());
 
 
         processBackend.startProcessCommit(task.getTaskId());
@@ -123,8 +120,7 @@ public class GeneralTaskServer implements TaskServer{
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
-                enqueueTask(taskId, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
-                        errorContainer.getRestartTime());
+                enqueueTask(taskId, asyncTask.getActorId(), errorContainer.getRestartTime());
             }
 
             taskBackend.addErrorCommit(taskId);
@@ -145,8 +141,7 @@ public class GeneralTaskServer implements TaskServer{
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
-                enqueueTask(taskId2Queue, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
-                        asyncTask.getStartTime());
+                enqueueTask(taskId2Queue, asyncTask.getActorId(), asyncTask.getStartTime());
             }
 
         }
@@ -159,15 +154,13 @@ public class GeneralTaskServer implements TaskServer{
         taskBackend.addDecisionCommit(taskId);
     }
 
-    private void enqueueTask(UUID taskId, String actorName, String actorVersion, long startTime) {
-
-        final ActorDefinition actorDefinition = ActorDefinition.valueOf(actorName, actorVersion);
+    private void enqueueTask(UUID taskId, String actorId, long startTime) {
 
         // set it to current time for precisely repeat
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        queueBackend.enqueueItem(actorDefinition, taskId, startTime);
+        queueBackend.enqueueItem(actorId, taskId, startTime);
     }
 
 }

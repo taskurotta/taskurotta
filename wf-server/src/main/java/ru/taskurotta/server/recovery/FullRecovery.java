@@ -7,6 +7,7 @@ import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -60,12 +61,7 @@ public class FullRecovery {
 
                 TaskContainer task2Queue = taskBackend.getTask(taskToQueueId);
 
-                queueBackend.enqueueItem(
-                        ActorDefinition.valueOf(
-                                task2Queue.getTarget().getName(),
-                                task2Queue.getTarget().getVersion()
-                        ),
-                        taskToQueueId,
+                queueBackend.enqueueItem(task2Queue.getActorId(), taskToQueueId,
                         task2Queue.getStartTime()); // This time may be shifted by RetryPolicy
             }
         }

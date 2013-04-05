@@ -1,6 +1,5 @@
 package ru.taskurotta.server.config.expiration;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -47,9 +46,9 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 	}
 		
 	@Override
-	public long getExpirationTimeout(Date forDate) {
+	public long getExpirationTimeout(long forTime) {
 		//Same timeout for any date
-		return timeout;
+		return timeUnit.toMillis(timeout);
 	}
 
 	@Override

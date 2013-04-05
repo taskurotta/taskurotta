@@ -3,6 +3,7 @@ package ru.taskurotta.backend.storage;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskDefinition;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.Date;
@@ -83,21 +84,18 @@ public interface TaskBackend {
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
     
     /**
-     * @param actorDefinition - targeting tasks for actors of this kind
-     * @param timeout - tasks wait for release timeout
-     * @param limit - limited result list if value greater then 0
-     * @return list of expired tasks. Meaning tasks which were taken to be processed by actors, but wasn't released by timeout expiration time
+     * @param actorId return only tasks for this actorId
+     * @param timeFrom return only tasks with processing start time greater then given
+     * @param timeTill return only tasks with processing start time less then given
+     * @return list of tasks wich are currently processing by some remote actors
      */
-    public List<TaskContainer> getExpiredTasks(ActorDefinition actorDefinition, long timeout, int limit);
+    public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill);
     
     /**
-     * Sets lock on task with given UUID, preventing it from getting to execution
+     * Removes this task definitions from list of active tasks
+     * @param tasks
+     * @return number of removed tasks
      */
-    public boolean lockTask(UUID taskId, String lockerId, Date releaseDate);
+    public int resetActiveTasks(List<TaskDefinition> tasks);
     
-    /**
-     * Removing lock from task
-     */
-    public boolean unlockTask(UUID taskId, String lockerId);
-
 }

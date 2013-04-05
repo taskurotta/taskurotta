@@ -30,6 +30,6 @@ public interface QueueBackend {
     public void pollCommit(UUID taskId);
 
 
-    public void enqueueItem(ActorDefinition actorDefinition, UUID taskId, long startTime);
+    public void enqueueItem(String actorId, UUID taskId, long startTime);
 
 }

@@ -1,6 +1,5 @@
 package ru.taskurotta.server.config.expiration;
 
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -9,7 +8,7 @@ import java.util.UUID;
  */
 public interface ExpirationPolicy {
 	
-	public long getExpirationTimeout(Date forDate);
+	public long getExpirationTimeout(long forTime);
 	
 	public long getNextStartTime(UUID taskUuid, long taskStartTime);
 	

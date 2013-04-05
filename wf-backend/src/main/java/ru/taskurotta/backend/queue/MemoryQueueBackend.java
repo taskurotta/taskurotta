@@ -118,11 +118,11 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void enqueueItem(ActorDefinition actorDefinition, UUID taskId, long startTime) {
+    public void enqueueItem(String actorId, UUID taskId, long startTime) {
 
-        logger.debug("enqueueItem() actorDefinition [{}], taskId [{}], startTime [{}]", actorDefinition, taskId, startTime);
+        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]", actorId, taskId, startTime);
 
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
         queue.add(new DelayedTaskElement(taskId, startTime));
     }
 
