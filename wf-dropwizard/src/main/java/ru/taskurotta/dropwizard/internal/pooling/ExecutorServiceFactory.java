@@ -5,15 +5,15 @@ import java.util.concurrent.Executors;
 
 
 public class ExecutorServiceFactory {
-	
-	private int threads = 1;
-	
-	public ExecutorService getFixedThreadPool() {
-		return Executors.newFixedThreadPool(threads);
-	}
 
-	public void setThreads(int threads) {
-		this.threads = threads;
-	}
-	
+    private int threads = 1;
+
+    public ExecutorService getFixedThreadPool() {
+        return Executors.newFixedThreadPool(threads);
+    }
+
+    public void setThreads(int threads) {
+        this.threads = threads;
+    }
+
 }

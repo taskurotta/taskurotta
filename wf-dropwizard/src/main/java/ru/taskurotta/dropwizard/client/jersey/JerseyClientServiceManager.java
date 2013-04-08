@@ -12,7 +12,7 @@ import ru.taskurotta.server.TaskServer;
 public class JerseyClientServiceManager implements ClientServiceManager {
 
     private TaskServer taskServer;
-    
+
     @Override
     public DeciderClientProvider getDeciderClientProvider() {
         return new DeciderClientProviderCommon(taskServer);
@@ -22,10 +22,10 @@ public class JerseyClientServiceManager implements ClientServiceManager {
     public TaskSpreaderProvider getTaskSpreaderProvider() {
         return new TaskSpreaderProviderCommon(taskServer);
     }
-	
+
     @Required
-	public void setTaskServer(TaskServer taskServer) {
-		this.taskServer = taskServer;
-	}
+    public void setTaskServer(TaskServer taskServer) {
+        this.taskServer = taskServer;
+    }
 
 }

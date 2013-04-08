@@ -7,11 +7,11 @@ import java.util.UUID;
  *
  */
 public interface ExpirationPolicy {
-	
-	public long getExpirationTimeout(long forTime);
-	
-	public long getNextStartTime(UUID taskUuid, long taskStartTime);
-	
-	public boolean readyToRecover(UUID uuid);
-	
+
+    public long getExpirationTimeout(long forTime);
+
+    public long getNextStartTime(UUID taskUuid, long taskStartTime);
+
+    public boolean readyToRecover(UUID uuid);
+
 }

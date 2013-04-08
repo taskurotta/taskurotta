@@ -1,9 +1,8 @@
 package ru.taskurotta.bootstrap;
 
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import ru.taskurotta.bootstrap.config.Config;
-
 import java.io.IOException;
+
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
 
 /**
  * User: romario
@@ -13,6 +12,6 @@ import java.io.IOException;
 public class Main {
 
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
-		new Bootstrap(args).start();
-	}
+        new Bootstrap(args).start();
+    }
 }

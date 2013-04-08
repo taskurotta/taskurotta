@@ -22,38 +22,38 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class ResultContainerDeserializer extends JsonDeserializer<DecisionContainer> implements Constants {
-	
-	private static final Logger logger = LoggerFactory.getLogger(ResultContainerDeserializer.class);
-	
-	@Override
-	public DecisionContainer deserialize(JsonParser jp,
-			DeserializationContext ctxt) throws IOException,
-			JsonProcessingException {
-		
-		ObjectCodec oc = jp.getCodec();
-		JsonNode rootNode = oc.readTree(jp);
-				
-		logger.debug("Deserializing Task from JSON[{}]", rootNode);
 
-		UUID taskId = DeserializationHelper.extractId(rootNode.get(RESULT_TASK_ID), null);
-		ArgContainer value = DeserializationHelper.parseArgument(rootNode.get(RESULT_VALUE));
-		Boolean error = rootNode.get(RESULT_IS_ERROR).booleanValue();
-		ErrorContainer errorContainer = null;
-		TaskContainer[] tasks = null;
-		
-		JsonNode tasksNode = rootNode.get(RESULT_TASKS);
-		if(tasksNode!=null && !tasksNode.isNull() && tasksNode.isArray()) {
-			List<TaskContainer> taskList = new ArrayList<TaskContainer>();
-			
-			Iterator<JsonNode> argsIterator = tasksNode.elements();
-			while(argsIterator.hasNext()) {
-				taskList.add(DeserializationHelper.parseTaskContainer(argsIterator.next()));
-			}
-			tasks = taskList.toArray(new TaskContainer[taskList.size()]);
-			
-		}
-		
-		return new DecisionContainer(taskId, value, error, errorContainer, tasks);
-	}
+    private static final Logger logger = LoggerFactory.getLogger(ResultContainerDeserializer.class);
+
+    @Override
+    public DecisionContainer deserialize(JsonParser jp,
+            DeserializationContext ctxt) throws IOException,
+            JsonProcessingException {
+
+        ObjectCodec oc = jp.getCodec();
+        JsonNode rootNode = oc.readTree(jp);
+
+        logger.debug("Deserializing Task from JSON[{}]", rootNode);
+
+        UUID taskId = DeserializationHelper.extractId(rootNode.get(RESULT_TASK_ID), null);
+        ArgContainer value = DeserializationHelper.parseArgument(rootNode.get(RESULT_VALUE));
+        Boolean error = rootNode.get(RESULT_IS_ERROR).booleanValue();
+        ErrorContainer errorContainer = null;
+        TaskContainer[] tasks = null;
+
+        JsonNode tasksNode = rootNode.get(RESULT_TASKS);
+        if(tasksNode!=null && !tasksNode.isNull() && tasksNode.isArray()) {
+            List<TaskContainer> taskList = new ArrayList<TaskContainer>();
+
+            Iterator<JsonNode> argsIterator = tasksNode.elements();
+            while(argsIterator.hasNext()) {
+                taskList.add(DeserializationHelper.parseTaskContainer(argsIterator.next()));
+            }
+            tasks = taskList.toArray(new TaskContainer[taskList.size()]);
+
+        }
+
+        return new DecisionContainer(taskId, value, error, errorContainer, tasks);
+    }
 
 }

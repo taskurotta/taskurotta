@@ -12,16 +12,16 @@ import java.io.IOException;
 
 public class ActorDefinitionDeserializer extends JsonDeserializer<ActorDefinition> implements Constants{
 
-	@Override
-	public ActorDefinition deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
-			JsonProcessingException {
-		ObjectCodec oc = jp.getCodec();
-		JsonNode rootNode = oc.readTree(jp);
-		
-		String name = rootNode.get(ACTOR_DEFINITION_NAME).textValue();
-		String version = rootNode.get(ACTOR_DEFINITION_VERSION).textValue();
-		
-		return ActorDefinition.valueOf(name, version);
-	}
-	
+    @Override
+    public ActorDefinition deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
+    JsonProcessingException {
+        ObjectCodec oc = jp.getCodec();
+        JsonNode rootNode = oc.readTree(jp);
+
+        String name = rootNode.get(ACTOR_DEFINITION_NAME).textValue();
+        String version = rootNode.get(ACTOR_DEFINITION_VERSION).textValue();
+
+        return ActorDefinition.valueOf(name, version);
+    }
+
 }

@@ -19,28 +19,28 @@ import com.yammer.metrics.annotation.Timed;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class TaskStarterResource {
-	
-	private static final Logger logger = LoggerFactory.getLogger(TaskStarterResource.class);	
-	private TaskServer taskServer;
-	
-	@POST
-	@Timed
-	public Response startAction(TaskContainerWrapper taskContainerWrapper) {
-		logger.debug("startAction resource called with entity[{}]", taskContainerWrapper);
-		
-		try {
-			taskServer.startProcess(taskContainerWrapper.getTaskContainer());	
-		} catch(Exception e) {
-			logger.error("Starting of task["+taskContainerWrapper+"] failed!", e);
-			return Response.serverError().build();
-		}
-		
-		return Response.ok().build();
-		
-	}
 
-	public void setTaskServer(TaskServer taskServer) {
-		this.taskServer = taskServer;
-	}
-	
+    private static final Logger logger = LoggerFactory.getLogger(TaskStarterResource.class);
+    private TaskServer taskServer;
+
+    @POST
+    @Timed
+    public Response startAction(TaskContainerWrapper taskContainerWrapper) {
+        logger.debug("startAction resource called with entity[{}]", taskContainerWrapper);
+
+        try {
+            taskServer.startProcess(taskContainerWrapper.getTaskContainer());
+        } catch(Exception e) {
+            logger.error("Starting of task["+taskContainerWrapper+"] failed!", e);
+            return Response.serverError().build();
+        }
+
+        return Response.ok().build();
+
+    }
+
+    public void setTaskServer(TaskServer taskServer) {
+        this.taskServer = taskServer;
+    }
+
 }

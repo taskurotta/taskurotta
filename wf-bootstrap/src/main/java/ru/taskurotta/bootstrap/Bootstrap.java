@@ -32,26 +32,26 @@ import java.util.concurrent.Executors;
 public class Bootstrap {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
-	private Config config;
-	private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
+    private Config config;
+    private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
 
-	public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
-		config = parseArgs(args);
-	}
+    public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+        config = parseArgs(args);
+    }
 
-	public Bootstrap(String configResourceName) throws ArgumentParserException, IOException, ClassNotFoundException {
-		config = parseArgs(new String[]{"-r", configResourceName});
-	}
+    public Bootstrap(String configResourceName) throws ArgumentParserException, IOException, ClassNotFoundException {
+        config = parseArgs(new String[]{"-r", configResourceName});
+    }
 
-	public Config parseArgs(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+    public Config parseArgs(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
         ArgumentParser parser = ArgumentParsers.newArgumentParser("prog");
         parser.addArgument("-f", "--file")
-                .required(false)
-                .help("Specify config file to use");
+        .required(false)
+        .help("Specify config file to use");
 
         parser.addArgument("-r", "--resource")
-                .required(false)
-                .help("Specify resource file (in classpath) to use");
+        .required(false)
+        .help("Specify resource file (in classpath) to use");
 
         Namespace namespace = parser.parseArgs(args);
 
@@ -60,13 +60,13 @@ public class Bootstrap {
         String configFileName = namespace.getString("file");
 
         if (configFileName != null) {
-			logger.debug("Config file is [{}]", configFileName);
+            logger.debug("Config file is [{}]", configFileName);
 
             File configFile = new File(configFileName);
             if (configFile.exists()) {
                 config = Config.valueOf(configFile);
             } else {
-				System.out.println("Configuration file doesn't exist: " + configFileName);
+                System.out.println("Configuration file doesn't exist: " + configFileName);
                 parser.printHelp();
                 return null;
             }
@@ -95,50 +95,50 @@ public class Bootstrap {
             return null;
         }
 
-		return config;
-	}
+        return config;
+    }
 
-	public void start() {
-		start(config);
-	}
+    public void start() {
+        start(config);
+    }
 
-	public void start(Config config) {
-		for (ActorConfig actorConfig : config.actorConfigs) {
+    public void start(Config config) {
+        for (ActorConfig actorConfig : config.actorConfigs) {
 
-			Class actorClass;
+            Class actorClass;
 
-			try {
-				actorClass = Class.forName(actorConfig.getActorInterface());
-			} catch (ClassNotFoundException e) {
-				logger.error("Not found class [{}]", actorConfig.getActorInterface());
-				throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
-			}
+            try {
+                actorClass = Class.forName(actorConfig.getActorInterface());
+            } catch (ClassNotFoundException e) {
+                logger.error("Not found class [{}]", actorConfig.getActorInterface());
+                throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
+            }
 
-			SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
-			TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+            SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
+            TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
 
-			RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
-			RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
+            RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
+            RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
 
-			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
-			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
+            ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
+            Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
-			ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
-			executors.add(actorExecutor);
+            ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
+            executors.add(actorExecutor);
 
-			int count = actorConfig.getCount();
-			ExecutorService executorService = Executors.newFixedThreadPool(count);
+            int count = actorConfig.getCount();
+            ExecutorService executorService = Executors.newFixedThreadPool(count);
 
-			for (int i = 0; i < count; i++) {
-				executorService.execute(actorExecutor);
-			}
-		}
-	}
+            for (int i = 0; i < count; i++) {
+                executorService.execute(actorExecutor);
+            }
+        }
+    }
 
-	public void stop() {
-		for (ActorExecutor executor : executors) {
-			executor.stop();
-		}
-	}
+    public void stop() {
+        for (ActorExecutor executor : executors) {
+            executor.stop();
+        }
+    }
 
 }
