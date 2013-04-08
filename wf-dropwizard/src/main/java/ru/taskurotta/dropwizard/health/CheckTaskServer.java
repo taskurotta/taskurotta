@@ -11,29 +11,29 @@ import com.yammer.metrics.core.HealthCheck;
 
 public class CheckTaskServer extends HealthCheck {
 
-	private static final Logger logger = LoggerFactory.getLogger(CheckTaskServer.class);
-	
-	private TaskServer taskServer;
-	
-	public CheckTaskServer(String name) {
-		super(name);
-	}
+    private static final Logger logger = LoggerFactory.getLogger(CheckTaskServer.class);
 
-	@Override
-	protected Result check() throws Exception {
-		try {
-			taskServer.poll(ActorDefinition.valueOf("testme", "testme"));
-			return Result.healthy();	
-		} catch(Exception e) {
-			logger.error("CheckTaskServer failed!", e);
-			return Result.unhealthy(e);
-		}
-		
-	}
+    private TaskServer taskServer;
 
-	@Required
-	public void setTaskServer(TaskServer taskServer) {
-		this.taskServer = taskServer;
-	}
+    public CheckTaskServer(String name) {
+        super(name);
+    }
+
+    @Override
+    protected Result check() throws Exception {
+        try {
+            taskServer.poll(ActorDefinition.valueOf("testme", "testme"));
+            return Result.healthy();
+        } catch(Exception e) {
+            logger.error("CheckTaskServer failed!", e);
+            return Result.unhealthy(e);
+        }
+
+    }
+
+    @Required
+    public void setTaskServer(TaskServer taskServer) {
+        this.taskServer = taskServer;
+    }
 
 }

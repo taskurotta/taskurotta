@@ -1,14 +1,12 @@
 package ru.taskurotta.backend.storage;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskDefinition;
-import ru.taskurotta.util.ActorDefinition;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario
@@ -82,7 +80,7 @@ public interface TaskBackend {
      * @return
      */
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
-    
+
     /**
      * @param actorId return only tasks for this actorId
      * @param timeFrom return only tasks with processing start time greater then given
@@ -90,12 +88,12 @@ public interface TaskBackend {
      * @return list of tasks wich are currently processing by some remote actors
      */
     public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill);
-    
+
     /**
      * Removes this task definitions from list of active tasks
      * @param tasks
      * @return number of removed tasks
      */
     public int resetActiveTasks(List<TaskDefinition> tasks);
-    
+
 }

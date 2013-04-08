@@ -5,7 +5,7 @@ import ru.taskurotta.annotation.DeciderClient;
 
 @DeciderClient(decider=MathActionDecider.class)
 public interface MathActionDeciderClient {
-	
-	public void performAction();
-	
+
+    public void performAction();
+
 }

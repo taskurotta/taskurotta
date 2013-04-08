@@ -4,7 +4,7 @@ import ru.taskurotta.annotation.Worker;
 
 @Worker
 public interface Multiplier {
-	
-	public Integer multiply(Integer a, Integer b);
-	
+
+    public Integer multiply(Integer a, Integer b);
+
 }

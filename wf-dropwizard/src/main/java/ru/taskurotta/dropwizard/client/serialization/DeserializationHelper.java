@@ -19,138 +19,138 @@ import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class DeserializationHelper implements Constants {
-	
-	private static final Logger logger = LoggerFactory.getLogger(DeserializationHelper.class);
-	
-	public static String getStringValue(JsonNode node, String defVal) {
-		String result = defVal;
-		if(node!=null && !node.isNull()) {
-			if(node.isTextual()) {
-				result = node.textValue();
-			} else if(node.isNumber()) {
-				result = String.valueOf(node.longValue());
-			}
-		}
-		return result;
-	}
-	
-	public static UUID extractId(JsonNode idNode, UUID defVal) {
-		UUID result = defVal;
-		if(idNode!=null && !idNode.isNull()) {
-			result = UUID.fromString(idNode.textValue());
-		} else {
-			logger.trace("Cannot extract UUID from node [{}]", idNode);
-		}
-		return result;
-	}
-		
-	public static TaskTarget extractTaskTarget(JsonNode targetNode, TaskTarget defVal) {
-		TaskTarget result = defVal;
-		if(targetNode!=null && !targetNode.isNull()) {
 
-			String taskType = targetNode.get(TASK_TARGET_TYPE).textValue();
-			TaskType tasktypeEnumVal = TaskType.valueOf(taskType);
-			String taskMethod = targetNode.get(TASK_TARGET_METHOD).textValue();
-			String taskName = targetNode.get(TASK_TARGET_NAME).textValue();
-			String taskVersion = targetNode.get(TASK_TARGET_VERSION).textValue();
-			
-			result = new TaskTargetImpl(tasktypeEnumVal, taskName, taskVersion, taskMethod);
-		} else {
-			logger.trace("Cannot extract TaskTarget from node [{}]", targetNode);
-		}
-		return result;
-	}
-	
-	public static ArgContainer[] extractArgs(JsonNode argsNode, ArgContainer[] defVal) {
-		ArgContainer[] result = defVal;
-		if(argsNode!=null && !argsNode.isNull() && argsNode.isArray()) {
-			Iterator<JsonNode> argsIterator = argsNode.elements();
-			List<ArgContainer> argumentsList = new ArrayList<ArgContainer>();
-			while(argsIterator.hasNext()) {
-				JsonNode arg = argsIterator.next();
-				
-				argumentsList.add(parseArgument(arg));
-			}
-			result = argumentsList.toArray(new ArgContainer[argumentsList.size()]);
-		} else {
-			logger.trace("Cannot extract task args from node[{}]", argsNode);
-		}
-		
-		return result;
-	}
+    private static final Logger logger = LoggerFactory.getLogger(DeserializationHelper.class);
 
-	public static TaskOptionsContainer extractOptions(JsonNode optionsNode, TaskOptionsContainer defValue) {
-		TaskOptionsContainer result = null;
-		if (optionsNode != null && !optionsNode.isNull()) {
-			logger.debug("Deserializing taskOptionsContainer node[{}]", optionsNode);
-			JsonNode typesNode = optionsNode.get(OPTIONS_ARG_TYPES);
-			if (typesNode != null && !typesNode.isNull() && typesNode.isArray()) {
-				Iterator<JsonNode> typesIterator = typesNode.elements();
-				List<ArgType> argTypes = new ArrayList<ArgType>(typesNode.size());
-				while (typesIterator.hasNext()) {
-					JsonNode item = typesIterator.next();
-					if(item.isNumber()) {
-						argTypes.add(ArgType.fromInt(Integer.valueOf(item.intValue())));
-					} else{
-						argTypes.add(ArgType.valueOf(item.textValue()));	
-					}
-					
-				}
-				result = new TaskOptionsContainer(argTypes.toArray(new ArgType[argTypes.size()]));
-			}
-		}
-		return result;
-	}
-	
-	public static ArgContainer parseArgument(JsonNode arg) {
-		ArgContainer result = null;
-		if(arg==null || arg.isNull()) {
-			return result;
-		} else {
-			String className = arg.get(ARG_CLASSNAME).textValue();
-			Boolean isPromise = arg.get(ARG_IS_PROMISE).booleanValue();
-			UUID taskId = extractId(arg.get(ARG_TASK_ID), null);
-			Boolean isReady = arg.get(ARG_IS_READY).booleanValue();
-			String json = arg.get(ARG_JSON_VALUE).textValue();
-			
-			return new ArgContainer(className, isPromise, taskId, isReady, json);
-		}
-	}
+    public static String getStringValue(JsonNode node, String defVal) {
+        String result = defVal;
+        if(node!=null && !node.isNull()) {
+            if(node.isTextual()) {
+                result = node.textValue();
+            } else if(node.isNumber()) {
+                result = String.valueOf(node.longValue());
+            }
+        }
+        return result;
+    }
 
-	public static long extractStartTime(JsonNode jsonNode, long defVal) {
-		long result = defVal;
-		if(jsonNode!=null && !jsonNode.isNull()) {
-			result = jsonNode.longValue();
-		}
-		return result;
-	}
+    public static UUID extractId(JsonNode idNode, UUID defVal) {
+        UUID result = defVal;
+        if(idNode!=null && !idNode.isNull()) {
+            result = UUID.fromString(idNode.textValue());
+        } else {
+            logger.trace("Cannot extract UUID from node [{}]", idNode);
+        }
+        return result;
+    }
 
-	public static int extractNumberOfAttempts(JsonNode jsonNode, int defVal) {
-		int result = defVal;
-		if(jsonNode!=null && !jsonNode.isNull()) {
-			result = jsonNode.intValue(); 
-		}
-		return result;
-	}
-	
-	public static TaskContainer parseTaskContainer(JsonNode rootNode) {
-		logger.debug("Deserializing Task from JSON[{}]", rootNode);
-		
-		UUID taskId = extractId(rootNode.get(TASK_ID), null);
-		UUID processId = extractId(rootNode.get(TASK_PROCESS_ID), null);
-		
-		String method = getStringValue(rootNode.get(TASK_METHOD), null);
-		String actorId = getStringValue(rootNode.get(TASK_ACTOR_ID), null);
-		TaskType type = TaskType.valueOf(getStringValue(rootNode.get(TASK_TYPE), null));
-		
-		ArgContainer[] args = extractArgs(rootNode.get(TASK_ARGS), null);
-		TaskOptionsContainer options = extractOptions(rootNode.get(TASK_OPTIONS), null);
-		
+    public static TaskTarget extractTaskTarget(JsonNode targetNode, TaskTarget defVal) {
+        TaskTarget result = defVal;
+        if(targetNode!=null && !targetNode.isNull()) {
+
+            String taskType = targetNode.get(TASK_TARGET_TYPE).textValue();
+            TaskType tasktypeEnumVal = TaskType.valueOf(taskType);
+            String taskMethod = targetNode.get(TASK_TARGET_METHOD).textValue();
+            String taskName = targetNode.get(TASK_TARGET_NAME).textValue();
+            String taskVersion = targetNode.get(TASK_TARGET_VERSION).textValue();
+
+            result = new TaskTargetImpl(tasktypeEnumVal, taskName, taskVersion, taskMethod);
+        } else {
+            logger.trace("Cannot extract TaskTarget from node [{}]", targetNode);
+        }
+        return result;
+    }
+
+    public static ArgContainer[] extractArgs(JsonNode argsNode, ArgContainer[] defVal) {
+        ArgContainer[] result = defVal;
+        if(argsNode!=null && !argsNode.isNull() && argsNode.isArray()) {
+            Iterator<JsonNode> argsIterator = argsNode.elements();
+            List<ArgContainer> argumentsList = new ArrayList<ArgContainer>();
+            while(argsIterator.hasNext()) {
+                JsonNode arg = argsIterator.next();
+
+                argumentsList.add(parseArgument(arg));
+            }
+            result = argumentsList.toArray(new ArgContainer[argumentsList.size()]);
+        } else {
+            logger.trace("Cannot extract task args from node[{}]", argsNode);
+        }
+
+        return result;
+    }
+
+    public static TaskOptionsContainer extractOptions(JsonNode optionsNode, TaskOptionsContainer defValue) {
+        TaskOptionsContainer result = null;
+        if (optionsNode != null && !optionsNode.isNull()) {
+            logger.debug("Deserializing taskOptionsContainer node[{}]", optionsNode);
+            JsonNode typesNode = optionsNode.get(OPTIONS_ARG_TYPES);
+            if (typesNode != null && !typesNode.isNull() && typesNode.isArray()) {
+                Iterator<JsonNode> typesIterator = typesNode.elements();
+                List<ArgType> argTypes = new ArrayList<ArgType>(typesNode.size());
+                while (typesIterator.hasNext()) {
+                    JsonNode item = typesIterator.next();
+                    if(item.isNumber()) {
+                        argTypes.add(ArgType.fromInt(Integer.valueOf(item.intValue())));
+                    } else{
+                        argTypes.add(ArgType.valueOf(item.textValue()));
+                    }
+
+                }
+                result = new TaskOptionsContainer(argTypes.toArray(new ArgType[argTypes.size()]));
+            }
+        }
+        return result;
+    }
+
+    public static ArgContainer parseArgument(JsonNode arg) {
+        ArgContainer result = null;
+        if(arg==null || arg.isNull()) {
+            return result;
+        } else {
+            String className = arg.get(ARG_CLASSNAME).textValue();
+            Boolean isPromise = arg.get(ARG_IS_PROMISE).booleanValue();
+            UUID taskId = extractId(arg.get(ARG_TASK_ID), null);
+            Boolean isReady = arg.get(ARG_IS_READY).booleanValue();
+            String json = arg.get(ARG_JSON_VALUE).textValue();
+
+            return new ArgContainer(className, isPromise, taskId, isReady, json);
+        }
+    }
+
+    public static long extractStartTime(JsonNode jsonNode, long defVal) {
+        long result = defVal;
+        if(jsonNode!=null && !jsonNode.isNull()) {
+            result = jsonNode.longValue();
+        }
+        return result;
+    }
+
+    public static int extractNumberOfAttempts(JsonNode jsonNode, int defVal) {
+        int result = defVal;
+        if(jsonNode!=null && !jsonNode.isNull()) {
+            result = jsonNode.intValue();
+        }
+        return result;
+    }
+
+    public static TaskContainer parseTaskContainer(JsonNode rootNode) {
+        logger.debug("Deserializing Task from JSON[{}]", rootNode);
+
+        UUID taskId = extractId(rootNode.get(TASK_ID), null);
+        UUID processId = extractId(rootNode.get(TASK_PROCESS_ID), null);
+
+        String method = getStringValue(rootNode.get(TASK_METHOD), null);
+        String actorId = getStringValue(rootNode.get(TASK_ACTOR_ID), null);
+        TaskType type = TaskType.valueOf(getStringValue(rootNode.get(TASK_TYPE), null));
+
+        ArgContainer[] args = extractArgs(rootNode.get(TASK_ARGS), null);
+        TaskOptionsContainer options = extractOptions(rootNode.get(TASK_OPTIONS), null);
+
         long startTime = extractStartTime(rootNode.get(TASK_START_TIME), -1);
         int numberOfAttempts = extractNumberOfAttempts(rootNode.get(TASK_NUMBER_OF_ATTEMPTS), -1);
-		
-		return new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, options);
-	}
 
-		
+        return new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, options);
+    }
+
+
 }

@@ -15,16 +15,14 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class TaskContainerDeserializer extends JsonDeserializer<TaskContainer> implements Constants {
-	
-	private static final Logger logger = LoggerFactory.getLogger(TaskContainerDeserializer.class);
-	
-	@Override
-	public TaskContainer deserialize(JsonParser jp, DeserializationContext ctxt)
-			throws IOException, JsonProcessingException {
-		ObjectCodec oc = jp.getCodec();
-		JsonNode rootNode = oc.readTree(jp);
-		
-		return DeserializationHelper.parseTaskContainer(rootNode);
-	}
-	
+
+    @Override
+    public TaskContainer deserialize(JsonParser jp, DeserializationContext ctxt)
+            throws IOException, JsonProcessingException {
+        ObjectCodec oc = jp.getCodec();
+        JsonNode rootNode = oc.readTree(jp);
+
+        return DeserializationHelper.parseTaskContainer(rootNode);
+    }
+
 }

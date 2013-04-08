@@ -30,203 +30,203 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ObjectFactory {
 
-	private ObjectMapper mapper;
+    private ObjectMapper mapper;
 
-	public ObjectFactory() {
-		mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-	}
+    public ObjectFactory() {
+        mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    }
 
-	public Object parseArg(ArgContainer argContainer) {
+    public Object parseArg(ArgContainer argContainer) {
 
-		if (argContainer == null) {
-			return null;
-		}
+        if (argContainer == null) {
+            return null;
+        }
 
-		Object value = null;
+        Object value = null;
 
-		String json = argContainer.getJSONValue();
+        String json = argContainer.getJSONValue();
 
-		if (json != null) {
+        if (json != null) {
 
-			String className = argContainer.getClassName();
-			Class loadedClass = null;
+            String className = argContainer.getClassName();
+            Class loadedClass = null;
 
-			try {
-				loadedClass = Thread.currentThread().getContextClassLoader().loadClass(className);
-			} catch (ClassNotFoundException e) {
-				// TODO: create new RuntimeException type
-				throw new RuntimeException("Can not instantiate Object from json. Specified class not found: " + className, e);
-			}
+            try {
+                loadedClass = Thread.currentThread().getContextClassLoader().loadClass(className);
+            } catch (ClassNotFoundException e) {
+                // TODO: create new RuntimeException type
+                throw new RuntimeException("Can not instantiate Object from json. Specified class not found: " + className, e);
+            }
 
-			try {
-				value = mapper.readValue(argContainer.getJSONValue(), loadedClass);
-			} catch (IOException e) {
-				// TODO: create new RuntimeException type
-				throw new RuntimeException("Can not instantiate Object from json. JSON value: " + argContainer.getJSONValue(), e);
-			}
+            try {
+                value = mapper.readValue(argContainer.getJSONValue(), loadedClass);
+            } catch (IOException e) {
+                // TODO: create new RuntimeException type
+                throw new RuntimeException("Can not instantiate Object from json. JSON value: " + argContainer.getJSONValue(), e);
+            }
 
-		}
+        }
 
-		if (argContainer.isPromise()) {
+        if (argContainer.isPromise()) {
 
-			Promise promise = Promise.createInstance(argContainer.getTaskId());
+            Promise promise = Promise.createInstance(argContainer.getTaskId());
 
-			if (argContainer.isReady()) {
-				promise.set(value);
-			}
+            if (argContainer.isReady()) {
+                promise.set(value);
+            }
 
-			return promise;
-		}
+            return promise;
+        }
 
-		return value;
-	}
-
-
-	public ArgContainer dumpArg(Object arg) {
-
-		if (arg == null) {
-			return null;
-		}
-
-		String className = null;
-		boolean isPromise = false;
-		UUID taskId = null;
-		boolean isReady = false;
-		String jsonValue = null;
-
-		if (arg instanceof Promise) {
-			isPromise = true;
-			taskId = ((Promise) arg).getId();
-			isReady = ((Promise) arg).isReady();
-
-			if (isReady) {
-				arg = ((Promise) arg).get();
-			} else {
-				arg = null;
-			}
-		}
-
-		if (arg != null) {
-
-			className = arg.getClass().getName();
-
-			try {
-				jsonValue = mapper.writeValueAsString(arg);
-			} catch (JsonProcessingException e) {
-				// TODO: create new RuntimeException type
-				throw new RuntimeException("Can not create json String from Object: " + arg, e);
-			}
-		}
-
-		return new ArgContainer(className, isPromise, taskId, isReady, jsonValue);
-	}
+        return value;
+    }
 
 
-	public Task parseTask(TaskContainer taskContainer) {
+    public ArgContainer dumpArg(Object arg) {
 
-		if (taskContainer == null) {
-			return null;
-		}
-		UUID processId = taskContainer.getProcessId();
-		UUID taskId = taskContainer.getTaskId();
-		ActorDefinition actorDef = ActorUtils.getActorDefinition(taskContainer.getActorId());
-		TaskTarget taskTarget = new TaskTargetImpl(taskContainer.getType(), actorDef.getName(), actorDef.getVersion(), taskContainer.getMethod());
-		Object[] args = null;
+        if (arg == null) {
+            return null;
+        }
 
-		ArgContainer[] argContainers = taskContainer.getArgs();
+        String className = null;
+        boolean isPromise = false;
+        UUID taskId = null;
+        boolean isReady = false;
+        String jsonValue = null;
 
-		if (argContainers != null) {
-			args = new Object[argContainers.length];
+        if (arg instanceof Promise) {
+            isPromise = true;
+            taskId = ((Promise) arg).getId();
+            isReady = ((Promise) arg).isReady();
 
-			int i = 0;
-			for (ArgContainer argContainer : argContainers) {
-				args[i++] = parseArg(argContainer);
-			}
-		}
+            if (isReady) {
+                arg = ((Promise) arg).get();
+            } else {
+                arg = null;
+            }
+        }
 
-		return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(), taskContainer.getNumberOfAttempts(), args, null);
-	}
+        if (arg != null) {
 
+            className = arg.getClass().getName();
 
-	public TaskContainer dumpTask(Task task) {
-		UUID taskId = task.getId();
-		UUID processId = task.getProcessId();
-		TaskTarget target = task.getTarget();
-		ArgContainer[] argContainers = null;
+            try {
+                jsonValue = mapper.writeValueAsString(arg);
+            } catch (JsonProcessingException e) {
+                // TODO: create new RuntimeException type
+                throw new RuntimeException("Can not create json String from Object: " + arg, e);
+            }
+        }
 
-		Object[] args = task.getArgs();
-
-		if (args != null) {
-			argContainers = new ArgContainer[args.length];
-
-			int i = 0;
-			for (Object arg : args) {
-				argContainers[i++] = dumpArg(arg);
-			}
-		}
-
-		TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
-
-		return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target), 
-				target.getType(), task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer);
-	}
+        return new ArgContainer(className, isPromise, taskId, isReady, jsonValue);
+    }
 
 
-	public TaskOptionsContainer dumpTaskOptions(TaskOptions taskOptions) {
+    public Task parseTask(TaskContainer taskContainer) {
 
-		if (taskOptions == null) {
-			return null;
-		}
+        if (taskContainer == null) {
+            return null;
+        }
+        UUID processId = taskContainer.getProcessId();
+        UUID taskId = taskContainer.getTaskId();
+        ActorDefinition actorDef = ActorUtils.getActorDefinition(taskContainer.getActorId());
+        TaskTarget taskTarget = new TaskTargetImpl(taskContainer.getType(), actorDef.getName(), actorDef.getVersion(), taskContainer.getMethod());
+        Object[] args = null;
 
-		return new TaskOptionsContainer(taskOptions.getArgTypes());
-	}
+        ArgContainer[] argContainers = taskContainer.getArgs();
 
+        if (argContainers != null) {
+            args = new Object[argContainers.length];
 
-	public TaskDecision parseResult(DecisionContainer decisionContainer) {
+            int i = 0;
+            for (ArgContainer argContainer : argContainers) {
+                args[i++] = parseArg(argContainer);
+            }
+        }
 
-		// TODO: TaskDecision can be error.
-
-		UUID taskId = decisionContainer.getTaskId();
-	Object value = null;
-	Task[] tasks = null;
-
-	ArgContainer argContainer = decisionContainer.getValue();
-	value = parseArg(argContainer);
-
-	TaskContainer[] taskContainers = decisionContainer.getTasks();
-
-	if (taskContainers != null) {
-		tasks = new Task[taskContainers.length];
-
-		int i = 0;
-		for (TaskContainer taskContainer : taskContainers) {
-			tasks[i++] = parseTask(taskContainer);
-		}
-	}
-
-	return new TaskDecisionImpl(taskId, value, tasks);
-	}
+        return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(), taskContainer.getNumberOfAttempts(), args, null);
+    }
 
 
-	public DecisionContainer dumpResult(TaskDecision taskDecision) {
-		UUID taskId = taskDecision.getId();
-		ArgContainer value = dumpArg(taskDecision.getValue());
-		boolean isError = false;
-		ErrorContainer errorContainer = null;
-		TaskContainer[] taskContainers = null;
+    public TaskContainer dumpTask(Task task) {
+        UUID taskId = task.getId();
+        UUID processId = task.getProcessId();
+        TaskTarget target = task.getTarget();
+        ArgContainer[] argContainers = null;
 
-		Task[] tasks = taskDecision.getTasks();
+        Object[] args = task.getArgs();
 
-		if (tasks != null) {
-			taskContainers = new TaskContainer[tasks.length];
+        if (args != null) {
+            argContainers = new ArgContainer[args.length];
 
-			int i = 0;
-			for (Task task : tasks) {
-				taskContainers[i++] = dumpTask(task);
-			}
-		}
+            int i = 0;
+            for (Object arg : args) {
+                argContainers[i++] = dumpArg(arg);
+            }
+        }
 
-		return new DecisionContainer(taskId, value, isError, errorContainer, taskContainers);
-	}
+        TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
+
+        return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target),
+                target.getType(), task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer);
+    }
+
+
+    public TaskOptionsContainer dumpTaskOptions(TaskOptions taskOptions) {
+
+        if (taskOptions == null) {
+            return null;
+        }
+
+        return new TaskOptionsContainer(taskOptions.getArgTypes());
+    }
+
+
+    public TaskDecision parseResult(DecisionContainer decisionContainer) {
+
+        // TODO: TaskDecision can be error.
+
+        UUID taskId = decisionContainer.getTaskId();
+        Object value = null;
+        Task[] tasks = null;
+
+        ArgContainer argContainer = decisionContainer.getValue();
+        value = parseArg(argContainer);
+
+        TaskContainer[] taskContainers = decisionContainer.getTasks();
+
+        if (taskContainers != null) {
+            tasks = new Task[taskContainers.length];
+
+            int i = 0;
+            for (TaskContainer taskContainer : taskContainers) {
+                tasks[i++] = parseTask(taskContainer);
+            }
+        }
+
+        return new TaskDecisionImpl(taskId, value, tasks);
+    }
+
+
+    public DecisionContainer dumpResult(TaskDecision taskDecision) {
+        UUID taskId = taskDecision.getId();
+        ArgContainer value = dumpArg(taskDecision.getValue());
+        boolean isError = false;
+        ErrorContainer errorContainer = null;
+        TaskContainer[] taskContainers = null;
+
+        Task[] tasks = taskDecision.getTasks();
+
+        if (tasks != null) {
+            taskContainers = new TaskContainer[tasks.length];
+
+            int i = 0;
+            for (Task task : tasks) {
+                taskContainers[i++] = dumpTask(task);
+            }
+        }
+
+        return new DecisionContainer(taskId, value, isError, errorContainer, taskContainers);
+    }
 }

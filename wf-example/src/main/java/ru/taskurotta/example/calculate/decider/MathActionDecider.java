@@ -5,8 +5,8 @@ import ru.taskurotta.annotation.Execute;
 
 @Decider
 public interface MathActionDecider {
-	
-	@Execute
-	public void performAction();
-	
+
+    @Execute
+    public void performAction();
+
 }
