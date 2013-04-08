@@ -1,4 +1,4 @@
-package ru.taskurotta.oracle.test;
+package ru.taskurotta.backend.ora;
 
 import java.util.Random;
 

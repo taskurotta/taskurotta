@@ -1,4 +1,4 @@
-package ru.taskurotta.oracle.test.domain;
+package ru.taskurotta.backend.ora.domain;
 
 /**
  * User: greg

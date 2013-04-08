@@ -1,14 +1,12 @@
-package ru.taskurotta.oracle.test.runnable;
+package ru.taskurotta.backend.ora.runnable;
 
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import ru.taskurotta.oracle.test.DbDAO;
-import ru.taskurotta.oracle.test.GenerationTools;
-import ru.taskurotta.oracle.test.domain.SimpleTask;
-import ru.taskurotta.oracle.test.domain.TaskStatus;
+import ru.taskurotta.backend.ora.dao.OraQueueDao;
+import ru.taskurotta.backend.ora.domain.SimpleTask;
 
 /**
  * User: greg
@@ -23,13 +21,13 @@ public class CreationTask implements Runnable {
 
     @Override
     public void run() {
-        DbDAO dbDAO = new DbDAO(dataSource);
+        OraQueueDao dbDAO = new OraQueueDao(dataSource);
         int count = 0;
         try {
             System.out.println("Starting adding data");
-            while (count < 1000000) {
+            while (count < 100000) {
                 count++;
-                dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), GenerationTools.getRandomType(), new Date(), TaskStatus.CREATED, ""), "QUEUE_BUS");
+                dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), new Date(), 0, "DEF"), "QUEUE_TEST");
             }
             System.out.println("Stopped adding data");
         } catch (SQLException ex) {

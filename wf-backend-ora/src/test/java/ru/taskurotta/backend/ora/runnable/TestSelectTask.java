@@ -1,4 +1,4 @@
-package ru.taskurotta.oracle.test.runnable;
+package ru.taskurotta.backend.ora.runnable;
 
 import java.sql.SQLException;
 import java.util.UUID;
@@ -6,7 +6,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.util.StopWatch;
-import ru.taskurotta.oracle.test.DbDAO;
+import ru.taskurotta.backend.ora.dao.OraQueueDao;
 
 /**
  * User: greg
@@ -29,7 +29,7 @@ public class TestSelectTask implements Runnable {
         final UUID threadId = UUID.randomUUID();
         System.out.println(String.format("Thread started for %s", threadId));
         int count = 0;
-        final DbDAO dbDAO = new DbDAO(dataSource);
+        final OraQueueDao dbDAO = new OraQueueDao(dataSource);
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -38,7 +38,7 @@ public class TestSelectTask implements Runnable {
             while (count < OPERATION_COUNT) {
                 count++;
 
-                dbDAO.pullTask("QUEUE_BUS");
+                dbDAO.pollTask("QUEUE_BUS");
 
             }
         } catch (SQLException e) {

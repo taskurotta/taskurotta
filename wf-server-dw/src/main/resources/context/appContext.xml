@@ -15,14 +15,14 @@
         <property name="taskServer" ref="taskServerGeneral"></property>
     </bean>
 
-    <bean id="dbConnect" class="ru.taskurotta.oracle.test.DbConnect"/>
+    <bean id="dbConnect" class="ru.taskurotta.backend.ora.dao.DbConnect"/>
 
     <bean id="taskServerGeneral" class="ru.taskurotta.server.TaskServerGeneral">
         <constructor-arg name="taskDao" ref="taskDao"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.oracle.test.TaskDaoOracle">
-    <constructor-arg name="dbConnect" ref="dbConnect"/>
+    <bean id="taskDao" class="ru.taskurotta.backend.ora.TaskDaoOracle">
+        <constructor-arg name="dbConnect" ref="dbConnect"/>
     </bean>
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">

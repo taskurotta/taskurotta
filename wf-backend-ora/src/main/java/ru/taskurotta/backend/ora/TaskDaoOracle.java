@@ -1,12 +1,15 @@
-package ru.taskurotta.oracle.test;
+package ru.taskurotta.backend.ora;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.oracle.test.domain.SimpleTask;
+import ru.taskurotta.backend.ora.dao.DbConnect;
+import ru.taskurotta.backend.ora.dao.OraQueueDao;
+import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.server.memory.TaskDaoMemory;
 import ru.taskurotta.server.model.TaskObject;
 import ru.taskurotta.util.ActorDefinition;
@@ -18,11 +21,11 @@ public class TaskDaoOracle extends TaskDaoMemory {
 
     private final static Logger log = LoggerFactory.getLogger(TaskDaoOracle.class);
 
-    private final DbDAO dbDAO;
+    private final OraQueueDao dbDAO;
     private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
 
     public TaskDaoOracle(DbConnect dbConnect) {
-        dbDAO = new DbDAO(dbConnect.getDataSource());
+        dbDAO = new OraQueueDao(dbConnect.getDataSource());
         try {
             queueNames.putAll(dbDAO.getQueueNames());
             log.warn("!!!!! Initial queue size = " + queueNames.size());
@@ -51,7 +54,7 @@ public class TaskDaoOracle extends TaskDaoMemory {
                 }
             }
 
-            dbDAO.enqueueTask(SimpleTask.createFromTaskObject(taskObj), getTableName(queueName));
+            dbDAO.enqueueTask(new SimpleTask(taskObj.getTaskId(), new Date(taskObj.getStartTime()), 0, null), getTableName(queueName));
         } catch (SQLException ex) {
             log.error("Database error", ex);
         }
@@ -62,7 +65,7 @@ public class TaskDaoOracle extends TaskDaoMemory {
         String queueName = getTableName(getQueueName(actorDefinition.getName(), actorDefinition.getVersion()));
         if (queueName != null) {
             try {
-                final UUID taskId = dbDAO.pullTask(queueName);
+                final UUID taskId = dbDAO.pollTask(queueName);
                 return taskMap.get(taskId);
             } catch (SQLException ex) {
                 log.error("Database error", ex);

@@ -38,34 +38,36 @@ public class MemoryTaskBackend implements TaskBackend {
 
         TaskContainer task = getTask(taskId);
 
-        ArgContainer[] args = task.getArgs();
+        if (task != null) {
+            ArgContainer[] args = task.getArgs();
 
-        if (args != null) {
+            if (args != null) {
 
-            for (int i = 0; i < args.length; i++) {
-                ArgContainer arg = args[i];
-                if (arg.isPromise()) {
-                    if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
-                        ArgContainer value = getTaskValue(arg.getTaskId());
-                        args[i] = value;
-                    } else {
-                        if (arg.getJSONValue() == null) {
-                            // resolved Promise. value may be null for NoWait promises
-
+                for (int i = 0; i < args.length; i++) {
+                    ArgContainer arg = args[i];
+                    if (arg.isPromise()) {
+                        if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
                             ArgContainer value = getTaskValue(arg.getTaskId());
-                            if (value != null) {
-                                arg.setJSONValue(value.getJSONValue());
-                                arg.setClassName(value.getClassName());
-                                arg.setReady(true);
+                            args[i] = value;
+                        } else {
+                            if (arg.getJSONValue() == null) {
+                                // resolved Promise. value may be null for NoWait promises
+
+                                ArgContainer value = getTaskValue(arg.getTaskId());
+                                if (value != null) {
+                                    arg.setJSONValue(value.getJSONValue());
+                                    arg.setClassName(value.getClassName());
+                                    arg.setReady(true);
+                                }
                             }
                         }
                     }
                 }
+
             }
 
+            id2ProgressMap.put(taskId, true);
         }
-
-        id2ProgressMap.put(taskId, true);
 
         return task;
     }

@@ -1,4 +1,4 @@
-package ru.taskurotta.oracle.test;
+package ru.taskurotta.backend.ora.dao;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -14,30 +14,29 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.oracle.test.domain.SimpleTask;
+import ru.taskurotta.backend.ora.domain.SimpleTask;
 
 /**
  * User: greg
  */
 
-public class DbDAO {
+public class OraQueueDao {
 
-    private final static Logger log = LoggerFactory.getLogger(DbDAO.class);
+    private final static Logger log = LoggerFactory.getLogger(OraQueueDao.class);
 
     private DataSource dataSource;
 
-    public DbDAO(DataSource dataSource) {
+    public OraQueueDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     public void enqueueTask(SimpleTask task, String queueName) throws SQLException {
         final Connection connection = dataSource.getConnection();
-        final PreparedStatement ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, type_id, data_update, actor_id) values (?,?,?,?,?)");
+        final PreparedStatement ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, task_list, date_start) values (?,?,?,?)");
         ps.setString(1, task.getTaskId().toString());
         ps.setInt(2, task.getStatusId());
-        ps.setInt(3, task.getTypeId());
+        ps.setString(3, task.getTaskList());
         ps.setDate(4, new java.sql.Date(task.getDate().getTime()));
-        ps.setString(5, task.getActorId());
         ps.executeUpdate();
         ps.close();
         connection.close();
@@ -78,11 +77,10 @@ public class DbDAO {
                 "   (\n" +
                 " TASK_ID VARCHAR(36) NOT NULL ENABLE, \n" +
                 " STATUS_ID NUMBER NOT NULL ENABLE, \n" +
-                " TYPE_ID NUMBER NOT NULL ENABLE, \n" +
-                " DATA_UPDATE DATE, \n" +
-                " ACTOR_ID VARCHAR2(100), \n" +
+                " TASK_LIST VARCHAR(54) NOT NULL ENABLE, \n" +
+                " DATE_START DATE, \n" +
                 " PRIMARY KEY (TASK_ID))";
-        String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, TYPE_ID)";
+        String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
         Statement statement = connection.createStatement();
         statement.addBatch(createQuery.replace(":queue_name", queueName));
         statement.addBatch(indexQuery.replace(":queue_name", queueName));
@@ -93,20 +91,20 @@ public class DbDAO {
         connection.close();
     }
 
-    public UUID pullTask(String queueName) throws SQLException {
+    public UUID pollTask(String queueName) throws SQLException {
         final Connection connection = dataSource.getConnection();
         String query = "begin\n" +
                 "UPDATE %s\n" +
                 "SET STATUS_ID = 1\n" +
                 "WHERE\n" +
                 "STATUS_ID = 0\n" +
-                "AND data_update <= CURRENT_TIMESTAMP\n" +
+                "AND DATE_START <= CURRENT_TIMESTAMP\n" +
                 "AND ROWNUM = 1\n" +
                 "RETURNING TASK_ID INTO ?;END;";
         CallableStatement cs = connection.prepareCall(String.format(query, queueName));
         cs.registerOutParameter(1, Types.VARCHAR);
         cs.execute();
-        UUID job_id = UUID.fromString(cs.getString(1));
+        UUID job_id = (cs.getString(1) != null) ? UUID.fromString(cs.getString(1)) : null;
         cs.close();
         connection.close();
         return job_id;

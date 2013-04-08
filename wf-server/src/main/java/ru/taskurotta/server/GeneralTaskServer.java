@@ -91,7 +91,9 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
 
-        queueBackend.pollCommit(taskId);
+        if (taskContainer != null) {
+            queueBackend.pollCommit(taskId);
+        }
 
         return taskContainer;
     }
