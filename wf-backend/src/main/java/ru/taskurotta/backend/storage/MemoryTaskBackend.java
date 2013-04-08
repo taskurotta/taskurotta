@@ -86,23 +86,28 @@ public class MemoryTaskBackend implements TaskBackend {
         DecisionContainer taskDecision = id2TaskDecisionMap.get(taskId);
 
         if (taskDecision == null) {
+            logger.debug("getTaskValue() taskDecision == null");
             return null;
         }
 
         ArgContainer argContainer = taskDecision.getValue();
 
         if (argContainer == null) {
+            logger.debug("getTaskValue() argContainer == null");
             return null;
         }
 
         if (!argContainer.isPromise()) {
+            logger.debug("getTaskValue() !argContainer.isPromise()");
             return argContainer;
         }
 
         if (argContainer.isPromise() && !argContainer.isReady()) {
+            logger.debug("getTaskValue() argContainer.isPromise() && !argContainer.isReady()");
             return getTaskValue(argContainer.getTaskId());
         }
 
+        logger.debug("getTaskValue() returns argContainer = [{}]", argContainer);
         return argContainer;
     }
 

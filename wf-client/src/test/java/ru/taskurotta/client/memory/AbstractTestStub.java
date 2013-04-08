@@ -5,8 +5,8 @@ import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
-import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
-import ru.taskurotta.backend.dependency.model.TaskDependency;
+import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.storage.MemoryTaskBackend;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
@@ -22,7 +22,6 @@ import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -34,7 +33,7 @@ public class AbstractTestStub {
 
     protected MemoryQueueBackend memoryQueueBackend;
     protected MemoryTaskBackend memoryStorageBackend;
-    protected MemoryDependencyBackend memoryDependencyBackend;
+    protected MemoryGraphDao memoryGraphDao;
 
     protected TaskServer taskServer;
     protected TaskSpreaderProviderCommon taskSpreaderProvider;
@@ -78,7 +77,7 @@ public class AbstractTestStub {
         BackendBundle backendBundle = new MemoryBackendBundle(0);
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
         memoryStorageBackend = (MemoryTaskBackend) backendBundle.getTaskBackend();
-        memoryDependencyBackend = (MemoryDependencyBackend) backendBundle.getDependencyBackend();
+        memoryGraphDao = ((MemoryBackendBundle) backendBundle).getMemoryGraphDao();
 
         taskServer = new GeneralTaskServer(backendBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
@@ -99,15 +98,10 @@ public class AbstractTestStub {
      * @return
      */
     public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
-        TaskDependency taskDependency = memoryDependencyBackend.getTaskDependency(taskId);
 
-        List<UUID> thisWaitThat = taskDependency.getThisWaitThat();
+        Graph graph = memoryGraphDao.getGraph(processId);
 
-        if (taskQuantity == -1 && !thisWaitThat.isEmpty()) {
-            return true;
-        }
-
-        return thisWaitThat.size() == taskQuantity;
+        return graph.isTaskWaitOtherTasks(taskId, taskQuantity);
 
     }
 

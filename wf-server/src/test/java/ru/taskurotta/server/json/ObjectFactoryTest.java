@@ -89,7 +89,7 @@ public class ObjectFactoryTest {
                         new Object[]{true, "Hello!", 10})
         };
 
-        TaskDecision taskDecision = new TaskDecisionImpl(UUID.randomUUID(), Boolean.TRUE, tasks);
+        TaskDecision taskDecision = new TaskDecisionImpl(UUID.randomUUID(), UUID.randomUUID(), Boolean.TRUE, tasks);
 
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision);
 

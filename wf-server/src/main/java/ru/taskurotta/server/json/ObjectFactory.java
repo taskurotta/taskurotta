@@ -1,8 +1,8 @@
 package ru.taskurotta.server.json;
 
-import java.io.IOException;
-import java.util.UUID;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
@@ -19,9 +19,8 @@ import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -188,6 +187,8 @@ public class ObjectFactory {
         // TODO: TaskDecision can be error.
 
         UUID taskId = decisionContainer.getTaskId();
+        UUID processId = decisionContainer.getProcessId();
+
         Object value = null;
         Task[] tasks = null;
 
@@ -205,12 +206,14 @@ public class ObjectFactory {
             }
         }
 
-        return new TaskDecisionImpl(taskId, value, tasks);
+        return new TaskDecisionImpl(taskId, processId, value, tasks);
     }
 
 
     public DecisionContainer dumpResult(TaskDecision taskDecision) {
         UUID taskId = taskDecision.getId();
+        UUID processId = taskDecision.getProcessId();
+
         ArgContainer value = dumpArg(taskDecision.getValue());
         boolean isError = false;
         ErrorContainer errorContainer = null;
@@ -227,6 +230,6 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, value, isError, errorContainer, taskContainers);
+        return new DecisionContainer(taskId, processId, value, isError, errorContainer, taskContainers);
     }
 }

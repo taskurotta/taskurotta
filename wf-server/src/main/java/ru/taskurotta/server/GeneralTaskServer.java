@@ -1,8 +1,7 @@
 package ru.taskurotta.server;
 
-import java.util.List;
-import java.util.UUID;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -16,12 +15,17 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * User: romario
  * Date: 4/1/13
  * Time: 12:04 PM
  */
-public class GeneralTaskServer implements TaskServer{
+public class GeneralTaskServer implements TaskServer {
+
+    private final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
     private ProcessBackend processBackend;
     private TaskBackend taskBackend;
@@ -39,14 +43,14 @@ public class GeneralTaskServer implements TaskServer{
     }
 
     public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
-    	this.processBackend = processBackend;
+        this.processBackend = processBackend;
         this.taskBackend = taskBackend;
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.configBackend = configBackend;
-    }    
-    
-	@Override
+    }
+
+    @Override
     public void startProcess(TaskContainer task) {
 
         // some consistence check
@@ -132,7 +136,10 @@ public class GeneralTaskServer implements TaskServer{
         taskBackend.addDecision(taskDecision);
 
         // idempotent statement
-        DependencyDecision dependencyDecision = dependencyBackend.analyzeDecision(taskDecision);
+        DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
+
+        logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
+
         List<UUID> readyTasks = dependencyDecision.getReadyTasks();
 
         if (readyTasks != null) {

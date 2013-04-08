@@ -75,8 +75,8 @@ public class TaskContainer {
 
 	@Override
 	public String toString() {
-		return "TaskContainer [taskId=" + taskId + ", method=" + method
-				+ ", actorId=" + actorId + ", type=" + type
+		return "TaskContainer [taskId=" + taskId
+				+ ", actorId=" + actorId + ", method=" + method + ", type=" + type
 				+ ", startTime=" + startTime + ", numberOfAttempts="
 				+ numberOfAttempts + ", args=" + Arrays.toString(args)
 				+ ", options=" + options + "]";

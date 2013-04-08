@@ -50,7 +50,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 Object value = targetReference.invoke(task.getArgs());
 
                 Task[] tasks = RuntimeContext.getCurrent().getTasks();
-                taskDecision = new TaskDecisionImpl(task.getId(), value, tasks);
+                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks);
             }
         } catch (IllegalAccessException e) {
             log.error("Can't call method [" + targetReference + "]", e);

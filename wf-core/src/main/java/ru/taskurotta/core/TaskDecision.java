@@ -16,6 +16,11 @@ public interface TaskDecision {
 
 
     /**
+     * @return Task unique Id
+     */
+    public UUID getProcessId();
+
+    /**
      * @return retirned value
      */
     Object getValue();

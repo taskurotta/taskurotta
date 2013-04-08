@@ -15,11 +15,13 @@ public class TaskDecisionImpl implements TaskDecision {
 
 
     private UUID uuid;
+    private UUID processId;
 	private Object value;
     private Task[] tasks;
 
-	public TaskDecisionImpl(UUID uuid, Object value, Task[] tasks) {
+	public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks) {
         this.uuid = uuid;
+        this.processId = processId;
         this.value = value;
         this.tasks = tasks;
 	}
@@ -27,6 +29,11 @@ public class TaskDecisionImpl implements TaskDecision {
     @Override
     public UUID getId() {
         return uuid;
+    }
+
+    @Override
+    public UUID getProcessId() {
+        return processId;
     }
 
     @Override
@@ -42,21 +49,23 @@ public class TaskDecisionImpl implements TaskDecision {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof TaskDecisionImpl)) return false;
 
         TaskDecisionImpl that = (TaskDecisionImpl) o;
 
+        if (!processId.equals(that.processId)) return false;
         if (!Arrays.equals(tasks, that.tasks)) return false;
-        if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (!uuid.equals(that.uuid)) return false;
+        if (!value.equals(that.value)) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = uuid != null ? uuid.hashCode() : 0;
-        result = 31 * result + (value != null ? value.hashCode() : 0);
+        int result = uuid.hashCode();
+        result = 31 * result + processId.hashCode();
+        result = 31 * result + value.hashCode();
         result = 31 * result + (tasks != null ? Arrays.hashCode(tasks) : 0);
         return result;
     }
@@ -65,6 +74,7 @@ public class TaskDecisionImpl implements TaskDecision {
     public String toString() {
         return "TaskDecisionImpl{" +
                 "uuid=" + uuid +
+                ", processId=" + processId +
                 ", value=" + value +
                 ", tasks=" + (tasks == null ? null : Arrays.asList(tasks)) +
                 '}';

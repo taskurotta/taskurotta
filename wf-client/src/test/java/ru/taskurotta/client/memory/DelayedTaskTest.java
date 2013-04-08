@@ -47,7 +47,7 @@ public class DelayedTaskTest extends AbstractTestStub {
 
         assertTrue(deciderTaskB.getStartTime() != 0L);
 
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, null, new Task[]{deciderTaskB});
+        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, null, new Task[]{deciderTaskB});
         deciderTaskSpreader.release(taskADecision);
 
         Task taskBFromQueue = deciderTaskSpreader.poll();
