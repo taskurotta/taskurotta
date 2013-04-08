@@ -44,6 +44,11 @@ public class ActorConfigTest {
     }
 
     @Test
+    public void testGetPolicyConfig() throws Exception {
+        assertEquals("TestPolicyConfig", actorConfig.getPolicyConfig());
+    }
+
+    @Test
     public void testGetCount() throws Exception {
         assertEquals(10, actorConfig.getCount());
     }

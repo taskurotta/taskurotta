@@ -10,11 +10,14 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.config.ActorConfig;
 import ru.taskurotta.bootstrap.config.Config;
 import ru.taskurotta.bootstrap.config.ProfilerConfig;
+import ru.taskurotta.bootstrap.config.RetryPolicyConfig;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
+import ru.taskurotta.policy.retry.LinearRetryPolicy;
+import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,7 +126,10 @@ public class Bootstrap {
 			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
 			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
-			ActorExecutor actorExecutor = new ActorExecutor(profiler, runtimeProcessor, taskSpreader);
+            RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
+            RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new LinearRetryPolicy(10) : retryPolicyConfig.getRetryPolicy();
+
+			ActorExecutor actorExecutor = new ActorExecutor(profiler, retryPolicy, runtimeProcessor, taskSpreader);
 			executors.add(actorExecutor);
 
 			int count = actorConfig.getCount();
