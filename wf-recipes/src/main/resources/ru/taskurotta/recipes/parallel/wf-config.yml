@@ -30,6 +30,16 @@ profiler:
           consoleOutput: false
           consoleOutputPeriod: 10
 
+policy:
+  - MainPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 10
+          maximumRetryIntervalSeconds: 300
+          maximumAttempts: 100
+
 actor:
   - PiDecider:
       actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider

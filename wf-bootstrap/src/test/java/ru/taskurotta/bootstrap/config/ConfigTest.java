@@ -28,6 +28,7 @@ public class ConfigTest {
         assertEquals(1, config.spreaderConfigs.size());
         assertEquals(1, config.profilerConfigs.size());
         assertEquals(1, config.actorConfigs.size());
+        assertEquals(1, config.policyConfigs.size());
     }
 
     @Test
@@ -39,5 +40,6 @@ public class ConfigTest {
         assertEquals(1, config.spreaderConfigs.size());
         assertEquals(1, config.profilerConfigs.size());
         assertEquals(1, config.actorConfigs.size());
+        assertEquals(1, config.policyConfigs.size());
     }
 }

@@ -10,32 +10,10 @@ import java.util.Date;
  * Date: 21.02.13
  * Time: 13:21
  */
-public class LinearRetryPolicy extends RetryPolicyBase {
-    private final long initialRetryIntervalSeconds;
-
-    private long maximumRetryIntervalSeconds = PolicyConstants.EXPONENTIAL_RETRY_MAXIMUM_RETRY_INTERVAL_SECONDS;
-
-    private long retryExpirationIntervalSeconds = PolicyConstants.EXPONENTIAL_RETRY_RETRY_EXPIRATION_SECONDS;
-
-    private int maximumAttempts = PolicyConstants.EXPONENTIAL_RETRY_MAXIMUM_ATTEMPTS;
+public class LinearRetryPolicy extends TimeRetryPolicyBase {
 
     public LinearRetryPolicy(long initialRetryIntervalSeconds) {
         this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;
-    }
-
-    public long getInitialRetryIntervalSeconds() {
-        return initialRetryIntervalSeconds;
-    }
-
-    public long getMaximumRetryIntervalSeconds() {
-        return maximumRetryIntervalSeconds;
-    }
-
-    /**
-     * Set the upper limit of retry interval. No limit by default.
-     */
-    public void setMaximumRetryIntervalSeconds(long maximumRetryIntervalSeconds) {
-        this.maximumRetryIntervalSeconds = maximumRetryIntervalSeconds;
     }
 
     public LinearRetryPolicy withMaximumRetryIntervalSeconds(long maximumRetryIntervalSeconds) {
@@ -43,31 +21,9 @@ public class LinearRetryPolicy extends RetryPolicyBase {
         return this;
     }
 
-    public long getRetryExpirationIntervalSeconds() {
-        return retryExpirationIntervalSeconds;
-    }
-
-    /**
-     * Stop retrying after the specified interval.
-     */
-    public void setRetryExpirationIntervalSeconds(long retryExpirationIntervalSeconds) {
-        this.retryExpirationIntervalSeconds = retryExpirationIntervalSeconds;
-    }
-
     public LinearRetryPolicy withRetryExpirationIntervalSeconds(long retryExpirationIntervalSeconds) {
         this.retryExpirationIntervalSeconds = retryExpirationIntervalSeconds;
         return this;
-    }
-
-    public int getMaximumAttempts() {
-        return maximumAttempts;
-    }
-
-    /**
-     * Maximum number of attempts. The first retry is second attempt.
-     */
-    public void setMaximumAttempts(int maximumAttempts) {
-        this.maximumAttempts = maximumAttempts;
     }
 
     public LinearRetryPolicy withMaximumAttempts(int maximumAttempts) {

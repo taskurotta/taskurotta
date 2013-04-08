@@ -37,6 +37,7 @@ public class Config {
     public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<String, RuntimeConfig>();
     public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<String, SpreaderConfig>();
     public Map<String, ProfilerConfig> profilerConfigs = new HashMap<String, ProfilerConfig>();
+    public Map<String, RetryPolicyConfig> policyConfigs = new HashMap<String, RetryPolicyConfig>();
     public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
 
     public static Config valueOf(File configFile) throws IOException {
@@ -73,6 +74,7 @@ public class Config {
         public static final String YAML_SPREADER = "spreader";
         public static final String YAML_ACTOR = "actor";
         public static final String YAML_RPOFILER = "profiler";
+        public static final String YAML_POLICY = "policy";
 
         @Override
         public Config deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {
@@ -109,6 +111,13 @@ public class Config {
                 parseProfilerConfigs(profilersNode, oc, config);
             } else {
                 logger.warn("Not found ProfilerConfigs in configuration");
+            }
+
+            JsonNode policiesNode = rootNode.get(YAML_POLICY);
+            if (policiesNode != null) {
+                parsePolicyConfig(policiesNode, oc, config);
+            } else {
+                logger.warn("Not found PolicyConfigs in configuration");
             }
 
             JsonNode actorsNode = rootNode.get(YAML_ACTOR);
@@ -223,6 +232,40 @@ public class Config {
                 }
 
                 config.profilerConfigs.put(profilerConfigName, profilerConfig);
+            }
+        }
+
+        private void parsePolicyConfig(JsonNode policyNodes, ObjectCodec oc, Config config) {
+            for (Iterator policyElements = policyNodes.elements(); policyElements.hasNext(); ) {
+
+                JsonNode policyElement = (JsonNode) policyElements.next();
+                logger.debug("policyElement [{}]", policyElement);
+
+                String policyConfigName = policyElement.fieldNames().next();
+                logger.debug("policyConfigName [{}]", policyConfigName);
+
+                JsonNode instanceDescriptionNode = policyElement.elements().next();
+                JsonNode policyConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
+                logger.debug("policyConfigNode [{}]", policyConfigNode);
+
+                String policyConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
+                logger.debug("policyConfigClassName [{}]", policyConfigClassName);
+
+                Class policyConfigClass;
+                try {
+                    policyConfigClass = Class.forName(policyConfigClassName);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("Can not find RetryPolicyConfig class: " + policyConfigClassName, e);
+                }
+
+                RetryPolicyConfig retryPolicyConfig;
+                try {
+                    retryPolicyConfig = (RetryPolicyConfig) oc.treeToValue(policyConfigNode, policyConfigClass);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can not deserialize RetryPolicyConfig object: " + policyConfigClassName, e);
+                }
+
+                config.policyConfigs.put(policyConfigName, retryPolicyConfig);
             }
         }
 
