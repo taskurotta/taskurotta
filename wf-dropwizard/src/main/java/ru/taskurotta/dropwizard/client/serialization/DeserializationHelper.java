@@ -13,6 +13,8 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
+import ru.taskurotta.backend.storage.model.StackTraceElementContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 
@@ -29,6 +31,44 @@ public class DeserializationHelper implements Constants {
                 result = node.textValue();
             } else if(node.isNumber()) {
                 result = String.valueOf(node.longValue());
+            } else if(node.isBoolean()) {
+                result = String.valueOf(node.booleanValue());
+            }
+        }
+        return result;
+    }
+
+    public static int getIntegerValue(JsonNode node, int defVal) {
+        int result = defVal;
+        if(node!=null && !node.isNull()) {
+            if(node.isTextual()) {
+                result = Integer.valueOf(node.textValue());
+            } else if(node.isNumber()) {
+                result = node.intValue();
+            }
+        }
+        return result;
+    }
+
+    public static long getLongValue(JsonNode node, long defVal) {
+        long result = defVal;
+        if(node!=null && !node.isNull()) {
+            if(node.isTextual()) {
+                result = Long.valueOf(node.textValue());
+            } else if(node.isNumber()) {
+                result = node.longValue();
+            }
+        }
+        return result;
+    }
+
+    public static boolean getBooleanValue(JsonNode node, boolean defVal) {
+        boolean result = defVal;
+        if(node!=null && !node.isNull()) {
+            if(node.isBoolean()) {
+                result =node.booleanValue();
+            } else if(node.isTextual()) {
+                result = Boolean.valueOf(node.textValue());
             }
         }
         return result;
@@ -152,5 +192,39 @@ public class DeserializationHelper implements Constants {
         return new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, options);
     }
 
+
+    public static ErrorContainer parseErrorContainer(JsonNode rootNode) {
+        ErrorContainer result = null;
+        if(rootNode!=null && !rootNode.isNull()) {
+            result = new ErrorContainer();
+            result.setClassName(getStringValue(rootNode.get(ERR_CLASS_NAME), null));
+            result.setMessage(getStringValue(rootNode.get(ERR_MESSAGE), null));
+            result.setRestartTime(getLongValue(rootNode.get(ERR_RESTART_TIME), -1));
+            result.setShouldBeRestarted(getBooleanValue(rootNode.get(ERR_SHOULD_BE_RESTARTED), false));
+
+            JsonNode stNode = rootNode.get(ERR_STACK_TRACE);
+            StackTraceElementContainer[] stackTrace = null;
+            if(stNode!=null && stNode.isArray()) {
+                stackTrace = new StackTraceElementContainer[stNode.size()];
+                int pos = 0;
+                Iterator<JsonNode> stackTraceElements = stNode.elements();
+                while(stackTraceElements.hasNext()) {
+                    stackTrace[pos++] = parseStackTraceElementContainer(stackTraceElements.next());
+                }
+            }
+            result.setStackTrace(stackTrace);
+        }
+
+        return result;
+    }
+
+    public static StackTraceElementContainer parseStackTraceElementContainer(JsonNode rootNode) {
+        StackTraceElementContainer result = new StackTraceElementContainer();
+        result.setDeclaringClass(getStringValue(rootNode.get(STE_DECLARING_CLASS), null));
+        result.setFileName(getStringValue(rootNode.get(STE_FILE_NAME), null));
+        result.setLineNumber(getIntegerValue(rootNode.get(STE_LINE_NUMBER), -1));
+        result.setMethodName(getStringValue(rootNode.get(STE_METHOD_NAME), null));
+        return result;
+    }
 
 }

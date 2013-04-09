@@ -61,7 +61,6 @@ public class ActorExecutor implements Runnable {
                     continue;
                 }
 
-                // TODO: catch all exceptions and send it to server
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
                 // ToDo (stukushin): which exceptions will be catch for use retry politics?

@@ -1,5 +1,6 @@
 package ru.taskurotta.internal;
 
+import org.junit.Assert;
 import org.junit.Test;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
@@ -7,6 +8,7 @@ import ru.taskurotta.RuntimeProviderManager;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.TargetException;
@@ -39,7 +41,7 @@ public class GeneralRuntimeProcessorTest {
         }
     }
 
-    @Test(expected = UndefinedActorException.class)
+    @Test
     public void testUndefinedExecuteTask() throws Exception {
         RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
 
@@ -48,10 +50,12 @@ public class GeneralRuntimeProcessorTest {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start1");
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
-        runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        Assert.assertEquals(true, taskDecision.isError());
+        Assert.assertEquals(UndefinedActorException.class, taskDecision.getException().getClass());
     }
 
-    @Test(expected = TargetException.class)
+    @Test
     public void testExecuteTaskWithException() throws Exception {
         RuntimeProvider runtimeProvider = RuntimeProviderManager.getRuntimeProvider();
 
@@ -60,6 +64,9 @@ public class GeneralRuntimeProcessorTest {
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, SimpleDecider.class.getName(), "1.0", "start");
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
-        runtimeProcessor.execute(task);
+        TaskDecision taskDecision = runtimeProcessor.execute(task);
+        Assert.assertEquals(true, taskDecision.isError());
+        Assert.assertEquals(TargetException.class, taskDecision.getException().getClass());
     }
+
 }

@@ -2,9 +2,6 @@ package ru.taskurotta.dropwizard.client.serialization;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.backend.storage.model.TaskContainer;
 
 import com.fasterxml.jackson.core.JsonParser;

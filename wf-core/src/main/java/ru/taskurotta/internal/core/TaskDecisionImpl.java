@@ -18,13 +18,32 @@ public class TaskDecisionImpl implements TaskDecision {
     private UUID processId;
 	private Object value;
     private Task[] tasks;
+    private Throwable exception;
+    private boolean error;
 
 	public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks) {
         this.uuid = uuid;
         this.processId = processId;
         this.value = value;
         this.tasks = tasks;
+        this.error = false;
 	}
+
+    public TaskDecisionImpl(UUID uuid, UUID processId, Throwable exception, Task[] tasks) {
+        this.uuid = uuid;
+        this.exception = exception;
+        this.processId = processId;
+        this.tasks = tasks;
+        this.error = true;
+    }
+
+    public Throwable getException() {
+        return exception;
+    }
+
+    public boolean isError() {
+        return error;
+    }
 
     @Override
     public UUID getId() {

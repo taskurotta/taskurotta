@@ -23,7 +23,7 @@ public class ActorDefinitionSerializationTest {
 
     @Test
     public void testActorDefinitionSerialization() {
-        ActorDefinition original = createActorDefinition();
+        ActorDefinition original = EntitiesFactory.createActorDefinition();
 
         ObjectMapper jacksonMapper = new ObjectMapper();
 
@@ -47,10 +47,6 @@ public class ActorDefinitionSerializationTest {
             }
         }
 
-    }
-
-    private ActorDefinition createActorDefinition() {
-        return ActorDefinition.valueOf("test.me.worker", "7.6.5");
     }
 
 }

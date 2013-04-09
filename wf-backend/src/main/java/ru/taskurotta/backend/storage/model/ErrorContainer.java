@@ -9,10 +9,58 @@ public class ErrorContainer {
 
     private String className;
     private String message;
-    private String stackTrace;
+    private StackTraceElementContainer[] stackTrace;
 
     private boolean shouldBeRestarted;
     private long restartTime;
+
+
+    public static StackTraceElementContainer[] convert(StackTraceElement[] stElements) {
+        if(stElements == null) {
+            return null;
+        }
+        StackTraceElementContainer[] result = new StackTraceElementContainer[stElements.length];
+        for(int i = 0; i < stElements.length ; i++) {
+            StackTraceElement ste = stElements[i];
+            StackTraceElementContainer item = new StackTraceElementContainer();
+            item.setDeclaringClass(ste.getClassName());
+            item.setFileName(ste.getFileName());
+            item.setLineNumber(ste.getLineNumber());
+            item.setMethodName(ste.getMethodName());
+            result[i] = item;
+        }
+
+        return result;
+    }
+
+    public static StackTraceElement[] convert(StackTraceElementContainer[] steContainers) {
+        if(steContainers == null) {
+            return null;
+        }
+        StackTraceElement[] result = new StackTraceElement[steContainers.length];
+        for(int i = 0; i < steContainers.length; i++) {
+            StackTraceElementContainer containerItem = steContainers[i];
+            result[i] = new StackTraceElement(containerItem.getDeclaringClass(), containerItem.getMethodName(),
+                    containerItem.getFileName(), containerItem.getLineNumber());
+        }
+        return result;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setShouldBeRestarted(boolean shouldBeRestarted) {
+        this.shouldBeRestarted = shouldBeRestarted;
+    }
+
+    public void setRestartTime(long restartTime) {
+        this.restartTime = restartTime;
+    }
 
     public String getClassName() {
         return className;
@@ -22,8 +70,12 @@ public class ErrorContainer {
         return message;
     }
 
-    public String getStackTrace() {
+    public StackTraceElementContainer[] getStackTrace() {
         return stackTrace;
+    }
+
+    public void setStackTrace(StackTraceElementContainer[] stackTrace) {
+        this.stackTrace = stackTrace;
     }
 
     public boolean isShouldBeRestarted() {

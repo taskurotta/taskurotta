@@ -31,4 +31,11 @@ public interface TaskDecision {
      * @return produced tasks
      */
     Task[] getTasks();
+
+
+    boolean isError();
+
+
+    Throwable getException();
+
 }
