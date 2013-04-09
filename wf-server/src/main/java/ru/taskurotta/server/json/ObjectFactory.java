@@ -1,8 +1,11 @@
 package ru.taskurotta.server.json;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
@@ -13,14 +16,16 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.exception.ActorExecutionException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
-import java.io.IOException;
-import java.util.UUID;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * User: romario
@@ -28,6 +33,8 @@ import java.util.UUID;
  * Time: 4:20 PM
  */
 public class ObjectFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(ObjectFactory.class);
 
     private ObjectMapper mapper;
 
@@ -184,19 +191,11 @@ public class ObjectFactory {
 
     public TaskDecision parseResult(DecisionContainer decisionContainer) {
 
-        // TODO: TaskDecision can be error.
-
         UUID taskId = decisionContainer.getTaskId();
         UUID processId = decisionContainer.getProcessId();
 
-        Object value = null;
-        Task[] tasks = null;
-
-        ArgContainer argContainer = decisionContainer.getValue();
-        value = parseArg(argContainer);
-
         TaskContainer[] taskContainers = decisionContainer.getTasks();
-
+        Task[] tasks = null;
         if (taskContainers != null) {
             tasks = new Task[taskContainers.length];
 
@@ -206,7 +205,16 @@ public class ObjectFactory {
             }
         }
 
-        return new TaskDecisionImpl(taskId, processId, value, tasks);
+        if(decisionContainer.isError()) {
+            ErrorContainer error = decisionContainer.getErrorContainer();
+            Throwable errValue = parseError(error);
+            return new TaskDecisionImpl(taskId, processId, errValue, tasks);
+        } else {
+            ArgContainer argContainer = decisionContainer.getValue();
+            Object value = parseArg(argContainer);
+            return new TaskDecisionImpl(taskId, processId, value, tasks);
+        }
+
     }
 
 
@@ -231,5 +239,52 @@ public class ObjectFactory {
         }
 
         return new DecisionContainer(taskId, processId, value, isError, errorContainer, taskContainers);
+    }
+
+    public ErrorContainer dumpError(Throwable e) {
+        if(e == null) {
+            return null;
+        }
+        ErrorContainer result = new ErrorContainer();
+        result.setClassName(e.getClass().getName());
+        result.setMessage(e.getMessage());
+        result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));
+
+        if(ActorExecutionException.class.isAssignableFrom(e.getClass())) {
+            ActorExecutionException aee = (ActorExecutionException) e;
+            result.setRestartTime(aee.getRestartTime());
+            result.setShouldBeRestarted(aee.isShouldBeRestarted());
+        }
+
+        return result;
+
+    }
+
+    private Throwable parseError(ErrorContainer error) {
+        if(error == null) {
+            return null;
+        }
+        Throwable result = new Throwable(error.getMessage());
+
+        if(isExistingClass(error.getClassName())) {
+            result = new ActorExecutionException(error.getMessage(), error.isShouldBeRestarted(), error.getRestartTime());
+        } else {
+            result = new Throwable(error.getMessage());
+        }
+
+        result.setStackTrace(ErrorContainer.convert(error.getStackTrace()));
+
+        return result;
+    }
+
+    private static boolean isExistingClass(String className) {
+        boolean result = false;
+        try {
+            Class.forName(className);
+            result = true;
+        } catch(ClassNotFoundException e) {
+            logger.debug("Cannot instantiate Throwable of class[{}], error is[{}]", className, e);
+        }
+        return result;
     }
 }

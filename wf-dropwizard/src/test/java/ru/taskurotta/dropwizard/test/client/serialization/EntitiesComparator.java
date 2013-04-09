@@ -3,8 +3,10 @@ package ru.taskurotta.dropwizard.test.client.serialization;
 import org.junit.Assert;
 
 import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.StackTraceElementContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.TaskTarget;
 
@@ -72,6 +74,42 @@ public class EntitiesComparator {
         }
     }
 
+    public static void compare(TaskContainer expected, TaskContainer actual) {
+        if(expected != null) {
+            Assert.assertNotNull(actual);
+            if(actual!=null) {
+                Assert.assertEquals("Tasks UUIDs must be the same", expected.getTaskId(), actual.getTaskId());
+                Assert.assertEquals("Tasks process UUIDs must be the same", expected.getProcessId(), actual.getProcessId());
+                Assert.assertEquals("Start times must be the same", expected.getStartTime(), actual.getStartTime());
+                Assert.assertEquals("Number of attempts must be the same", expected.getNumberOfAttempts(), actual.getNumberOfAttempts());
+
+                //validateTaskTarget(original.getTarget(), result.getTarget());
+                Assert.assertEquals("Task methods must be the same", expected.getMethod(), actual.getMethod());
+                Assert.assertEquals("Task actorIds must be the same", expected.getActorId(), actual.getActorId());
+                Assert.assertEquals("Task types must be the same", expected.getType(), actual.getType());
+                compare(expected.getArgs(), actual.getArgs());
+                compare(expected.getOptions(), actual.getOptions());
+
+            }
+        } else {
+            Assert.assertNull(actual);
+        }
+    }
+
+    public static void compare(ArgContainer[] expected, ArgContainer[] actual) {
+        if(expected!=null) {
+            Assert.assertNotNull(actual);
+            if(actual != null) {
+                Assert.assertEquals("Args array size must be the same", expected.length, actual.length);
+                if(expected.length == actual.length) {
+                    for(int i = 0;i<actual.length;i++) {
+                        compare(expected[i], actual[i]);
+                    }
+                }
+            }
+        }
+    }
+
     public static void compare(StackTraceElementContainer expected, StackTraceElementContainer actual) {
         if(expected!=null) {
             Assert.assertNotNull(actual);
@@ -85,6 +123,32 @@ public class EntitiesComparator {
             Assert.assertNull(actual);
         }
     }
+
+    public static void compare(DecisionContainer expected, DecisionContainer actual) {
+        if(expected != null) {
+            Assert.assertNotNull(actual);
+            if(actual!=null) {
+                Assert.assertEquals("DecisionContainer taskId must be equal", expected.getTaskId(), actual.getTaskId());
+                Assert.assertEquals("DecisionContainer taskId must be equal", expected.getProcessId(), actual.getProcessId());
+                compare(expected.getErrorContainer(), actual.getErrorContainer());
+                compare(expected.getValue(), actual.getValue());
+                if(expected.getTasks()!=null) {
+                    Assert.assertNotNull(actual.getTasks());
+                    if(actual.getTasks()!=null) {
+                        Assert.assertEquals("DecisionContainer tasks arrays must have the same length", expected.getTasks().length, actual.getTasks().length);
+                        for(int i = 0; i<expected.getTasks().length; i++) {
+                           compare(expected.getTasks()[i], actual.getTasks()[i]);
+                        }
+                    }
+                } else {
+                    Assert.assertNull(actual.getTasks());
+                }
+            }
+        } else {
+            Assert.assertNull(actual);
+        }
+    }
+
 
 
 }

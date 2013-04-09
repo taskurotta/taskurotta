@@ -38,7 +38,7 @@ public class DecisionContainerSerializationTest {
         }
 
         Assert.assertNotNull(resultWrapper);
-        compare(original, resultWrapper.getResultContainer());
+        EntitiesComparator.compare(original, resultWrapper.getResultContainer());
 
     }
 
@@ -59,23 +59,7 @@ public class DecisionContainerSerializationTest {
         }
 
         Assert.assertNotNull(resultWrapper);
-        compare(original, resultWrapper.getResultContainer());
+        EntitiesComparator.compare(original, resultWrapper.getResultContainer());
     }
-
-    private void compare(DecisionContainer expected, DecisionContainer actual) {
-        if(expected != null) {
-            Assert.assertNotNull(actual);
-            if(actual!=null) {
-                Assert.assertEquals("DecisionContainer taskId must be equal", expected.getTaskId(), actual.getTaskId());
-                expected.getErrorContainer();
-                expected.getTaskId();
-                expected.getTasks();
-                expected.getValue();
-            }
-        } else {
-            Assert.assertNull(actual);
-        }
-    }
-
 
 }
