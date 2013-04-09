@@ -2,6 +2,8 @@ package ru.taskurotta.server.json;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -12,6 +14,11 @@ import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.test.TestTasks;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static junit.framework.Assert.assertEquals;
@@ -22,6 +29,7 @@ import static junit.framework.Assert.assertEquals;
  * Time: 4:46 PM
  */
 public class ObjectFactoryTest {
+    protected final static Logger log = LoggerFactory.getLogger(ObjectFactoryTest.class);
 
     private ObjectFactory objectFactory;
 
@@ -30,55 +38,74 @@ public class ObjectFactoryTest {
         objectFactory = new ObjectFactory();
     }
 
-
     @Test
     public void argContainerBoolean() {
-
         Boolean arg = Boolean.FALSE;
+        testInternal(arg);
+    }
 
-        ArgContainer argContainer = objectFactory.dumpArg(arg);
+    //FixMe: it fails
+    @org.junit.Ignore
+    @Test
+    public void argContainerArrayInt() {
+        int[] arg = new int[10];
+        testInternal(arg);
+    }
 
-        System.err.println("argContainer = " + argContainer);
+    @Test
+    public void argContainerListInt() {
+        List<Integer> arg = new ArrayList<Integer>(10);
+        for (int i=0; i < 10; i++) {
+            arg.add(i);
+        }
 
-        Object newArg = objectFactory.parseArg(argContainer);
+        testInternal(arg);
+    }
 
-        System.err.println("newArg = " + newArg);
+    @Test
+    public void argContainerLinkedListInt() {
+        List<Integer> arg = new LinkedList<Integer>();
+        for (int i=0; i < 10; i++) {
+            arg.add(i);
+        }
 
-        assertEquals(arg, newArg);
+        testInternal(arg);
+    }
+
+    //FixMe: it fails
+    @org.junit.Ignore
+    @Test
+    public void argContainerMapInt() {
+        Map<Integer, Object> arg = new HashMap<Integer, Object>();
+        Promise payload = Promise.asPromise(true);
+        for (int i=0; i < 10; i++) {
+            arg.put(i, payload);
+        }
+
+        testInternal(arg);
     }
 
     @Test
     public void argContainerReadyPromise() {
-
         Promise arg = Promise.asPromise(Boolean.TRUE);
-
-        ArgContainer argContainer = objectFactory.dumpArg(arg);
-
-        System.err.println("argContainer = " + argContainer);
-
-        Object newArg = objectFactory.parseArg(argContainer);
-
-        System.err.println("newArg = " + newArg);
-
-        assertEquals(arg, newArg);
+        testInternal(arg);
     }
 
     @Test
     public void argContainerNotReadyPromise() {
-
         Promise arg = Promise.createInstance(UUID.randomUUID());
+        testInternal(arg);
+    }
 
+    private void testInternal(Object arg) {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
-
-        System.err.println("argContainer = " + argContainer);
+        log.debug("argContainer = {}", argContainer);
 
         Object newArg = objectFactory.parseArg(argContainer);
-
-        System.err.println("newArg = " + newArg);
+        log.debug("newArg = {}", newArg);
 
         assertEquals(arg, newArg);
     }
-
 
     @Test
     public void resultContainerSimple() {

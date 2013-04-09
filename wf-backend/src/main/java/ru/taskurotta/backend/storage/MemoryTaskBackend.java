@@ -53,7 +53,11 @@ public class MemoryTaskBackend implements TaskBackend {
                 if (arg.isPromise()) {
                     if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getType())) {
                         ArgContainer value = getTaskValue(arg.getTaskId());
-                        args[i] = value;
+                        if (null == value) { // Promise doesn't have parent task. It is made from plain object
+                            arg.setPromise(false);
+                        } else {
+                            args[i] = value;
+                        }
                     } else {
                         if (arg.getJSONValue() == null) {
                             // resolved Promise. value may be null for NoWait promises
