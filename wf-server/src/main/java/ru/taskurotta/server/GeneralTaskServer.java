@@ -140,6 +140,16 @@ public class GeneralTaskServer implements TaskServer {
 
         logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
 
+        if (dependencyDecision.isFail()) {
+
+            logger.debug("release() failed dependencyDecision. release() should be retried after " +
+                    "RELEASE_TIMEOUT");
+
+            // leave release() method.
+            // RELEASE_TIMEOUT should be automatically fired
+            return;
+        }
+
         List<UUID> readyTasks = dependencyDecision.getReadyTasks();
 
         if (readyTasks != null) {

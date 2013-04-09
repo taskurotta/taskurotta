@@ -63,14 +63,6 @@ public class Graph {
     }
 
 
-    public Graph(int version, UUID graphId, Map<UUID, Set<UUID>> links) {
-
-        this.version = version;
-        this.graphId = graphId;
-        this.links = links;
-    }
-
-
     private static Map<UUID, Set<UUID>> reverseIt(Map<UUID, Set<UUID>> links) {
         Map<UUID, Set<UUID>> reverseResult = new HashMap<UUID, Set<UUID>>();
 
@@ -136,14 +128,6 @@ public class Graph {
 
     public void setLinks(Map<UUID, Set<UUID>> links) {
         this.links = links;
-    }
-
-    public void setModification(Modification modification) {
-        this.modification = modification;
-    }
-
-    public void setReadyItems(UUID[] readyItems) {
-        this.readyItems = readyItems;
     }
 
     @JsonIgnore
@@ -221,6 +205,7 @@ public class Graph {
 
                 }
 
+                // update reverse map
                 for (UUID thatItem : newItemLinks) {
                     Set<UUID> reverseItemLinks = getOrCreateReverseItemLinks(reverseLinks, thatItem);
                     reverseItemLinks.add(item);
@@ -244,6 +229,9 @@ public class Graph {
                 if (!candidateLinks.isEmpty()) {
                     continue;
                 }
+
+                // GC items without dependencies
+                links.remove(releaseCandidate);
 
                 // hide items to stash
                 if (waitForAfterRelease != null) {
@@ -335,20 +323,6 @@ public class Graph {
 
     }
 
-    private Set<UUID> getOrCreateItemLinks(UUID item) {
-
-        Set<UUID> itemLinks = links.get(item);
-
-        if (itemLinks != null) {
-            return itemLinks;
-        }
-
-        itemLinks = new HashSet<UUID>();
-        links.put(item, itemLinks);
-
-        return itemLinks;
-    }
-
     private static Set<UUID> getOrCreateReverseItemLinks(Map<UUID, Set<UUID>> reverseLinks, UUID item) {
 
         Set<UUID> reverseItemLinks = reverseLinks.get(item);
@@ -393,37 +367,5 @@ public class Graph {
                 '}';
     }
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Graph)) return false;
-
-        Graph graph = (Graph) o;
-
-        if (version != graph.version) return false;
-        if (frozenReadyItems != null ? !frozenReadyItems.equals(graph.frozenReadyItems) : graph.frozenReadyItems != null)
-            return false;
-        if (!graphId.equals(graph.graphId)) return false;
-        if (links != null ? !links.equals(graph.links) : graph.links != null) return false;
-        if (modification != null ? !modification.equals(graph.modification) : graph.modification != null) return false;
-        if (notFinishedItems != null ? !notFinishedItems.equals(graph.notFinishedItems) : graph.notFinishedItems != null)
-            return false;
-        if (!Arrays.equals(readyItems, graph.readyItems)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = version;
-        result = 31 * result + graphId.hashCode();
-        result = 31 * result + (notFinishedItems != null ? notFinishedItems.hashCode() : 0);
-        result = 31 * result + (frozenReadyItems != null ? frozenReadyItems.hashCode() : 0);
-        result = 31 * result + (links != null ? links.hashCode() : 0);
-        result = 31 * result + (modification != null ? modification.hashCode() : 0);
-        result = 31 * result + (readyItems != null ? Arrays.hashCode(readyItems) : 0);
-        return result;
-    }
 }
 

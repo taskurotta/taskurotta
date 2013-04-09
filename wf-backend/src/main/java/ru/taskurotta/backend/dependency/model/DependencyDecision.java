@@ -74,6 +74,10 @@ public class DependencyDecision {
         this.finishedProcessValue = finishedProcessValue;
     }
 
+    public boolean isFail() {
+        return fail;
+    }
+
     @Override
     public String toString() {
         return "DependencyDecision{" +
