@@ -91,11 +91,8 @@ public class TaskDecisionImpl implements TaskDecision {
 
     @Override
     public String toString() {
-        return "TaskDecisionImpl{" +
-                "uuid=" + uuid +
-                ", processId=" + processId +
-                ", value=" + value +
-                ", tasks=" + (tasks == null ? null : Arrays.asList(tasks)) +
-                '}';
+        return "TaskDecisionImpl [uuid=" + uuid + ", processId=" + processId
+                + ", value=" + value + ", tasks=" + Arrays.toString(tasks)
+                + ", exception=" + exception + ", error=" + error + "]";
     }
 }
