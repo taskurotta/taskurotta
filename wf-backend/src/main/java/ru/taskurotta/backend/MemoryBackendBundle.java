@@ -4,7 +4,6 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
-import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
