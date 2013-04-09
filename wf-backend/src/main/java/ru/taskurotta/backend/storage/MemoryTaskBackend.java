@@ -1,20 +1,19 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskDefinition;
 import ru.taskurotta.core.TaskType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -50,26 +49,32 @@ public class MemoryTaskBackend implements TaskBackend {
 
             for (int i = 0; i < args.length; i++) {
                 ArgContainer arg = args[i];
-                if (arg.isPromise()) {
-                    if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getType())) {
-                        ArgContainer value = getTaskValue(arg.getTaskId());
-                        if (null == value) { // Promise doesn't have parent task. It is made from plain object
-                            arg.setPromise(false);
-                        } else {
-                            args[i] = value;
-                        }
-                    } else {
-                        if (arg.getJSONValue() == null) {
-                            // resolved Promise. value may be null for NoWait promises
 
-                            ArgContainer value = getTaskValue(arg.getTaskId());
-                            if (value != null) {
-                                arg.setJSONValue(value.getJSONValue());
-                                arg.setClassName(value.getClassName());
-                                arg.setReady(true);
-                            }
-                        }
-                    }
+                if (!arg.isPromise()) {
+                    continue;
+                }
+
+                if (arg.isReady()) {
+                    continue;
+                }
+
+                ArgContainer value = getTaskValue(arg.getTaskId());
+                if (value == null) {
+                    // value may be null for NoWait promises
+                    // leave it in peace...
+                    continue;
+                }
+
+                if (!task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+
+                    // swap promise with real value for Actor tasks
+                    args[i] = value;
+                } else {
+
+                    // set real value into promise for Decider tasks
+                    arg.setJSONValue(value.getJSONValue());
+                    arg.setClassName(value.getClassName());
+                    arg.setReady(true);
                 }
             }
 
@@ -86,6 +91,9 @@ public class MemoryTaskBackend implements TaskBackend {
     private ArgContainer getTaskValue(UUID taskId) {
 
         logger.debug("getTaskValue() taskId = [{}]", taskId);
+        if (taskId == null) {
+            throw new IllegalStateException("Cannot find value for NULL taskId");
+        }
 
         DecisionContainer taskDecision = id2TaskDecisionMap.get(taskId);
 
@@ -149,8 +157,8 @@ public class MemoryTaskBackend implements TaskBackend {
     }
 
     private void removeProgressedTask(UUID taskId) {
-        for(TaskDefinition td: id2ProgressMap.keySet()) {
-            if(taskId.equals(td.getTaskId())) {
+        for (TaskDefinition td : id2ProgressMap.keySet()) {
+            if (taskId.equals(td.getTaskId())) {
                 id2ProgressMap.remove(td);
                 break;
             }
@@ -178,8 +186,8 @@ public class MemoryTaskBackend implements TaskBackend {
 
     public boolean isTaskInProgress(UUID taskId) {
         boolean result = false;
-        for(TaskDefinition td: id2ProgressMap.keySet()) {
-            if(taskId.equals(td.getTaskId())) {
+        for (TaskDefinition td : id2ProgressMap.keySet()) {
+            if (taskId.equals(td.getTaskId())) {
                 result = true;
                 break;
             }
@@ -239,9 +247,9 @@ public class MemoryTaskBackend implements TaskBackend {
     @Override
     public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill) {
         List<TaskDefinition> result = new ArrayList<TaskDefinition>();
-        for(TaskDefinition taskDef: id2ProgressMap.keySet()) {
+        for (TaskDefinition taskDef : id2ProgressMap.keySet()) {
             Long taskAcceptedDate = id2ProgressMap.get(taskDef);
-            if(taskAcceptedDate>timeFrom && taskAcceptedDate<timeTill) {
+            if (taskAcceptedDate > timeFrom && taskAcceptedDate < timeTill) {
                 result.add(taskDef);
             }
         }
@@ -252,9 +260,9 @@ public class MemoryTaskBackend implements TaskBackend {
     @Override
     public int resetActiveTasks(List<TaskDefinition> tasks) {
         int result = 0;
-        if(tasks!=null && !tasks.isEmpty()) {
-            for(TaskDefinition task: tasks) {
-                if(id2ProgressMap.remove(task) != null) {
+        if (tasks != null && !tasks.isEmpty()) {
+            for (TaskDefinition task : tasks) {
+                if (id2ProgressMap.remove(task) != null) {
                     result++;
                 } else {
                     logger.debug("Cannot reset task[{}]", task);
