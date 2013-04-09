@@ -33,7 +33,7 @@ public interface Constants {
     public static final String RESULT_VALUE = "value";
     public static final String RESULT_IS_ERROR = "error";
     public static final String RESULT_TASKS = "tasks";
-    public static final String RESULT_ERROR_CONTAINER = "ErrorContainer";
+    public static final String RESULT_ERROR_CONTAINER = "errorContainer";
 
     public static final String ERR_CLASS_NAME = "className";
     public static final String ERR_MESSAGE = "message";

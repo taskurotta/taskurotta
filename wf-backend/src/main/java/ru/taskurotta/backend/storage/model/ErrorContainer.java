@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.storage.model;
 
+import java.util.Arrays;
+
 /**
  * User: romario
  * Date: 2/25/13
@@ -85,4 +87,13 @@ public class ErrorContainer {
     public long getRestartTime() {
         return restartTime;
     }
+
+    @Override
+    public String toString() {
+        return "ErrorContainer [className=" + className + ", message="
+                + message + ", stackTrace=" + Arrays.toString(stackTrace)
+                + ", shouldBeRestarted=" + shouldBeRestarted + ", restartTime="
+                + restartTime + "]";
+    }
+
 }

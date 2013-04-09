@@ -1,6 +1,8 @@
 package ru.taskurotta.dropwizard.test.client.serialization;
 
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
@@ -11,6 +13,8 @@ import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.TaskTarget;
 
 public class EntitiesComparator {
+
+    private static final Logger logger = LoggerFactory.getLogger(EntitiesComparator.class);
 
     public static void compare(ArgContainer original, ArgContainer validating) {
         if(original!=null) {
@@ -47,10 +51,11 @@ public class EntitiesComparator {
     }
 
     public static void compare(ErrorContainer expected, ErrorContainer actual) {
+        logger.debug("Comparing error containers: expected[{}], actual[{}]", expected, actual);
         if(expected!=null) {
             Assert.assertNotNull(actual);
             if(actual!=null) {
-                Assert.assertEquals("ErrorContainer class names must be the same", expected.getClassName(), actual.getClassName());
+                Assert.assertEquals("ErrorContainer class names must be the same!", expected.getClassName(), actual.getClassName());
                 Assert.assertEquals("ErrorContainer messages must be the same", expected.getMessage(), actual.getMessage());
                 Assert.assertEquals("ErrorContainer restart times must be the same", expected.getRestartTime(), actual.getRestartTime());
                 Assert.assertEquals("ErrorContainer should be restarted flags must be the same", expected.isShouldBeRestarted(), actual.isShouldBeRestarted());
