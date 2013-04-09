@@ -64,7 +64,6 @@ public class GeneralDependencyBackend implements DependencyBackend {
                 break;
             }
 
-            graph = graphDao.getGraph(processId);
         }
 
         if (!successfullySaved) {
