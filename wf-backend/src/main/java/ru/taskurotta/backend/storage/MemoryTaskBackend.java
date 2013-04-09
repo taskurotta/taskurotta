@@ -123,6 +123,7 @@ public class MemoryTaskBackend implements TaskBackend {
 
     @Override
     public void addError(UUID taskId, ErrorContainer asyncTaskError, boolean shouldBeRestarted) {
+        logger.debug("Task with error getted: taskId[{}], asyncTaskError[{}], shouldBeRestarted[{]]", taskId, asyncTaskError, shouldBeRestarted);
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
