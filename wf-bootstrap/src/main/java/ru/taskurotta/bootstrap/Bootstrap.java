@@ -128,8 +128,9 @@ public class Bootstrap {
 
             RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
             RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new LinearRetryPolicy(10) : retryPolicyConfig.getRetryPolicy();
+            PolicyArbiter policyArbiter = new PolicyArbiter(retryPolicy);
 
-			ActorExecutor actorExecutor = new ActorExecutor(profiler, retryPolicy, runtimeProcessor, taskSpreader);
+			ActorExecutor actorExecutor = new ActorExecutor(profiler, policyArbiter, runtimeProcessor, taskSpreader);
 			executors.add(actorExecutor);
 
 			int count = actorConfig.getCount();

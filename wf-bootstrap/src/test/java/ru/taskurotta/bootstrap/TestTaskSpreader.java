@@ -19,18 +19,30 @@ import java.util.List;
 public class TestTaskSpreader implements TaskSpreader {
 
     private Date attemptDate;
+    private List<Task> tasks;
+
     public List<Integer> timeouts = new ArrayList<Integer>();
+
+    public TestTaskSpreader() {}
+
+    public TestTaskSpreader(List<Task> tasks) {
+        this.tasks = tasks;
+    }
 
     @Override
     public Task poll() {
-        if (attemptDate == null) {
+        if (tasks == null || tasks.isEmpty()) {
+            if (attemptDate == null) {
+                attemptDate = new Date();
+            }
+
+            timeouts.add((int) (System.currentTimeMillis() - attemptDate.getTime()) / 1000);
             attemptDate = new Date();
+
+            return null;
+        } else {
+            return tasks.remove(0);
         }
-
-        timeouts.add((int) (System.currentTimeMillis() - attemptDate.getTime()) / 1000);
-        attemptDate = new Date();
-
-        return null;
     }
 
     @Override
