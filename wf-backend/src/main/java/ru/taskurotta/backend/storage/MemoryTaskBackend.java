@@ -43,6 +43,9 @@ public class MemoryTaskBackend implements TaskBackend {
 
         TaskContainer task = getTask(taskId);
 
+        // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
+        // due guarantees for its immutability.
+
         ArgContainer[] args = task.getArgs();
 
         if (args != null) {
@@ -54,7 +57,11 @@ public class MemoryTaskBackend implements TaskBackend {
                     continue;
                 }
 
-                if (arg.isReady()) {
+                if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+
+                    // set real value to Actor tasks
+                    args[i] = new ArgContainer(arg.getClassName(), false, arg.getTaskId(), true, arg.getJSONValue(),
+                            arg.isArray());
                     continue;
                 }
 
@@ -72,9 +79,8 @@ public class MemoryTaskBackend implements TaskBackend {
                 } else {
 
                     // set real value into promise for Decider tasks
-                    arg.setJSONValue(value.getJSONValue());
-                    arg.setClassName(value.getClassName());
-                    arg.setReady(true);
+                    args[i] = new ArgContainer(value.getClassName(), true, arg.getTaskId(), true, value.getJSONValue(),
+                            arg.isArray());
                 }
             }
 
