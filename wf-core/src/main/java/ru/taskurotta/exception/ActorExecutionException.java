@@ -50,7 +50,7 @@ public class ActorExecutionException extends Throwable implements Retriable {
 
     @Override
     public String toString() {
-        return "ActorExecutionException [restartTime=" + restartTime
+        return "ActorExecutionException [cause="+getCause()+", restartTime=" + restartTime
                 + ", shouldBeRestarted=" + shouldBeRestarted + "]";
     }
 

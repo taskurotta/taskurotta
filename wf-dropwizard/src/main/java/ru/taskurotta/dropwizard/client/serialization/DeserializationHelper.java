@@ -175,8 +175,6 @@ public class DeserializationHelper implements Constants {
     }
 
     public static TaskContainer parseTaskContainer(JsonNode rootNode) {
-        logger.debug("Deserializing Task from JSON[{}]", rootNode);
-
         UUID taskId = extractId(rootNode.get(TASK_ID), null);
         UUID processId = extractId(rootNode.get(TASK_PROCESS_ID), null);
 

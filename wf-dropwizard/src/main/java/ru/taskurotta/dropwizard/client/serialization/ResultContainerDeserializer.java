@@ -33,7 +33,7 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
         ObjectCodec oc = jp.getCodec();
         JsonNode rootNode = oc.readTree(jp);
 
-        logger.debug("Deserializing Task from JSON[{}]", rootNode);
+        logger.debug("Deserializing DecisionContainer from JSON[{}]", rootNode);
 
         UUID taskId = DeserializationHelper.extractId(rootNode.get(RESULT_TASK_ID), null);
         UUID processId = DeserializationHelper.extractId(rootNode.get(RESULT_PROCESS_ID), null);

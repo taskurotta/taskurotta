@@ -124,6 +124,7 @@ public class GeneralTaskServer implements TaskServer {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
+                logger.debug("Error task enqueued again, taskId[{]]", taskId);
                 enqueueTask(taskId, asyncTask.getActorId(), errorContainer.getRestartTime());
             }
 
