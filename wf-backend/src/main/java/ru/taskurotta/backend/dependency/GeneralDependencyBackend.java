@@ -49,11 +49,10 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
             graph = graphDao.getGraph(processId);
 
-            UUID[] readyTasks = null;
-
             if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                readyTasks = graphDao.getReadyTasks(finishedTaskId);
+                UUID[] readyTasks = graphDao.getReadyTasks(finishedTaskId);
 
+                logger.warn("Won't apply graph modification");
                 return new DependencyDecision().withReadyTasks(readyTasks);
             }
 
@@ -67,6 +66,7 @@ public class GeneralDependencyBackend implements DependencyBackend {
         }
 
         if (!successfullySaved) {
+            logger.warn("Can't apply graph modification");
             // TODO: should be analyzed at TaskServer
             return new DependencyDecision().withFail();
         }

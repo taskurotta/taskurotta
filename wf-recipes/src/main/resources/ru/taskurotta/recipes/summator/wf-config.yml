@@ -30,4 +30,4 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
-      count: 2
+      count: 8

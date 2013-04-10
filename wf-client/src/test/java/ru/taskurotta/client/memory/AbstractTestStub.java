@@ -101,7 +101,7 @@ public class AbstractTestStub {
 
         Graph graph = memoryGraphDao.getGraph(processId);
 
-        return graph.isTaskWaitOtherTasks(taskId, taskQuantity);
+        return graph != null && graph.isTaskWaitOtherTasks(taskId, taskQuantity);
 
     }
 
