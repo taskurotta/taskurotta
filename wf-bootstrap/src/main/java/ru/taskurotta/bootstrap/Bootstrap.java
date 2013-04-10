@@ -16,7 +16,7 @@ import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
-import ru.taskurotta.policy.retry.LinearRetryPolicy;
+import ru.taskurotta.policy.retry.BlankRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.io.File;
@@ -127,10 +127,10 @@ public class Bootstrap {
 			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
 
             RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
-            RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new LinearRetryPolicy(10) : retryPolicyConfig.getRetryPolicy();
-            PolicyArbiter policyArbiter = new PolicyArbiter(retryPolicy);
+            RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
+            Inspector inspector = new Inspector(retryPolicy);
 
-			ActorExecutor actorExecutor = new ActorExecutor(profiler, policyArbiter, runtimeProcessor, taskSpreader);
+			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
 			executors.add(actorExecutor);
 
 			int count = actorConfig.getCount();

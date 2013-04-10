@@ -14,17 +14,15 @@ import ru.taskurotta.core.TaskDecision;
 public class ActorExecutor implements Runnable {
 
     private Profiler profiler;
-    private PolicyArbiter policyArbiter;
     private RuntimeProcessor runtimeProcessor;
     private TaskSpreader taskSpreader;
 
     private boolean shutdown = false;
 
-    public ActorExecutor(Profiler profiler, PolicyArbiter policyArbiter, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
+    public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
         this.profiler = profiler;
-        this.policyArbiter = policyArbiter;
-        this.runtimeProcessor = profiler.decorate(runtimeProcessor);
-        this.taskSpreader = profiler.decorate(taskSpreader);
+        this.runtimeProcessor = inspector.decorate(profiler.decorate(runtimeProcessor));
+        this.taskSpreader = inspector.decorate(profiler.decorate(taskSpreader));
     }
 
     @Override
@@ -37,14 +35,13 @@ public class ActorExecutor implements Runnable {
             try {
 
                 Task task = taskSpreader.poll();
-                while (!policyArbiter.continueAfterPoll(task)) {
-                    task = taskSpreader.poll();
+
+                if (task == null) {
+                    profiler.cycleFinish();
+                    continue;
                 }
 
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
-                while (!policyArbiter.continueAfterExecute(taskDecision)) {
-                    taskDecision = runtimeProcessor.execute(task);
-                }
 
                 taskSpreader.release(taskDecision);
 

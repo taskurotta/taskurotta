@@ -31,5 +31,5 @@ public interface RetryPolicy {
      * @return Time to the next retry. {@link ru.taskurotta.policy.PolicyConstants#NONE} means stop
      *         retrying.
      */
-    long nextRetryDelaySeconds(Date firstAttempt, Date recordedFailure, int numberOfTries);
+    long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries);
 }

@@ -17,7 +17,6 @@ package ru.taskurotta.policy.retry;
 import ru.taskurotta.policy.PolicyConstants;
 
 import java.util.Collection;
-import java.util.Date;
 
 public class ExponentialRetryPolicy extends TimeRetryPolicyBase {
 
@@ -67,7 +66,7 @@ public class ExponentialRetryPolicy extends TimeRetryPolicyBase {
     }
 
     @Override
-    public long nextRetryDelaySeconds(Date firstAttempt, Date recordedFailure, int numberOfTries) {
+    public long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries) {
 
         if (numberOfTries < 2) {
             throw new IllegalArgumentException("attempt is less then 2: " + numberOfTries);
@@ -79,7 +78,7 @@ public class ExponentialRetryPolicy extends TimeRetryPolicyBase {
 
         long result = (long) (initialRetryIntervalSeconds * Math.pow(backoffCoefficient, numberOfTries - 2));
         result = maximumRetryIntervalSeconds > PolicyConstants.NONE ? Math.min(result, maximumRetryIntervalSeconds) : result;
-        int secondsSinceFirstAttempt = (int) ((recordedFailure.getTime() - firstAttempt.getTime()) / 1000);
+        int secondsSinceFirstAttempt = (int) ((recordedFailure - firstAttempt) / 1000);
         if (retryExpirationIntervalSeconds > PolicyConstants.NONE
                 && secondsSinceFirstAttempt + result >= retryExpirationIntervalSeconds) {
             return PolicyConstants.NONE;
