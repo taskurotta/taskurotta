@@ -5,8 +5,8 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.apache.commons.dbcp.BasicDataSource;
-import ru.taskurotta.backend.ora.dao.OraQueueDao;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
+import ru.taskurotta.backend.ora.queue.OraQueueDao;
 
 /**
  * User: greg

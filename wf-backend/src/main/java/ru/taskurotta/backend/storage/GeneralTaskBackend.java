@@ -1,9 +1,7 @@
 package ru.taskurotta.backend.storage;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,17 +16,20 @@ import ru.taskurotta.core.TaskType;
  * Date: 4/1/13
  * Time: 9:34 PM
  */
-public class MemoryTaskBackend implements TaskBackend {
+public class GeneralTaskBackend implements TaskBackend {
 
-    private final static Logger logger = LoggerFactory.getLogger(MemoryTaskBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(GeneralTaskBackend.class);
 
-    private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
-    private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
-    private Map<UUID, Boolean> id2ProgressMap = new ConcurrentHashMap<UUID, Boolean>();
+
+    private TaskDao taskDao;
+
+    public GeneralTaskBackend(TaskDao taskDao) {
+        this.taskDao = taskDao;
+    }
 
     @Override
     public void startProcess(TaskContainer taskContainer) {
-        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
+        taskDao.addTask(taskContainer);
     }
 
     @Override
@@ -52,7 +53,6 @@ public class MemoryTaskBackend implements TaskBackend {
                         } else {
                             if (arg.getJSONValue() == null) {
                                 // resolved Promise. value may be null for NoWait promises
-
                                 ArgContainer value = getTaskValue(arg.getTaskId());
                                 if (value != null) {
                                     arg.setJSONValue(value.getJSONValue());
@@ -65,8 +65,7 @@ public class MemoryTaskBackend implements TaskBackend {
                 }
 
             }
-
-            id2ProgressMap.put(taskId, true);
+            taskDao.markTaskProcessing(taskId, true);
         }
 
         return task;
@@ -77,7 +76,7 @@ public class MemoryTaskBackend implements TaskBackend {
 
         logger.debug("getTaskValue() taskId = [{}]", taskId);
 
-        DecisionContainer taskDecision = id2TaskDecisionMap.get(taskId);
+        DecisionContainer taskDecision = taskDao.getDecision(taskId);
 
         if (taskDecision == null) {
             return null;
@@ -103,7 +102,7 @@ public class MemoryTaskBackend implements TaskBackend {
 
     @Override
     public TaskContainer getTask(UUID taskId) {
-        return id2TaskMap.get(taskId);
+        return taskDao.getTask(taskId);
     }
 
     @Override
@@ -116,10 +115,8 @@ public class MemoryTaskBackend implements TaskBackend {
 
         logger.debug("addDecision() taskDecision = [{}]", taskDecision);
 
-        UUID taskId = taskDecision.getTaskId();
-
-        id2ProgressMap.remove(taskId);
-        id2TaskDecisionMap.put(taskId, taskDecision);
+        taskDao.markTaskProcessing(taskDecision.getTaskId(), false);
+        taskDao.addDecision(taskDecision);
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
         if (taskContainers == null) {
@@ -127,7 +124,7 @@ public class MemoryTaskBackend implements TaskBackend {
         }
 
         for (TaskContainer taskContainer : taskContainers) {
-            id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
+            taskDao.addTask(taskContainer);
         }
     }
 
@@ -137,7 +134,6 @@ public class MemoryTaskBackend implements TaskBackend {
 
     @Override
     public void addErrorCommit(UUID taskId) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -151,10 +147,10 @@ public class MemoryTaskBackend implements TaskBackend {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        return id2ProgressMap.containsKey(taskId);
+        return taskDao.isTaskInProgress(taskId);
     }
 
     public boolean isTaskReleased(UUID taskId) {
-        return id2TaskDecisionMap.containsKey(taskId);
+        return taskDao.isTaskReleased(taskId);
     }
 }

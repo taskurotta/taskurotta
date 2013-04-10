@@ -5,10 +5,11 @@ import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryProcessBackend;
-import ru.taskurotta.backend.storage.MemoryTaskBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
+import ru.taskurotta.backend.storage.TaskDao;
 
 /**
  * User: romario
@@ -24,9 +25,9 @@ public class MemoryBackendBundle implements BackendBundle {
     private ConfigBackend configBackend;
 
 
-    public MemoryBackendBundle(int pollDelay) {
+    public MemoryBackendBundle(int pollDelay, TaskDao taskDao) {
         this.processBackend = new MemoryProcessBackend();
-        this.taskBackend = new MemoryTaskBackend();
+        this.taskBackend = new GeneralTaskBackend(taskDao);
         this.queueBackend = new MemoryQueueBackend(pollDelay);
         this.dependencyBackend = new MemoryDependencyBackend();
         this.configBackend = new ConfigBackend();

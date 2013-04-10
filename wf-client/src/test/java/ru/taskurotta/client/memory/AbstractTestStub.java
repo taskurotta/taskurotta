@@ -11,7 +11,8 @@ import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.dependency.model.TaskDependency;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
-import ru.taskurotta.backend.storage.MemoryTaskBackend;
+import ru.taskurotta.backend.storage.GeneralTaskBackend;
+import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -33,7 +34,7 @@ import ru.taskurotta.util.ActorDefinition;
 public class AbstractTestStub {
 
     protected MemoryQueueBackend memoryQueueBackend;
-    protected MemoryTaskBackend memoryStorageBackend;
+    protected GeneralTaskBackend memoryStorageBackend;
     protected MemoryDependencyBackend memoryDependencyBackend;
 
     protected TaskServer taskServer;
@@ -71,11 +72,10 @@ public class AbstractTestStub {
 
     @Before
     public void setUp() throws Exception {
-//        taskDao = new TaskDaoMemory(0);
-//        taskServer = new TaskServerGeneral(taskDao);
-        BackendBundle backendBundle = new MemoryBackendBundle(0);
+        MemoryTaskDao taskDao = new MemoryTaskDao();
+        BackendBundle backendBundle = new MemoryBackendBundle(0, taskDao);
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
-        memoryStorageBackend = (MemoryTaskBackend) backendBundle.getTaskBackend();
+        memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
         memoryDependencyBackend = (MemoryDependencyBackend) backendBundle.getDependencyBackend();
 
         taskServer = new GeneralTaskServer(backendBundle);

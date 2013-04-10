@@ -6,7 +6,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.util.StopWatch;
-import ru.taskurotta.backend.ora.dao.OraQueueDao;
+import ru.taskurotta.backend.ora.queue.OraQueueDao;
 
 /**
  * User: greg

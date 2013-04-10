@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.ora.dao;
+package ru.taskurotta.backend.ora.queue;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;

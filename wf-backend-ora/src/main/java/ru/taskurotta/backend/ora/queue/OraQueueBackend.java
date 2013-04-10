@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.ora.dao.DbConnect;
-import ru.taskurotta.backend.ora.dao.OraQueueDao;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.util.ActorDefinition;

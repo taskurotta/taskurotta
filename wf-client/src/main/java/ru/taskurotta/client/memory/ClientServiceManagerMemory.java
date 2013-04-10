@@ -1,6 +1,7 @@
 package ru.taskurotta.client.memory;
 
 import ru.taskurotta.backend.MemoryBackendBundle;
+import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.client.TaskSpreaderProvider;
@@ -19,7 +20,7 @@ public class ClientServiceManagerMemory implements ClientServiceManager {
     private TaskServer taskServer;
 
     public ClientServiceManagerMemory() {
-        MemoryBackendBundle memoryBackendBundle = new MemoryBackendBundle(60);
+        MemoryBackendBundle memoryBackendBundle = new MemoryBackendBundle(60, new MemoryTaskDao());
         taskServer = new GeneralTaskServer(memoryBackendBundle);
     }
 

@@ -26,8 +26,11 @@
         <property name="threads" value="${internalPool.poolSize}"/>
     </bean>
 
+    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao"/>
+
     <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
         <constructor-arg name="dbConnect" ref="dbConnect"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
     </bean>
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
