@@ -16,6 +16,7 @@ public class SummarizerImpl implements Summarizer {
     public Integer summarize(Integer a, Integer b) {
 
         if(RandomException.isEventHappened(errPossibility)) {
+            logger.error("Summarizer: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 

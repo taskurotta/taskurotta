@@ -18,6 +18,7 @@ public class MultiplierImpl implements Multiplier {
     public Integer multiply(Integer a, Integer b) {
 
         if(RandomException.isEventHappened(errPossibility)) {
+            logger.error("Multiplier: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 

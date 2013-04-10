@@ -20,6 +20,7 @@ public class NumberGeneratorImpl implements NumberGenerator {
     public Integer getNumber() {
 
         if(RandomException.isEventHappened(errPossibility)) {
+            logger.error("NumberGenerator: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 

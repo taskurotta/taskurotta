@@ -34,7 +34,7 @@ public class TaskDecisionImpl implements TaskDecision {
         this.exception = exception;
         this.processId = processId;
         this.tasks = tasks;
-        this.error = true;
+        this.error = exception!=null;
     }
 
     public Throwable getException() {

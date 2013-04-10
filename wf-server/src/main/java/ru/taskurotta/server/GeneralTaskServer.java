@@ -115,7 +115,7 @@ public class GeneralTaskServer implements TaskServer {
         // if Error
         if (taskDecision.isError()) {
             final ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            final boolean isShouldBeRestarted = errorContainer.isShouldBeRestarted();
+            final boolean isShouldBeRestarted = errorContainer!=null? errorContainer.isShouldBeRestarted(): false;
 
             taskBackend.addError(taskId, errorContainer, isShouldBeRestarted);
 

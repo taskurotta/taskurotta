@@ -27,6 +27,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
     public void performAction() {
 
         if(RandomException.isEventHappened(errPossibility)) {
+            logger.error("MathActionDecider: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 
