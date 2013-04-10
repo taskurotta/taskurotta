@@ -38,7 +38,7 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
         UUID taskId = DeserializationHelper.extractId(rootNode.get(RESULT_TASK_ID), null);
         UUID processId = DeserializationHelper.extractId(rootNode.get(RESULT_PROCESS_ID), null);
         ArgContainer value = DeserializationHelper.parseArgument(rootNode.get(RESULT_VALUE));
-        Boolean error = rootNode.get(RESULT_IS_ERROR).booleanValue();
+        //Boolean error = rootNode.get(RESULT_IS_ERROR).booleanValue();
         ErrorContainer errorContainer = DeserializationHelper.parseErrorContainer(rootNode.get(RESULT_ERROR_CONTAINER));
         TaskContainer[] tasks = null;
 
@@ -54,7 +54,7 @@ public class ResultContainerDeserializer extends JsonDeserializer<DecisionContai
 
         }
 
-        return new DecisionContainer(taskId, processId, value, error, errorContainer, tasks);
+        return new DecisionContainer(taskId, processId, value, errorContainer, tasks);
     }
 
 

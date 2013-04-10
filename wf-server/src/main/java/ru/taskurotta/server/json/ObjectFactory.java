@@ -228,7 +228,7 @@ public class ObjectFactory {
             }
         }
 
-        if(decisionContainer.isError()) {
+        if(decisionContainer.containsError()) {
             ErrorContainer error = decisionContainer.getErrorContainer();
             Throwable errValue = parseError(error);
             return new TaskDecisionImpl(taskId, processId, errValue, tasks);
@@ -261,7 +261,7 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, processId, value, isError, errorContainer, taskContainers);
+        return new DecisionContainer(taskId, processId, value, errorContainer, taskContainers);
     }
 
     public ErrorContainer dumpError(Throwable e) {

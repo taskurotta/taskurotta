@@ -51,9 +51,9 @@ public class EntitiesFactory {
         tasks[0] = createTaskContainer();
         tasks[1] = createTaskContainer();
         if(isError) {
-            return new DecisionContainer(taskId, processId, null, isError, createErrorContainer(), tasks);
+            return new DecisionContainer(taskId, processId, null, createErrorContainer(), tasks);
         } else {
-            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), isError, null, tasks);
+            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, tasks);
         }
 
     }

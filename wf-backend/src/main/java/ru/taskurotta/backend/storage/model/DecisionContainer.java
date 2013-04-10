@@ -17,17 +17,15 @@ public class DecisionContainer {
     private UUID taskId;
     private UUID processId;
     private ArgContainer value;
-    private boolean isError = false;
     private ErrorContainer errorContainer;
     private TaskContainer[] tasks;
 
-    public DecisionContainer(UUID taskId, UUID processId, ArgContainer value, boolean error,
+    public DecisionContainer(UUID taskId, UUID processId, ArgContainer value,
                              ErrorContainer errorContainer,
                              TaskContainer[] tasks) {
         this.taskId = taskId;
         this.processId = processId;
         this.value = value;
-        isError = error;
         this.errorContainer = errorContainer;
         this.tasks = tasks;
     }
@@ -40,8 +38,8 @@ public class DecisionContainer {
         return value;
     }
 
-    public boolean isError() {
-        return isError;
+    public boolean containsError() {
+        return errorContainer!=null;
     }
 
     public ErrorContainer getErrorContainer() {
@@ -58,42 +56,56 @@ public class DecisionContainer {
 
     @Override
     public String toString() {
-        return "DecisionContainer{" +
-                "taskId=" + taskId +
-                ", processId=" + processId +
-                ", value=" + value +
-                ", isError=" + isError +
-                ", errorContainer=" + errorContainer +
-                ", tasks=" + (tasks == null ? null : Arrays.asList(tasks)) +
-                '}';
+        return "DecisionContainer [taskId=" + taskId + ", processId="
+                + processId + ", value=" + value + ", errorContainer="
+                + errorContainer + ", tasks=" + Arrays.toString(tasks) + "]";
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DecisionContainer)) return false;
-
-        DecisionContainer that = (DecisionContainer) o;
-
-        if (isError != that.isError) return false;
-        if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
             return false;
-        if (!processId.equals(that.processId)) return false;
-        if (!taskId.equals(that.taskId)) return false;
-        if (!Arrays.equals(tasks, that.tasks)) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
+        if (getClass() != obj.getClass())
+            return false;
+        DecisionContainer other = (DecisionContainer) obj;
+        if (errorContainer == null) {
+            if (other.errorContainer != null)
+                return false;
+        } else if (!errorContainer.equals(other.errorContainer))
+            return false;
+        if (processId == null) {
+            if (other.processId != null)
+                return false;
+        } else if (!processId.equals(other.processId))
+            return false;
+        if (taskId == null) {
+            if (other.taskId != null)
+                return false;
+        } else if (!taskId.equals(other.taskId))
+            return false;
+        if (!Arrays.equals(tasks, other.tasks))
+            return false;
+        if (value == null) {
+            if (other.value != null)
+                return false;
+        } else if (!value.equals(other.value))
+            return false;
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = taskId.hashCode();
-        result = 31 * result + processId.hashCode();
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (isError ? 1 : 0);
-        result = 31 * result + (errorContainer != null ? errorContainer.hashCode() : 0);
-        result = 31 * result + (tasks != null ? Arrays.hashCode(tasks) : 0);
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((errorContainer == null) ? 0 : errorContainer.hashCode());
+        result = prime * result
+                + ((processId == null) ? 0 : processId.hashCode());
+        result = prime * result + ((taskId == null) ? 0 : taskId.hashCode());
+        result = prime * result + Arrays.hashCode(tasks);
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
         return result;
     }
 }
