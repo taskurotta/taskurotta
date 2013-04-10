@@ -7,7 +7,7 @@ import java.util.UUID;
  * Date: 2/25/13
  * Time: 3:07 PM
  */
-public class ArgContainer {
+public class ArgContainer implements Cloneable {
 
     private String className;
     private boolean isPromise;
@@ -63,6 +63,11 @@ public class ArgContainer {
 
     public boolean isArray() {
         return isArray;
+    }
+
+    @Override
+    public ArgContainer clone() throws CloneNotSupportedException {
+        return (ArgContainer) super.clone();
     }
 
     @Override
