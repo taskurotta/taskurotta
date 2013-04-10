@@ -106,7 +106,7 @@ public class MemoryQueueBackend implements QueueBackend {
             }
         }
 
-        logger.debug("poll() returns taskId [{}]", taskId);
+        logger.debug("poll() returns taskId [{}]. Queue.size: {}", taskId, queue.size());
 
         return taskId;
 
@@ -120,10 +120,10 @@ public class MemoryQueueBackend implements QueueBackend {
     @Override
     public void enqueueItem(String actorId, UUID taskId, long startTime) {
 
-        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]", actorId, taskId, startTime);
-
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
         queue.add(new DelayedTaskElement(taskId, startTime));
+
+        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
 
