@@ -24,6 +24,7 @@ public interface Constants {
 
     public static final String ARG_CLASSNAME = "className";
     public static final String ARG_IS_PROMISE = "promise";
+    public static final String ARG_IS_ARRAY = "array";
     public static final String ARG_TASK_ID = "taskId";
     public static final String ARG_IS_READY = "ready";
     public static final String ARG_JSON_VALUE = "jsonvalue";

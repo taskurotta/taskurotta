@@ -14,13 +14,15 @@ public class ArgContainer {
     private UUID taskId;
     private boolean isReady;
     private String JSONValue;
+    private boolean isArray;
 
-    public ArgContainer(String className, boolean isPromise, UUID taskId, boolean isReady, String JSONValue) {
+    public ArgContainer(String className, boolean isPromise, UUID taskId, boolean isReady, String JSONValue, boolean isArray) {
         this.className = className;
         this.isPromise = isPromise;
         this.taskId = taskId;
         this.isReady = isReady;
         this.JSONValue = JSONValue;
+        this.isArray = isArray;
     }
 
     public String getClassName() {
@@ -59,14 +61,14 @@ public class ArgContainer {
         isReady = ready;
     }
 
+    public boolean isArray() {
+        return isArray;
+    }
+
     @Override
     public String toString() {
-        return "ArgContainer{" +
-                "className='" + className + '\'' +
-                ", isPromise=" + isPromise +
-                ", taskId=" + taskId +
-                ", isReady=" + isReady +
-                ", JSONValue='" + JSONValue + '\'' +
-                '}';
+        return "ArgContainer [className=" + className + ", isPromise="
+                + isPromise + ", taskId=" + taskId + ", isReady=" + isReady
+                + ", JSONValue=" + JSONValue + ", isArray=" + isArray + "]";
     }
 }

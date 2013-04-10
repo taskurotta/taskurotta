@@ -1,6 +1,8 @@
 package ru.taskurotta.server.json;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Iterator;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -23,9 +25,13 @@ import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * User: romario
@@ -52,6 +58,7 @@ public class ObjectFactory {
         Object value = null;
 
         String json = argContainer.getJSONValue();
+        boolean isArray = argContainer.isArray();
 
         if (json != null) {
 
@@ -59,19 +66,11 @@ public class ObjectFactory {
             Class loadedClass = null;
 
             try {
-                loadedClass = Thread.currentThread().getContextClassLoader().loadClass(className);
-            } catch (ClassNotFoundException e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not instantiate Object from json. Specified class not found: " + className, e);
-            }
-
-            try {
-                value = mapper.readValue(argContainer.getJSONValue(), loadedClass);
-            } catch (IOException e) {
+                value = isArray? getArrayValue(json, className): getSimpleValue(json, className);
+            } catch (Exception e) {
                 // TODO: create new RuntimeException type
                 throw new RuntimeException("Can not instantiate Object from json. JSON value: " + argContainer.getJSONValue(), e);
             }
-
         }
 
         if (argContainer.isPromise()) {
@@ -88,13 +87,30 @@ public class ObjectFactory {
         return value;
     }
 
+    private Object getSimpleValue(String json, String valueClass) throws ClassNotFoundException, JsonParseException, JsonMappingException, IOException {
+        Class loadedClass = Thread.currentThread().getContextClassLoader().loadClass(valueClass);
+        return mapper.readValue(json, loadedClass);
+    }
+
+    private Object getArrayValue(String json, String arrayItemClass) throws Exception {
+        JsonNode node = mapper.readTree(json);
+        Class clazz = Class.forName(arrayItemClass);
+        Object array = Array.newInstance(clazz, node.size());
+        Iterator<JsonNode> iterator = node.elements();
+        int i = 0;
+        while(iterator.hasNext()) {
+            JsonNode item = iterator.next();
+            Array.set(array, i++, clazz.getConstructor(String.class).newInstance(item.textValue()));
+        }
+        return array;
+    }
 
     public ArgContainer dumpArg(Object arg) {
 
         if (arg == null) {
             return null;
         }
-
+        boolean isArray =arg.getClass().isArray();
         String className = null;
         boolean isPromise = false;
         UUID taskId = null;
@@ -115,17 +131,24 @@ public class ObjectFactory {
 
         if (arg != null) {
 
-            className = arg.getClass().getName();
+            if(isArray) {
+                className = arg.getClass().getComponentType().getName();
+            } else {
+                className = arg.getClass().getName();
+            }
 
             try {
-                jsonValue = mapper.writeValueAsString(arg);
+                jsonValue = isArray? writeAsJsonArray(arg): mapper.writeValueAsString(arg);
+                logger.debug("Arg container JsonValue getted is [{}]", jsonValue);
             } catch (JsonProcessingException e) {
                 // TODO: create new RuntimeException type
                 throw new RuntimeException("Can not create json String from Object: " + arg, e);
             }
         }
 
-        return new ArgContainer(className, isPromise, taskId, isReady, jsonValue);
+        ArgContainer result =  new ArgContainer(className, isPromise, taskId, isReady, jsonValue, isArray);
+        logger.debug("Created new ArgContainer[{}]", result);
+        return result;
     }
 
 
@@ -286,5 +309,19 @@ public class ObjectFactory {
             logger.debug("Cannot instantiate Throwable of class[{}], error is[{}]", className, e);
         }
         return result;
+    }
+
+    private String writeAsJsonArray(Object array) throws ArrayIndexOutOfBoundsException, JsonProcessingException, IllegalArgumentException {
+        ArrayNode arrayNode = mapper.createArrayNode();
+        if(array!=null) {
+
+            int size = Array.getLength(array);
+            for(int i = 0; i<size; i++) {
+                String itemValue =mapper.writeValueAsString(Array.get(array, i));
+                arrayNode.add(itemValue);
+            }
+        }
+
+        return arrayNode.toString();
     }
 }

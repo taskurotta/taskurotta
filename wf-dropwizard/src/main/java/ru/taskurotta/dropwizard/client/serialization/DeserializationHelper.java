@@ -149,11 +149,12 @@ public class DeserializationHelper implements Constants {
         } else {
             String className = arg.get(ARG_CLASSNAME).textValue();
             Boolean isPromise = arg.get(ARG_IS_PROMISE).booleanValue();
+            Boolean isArray = arg.get(ARG_IS_ARRAY).booleanValue();
             UUID taskId = extractId(arg.get(ARG_TASK_ID), null);
             Boolean isReady = arg.get(ARG_IS_READY).booleanValue();
             String json = arg.get(ARG_JSON_VALUE).textValue();
 
-            return new ArgContainer(className, isPromise, taskId, isReady, json);
+            return new ArgContainer(className, isPromise, taskId, isReady, json, isArray);
         }
     }
 
