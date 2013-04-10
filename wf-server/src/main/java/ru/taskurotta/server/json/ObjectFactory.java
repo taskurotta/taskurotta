@@ -246,7 +246,6 @@ public class ObjectFactory {
         UUID processId = taskDecision.getProcessId();
 
         ArgContainer value = dumpArg(taskDecision.getValue());
-        boolean isError = taskDecision.isError();
         ErrorContainer errorContainer = dumpError(taskDecision.getException());
         TaskContainer[] taskContainers = null;
 
