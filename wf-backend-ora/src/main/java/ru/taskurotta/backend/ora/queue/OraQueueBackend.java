@@ -20,6 +20,8 @@ public class OraQueueBackend implements QueueBackend {
 
     private final static Logger log = LoggerFactory.getLogger(OraQueueBackend.class);
 
+    private static final String TABLE_PREFIX = "qb$";
+
     private final OraQueueDao dbDAO;
 
     private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
@@ -46,7 +48,7 @@ public class OraQueueBackend implements QueueBackend {
                     long queueId = dbDAO.registerQueue(queueName);
                     queueNames.put(queueName, queueId);
                     log.warn("Queues count [{}] ", queueNames.size());
-                    dbDAO.createQueue("qb$" + queueId);
+                    dbDAO.createQueue(TABLE_PREFIX + queueId);
                 }
             }
 
@@ -82,7 +84,7 @@ public class OraQueueBackend implements QueueBackend {
     private String getTableName(String queueName) {
         Long id = queueNames.get(queueName);
         if (id != null) {
-            return "qb$" + id;
+            return TABLE_PREFIX + id;
         }
         return null;
     }

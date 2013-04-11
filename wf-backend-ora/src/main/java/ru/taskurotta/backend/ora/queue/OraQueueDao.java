@@ -42,10 +42,10 @@ public class OraQueueDao {
         connection.close();
     }
 
-    public void dequeueTask(int taskId, String queueName) throws SQLException {
+    public void dequeueTask(UUID taskId, String queueName) throws SQLException {
         final Connection connection = dataSource.getConnection();
         final PreparedStatement ps = connection.prepareStatement("delete from " + queueName + " where task_id = ?");
-        ps.setInt(1, taskId);
+        ps.setString(1, taskId.toString());
         ps.executeUpdate();
         ps.close();
         connection.close();

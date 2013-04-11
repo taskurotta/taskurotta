@@ -15,6 +15,9 @@ public class ArgContainer {
     private boolean isReady;
     private String JSONValue;
 
+    public ArgContainer() {
+    }
+
     public ArgContainer(String className, boolean isPromise, UUID taskId, boolean isReady, String JSONValue) {
         this.className = className;
         this.isPromise = isPromise;

@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
  */
 public class SimpleTask {
 
+    public static final String DEFAULT_TASK_LIST = "$D";
+
     private UUID taskId;
     private Date date;
     private String taskList;
@@ -19,7 +21,7 @@ public class SimpleTask {
         this.date = date;
         this.statusId = statusId;
         this.taskId = taskId;
-        this.taskList = (StringUtils.hasText(taskList)) ? taskList : "DEF";
+        this.taskList = (StringUtils.hasText(taskList)) ? taskList : DEFAULT_TASK_LIST;
     }
 
     public Date getDate() {

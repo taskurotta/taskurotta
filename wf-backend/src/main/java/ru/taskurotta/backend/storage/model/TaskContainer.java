@@ -19,6 +19,9 @@ public class TaskContainer {
     private ArgContainer[] args;
     private TaskOptionsContainer options;
 
+    public TaskContainer() {
+    }
+
     public TaskContainer(UUID taskId, TaskTarget target, long startTime, int numberOfAttempts, ArgContainer[] args,
                          TaskOptionsContainer options) {
         this.taskId = taskId;

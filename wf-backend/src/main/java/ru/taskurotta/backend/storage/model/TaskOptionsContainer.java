@@ -11,6 +11,9 @@ public class TaskOptionsContainer {
 
     private ArgType[] argTypes;
 
+    public TaskOptionsContainer() {
+    }
+
     public TaskOptionsContainer(ArgType[] argTypes) {
         this.argTypes = argTypes;
     }

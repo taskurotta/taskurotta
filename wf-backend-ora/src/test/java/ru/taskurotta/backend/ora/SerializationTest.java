@@ -20,7 +20,7 @@ import ru.taskurotta.internal.core.TaskTargetImpl;
  */
 public class SerializationTest {
 
-    private TaskContainer createTaskContainer() {
+    static TaskContainer createTaskContainer() {
         UUID originalUuid = UUID.randomUUID();
         TaskType originalTaskType = TaskType.WORKER;
         String originalName = "test.me.worker";

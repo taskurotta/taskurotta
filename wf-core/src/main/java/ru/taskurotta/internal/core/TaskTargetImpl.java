@@ -9,58 +9,61 @@ import ru.taskurotta.core.TaskType;
  */
 public class TaskTargetImpl implements TaskTarget {
 
-	private TaskType type;
-	private String name;
-	private String version;
-	private String method;
+    private TaskType type;
+    private String name;
+    private String version;
+    private String method;
 
-	public TaskTargetImpl(TaskType type, String name, String version, String method) {
-		this.type = type;
-		this.name = name;
-		this.version = version;
-		this.method = method;
-	}
+    public TaskTargetImpl() {
+    }
 
-	public TaskType getType() {
-		return type;
-	}
+    public TaskTargetImpl(TaskType type, String name, String version, String method) {
+        this.type = type;
+        this.name = name;
+        this.version = version;
+        this.method = method;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public TaskType getType() {
+        return type;
+    }
 
-	public String getVersion() {
-		return version;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getMethod() {
-		return method;
-	}
+    public String getVersion() {
+        return version;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof TaskTargetImpl)) return false;
+    public String getMethod() {
+        return method;
+    }
 
-		TaskTargetImpl that = (TaskTargetImpl) o;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TaskTargetImpl)) return false;
 
-		if (!method.equals(that.method)) return false;
-		if (!name.equals(that.name)) return false;
-		if (type != that.type) return false;
-		if (!version.equals(that.version)) return false;
+        TaskTargetImpl that = (TaskTargetImpl) o;
 
-		return true;
-	}
+        if (!method.equals(that.method)) return false;
+        if (!name.equals(that.name)) return false;
+        if (type != that.type) return false;
+        if (!version.equals(that.version)) return false;
+
+        return true;
+    }
 
 
-	@Override
-	public int hashCode() {
-		int result = type.hashCode();
-		result = 31 * result + name.hashCode();
-		result = 31 * result + version.hashCode();
-		result = 31 * result + method.hashCode();
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        int result = type.hashCode();
+        result = 31 * result + name.hashCode();
+        result = 31 * result + version.hashCode();
+        result = 31 * result + method.hashCode();
+        return result;
+    }
 
     @Override
     public String toString() {
