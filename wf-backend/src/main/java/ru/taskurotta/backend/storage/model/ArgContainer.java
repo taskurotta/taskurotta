@@ -16,6 +16,10 @@ public class ArgContainer implements Cloneable {
     private String JSONValue;
     private boolean isArray;
 
+
+    public ArgContainer() {
+    }
+
     public ArgContainer(String className, boolean isPromise, UUID taskId, boolean isReady, String JSONValue, boolean isArray) {
         this.className = className;
         this.isPromise = isPromise;
@@ -63,6 +67,10 @@ public class ArgContainer implements Cloneable {
 
     public boolean isArray() {
         return isArray;
+    }
+
+    public void setArray(boolean array) {
+        isArray = array;
     }
 
     @Override

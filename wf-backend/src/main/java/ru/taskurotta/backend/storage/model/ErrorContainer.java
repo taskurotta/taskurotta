@@ -13,12 +13,15 @@ public class ErrorContainer {
     private String message;
     private StackTraceElementContainer[] stackTrace;
 
+    public ErrorContainer() {
+    }
+
     public static StackTraceElementContainer[] convert(StackTraceElement[] stElements) {
-        if(stElements == null) {
+        if (stElements == null) {
             return null;
         }
         StackTraceElementContainer[] result = new StackTraceElementContainer[stElements.length];
-        for(int i = 0; i < stElements.length ; i++) {
+        for (int i = 0; i < stElements.length; i++) {
             StackTraceElement ste = stElements[i];
             StackTraceElementContainer item = new StackTraceElementContainer();
             item.setDeclaringClass(ste.getClassName());
@@ -32,11 +35,11 @@ public class ErrorContainer {
     }
 
     public static StackTraceElement[] convert(StackTraceElementContainer[] steContainers) {
-        if(steContainers == null) {
+        if (steContainers == null) {
             return null;
         }
         StackTraceElement[] result = new StackTraceElement[steContainers.length];
-        for(int i = 0; i < steContainers.length; i++) {
+        for (int i = 0; i < steContainers.length; i++) {
             StackTraceElementContainer containerItem = steContainers[i];
             result[i] = new StackTraceElement(containerItem.getDeclaringClass(), containerItem.getMethodName(),
                     containerItem.getFileName(), containerItem.getLineNumber());
@@ -72,7 +75,7 @@ public class ErrorContainer {
     public String toString() {
         return "ErrorContainer [className=" + className + ", message="
                 + message + ", stackTrace=" + Arrays.toString(stackTrace)
-                 + "]";
+                + "]";
     }
 
 }

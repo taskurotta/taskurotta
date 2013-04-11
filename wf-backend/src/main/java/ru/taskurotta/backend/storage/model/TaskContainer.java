@@ -19,29 +19,32 @@ public class TaskContainer {
     private long startTime;
     private int numberOfAttempts;
     private ArgContainer[] args;
-	private TaskOptionsContainer options;
-	private UUID processId;
+    private TaskOptionsContainer options;
+    private UUID processId;
 
     public UUID getProcessId() {
-		return processId;
-	}
+        return processId;
+    }
 
-	public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
-			TaskType type, long startTime, int numberOfAttempts,
-			ArgContainer[] args, TaskOptionsContainer options) {
-		super();
-		this.taskId = taskId;
-		this.method = method;
-		this.actorId = actorId;
-		this.type = type;
-		this.startTime = startTime;
-		this.numberOfAttempts = numberOfAttempts;
-		this.args = args;
-		this.options = options;
-		this.processId = processId;
-	}
+    public TaskContainer() {
+    }
 
-	public UUID getTaskId() {
+    public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
+                         TaskType type, long startTime, int numberOfAttempts,
+                         ArgContainer[] args, TaskOptionsContainer options) {
+        super();
+        this.taskId = taskId;
+        this.method = method;
+        this.actorId = actorId;
+        this.type = type;
+        this.startTime = startTime;
+        this.numberOfAttempts = numberOfAttempts;
+        this.args = args;
+        this.options = options;
+        this.processId = processId;
+    }
+
+    public UUID getTaskId() {
         return taskId;
     }
 
@@ -57,32 +60,32 @@ public class TaskContainer {
         return numberOfAttempts;
     }
 
-	public TaskOptionsContainer getOptions() {
-		return options;
-	}
+    public TaskOptionsContainer getOptions() {
+        return options;
+    }
 
     public String getMethod() {
-		return method;
-	}
+        return method;
+    }
 
-	public String getActorId() {
-		return actorId;
-	}
+    public String getActorId() {
+        return actorId;
+    }
 
-	public TaskType getType() {
-		return type;
-	}
+    public TaskType getType() {
+        return type;
+    }
 
     public void incrementNumberOfAttempts() {
-        numberOfAttempts ++;
+        numberOfAttempts++;
     }
 
     @Override
-	public String toString() {
-		return "TaskContainer [taskId=" + taskId
-				+ ", actorId=" + actorId + ", method=" + method + ", type=" + type
-				+ ", startTime=" + startTime + ", numberOfAttempts="
-				+ numberOfAttempts + ", args=" + Arrays.toString(args)
-				+ ", options=" + options + "]";
-	}
+    public String toString() {
+        return "TaskContainer [taskId=" + taskId
+                + ", actorId=" + actorId + ", method=" + method + ", type=" + type
+                + ", startTime=" + startTime + ", numberOfAttempts="
+                + numberOfAttempts + ", args=" + Arrays.toString(args)
+                + ", options=" + options + "]";
+    }
 }

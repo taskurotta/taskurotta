@@ -1,5 +1,7 @@
 package ru.taskurotta.client.memory;
 
+import java.util.UUID;
+
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
@@ -8,7 +10,8 @@ import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
-import ru.taskurotta.backend.storage.MemoryTaskBackend;
+import ru.taskurotta.backend.storage.GeneralTaskBackend;
+import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -22,8 +25,6 @@ import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
 
-import java.util.UUID;
-
 /**
  * User: romario
  * Date: 3/29/13
@@ -32,7 +33,7 @@ import java.util.UUID;
 public class AbstractTestStub {
 
     protected MemoryQueueBackend memoryQueueBackend;
-    protected MemoryTaskBackend memoryStorageBackend;
+    protected GeneralTaskBackend memoryStorageBackend;
     protected MemoryGraphDao memoryGraphDao;
 
     protected TaskServer taskServer;
@@ -74,9 +75,9 @@ public class AbstractTestStub {
     public void setUp() throws Exception {
 //        taskDao = new TaskDaoMemory(0);
 //        taskServer = new TaskServerGeneral(taskDao);
-        BackendBundle backendBundle = new MemoryBackendBundle(0);
+        BackendBundle backendBundle = new MemoryBackendBundle(0, new MemoryTaskDao());
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
-        memoryStorageBackend = (MemoryTaskBackend) backendBundle.getTaskBackend();
+        memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
         memoryGraphDao = ((MemoryBackendBundle) backendBundle).getMemoryGraphDao();
 
         taskServer = new GeneralTaskServer(backendBundle);

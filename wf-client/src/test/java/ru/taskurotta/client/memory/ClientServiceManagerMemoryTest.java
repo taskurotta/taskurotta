@@ -1,13 +1,14 @@
 package ru.taskurotta.client.memory;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
+import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * User: stukushin
@@ -21,7 +22,7 @@ public class ClientServiceManagerMemoryTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        BackendBundle memoryBackendBundle = new MemoryBackendBundle(60);
+        BackendBundle memoryBackendBundle = new MemoryBackendBundle(60, new MemoryTaskDao());
         TaskServer taskServer = new GeneralTaskServer(memoryBackendBundle);
         clientServiceManagerMemory = new ClientServiceManagerMemory();
         clientServiceManagerMemoryWithTaskServer = new ClientServiceManagerMemory(taskServer);

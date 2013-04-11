@@ -1,9 +1,5 @@
 package ru.taskurotta.backend.storage.model;
 
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -20,6 +16,9 @@ public class DecisionContainer {
     private ErrorContainer errorContainer;
     private long restartTime;
     private TaskContainer[] tasks;
+
+    public DecisionContainer() {
+    }
 
     public DecisionContainer(UUID taskId, UUID processId, ArgContainer value,
                              ErrorContainer errorContainer, long restartTime,
@@ -41,7 +40,7 @@ public class DecisionContainer {
     }
 
     public boolean containsError() {
-        return errorContainer!=null;
+        return errorContainer != null;
     }
 
     public ErrorContainer getErrorContainer() {

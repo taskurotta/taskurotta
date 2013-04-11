@@ -1,23 +1,26 @@
 package ru.taskurotta.backend.storage.model;
 
-import ru.taskurotta.core.ArgType;
-
 import java.util.Arrays;
+
+import ru.taskurotta.core.ArgType;
 
 /**
  * Created by void 22.03.13 16:42
  */
 public class TaskOptionsContainer {
 
-	private ArgType[] argTypes;
+    private ArgType[] argTypes;
 
-	public TaskOptionsContainer(ArgType[] argTypes) {
-		this.argTypes = argTypes;
-	}
+    public TaskOptionsContainer() {
+    }
 
-	public ArgType[] getArgTypes() {
-		return argTypes;
-	}
+    public TaskOptionsContainer(ArgType[] argTypes) {
+        this.argTypes = argTypes;
+    }
+
+    public ArgType[] getArgTypes() {
+        return argTypes;
+    }
 
 
     @Override

@@ -15,6 +15,9 @@ public class TaskStateObject {
     protected STATE state;
     protected String actorId;
 
+    public TaskStateObject() {
+    }
+
     public TaskStateObject(String actorId, STATE state, long time) {
         this.actorId = actorId;
         this.state = state;

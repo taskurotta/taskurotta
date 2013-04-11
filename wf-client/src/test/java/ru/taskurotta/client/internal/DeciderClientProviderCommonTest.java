@@ -1,5 +1,9 @@
 package ru.taskurotta.client.internal;
 
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import ru.taskurotta.ProxyFactory;
 import ru.taskurotta.annotation.Decider;
@@ -7,13 +11,10 @@ import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
+import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
-
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * User: stukushin
@@ -39,7 +40,7 @@ public class DeciderClientProviderCommonTest {
         TestDeciderClient testDeciderClientOrig = ProxyFactory.getDeciderClient(TestDeciderClient.class,
                 new RuntimeContext(UUID.randomUUID()));
 
-        BackendBundle backendBundle = new MemoryBackendBundle(0);
+        BackendBundle backendBundle = new MemoryBackendBundle(0, new MemoryTaskDao());
         TaskServer taskServer = new GeneralTaskServer(backendBundle);
         DeciderClientProviderCommon deciderClientProviderCommon = new DeciderClientProviderCommon(taskServer);
         TestDeciderClient testDeciderClient = deciderClientProviderCommon.getDeciderClient(TestDeciderClient.class);
