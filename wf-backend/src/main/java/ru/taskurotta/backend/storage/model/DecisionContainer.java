@@ -61,56 +61,42 @@ public class DecisionContainer {
 
     @Override
     public String toString() {
-        return "DecisionContainer [taskId=" + taskId + ", processId="
-                + processId + ", value=" + value + ", errorContainer="
-                + errorContainer + ", tasks=" + Arrays.toString(tasks) + "]";
+        return "DecisionContainer{" +
+                "taskId=" + taskId +
+                ", processId=" + processId +
+                ", value=" + value +
+                ", errorContainer=" + errorContainer +
+                ", restartTime=" + restartTime +
+                ", tasks=" + Arrays.toString(tasks) +
+                '}';
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DecisionContainer that = (DecisionContainer) o;
+
+        if (restartTime != that.restartTime) return false;
+        if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        DecisionContainer other = (DecisionContainer) obj;
-        if (errorContainer == null) {
-            if (other.errorContainer != null)
-                return false;
-        } else if (!errorContainer.equals(other.errorContainer))
-            return false;
-        if (processId == null) {
-            if (other.processId != null)
-                return false;
-        } else if (!processId.equals(other.processId))
-            return false;
-        if (taskId == null) {
-            if (other.taskId != null)
-                return false;
-        } else if (!taskId.equals(other.taskId))
-            return false;
-        if (!Arrays.equals(tasks, other.tasks))
-            return false;
-        if (value == null) {
-            if (other.value != null)
-                return false;
-        } else if (!value.equals(other.value))
-            return false;
+        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (!Arrays.equals(tasks, that.tasks)) return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+
         return true;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((errorContainer == null) ? 0 : errorContainer.hashCode());
-        result = prime * result
-                + ((processId == null) ? 0 : processId.hashCode());
-        result = prime * result + ((taskId == null) ? 0 : taskId.hashCode());
-        result = prime * result + Arrays.hashCode(tasks);
-        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        int result = taskId != null ? taskId.hashCode() : 0;
+        result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (errorContainer != null ? errorContainer.hashCode() : 0);
+        result = 31 * result + (int) (restartTime ^ (restartTime >>> 32));
+        result = 31 * result + (tasks != null ? Arrays.hashCode(tasks) : 0);
         return result;
     }
 }

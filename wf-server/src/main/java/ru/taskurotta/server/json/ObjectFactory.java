@@ -231,7 +231,7 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, processId, value, errorContainer, -1, taskContainers);
+        return new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers);
     }
 
     public ErrorContainer dumpError(Throwable e) {
