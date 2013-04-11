@@ -116,7 +116,7 @@ public class GeneralTaskServer implements TaskServer {
         // if Error
         if (taskDecision.containsError()) {
             final ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            final boolean isShouldBeRestarted = errorContainer.isShouldBeRestarted();
+            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != -1;
 
             // enqueue task immediately if needed
             if (isShouldBeRestarted) {
@@ -124,7 +124,7 @@ public class GeneralTaskServer implements TaskServer {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
                 logger.debug("Error task enqueued again, taskId[{]]", taskId);
-                enqueueTask(taskId, asyncTask.getActorId(), errorContainer.getRestartTime());
+                enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime());
             }
 
             taskBackend.addDecisionCommit(taskDecision);
