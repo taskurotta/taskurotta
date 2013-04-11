@@ -19,7 +19,6 @@ import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskDefinition;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;

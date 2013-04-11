@@ -6,7 +6,6 @@ import java.util.UUID;
 import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskDefinition;
 
 /**
  * User: romario
