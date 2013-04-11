@@ -1,4 +1,4 @@
-package ru.taskurotta.checkpoint;
+package ru.taskurotta.backend.checkpoint;
 
 public interface CheckpointServiceProvider {
 

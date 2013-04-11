@@ -1,9 +1,9 @@
-package ru.taskurotta.checkpoint;
+package ru.taskurotta.backend.checkpoint;
 
 import java.util.List;
 
-import ru.taskurotta.checkpoint.model.Checkpoint;
-import ru.taskurotta.checkpoint.model.CheckpointQuery;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 
 public interface CheckpointService {
 

@@ -1,4 +1,4 @@
-package ru.taskurotta.checkpoint.model;
+package ru.taskurotta.backend.checkpoint.model;
 
 /**
  * Query command for listing Checkpoints from CheckpointService,

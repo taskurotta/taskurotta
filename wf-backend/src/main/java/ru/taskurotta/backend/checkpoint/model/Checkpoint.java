@@ -1,4 +1,4 @@
-package ru.taskurotta.checkpoint.model;
+package ru.taskurotta.backend.checkpoint.model;
 
 import java.util.UUID;
 

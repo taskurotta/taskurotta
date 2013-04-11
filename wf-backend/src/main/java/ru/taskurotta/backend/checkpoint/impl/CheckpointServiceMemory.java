@@ -1,13 +1,13 @@
-package ru.taskurotta.checkpoint.impl;
+package ru.taskurotta.backend.checkpoint.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import ru.taskurotta.checkpoint.CheckpointService;
-import ru.taskurotta.checkpoint.model.Checkpoint;
-import ru.taskurotta.checkpoint.model.CheckpointQuery;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 
 
 /**
