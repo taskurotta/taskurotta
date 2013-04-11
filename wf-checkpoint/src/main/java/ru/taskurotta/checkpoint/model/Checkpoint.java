@@ -1,9 +1,9 @@
-package ru.taskurotta.checkpoint;
+package ru.taskurotta.checkpoint.model;
 
 import java.util.UUID;
 
 /**
- * Description for common entity having specified time.
+ * Description for common entity having specified time (checkpoint time).
  * For instance, an expiration time for task having response timeout
  */
 public class Checkpoint {
@@ -14,7 +14,7 @@ public class Checkpoint {
     //Type of object having this guid
     private String type;
 
-    //Entity time
+    //Checkpoint time
     private long time;
 
     public UUID getGuid() {

@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import ru.taskurotta.checkpoint.Checkpoint;
-import ru.taskurotta.checkpoint.CheckpointCommand;
 import ru.taskurotta.checkpoint.CheckpointService;
+import ru.taskurotta.checkpoint.model.Checkpoint;
+import ru.taskurotta.checkpoint.model.CheckpointCommand;
 
 
-
-public class CheckpointMemoryStorage implements CheckpointService {
+/**
+ * CheckpointService implementation with memory Set<Checkpoint> storage
+ */
+public class CheckpointServiceMemory implements CheckpointService {
 
     private Set<Checkpoint> checkpointStorage = new CopyOnWriteArraySet<Checkpoint>();
 
@@ -36,11 +38,11 @@ public class CheckpointMemoryStorage implements CheckpointService {
     private static boolean validAgainstCommand(Checkpoint checkpoint, CheckpointCommand command) {
         boolean result = true;
         if(checkpoint!=null && command!=null) {
-            if(command.getStartTime() > 0) {
-                result = result && checkpoint.getTime()>command.getStartTime();
+            if(command.getMinTime() > 0) {
+                result = result && checkpoint.getTime()>command.getMinTime();
             }
-            if(command.getEndTime() > 0) {
-                result = result && checkpoint.getTime()<command.getEndTime();
+            if(command.getMaxTime() > 0) {
+                result = result && checkpoint.getTime()<command.getMaxTime();
             }
 
             if(command.getType() != null) {
@@ -48,6 +50,24 @@ public class CheckpointMemoryStorage implements CheckpointService {
             }
         }
         return result;
+    }
+
+    @Override
+    public void addCheckpoints(List<Checkpoint> checkpoints) {
+        if(checkpoints!=null && !checkpoints.isEmpty()) {
+            for(Checkpoint checkpoint: checkpoints) {
+                addCheckpoint(checkpoint);
+            }
+        }
+    }
+
+    @Override
+    public void removeCheckpoints(List<Checkpoint> checkpoints) {
+        if(checkpoints!=null && !checkpoints.isEmpty()) {
+            for(Checkpoint checkpoint: checkpoints) {
+                removeCheckpoint(checkpoint);
+            }
+        }
     }
 
 }
