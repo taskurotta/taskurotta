@@ -19,6 +19,7 @@ import ru.taskurotta.exception.TaskTargetRequiredException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.proxy.DeciderProxyFactory;
 import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
+import ru.taskurotta.policy.retry.LinearRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.util.AnnotationUtils;
@@ -235,7 +236,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
         if (method.isAnnotationPresent(LinearRetry.class)) {
             LinearRetry annotationPolicy = method.getAnnotation(LinearRetry.class);
-            retryPolicy = new ExponentialRetryPolicy(annotationPolicy.initialRetryIntervalSeconds());
+            retryPolicy = new LinearRetryPolicy(annotationPolicy.initialRetryIntervalSeconds());
             retryPolicy.setMaximumRetryIntervalSeconds(annotationPolicy.maximumRetryIntervalSeconds());
             retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
             retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());

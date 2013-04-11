@@ -2,11 +2,19 @@ package ru.taskurotta.annotation;
 
 import ru.taskurotta.policy.PolicyConstants;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * User: stukushin
  * Date: 21.02.13
  * Time: 13:18
  */
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface LinearRetry {
     /**
      * Interval to wait after the initial failure, before triggering a retry.

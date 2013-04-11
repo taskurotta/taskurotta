@@ -12,6 +12,7 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.ActorExecutionException;
+import ru.taskurotta.exception.ActorRuntimeException;
 import ru.taskurotta.exception.TargetException;
 import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
@@ -68,7 +69,7 @@ public class GeneralRuntimeProcessorTest {
 
         TaskDecision taskDecision = runtimeProcessor.execute(task);
         Assert.assertEquals(true, taskDecision.isError());
-        Assert.assertEquals(InvocationTargetException.class, taskDecision.getException().getClass());
+        Assert.assertEquals(ActorRuntimeException.class, taskDecision.getException().getClass());
     }
 
 }
