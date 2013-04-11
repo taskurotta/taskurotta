@@ -1,12 +1,12 @@
 package ru.taskurotta.backend.checkpoint.impl;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,8 @@ public class CheckpointServiceMemory implements CheckpointService {
             result = checkpointStorage.get(type);
             if(createIfMissing && result==null) {
                 synchronized (this) {
-                    result = new HashSet<Checkpoint>();
+                    //TODO: some other threadsafe implementation?
+                    result = new CopyOnWriteArraySet<Checkpoint>();
                     checkpointStorage.put(type, result);
                 }
             }
