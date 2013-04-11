@@ -6,8 +6,6 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.exception.ActorExecutionException;
-import ru.taskurotta.exception.Retriable;
 import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.policy.retry.RetryPolicy;
@@ -71,16 +69,6 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
         }
 
         return taskDecision;
-    }
-
-
-    private ActorExecutionException prepareException(Throwable e) {
-        ActorExecutionException result = new ActorExecutionException(e);
-        if(e instanceof Retriable) {//TODO: require some updates with retry policy
-            result.setShouldBeRestarted(((Retriable)e).isShouldBeRestarted());
-            result.setRestartTime(((Retriable)e).getRestartTime());
-        }
-        return result;
     }
 
     @Override
