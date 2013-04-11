@@ -8,6 +8,8 @@ import ru.taskurotta.RuntimeProvider;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
+import ru.taskurotta.annotation.ExponentialRetry;
+import ru.taskurotta.annotation.LinearRetry;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
@@ -16,6 +18,9 @@ import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.exception.TaskTargetRequiredException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.proxy.DeciderProxyFactory;
+import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
+import ru.taskurotta.policy.retry.RetryPolicy;
+import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,10 +41,21 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
     protected static class TargetReference {
         private Object actorObject;
         private Method method;
+        private RetryPolicy retryPolicy;
 
         private TargetReference(Object actorObject, Method method) {
             this.actorObject = actorObject;
             this.method = method;
+        }
+
+        private TargetReference(Object actorObject, Method method, RetryPolicy retryPolicy) {
+            this.actorObject = actorObject;
+            this.method = method;
+            this.retryPolicy = retryPolicy;
+        }
+
+        public RetryPolicy getRetryPolicy() {
+            return retryPolicy;
         }
 
         public Object invoke(Object... args) throws InvocationTargetException, IllegalAccessException {
@@ -109,7 +125,9 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
                 taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
-            taskTargetsMap.put(key, new TargetReference(workerBean, method));
+            RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
+
+            taskTargetsMap.put(key, new TargetReference(workerBean, method, retryPolicy));
         }
 
         if (taskTargetsMap == null) {
@@ -201,6 +219,29 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
     private TaskTarget createTaskTarget(TaskType taskType, String actorName, String version, String methodName) {
         return new TaskTargetImpl(taskType, actorName, version, methodName);
+    }
+
+    private RetryPolicy findAndCreateRetryPolicy(Method method) {
+        TimeRetryPolicyBase retryPolicy = null;
+
+        if (method.isAnnotationPresent(ExponentialRetry.class)) {
+            ExponentialRetry annotationPolicy = method.getAnnotation(ExponentialRetry.class);
+            retryPolicy = new ExponentialRetryPolicy(annotationPolicy.initialRetryIntervalSeconds());
+            retryPolicy.setMaximumRetryIntervalSeconds(annotationPolicy.maximumRetryIntervalSeconds());
+            retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
+            retryPolicy.setBackoffCoefficient(annotationPolicy.backoffCoefficient());
+            retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());
+        }
+
+        if (method.isAnnotationPresent(LinearRetry.class)) {
+            LinearRetry annotationPolicy = method.getAnnotation(LinearRetry.class);
+            retryPolicy = new ExponentialRetryPolicy(annotationPolicy.initialRetryIntervalSeconds());
+            retryPolicy.setMaximumRetryIntervalSeconds(annotationPolicy.maximumRetryIntervalSeconds());
+            retryPolicy.setMaximumAttempts(annotationPolicy.maximumAttempts());
+            retryPolicy.setRetryExpirationIntervalSeconds(annotationPolicy.retryExpirationSeconds());
+        }
+
+        return retryPolicy;
     }
 
 }

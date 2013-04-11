@@ -1,21 +1,19 @@
 package ru.taskurotta.internal;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.ActorExecutionException;
-import ru.taskurotta.exception.ActorRuntimeException;
 import ru.taskurotta.exception.Retriable;
 import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
+import ru.taskurotta.policy.retry.RetryPolicy;
+
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -54,18 +52,20 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 Task[] tasks = RuntimeContext.getCurrent().getTasks();
                 taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks);
             }
-        } catch (IllegalAccessException e) {
-            log.debug("Can't call method [" + targetReference + "]", e);
-            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(),
-                    new ActorRuntimeException("Can't call method [" + targetReference + "]", e), RuntimeContext.getCurrent().getTasks());
-        } catch (InvocationTargetException e) {
-            log.debug("Can't call method [{}], exception[{}]", targetReference, e);
-            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(),
-                    prepareException(e.getCause()), RuntimeContext.getCurrent().getTasks());
         } catch(Throwable e) {
             log.error("Unexpected error processing task ["+task+"]", e);
-            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(),
-                    prepareException(e), RuntimeContext.getCurrent().getTasks());
+
+            RetryPolicy retryPolicy = targetReference.getRetryPolicy();
+
+            // ToDo: use global constant, maybe ru.taskurotta.policy.PolicyConstants
+            long restartTime = -1;
+            if (retryPolicy != null && retryPolicy.isRetryable(e)) {
+                long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(task.getStartTime(), System.currentTimeMillis(), task.getNumberOfAttempts());
+                restartTime = System.currentTimeMillis() + nextRetryDelaySeconds;
+            }
+
+            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), e, RuntimeContext.getCurrent().getTasks(), restartTime);
+
         } finally {
             RuntimeContext.finish();
         }
