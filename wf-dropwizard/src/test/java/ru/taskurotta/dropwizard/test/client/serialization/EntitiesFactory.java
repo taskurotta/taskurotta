@@ -51,9 +51,9 @@ public class EntitiesFactory {
         tasks[0] = createTaskContainer();
         tasks[1] = createTaskContainer();
         if(isError) {
-            return new DecisionContainer(taskId, processId, null, createErrorContainer(), tasks);
+            return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis()+9000l, tasks);
         } else {
-            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, tasks);
+            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, -1, tasks);
         }
 
     }
@@ -62,8 +62,6 @@ public class EntitiesFactory {
         ErrorContainer result = new ErrorContainer();
         result.setClassName(ActorExecutionException.class.getName());
         result.setMessage("Test exception");
-        result.setRestartTime(System.currentTimeMillis()+9000l);
-        result.setShouldBeRestarted(true);
         Exception e = new Exception();
         e.fillInStackTrace();
         result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));

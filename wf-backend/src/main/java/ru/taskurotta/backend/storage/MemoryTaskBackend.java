@@ -146,6 +146,12 @@ public class MemoryTaskBackend implements TaskBackend {
 
         id2TaskDecisionMap.put(taskId, taskDecision);
 
+        // increment number of attempts for error tasks with retry policy
+        if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
+            TaskContainer task = id2TaskMap.get(taskId);
+            task.incrementNumberOfAttempts();
+        }
+
         TaskContainer[] taskContainers = taskDecision.getTasks();
         if (taskContainers == null) {
             return;

@@ -13,10 +13,6 @@ public class ErrorContainer {
     private String message;
     private StackTraceElementContainer[] stackTrace;
 
-    private boolean shouldBeRestarted;
-    private long restartTime;
-
-
     public static StackTraceElementContainer[] convert(StackTraceElement[] stElements) {
         if(stElements == null) {
             return null;
@@ -56,14 +52,6 @@ public class ErrorContainer {
         this.message = message;
     }
 
-    public void setShouldBeRestarted(boolean shouldBeRestarted) {
-        this.shouldBeRestarted = shouldBeRestarted;
-    }
-
-    public void setRestartTime(long restartTime) {
-        this.restartTime = restartTime;
-    }
-
     public String getClassName() {
         return className;
     }
@@ -80,20 +68,11 @@ public class ErrorContainer {
         this.stackTrace = stackTrace;
     }
 
-    public boolean isShouldBeRestarted() {
-        return shouldBeRestarted;
-    }
-
-    public long getRestartTime() {
-        return restartTime;
-    }
-
     @Override
     public String toString() {
         return "ErrorContainer [className=" + className + ", message="
                 + message + ", stackTrace=" + Arrays.toString(stackTrace)
-                + ", shouldBeRestarted=" + shouldBeRestarted + ", restartTime="
-                + restartTime + "]";
+                 + "]";
     }
 
 }

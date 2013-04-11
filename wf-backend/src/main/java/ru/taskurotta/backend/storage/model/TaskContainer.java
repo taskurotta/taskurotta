@@ -73,7 +73,11 @@ public class TaskContainer {
 		return type;
 	}
 
-	@Override
+    public void incrementNumberOfAttempts() {
+        numberOfAttempts ++;
+    }
+
+    @Override
 	public String toString() {
 		return "TaskContainer [taskId=" + taskId
 				+ ", actorId=" + actorId + ", method=" + method + ", type=" + type

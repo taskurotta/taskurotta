@@ -57,8 +57,6 @@ public class EntitiesComparator {
             if(actual!=null) {
                 Assert.assertEquals("ErrorContainer class names must be the same!", expected.getClassName(), actual.getClassName());
                 Assert.assertEquals("ErrorContainer messages must be the same", expected.getMessage(), actual.getMessage());
-                Assert.assertEquals("ErrorContainer restart times must be the same", expected.getRestartTime(), actual.getRestartTime());
-                Assert.assertEquals("ErrorContainer should be restarted flags must be the same", expected.isShouldBeRestarted(), actual.isShouldBeRestarted());
 
                 StackTraceElementContainer[] actualStacks = actual.getStackTrace();
                 StackTraceElementContainer[] expectedStacks = expected.getStackTrace();
@@ -135,6 +133,7 @@ public class EntitiesComparator {
             if(actual!=null) {
                 Assert.assertEquals("DecisionContainer taskId must be equal", expected.getTaskId(), actual.getTaskId());
                 Assert.assertEquals("DecisionContainer taskId must be equal", expected.getProcessId(), actual.getProcessId());
+                Assert.assertEquals("DecisionContainer restart times must be the same", expected.getRestartTime(), actual.getRestartTime());
                 compare(expected.getErrorContainer(), actual.getErrorContainer());
                 compare(expected.getValue(), actual.getValue());
                 if(expected.getTasks()!=null) {
