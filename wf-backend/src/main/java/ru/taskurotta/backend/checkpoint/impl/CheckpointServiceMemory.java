@@ -1,9 +1,14 @@
 package ru.taskurotta.backend.checkpoint.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
@@ -15,22 +20,66 @@ import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
  */
 public class CheckpointServiceMemory implements CheckpointService {
 
-    private Set<Checkpoint> checkpointStorage = new CopyOnWriteArraySet<Checkpoint>();
+    private static final Logger logger = LoggerFactory.getLogger(CheckpointServiceMemory.class);
+
+    private Map<String, Set<Checkpoint>> checkpointStorage = new ConcurrentHashMap<String, Set<Checkpoint>>();
 
     public void addCheckpoint(Checkpoint checkpoint) {
-        checkpointStorage.add(checkpoint);
+        if(isTyped(checkpoint)) {
+            Set<Checkpoint> set = getTypedSet(checkpoint.getType(), true);
+            set.add(checkpoint);
+        } else {
+            logger.error("Cannot add empty type Checkpoint [{}]", checkpoint);
+        }
     }
 
+
+    private Set<Checkpoint> getTypedSet(String type, boolean createIfMissing) {
+        Set<Checkpoint> result = null;
+        if(type!=null) {
+            result = checkpointStorage.get(type);
+            if(createIfMissing && result==null) {
+                synchronized (this) {
+                    result = new HashSet<Checkpoint>();
+                    checkpointStorage.put(type, result);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static boolean isTyped(Checkpoint checkpoint) {
+        return checkpoint!=null && checkpoint.getType()!=null && checkpoint.getType().trim().length()>0;
+    }
+
+    @Override
     public void removeCheckpoint(Checkpoint checkpoint) {
-        checkpointStorage.remove(checkpoint);
+        if(isTyped(checkpoint)) {
+            Set<Checkpoint> set = getTypedSet(checkpoint.getType(), false);
+            if(set != null) {
+                set.remove(checkpoint);
+            } else {
+                logger.debug("Skipping checkpoint[{}] removal: storage for type[{}] have not been created yet", checkpoint, checkpoint.getType());
+            }
+        } else {
+            logger.error("Cannot remove empty type Checkpoint [{}]", checkpoint);
+        }
     }
 
+    @Override
     public List<Checkpoint> listCheckpoints(CheckpointQuery command) {
         List<Checkpoint> result = new ArrayList<Checkpoint>();
-        for(Checkpoint item: checkpointStorage) {
-            if(validAgainstCommand(item, command)) {
-                result.add(item);
+        if(command!=null && command.getType()!=null && command.getType().trim().length()>0) {
+            Set<Checkpoint> set = getTypedSet(command.getType(), false);
+            if(set != null) {
+                for(Checkpoint item: set) {
+                    if(validAgainstCommand(item, command)) {
+                        result.add(item);
+                    }
+                }
             }
+        } else {
+            logger.debug("Cannot list checkpoint with empty type query[{}]", command);
         }
         return result;
     }
@@ -53,20 +102,18 @@ public class CheckpointServiceMemory implements CheckpointService {
     }
 
     @Override
-    public void addCheckpoints(List<Checkpoint> checkpoints) {
-        if(checkpoints!=null && !checkpoints.isEmpty()) {
-            for(Checkpoint checkpoint: checkpoints) {
-                addCheckpoint(checkpoint);
-            }
-        }
+    public void addCheckpoints(String type, List<Checkpoint> checkpoints) {
+        Set<Checkpoint> set = getTypedSet(type, true);
+        set.addAll(checkpoints);
     }
 
     @Override
-    public void removeCheckpoints(List<Checkpoint> checkpoints) {
-        if(checkpoints!=null && !checkpoints.isEmpty()) {
-            for(Checkpoint checkpoint: checkpoints) {
-                removeCheckpoint(checkpoint);
-            }
+    public void removeCheckpoints(String type, List<Checkpoint> checkpoints) {
+        Set<Checkpoint> set = getTypedSet(type, false);
+        if(set != null) {
+            set.removeAll(checkpoints);
+        } else {
+            logger.debug("Cannot remove checkpoints of type[{}]: store have not been initialized");
         }
     }
 

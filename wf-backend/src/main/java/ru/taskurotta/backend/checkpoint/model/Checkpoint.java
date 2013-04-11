@@ -17,6 +17,15 @@ public class Checkpoint {
     //Checkpoint time
     private long time;
 
+    public Checkpoint(UUID guid, String type, long time) {
+        this.guid = guid;
+        this.time = time;
+        this.type = type;
+    }
+
+    public Checkpoint() {
+    }
+
     public UUID getGuid() {
         return guid;
     }
@@ -41,6 +50,7 @@ public class Checkpoint {
         return "Checkpoint [guid=" + guid + ", type=" + type + ", time=" + time
                 + "]";
     }
+
     @Override
     public int hashCode() {
         final int prime = 31;
