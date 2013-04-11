@@ -1,19 +1,20 @@
 package ru.taskurotta.backend.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskDefinition;
-import ru.taskurotta.core.TaskType;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.impl.CheckpointServiceMemory;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.core.TaskType;
 
 /**
  * User: romario
@@ -26,10 +27,9 @@ public class MemoryTaskBackend implements TaskBackend {
 
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
-    private Map<TaskDefinition, Long> id2ProgressMap = new ConcurrentHashMap<TaskDefinition, Long>();
+   // private Map<TaskDefinition, Long> id2ProgressMap = new ConcurrentHashMap<TaskDefinition, Long>();
 
-    //recovery process locks
-    //	private Map<UUID, Lock> locksMap = new ConcurrentHashMap<UUID, Lock>();
+    private CheckpointService checkpointService = new CheckpointServiceMemory();//Default memory implementation
 
     @Override
     public void startProcess(TaskContainer taskContainer) {
@@ -86,9 +86,11 @@ public class MemoryTaskBackend implements TaskBackend {
 
         }
 
-        Long executionStarted = System.currentTimeMillis();
-        TaskDefinition td = new TaskDefinition(taskId, task.getActorId(), task.getStartTime(), null, executionStarted);
-        id2ProgressMap.put(td, executionStarted);//Always create new entry due to Long executionStarted parameter
+        checkpointService.addCheckpoint(new Checkpoint(taskId, task.getActorId(), System.currentTimeMillis()));
+
+//        Long executionStarted = System.currentTimeMillis();
+//        TaskDefinition td = new TaskDefinition(taskId, task.getActorId(), task.getStartTime(), null, executionStarted);
+//        id2ProgressMap.put(td, executionStarted);//Always create new entry due to Long executionStarted parameter
 
         return task;
     }
@@ -141,14 +143,18 @@ public class MemoryTaskBackend implements TaskBackend {
         logger.debug("addDecision() taskDecision = [{}]", taskDecision);
 
         UUID taskId = taskDecision.getTaskId();
+        TaskContainer task = id2TaskMap.get(taskId);
 
-        removeProgressedTask(taskId);
+        //TODO: find some better way of setting/releasing checkpoints & determine checkpoint type
+        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, task.getActorId());
+        checkpointService.removeCheckpoints(task.getActorId(), existingCheckpoints);
+
+
 
         id2TaskDecisionMap.put(taskId, taskDecision);
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
-            TaskContainer task = id2TaskMap.get(taskId);
             task.incrementNumberOfAttempts();
         }
 
@@ -162,14 +168,14 @@ public class MemoryTaskBackend implements TaskBackend {
         }
     }
 
-    private void removeProgressedTask(UUID taskId) {
-        for (TaskDefinition td : id2ProgressMap.keySet()) {
-            if (taskId.equals(td.getTaskId())) {
-                id2ProgressMap.remove(td);
-                break;
-            }
-        }
-    }
+//    private void removeProgressedTask(UUID taskId) {
+//        for (TaskDefinition td : id2ProgressMap.keySet()) {
+//            if (taskId.equals(td.getTaskId())) {
+//                id2ProgressMap.remove(td);
+//                break;
+//            }
+//        }
+//    }
 
     @Override
     public void addDecisionCommit(DecisionContainer taskDecision) {
@@ -187,90 +193,53 @@ public class MemoryTaskBackend implements TaskBackend {
 
     public boolean isTaskInProgress(UUID taskId) {
         boolean result = false;
-        for (TaskDefinition td : id2ProgressMap.keySet()) {
-            if (taskId.equals(td.getTaskId())) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+        TaskContainer task = getTask(taskId);
+
+        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, task.getActorId());
+        return checkpoints!=null && !checkpoints.isEmpty();
     }
 
     public boolean isTaskReleased(UUID taskId) {
         return id2TaskDecisionMap.containsKey(taskId);
     }
 
-    // TODO: delete commented block
-    //	private static boolean hasTargetActorDefinition(ActorDefinition actorDefinition, TaskTarget taskTarget) {
-    //		return "default".equalsIgnoreCase(actorDefinition.getName())
-    //				|| (actorDefinition.getName().equals(taskTarget.getName()) && actorDefinition.getVersion().equals(taskTarget.getVersion()));
-    //	}
-    //
-    //	@Override
-    //	public boolean lockTask(UUID taskId, String lockerId, Date releaseDate) {
-    //		boolean result = false;
-    //		if(!isLocked(taskId)) {
-    //			locksMap.put(taskId, new Lock(lockerId, releaseDate));
-    //			result =  true;
-    //		}
-    //
-    //		logger.debug("Locking task[{}] result is[{}]", taskId, result);
-    //		return result;
-    //	}
-    //
-    //	@Override
-    //	public boolean unlockTask(UUID taskId, String lockerId) {
-    //		boolean result = true;
-    //		Lock lock = locksMap.get(taskId);
-    //		if(lock!=null) {
-    //			if(lockerId.equals(lock.getLockerId()) || lock.isExpired()) {
-    //				locksMap.remove(taskId);
-    //			} else {
-    //				logger.debug("LockerId[{}] cannot unlock task[{}], it has active lock till[{}] by [{}]", lockerId, taskId, lock.getExpires(), lock.getLockerId());
-    //				result = false;
-    //			}
-    //		}
-    //		logger.debug("Unlocking task[{}] result is[{}]", taskId, result);
-    //		return result;
-    //	}
-    //
-    //	private boolean isLocked(UUID taskId) {
-    //		boolean result =  locksMap.containsKey(taskId);
-    //		if(result) {
-    //			Lock lock = locksMap.get(taskId);
-    //			if(lock.isExpired()) {
-    //				result = !unlockTask(taskId, lock.getLockerId());
-    //			}
-    //		}
-    //		return result;
-    //	}
+
+//    @Override
+//    public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill) {
+//        List<TaskDefinition> result = new ArrayList<TaskDefinition>();
+//        for (TaskDefinition taskDef : id2ProgressMap.keySet()) {
+//            Long taskAcceptedDate = id2ProgressMap.get(taskDef);
+//            if (taskAcceptedDate > timeFrom && taskAcceptedDate < timeTill) {
+//                result.add(taskDef);
+//            }
+//        }
+//        //logger.debug("Found[{}] active task for actorId[{}] in period from[{}] till[{}]", result.size(), actorId, timeFrom, timeTill);
+//        return result;
+//    }
+
+//    @Override
+//    public int resetActiveTasks(List<TaskDefinition> tasks) {
+//        int result = 0;
+//        if (tasks != null && !tasks.isEmpty()) {
+//            for (TaskDefinition task : tasks) {
+//                if (id2ProgressMap.remove(task) != null) {
+//                    result++;
+//                } else {
+//                    logger.debug("Cannot reset task[{}]", task);
+//                }
+//            }
+//        }
+//        return result;
+//    }
 
     @Override
-    public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill) {
-        List<TaskDefinition> result = new ArrayList<TaskDefinition>();
-        for (TaskDefinition taskDef : id2ProgressMap.keySet()) {
-            Long taskAcceptedDate = id2ProgressMap.get(taskDef);
-            if (taskAcceptedDate > timeFrom && taskAcceptedDate < timeTill) {
-                result.add(taskDef);
-            }
-        }
-        //logger.debug("Found[{}] active task for actorId[{}] in period from[{}] till[{}]", result.size(), actorId, timeFrom, timeTill);
-        return result;
+    public CheckpointService getCheckpointService() {
+        return checkpointService;
     }
 
-    @Override
-    public int resetActiveTasks(List<TaskDefinition> tasks) {
-        int result = 0;
-        if (tasks != null && !tasks.isEmpty()) {
-            for (TaskDefinition task : tasks) {
-                if (id2ProgressMap.remove(task) != null) {
-                    result++;
-                } else {
-                    logger.debug("Cannot reset task[{}]", task);
-                }
-            }
-        }
-        return result;
+    public void setCheckpointService(CheckpointService checkpointService) {
+        this.checkpointService = checkpointService;
     }
+
 
 }

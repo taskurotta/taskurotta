@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -103,18 +104,43 @@ public class CheckpointServiceMemory implements CheckpointService {
 
     @Override
     public void addCheckpoints(String type, List<Checkpoint> checkpoints) {
+        if(checkpoints == null) {
+            return;
+        }
         Set<Checkpoint> set = getTypedSet(type, true);
         set.addAll(checkpoints);
     }
 
     @Override
     public void removeCheckpoints(String type, List<Checkpoint> checkpoints) {
+        if(checkpoints == null) {
+            return;
+        }
         Set<Checkpoint> set = getTypedSet(type, false);
         if(set != null) {
             set.removeAll(checkpoints);
         } else {
             logger.debug("Cannot remove checkpoints of type[{}]: store have not been initialized");
         }
+    }
+
+
+    @Override
+    public List<Checkpoint> getCheckpoints(UUID uuid, String type) {
+        List<Checkpoint> result = new ArrayList<Checkpoint>();
+        if(type!=null && type.trim().length()>0) {
+            Set<Checkpoint> set = getTypedSet(type, false);
+            if(set != null) {
+                for(Checkpoint item: set) {
+                    if(item.getGuid().equals(uuid)) {
+                        result.add(item);
+                    }
+                }
+            }
+        } else {
+            logger.debug("Cannot get checkpoint with empty type [{}]", type);
+        }
+        return result;
     }
 
 }

@@ -3,8 +3,8 @@ package ru.taskurotta.backend.storage;
 import java.util.List;
 import java.util.UUID;
 
+import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskDefinition;
 
@@ -13,7 +13,7 @@ import ru.taskurotta.backend.storage.model.TaskDefinition;
  * Date: 4/1/13
  * Time: 12:11 PM
  */
-public interface TaskBackend {
+public interface TaskBackend extends CheckpointServiceProvider {
 
     public void startProcess(TaskContainer taskContainer);
 
@@ -71,13 +71,13 @@ public interface TaskBackend {
      * @param timeTill return only tasks with processing start time less then given
      * @return list of tasks wich are currently processing by some remote actors
      */
-    public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill);
+    //public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill);
 
     /**
      * Removes this task definitions from list of active tasks
      * @param tasks
      * @return number of removed tasks
      */
-    public int resetActiveTasks(List<TaskDefinition> tasks);
+    //public int resetActiveTasks(List<TaskDefinition> tasks);
 
 }
