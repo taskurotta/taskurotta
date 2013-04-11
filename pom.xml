@@ -35,7 +35,6 @@
 		<module>wf-dropwizard</module>
 		<module>wf-dropwizard-assemble</module>
         <module>wf-backend</module>
-        <module>wf-checkpoint</module>
     </modules>
 
 	<dependencies>
