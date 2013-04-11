@@ -1,10 +1,10 @@
 package ru.taskurotta.checkpoint.model;
 
 /**
- * Command for listing Checkpoints from CheckpointService,
+ * Query command for listing Checkpoints from CheckpointService,
  * can contain multiple search/filter/sorting criteria
  */
-public class CheckpointCommand {
+public class CheckpointQuery {
 
     //filter by min checkpoint time
     private long minTime;

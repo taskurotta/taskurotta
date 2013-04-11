@@ -3,7 +3,7 @@ package ru.taskurotta.checkpoint;
 import java.util.List;
 
 import ru.taskurotta.checkpoint.model.Checkpoint;
-import ru.taskurotta.checkpoint.model.CheckpointCommand;
+import ru.taskurotta.checkpoint.model.CheckpointQuery;
 
 public interface CheckpointService {
 
@@ -15,6 +15,6 @@ public interface CheckpointService {
 
     public void removeCheckpoints(List<Checkpoint> checkpoint);
 
-    public List<Checkpoint> listCheckpoints(CheckpointCommand command);
+    public List<Checkpoint> listCheckpoints(CheckpointQuery command);
 
 }

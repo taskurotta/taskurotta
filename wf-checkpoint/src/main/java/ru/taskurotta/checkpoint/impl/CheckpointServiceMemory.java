@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import ru.taskurotta.checkpoint.CheckpointService;
 import ru.taskurotta.checkpoint.model.Checkpoint;
-import ru.taskurotta.checkpoint.model.CheckpointCommand;
+import ru.taskurotta.checkpoint.model.CheckpointQuery;
 
 
 /**
@@ -25,7 +25,7 @@ public class CheckpointServiceMemory implements CheckpointService {
         checkpointStorage.remove(checkpoint);
     }
 
-    public List<Checkpoint> listCheckpoints(CheckpointCommand command) {
+    public List<Checkpoint> listCheckpoints(CheckpointQuery command) {
         List<Checkpoint> result = new ArrayList<Checkpoint>();
         for(Checkpoint item: checkpointStorage) {
             if(validAgainstCommand(item, command)) {
@@ -35,7 +35,7 @@ public class CheckpointServiceMemory implements CheckpointService {
         return result;
     }
 
-    private static boolean validAgainstCommand(Checkpoint checkpoint, CheckpointCommand command) {
+    private static boolean validAgainstCommand(Checkpoint checkpoint, CheckpointQuery command) {
         boolean result = true;
         if(checkpoint!=null && command!=null) {
             if(command.getMinTime() > 0) {
