@@ -38,15 +38,6 @@ public interface TaskBackend {
 
 
     /**
-     * Create RELEASE_ERROR_TIMEOUT checkpoint
-     *
-     * @param asyncTaskError
-     * @param shouldBeRestarted retry counter should be incremented
-     */
-    public void addError(UUID taskId, ErrorContainer asyncTaskError, boolean shouldBeRestarted);
-
-
-    /**
      * Create RELEASE_TIMEOUT checkpoint
      *
      * @param taskDecision
@@ -57,17 +48,10 @@ public interface TaskBackend {
     /**
      * Delete RELEASE_TIMEOUT checkpoint
      *
-     * @param taskId
+     * @param taskDecision
      */
-    public void addDecisionCommit(UUID taskId);
+    public void addDecisionCommit(DecisionContainer taskDecision);
 
-
-    /**
-     * Delete RELEASE_ERROR_TIMEOUT
-     *
-     * @param taskId
-     */
-    public void addErrorCommit(UUID taskId);
 
 
     public List<TaskContainer> getAllRunProcesses();

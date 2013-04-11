@@ -136,12 +136,6 @@ public class MemoryTaskBackend implements TaskBackend {
     }
 
     @Override
-    public void addError(UUID taskId, ErrorContainer asyncTaskError, boolean shouldBeRestarted) {
-        logger.debug("Task with error getted: taskId[{}], asyncTaskError[{}], shouldBeRestarted[{]]", taskId, asyncTaskError, shouldBeRestarted);
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void addDecision(DecisionContainer taskDecision) {
 
         logger.debug("addDecision() taskDecision = [{}]", taskDecision);
@@ -172,12 +166,7 @@ public class MemoryTaskBackend implements TaskBackend {
     }
 
     @Override
-    public void addDecisionCommit(UUID taskId) {
-    }
-
-    @Override
-    public void addErrorCommit(UUID taskId) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public void addDecisionCommit(DecisionContainer taskDecision) {
     }
 
     @Override

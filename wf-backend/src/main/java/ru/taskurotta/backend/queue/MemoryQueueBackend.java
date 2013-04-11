@@ -113,7 +113,7 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void pollCommit(UUID taskId) {
+    public void pollCommit(ActorDefinition actorDefinition, UUID taskId) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

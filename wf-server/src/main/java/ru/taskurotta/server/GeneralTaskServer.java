@@ -76,7 +76,7 @@ public class GeneralTaskServer implements TaskServer {
         enqueueTask(task.getTaskId(), task.getActorId(), task.getStartTime());
 
 
-        processBackend.startProcessCommit(task.getTaskId());
+        processBackend.startProcessCommit(task);
     }
 
 
@@ -99,7 +99,7 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
 
-        queueBackend.pollCommit(taskId);
+        queueBackend.pollCommit(actorDefinition, taskId);
 
         return taskContainer;
     }
@@ -108,7 +108,8 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public void release(DecisionContainer taskDecision) {
 
-        // ? should full DecisionContainer be logged ?
+        // save it firstly
+        taskBackend.addDecision(taskDecision);
 
         UUID taskId = taskDecision.getTaskId();
 
@@ -116,8 +117,6 @@ public class GeneralTaskServer implements TaskServer {
         if (taskDecision.containsError()) {
             final ErrorContainer errorContainer = taskDecision.getErrorContainer();
             final boolean isShouldBeRestarted = errorContainer.isShouldBeRestarted();
-
-            taskBackend.addError(taskId, errorContainer, isShouldBeRestarted);
 
             // enqueue task immediately if needed
             if (isShouldBeRestarted) {
@@ -128,13 +127,11 @@ public class GeneralTaskServer implements TaskServer {
                 enqueueTask(taskId, asyncTask.getActorId(), errorContainer.getRestartTime());
             }
 
-            taskBackend.addErrorCommit(taskId);
+            taskBackend.addDecisionCommit(taskDecision);
 
             return;
         }
 
-        // if Success
-        taskBackend.addDecision(taskDecision);
 
         // idempotent statement
         DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
@@ -169,7 +166,7 @@ public class GeneralTaskServer implements TaskServer {
                     dependencyDecision.getFinishedProcessValue());
         }
 
-        taskBackend.addDecisionCommit(taskId);
+        taskBackend.addDecisionCommit(taskDecision);
     }
 
     private void enqueueTask(UUID taskId, String actorId, long startTime) {
