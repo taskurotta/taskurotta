@@ -212,35 +212,6 @@ public class ObjectFactory {
     }
 
 
-    public TaskDecision parseResult(DecisionContainer decisionContainer) {
-
-        UUID taskId = decisionContainer.getTaskId();
-        UUID processId = decisionContainer.getProcessId();
-
-        TaskContainer[] taskContainers = decisionContainer.getTasks();
-        Task[] tasks = null;
-        if (taskContainers != null) {
-            tasks = new Task[taskContainers.length];
-
-            int i = 0;
-            for (TaskContainer taskContainer : taskContainers) {
-                tasks[i++] = parseTask(taskContainer);
-            }
-        }
-
-        if(decisionContainer.containsError()) {
-            ErrorContainer error = decisionContainer.getErrorContainer();
-            Throwable errValue = parseError(error);
-            return new TaskDecisionImpl(taskId, processId, errValue, tasks);
-        } else {
-            ArgContainer argContainer = decisionContainer.getValue();
-            Object value = parseArg(argContainer);
-            return new TaskDecisionImpl(taskId, processId, value, tasks);
-        }
-
-    }
-
-
     public DecisionContainer dumpResult(TaskDecision taskDecision) {
         UUID taskId = taskDecision.getId();
         UUID processId = taskDecision.getProcessId();
@@ -260,7 +231,7 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, processId, value, errorContainer, taskContainers);
+        return new DecisionContainer(taskId, processId, value, errorContainer, -1, taskContainers);
     }
 
     public ErrorContainer dumpError(Throwable e) {
@@ -272,43 +243,10 @@ public class ObjectFactory {
         result.setMessage(e.getMessage());
         result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));
 
-        if(ActorExecutionException.class.isAssignableFrom(e.getClass())) {
-            ActorExecutionException aee = (ActorExecutionException) e;
-            result.setRestartTime(aee.getRestartTime());
-            result.setShouldBeRestarted(aee.isShouldBeRestarted());
-        }
-
         return result;
 
     }
 
-    private Throwable parseError(ErrorContainer error) {
-        if(error == null) {
-            return null;
-        }
-        Throwable result = new Throwable(error.getMessage());
-
-        if(isExistingClass(error.getClassName())) {
-            result = new ActorExecutionException(error.getMessage(), error.isShouldBeRestarted(), error.getRestartTime());
-        } else {
-            result = new Throwable(error.getMessage());
-        }
-
-        result.setStackTrace(ErrorContainer.convert(error.getStackTrace()));
-
-        return result;
-    }
-
-    private static boolean isExistingClass(String className) {
-        boolean result = false;
-        try {
-            Class.forName(className);
-            result = true;
-        } catch(ClassNotFoundException e) {
-            logger.debug("Cannot instantiate Throwable of class[{}], error is[{}]", className, e);
-        }
-        return result;
-    }
 
     private String writeAsJsonArray(Object array) throws ArrayIndexOutOfBoundsException, JsonProcessingException, IllegalArgumentException {
         ArrayNode arrayNode = mapper.createArrayNode();

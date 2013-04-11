@@ -18,15 +18,17 @@ public class DecisionContainer {
     private UUID processId;
     private ArgContainer value;
     private ErrorContainer errorContainer;
+    private long restartTime;
     private TaskContainer[] tasks;
 
     public DecisionContainer(UUID taskId, UUID processId, ArgContainer value,
-                             ErrorContainer errorContainer,
+                             ErrorContainer errorContainer, long restartTime,
                              TaskContainer[] tasks) {
         this.taskId = taskId;
         this.processId = processId;
         this.value = value;
         this.errorContainer = errorContainer;
+        this.restartTime = restartTime;
         this.tasks = tasks;
     }
 
@@ -52,6 +54,10 @@ public class DecisionContainer {
 
     public UUID getProcessId() {
         return processId;
+    }
+
+    public long getRestartTime() {
+        return restartTime;
     }
 
     @Override

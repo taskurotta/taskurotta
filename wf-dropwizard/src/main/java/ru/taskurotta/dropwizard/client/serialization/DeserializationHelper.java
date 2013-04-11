@@ -198,8 +198,8 @@ public class DeserializationHelper implements Constants {
             result = new ErrorContainer();
             result.setClassName(getStringValue(rootNode.get(ERR_CLASS_NAME), null));
             result.setMessage(getStringValue(rootNode.get(ERR_MESSAGE), null));
-            result.setRestartTime(getLongValue(rootNode.get(ERR_RESTART_TIME), -1));
-            result.setShouldBeRestarted(getBooleanValue(rootNode.get(ERR_SHOULD_BE_RESTARTED), false));
+//            result.setRestartTime(getLongValue(rootNode.get(ERR_RESTART_TIME), -1));
+//            result.setShouldBeRestarted(getBooleanValue(rootNode.get(ERR_SHOULD_BE_RESTARTED), false));
 
             JsonNode stNode = rootNode.get(ERR_STACK_TRACE);
             StackTraceElementContainer[] stackTrace = null;
