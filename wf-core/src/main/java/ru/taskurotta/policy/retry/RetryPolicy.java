@@ -14,8 +14,6 @@
  */
 package ru.taskurotta.policy.retry;
 
-import java.util.Date;
-
 /**
  * Defines retry policy in case of failures. Valid implementation should be
  * stateless and thread safe.
