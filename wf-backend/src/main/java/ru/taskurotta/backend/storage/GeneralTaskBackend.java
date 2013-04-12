@@ -87,7 +87,7 @@ public class GeneralTaskBackend implements TaskBackend {
         }
 
         //Setting TASK_START checkpoint
-        Checkpoint startCheckpoint = new Checkpoint(taskId, TimeoutType.TASK_START_TO_CLOSE.toString(), System.currentTimeMillis());
+        Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());
         checkpointService.addCheckpoint(startCheckpoint);
 
         return task;
@@ -159,8 +159,8 @@ public class GeneralTaskBackend implements TaskBackend {
         }
 
         //Removing TASK_START checkpoint
-        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE.toString());
-        checkpointService.removeCheckpoints(TimeoutType.TASK_START_TO_CLOSE.toString(), existingCheckpoints);
+        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
+        checkpointService.removeCheckpoints(TimeoutType.TASK_START_TO_CLOSE, existingCheckpoints);
 
     }
 
@@ -179,9 +179,7 @@ public class GeneralTaskBackend implements TaskBackend {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        TaskContainer task = getTask(taskId);
-
-        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, task.getActorId());
+        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
         return checkpoints != null && !checkpoints.isEmpty();
     }
 

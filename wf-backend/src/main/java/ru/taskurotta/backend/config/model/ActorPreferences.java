@@ -6,11 +6,18 @@ import ru.taskurotta.util.ActorDefinition;
 
 public class ActorPreferences {
 
+    private String id;
     private String name;
     private String version;
     private boolean blocked = false;
     private ExpirationPolicyConfig expirationPolicy;
 
+    public String getId() {
+        return id;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
     public ActorDefinition getActorDefinition() {
         return ActorDefinition.valueOf(name, version);
     }

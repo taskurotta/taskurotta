@@ -1,6 +1,5 @@
 package ru.taskurotta.server.recovery;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.config.ConfigBackend;
@@ -20,8 +20,6 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.config.expiration.ExpirationPolicy;
-import ru.taskurotta.util.ActorDefinition;
-import ru.taskurotta.util.ActorUtils;
 
 public class TaskExpirationRecovery implements Runnable {
 
@@ -31,87 +29,50 @@ public class TaskExpirationRecovery implements Runnable {
     private TaskBackend taskBackend;
 
     private String schedule;
-    private long timeIterationStep = 10000;
+
+    private int timeIterationStep = 10000;
+    private TimeUnit timeIterationStepUnit = TimeUnit.MILLISECONDS;
+
     private int recoveryPeriod = 60;
     private TimeUnit recoveryPeriodUnit = TimeUnit.MINUTES;
 
-    private Map<ActorDefinition, ExpirationPolicy> expirationPolicyMap;
+    private Map<String, ExpirationPolicy> expirationPolicyMap;
 
     @Override
     public void run() {
         logger.debug("TaskExpirationRecovery daemon started. Schedule[{}], expirationPolicies for[{}]", schedule, expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
         while(repeat(schedule)) {
-            if(expirationPolicyMap!=null && !expirationPolicyMap.isEmpty()) {
-                for(ActorDefinition actorDef: expirationPolicyMap.keySet()) {
-                    ExpirationPolicy ePolicy =  expirationPolicyMap.get(actorDef);
-                    int counter = 0;
-                    long timeFrom = System.currentTimeMillis() - recoveryPeriodUnit.toMillis(recoveryPeriod);
-                    while(timeFrom < System.currentTimeMillis()) {
-                        long timeTill =  timeFrom+timeIterationStep;
-                        counter += processStep(ActorUtils.getActorId(actorDef), timeFrom, timeTill, ePolicy);
-                        timeFrom = timeTill;
-                    }
-
-                    logger.info("Recovered [{}] tasks due to expiration policy of actor[{}]", counter,  actorDef);
-                }
-            }
+            processRecoveryIteration();
         }
     }
 
-    private static List<Checkpoint> filterNonExpired(List<Checkpoint> activeTasks, long timeout) {
-        if(activeTasks!=null && !activeTasks.isEmpty()) {
-            int removed = 0;
-            int initialSize = activeTasks.size();
-            Iterator<Checkpoint> iterator = activeTasks.iterator();
-            while(iterator.hasNext()) {
-                Checkpoint item = iterator.next();
-                logger.debug("Validating item[{}], timeout[{}], currentTime[{}]", item, timeout, System.currentTimeMillis());
-                if(item.getTime()+timeout > System.currentTimeMillis()) {//not expired
-                    iterator.remove();
-                    removed++;
-                }
-            }
-            logger.debug("Removed [{}] items from active task list sized[{}] with timeout[{}]", removed, initialSize, timeout);
+    protected void processRecoveryIteration() {
+        int counter = 0;
+        long timeFrom = System.currentTimeMillis() - recoveryPeriodUnit.toMillis(recoveryPeriod);
+        while(timeFrom < System.currentTimeMillis()) {
+            long timeTill =  timeFrom+timeIterationStepUnit.toMillis(timeIterationStep);
+            counter += processStep(TimeoutType.TASK_START_TO_CLOSE, timeFrom, timeTill);
+            timeFrom = timeTill;
         }
-        return activeTasks;
+
+        logger.info("Recovered [{}] tasks for timeout type[{]]", counter);
+
     }
 
-    //    private static List<TaskDefinition> filterNonExpired(List<TaskDefinition> activeTasks, long timeout) {
-    //        if(activeTasks!=null && !activeTasks.isEmpty()) {
-    //            int removed = 0;
-    //            int initialSize = activeTasks.size();
-    //            Iterator<TaskDefinition> iterator = activeTasks.iterator();
-    //            while(iterator.hasNext()) {
-    //                TaskDefinition item = iterator.next();
-    //                logger.debug("Validating item[{}], ExecutionStarted[{}], timeout[{}], currentTime[{}]", item.getTaskId(), item.getExecutionStarted(), timeout, System.currentTimeMillis());
-    //                if(item.getExecutionStarted()+timeout > System.currentTimeMillis()) {//not expired
-    //                    iterator.remove();
-    //                    removed++;
-    //                }
-    //            }
-    //            logger.debug("Removed [{}] items from active task list sized[{}] with timeout[{}]", removed, initialSize, timeout);
-    //        }
-    //        return activeTasks;
-    //    }
-
-    private int processStep(String actorId, long timeFrom, long timeTill, ExpirationPolicy expPolicy) {
-        long timeout = expPolicy.getExpirationTimeout(System.currentTimeMillis());
+    private int processStep(TimeoutType timeoutType, long timeFrom, long timeTill) {
+        int counter = 0;
         CheckpointService checkpointService = taskBackend.getCheckpointService();
 
-        CheckpointQuery query = new CheckpointQuery();
-        query.setType(actorId);
+        CheckpointQuery query = new CheckpointQuery(timeoutType);
         query.setMaxTime(timeTill);
         query.setMinTime(timeFrom);
 
-        //TODO: Always return empty list for default actor! Implement default actor behavior
-        List<Checkpoint> expired = filterNonExpired(checkpointService.listCheckpoints(query), timeout);
-        int counter = 0;
-        if(expired!=null && !expired.isEmpty()) {
+        List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
 
-            logger.debug("Try to recover [{}] expired tasks", expired.size());
-            for(Checkpoint checkpoint: expired) {
-                TaskContainer task = taskBackend.getTask(checkpoint.getGuid());
-                if(expPolicy.readyToRecover(task.getTaskId())) {
+        if(stepCheckpoints!= null && !stepCheckpoints.isEmpty()) {
+            for(Checkpoint checkpoint: stepCheckpoints) {
+                if(isReadyToRecover(checkpoint)) {
+                    TaskContainer task = taskBackend.getTask(checkpoint.getGuid());
                     try {
                         queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime());
                         checkpointService.removeCheckpoint(checkpoint);
@@ -119,9 +80,6 @@ public class TaskExpirationRecovery implements Runnable {
                     } catch(Exception e) {
                         logger.error("Cannot recover task["+task.getTaskId()+"]", e);
                     }
-                } else {
-                    logger.error("Cannot perform expired task recovery. Task[{}]", task);
-                    //TODO: execute error processing in backends
                 }
             }
         }
@@ -129,11 +87,28 @@ public class TaskExpirationRecovery implements Runnable {
         return counter;
     }
 
+
+    private boolean isReadyToRecover(Checkpoint checkpoint) {
+        boolean result = false;
+        if(checkpoint != null) {
+            if(checkpoint.getEntityType() != null) {
+                ExpirationPolicy expPolicy = expirationPolicyMap.get(checkpoint.getEntityType());
+                if(expPolicy != null) {
+                    long timeout = expPolicy.getExpirationTimeout(System.currentTimeMillis());
+                    result = expPolicy.readyToRecover(checkpoint.getGuid())
+                            && (System.currentTimeMillis() > (checkpoint.getTime()+timeout));
+                }
+            }
+
+        }
+        return result;
+    }
+
     private void initConfigs(ActorPreferences[] actorPrefs) {
         logger.debug("Initializing recovery config with actorPrefs[{}]", actorPrefs);
         if(actorPrefs!=null) {
             try {
-                expirationPolicyMap = new HashMap<ActorDefinition, ExpirationPolicy>();
+                expirationPolicyMap = new HashMap<String, ExpirationPolicy>();
                 for(ActorPreferences actorConfig: actorPrefs) {
                     ExpirationPolicy expPolicy = null;
                     ActorPreferences.ExpirationPolicyConfig expPolicyConf = actorConfig.getExpirationPolicy();
@@ -148,7 +123,7 @@ public class TaskExpirationRecovery implements Runnable {
                             expPolicy = (ExpirationPolicy) expPolicyClass.newInstance();
                         }
 
-                        expirationPolicyMap.put(actorConfig.getActorDefinition(), expPolicy);
+                        expirationPolicyMap.put(actorConfig.getId(), expPolicy);
                     }
 
                 }
@@ -178,6 +153,24 @@ public class TaskExpirationRecovery implements Runnable {
         return true;
     }
 
+    private static List<Checkpoint> filterNonExpired(List<Checkpoint> activeTasks, long timeout) {
+        if(activeTasks!=null && !activeTasks.isEmpty()) {
+            int removed = 0;
+            int initialSize = activeTasks.size();
+            Iterator<Checkpoint> iterator = activeTasks.iterator();
+            while(iterator.hasNext()) {
+                Checkpoint item = iterator.next();
+                logger.debug("Validating item[{}], timeout[{}], currentTime[{}]", item, timeout, System.currentTimeMillis());
+                if(item.getTime()+timeout > System.currentTimeMillis()) {//not expired
+                    iterator.remove();
+                    removed++;
+                }
+            }
+            logger.debug("Removed [{}] items from active task list sized[{}] with timeout[{}]", removed, initialSize, timeout);
+        }
+        return activeTasks;
+    }
+
     public void setQueueBackend(QueueBackend queueBackend) {
         this.queueBackend = queueBackend;
     }
@@ -187,7 +180,7 @@ public class TaskExpirationRecovery implements Runnable {
     public void setConfigBackend(ConfigBackend configBackend) {
         initConfigs(configBackend.getActorPreferences());
     }
-    public void setTimeIterationStep(long timeIterationStep) {
+    public void setTimeIterationStep(int timeIterationStep) {
         this.timeIterationStep = timeIterationStep;
     }
     public void setRecoveryPeriod(int recoveryPeriod) {
@@ -195,6 +188,9 @@ public class TaskExpirationRecovery implements Runnable {
     }
     public void setRecoveryPeriodUnit(TimeUnit recoveryPeriodUnit) {
         this.recoveryPeriodUnit = recoveryPeriodUnit;
+    }
+    public void setTimeIterationStepUnit(TimeUnit timeIterationStepUnit) {
+        this.timeIterationStepUnit = timeIterationStepUnit;
     }
 
 }
