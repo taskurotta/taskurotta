@@ -1,16 +1,15 @@
 package ru.taskurotta.server.recovery;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * First pre-mega-supa-alfa of full recovery process;
@@ -61,7 +60,7 @@ public class FullRecovery {
                 TaskContainer task2Queue = taskBackend.getTask(taskToQueueId);
 
                 queueBackend.enqueueItem(task2Queue.getActorId(), taskToQueueId,
-                        task2Queue.getStartTime()); // This time may be shifted by RetryPolicy
+                        task2Queue.getStartTime(), null); // This time may be shifted by RetryPolicy
             }
         }
 
