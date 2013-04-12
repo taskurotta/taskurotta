@@ -37,7 +37,7 @@ public class NoWaitTest extends AbstractTestStub {
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
 
-        Task taskAFromQueue = deciderTaskSpreader.pull();
+        Task taskAFromQueue = deciderTaskSpreader.poll();
 
         // should be task A
         assertEquals(taskAId, taskAFromQueue.getId());
@@ -57,7 +57,8 @@ public class NoWaitTest extends AbstractTestStub {
                 new Object[]{promise(deciderTaskB), promise(deciderTaskC)},
                 new TaskOptions(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, null, new Task[]{deciderTaskB, deciderTaskC, deciderTaskD});
+        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, null, new Task[]{deciderTaskB,
+                deciderTaskC, deciderTaskD});
         deciderTaskSpreader.release(taskADecision);
 
         // taskC and taskB may be pooled in different order
@@ -65,8 +66,8 @@ public class NoWaitTest extends AbstractTestStub {
         Task taskCFromQueue = null;
         Task taskBFromQueue = null;
 
-        Task task1 = deciderTaskSpreader.pull();
-        Task task2 = deciderTaskSpreader.pull();
+        Task task1 = deciderTaskSpreader.poll();
+        Task task2 = deciderTaskSpreader.poll();
         if (task1.getId().equals(taskCId)) {
             taskCFromQueue = task1;
         }
@@ -83,16 +84,16 @@ public class NoWaitTest extends AbstractTestStub {
         assertEquals(taskCId, taskCFromQueue.getId());
         assertEquals(taskBId, taskBFromQueue.getId());
 
-        Task taskDFromQueue = deciderTaskSpreader.pull();
+        Task taskDFromQueue = deciderTaskSpreader.poll();
 
         assertNull(taskDFromQueue);
 
         // release task C and task D should be queued
 
-        TaskDecision taskCDecision = new TaskDecisionImpl(taskCId, null, null);
+        TaskDecision taskCDecision = new TaskDecisionImpl(taskCId, processId, null, null);
         deciderTaskSpreader.release(taskCDecision);
 
-        taskDFromQueue = deciderTaskSpreader.pull();
+        taskDFromQueue = deciderTaskSpreader.poll();
 
         assertNotNull(taskDFromQueue);
 
@@ -103,28 +104,28 @@ public class NoWaitTest extends AbstractTestStub {
                 new Object[]{promise(deciderTaskB)},
                 null);
 
-        TaskDecision taskDDecision = new TaskDecisionImpl(taskDId, null, new Task[]{deciderTaskE});
+        TaskDecision taskDDecision = new TaskDecisionImpl(taskDId, processId, null, new Task[]{deciderTaskE});
         deciderTaskSpreader.release(taskDDecision);
 
         // should be empty queue. we are still waiting task B
 
-        Task taskEFromQueue = deciderTaskSpreader.pull();
+        Task taskEFromQueue = deciderTaskSpreader.poll();
 
         assertNull(taskEFromQueue);
 
         // release task B
 
-        TaskDecision taskBDecision = new TaskDecisionImpl(taskBId, null, null);
+        TaskDecision taskBDecision = new TaskDecisionImpl(taskBId, processId, null, null);
         deciderTaskSpreader.release(taskBDecision);
 
-        taskEFromQueue = deciderTaskSpreader.pull();
+        taskEFromQueue = deciderTaskSpreader.poll();
 
         // should be task E
         assertEquals(taskEId, taskEFromQueue.getId());
 
         // should be empty queue
 
-        Task task = deciderTaskSpreader.pull();
+        Task task = deciderTaskSpreader.poll();
 
         assertNull(task);
     }

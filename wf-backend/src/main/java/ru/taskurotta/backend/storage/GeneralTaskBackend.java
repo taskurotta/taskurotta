@@ -5,9 +5,11 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.impl.CheckpointServiceMemory;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskType;
 
@@ -20,8 +22,9 @@ public class GeneralTaskBackend implements TaskBackend {
 
     private final static Logger logger = LoggerFactory.getLogger(GeneralTaskBackend.class);
 
-
     private TaskDao taskDao;
+
+    private CheckpointService checkpointService = new CheckpointServiceMemory();//Default memory implementation
 
     public GeneralTaskBackend(TaskDao taskDao) {
         this.taskDao = taskDao;
@@ -39,34 +42,50 @@ public class GeneralTaskBackend implements TaskBackend {
 
         TaskContainer task = getTask(taskId);
 
-        if (task != null) {
-            ArgContainer[] args = task.getArgs();
+        // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
+        // due guarantees for its immutability.
 
-            if (args != null) {
+        ArgContainer[] args = task.getArgs();
 
-                for (int i = 0; i < args.length; i++) {
-                    ArgContainer arg = args[i];
-                    if (arg.isPromise()) {
-                        if (!TaskType.DECIDER_ASYNCHRONOUS.equals(task.getTarget().getType())) {
-                            ArgContainer value = getTaskValue(arg.getTaskId());
-                            args[i] = value;
-                        } else {
-                            if (arg.getJSONValue() == null) {
-                                // resolved Promise. value may be null for NoWait promises
-                                ArgContainer value = getTaskValue(arg.getTaskId());
-                                if (value != null) {
-                                    arg.setJSONValue(value.getJSONValue());
-                                    arg.setClassName(value.getClassName());
-                                    arg.setReady(true);
-                                }
-                            }
-                        }
-                    }
+        if (args != null) {
+
+            for (int i = 0; i < args.length; i++) {
+                ArgContainer arg = args[i];
+
+                if (!arg.isPromise()) {
+                    continue;
                 }
 
+                if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+
+                    // set real value to Actor tasks
+                    args[i] = new ArgContainer(arg.getClassName(), false, arg.getTaskId(), true, arg.getJSONValue(),
+                            arg.isArray());
+                    continue;
+                }
+
+                ArgContainer value = getTaskValue(arg.getTaskId());
+                if (value == null) {
+                    // value may be null for NoWait promises
+                    // leave it in peace...
+                    continue;
+                }
+
+                if (!task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+
+                    // swap promise with real value for Actor tasks
+                    args[i] = value;
+                } else {
+
+                    // set real value into promise for Decider tasks
+                    args[i] = new ArgContainer(value.getClassName(), true, arg.getTaskId(), true, value.getJSONValue(),
+                            arg.isArray());
+                }
             }
-            taskDao.markTaskProcessing(taskId, true);
+
         }
+
+        checkpointService.addCheckpoint(new Checkpoint(taskId, task.getActorId(), System.currentTimeMillis()));
 
         return task;
     }
@@ -75,27 +94,35 @@ public class GeneralTaskBackend implements TaskBackend {
     private ArgContainer getTaskValue(UUID taskId) {
 
         logger.debug("getTaskValue() taskId = [{}]", taskId);
+        if (taskId == null) {
+            throw new IllegalStateException("Cannot find value for NULL taskId");
+        }
 
         DecisionContainer taskDecision = taskDao.getDecision(taskId);
 
         if (taskDecision == null) {
+            logger.debug("getTaskValue() taskDecision == null");
             return null;
         }
 
         ArgContainer argContainer = taskDecision.getValue();
 
         if (argContainer == null) {
+            logger.debug("getTaskValue() argContainer == null");
             return null;
         }
 
         if (!argContainer.isPromise()) {
+            logger.debug("getTaskValue() !argContainer.isPromise()");
             return argContainer;
         }
 
         if (argContainer.isPromise() && !argContainer.isReady()) {
+            logger.debug("getTaskValue() argContainer.isPromise() && !argContainer.isReady()");
             return getTaskValue(argContainer.getTaskId());
         }
 
+        logger.debug("getTaskValue() returns argContainer = [{}]", argContainer);
         return argContainer;
     }
 
@@ -106,17 +133,25 @@ public class GeneralTaskBackend implements TaskBackend {
     }
 
     @Override
-    public void addError(UUID taskId, ErrorContainer asyncTaskError, boolean shouldBeRestarted) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public void addDecision(DecisionContainer taskDecision) {
 
         logger.debug("addDecision() taskDecision = [{}]", taskDecision);
 
-        taskDao.markTaskProcessing(taskDecision.getTaskId(), false);
+        UUID taskId = taskDecision.getTaskId();
+        TaskContainer task = taskDao.getTask(taskId);
+
+        //TODO: find some better way of setting/releasing checkpoints & determine checkpoint type
+        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, task.getActorId());
+        checkpointService.removeCheckpoints(task.getActorId(), existingCheckpoints);
+
+
         taskDao.addDecision(taskDecision);
+
+        // increment number of attempts for error tasks with retry policy
+        if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
+            task.incrementNumberOfAttempts();
+            taskDao.updateTask(task);
+        }
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
         if (taskContainers == null) {
@@ -129,28 +164,39 @@ public class GeneralTaskBackend implements TaskBackend {
     }
 
     @Override
-    public void addDecisionCommit(UUID taskId) {
-    }
-
-    @Override
-    public void addErrorCommit(UUID taskId) {
+    public void addDecisionCommit(DecisionContainer taskDecision) {
     }
 
     @Override
     public List<TaskContainer> getAllRunProcesses() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @Override
     public List<DecisionContainer> getAllTaskDecisions(UUID processId) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        return taskDao.isTaskInProgress(taskId);
+        boolean result = false;
+        TaskContainer task = getTask(taskId);
+
+        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, task.getActorId());
+        return checkpoints != null && !checkpoints.isEmpty();
     }
 
     public boolean isTaskReleased(UUID taskId) {
         return taskDao.isTaskReleased(taskId);
     }
+
+    @Override
+    public CheckpointService getCheckpointService() {
+        return checkpointService;
+    }
+
+    public void setCheckpointService(CheckpointService checkpointService) {
+        this.checkpointService = checkpointService;
+    }
+
+
 }

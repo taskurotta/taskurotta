@@ -14,12 +14,15 @@
         <constructor-arg name="tags">
             <list>
                 <value>start</value>
-                <value>taskC</value>
-                <value>taskB</value>
-                <value>process</value>
-                <value>taskE</value>
+                <value>taskB, taskC, process</value>
+                <value>taskD</value>
+                <value>finish</value>
             </list>
         </constructor-arg>
+    </bean>
+
+    <bean class="ru.taskurotta.test.FlowArbiterFactory">
+        <property name="instance" ref="arbiter" />
     </bean>
 
     <bean id="worker" class="ru.taskurotta.recipes.nowait.workers.FastWorkerImpl">

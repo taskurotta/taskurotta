@@ -40,7 +40,8 @@ public abstract class ProfilerTest {
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new TestWorkerImpl());
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, TestWorker.class.getName(), "1.0", "sum");
-        Task task = new TaskImpl(UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1, new Object[]{1, 2}, null);
+        Task task = new TaskImpl(UUID.randomUUID(), UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1,
+                new Object[]{1, 2}, null);
         TaskDecision taskDecision = runtimeProcessor.execute(task);
 
         RuntimeProcessor decorateRuntimeProcessor = profiler.decorate(runtimeProcessor);
@@ -51,10 +52,10 @@ public abstract class ProfilerTest {
 
     @Test
     public void testDecorateTaskSpreader() throws Exception {
-        Task task = getTaskSpreader().pull();
+        Task task = getTaskSpreader().poll();
 
         TaskSpreader decorateTaskSpreader = profiler.decorate(getTaskSpreader());
-        Task taskFromDecorateTaskSpreader = decorateTaskSpreader.pull();
+        Task taskFromDecorateTaskSpreader = decorateTaskSpreader.poll();
 
         assertEquals(task.getTarget(), taskFromDecorateTaskSpreader.getTarget());
     }

@@ -1,6 +1,5 @@
 package ru.taskurotta.server.config.expiration;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
@@ -9,10 +8,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.server.model.TaskObject;
 
 /**
- * Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
+ *  Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
  */
 public class FixedRetryPolicy implements ExpirationPolicy {
 
@@ -30,16 +28,16 @@ public class FixedRetryPolicy implements ExpirationPolicy {
 
 
     public FixedRetryPolicy(Properties props) {
-        if (props != null && !props.isEmpty()) {
-            if (props.containsKey(RETRY)) {
+        if(props!=null && !props.isEmpty()) {
+            if(props.containsKey(RETRY)) {
                 this.retry = Integer.valueOf(props.get(RETRY).toString());
             }
 
-            if (props.containsKey(TIMEOUT)) {
+            if(props.containsKey(TIMEOUT)) {
                 this.timeout = Integer.valueOf(props.get(TIMEOUT).toString());
             }
 
-            if (props.containsKey(TIME_UNIT)) {
+            if(props.containsKey(TIME_UNIT)) {
                 this.timeUnit = TimeUnit.valueOf(props.get(TIME_UNIT).toString().toUpperCase());
             }
 
@@ -48,38 +46,33 @@ public class FixedRetryPolicy implements ExpirationPolicy {
     }
 
     @Override
-    public boolean isScheduleAgain(TaskObject task) {
-        //TODO: some additional checks?
-        return needRetry(task);
+    public long getExpirationTimeout(long forTime) {
+        //Same timeout for any date
+        return timeUnit.toMillis(timeout);
     }
 
+    @Override
+    public long getNextStartTime(UUID taskUuid, long taskStartTime) {
+        //TODO: implement some nextStartTime = nextStartTime(retry) function feature?
+        return taskStartTime;//start retried tasks right away
+    }
 
-    private boolean needRetry(TaskObject task) {
+    @Override
+    public boolean readyToRecover(UUID uuid) {
         boolean result = true;
-        if (retry > 0) {
-            Integer taskRetry = expirations.get(task.getTaskId());
+        if(retry > 0) {
+            Integer taskRetry = expirations.get(uuid);
 
-            if (taskRetry == null || taskRetry < retry) {
-                expirations.put(task.getTaskId(), Integer.valueOf(taskRetry == null ? 1 : taskRetry.intValue() + 1));
+            if(taskRetry == null || taskRetry < retry) {
+                expirations.put(uuid, Integer.valueOf(taskRetry==null?1: taskRetry.intValue()+1));
             } else {
                 result = false;
+                logger.error("Task[{}] expiration policy commit failed: Task has been already retried for [{}]/[{}] times", uuid, taskRetry, retry);
             }
 
         }
         return result;
-    }
 
-    @Override
-    public Date getNextExpirationDate(Date forDate) {
-        Date result = null;
-        if (timeout > 0) {
-            long cur = forDate != null ? forDate.getTime() : 0;
-            long expirationTime = timeUnit.toMillis(timeout);
-
-            result = new Date(cur + expirationTime);
-        }
-
-        return result;
     }
 
 

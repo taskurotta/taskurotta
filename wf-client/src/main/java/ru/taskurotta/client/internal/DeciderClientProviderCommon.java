@@ -1,12 +1,14 @@
 package ru.taskurotta.client.internal;
 
 import ru.taskurotta.ProxyFactory;
-import ru.taskurotta.TaskHandler;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
+
+import java.util.UUID;
 
 /**
  * User: romario
@@ -28,10 +30,20 @@ public class DeciderClientProviderCommon implements DeciderClientProvider {
 
     @Override
     public <DeciderClientType> DeciderClientType getDeciderClient(Class<DeciderClientType> type) {
-        return ProxyFactory.getDeciderClient(type, new TaskHandler() {
+        return ProxyFactory.getDeciderClient(type, new RuntimeContext(null) {
             @Override
             public void handle(Task task) {
                 startProcess(task);
+            }
+
+            /**
+             * Always creates new process uuid for new tasks because each DeciderClientType invocation are start of new
+             * process.
+             *
+             * @return
+             */
+            public UUID getProcessId() {
+                return UUID.randomUUID();
             }
         });
     }

@@ -17,37 +17,11 @@ package ru.taskurotta.policy.retry;
 import ru.taskurotta.policy.PolicyConstants;
 
 import java.util.Collection;
-import java.util.Date;
 
-public class ExponentialRetryPolicy extends RetryPolicyBase {
-
-    private final long initialRetryIntervalSeconds;
-
-    private long maximumRetryIntervalSeconds = PolicyConstants.EXPONENTIAL_RETRY_MAXIMUM_RETRY_INTERVAL_SECONDS;
-
-    private long retryExpirationIntervalSeconds = PolicyConstants.EXPONENTIAL_RETRY_RETRY_EXPIRATION_SECONDS;
-
-    private double backoffCoefficient = PolicyConstants.EXPONENTIAL_RETRY_BACKOFF_COEFFICIENT;
-
-    private int maximumAttempts = PolicyConstants.EXPONENTIAL_RETRY_MAXIMUM_ATTEMPTS;
+public class ExponentialRetryPolicy extends TimeRetryPolicyBase {
 
     public ExponentialRetryPolicy(long initialRetryIntervalSeconds) {
         this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;
-    }
-
-    public long getInitialRetryIntervalSeconds() {
-        return initialRetryIntervalSeconds;
-    }
-
-    public long getMaximumRetryIntervalSeconds() {
-        return maximumRetryIntervalSeconds;
-    }
-
-    /**
-     * Set the upper limit of retry interval. No limit by default.
-     */
-    public void setMaximumRetryIntervalSeconds(long maximumRetryIntervalSeconds) {
-        this.maximumRetryIntervalSeconds = maximumRetryIntervalSeconds;
     }
 
     public ExponentialRetryPolicy withMaximumRetryIntervalSeconds(long maximumRetryIntervalSeconds) {
@@ -55,49 +29,14 @@ public class ExponentialRetryPolicy extends RetryPolicyBase {
         return this;
     }
 
-    public long getRetryExpirationIntervalSeconds() {
-        return retryExpirationIntervalSeconds;
-    }
-
-    /**
-     * Stop retrying after the specified interval.
-     */
-    public void setRetryExpirationIntervalSeconds(long retryExpirationIntervalSeconds) {
-        this.retryExpirationIntervalSeconds = retryExpirationIntervalSeconds;
-    }
-
     public ExponentialRetryPolicy withRetryExpirationIntervalSeconds(long retryExpirationIntervalSeconds) {
         this.retryExpirationIntervalSeconds = retryExpirationIntervalSeconds;
         return this;
     }
 
-    public double getBackoffCoefficient() {
-        return backoffCoefficient;
-    }
-
-    /**
-     * Coefficient used to calculate the next retry interval. The following
-     * formula is used:
-     * <code>initialRetryIntervalSeconds * Math.pow(backoffCoefficient, numberOfTries - 2)</code>
-     */
-    public void setBackoffCoefficient(double backoffCoefficient) {
-        this.backoffCoefficient = backoffCoefficient;
-    }
-
     public ExponentialRetryPolicy withBackoffCoefficient(double backoffCoefficient) {
         this.backoffCoefficient = backoffCoefficient;
         return this;
-    }
-
-    public int getMaximumAttempts() {
-        return maximumAttempts;
-    }
-
-    /**
-     * Maximum number of attempts. The first retry is second attempt.
-     */
-    public void setMaximumAttempts(int maximumAttempts) {
-        this.maximumAttempts = maximumAttempts;
     }
 
     public ExponentialRetryPolicy withMaximumAttempts(int maximumAttempts) {
@@ -127,7 +66,7 @@ public class ExponentialRetryPolicy extends RetryPolicyBase {
     }
 
     @Override
-    public long nextRetryDelaySeconds(Date firstAttempt, Date recordedFailure, int numberOfTries) {
+    public long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries) {
 
         if (numberOfTries < 2) {
             throw new IllegalArgumentException("attempt is less then 2: " + numberOfTries);
@@ -139,7 +78,7 @@ public class ExponentialRetryPolicy extends RetryPolicyBase {
 
         long result = (long) (initialRetryIntervalSeconds * Math.pow(backoffCoefficient, numberOfTries - 2));
         result = maximumRetryIntervalSeconds > PolicyConstants.NONE ? Math.min(result, maximumRetryIntervalSeconds) : result;
-        int secondsSinceFirstAttempt = (int) ((recordedFailure.getTime() - firstAttempt.getTime()) / 1000);
+        int secondsSinceFirstAttempt = (int) ((recordedFailure - firstAttempt) / 1000);
         if (retryExpirationIntervalSeconds > PolicyConstants.NONE
                 && secondsSinceFirstAttempt + result >= retryExpirationIntervalSeconds) {
             return PolicyConstants.NONE;

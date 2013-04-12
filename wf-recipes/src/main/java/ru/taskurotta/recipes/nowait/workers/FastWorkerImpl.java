@@ -8,35 +8,35 @@ import ru.taskurotta.test.FlowArbiter;
  * Created by void 27.03.13 19:40
  */
 public class FastWorkerImpl implements FastWorker {
-    protected final static Logger log = LoggerFactory.getLogger(FastWorkerImpl.class);
+	protected final static Logger log = LoggerFactory.getLogger(FastWorkerImpl.class);
 
-    private FlowArbiter arbiter;
+	private FlowArbiter arbiter;
 
-    @Override
-    public int taskB() {
-        log.info("taskB()");
+	@Override
+	public int taskB() {
+		log.info("taskB()");
 
-        arbiter.notify("taskB");
+		arbiter.notify("taskB");
 
-        log.info("taskB done");
-        return 1;
-    }
+		log.info("taskB done");
+		return 1;
+	}
 
-    @Override
-    public int taskC() {
-        log.info("taskC()");
-        arbiter.notify("taskC");
-        return 2;
-    }
+	@Override
+	public int taskC() {
+		log.info("taskC()");
+		arbiter.notify("taskC");
+		return 2;
+	}
 
-    @Override
-    public int taskE(int b) {
-        log.info("taskE({})", b);
-        arbiter.notify("taskE");
-        return 3;
-    }
+	@Override
+	public int taskD(int b) {
+		log.info("taskD({})", b);
+		arbiter.notify("taskD");
+		return 3;
+	}
 
-    public void setArbiter(FlowArbiter arbiter) {
-        this.arbiter = arbiter;
-    }
+	public void setArbiter(FlowArbiter arbiter) {
+		this.arbiter = arbiter;
+	}
 }

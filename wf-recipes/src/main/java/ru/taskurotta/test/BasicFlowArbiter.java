@@ -1,54 +1,102 @@
 package ru.taskurotta.test;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by void 01.04.13 12:04
  */
-public abstract class BasicFlowArbiter implements FlowArbiter {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+public class BasicFlowArbiter implements FlowArbiter {
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final List<String> stages;
+	private final List<Stage> stages;
+	private boolean strictFlowCheck = true;
 
-    public BasicFlowArbiter(List<String> stages) {
-        this.stages = stages;
-    }
+	private String lastTag;
 
-    @Override
-    public void notify(String tag) {
-        log.debug("notified about tag [{}]; {}", tag, stages);
+	public BasicFlowArbiter(List<String> stages) {
+		this.stages = new LinkedList<Stage>();
+		for (String line : stages) {
+			this.stages.add(new Stage(line));
+		}
+	}
 
-        synchronized (stages) {
-            String current = stages.get(0);
-            if (current.equals(tag)) {
-                stages.remove(0);
-            } else {
-                throw new IncorrectFlowException("Wrong tag: expected [" + current + "] but found [" + tag + "]");
-            }
+	@Override
+	public void notify(String tag) {
+		log.debug("notified about tag [{}]; Stage list: {}", tag, stages);
 
-            process(tag);
-        }
+		synchronized (stages) {
+			Stage current = stages.get(0);
 
-    }
+			if (current == null) {
+				throw new IncorrectFlowException("Expected flow finished. Called with " + tag);
+			}
 
-    public String getCurrentStage() {
-        return stages.get(0);
-    }
+			if (!current.remove(tag) && isStrictFlowCheck()) {
+				throw new IncorrectFlowException("Wrong tag: expected "+ current +" but found {"+ tag +"}");
+			}
+			if (current.isEmpty()) {
+				stages.remove(0);
+			}
 
-    protected void pause(long millis) {
-        try {
-            stages.wait(millis);
-        } catch (InterruptedException e) {
-            // ignore
-        }
-    }
+			process(tag);
 
-    protected void resume() {
-        stages.notifyAll();
-    }
+			lastTag = tag;   // saved for waitForTag processes
+			stages.notifyAll();
+		}
 
-    protected abstract void process(String tag);
+	}
+
+	protected void waitForTag(String tag, long timeToWait) {
+		try {
+			long endTime = System.currentTimeMillis() + timeToWait;
+			while (!lastTag.equals(tag) && timeToWait > 0) {
+				stages.wait(timeToWait);
+				timeToWait = endTime - System.currentTimeMillis();
+			}
+			if (timeToWait <= 0) {
+				throw new IncorrectFlowException("Tag "+ tag +" doesn't checked");
+			}
+		} catch (InterruptedException e) {
+			// just go away
+		}
+	}
+
+	protected void process(String tag){
+		// nothing to do here
+	}
+
+	public boolean waitForFinish(long timeToWait) {
+		long endTime = System.currentTimeMillis() + timeToWait;
+		synchronized (stages) {
+			try {
+				while (stages.size() > 0 && timeToWait > 0) {
+
+					stages.wait(timeToWait);
+					timeToWait = endTime - System.currentTimeMillis();
+
+					log.debug("Stages: {}, time to wait: {}", stages, timeToWait);
+				}
+			} catch (InterruptedException e) {
+				// just go away
+			}
+			return stages.size() == 0;
+		}
+	}
+
+	private boolean checkTag(String tag) {
+		Stage stage = stages.get(0);
+		return stage != null && stage.contains(tag);
+	}
+
+	public boolean isStrictFlowCheck() {
+		return strictFlowCheck;
+	}
+
+	public void setStrictFlowCheck(boolean strictFlowCheck) {
+		this.strictFlowCheck = strictFlowCheck;
+	}
 }

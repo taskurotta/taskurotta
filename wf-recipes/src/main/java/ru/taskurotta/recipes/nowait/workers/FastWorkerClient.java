@@ -8,9 +8,7 @@ import ru.taskurotta.core.Promise;
  */
 @WorkerClient(worker = FastWorker.class)
 public interface FastWorkerClient {
-    public Promise<Integer> taskB();
-
-    public Promise<Integer> taskC();
-
-    public Promise<Integer> taskE(Promise<Integer> b);
+	public Promise<Integer> taskB();
+	public Promise<Integer> taskC();
+	public Promise<Integer> taskD(Promise<Integer> b);
 }

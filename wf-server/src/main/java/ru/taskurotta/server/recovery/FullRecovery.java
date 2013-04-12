@@ -1,16 +1,16 @@
 package ru.taskurotta.server.recovery;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.util.ActorDefinition;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * First pre-mega-supa-alfa of full recovery process;
@@ -48,24 +48,19 @@ public class FullRecovery {
                 // remove resolved task
                 tasksToQueueList.remove(decisionContainer.getTaskId());
                 // add all new ready tasks to queue
-                DependencyDecision dependencyDecision = dependencyBackend.analyzeDecision(decisionContainer);
+                DependencyDecision dependencyDecision = dependencyBackend.applyDecision(decisionContainer);
 
-                List<UUID> readyTasks = dependencyDecision.getReadyTasks();
-                if (readyTasks != null) {
-                    tasksToQueueList.addAll(readyTasks);
-                }
+//                UUID[] readyTasks = dependencyDecision.getReadyTasks();
+//                if (readyTasks != null) {
+//                    tasksToQueueList.addAll(Arrays.asList(readyTasks));
+//                }
             }
 
             for (UUID taskToQueueId : tasksToQueueList) {
 
                 TaskContainer task2Queue = taskBackend.getTask(taskToQueueId);
 
-                queueBackend.enqueueItem(
-                        ActorDefinition.valueOf(
-                                task2Queue.getTarget().getName(),
-                                task2Queue.getTarget().getVersion()
-                        ),
-                        taskToQueueId,
+                queueBackend.enqueueItem(task2Queue.getActorId(), taskToQueueId,
                         task2Queue.getStartTime()); // This time may be shifted by RetryPolicy
             }
         }

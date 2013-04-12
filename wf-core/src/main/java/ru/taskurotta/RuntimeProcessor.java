@@ -4,6 +4,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -24,8 +25,9 @@ public interface RuntimeProcessor {
     /**
      * Record all intercepted tasks
      *
+     * @param processId
      * @param runnable
      * @return Array af intercepted tasks
      */
-    public Task[] execute(Runnable runnable);
+    public Task[] execute(UUID processId, Runnable runnable);
 }

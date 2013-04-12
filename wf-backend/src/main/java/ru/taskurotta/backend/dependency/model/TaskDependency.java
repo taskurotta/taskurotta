@@ -16,7 +16,6 @@ public class TaskDependency {
     private List<UUID> thisWaitThat;
     private boolean parentWaitIt = false;
     private UUID parentId;
-    private int countdown;
 
     public TaskDependency() {
     }

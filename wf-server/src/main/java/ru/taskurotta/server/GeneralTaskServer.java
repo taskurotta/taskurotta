@@ -1,8 +1,7 @@
 package ru.taskurotta.server;
 
-import java.util.List;
-import java.util.UUID;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -13,9 +12,11 @@ import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -23,6 +24,8 @@ import ru.taskurotta.util.ActorDefinition;
  * Time: 12:04 PM
  */
 public class GeneralTaskServer implements TaskServer {
+
+    private final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
     private ProcessBackend processBackend;
     private TaskBackend taskBackend;
@@ -39,12 +42,19 @@ public class GeneralTaskServer implements TaskServer {
         this.configBackend = backendBundle.getConfigBackend();
     }
 
+    public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+        this.processBackend = processBackend;
+        this.taskBackend = taskBackend;
+        this.queueBackend = queueBackend;
+        this.dependencyBackend = dependencyBackend;
+        this.configBackend = configBackend;
+    }
 
     @Override
     public void startProcess(TaskContainer task) {
 
         // some consistence check
-        if (!task.getTarget().getType().equals(TaskType.DECIDER_START)) {
+        if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
             throw new IllegalStateException("Can not start process. Task should be type of " + TaskType.DECIDER_START);
         }
@@ -57,18 +67,16 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         taskBackend.startProcess(task);
 
-        final TaskTarget taskTarget = task.getTarget();
-
         // inform dependencyBackend about new process
         // idempotent statement
         dependencyBackend.startProcess(task);
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
-        enqueueTask(task.getTaskId(), taskTarget.getName(), taskTarget.getVersion(), task.getStartTime());
+        enqueueTask(task.getTaskId(), task.getActorId(), task.getStartTime());
 
 
-        processBackend.startProcessCommit(task.getTaskId());
+        processBackend.startProcessCommit(task);
     }
 
 
@@ -91,9 +99,7 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
 
-        if (taskContainer != null) {
-            queueBackend.pollCommit(taskId);
-        }
+        queueBackend.pollCommit(actorDefinition, taskId);
 
         return taskContainer;
     }
@@ -102,36 +108,46 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public void release(DecisionContainer taskDecision) {
 
-        // ? should full DecisionContainer be logged ?
+        // save it firstly
+        taskBackend.addDecision(taskDecision);
 
         UUID taskId = taskDecision.getTaskId();
 
         // if Error
-        if (taskDecision.isError()) {
+        if (taskDecision.containsError()) {
             final ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            final boolean isShouldBeRestarted = errorContainer.isShouldBeRestarted();
-
-            taskBackend.addError(taskId, errorContainer, isShouldBeRestarted);
+            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != -1;
 
             // enqueue task immediately if needed
             if (isShouldBeRestarted) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
-                enqueueTask(taskId, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
-                        errorContainer.getRestartTime());
+                logger.debug("Error task enqueued again, taskId[{]]", taskId);
+                enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime());
             }
 
-            taskBackend.addErrorCommit(taskId);
+            taskBackend.addDecisionCommit(taskDecision);
 
             return;
         }
 
-        // if Success
-        taskBackend.addDecision(taskDecision);
 
         // idempotent statement
-        DependencyDecision dependencyDecision = dependencyBackend.analyzeDecision(taskDecision);
+        DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
+
+        logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
+
+        if (dependencyDecision.isFail()) {
+
+            logger.debug("release() failed dependencyDecision. release() should be retried after " +
+                    "RELEASE_TIMEOUT");
+
+            // leave release() method.
+            // RELEASE_TIMEOUT should be automatically fired
+            return;
+        }
+
         List<UUID> readyTasks = dependencyDecision.getReadyTasks();
 
         if (readyTasks != null) {
@@ -140,8 +156,7 @@ public class GeneralTaskServer implements TaskServer {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
-                enqueueTask(taskId2Queue, asyncTask.getTarget().getName(), asyncTask.getTarget().getVersion(),
-                        asyncTask.getStartTime());
+                enqueueTask(taskId2Queue, asyncTask.getActorId(), asyncTask.getStartTime());
             }
 
         }
@@ -151,18 +166,16 @@ public class GeneralTaskServer implements TaskServer {
                     dependencyDecision.getFinishedProcessValue());
         }
 
-        taskBackend.addDecisionCommit(taskId);
+        taskBackend.addDecisionCommit(taskDecision);
     }
 
-    private void enqueueTask(UUID taskId, String actorName, String actorVersion, long startTime) {
-
-        final ActorDefinition actorDefinition = ActorDefinition.valueOf(actorName, actorVersion);
+    private void enqueueTask(UUID taskId, String actorId, long startTime) {
 
         // set it to current time for precisely repeat
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        queueBackend.enqueueItem(actorDefinition, taskId, startTime);
+        queueBackend.enqueueItem(actorId, taskId, startTime);
     }
 
 }

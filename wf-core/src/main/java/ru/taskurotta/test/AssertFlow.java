@@ -6,6 +6,8 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 
+import java.util.UUID;
+
 /**
  * User: romario
  * Date: 1/22/13
@@ -33,7 +35,9 @@ public abstract class AssertFlow {
 
         final Box<Promise> box = new Box<Promise>();
 
-        Task[] expectedTaskList = runtimeProcessor.execute(new Runnable() {
+        UUID processId = UUID.randomUUID();
+
+        Task[] expectedTaskList = runtimeProcessor.execute(processId, new Runnable() {
             @Override
             public void run() {
                 Promise promise = expectedFlow();
@@ -48,7 +52,7 @@ public abstract class AssertFlow {
         // 2. run all task sequentially
         // ============================
 
-        Task[] startTasks = runtimeProcessor.execute(new Runnable() {
+        Task[] startTasks = runtimeProcessor.execute(processId, new Runnable() {
             @Override
             public void run() {
                 execute();

@@ -1,10 +1,11 @@
 package ru.taskurotta.dropwizard.client.serialization.wrapper;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import ru.taskurotta.dropwizard.client.serialization.ActorDefinitionDeserializer;
 import ru.taskurotta.dropwizard.client.serialization.ActorDefinitionSerializer;
 import ru.taskurotta.util.ActorDefinition;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class ActorDefinitionWrapper {
 
@@ -17,19 +18,19 @@ public class ActorDefinitionWrapper {
         this.actorDefinition = actorDefinition;
     }
 
-    @JsonSerialize(using = ActorDefinitionSerializer.class)
+    @JsonSerialize(using=ActorDefinitionSerializer.class)
     public ActorDefinition getActorDefinition() {
         return actorDefinition;
     }
 
-    @JsonDeserialize(using = ActorDefinitionDeserializer.class)
+    @JsonDeserialize(using=ActorDefinitionDeserializer.class)
     public void setActorDefinition(ActorDefinition actorDefinition) {
         this.actorDefinition = actorDefinition;
     }
 
     @Override
     public String toString() {
-        return "ActorDefinitionWrapper [name=" + (actorDefinition != null ? actorDefinition.getName() : null) + ", version = " + (actorDefinition != null ? actorDefinition.getVersion() : null) + "]";
+        return "ActorDefinitionWrapper [name=" + (actorDefinition!=null? actorDefinition.getName(): null) + ", version = " + (actorDefinition!=null? actorDefinition.getVersion(): null)  + "]";
     }
 
 }

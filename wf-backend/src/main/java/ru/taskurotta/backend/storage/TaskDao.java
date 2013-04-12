@@ -16,11 +16,9 @@ public interface TaskDao {
 
     void addTask(TaskContainer taskContainer);
 
+    void updateTask(TaskContainer taskContainer);
+
     DecisionContainer getDecision(UUID taskId);
-
-    void markTaskProcessing(UUID taskId, boolean inProcess);
-
-    boolean isTaskInProgress(UUID taskId);
 
     boolean isTaskReleased(UUID taskId);
 }

@@ -1,6 +1,5 @@
 package ru.taskurotta.client.memory;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -8,8 +7,8 @@ import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
-import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
-import ru.taskurotta.backend.dependency.model.TaskDependency;
+import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
@@ -35,7 +34,7 @@ public class AbstractTestStub {
 
     protected MemoryQueueBackend memoryQueueBackend;
     protected GeneralTaskBackend memoryStorageBackend;
-    protected MemoryDependencyBackend memoryDependencyBackend;
+    protected MemoryGraphDao memoryGraphDao;
 
     protected TaskServer taskServer;
     protected TaskSpreaderProviderCommon taskSpreaderProvider;
@@ -57,6 +56,8 @@ public class AbstractTestStub {
     protected static final ActorDefinition DECIDER_ACTOR_DEF;
     protected static final ActorDefinition WORKER_ACTOR_DEF;
 
+    protected static final UUID processId = UUID.randomUUID();
+
     static {
         ActorDefinition actorDefinition = ActorDefinition.valueOf(TestDecider.class);
         DECIDER_NAME = actorDefinition.getName();
@@ -72,11 +73,12 @@ public class AbstractTestStub {
 
     @Before
     public void setUp() throws Exception {
-        MemoryTaskDao taskDao = new MemoryTaskDao();
-        BackendBundle backendBundle = new MemoryBackendBundle(0, taskDao);
+//        taskDao = new TaskDaoMemory(0);
+//        taskServer = new TaskServerGeneral(taskDao);
+        BackendBundle backendBundle = new MemoryBackendBundle(0, new MemoryTaskDao());
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
         memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
-        memoryDependencyBackend = (MemoryDependencyBackend) backendBundle.getDependencyBackend();
+        memoryGraphDao = ((MemoryBackendBundle) backendBundle).getMemoryGraphDao();
 
         taskServer = new GeneralTaskServer(backendBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
@@ -97,15 +99,10 @@ public class AbstractTestStub {
      * @return
      */
     public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
-        TaskDependency taskDependency = memoryDependencyBackend.getTaskDependency(taskId);
 
-        List<UUID> thisWaitThat = taskDependency.getThisWaitThat();
+        Graph graph = memoryGraphDao.getGraph(processId);
 
-        if (taskQuantity == -1 && !thisWaitThat.isEmpty()) {
-            return true;
-        }
-
-        return thisWaitThat.size() == taskQuantity;
+        return graph != null && graph.isTaskWaitOtherTasks(taskId, taskQuantity);
 
     }
 
@@ -115,7 +112,7 @@ public class AbstractTestStub {
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, startTime, 0, null, null);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, startTime, 0, null, null);
         return task;
     }
 
@@ -125,19 +122,19 @@ public class AbstractTestStub {
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, args, null);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
         return task;
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args, TaskOptions taskOptions) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, args, taskOptions);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions);
         return task;
     }
 
     public static Task workerTask(UUID id, TaskType type, String methodName, Object[] args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, WORKER_NAME, WORKER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, taskTarget, args);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args);
         return task;
     }
 

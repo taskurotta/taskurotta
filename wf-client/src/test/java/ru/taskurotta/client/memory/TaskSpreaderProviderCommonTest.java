@@ -40,15 +40,15 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         // task should be in queue
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, taskId));
 
-        Task taskFromQueue = workerTaskSpreader.pull();
+        Task taskFromQueue = workerTaskSpreader.poll();
 
-        // pulled task should be the same as added above
+        // polled task should be the same as added above
         assertEquals(taskId, taskFromQueue.getId());
 
         // task should be in "process" state
         assertTrue(isTaskInProgress(taskId));
 
-        TaskDecision taskDecision = new TaskDecisionImpl(taskId, null, null);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskId, processId, null, null);
         workerTaskSpreader.release(taskDecision);
 
         // task should be in "done" state
@@ -82,6 +82,14 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         System.err.println("taskIdA = " + taskIdA);
         Task taskA = deciderTask(taskIdA, TaskType.DECIDER_START, "taskA", null);
 
+        // Add taskA to queue
+        taskServer.startProcess(objectFactory.dumpTask(taskA));
+
+        // poll task from queue
+        // pulled task should be the same as added (as TaskDecision) above
+        Task taskQueueA = deciderTaskSpreader.poll();
+        assertEquals(taskIdA, taskQueueA.getId());
+
         // create taskB
 
         UUID taskIdB = UUID.randomUUID();
@@ -92,16 +100,11 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         UUID workerTaskIdA = UUID.randomUUID();
         Task workerTaskA = workerTask(workerTaskIdA, TaskType.WORKER, "workerTaskA", new Object[]{promise(taskB)});
 
-        // Add taskA to queue
-        taskServer.startProcess(objectFactory.dumpTask(taskA));
 
-        // poll task from queue
-        // pulled task should be the same as added (as TaskDecision) above
-        Task taskQueueA = deciderTaskSpreader.pull();
-        assertEquals(taskIdA, taskQueueA.getId());
 
         // release taskA with return (promiseB) and task list (taskB, workerTaskA(promiseB)
-        TaskDecision taskAResult = new TaskDecisionImpl(taskIdA, promise(taskB), new Task[]{taskB, workerTaskA});
+        TaskDecision taskAResult = new TaskDecisionImpl(taskIdA, processId, promise(taskB), new Task[]{taskB,
+                workerTaskA});
         deciderTaskSpreader.release(taskAResult);
 
         // task A should be in "depend" state
@@ -113,7 +116,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
         // poll task from queue
         // pulled task should be the same as added (as TaskDecision) above
-        Task taskQueueB = deciderTaskSpreader.pull();
+        Task taskQueueB = deciderTaskSpreader.poll();
         assertEquals(taskIdB, taskQueueB.getId());
 
         // create taskC
@@ -121,7 +124,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "taskC", null);
 
         // release taskB with return (promiseC) and task list (taskC)
-        TaskDecision taskBResult = new TaskDecisionImpl(taskIdB, promise(taskC), new Task[]{taskC});
+        TaskDecision taskBResult = new TaskDecisionImpl(taskIdB, processId, promise(taskC), new Task[]{taskC});
         deciderTaskSpreader.release(taskBResult);
 
         // task B should be in "depend" state
@@ -130,11 +133,11 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
         // poll task from queue
         // pulled task should be the same as added (as TaskDecision) above
-        Task taskQueueC = deciderTaskSpreader.pull();
+        Task taskQueueC = deciderTaskSpreader.poll();
         assertEquals(taskIdC, taskQueueC.getId());
 
         // release taskC with return (1) and task list ()
-        TaskDecision taskCResult = new TaskDecisionImpl(taskIdC, Promise.asPromise(1), null);
+        TaskDecision taskCResult = new TaskDecisionImpl(taskIdC, processId, Promise.asPromise(1), null);
         deciderTaskSpreader.release(taskCResult);
 
         // check all in done state
@@ -150,7 +153,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         // workTaskA should be in "wait" state
         Assert.assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskIdA));
 
-        Task workerQueueTaskA = workerTaskSpreader.pull();
+        Task workerQueueTaskA = workerTaskSpreader.poll();
 
         Assert.assertTrue(isTaskInProgress(workerTaskIdA));
 //        assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getValue());

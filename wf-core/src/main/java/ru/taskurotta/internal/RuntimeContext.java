@@ -4,6 +4,7 @@ import ru.taskurotta.core.Task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -15,19 +16,21 @@ public class RuntimeContext {
     private static ThreadLocal<RuntimeContext> currentContext = new ThreadLocal<RuntimeContext>();
 
     private List<Task> tasks;
+    private UUID processId;
 
-    private RuntimeContext() {
+    public RuntimeContext(UUID processId) {
 
+        this.processId = processId;
     }
 
 
-    public static RuntimeContext create() {
-        RuntimeContext runtimeContext = new RuntimeContext();
+    public static RuntimeContext start(UUID processId) {
+        RuntimeContext runtimeContext = new RuntimeContext(processId);
         currentContext.set(runtimeContext);
         return runtimeContext;
     }
 
-    public static void remove() {
+    public static void finish() {
         currentContext.remove();
     }
 
@@ -61,4 +64,7 @@ public class RuntimeContext {
         return tasks.toArray(new Task[tasks.size()]);
     }
 
+    public UUID getProcessId() {
+        return processId;
+    }
 }

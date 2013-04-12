@@ -5,6 +5,8 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
+import java.util.UUID;
+
 /**
  * User: stukushin
  * Date: 26.03.13
@@ -24,8 +26,8 @@ public class SimpleProfiler implements Profiler {
             }
 
             @Override
-            public Task[] execute(Runnable runnable) {
-                return runtimeProcessor.execute(runnable);
+            public Task[] execute(UUID processId, Runnable runnable) {
+                return runtimeProcessor.execute(processId, runnable);
             }
         };
     }
@@ -34,8 +36,8 @@ public class SimpleProfiler implements Profiler {
     public TaskSpreader decorate(final TaskSpreader taskSpreader) {
         return new TaskSpreader() {
             @Override
-            public Task pull() {
-                return taskSpreader.pull();
+            public Task poll() {
+                return taskSpreader.poll();
             }
 
             @Override

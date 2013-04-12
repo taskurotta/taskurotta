@@ -19,10 +19,10 @@ public class ActorExecutor implements Runnable {
 
     private boolean shutdown = false;
 
-    public ActorExecutor(Profiler profiler, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
+    public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
         this.profiler = profiler;
-        this.runtimeProcessor = profiler.decorate(runtimeProcessor);
-        this.taskSpreader = profiler.decorate(taskSpreader);
+        this.runtimeProcessor = inspector.decorate(profiler.decorate(runtimeProcessor));
+        this.taskSpreader = inspector.decorate(profiler.decorate(taskSpreader));
     }
 
     @Override
@@ -34,16 +34,13 @@ public class ActorExecutor implements Runnable {
 
             try {
 
-                Task task = taskSpreader.pull();
+                Task task = taskSpreader.poll();
 
                 if (task == null) {
                     profiler.cycleFinish();
-
-                    // TODO: sleep one or few seconds? Or implement sleep policy?
                     continue;
                 }
 
-                // TODO: catch all exceptions and send it to server
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
                 taskSpreader.release(taskDecision);

@@ -7,13 +7,12 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.ActorRuntimeException;
-import ru.taskurotta.exception.TargetException;
 import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
+import ru.taskurotta.policy.retry.RetryPolicy;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -35,7 +34,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
     @Override
     public TaskDecision execute(Task task) {
 
-        RuntimeContext.create();
+        RuntimeContext.start(task.getProcessId());
 
         TaskDecision taskDecision = null;
         TaskTarget key = task.getTarget();
@@ -44,32 +43,45 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
         try {
 
             if (null == targetReference) {
-                throw new UndefinedActorException(key);
+                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), new UndefinedActorException(key), RuntimeContext.getCurrent().getTasks());
             } else {
 
                 Object value = targetReference.invoke(task.getArgs());
 
                 Task[] tasks = RuntimeContext.getCurrent().getTasks();
-                taskDecision = new TaskDecisionImpl(task.getId(), value, tasks);
+                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks);
             }
-        } catch (IllegalAccessException e) {
-            log.error("Can't call method [" + targetReference + "]", e);
-            throw new ActorRuntimeException("Can't call method [" + targetReference + "]", e);
-        } catch (InvocationTargetException e) {
-            log.error("Can't call method [" + targetReference + "]", e);
-            throw new TargetException(targetReference.toString(), e);
+        } catch(Throwable e) {
+            log.error("Unexpected error processing task ["+task+"]", e);
+
+            ActorRuntimeException actorRuntimeException = new ActorRuntimeException(e);
+
+            RetryPolicy retryPolicy = targetReference.getRetryPolicy();
+
+            long restartTime = -1; // ToDo: use global constant, maybe ru.taskurotta.policy.PolicyConstants
+            if (retryPolicy != null && retryPolicy.isRetryable(actorRuntimeException)) {
+                long nextRetryDelaySeconds = 0;
+                long recordedFailure = System.currentTimeMillis();
+                if (task.getNumberOfAttempts() > 2) {
+                    nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
+                }
+
+                restartTime = recordedFailure + nextRetryDelaySeconds * 1000;
+            }
+
+            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), actorRuntimeException, RuntimeContext.getCurrent().getTasks(), restartTime);
+
         } finally {
-            RuntimeContext.remove();
+            RuntimeContext.finish();
         }
 
         return taskDecision;
     }
 
-
     @Override
-    public Task[] execute(Runnable runnable) {
+    public Task[] execute(UUID processId, Runnable runnable) {
 
-        RuntimeContext.create();
+        RuntimeContext.start(processId);
 
         Task[] tasks;
 
@@ -78,7 +90,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             tasks = RuntimeContext.getCurrent().getTasks();
 
         } finally {
-            RuntimeContext.remove();
+            RuntimeContext.finish();
         }
 
         return tasks;

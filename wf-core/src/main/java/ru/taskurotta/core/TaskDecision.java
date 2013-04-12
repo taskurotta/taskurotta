@@ -16,6 +16,11 @@ public interface TaskDecision {
 
 
     /**
+     * @return Task unique Id
+     */
+    public UUID getProcessId();
+
+    /**
      * @return retirned value
      */
     Object getValue();
@@ -26,4 +31,12 @@ public interface TaskDecision {
      * @return produced tasks
      */
     Task[] getTasks();
+
+
+    boolean isError();
+
+
+    Throwable getException();
+
+    long getRestartTime();
 }

@@ -8,9 +8,10 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+
+import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -38,15 +39,15 @@ public class ThreadPooledTaskServer implements TaskServer {
     public void startProcess(TaskContainer task) {
         try {
             Future<Boolean> futureResult = executorService.submit(asyncTaskServer.callStartTask(task));
-            if (timeout > 0) {
+            if(timeout>0) {
                 futureResult.get(timeout, TimeUnit.MILLISECONDS);
-            } else {
+            } else{
                 futureResult.get();
             }
         } catch (TimeoutException e) {
-            logger.debug("startProcess([" + task + "]) timed out", e);
+            logger.debug("startProcess(["+task+"]) timed out", e);
         } catch (Exception ex) {
-            logger.error("startProcess([" + task + "]) failed", ex);
+            logger.error("startProcess(["+task+"]) failed", ex);
         }
     }
 
@@ -55,15 +56,15 @@ public class ThreadPooledTaskServer implements TaskServer {
         TaskContainer result = null;
         try {
             Future<TaskContainer> futureResult = executorService.submit(asyncTaskServer.callPull(actorDefinition));
-            if (timeout > 0) {
+            if(timeout>0) {
                 result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
             } else {
                 result = futureResult.get();
             }
         } catch (TimeoutException e) {
-            logger.debug("poll([" + actorDefinition + "]) timed out", e);
+            logger.debug("poll(["+actorDefinition+"]) timed out", e);
         } catch (Exception e) {
-            logger.error("poll([" + actorDefinition + "]) failed", e);
+            logger.error("poll(["+actorDefinition+"]) failed", e);
         }
         return result;
     }
@@ -73,15 +74,15 @@ public class ThreadPooledTaskServer implements TaskServer {
 
         try {
             Future<Boolean> futureResult = executorService.submit(asyncTaskServer.callRelease(decisionContainer));
-            if (timeout > 0) {
+            if(timeout > 0) {
                 futureResult.get(timeout, TimeUnit.MILLISECONDS);
             } else {
                 futureResult.get();
             }
         } catch (TimeoutException e) {
-            logger.debug("release([" + decisionContainer + "]) timed out", e);
+            logger.debug("release(["+decisionContainer+"]) timed out", e);
         } catch (Exception e) {
-            logger.error("release([" + decisionContainer + "]) failed", e);
+            logger.error("release(["+decisionContainer+"]) failed", e);
         }
     }
 

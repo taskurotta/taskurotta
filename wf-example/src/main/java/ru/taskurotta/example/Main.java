@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import ru.taskurotta.bootstrap.Bootstrap;
-import ru.taskurotta.bootstrap.config.Config;
 
 /**
  * User: stukushin
@@ -13,17 +12,10 @@ import ru.taskurotta.bootstrap.config.Config;
  */
 public class Main {
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
-        Bootstrap bootstrap = new Bootstrap();
-        Config config;
-        if (args.length == 0) {
-//            config = bootstrap.parseArgs(new String[]{"-r", "wf-config.yml"});
-//    		new Main().run(new String[]{"-r", "wf-config-example2.yml"});
-
-//    		Для работы теста сначала нужно запустить DW сервер (wf-server-dw/run.bat)
-            config = bootstrap.parseArgs(new String[]{"-r", "wf-config-example2-jersey.yml"});
+        if(args.length == 0) {
+            new Bootstrap("ru/taskurotta/example/notification/wf-config.yml").start();
         } else {
-            config = bootstrap.parseArgs(args);
+            new Bootstrap(args).start();
         }
-        bootstrap.start(config);
     }
 }

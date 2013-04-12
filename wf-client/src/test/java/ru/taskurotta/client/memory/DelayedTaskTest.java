@@ -33,7 +33,7 @@ public class DelayedTaskTest extends AbstractTestStub {
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
 
-        Task taskAFromQueue = deciderTaskSpreader.pull();
+        Task taskAFromQueue = deciderTaskSpreader.poll();
 
         // should be task A
         assertEquals(taskAId, taskAFromQueue.getId());
@@ -44,15 +44,15 @@ public class DelayedTaskTest extends AbstractTestStub {
 
         assertTrue(deciderTaskB.getStartTime() != 0L);
 
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, null, new Task[]{deciderTaskB});
+        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, null, new Task[]{deciderTaskB});
         deciderTaskSpreader.release(taskADecision);
 
-        Task taskBFromQueue = deciderTaskSpreader.pull();
+        Task taskBFromQueue = deciderTaskSpreader.poll();
         assertNull(taskBFromQueue);
 
         Thread.sleep(3000L);
 
-        taskBFromQueue = deciderTaskSpreader.pull();
+        taskBFromQueue = deciderTaskSpreader.poll();
 
         assertNotNull(taskBFromQueue);
 

@@ -2,11 +2,13 @@ package ru.taskurotta.dropwizard;
 
 import java.util.Properties;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
+import ru.taskurotta.dropwizard.internal.pooling.InternalPoolConfig;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
-import org.hibernate.validator.constraints.NotEmpty;
-import ru.taskurotta.dropwizard.internal.pooling.InternalPoolConfig;
-import ru.taskurotta.server.config.ServerConfig;
 
 public class TaskQueueConfig extends Configuration {
 
@@ -14,8 +16,9 @@ public class TaskQueueConfig extends Configuration {
     private Properties properties;
 
     @JsonProperty
-    private ServerConfig serverConfig;
+    private MemoryConfigBackend actorConfig;
 
+    @JsonProperty
     private InternalPoolConfig internalPoolConfig;
 
     @NotEmpty
@@ -46,13 +49,12 @@ public class TaskQueueConfig extends Configuration {
         this.internalPoolConfig = internalPoolConfig;
     }
 
-    public ServerConfig getServerConfig() {
-        return serverConfig;
+    public MemoryConfigBackend getActorConfig() {
+        return actorConfig;
     }
 
-    public void setServerConfig(ServerConfig serverConfig) {
-        this.serverConfig = serverConfig;
+    public void setActorConfig(MemoryConfigBackend actorConfig) {
+        this.actorConfig = actorConfig;
     }
-
 
 }

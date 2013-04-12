@@ -11,4 +11,7 @@ public class IncorrectExecuteMethodDefinition extends ActorRuntimeException {
         super(message + " : " + decider.getClass().getName());
     }
 
+    public IncorrectExecuteMethodDefinition(String message, Class deciderClass) {
+        super(message + " : " + deciderClass.getName());
+    }
 }

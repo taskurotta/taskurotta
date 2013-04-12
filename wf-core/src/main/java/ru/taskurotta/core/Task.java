@@ -20,6 +20,13 @@ public interface Task {
 
 
     /**
+     * Unique process id.
+     * Can not be null.
+     */
+
+    public UUID getProcessId();
+
+    /**
      * Target of task consumer.
      * Can not be null.
      *

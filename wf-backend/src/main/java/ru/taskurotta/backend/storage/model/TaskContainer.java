@@ -3,7 +3,7 @@ package ru.taskurotta.backend.storage.model;
 import java.util.Arrays;
 import java.util.UUID;
 
-import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.core.TaskType;
 
 /**
  * User: romario
@@ -13,31 +13,39 @@ import ru.taskurotta.core.TaskTarget;
 public class TaskContainer {
 
     private UUID taskId;
-    private TaskTarget target;
+    private String method;
+    private String actorId;
+    private TaskType type;
     private long startTime;
     private int numberOfAttempts;
     private ArgContainer[] args;
     private TaskOptionsContainer options;
+    private UUID processId;
+
+    public UUID getProcessId() {
+        return processId;
+    }
 
     public TaskContainer() {
     }
 
-    public TaskContainer(UUID taskId, TaskTarget target, long startTime, int numberOfAttempts, ArgContainer[] args,
-                         TaskOptionsContainer options) {
+    public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
+                         TaskType type, long startTime, int numberOfAttempts,
+                         ArgContainer[] args, TaskOptionsContainer options) {
+        super();
         this.taskId = taskId;
-        this.target = target;
+        this.method = method;
+        this.actorId = actorId;
+        this.type = type;
         this.startTime = startTime;
         this.numberOfAttempts = numberOfAttempts;
         this.args = args;
         this.options = options;
+        this.processId = processId;
     }
 
     public UUID getTaskId() {
         return taskId;
-    }
-
-    public TaskTarget getTarget() {
-        return target;
     }
 
     public ArgContainer[] getArgs() {
@@ -56,15 +64,28 @@ public class TaskContainer {
         return options;
     }
 
+    public String getMethod() {
+        return method;
+    }
+
+    public String getActorId() {
+        return actorId;
+    }
+
+    public TaskType getType() {
+        return type;
+    }
+
+    public void incrementNumberOfAttempts() {
+        numberOfAttempts++;
+    }
+
     @Override
     public String toString() {
-        return "TaskContainer{" +
-                "taskId=" + taskId +
-                ", target=" + target +
-                ", startTime=" + startTime +
-                ", numberOfAttempts=" + numberOfAttempts +
-                ", args=" + (args == null ? null : Arrays.asList(args)) +
-                ", options=" + options +
-                '}';
+        return "TaskContainer [taskId=" + taskId
+                + ", actorId=" + actorId + ", method=" + method + ", type=" + type
+                + ", startTime=" + startTime + ", numberOfAttempts="
+                + numberOfAttempts + ", args=" + Arrays.toString(args)
+                + ", options=" + options + "]";
     }
 }

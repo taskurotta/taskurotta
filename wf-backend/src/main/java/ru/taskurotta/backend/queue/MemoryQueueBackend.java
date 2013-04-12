@@ -107,24 +107,24 @@ public class MemoryQueueBackend implements QueueBackend {
             }
         }
 
-        logger.debug("poll() returns taskId [{}]", taskId);
+        logger.debug("poll() returns taskId [{}]. Queue.size: {}", taskId, queue.size());
 
         return taskId;
 
     }
 
     @Override
-    public void pollCommit(UUID taskId) {
+    public void pollCommit(ActorDefinition actorDefinition, UUID taskId) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void enqueueItem(ActorDefinition actorDefinition, UUID taskId, long startTime) {
+    public void enqueueItem(String actorId, UUID taskId, long startTime) {
 
-        logger.debug("enqueueItem() actorDefinition [{}], taskId [{}], startTime [{}]", actorDefinition, taskId, startTime);
-
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
         queue.add(new DelayedTaskElement(taskId, startTime));
+
+        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
 

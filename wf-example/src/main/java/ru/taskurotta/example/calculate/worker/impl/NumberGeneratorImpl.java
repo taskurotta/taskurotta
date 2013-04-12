@@ -2,6 +2,8 @@ package ru.taskurotta.example.calculate.worker.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ru.taskurotta.example.calculate.RandomException;
 import ru.taskurotta.example.calculate.worker.NumberGenerator;
 
 public class NumberGeneratorImpl implements NumberGenerator {
@@ -12,10 +14,17 @@ public class NumberGeneratorImpl implements NumberGenerator {
 
     private long sleep = -1l;
 
+    private double errPossibility = 0.0d;
+
     @Override
     public Integer getNumber() {
 
-        if (sleep > 0) {
+        if(RandomException.isEventHappened(errPossibility)) {
+            logger.error("NumberGenerator: RANDOMLY FAILED!");
+            throw new RandomException("Its exception time");
+        }
+
+        if(sleep > 0) {
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {
@@ -23,8 +32,8 @@ public class NumberGeneratorImpl implements NumberGenerator {
             }
         }
 
-        Integer result = Double.valueOf(Math.floor(Math.random() * (maxNumber + 1))).intValue();
-        if (result == 0) {
+        Integer result =  Double.valueOf(Math.floor(Math.random() * (maxNumber+1))).intValue();
+        if(result == 0) {
             result = getNumber();
         }
 
@@ -38,6 +47,10 @@ public class NumberGeneratorImpl implements NumberGenerator {
 
     public void setSleep(long sleep) {
         this.sleep = sleep;
+    }
+
+    public void setErrPossibility(double errPossibility) {
+        this.errPossibility = errPossibility;
     }
 
 }

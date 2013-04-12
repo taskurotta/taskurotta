@@ -19,7 +19,6 @@ public class MemoryTaskDao implements TaskDao {
 
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
-    private Map<UUID, Boolean> id2ProgressMap = new ConcurrentHashMap<UUID, Boolean>();
 
 
     @Override
@@ -43,21 +42,12 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public void markTaskProcessing(UUID taskId, boolean inProcess) {
-        if (inProcess) {
-            id2ProgressMap.put(taskId, true);
-        } else {
-            id2ProgressMap.remove(taskId);
-        }
-    }
-
-    @Override
-    public boolean isTaskInProgress(UUID taskId) {
-        return id2ProgressMap.containsKey(taskId);
-    }
-
-    @Override
     public boolean isTaskReleased(UUID taskId) {
         return id2TaskDecisionMap.containsKey(taskId);
+    }
+
+    @Override
+    public void updateTask(TaskContainer taskContainer) {
+        //Для памяти нет необходимости реализовывать
     }
 }

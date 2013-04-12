@@ -1,0 +1,59 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/summator/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/summator/SpreaderBeans.xml
+        properties:
+          foo: bar
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.FlowArbiterProfiler
+
+actor:
+  - Decider:
+      actorInterface: ru.taskurotta.recipes.summator.decider.SummatorDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
+  - Worker:
+      actorInterface: ru.taskurotta.recipes.summator.worker.AddWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 8
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/recipes-parallel.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: DEBUG
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - FICTION:
+                key: ref

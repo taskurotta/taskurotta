@@ -17,7 +17,7 @@ public class MemoryProcessBackend implements ProcessBackend {
     }
 
     @Override
-    public void startProcessCommit(UUID processId) {
+    public void startProcessCommit(TaskContainer task) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 

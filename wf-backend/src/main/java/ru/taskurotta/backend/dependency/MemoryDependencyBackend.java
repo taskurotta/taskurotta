@@ -31,7 +31,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
     private Map<UUID, TaskDependency> id2depMap = new ConcurrentHashMap<UUID, TaskDependency>();
 
     @Override
-    public DependencyDecision analyzeDecision(DecisionContainer taskDecision) {
+    public DependencyDecision applyDecision(DecisionContainer taskDecision) {
 
         DependencyDecision dependencyDecision = new DependencyDecision();
 
@@ -171,7 +171,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
                 (value != null && !value.isPromise()) ||
                 (value != null && value.isPromise() && value.isReady())) {
 
-            logger.debug("HHHH" + taskId);
+            logger.debug("taskId: {}", taskId);
             TaskDependency taskDependency = id2depMap.get(taskId);
 
             removeFinishedTasks(taskDependency, dependencyDecision);

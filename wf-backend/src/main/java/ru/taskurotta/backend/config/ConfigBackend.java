@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.config;
 
+import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -7,9 +8,10 @@ import ru.taskurotta.util.ActorDefinition;
  * Date: 4/1/13
  * Time: 12:08 PM
  */
-public class ConfigBackend {
-
-    public boolean isActorBlocked(ActorDefinition actorDefinition) {
-        return false;
-    }
+public interface ConfigBackend {
+	
+    public boolean isActorBlocked(ActorDefinition actorDefinition);
+    
+    public ActorPreferences[] getActorPreferences();
+    
 }

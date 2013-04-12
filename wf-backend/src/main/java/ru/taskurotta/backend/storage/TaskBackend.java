@@ -3,8 +3,8 @@ package ru.taskurotta.backend.storage;
 import java.util.List;
 import java.util.UUID;
 
+import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 
 /**
@@ -12,7 +12,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
  * Date: 4/1/13
  * Time: 12:11 PM
  */
-public interface TaskBackend {
+public interface TaskBackend extends CheckpointServiceProvider {
 
     public void startProcess(TaskContainer taskContainer);
 
@@ -37,15 +37,6 @@ public interface TaskBackend {
 
 
     /**
-     * Create RELEASE_ERROR_TIMEOUT checkpoint
-     *
-     * @param asyncTaskError
-     * @param shouldBeRestarted retry counter should be incremented
-     */
-    public void addError(UUID taskId, ErrorContainer asyncTaskError, boolean shouldBeRestarted);
-
-
-    /**
      * Create RELEASE_TIMEOUT checkpoint
      *
      * @param taskDecision
@@ -56,17 +47,10 @@ public interface TaskBackend {
     /**
      * Delete RELEASE_TIMEOUT checkpoint
      *
-     * @param taskId
+     * @param taskDecision
      */
-    public void addDecisionCommit(UUID taskId);
+    public void addDecisionCommit(DecisionContainer taskDecision);
 
-
-    /**
-     * Delete RELEASE_ERROR_TIMEOUT
-     *
-     * @param taskId
-     */
-    public void addErrorCommit(UUID taskId);
 
 
     public List<TaskContainer> getAllRunProcesses();
@@ -79,4 +63,20 @@ public interface TaskBackend {
      * @return
      */
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
+
+    /**
+     * @param actorId return only tasks for this actorId
+     * @param timeFrom return only tasks with processing start time greater then given
+     * @param timeTill return only tasks with processing start time less then given
+     * @return list of tasks wich are currently processing by some remote actors
+     */
+    //public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill);
+
+    /**
+     * Removes this task definitions from list of active tasks
+     * @param tasks
+     * @return number of removed tasks
+     */
+    //public int resetActiveTasks(List<TaskDefinition> tasks);
+
 }

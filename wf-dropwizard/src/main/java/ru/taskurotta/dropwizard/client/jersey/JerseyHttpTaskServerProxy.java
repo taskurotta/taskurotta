@@ -2,10 +2,11 @@ package ru.taskurotta.dropwizard.client.jersey;
 
 import javax.annotation.PostConstruct;
 
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+
+import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 
 public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
 
@@ -15,16 +16,16 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
     public void init() {
         MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
 
-        if (connectTimeout > 0) {
+        if(connectTimeout>0) {
             connectionManager.getParams().setConnectionTimeout(connectTimeout);
         }
-        if (readTimeout > 0) {
+        if(readTimeout>0) {
             connectionManager.getParams().setSoTimeout(readTimeout);
         }
-        if (threadPoolSize > 0) {
+        if(threadPoolSize>0) {
             connectionManager.getParams().setMaxTotalConnections(threadPoolSize);
         }
-        if (maxConnectionsPerHost > 0) {
+        if(maxConnectionsPerHost>0) {
             connectionManager.getParams().setDefaultMaxConnectionsPerHost(maxConnectionsPerHost);
         }
 
@@ -32,7 +33,7 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
         HttpClient httpClient = new HttpClient(connectionManager);
 
         ApacheHttpClientHandler httpClientHandler = new ApacheHttpClientHandler(httpClient);
-        ApacheHttpClient contentServerClient = new ApacheHttpClient(httpClientHandler) {
+        ApacheHttpClient contentServerClient = new ApacheHttpClient(httpClientHandler){
 
         };
         contentServerClient.setConnectTimeout(connectTimeout);

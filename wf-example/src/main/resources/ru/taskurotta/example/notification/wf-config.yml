@@ -1,0 +1,59 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: /ru/taskurotta/example/notification/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/example/notification/SpreaderBeans.xml
+        properties:
+          userId: 10
+          message: "Hello!"
+          count: 1
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: true
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: false
+          consoleOutput: false
+
+actor:
+  - NotificationDecider:
+      actorInterface: ru.taskurotta.example.notification.decider.NotificationDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
+
+  - ProfileWorker:
+      actorInterface: ru.taskurotta.example.notification.workers.ProfileWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
+
+  - EmailWorker:
+      actorInterface: ru.taskurotta.example.notification.workers.EmailWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
+
+  - SMSWorker:
+      actorInterface: ru.taskurotta.example.notification.workers.SMSWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1

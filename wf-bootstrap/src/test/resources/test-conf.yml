@@ -1,12 +1,12 @@
 runtime:
   - TestRuntimeConfig:
-      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      class: ru.taskurotta.spring.test.configs.RuntimeConfigPathXmlApplicationContext
       instance:
         context: RuntimeBeans.xml
 
 spreader:
   - TestTaskSpreaderConfig:
-      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      class: ru.taskurotta.spring.test.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         context: SpreaderBeans.xml
         properties:
@@ -30,12 +30,23 @@ profiler:
           consoleOutput: false
           consoleOutputPeriod: 10
 
+policy:
+  - TestPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 10
+          maximumRetryIntervalSeconds: 300
+          maximumAttempts: 100
+
 actor:
   - TestWorker:
       actorInterface: ru.taskurotta.bootstrap.TestWorker
       runtimeConfig: TestRuntimeConfig
       spreaderConfig: TestTaskSpreaderConfig
       profilerConfig: TestProfilerConfig
+      policyConfig: TestPolicyConfig
       count: 10
 
 logback:

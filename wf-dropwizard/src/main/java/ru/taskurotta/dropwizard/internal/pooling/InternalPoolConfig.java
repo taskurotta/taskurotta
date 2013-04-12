@@ -19,15 +19,12 @@ public class InternalPoolConfig {
     public int getPoolSize() {
         return poolSize;
     }
-
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
-
     public long getThreadTimeout() {
         return threadTimeout;
     }
-
     public void setThreadTimeout(long threadTimeout) {
         this.threadTimeout = threadTimeout;
     }

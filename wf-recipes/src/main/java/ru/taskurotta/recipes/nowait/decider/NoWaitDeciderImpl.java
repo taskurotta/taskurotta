@@ -13,37 +13,45 @@ import ru.taskurotta.test.FlowArbiter;
  * Created by void 27.03.13 17:11
  */
 public class NoWaitDeciderImpl implements NoWaitDecider {
-    protected final static Logger log = LoggerFactory.getLogger(NoWaitDeciderImpl.class);
+	protected final static Logger log = LoggerFactory.getLogger(NoWaitDeciderImpl.class);
 
-    private FlowArbiter arbiter;
-    private FastWorkerClient worker;
-    private NoWaitDeciderImpl async;
+	private FlowArbiter arbiter;
+	private FastWorkerClient worker;
+	private NoWaitDeciderImpl async;
 
-    @Override
-    public void start() {
-        log.info("start");
-        arbiter.notify("start");
-        Promise<Integer> pB = worker.taskB();
-        Promise<Integer> pC = worker.taskC();
-        async.process(pB, pC);
-    }
+	@Override
+	public void start() {
+		log.info("start");
+		arbiter.notify("start");
+		Promise<Integer> pB = worker.taskB();
+		Promise<Integer> pC = worker.taskC();
+		Promise<Integer> pProcess = async.process(pB, pC);
+		async.finish(pProcess);
+	}
 
-    @Asynchronous
-    public Promise<Integer> process(@NoWait Promise<Integer> b, Promise<Integer> c) {
-        log.info("process({}, {})", b, c.get());
-        arbiter.notify("process");
-        return worker.taskE(b);
-    }
+	@Asynchronous
+	public Promise<Integer> process(@NoWait Promise<Integer> b, Promise<Integer> c) {
+		log.info("process({}, {})", b, c.get());
+		arbiter.notify("process");
+		log.info("process done");
+		return worker.taskD(b);
+	}
 
-    public void setWorker(FastWorkerClient worker) {
-        this.worker = worker;
-    }
+	@Asynchronous
+	public void finish(Promise<Integer> p) {
+		log.info("finish: {}", p.get());
+		arbiter.notify("finish");
+	}
 
-    public void setAsync(NoWaitDeciderImpl async) {
-        this.async = async;
-    }
+	public void setWorker(FastWorkerClient worker) {
+		this.worker = worker;
+	}
 
-    public void setArbiter(FlowArbiter arbiter) {
-        this.arbiter = arbiter;
-    }
+	public void setAsync(NoWaitDeciderImpl async) {
+		this.async = async;
+	}
+
+	public void setArbiter(FlowArbiter arbiter) {
+		this.arbiter = arbiter;
+	}
 }
