@@ -83,9 +83,9 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public UUID poll(ActorDefinition actorDefinition) {
+    public UUID poll(String actorId, String taskList) {
 
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
 
         UUID taskId = null;
         try {
@@ -114,12 +114,12 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void pollCommit(ActorDefinition actorDefinition, UUID taskId) {
+    public void pollCommit(String actorId, UUID taskId) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, long startTime) {
+    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
         queue.add(new DelayedTaskElement(taskId, startTime));
