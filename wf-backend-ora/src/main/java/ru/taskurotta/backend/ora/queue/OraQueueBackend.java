@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: moroz
@@ -37,7 +36,7 @@ public class OraQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, long startTime) {
+    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
         try {
             //String queueName = getQueueName(actorDefinition.getName(), actorDefinition.getVersion());
             log.debug("addTaskToQueue taskId = [{}]", taskId);
@@ -59,8 +58,8 @@ public class OraQueueBackend implements QueueBackend {
     }
 
     @Override
-    public UUID poll(ActorDefinition actorDefinition) {
-        String queueName = getTableName(getQueueName(actorDefinition.getName(), actorDefinition.getVersion()));
+    public UUID poll(String actorId, String taskList) {
+        String queueName = getTableName(actorId);
         if (queueName != null) {
             try {
                 final UUID taskId = dbDAO.pollTask(queueName);
@@ -73,13 +72,10 @@ public class OraQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void pollCommit(ActorDefinition actorDefinition, UUID taskId) {
+    public void pollCommit(String actorId, UUID taskId) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public static String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {
-        return actorDefinitionName + '#' + actorDefinitionVersion;
-    }
 
     private String getTableName(String queueName) {
         Long id = queueNames.get(queueName);
