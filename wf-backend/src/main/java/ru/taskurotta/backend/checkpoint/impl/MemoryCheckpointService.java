@@ -1,17 +1,19 @@
 package ru.taskurotta.backend.checkpoint.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 
@@ -19,30 +21,29 @@ import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 /**
  * CheckpointService implementation with memory Set<Checkpoint> storage
  */
-public class CheckpointServiceMemory implements CheckpointService {
+public class MemoryCheckpointService implements CheckpointService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CheckpointServiceMemory.class);
+    private static final Logger logger = LoggerFactory.getLogger(MemoryCheckpointService.class);
 
-    private Map<String, Set<Checkpoint>> checkpointStorage = new ConcurrentHashMap<String, Set<Checkpoint>>();
+    private Map<TimeoutType, Set<Checkpoint>> checkpointStorage = new ConcurrentHashMap<TimeoutType, Set<Checkpoint>>();
 
     public void addCheckpoint(Checkpoint checkpoint) {
-        if(isTyped(checkpoint)) {
-            Set<Checkpoint> set = getTypedSet(checkpoint.getType(), true);
+        if(hasTimeoutType(checkpoint)) {
+            Set<Checkpoint> set = getTypedSet(checkpoint.getTimeoutType(), true);
             set.add(checkpoint);
         } else {
             logger.error("Cannot add empty type Checkpoint [{}]", checkpoint);
         }
     }
 
-
-    private Set<Checkpoint> getTypedSet(String type, boolean createIfMissing) {
+    private Set<Checkpoint> getTypedSet(TimeoutType type, boolean createIfMissing) {
         Set<Checkpoint> result = null;
         if(type!=null) {
             result = checkpointStorage.get(type);
             if(createIfMissing && result==null) {
                 synchronized (this) {
                     //TODO: some other threadsafe implementation?
-                    result = new CopyOnWriteArraySet<Checkpoint>();
+                    result = Collections.synchronizedSet(new HashSet<Checkpoint>());
                     checkpointStorage.put(type, result);
                 }
             }
@@ -50,18 +51,14 @@ public class CheckpointServiceMemory implements CheckpointService {
         return result;
     }
 
-    private static boolean isTyped(Checkpoint checkpoint) {
-        return checkpoint!=null && checkpoint.getType()!=null && checkpoint.getType().trim().length()>0;
-    }
-
     @Override
     public void removeCheckpoint(Checkpoint checkpoint) {
-        if(isTyped(checkpoint)) {
-            Set<Checkpoint> set = getTypedSet(checkpoint.getType(), false);
+        if(hasTimeoutType(checkpoint)) {
+            Set<Checkpoint> set = getTypedSet(checkpoint.getTimeoutType(), false);
             if(set != null) {
                 set.remove(checkpoint);
             } else {
-                logger.debug("Skipping checkpoint[{}] removal: storage for type[{}] have not been created yet", checkpoint, checkpoint.getType());
+                logger.debug("Skipping checkpoint[{}] removal: storage for timeout type[{}] have not been created yet", checkpoint, checkpoint.getTimeoutType());
             }
         } else {
             logger.error("Cannot remove empty type Checkpoint [{}]", checkpoint);
@@ -71,8 +68,8 @@ public class CheckpointServiceMemory implements CheckpointService {
     @Override
     public List<Checkpoint> listCheckpoints(CheckpointQuery command) {
         List<Checkpoint> result = new ArrayList<Checkpoint>();
-        if(command!=null && command.getType()!=null && command.getType().trim().length()>0) {
-            Set<Checkpoint> set = getTypedSet(command.getType(), false);
+        if(command!=null && command.getTimeoutType()!=null) {
+            Set<Checkpoint> set = getTypedSet(command.getTimeoutType(), false);
             if(set != null) {
                 for(Checkpoint item: set) {
                     if(validAgainstCommand(item, command)) {
@@ -96,28 +93,28 @@ public class CheckpointServiceMemory implements CheckpointService {
                 result = result && checkpoint.getTime()<command.getMaxTime();
             }
 
-            if(command.getType() != null) {
-                result = result && command.getType().equals(command.getType());
+            if(command.getEntityType() != null) {
+                result = result && command.getEntityType().equals(checkpoint.getEntityType());
             }
         }
         return result;
     }
 
     @Override
-    public void addCheckpoints(String type, List<Checkpoint> checkpoints) {
+    public void addCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoints) {
         if(checkpoints == null) {
             return;
         }
-        Set<Checkpoint> set = getTypedSet(type, true);
+        Set<Checkpoint> set = getTypedSet(timeoutType, true);
         set.addAll(checkpoints);
     }
 
     @Override
-    public void removeCheckpoints(String type, List<Checkpoint> checkpoints) {
+    public void removeCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoints) {
         if(checkpoints == null) {
             return;
         }
-        Set<Checkpoint> set = getTypedSet(type, false);
+        Set<Checkpoint> set = getTypedSet(timeoutType, false);
         if(set != null) {
             set.removeAll(checkpoints);
         } else {
@@ -127,21 +124,28 @@ public class CheckpointServiceMemory implements CheckpointService {
 
 
     @Override
-    public List<Checkpoint> getCheckpoints(UUID uuid, String type) {
+    public List<Checkpoint> getCheckpoints(UUID uuid, TimeoutType timeoutType) {
         List<Checkpoint> result = new ArrayList<Checkpoint>();
-        if(type!=null && type.trim().length()>0) {
-            Set<Checkpoint> set = getTypedSet(type, false);
+        if(timeoutType != null) {
+            Set<Checkpoint> set = getTypedSet(timeoutType, false);
             if(set != null) {
-                for(Checkpoint item: set) {
-                    if(item.getGuid().equals(uuid)) {
-                        result.add(item);
+                synchronized (set) {
+                    for(Checkpoint item: set) {
+                        if(item.getGuid().equals(uuid)) {
+                            result.add(item);
+                        }
                     }
                 }
             }
         } else {
-            logger.debug("Cannot get checkpoint with empty type [{}]", type);
+            logger.debug("Cannot get checkpoint with empty timeout type [{}]", timeoutType);
         }
         return result;
     }
+
+    private static boolean hasTimeoutType(Checkpoint checkpoint) {
+        return checkpoint!=null && checkpoint.getTimeoutType()!=null;
+    }
+
 
 }

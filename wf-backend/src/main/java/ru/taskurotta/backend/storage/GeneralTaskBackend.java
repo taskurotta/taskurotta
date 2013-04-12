@@ -6,7 +6,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.impl.CheckpointServiceMemory;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
@@ -24,7 +25,7 @@ public class GeneralTaskBackend implements TaskBackend {
 
     private TaskDao taskDao;
 
-    private CheckpointService checkpointService = new CheckpointServiceMemory();//Default memory implementation
+    private CheckpointService checkpointService = new MemoryCheckpointService();//Default memory implementation
 
     public GeneralTaskBackend(TaskDao taskDao) {
         this.taskDao = taskDao;
@@ -85,7 +86,9 @@ public class GeneralTaskBackend implements TaskBackend {
 
         }
 
-        checkpointService.addCheckpoint(new Checkpoint(taskId, task.getActorId(), System.currentTimeMillis()));
+        //Setting TASK_START checkpoint
+        Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());
+        checkpointService.addCheckpoint(startCheckpoint);
 
         return task;
     }
@@ -138,29 +141,27 @@ public class GeneralTaskBackend implements TaskBackend {
         logger.debug("addDecision() taskDecision = [{}]", taskDecision);
 
         UUID taskId = taskDecision.getTaskId();
-        TaskContainer task = taskDao.getTask(taskId);
-
-        //TODO: find some better way of setting/releasing checkpoints & determine checkpoint type
-        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, task.getActorId());
-        checkpointService.removeCheckpoints(task.getActorId(), existingCheckpoints);
-
 
         taskDao.addDecision(taskDecision);
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
+            TaskContainer task = taskDao.getTask(taskId);
             task.incrementNumberOfAttempts();
             taskDao.updateTask(task);
         }
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
-        if (taskContainers == null) {
-            return;
+        if (taskContainers!=null) {
+            for (TaskContainer taskContainer : taskContainers) {
+                taskDao.addTask(taskContainer);
+            }
         }
 
-        for (TaskContainer taskContainer : taskContainers) {
-            taskDao.addTask(taskContainer);
-        }
+        //Removing TASK_START checkpoint
+        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
+        checkpointService.removeCheckpoints(TimeoutType.TASK_START_TO_CLOSE, existingCheckpoints);
+
     }
 
     @Override
@@ -178,10 +179,7 @@ public class GeneralTaskBackend implements TaskBackend {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        boolean result = false;
-        TaskContainer task = getTask(taskId);
-
-        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, task.getActorId());
+        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
         return checkpoints != null && !checkpoints.isEmpty();
     }
 

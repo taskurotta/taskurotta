@@ -5,7 +5,7 @@ runtime:
         context: ru/taskurotta/example/calculate/RuntimeBeans.xml
         properties:
           sleep: -1
-          failChance: 0.3
+          failChance: 0.0
 
 
 spreader:
