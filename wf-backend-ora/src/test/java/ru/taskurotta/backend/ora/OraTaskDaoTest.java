@@ -23,7 +23,6 @@ public class OraTaskDaoTest {
         TaskContainer task1 = dao.getTask(task.getTaskId());
         Assert.assertEquals(task.getStartTime(), task1.getStartTime());
         Assert.assertEquals(task.getArgs().length, task1.getArgs().length);
-        dao.markTaskProcessing(task.getTaskId(), true);
-        Assert.assertTrue(dao.isTaskInProgress(task.getTaskId()));
+
     }
 }

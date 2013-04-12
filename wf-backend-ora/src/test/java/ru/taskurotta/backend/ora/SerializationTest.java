@@ -10,9 +10,7 @@ import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.ArgType;
-import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.TaskTargetImpl;
 
 /**
  * User: moroz
@@ -22,27 +20,28 @@ public class SerializationTest {
 
     static TaskContainer createTaskContainer() {
         UUID originalUuid = UUID.randomUUID();
+        UUID processUuid = UUID.randomUUID();
         TaskType originalTaskType = TaskType.WORKER;
         String originalName = "test.me.worker";
         String originalVersion = "7.6.5";
         String originalMethod = "doSomeWork";
-        TaskTarget originalTaskTarget = new TaskTargetImpl(originalTaskType, originalName, originalVersion, originalMethod);
+        String originalActorId = originalName + "#" + originalVersion;
         long originalStartTime = System.currentTimeMillis();
         int originalNumberOfAttempts = 5;
 
         String origArg1ClassName = "null";
         String origArg1Value = "null";
-        ArgContainer originalArg1 = new ArgContainer(origArg1ClassName, true, originalUuid, false, origArg1Value);
+        ArgContainer originalArg1 = new ArgContainer(origArg1ClassName, true, originalUuid, false, origArg1Value, false);
 
         String origArg2ClassName = "java.lang.String";
         String origArg2Value = "string value here";
-        ArgContainer originalArg2 = new ArgContainer(origArg2ClassName, false, originalUuid, true, origArg2Value);
+        ArgContainer originalArg2 = new ArgContainer(origArg2ClassName, false, originalUuid, true, origArg2Value, false);
 
 
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
 
-        return new TaskContainer(originalUuid, originalTaskTarget, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
     }
 
     @Test

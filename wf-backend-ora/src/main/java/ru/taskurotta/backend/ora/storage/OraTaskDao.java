@@ -94,41 +94,6 @@ public class OraTaskDao implements TaskDao {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-//    @Override
-//    public void markTaskProcessing(UUID taskId, boolean inProcess) {
-//        try {
-//            final Connection connection = dataSource.getConnection();
-//            final PreparedStatement ps = connection.prepareStatement("UPDATE TASK SET IN_PROCESSING = ? WHERE UUID = ?");
-//            ps.setString(2, taskId.toString());
-//            ps.setInt(1, inProcess ? 1 : 0);
-//            ps.executeUpdate();
-//            ps.close();
-//            connection.close();
-//        } catch (SQLException ex) {
-//            log.error("DataBase exception: " + ex.getMessage(), ex);
-//        }
-//    }
-//
-//    @Override
-//    public boolean isTaskInProgress(UUID taskId) {
-//        boolean result = false;
-//        try {
-//            final Connection connection = dataSource.getConnection();
-//            final PreparedStatement ps = connection.prepareStatement("SELECT IN_PROCESSING FROM TASK WHERE UUID = ?");
-//            ps.setString(1, taskId.toString());
-//            ResultSet rs = ps.executeQuery();
-//            while (rs.next()) {
-//                result = (rs.getInt(1) == 1) ? true : false;
-//            }
-//            ps.close();
-//            connection.close();
-//
-//        } catch (SQLException ex) {
-//            log.error("DataBase exception: " + ex.getMessage(), ex);
-//        }
-//        return result;
-//    }
-
     @Override
     public boolean isTaskReleased(UUID taskId) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
