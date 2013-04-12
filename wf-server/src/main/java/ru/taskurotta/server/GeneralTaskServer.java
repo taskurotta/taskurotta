@@ -1,5 +1,8 @@
 package ru.taskurotta.server;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
@@ -14,9 +17,6 @@ import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario
@@ -90,7 +90,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // atomic statement
-        UUID taskId = queueBackend.poll(actorDefinition);
+        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), null);
 
         if (taskId == null) {
             return null;
@@ -99,7 +99,7 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
 
-        queueBackend.pollCommit(actorDefinition, taskId);
+        queueBackend.pollCommit(actorDefinition.getFullName(), taskId);
 
         return taskContainer;
     }
@@ -175,7 +175,7 @@ public class GeneralTaskServer implements TaskServer {
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        queueBackend.enqueueItem(actorId, taskId, startTime);
+        queueBackend.enqueueItem(actorId, taskId, startTime, null);
     }
 
 }
