@@ -8,7 +8,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.impl.CheckpointServiceMemory;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 
@@ -16,7 +16,7 @@ public class TestCheckpointServiceMemory {
 
     @Test
     public void testCheckpointServiceMemory() {
-        CheckpointService checkpointService = new CheckpointServiceMemory();
+        CheckpointService checkpointService = new MemoryCheckpointService();
 
         UUID uuid1 = UUID.randomUUID();
         UUID uuid2 = UUID.randomUUID();

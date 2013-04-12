@@ -19,9 +19,9 @@ import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 /**
  * CheckpointService implementation with memory Set<Checkpoint> storage
  */
-public class CheckpointServiceMemory implements CheckpointService {
+public class MemoryCheckpointService implements CheckpointService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CheckpointServiceMemory.class);
+    private static final Logger logger = LoggerFactory.getLogger(MemoryCheckpointService.class);
 
     private Map<String, Set<Checkpoint>> checkpointStorage = new ConcurrentHashMap<String, Set<Checkpoint>>();
 
