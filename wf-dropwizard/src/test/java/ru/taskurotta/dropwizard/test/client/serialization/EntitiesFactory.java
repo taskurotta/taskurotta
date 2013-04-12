@@ -8,6 +8,7 @@ import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.ActorExecutionException;
 import ru.taskurotta.util.ActorDefinition;
@@ -53,7 +54,7 @@ public class EntitiesFactory {
         if(isError) {
             return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis()+9000l, tasks);
         } else {
-            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, -1, tasks);
+            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, TaskDecision.NO_RESTART, tasks);
         }
 
     }
