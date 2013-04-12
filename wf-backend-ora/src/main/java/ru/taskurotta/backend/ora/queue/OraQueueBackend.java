@@ -37,22 +37,22 @@ public class OraQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void enqueueItem(ActorDefinition actorDefinition, UUID taskId, long startTime) {
+    public void enqueueItem(String actorId, UUID taskId, long startTime) {
         try {
-            String queueName = getQueueName(actorDefinition.getName(), actorDefinition.getVersion());
+            //String queueName = getQueueName(actorDefinition.getName(), actorDefinition.getVersion());
             log.debug("addTaskToQueue taskId = [{}]", taskId);
 
             synchronized (queueNames) {
-                if (!queueNames.containsKey(queueName)) {
-                    log.warn("Create queue for target [{}]", actorDefinition.getName());
-                    long queueId = dbDAO.registerQueue(queueName);
-                    queueNames.put(queueName, queueId);
+                if (!queueNames.containsKey(actorId)) {
+                    log.warn("Create queue for target [{}]", actorId);
+                    long queueId = dbDAO.registerQueue(actorId);
+                    queueNames.put(actorId, queueId);
                     log.warn("Queues count [{}] ", queueNames.size());
                     dbDAO.createQueue(TABLE_PREFIX + queueId);
                 }
             }
 
-            dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), getTableName(queueName));
+            dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), getTableName(actorId));
         } catch (SQLException ex) {
             log.error("Database error", ex);
         }
@@ -73,8 +73,8 @@ public class OraQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void pollCommit(UUID taskId) {
-        //There is no need to implement this method for Oracle.
+    public void pollCommit(ActorDefinition actorDefinition, UUID taskId) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public static String getQueueName(String actorDefinitionName, String actorDefinitionVersion) {

@@ -2,6 +2,7 @@ package ru.taskurotta.backend.ora;
 
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
 import ru.taskurotta.backend.ora.dao.DbConnect;
@@ -28,7 +29,7 @@ public class OraBackendBundle implements BackendBundle {
         this.taskBackend = new GeneralTaskBackend(taskDao);
         this.queueBackend = new OraQueueBackend(dbConnect);
         this.dependencyBackend = new MemoryDependencyBackend();
-        this.configBackend = new ConfigBackend();
+        this.configBackend = new MemoryConfigBackend();
     }
 
     public ConfigBackend getConfigBackend() {
