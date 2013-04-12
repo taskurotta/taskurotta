@@ -63,9 +63,7 @@ public class EntitiesFactory {
         ErrorContainer result = new ErrorContainer();
         result.setClassName(ActorExecutionException.class.getName());
         result.setMessage("Test exception");
-        Exception e = new Exception();
-        e.fillInStackTrace();
-        result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));
+        result.setStackTrace("Test stack trace");
         return result;
     }
 
