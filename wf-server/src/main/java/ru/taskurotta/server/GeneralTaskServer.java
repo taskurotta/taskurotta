@@ -13,8 +13,8 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -115,15 +115,14 @@ public class GeneralTaskServer implements TaskServer {
 
         // if Error
         if (taskDecision.containsError()) {
-            final ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != -1;
+            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != TaskDecision.NO_RESTART;
 
             // enqueue task immediately if needed
             if (isShouldBeRestarted) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
-                logger.debug("Error task enqueued again, taskId[{]]", taskId);
+                logger.debug("Error task enqueued again, taskId [{}]", taskId);
                 enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime());
             }
 
