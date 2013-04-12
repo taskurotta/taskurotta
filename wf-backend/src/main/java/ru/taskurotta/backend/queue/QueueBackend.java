@@ -2,8 +2,6 @@ package ru.taskurotta.backend.queue;
 
 import java.util.UUID;
 
-import ru.taskurotta.util.ActorDefinition;
-
 /**
  * User: romario
  * Date: 4/1/13
@@ -14,10 +12,10 @@ public interface QueueBackend {
     /**
      * Create TASK_POLL_TIMEOUT checkpoint.
      *
-     * @param actorDefinition
+     * @param actorId
      * @return
      */
-    public UUID poll(ActorDefinition actorDefinition);
+    public UUID poll(String actorId, String taskList);
 
 
     /**
@@ -26,9 +24,9 @@ public interface QueueBackend {
      *
      * @param taskId
      */
-    public void pollCommit(ActorDefinition actorDefinition, UUID taskId);
+    public void pollCommit(String actorId, UUID taskId);
 
 
-    public void enqueueItem(String actorId, UUID taskId, long startTime);
+    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList);
 
 }

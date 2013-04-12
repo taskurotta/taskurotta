@@ -1,7 +1,6 @@
 package ru.taskurotta.server.recovery;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -74,11 +73,11 @@ public class TaskExpirationRecovery implements Runnable {
                 if(isReadyToRecover(checkpoint)) {
                     TaskContainer task = taskBackend.getTask(checkpoint.getGuid());
                     try {
-                        queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime());
+                        queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime(), null);
                         checkpointService.removeCheckpoint(checkpoint);
                         counter++;
-                    } catch(Exception e) {
-                        logger.error("Cannot recover task["+task.getTaskId()+"]", e);
+                    } catch (Exception e) {
+                        logger.error("Cannot recover task[" + task.getTaskId() + "]", e);
                     }
                 }
             }
@@ -117,18 +116,18 @@ public class TaskExpirationRecovery implements Runnable {
 
     private void initConfigs(ActorPreferences[] actorPrefs) {
         logger.debug("Initializing recovery config with actorPrefs[{}]", actorPrefs);
-        if(actorPrefs!=null) {
+        if (actorPrefs != null) {
             try {
                 expirationPolicyMap = new HashMap<String, ExpirationPolicy>();
                 for(ActorPreferences actorConfig: actorPrefs) {
                     ExpirationPolicy expPolicy = null;
                     ActorPreferences.ExpirationPolicyConfig expPolicyConf = actorConfig.getExpirationPolicy();
 
-                    if(expPolicyConf!=null) {
+                    if (expPolicyConf != null) {
                         Class<?> expPolicyClass = Class.forName(expPolicyConf.getClassName());
                         Properties expPolicyProps = expPolicyConf.getProperties();
 
-                        if(expPolicyProps != null) {
+                        if (expPolicyProps != null) {
                             expPolicy = (ExpirationPolicy) expPolicyClass.getConstructor(Properties.class).newInstance(expPolicyProps);
                         } else {
                             expPolicy = (ExpirationPolicy) expPolicyClass.newInstance();
@@ -139,8 +138,8 @@ public class TaskExpirationRecovery implements Runnable {
 
                 }
 
-            } catch(Exception e) {
-                logger.error("TaskExpirationRecovery#initConfigs invocation failed! actorPrefs["+actorPrefs+"]", e);
+            } catch (Exception e) {
+                logger.error("TaskExpirationRecovery#initConfigs invocation failed! actorPrefs[" + actorPrefs + "]", e);
                 throw new RuntimeException(e);
             }
         }
@@ -151,7 +150,7 @@ public class TaskExpirationRecovery implements Runnable {
     }
 
     private static boolean repeat(String schedule) {
-        if(schedule == null) {
+        if (schedule == null) {
             return false;
         }
         Integer number = Integer.valueOf(schedule.replaceAll("\\D", "").trim());
@@ -162,24 +161,6 @@ public class TaskExpirationRecovery implements Runnable {
             logger.error("TaskExpirationRecovery schedule interrupted", e);
         }
         return true;
-    }
-
-    private static List<Checkpoint> filterNonExpired(List<Checkpoint> activeTasks, long timeout) {
-        if(activeTasks!=null && !activeTasks.isEmpty()) {
-            int removed = 0;
-            int initialSize = activeTasks.size();
-            Iterator<Checkpoint> iterator = activeTasks.iterator();
-            while(iterator.hasNext()) {
-                Checkpoint item = iterator.next();
-                logger.debug("Validating item[{}], timeout[{}], currentTime[{}]", item, timeout, System.currentTimeMillis());
-                if(item.getTime()+timeout > System.currentTimeMillis()) {//not expired
-                    iterator.remove();
-                    removed++;
-                }
-            }
-            logger.debug("Removed [{}] items from active task list sized[{}] with timeout[{}]", removed, initialSize, timeout);
-        }
-        return activeTasks;
     }
 
     public void setQueueBackend(QueueBackend queueBackend) {

@@ -1,5 +1,8 @@
 package ru.taskurotta.server;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
@@ -10,13 +13,10 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario
@@ -90,7 +90,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // atomic statement
-        UUID taskId = queueBackend.poll(actorDefinition);
+        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), null);
 
         if (taskId == null) {
             return null;
@@ -99,7 +99,7 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
 
-        queueBackend.pollCommit(actorDefinition, taskId);
+        queueBackend.pollCommit(actorDefinition.getFullName(), taskId);
 
         return taskContainer;
     }
@@ -115,15 +115,14 @@ public class GeneralTaskServer implements TaskServer {
 
         // if Error
         if (taskDecision.containsError()) {
-            final ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != -1;
+            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != TaskDecision.NO_RESTART;
 
             // enqueue task immediately if needed
             if (isShouldBeRestarted) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
-                logger.debug("Error task enqueued again, taskId[{]]", taskId);
+                logger.debug("Error task enqueued again, taskId [{}]", taskId);
                 enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime());
             }
 
@@ -175,7 +174,7 @@ public class GeneralTaskServer implements TaskServer {
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        queueBackend.enqueueItem(actorId, taskId, startTime);
+        queueBackend.enqueueItem(actorId, taskId, startTime, null);
     }
 
 }

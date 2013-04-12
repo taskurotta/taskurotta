@@ -6,7 +6,6 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.exception.ActorRuntimeException;
 import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.policy.retry.RetryPolicy;
@@ -54,12 +53,10 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
         } catch(Throwable e) {
             log.error("Unexpected error processing task ["+task+"]", e);
 
-            ActorRuntimeException actorRuntimeException = new ActorRuntimeException(e);
-
             RetryPolicy retryPolicy = targetReference.getRetryPolicy();
 
-            long restartTime = -1; // ToDo: use global constant, maybe ru.taskurotta.policy.PolicyConstants
-            if (retryPolicy != null && retryPolicy.isRetryable(actorRuntimeException)) {
+            long restartTime = TaskDecision.NO_RESTART;
+            if (retryPolicy != null && retryPolicy.isRetryable(e)) {
                 long nextRetryDelaySeconds = 0;
                 long recordedFailure = System.currentTimeMillis();
                 if (task.getNumberOfAttempts() > 2) {
@@ -69,7 +66,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 restartTime = recordedFailure + nextRetryDelaySeconds * 1000;
             }
 
-            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), actorRuntimeException, RuntimeContext.getCurrent().getTasks(), restartTime);
+            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), e, RuntimeContext.getCurrent().getTasks(), restartTime);
 
         } finally {
             RuntimeContext.finish();
