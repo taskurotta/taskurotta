@@ -1,15 +1,15 @@
 package ru.taskurotta.backend.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.util.ActorDefinition;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario
@@ -57,6 +57,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
         /**
          * startTime not used because we assume than no duplication in queue
+         *
          * @param o
          * @return
          */
@@ -82,9 +83,9 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public UUID poll(ActorDefinition actorDefinition) {
+    public UUID poll(String actorId) {
 
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
 
         UUID taskId = null;
         try {
@@ -113,7 +114,7 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void pollCommit(ActorDefinition actorDefinition, UUID taskId) {
+    public void pollCommit(String actorId, UUID taskId) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
