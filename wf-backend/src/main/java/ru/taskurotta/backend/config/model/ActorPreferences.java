@@ -2,13 +2,10 @@ package ru.taskurotta.backend.config.model;
 
 import java.util.Properties;
 
-import ru.taskurotta.util.ActorDefinition;
-
 public class ActorPreferences {
 
     private String id;
-    private String name;
-    private String version;
+    private String type;
     private boolean blocked = false;
     private ExpirationPolicyConfig expirationPolicy;
 
@@ -17,9 +14,6 @@ public class ActorPreferences {
     }
     public void setId(String id) {
         this.id = id;
-    }
-    public ActorDefinition getActorDefinition() {
-        return ActorDefinition.valueOf(name, version);
     }
     public boolean isBlocked() {
         return blocked;
@@ -33,17 +27,11 @@ public class ActorPreferences {
     public void setExpirationPolicy(ExpirationPolicyConfig expirationPolicy) {
         this.expirationPolicy = expirationPolicy;
     }
-    public String getName() {
-        return name;
+    public String getType() {
+        return type;
     }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public String getVersion() {
-        return version;
-    }
-    public void setVersion(String version) {
-        this.version = version;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public class ExpirationPolicyConfig {
@@ -73,9 +61,8 @@ public class ActorPreferences {
 
     @Override
     public String toString() {
-        return "ActorPreferences [name=" + name + ", version=" + version
-                + ", blocked=" + blocked + ", expirationPolicy="
-                + expirationPolicy + "]";
+        return "ActorPreferences [id=" + id + ", type=" + type + ", blocked="
+                + blocked + ", expirationPolicy=" + expirationPolicy + "]";
     }
 
 }

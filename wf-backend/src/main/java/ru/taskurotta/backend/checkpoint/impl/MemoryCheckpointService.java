@@ -129,9 +129,11 @@ public class MemoryCheckpointService implements CheckpointService {
         if(timeoutType != null) {
             Set<Checkpoint> set = getTypedSet(timeoutType, false);
             if(set != null) {
-                for(Checkpoint item: set) {
-                    if(item.getGuid().equals(uuid)) {
-                        result.add(item);
+                synchronized (set) {
+                    for(Checkpoint item: set) {
+                        if(item.getGuid().equals(uuid)) {
+                            result.add(item);
+                        }
                     }
                 }
             }

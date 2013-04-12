@@ -1,8 +1,8 @@
 contextLocation: "classpath*:context/appContext.xml"
 actorConfig:
   actorPreferences:
-    - name: "default"
-      version: "default"
+    - id: "default"
+      type: "default"
       expirationPolicy:
         className: "ru.taskurotta.server.config.expiration.FixedRetryPolicy"
         properties:
@@ -11,7 +11,7 @@ actorConfig:
           timeUnit: "SECONDS"
 properties:
   pollDelay: 1
-  expirationCheckSchedule: "20 SECONDS"
+  expirationCheckSchedule: "50 SECONDS"
   expirationCheckLimit: 100
 logging:
     level: WARN

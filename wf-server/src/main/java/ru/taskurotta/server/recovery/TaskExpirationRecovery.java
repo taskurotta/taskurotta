@@ -55,7 +55,7 @@ public class TaskExpirationRecovery implements Runnable {
             timeFrom = timeTill;
         }
 
-        logger.info("Recovered [{}] tasks for timeout type[{]]", counter);
+        logger.info("Recovered [{}] tasks for timeout type[{}]", counter, TimeoutType.TASK_START_TO_CLOSE);
 
     }
 
@@ -92,7 +92,7 @@ public class TaskExpirationRecovery implements Runnable {
         boolean result = false;
         if(checkpoint != null) {
             if(checkpoint.getEntityType() != null) {
-                ExpirationPolicy expPolicy = expirationPolicyMap.get(checkpoint.getEntityType());
+                ExpirationPolicy expPolicy = getExpirationPolicy(checkpoint.getEntityType());
                 if(expPolicy != null) {
                     long timeout = expPolicy.getExpirationTimeout(System.currentTimeMillis());
                     result = expPolicy.readyToRecover(checkpoint.getGuid())
@@ -100,6 +100,17 @@ public class TaskExpirationRecovery implements Runnable {
                 }
             }
 
+        }
+        return result;
+    }
+
+    private ExpirationPolicy getExpirationPolicy(String entityType) {
+        ExpirationPolicy result = null;
+        if(entityType!=null && expirationPolicyMap!=null) {
+            result = expirationPolicyMap.get(entityType);
+            if(result == null) {
+                result = expirationPolicyMap.get("default");
+            }
         }
         return result;
     }
