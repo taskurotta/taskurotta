@@ -15,7 +15,7 @@ public interface QueueBackend {
      * @param actorId
      * @return
      */
-    public UUID poll(String actorId);
+    public UUID poll(String actorId, String taskList);
 
 
     /**
@@ -27,6 +27,6 @@ public interface QueueBackend {
     public void pollCommit(String actorId, UUID taskId);
 
 
-    public void enqueueItem(String actorId, UUID taskId, long startTime);
+    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList);
 
 }

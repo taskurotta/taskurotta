@@ -83,7 +83,7 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public UUID poll(String actorId) {
+    public UUID poll(String actorId, String taskList) {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
 
@@ -119,7 +119,7 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, long startTime) {
+    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
         queue.add(new DelayedTaskElement(taskId, startTime));
