@@ -3,13 +3,13 @@ package ru.taskurotta.internal.proxy;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.NoWait;
+import ru.taskurotta.core.ActorShedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.exception.ProxyFactoryException;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,15 +28,13 @@ public final class ClientCheckerUtil {
      * @param actorInterface  - actor interface to compare to.
      */
     public static void checkInterfaceMatching(Class clientInterface, Class actorInterface) {
-
         // check: actor methods should have different names
+        Map<String, Method> clientMethodMap = new HashMap<String, Method>();
 
-        Map<String, Method> actorMethodMap = new HashMap<String, Method>();
-
-        for (Method method : actorInterface.getDeclaredMethods()) {
+        for (Method method : clientInterface.getDeclaredMethods()) {
             String methodName = method.getName();
 
-            Method anotherMethodWithSameName = actorMethodMap.put(methodName, method);
+            Method anotherMethodWithSameName = clientMethodMap.put(methodName, method);
             if (anotherMethodWithSameName != null) {
                 throw new ProxyFactoryException("Method overloading are not supported. Actor interface has two methods ("
                         + methodName + ") with same name.");
@@ -44,20 +42,16 @@ public final class ClientCheckerUtil {
         }
 
         // check: all client methods should have matching
+        for (Method actorMethod : actorInterface.getDeclaredMethods()) {
+            Method clientMethod = clientMethodMap.get(actorMethod.getName());
 
-        for (Method clientMethod : clientInterface.getDeclaredMethods()) {
-
-            Method actorMethod = actorMethodMap.get(clientMethod.getName());
-            if (actorMethod == null) {
-
-                throw new ProxyFactoryException("Client (" + clientInterface.getName() + ") method ("
-                        + clientMethod.getName() + ") has no match in actor (" + actorInterface.getName() + ").");
+            if (clientMethod == null) {
+                throw new ProxyFactoryException("Actor (" + actorInterface.getName() + ") method ("
+                        + actorMethod.getName() + ") has no match in client (" + clientInterface.getName() + ").");
             }
+
             checkMethodMatching(clientInterface, actorInterface, clientMethod, actorMethod);
-
-
         }
-
     }
 
 
@@ -71,16 +65,43 @@ public final class ClientCheckerUtil {
 
         if (actorParameterTypes.length != clientParameterTypes.length) {
 
-            // TODO: Using Variable Arguments<Promise> in tail of parameters: Actor.method(Type arg1, Type arg 2, Promise ... dependsOn); Planned to 2 stage
+            int difference = clientParameterTypes.length - actorParameterTypes.length;
+            Class lastArgumentClass;
+            Class penultimateArgumentClass;
 
-            throw new ProxyFactoryException("Quantity of client method parameters should be equals to actor method parameters: "
-                    + "client (" + clientInterface.getName() + "), actor (" + actorInterface.getName() + "), method ("
-                    + clientMethod.getName() + ").");
+            switch (difference) {
+
+                case 1:
+                    lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
+
+                    if (!lastArgumentClass.equals(Promise[].class)) {
+                        throw new ProxyFactoryException("Last custom argument in client interface method " +
+                                "must be Promise<?>..., but it: " + lastArgumentClass);
+                    }
+
+                    break;
+
+                case 2:
+                    lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
+                    penultimateArgumentClass = clientParameterTypes[clientParameterTypes.length - 2];
+
+                    if (!lastArgumentClass.equals(Promise[].class) && !penultimateArgumentClass.equals(ActorShedulingOptions.class)) {
+                        throw new ProxyFactoryException("Last and penultimate custom arguments in client interface method must be in order " +
+                                "(..., ActorShedulingOptions, Promise<?>...), but it: (..., " + penultimateArgumentClass + ", " + lastArgumentClass);
+                    }
+
+                    break;
+
+                default:
+                    throw new ProxyFactoryException("Quantity of client method parameters should be equals to actor method parameters: "
+                            + "client (" + clientInterface.getName() + "), actor (" + actorInterface.getName() + "), method ("
+                            + clientMethod.getName() + ").");
+            }
         }
 
         // check: method arguments
 
-        for (int i = 0; i < clientParameterTypes.length; i++) {
+        for (int i = 0; i < actorParameterTypes.length; i++) {
 
             // check: client method arguments should have matching
             // WARN: should we find the way to check generic parameter of the Promise class ?

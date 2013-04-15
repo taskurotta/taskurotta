@@ -3,6 +3,7 @@ package ru.taskurotta.internal.proxy;
 import org.junit.Test;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.annotation.WorkerClient;
+import ru.taskurotta.core.ActorShedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.ProxyFactoryException;
@@ -40,6 +41,8 @@ public class ClientCheckerUtilTest {
         public int method6(String arg1);
 
         public void method7(Promise<String> arg1);
+
+        public void method8(String arg1, ActorShedulingOptions actorShedulingOptions);
     }
 
     public static interface BadActor {
@@ -124,20 +127,16 @@ public class ClientCheckerUtilTest {
         Class clientInterface = BadClient.class;
         Class actorInterface = BadActor.class;
 
-        Map<String, Method> actorMethodMap = new HashMap<String, Method>();
-
-        for (Method method : actorInterface.getDeclaredMethods()) {
-            String methodName = method.getName();
-
-            actorMethodMap.put(methodName, method);
+        Map<String, Method> clientMethodMap = new HashMap<String, Method>();
+        for (Method method : clientInterface.getDeclaredMethods()) {
+            clientMethodMap.put(method.getName(), method);
         }
-
 
         // check: all client methods should have matching
 
-        for (Method clientMethod : clientInterface.getDeclaredMethods()) {
+        for (Method actorMethod : actorInterface.getDeclaredMethods()) {
 
-            Method actorMethod = actorMethodMap.get(clientMethod.getName());
+            Method clientMethod = clientMethodMap.get(actorMethod.getName());
 
             try {
                 ClientCheckerUtil.checkMethodMatching(clientInterface, actorInterface, clientMethod, actorMethod);
@@ -173,6 +172,10 @@ public class ClientCheckerUtilTest {
         public Promise<Void> method3(Promise<String> arg1, double arg2);
 
         public Promise<Integer> method4(Promise<String> arg1, double arg2);
+
+        public void method5(String arg1, Promise<?> ... waitFor);
+
+        public void method6(String arg1, ActorShedulingOptions actorShedulingOptions, Promise<?> ... waitFor);
     }
 
 
@@ -232,23 +235,17 @@ public class ClientCheckerUtilTest {
         Class clientInterface = GoodClient.class;
         Class actorInterface = GoodActor.class;
 
-        Map<String, Method> actorMethodMap = new HashMap<String, Method>();
+        Map<String, Method> clientMethodMap = new HashMap<String, Method>();
 
-        for (Method method : actorInterface.getDeclaredMethods()) {
-            String methodName = method.getName();
-
-            actorMethodMap.put(methodName, method);
+        for (Method method : clientInterface.getDeclaredMethods()) {
+            clientMethodMap.put(method.getName(), method);
         }
 
-
         // check: all client methods should have matching
-
-        for (Method clientMethod : clientInterface.getDeclaredMethods()) {
-
-            Method actorMethod = actorMethodMap.get(clientMethod.getName());
+        for (Method actorMethod : actorInterface.getDeclaredMethods()) {
+            Method clientMethod = clientMethodMap.get(actorMethod.getName());
 
             ClientCheckerUtil.checkMethodMatching(clientInterface, actorInterface, clientMethod, actorMethod);
         }
-
     }
 }
