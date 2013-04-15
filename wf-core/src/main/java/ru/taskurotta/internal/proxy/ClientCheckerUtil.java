@@ -28,13 +28,15 @@ public final class ClientCheckerUtil {
      * @param actorInterface  - actor interface to compare to.
      */
     public static void checkInterfaceMatching(Class clientInterface, Class actorInterface) {
-        // check: actor methods should have different names
-        Map<String, Method> clientMethodMap = new HashMap<String, Method>();
 
-        for (Method method : clientInterface.getDeclaredMethods()) {
+        // check: actor methods should have different names
+
+        Map<String, Method> actorMethodMap = new HashMap<String, Method>();
+
+        for (Method method : actorInterface.getDeclaredMethods()) {
             String methodName = method.getName();
 
-            Method anotherMethodWithSameName = clientMethodMap.put(methodName, method);
+            Method anotherMethodWithSameName = actorMethodMap.put(methodName, method);
             if (anotherMethodWithSameName != null) {
                 throw new ProxyFactoryException("Method overloading are not supported. Actor interface has two methods ("
                         + methodName + ") with same name.");
@@ -42,16 +44,20 @@ public final class ClientCheckerUtil {
         }
 
         // check: all client methods should have matching
-        for (Method actorMethod : actorInterface.getDeclaredMethods()) {
-            Method clientMethod = clientMethodMap.get(actorMethod.getName());
 
-            if (clientMethod == null) {
-                throw new ProxyFactoryException("Actor (" + actorInterface.getName() + ") method ("
-                        + actorMethod.getName() + ") has no match in client (" + clientInterface.getName() + ").");
+        for (Method clientMethod : clientInterface.getDeclaredMethods()) {
+
+            Method actorMethod = actorMethodMap.get(clientMethod.getName());
+            if (actorMethod == null) {
+
+                throw new ProxyFactoryException("Client (" + clientInterface.getName() + ") method ("
+                        + clientMethod.getName() + ") has no match in actor (" + actorInterface.getName() + ").");
             }
-
             checkMethodMatching(clientInterface, actorInterface, clientMethod, actorMethod);
+
+
         }
+
     }
 
 
@@ -74,9 +80,9 @@ public final class ClientCheckerUtil {
                 case 1:
                     lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
 
-                    if (!lastArgumentClass.equals(Promise[].class)) {
+                    if (!lastArgumentClass.equals(Promise[].class) && !lastArgumentClass.equals(ActorShedulingOptions.class)) {
                         throw new ProxyFactoryException("Last custom argument in client interface method " +
-                                "must be Promise<?>..., but it: " + lastArgumentClass);
+                                "must be Promise<?>... or ActorShedulingOptions, but it: " + lastArgumentClass);
                     }
 
                     break;
