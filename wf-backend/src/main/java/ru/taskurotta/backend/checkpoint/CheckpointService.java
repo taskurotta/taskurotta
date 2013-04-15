@@ -7,7 +7,7 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 
 /**
- * Service interface for managing checkpoints which timeouts are refer to.
+ * Service interface for managing checkpoints referred by timeouts.
  * For example, process expiration timeout would refer to the checkpoint
  * of process start time (and thus checkpoint should be removed at process end)
  */
