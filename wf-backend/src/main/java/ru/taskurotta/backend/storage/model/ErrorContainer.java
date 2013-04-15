@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.storage.model;
 
-import java.util.Arrays;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * User: romario
@@ -11,40 +12,26 @@ public class ErrorContainer {
 
     private String className;
     private String message;
-    private StackTraceElementContainer[] stackTrace;
+    private String stackTrace;
 
     public ErrorContainer() {
     }
 
-    public static StackTraceElementContainer[] convert(StackTraceElement[] stElements) {
-        if (stElements == null) {
-            return null;
-        }
-        StackTraceElementContainer[] result = new StackTraceElementContainer[stElements.length];
-        for (int i = 0; i < stElements.length; i++) {
-            StackTraceElement ste = stElements[i];
-            StackTraceElementContainer item = new StackTraceElementContainer();
-            item.setDeclaringClass(ste.getClassName());
-            item.setFileName(ste.getFileName());
-            item.setLineNumber(ste.getLineNumber());
-            item.setMethodName(ste.getMethodName());
-            result[i] = item;
-        }
-
-        return result;
+    public ErrorContainer(Throwable throwable) {
+        this.className = throwable.getClass().getName();
+        this.message = throwable.getMessage();
+        this.stackTrace = stackTraceToString(throwable);
     }
 
-    public static StackTraceElement[] convert(StackTraceElementContainer[] steContainers) {
-        if (steContainers == null) {
+    public static String stackTraceToString(Throwable throwable) {
+        if (throwable == null) {
             return null;
         }
-        StackTraceElement[] result = new StackTraceElement[steContainers.length];
-        for (int i = 0; i < steContainers.length; i++) {
-            StackTraceElementContainer containerItem = steContainers[i];
-            result[i] = new StackTraceElement(containerItem.getDeclaringClass(), containerItem.getMethodName(),
-                    containerItem.getFileName(), containerItem.getLineNumber());
-        }
-        return result;
+
+        StringWriter writer = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(writer));
+
+        return writer.toString();
     }
 
     public void setClassName(String className) {
@@ -63,19 +50,43 @@ public class ErrorContainer {
         return message;
     }
 
-    public StackTraceElementContainer[] getStackTrace() {
+    public String getStackTrace() {
         return stackTrace;
     }
 
-    public void setStackTrace(StackTraceElementContainer[] stackTrace) {
+    public void setStackTrace(String stackTrace) {
         this.stackTrace = stackTrace;
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ErrorContainer that = (ErrorContainer) o;
+
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (message != null ? !message.equals(that.message) : that.message != null) return false;
+        if (stackTrace != null ? !stackTrace.equals(that.stackTrace) : that.stackTrace != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = className != null ? className.hashCode() : 0;
+        result = 31 * result + (message != null ? message.hashCode() : 0);
+        result = 31 * result + (stackTrace != null ? stackTrace.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
-        return "ErrorContainer [className=" + className + ", message="
-                + message + ", stackTrace=" + Arrays.toString(stackTrace)
-                + "]";
+        return "ErrorContainer{" +
+                "className='" + className + '\'' +
+                ", message='" + message + '\'' +
+                ", stackTrace='" + stackTrace + '\'' +
+                "} " + super.toString();
     }
 
 }

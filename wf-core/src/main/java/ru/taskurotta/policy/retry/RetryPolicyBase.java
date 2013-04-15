@@ -82,10 +82,6 @@ public abstract class RetryPolicyBase implements RetryPolicy {
     public boolean isRetryable(Throwable failure) {
         boolean isRetryable = false;
         
-        if (failure.getCause() != null) {
-            failure = failure.getCause();
-        }
-        
         for (Class<? extends Throwable> exceptionToRetry: getExceptionsToRetry()) {
             if (exceptionToRetry.isAssignableFrom(failure.getClass())) {
                 isRetryable = true;

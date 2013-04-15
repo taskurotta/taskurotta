@@ -50,33 +50,6 @@ public class EntitiesComparator {
         }
     }
 
-    public static void compare(ErrorContainer expected, ErrorContainer actual) {
-        logger.debug("Comparing error containers: expected[{}], actual[{}]", expected, actual);
-        if(expected!=null) {
-            Assert.assertNotNull(actual);
-            if(actual!=null) {
-                Assert.assertEquals("ErrorContainer class names must be the same!", expected.getClassName(), actual.getClassName());
-                Assert.assertEquals("ErrorContainer messages must be the same", expected.getMessage(), actual.getMessage());
-
-                StackTraceElementContainer[] actualStacks = actual.getStackTrace();
-                StackTraceElementContainer[] expectedStacks = expected.getStackTrace();
-                if(expectedStacks != null) {
-                    Assert.assertNotNull(actualStacks);
-                    if(actualStacks!=null) {
-                        Assert.assertEquals("Stack trace arrays must have the same length", expectedStacks.length, actualStacks.length);
-                        for(int i = 0; i<expectedStacks.length;i++ ) {
-                            compare(expectedStacks[i], actualStacks[i]);
-                        }
-                    }
-                } else {
-                    Assert.assertNull(actualStacks);
-                }
-            }
-        } else {
-            Assert.assertNull(actual);
-        }
-    }
-
     public static void compare(TaskContainer expected, TaskContainer actual) {
         if(expected != null) {
             Assert.assertNotNull(actual);
@@ -113,20 +86,6 @@ public class EntitiesComparator {
         }
     }
 
-    public static void compare(StackTraceElementContainer expected, StackTraceElementContainer actual) {
-        if(expected!=null) {
-            Assert.assertNotNull(actual);
-            if(actual != null) {
-                Assert.assertEquals("StackTraceElementContainer declaring classes must be equal", expected.getDeclaringClass(), actual.getDeclaringClass());
-                Assert.assertEquals("StackTraceElementContainer file names must be equal", expected.getFileName(), actual.getFileName());
-                Assert.assertEquals("StackTraceElementContainer line numbers must be equal", expected.getLineNumber(), actual.getLineNumber());
-                Assert.assertEquals("StackTraceElementContainer method names must be equal", expected.getMethodName(), actual.getMethodName());
-            }
-        } else {
-            Assert.assertNull(actual);
-        }
-    }
-
     public static void compare(DecisionContainer expected, DecisionContainer actual) {
         if(expected != null) {
             Assert.assertNotNull(actual);
@@ -134,7 +93,7 @@ public class EntitiesComparator {
                 Assert.assertEquals("DecisionContainer taskId must be equal", expected.getTaskId(), actual.getTaskId());
                 Assert.assertEquals("DecisionContainer taskId must be equal", expected.getProcessId(), actual.getProcessId());
                 Assert.assertEquals("DecisionContainer restart times must be the same", expected.getRestartTime(), actual.getRestartTime());
-                compare(expected.getErrorContainer(), actual.getErrorContainer());
+                Assert.assertEquals("ErrorContainer must be the same", expected.getErrorContainer(), actual.getErrorContainer());
                 compare(expected.getValue(), actual.getValue());
                 if(expected.getTasks()!=null) {
                     Assert.assertNotNull(actual.getTasks());

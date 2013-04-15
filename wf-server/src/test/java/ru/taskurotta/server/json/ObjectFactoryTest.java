@@ -5,16 +5,16 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.test.TestTasks;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -150,4 +150,66 @@ public class ObjectFactoryTest {
     }
 
     // TODO: test dupm of DecisionContainer
+
+    @Test
+    public void testDumpError() {
+
+        class TestExceptions {
+
+            int start(int a, int b) {
+                return sum(a, b);
+            }
+
+            int sum(int a, int b) {
+                int result;
+
+                try {
+                    result = a + product(a, b);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("3 descendant exception", e);
+                }
+
+                return result;
+            }
+
+            int product(int a, int b) {
+                int result;
+
+                try {
+                    result = division(a, b) * b;
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("2 descendant exception", e);
+                }
+
+                return result;
+            }
+
+            int division(int a, int b) {
+                int result;
+
+                try {
+                    result = a / b;
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("1 descendant exception", e);
+                }
+
+                return result;
+            }
+        }
+
+        try {
+            TestExceptions test = new TestExceptions();
+            test.start(1, 0);
+        } catch (Throwable e) {
+            ErrorContainer errorContainer = new ErrorContainer(e);
+
+            StringWriter writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+
+            assertEquals(e.getClass().getName(), errorContainer.getClassName());
+            assertEquals(e.getMessage(), errorContainer.getMessage());
+            assertEquals(writer.toString(), errorContainer.getStackTrace());
+        }
+
+    }
 }
