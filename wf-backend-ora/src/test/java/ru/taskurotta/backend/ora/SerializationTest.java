@@ -7,10 +7,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import ru.taskurotta.backend.storage.model.ArgContainer;
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskType;
+import ru.taskurotta.exception.ActorExecutionException;
 
 /**
  * User: moroz
@@ -43,6 +46,36 @@ public class SerializationTest {
 
         return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
     }
+
+    public static DecisionContainer createDecisionContainer(boolean isError) {
+        UUID taskId = UUID.randomUUID();
+        UUID processId = UUID.randomUUID();
+        TaskContainer[] tasks = new TaskContainer[2];
+        tasks[0] = createTaskContainer();
+        tasks[1] = createTaskContainer();
+        if (isError) {
+            return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis() + 9000l, tasks);
+        } else {
+            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, -1, tasks);
+        }
+
+    }
+
+    public static ErrorContainer createErrorContainer() {
+        ErrorContainer result = new ErrorContainer();
+        result.setClassName(ActorExecutionException.class.getName());
+        result.setMessage("Test exception");
+        Exception e = new Exception();
+        e.fillInStackTrace();
+        result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));
+        return result;
+    }
+
+    public static ArgContainer createArgSimpleValue(UUID taskId) {
+        String value = "simple string value";
+        return new ArgContainer(value.getClass().getName(), false, taskId, true, value, false);
+    }
+
 
     @Test
     public void test() {
