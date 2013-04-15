@@ -33,7 +33,7 @@ public class MemoryBackendBundle implements BackendBundle {
         this.taskBackend = new GeneralTaskBackend(taskDao);
         this.queueBackend = new MemoryQueueBackend(pollDelay);
         this.memoryGraphDao = new MemoryGraphDao();
-        this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao, 100000); // ToDo: reduce this if taskRestarter works
+        this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao, 100000); // ToDo: reduce this if TaskExpirationRecovery works
         this.configBackend = new MemoryConfigBackend();
     }
 

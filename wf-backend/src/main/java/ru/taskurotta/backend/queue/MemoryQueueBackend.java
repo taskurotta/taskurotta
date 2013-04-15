@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ public class MemoryQueueBackend implements QueueBackend {
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
     private Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
     private CheckpointService checkpointService = new MemoryCheckpointService();
+    private Lock lock = new ReentrantLock();
 
     public MemoryQueueBackend(int pollDelay) {
 
@@ -148,15 +151,19 @@ public class MemoryQueueBackend implements QueueBackend {
 
     private DelayQueue<DelayedTaskElement> getQueue(String queueName) {
 
-        DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
-        if (queue == null) {
-            synchronized (this) {
+        try {
+            lock.lock();
+
+            DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+            if (queue == null) {
                 queue = new DelayQueue<DelayedTaskElement>();
                 queues.put(queueName, queue);
             }
-        }
 
-        return queue;
+            return queue;
+        } finally {
+            lock.unlock();
+        }
     }
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
