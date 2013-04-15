@@ -10,7 +10,6 @@ import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.exception.ActorExecutionException;
 import ru.taskurotta.util.ActorDefinition;
 
 public class EntitiesFactory {
@@ -61,7 +60,7 @@ public class EntitiesFactory {
 
     public static ErrorContainer createErrorContainer() {
         ErrorContainer result = new ErrorContainer();
-        result.setClassName(ActorExecutionException.class.getName());
+        result.setClassName(Throwable.class.getName());
         result.setMessage("Test exception");
         result.setStackTrace("Test stack trace");
         return result;

@@ -1,9 +1,6 @@
 package ru.taskurotta.dropwizard.client.serialization.wrapper;
 
-import ru.taskurotta.dropwizard.client.serialization.ResultContainerDeserializer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 public class DecisionContainerWrapper {
 
@@ -20,7 +17,6 @@ public class DecisionContainerWrapper {
         return decisionContainer;
     }
 
-    @JsonDeserialize(using=ResultContainerDeserializer.class)
     public void setResultContainer(DecisionContainer decisionContainer) {
         this.decisionContainer = decisionContainer;
     }
