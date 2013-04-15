@@ -54,10 +54,6 @@ public class LinearRetryPolicy extends TimeRetryPolicyBase {
     @Override
     public long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries) {
 
-        if (numberOfTries < 2) {
-            throw new IllegalArgumentException("attempt is less then 2: " + numberOfTries);
-        }
-
         if (maximumAttempts > PolicyConstants.NONE && numberOfTries > maximumAttempts) {
             return PolicyConstants.NONE;
         }
