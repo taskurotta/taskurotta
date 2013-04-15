@@ -139,15 +139,15 @@ public class GeneralTaskBackend implements TaskBackend {
     @Override
     public void addDecision(DecisionContainer taskDecision) {
 
-        logger.debug("addDecision() taskDecision = [{}]", taskDecision);
-
-        UUID taskId = taskDecision.getTaskId();
+        logger.debug("addDecision() taskDecision [{}]", taskDecision);
+        TaskContainer task = taskDao.getTask(taskDecision.getTaskId());
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getActorId(), System.currentTimeMillis()));
 
         taskDao.addDecision(taskDecision);
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
-            TaskContainer task = taskDao.getTask(taskId);
+
             task.incrementNumberOfAttempts();
             taskDao.updateTask(task);
         }
@@ -159,13 +159,14 @@ public class GeneralTaskBackend implements TaskBackend {
             }
         }
 
-        //Removing TASK_START checkpoint
-        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
 
     }
 
     @Override
     public void addDecisionCommit(DecisionContainer taskDecision) {
+        //Removing checkpoints
+        checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_START_TO_CLOSE);
+        checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_RELEASE_TO_COMMIT);
     }
 
     @Override

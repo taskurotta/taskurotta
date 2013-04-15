@@ -99,7 +99,6 @@ public class MemoryQueueBackend implements QueueBackend {
 
     @Override
     public UUID poll(String actorId, String taskList) {
-
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
 
         UUID taskId = null;
@@ -110,6 +109,8 @@ public class MemoryQueueBackend implements QueueBackend {
             if (delayedTaskObject != null) {
                 taskId = delayedTaskObject.taskId;
             }
+
+            checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -131,6 +132,7 @@ public class MemoryQueueBackend implements QueueBackend {
     @Override
     public void pollCommit(String actorId, UUID taskId) {
         checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
+        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override

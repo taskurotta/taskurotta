@@ -29,6 +29,10 @@ public class Checkpoint {
         this.timeoutType = timeoutType;
     }
 
+    public Checkpoint(TimeoutType timeoutType, UUID guid, long time) {
+        this(timeoutType, guid, null, time);
+    }
+
     public Checkpoint() {
     }
 
