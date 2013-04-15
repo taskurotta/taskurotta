@@ -2,7 +2,7 @@ package ru.taskurotta.backend.checkpoint;
 
 public enum TimeoutType {
 
-    WORKFLOW_START_TO_CLOSE ("WORKFLOW_START_TO_CLOSE"),
+    PROCESS_START_TO_CLOSE ("PROCESS_START_TO_CLOSE"),
     TASK_START_TO_CLOSE ("TASK_START_TO_CLOSE"),
     TASK_SCHEDULE_TO_START("TASK_SCHEDULE_TO_START"),
     TASK_SCHEDULE_TO_CLOSE ("TASK_SCHEDULE_TO_CLOSE");
@@ -20,7 +20,7 @@ public enum TimeoutType {
 
     public static TimeoutType forValue(String value) {
         if("WORKFLOW_START_TO_CLOSE".equalsIgnoreCase(value)) {
-            return TimeoutType.WORKFLOW_START_TO_CLOSE;
+            return TimeoutType.PROCESS_START_TO_CLOSE;
         } else if("TASK_START_TO_CLOSE".equalsIgnoreCase(value)) {
             return TimeoutType.TASK_START_TO_CLOSE;
         } else if("TASK_SCHEDULE_TO_START".equalsIgnoreCase(value)) {

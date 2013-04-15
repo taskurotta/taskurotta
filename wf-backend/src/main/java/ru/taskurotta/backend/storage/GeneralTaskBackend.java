@@ -9,6 +9,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
@@ -159,8 +160,7 @@ public class GeneralTaskBackend implements TaskBackend {
         }
 
         //Removing TASK_START checkpoint
-        List<Checkpoint> existingCheckpoints = checkpointService.getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
-        checkpointService.removeCheckpoints(TimeoutType.TASK_START_TO_CLOSE, existingCheckpoints);
+        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
 
     }
 
@@ -179,7 +179,7 @@ public class GeneralTaskBackend implements TaskBackend {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        List<Checkpoint> checkpoints = getCheckpointService().getCheckpoints(taskId, TimeoutType.TASK_START_TO_CLOSE);
+        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, null, -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();
     }
 

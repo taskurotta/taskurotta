@@ -123,8 +123,7 @@ public class MemoryCheckpointService implements CheckpointService {
     }
 
 
-    @Override
-    public List<Checkpoint> getCheckpoints(UUID uuid, TimeoutType timeoutType) {
+    private List<Checkpoint> getCheckpoints(UUID uuid, TimeoutType timeoutType) {
         List<Checkpoint> result = new ArrayList<Checkpoint>();
         if(timeoutType != null) {
             Set<Checkpoint> set = getTypedSet(timeoutType, false);
@@ -145,6 +144,17 @@ public class MemoryCheckpointService implements CheckpointService {
 
     private static boolean hasTimeoutType(Checkpoint checkpoint) {
         return checkpoint!=null && checkpoint.getTimeoutType()!=null;
+    }
+
+    @Override
+    public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType) {
+        int result = 0;
+        List<Checkpoint> checkpoints = getCheckpoints(uuid, timeoutType);
+        if(checkpoints!=null && !checkpoints.isEmpty()) {
+            removeCheckpoints(timeoutType, checkpoints);
+            result = checkpoints.size();
+        }
+        return result;
     }
 
 

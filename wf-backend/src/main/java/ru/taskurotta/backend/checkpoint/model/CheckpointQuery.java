@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.checkpoint.model;
 
+import java.util.UUID;
+
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 
 /**
@@ -20,6 +22,8 @@ public class CheckpointQuery {
     //filter by timeout type
     private TimeoutType timeoutType;
 
+    //Filter by enity uuid
+    private UUID uuid;
 
     public CheckpointQuery(TimeoutType timeoutType, String entityType, long maxTime, long minTime) {
         this.timeoutType = timeoutType;
@@ -64,11 +68,19 @@ public class CheckpointQuery {
         this.timeoutType = timeoutType;
     }
 
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
     @Override
     public String toString() {
         return "CheckpointQuery [minTime=" + minTime + ", maxTime=" + maxTime
                 + ", entityType=" + entityType + ", timeoutType=" + timeoutType
-                + "]";
+                + ", uuid=" + uuid + "]";
     }
 
     @Override

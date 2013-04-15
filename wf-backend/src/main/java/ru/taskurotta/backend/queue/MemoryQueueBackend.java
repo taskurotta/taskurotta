@@ -9,6 +9,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
@@ -21,12 +26,19 @@ public class MemoryQueueBackend implements QueueBackend {
     private final static Logger logger = LoggerFactory.getLogger(MemoryQueueBackend.class);
 
     private int pollDelay = 60;
+    private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
     private Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
-
+    private CheckpointService checkpointService = new MemoryCheckpointService();
 
     public MemoryQueueBackend(int pollDelay) {
 
         this.pollDelay = pollDelay;
+    }
+
+    public MemoryQueueBackend(int pollDelay, TimeUnit pollDelayUnit) {
+
+        this.pollDelay = pollDelay;
+        this.pollDelayUnit = pollDelayUnit;
     }
 
 
@@ -90,7 +102,7 @@ public class MemoryQueueBackend implements QueueBackend {
         UUID taskId = null;
         try {
 
-            DelayedTaskElement delayedTaskObject = queue.poll(pollDelay, TimeUnit.SECONDS);
+            DelayedTaskElement delayedTaskObject = queue.poll(pollDelay, pollDelayUnit);
 
             if (delayedTaskObject != null) {
                 taskId = delayedTaskObject.taskId;
@@ -115,7 +127,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
     @Override
     public void pollCommit(String actorId, UUID taskId) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
     }
 
     @Override
@@ -123,6 +135,12 @@ public class MemoryQueueBackend implements QueueBackend {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
         queue.add(new DelayedTaskElement(taskId, startTime));
+
+        //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
+        Checkpoint scheduleToStartCpt = new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime);
+        checkpointService.addCheckpoint(scheduleToStartCpt);
+        Checkpoint scheduleToClose = new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime);
+        checkpointService.addCheckpoint(scheduleToClose);
 
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
@@ -148,5 +166,15 @@ public class MemoryQueueBackend implements QueueBackend {
 
         return queue.contains(delayedTaskElement);
     }
+
+    @Override
+    public CheckpointService getCheckpointService() {
+        return checkpointService;
+    }
+
+    public void setCheckpointService(CheckpointService checkpointService) {
+        this.checkpointService = checkpointService;
+    }
+
 
 }
