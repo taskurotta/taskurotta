@@ -13,6 +13,16 @@ public class QueueBackendEnqueueTaskRecovery extends AbstractIterableRecovery {
     private TaskBackend taskBackend;
     private QueueBackend queueBackend;
 
+    /*
+    Self-start
+     */
+    public void init() {
+        Thread thread = new Thread(this);
+        thread.setDaemon(true);
+        thread.setName(getClass().getSimpleName());
+        thread.start();
+    }
+
     @Override
     protected CheckpointService getCheckpointService() {
         return queueBackend.getCheckpointService();

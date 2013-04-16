@@ -29,7 +29,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
+    private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
     private CheckpointService checkpointService = new MemoryCheckpointService();
     private Lock lock = new ReentrantLock();
 
@@ -152,19 +152,18 @@ public class MemoryQueueBackend implements QueueBackend {
 
     private DelayQueue<DelayedTaskElement> getQueue(String queueName) {
 
-        try {
-            lock.lock();
+        DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+        if (queue == null) {
+            synchronized (queues) {
 
-            DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
-            if (queue == null) {
-                queue = new DelayQueue<DelayedTaskElement>();
-                queues.put(queueName, queue);
+                queue = queues.get(queueName);
+                if (queue == null) {
+                    queue = new DelayQueue<DelayedTaskElement>();
+                    queues.put(queueName, queue);
+                }
             }
-
-            return queue;
-        } finally {
-            lock.unlock();
         }
+        return queue;
     }
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {

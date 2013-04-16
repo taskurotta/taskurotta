@@ -14,4 +14,23 @@
         <property name="clientServiceManager" ref="clientServiceManager"/>
     </bean>
 
+    <bean id="taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery" init-method="init">
+
+        <property name="queueBackend">
+            <bean factory-bean="clientServiceManager" factory-method="getQueueBackend" />
+        </property>
+        <property name="taskBackend">
+            <bean factory-bean="clientServiceManager" factory-method="getTaskBackend" />
+        </property>
+        <property name="configBackend">
+            <bean factory-bean="clientServiceManager" factory-method="getConfigBackend" />
+        </property>
+
+        <property name="recoveryPeriod" value = "1" />
+        <property name="recoveryPeriodUnit" value = "SECONDS" />
+        <property name="timeIterationStep" value="200" />
+        <property name="timeIterationStepUnit" value="MILLISECONDS" />
+    </bean>
+
+    <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />
 </beans>
