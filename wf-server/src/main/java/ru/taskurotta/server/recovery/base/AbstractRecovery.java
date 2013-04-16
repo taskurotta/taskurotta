@@ -98,6 +98,7 @@ public abstract class AbstractRecovery implements Runnable {
                 result = valueMap.get(timeoutType);
             }
         }
+        logger.debug("ExpirationPolicy getted for entityType[{}] is [{}]", entityType, result);
         return result;
     }
 

@@ -7,21 +7,21 @@ actorConfig:
     - id: "default"
       type: "default"
       timeoutPolicies:
-        PROCESS_START_TO_CLOSE: "timeout 50 seconds"
-        PROCESS_SCHEDULE_TO_START: "timeout 50 seconds"
-        PROCESS_SCHEDULE_TO_CLOSE: "timeout 50 seconds"
-        TASK_START_TO_CLOSE: "timeout 50 seconds"
-        TASK_SCHEDULE_TO_START: "timeout 50 seconds"
-        TASK_SCHEDULE_TO_CLOSE: "timeout 50 seconds"
-        TASK_POLL_TO_COMMIT: "timeout 50 seconds"
-        TASK_RELEASE_TO_COMMIT: "timeout 50 seconds"
+        PROCESS_START_TO_CLOSE: "timeout 5 seconds"
+        PROCESS_SCHEDULE_TO_START: "timeout 5 seconds"
+        PROCESS_SCHEDULE_TO_CLOSE: "timeout 5 seconds"
+        TASK_START_TO_CLOSE: "timeout 5 seconds"
+        TASK_SCHEDULE_TO_START: "timeout 5 seconds"
+        TASK_SCHEDULE_TO_CLOSE: "timeout 5 seconds"
+        TASK_POLL_TO_COMMIT: "timeout 5 seconds"
+        TASK_RELEASE_TO_COMMIT: "timeout 5 seconds"
 
 #List of expiration policies available for actors: \\TODO: Should be parameterized somehow
   expirationPolicies:
-    - name: "timeout 50 seconds"
+    - name: "timeout 5 seconds"
       className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
       properties:
-        timeout: 50
+        timeout: 5
         timeUnit: "SECONDS"
     - name: "retriable 60 seconds timeout"
       className: "ru.taskurotta.server.config.expiration.impl.TimeoutWithFixedRetryPolicy"
@@ -48,6 +48,8 @@ logging:
     level: WARN
     loggers:
         ru.taskurotta: DEBUG
+        ru.taskurotta.dropwizard.resources: INFO
+        ru.taskurotta.backend: INFO
         com.yammer: INFO
     file:
         enabled: true
