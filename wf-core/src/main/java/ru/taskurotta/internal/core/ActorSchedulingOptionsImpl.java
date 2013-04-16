@@ -10,7 +10,7 @@ import ru.taskurotta.core.ActorSchedulingOptions;
 public class ActorSchedulingOptionsImpl implements ActorSchedulingOptions {
 
     private String customId;
-    private long startTime;
+    private long startTime = -1;
     private String taskList; // name of task queue/list
 
     public ActorSchedulingOptionsImpl() {}
