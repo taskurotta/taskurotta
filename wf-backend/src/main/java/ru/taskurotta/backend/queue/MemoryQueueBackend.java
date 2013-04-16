@@ -108,9 +108,8 @@ public class MemoryQueueBackend implements QueueBackend {
 
             if (delayedTaskObject != null) {
                 taskId = delayedTaskObject.taskId;
+                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
             }
-
-            checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
 
         } catch (InterruptedException e) {
             e.printStackTrace();
