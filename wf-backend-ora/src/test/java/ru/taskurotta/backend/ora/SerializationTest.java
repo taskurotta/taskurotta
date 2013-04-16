@@ -12,8 +12,8 @@ import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
-import ru.taskurotta.exception.ActorExecutionException;
 
 /**
  * User: moroz
@@ -21,7 +21,7 @@ import ru.taskurotta.exception.ActorExecutionException;
  */
 public class SerializationTest {
 
-    static TaskContainer createTaskContainer() {
+    public static TaskContainer createTaskContainer() {
         UUID originalUuid = UUID.randomUUID();
         UUID processUuid = UUID.randomUUID();
         TaskType originalTaskType = TaskType.WORKER;
@@ -56,18 +56,16 @@ public class SerializationTest {
         if (isError) {
             return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis() + 9000l, tasks);
         } else {
-            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, -1, tasks);
+            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, TaskDecision.NO_RESTART, tasks);
         }
 
     }
 
     public static ErrorContainer createErrorContainer() {
         ErrorContainer result = new ErrorContainer();
-        result.setClassName(ActorExecutionException.class.getName());
+        result.setClassName(Throwable.class.getName());
         result.setMessage("Test exception");
-        Exception e = new Exception();
-        e.fillInStackTrace();
-        result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));
+        result.setStackTrace("Test stack trace");
         return result;
     }
 
