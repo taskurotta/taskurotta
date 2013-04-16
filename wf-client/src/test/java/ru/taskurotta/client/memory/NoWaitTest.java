@@ -5,7 +5,7 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskOptions;
+import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.util.ActorDefinition;
@@ -58,7 +58,7 @@ public class NoWaitTest extends AbstractTestStub {
         UUID taskDId = UUID.randomUUID();
         Task deciderTaskD = deciderTask(taskDId, TaskType.DECIDER_START, "startD",
                 new Object[]{promise(deciderTaskB), promise(deciderTaskC)},
-                new TaskOptions(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
+                new TaskOptionsImpl(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
         TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, null, new Task[]{deciderTaskB,
                 deciderTaskC, deciderTaskD});

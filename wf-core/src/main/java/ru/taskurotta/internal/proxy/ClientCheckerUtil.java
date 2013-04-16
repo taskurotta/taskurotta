@@ -3,13 +3,13 @@ package ru.taskurotta.internal.proxy;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.NoWait;
+import ru.taskurotta.core.ActorShedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.exception.ProxyFactoryException;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,16 +71,43 @@ public final class ClientCheckerUtil {
 
         if (actorParameterTypes.length != clientParameterTypes.length) {
 
-            // TODO: Using Variable Arguments<Promise> in tail of parameters: Actor.method(Type arg1, Type arg 2, Promise ... dependsOn); Planned to 2 stage
+            int difference = clientParameterTypes.length - actorParameterTypes.length;
+            Class lastArgumentClass;
+            Class penultimateArgumentClass;
 
-            throw new ProxyFactoryException("Quantity of client method parameters should be equals to actor method parameters: "
-                    + "client (" + clientInterface.getName() + "), actor (" + actorInterface.getName() + "), method ("
-                    + clientMethod.getName() + ").");
+            switch (difference) {
+
+                case 1:
+                    lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
+
+                    if (!lastArgumentClass.equals(Promise[].class) && !lastArgumentClass.equals(ActorShedulingOptions.class)) {
+                        throw new ProxyFactoryException("Last custom argument in client interface method " +
+                                "must be Promise<?>... or ActorShedulingOptions, but it: " + lastArgumentClass);
+                    }
+
+                    break;
+
+                case 2:
+                    lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
+                    penultimateArgumentClass = clientParameterTypes[clientParameterTypes.length - 2];
+
+                    if (!lastArgumentClass.equals(Promise[].class) && !penultimateArgumentClass.equals(ActorShedulingOptions.class)) {
+                        throw new ProxyFactoryException("Last and penultimate custom arguments in client interface method must be in order " +
+                                "(..., ActorShedulingOptions, Promise<?>...), but it: (..., " + penultimateArgumentClass + ", " + lastArgumentClass);
+                    }
+
+                    break;
+
+                default:
+                    throw new ProxyFactoryException("Quantity of client method parameters should be equals to actor method parameters: "
+                            + "client (" + clientInterface.getName() + "), actor (" + actorInterface.getName() + "), method ("
+                            + clientMethod.getName() + ").");
+            }
         }
 
         // check: method arguments
 
-        for (int i = 0; i < clientParameterTypes.length; i++) {
+        for (int i = 0; i < actorParameterTypes.length; i++) {
 
             // check: client method arguments should have matching
             // WARN: should we find the way to check generic parameter of the Promise class ?

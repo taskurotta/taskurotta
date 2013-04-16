@@ -1,7 +1,7 @@
 package ru.taskurotta.internal.core;
 
-import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
 
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class TaskImpl implements Task {
         this.args = args;
 
 		if (taskOptions == null) {
-			this.taskOptions = new TaskOptions(null);
+			this.taskOptions = new TaskOptionsImpl(null);
 		} else {
 			this.taskOptions = taskOptions;
 		}
