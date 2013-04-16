@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.checkpoint;
 
+/**
+ * Type of the monitored timeout
+ */
 public enum TimeoutType {
 
     PROCESS_START_TO_CLOSE ("PROCESS_START_TO_CLOSE"),
