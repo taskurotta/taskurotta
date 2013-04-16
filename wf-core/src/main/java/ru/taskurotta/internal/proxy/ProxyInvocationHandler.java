@@ -1,5 +1,6 @@
 package ru.taskurotta.internal.proxy;
 
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -12,6 +13,7 @@ import ru.taskurotta.internal.core.TaskImpl;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,13 +42,28 @@ public class ProxyInvocationHandler implements InvocationHandler {
         MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
 
         ArgType[] argTypes = methodDescriptor.getArgTypes();
+        int positionActorSchedulingOptions = methodDescriptor.getPositionActorSchedulingOptions();
+        int positionPromisesWaitFor = methodDescriptor.getPositionPromisesWaitFor();
         TaskOptions taskOptions = null;
 
-        if (argTypes != null) {
-            taskOptions = new TaskOptionsImpl(argTypes);
+        if (argTypes != null || positionActorSchedulingOptions > -1 || positionPromisesWaitFor > -1) {
+
+            Promise<?>[] promisesWaitFor = null;
+            if (positionPromisesWaitFor > -1) {
+                promisesWaitFor = (Promise[])args[positionPromisesWaitFor];
+                args = Arrays.copyOf(args, positionPromisesWaitFor);
+            }
+
+            ActorSchedulingOptions actorSchedulingOptions = null;
+            if (positionActorSchedulingOptions > -1) {
+                actorSchedulingOptions = (ActorSchedulingOptions)args[positionActorSchedulingOptions];
+                args = Arrays.copyOf(args, positionActorSchedulingOptions);
+            }
+
+            taskOptions = new TaskOptionsImpl(argTypes, actorSchedulingOptions, promisesWaitFor);
         }
 
-        RuntimeContext runtimeContext = null;
+        RuntimeContext runtimeContext;
 
         if (injectedRuntimeProcess != null) {
             runtimeContext = injectedRuntimeProcess;

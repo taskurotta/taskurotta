@@ -8,6 +8,10 @@ import ru.taskurotta.core.TaskType;
  * Created by void 22.03.13 13:26
  */
 public class MethodDescriptor {
+
+    private int positionActorSchedulingOptions = -1;
+    private int positionPromisesWaitFor = -1;
+
 	private TaskTarget taskTarget;
 	private ArgType[] argTypes;
 
@@ -24,6 +28,13 @@ public class MethodDescriptor {
 		this.argTypes = argTypes;
 	}
 
+    public MethodDescriptor(TaskTarget taskTarget, ArgType[] argTypes, int positionActorSchedulingOptions, int positionPromisesWaitFor) {
+        this.taskTarget = taskTarget;
+        this.argTypes = argTypes;
+        this.positionActorSchedulingOptions = positionActorSchedulingOptions;
+        this.positionPromisesWaitFor = positionPromisesWaitFor;
+    }
+
 	public TaskTarget getTaskTarget() {
 		return taskTarget;
 	}
@@ -31,4 +42,12 @@ public class MethodDescriptor {
 	public ArgType[] getArgTypes() {
 		return argTypes;
 	}
+
+    public int getPositionActorSchedulingOptions() {
+        return positionActorSchedulingOptions;
+    }
+
+    public int getPositionPromisesWaitFor() {
+        return positionPromisesWaitFor;
+    }
 }
