@@ -38,7 +38,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             timeFrom = timeTill;
         }
 
-        logger.info("Recovery [{}]: recovered [{}] tasks", getClass(), counter);
+        logger.info("[{}]: recovered [{}] tasks", getClass(), counter);
 
     }
 

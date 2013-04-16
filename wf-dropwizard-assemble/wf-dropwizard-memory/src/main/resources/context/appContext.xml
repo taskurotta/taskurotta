@@ -40,7 +40,7 @@
 
     <!-- Recovery schedulers -->
     <bean id="PROCESS_START_TO_CLOSE_scheduler" class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
-        <property name="schedule" value="${schedule.normal}" />
+        <property name="schedule" value="${schedule.slow}" />
         <property name="name" value="PROCESS_START_TO_CLOSE" />
         <property name="scheduledProcess" ref="processBackendEnqueueTaskRecovery" />
     </bean>
