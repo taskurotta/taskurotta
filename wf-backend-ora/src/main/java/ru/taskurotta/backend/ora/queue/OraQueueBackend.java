@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
@@ -83,5 +84,10 @@ public class OraQueueBackend implements QueueBackend {
             return TABLE_PREFIX + id;
         }
         return null;
+    }
+
+    @Override
+    public CheckpointService getCheckpointService() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
