@@ -1,13 +1,14 @@
 package ru.taskurotta.server.json;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.Iterator;
-import java.util.UUID;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.backend.storage.model.ArgContainer;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
@@ -18,20 +19,15 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.exception.ActorExecutionException;
-import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Iterator;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -238,13 +234,8 @@ public class ObjectFactory {
         if(e == null) {
             return null;
         }
-        ErrorContainer result = new ErrorContainer();
-        result.setClassName(e.getClass().getName());
-        result.setMessage(e.getMessage());
-        result.setStackTrace(ErrorContainer.convert(e.getStackTrace()));
 
-        return result;
-
+        return new ErrorContainer(e);
     }
 
 

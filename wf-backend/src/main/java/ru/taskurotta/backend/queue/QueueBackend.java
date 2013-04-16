@@ -2,12 +2,14 @@ package ru.taskurotta.backend.queue;
 
 import java.util.UUID;
 
+import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
+
 /**
  * User: romario
  * Date: 4/1/13
  * Time: 12:12 PM
  */
-public interface QueueBackend {
+public interface QueueBackend extends CheckpointServiceProvider {
 
     /**
      * Create TASK_POLL_TIMEOUT checkpoint.

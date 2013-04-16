@@ -4,6 +4,7 @@ import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;
+import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
@@ -42,7 +43,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
         TaskOptions taskOptions = null;
 
         if (argTypes != null) {
-            taskOptions = new TaskOptions(argTypes);
+            taskOptions = new TaskOptionsImpl(argTypes);
         }
 
         RuntimeContext runtimeContext = null;

@@ -3,6 +3,7 @@ package ru.taskurotta.internal.proxy;
 import org.junit.Test;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.annotation.WorkerClient;
+import ru.taskurotta.core.ActorShedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.ProxyFactoryException;
@@ -40,6 +41,10 @@ public class ClientCheckerUtilTest {
         public int method6(String arg1);
 
         public void method7(Promise<String> arg1);
+
+        public void method4(String arg1, ActorShedulingOptions actorShedulingOptions, String arg2);
+
+        public void method4(String arg1, ActorShedulingOptions actorShedulingOptions, String arg2, Promise<?> ... waitFor);
     }
 
     public static interface BadActor {
@@ -173,6 +178,12 @@ public class ClientCheckerUtilTest {
         public Promise<Void> method3(Promise<String> arg1, double arg2);
 
         public Promise<Integer> method4(Promise<String> arg1, double arg2);
+
+        public void method1(String arg1, String arg2, ActorShedulingOptions actorShedulingOptions, Promise<?> ... waitFor);
+
+        public void method1(String arg1, String arg2, ActorShedulingOptions actorShedulingOptions);
+
+        public void method1(String arg1, String arg2, Promise<?> ... waitFor);
     }
 
 

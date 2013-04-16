@@ -2,6 +2,7 @@ package ru.taskurotta.backend.storage;
 
 import java.util.UUID;
 
+import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 
 /**
@@ -9,7 +10,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
  * Date: 4/2/13
  * Time: 7:58 PM
  */
-public interface ProcessBackend {
+public interface ProcessBackend extends CheckpointServiceProvider {
 
     /**
      * Create PROCESS_START_TIMEOUT checkpoint.

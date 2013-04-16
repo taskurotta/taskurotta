@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * User: stukushin
@@ -108,7 +109,7 @@ public class Bootstrap {
 	public void start(Config config) {
 		for (ActorConfig actorConfig : config.actorConfigs) {
 
-			Class actorClass;
+			final Class actorClass;
 
 			try {
 				actorClass = Class.forName(actorConfig.getActorInterface());
@@ -134,10 +135,17 @@ public class Bootstrap {
 			executors.add(actorExecutor);
 
 			int count = actorConfig.getCount();
-			ExecutorService executorService = Executors.newFixedThreadPool(count);
+			ExecutorService executorService = Executors.newFixedThreadPool(count, new ThreadFactory() {
+                private int count;
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, actorClass.getSimpleName()+"-"+ (++count));
+                }
+            });
 
 			for (int i = 0; i < count; i++) {
-				executorService.execute(actorExecutor);
+                logger.debug("add thread for [{}]", actorClass);
+                executorService.execute(actorExecutor);
 			}
 		}
 	}

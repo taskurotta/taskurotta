@@ -9,6 +9,8 @@ import java.util.UUID;
  */
 public interface TaskDecision {
 
+    public static final int NO_RESTART = -1;
+
     /**
      * @return Task unique Id
      */

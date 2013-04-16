@@ -64,19 +64,4 @@ public interface TaskBackend extends CheckpointServiceProvider {
      */
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
 
-    /**
-     * @param actorId return only tasks for this actorId
-     * @param timeFrom return only tasks with processing start time greater then given
-     * @param timeTill return only tasks with processing start time less then given
-     * @return list of tasks wich are currently processing by some remote actors
-     */
-    //public List<TaskDefinition> getActiveTasks(String actorId, long timeFrom, long timeTill);
-
-    /**
-     * Removes this task definitions from list of active tasks
-     * @param tasks
-     * @return number of removed tasks
-     */
-    //public int resetActiveTasks(List<TaskDefinition> tasks);
-
 }

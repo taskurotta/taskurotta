@@ -26,10 +26,11 @@ public class MathActionDeciderImpl implements MathActionDecider {
     @Execute
     public void performAction() {
 
-        if(RandomException.isEventHappened(errPossibility)) {
-            logger.error("MathActionDecider: RANDOMLY FAILED!");
-            throw new RandomException("Its exception time");
-        }
+// No retries for decider
+//        if(RandomException.isEventHappened(errPossibility)) {
+//            logger.error("MathActionDecider: RANDOMLY FAILED!");
+//            throw new RandomException("Its exception time");
+//        }
 
         long start = System.currentTimeMillis();
         Promise<Integer> a = numberGeneratorClient.getNumber();

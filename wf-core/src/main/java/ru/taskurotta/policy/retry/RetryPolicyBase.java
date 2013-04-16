@@ -14,8 +14,6 @@
  */
 package ru.taskurotta.policy.retry;
 
-import ru.taskurotta.exception.ActorRuntimeException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -83,10 +81,6 @@ public abstract class RetryPolicyBase implements RetryPolicy {
     @Override
     public boolean isRetryable(Throwable failure) {
         boolean isRetryable = false;
-        
-        if (failure instanceof ActorRuntimeException && failure.getCause() != null) {
-            failure = failure.getCause();
-        }
         
         for (Class<? extends Throwable> exceptionToRetry: getExceptionsToRetry()) {
             if (exceptionToRetry.isAssignableFrom(failure.getClass())) {

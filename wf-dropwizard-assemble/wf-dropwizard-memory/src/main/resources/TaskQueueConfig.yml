@@ -1,18 +1,26 @@
 contextLocation: "classpath*:context/appContext.xml"
+
 actorConfig:
   actorPreferences:
-    - name: "default"
-      version: "default"
+    - id: "default"
+      type: "default"
       expirationPolicy:
         className: "ru.taskurotta.server.config.expiration.FixedRetryPolicy"
         properties:
           retry: 50
           timeout: 1
           timeUnit: "SECONDS"
+
 properties:
-  pollDelay: 1
-  expirationCheckSchedule: "20 SECONDS"
-  expirationCheckLimit: 100
+  pollDelay: 2
+  pollDelayUnit: "SECONDS"
+  retryTimes: 10
+  recovery.task_start_to_close.schedule: "50 SECONDS"
+  recovery.task_start_to_close.period: 60
+  recovery.task_start_to_close.period_unit: "SECONDS"
+  recovery.task_start_to_close.time_step: 200
+  recovery.task_start_to_close.time_step_unit: "MILLISECONDS"
+
 logging:
     level: WARN
     loggers:
