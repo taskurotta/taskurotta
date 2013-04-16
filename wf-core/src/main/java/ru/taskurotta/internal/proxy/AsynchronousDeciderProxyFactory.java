@@ -8,6 +8,8 @@ import net.sf.cglib.proxy.MethodProxy;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
+import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.exception.IncorrectAsynchronousMethodDefinition;
@@ -105,7 +107,10 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 }
 
                 TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
-                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
+                int positionPromisesWaitFor = positionParameter(parameterTypes, Promise[].class);
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -129,7 +134,9 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
                     if (implementationMethod.getName().equals(interfaceMethod)) {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
-                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+                        int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), ActorSchedulingOptions.class);
+                        int positionPromisesWaitFor = positionParameter(method.getParameterTypes(), Promise[].class);
+                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }

@@ -2,35 +2,35 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/summator/RuntimeBeans.xml
+        context: ru/taskurotta/recipes/custom/RuntimeBeans.xml
 
 spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/summator/SpreaderBeans.xml
+        context: ru/taskurotta/recipes/custom/SpreaderBeans.xml
         properties:
-          foo: bar
-
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.FlowArbiterProfiler
+          a: 1
+          b: 2
 
 actor:
-  - Decider:
-      actorInterface: ru.taskurotta.recipes.summator.decider.SummatorDecider
+  - CustomDecider:
+      actorInterface: ru.taskurotta.recipes.custom.deciders.CustomDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 1
-  - Worker:
-      actorInterface: ru.taskurotta.recipes.summator.worker.AddWorker
+
+  - DescendantCustomDecider:
+        actorInterface: ru.taskurotta.recipes.custom.deciders.DescendantCustomDecider
+        runtimeConfig: MainRuntimeConfig
+        spreaderConfig: MainTaskSpreaderConfig
+        count: 1
+
+  - CustomWorker:
+      actorInterface: ru.taskurotta.recipes.custom.workers.CustomWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      count: 8
+      count: 1
 
 logback:
     appender:
@@ -42,7 +42,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-summator.log
+             file: ./logs/recipes-custom.log
              append: true
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
@@ -55,5 +55,8 @@ logback:
              \@level: !!!str OFF
     root:
         appender-ref:
-            - FICTION:
+            - STDOUT:
                 key: ref
+            - FILE:
+                key: ref
+

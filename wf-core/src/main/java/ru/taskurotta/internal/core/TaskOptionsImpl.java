@@ -1,6 +1,8 @@
 package ru.taskurotta.internal.core;
 
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskOptions;
 
 import java.util.Arrays;
@@ -11,30 +13,54 @@ import java.util.Arrays;
 public class TaskOptionsImpl implements TaskOptions {
 
 	private ArgType[] argTypes;
+    private ActorSchedulingOptions actorSchedulingOptions;
+    private Promise<?>[] promisesWaitFor;
 
 	public TaskOptionsImpl(ArgType[] argTypes) {
 		this.argTypes = argTypes;
 	}
 
-	@Override
+    public TaskOptionsImpl(ArgType[] argTypes, ActorSchedulingOptions actorSchedulingOptions, Promise<?>[] promisesWaitFor) {
+        this.argTypes = argTypes;
+        this.actorSchedulingOptions = actorSchedulingOptions;
+        this.promisesWaitFor = promisesWaitFor;
+    }
+
+    @Override
     public ArgType[] getArgTypes() {
 		return argTypes;
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+    @Override
+    public ActorSchedulingOptions getActorSchedulingOptions() {
+        return actorSchedulingOptions;
+    }
 
-		TaskOptionsImpl that = (TaskOptionsImpl) o;
+    @Override
+    public Promise<?>[] getPromisesWaitFor() {
+        return promisesWaitFor;
+    }
 
-		if (!Arrays.equals(argTypes, that.argTypes)) return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-		return true;
-	}
+        TaskOptionsImpl that = (TaskOptionsImpl) o;
 
-	@Override
-	public int hashCode() {
-		return argTypes != null ? Arrays.hashCode(argTypes) : 0;
-	}
+        if (actorSchedulingOptions != null ? !actorSchedulingOptions.equals(that.actorSchedulingOptions) : that.actorSchedulingOptions != null)
+            return false;
+        if (!Arrays.equals(argTypes, that.argTypes)) return false;
+        if (!Arrays.equals(promisesWaitFor, that.promisesWaitFor)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = argTypes != null ? Arrays.hashCode(argTypes) : 0;
+        result = 31 * result + (actorSchedulingOptions != null ? actorSchedulingOptions.hashCode() : 0);
+        result = 31 * result + (promisesWaitFor != null ? Arrays.hashCode(promisesWaitFor) : 0);
+        return result;
+    }
 }

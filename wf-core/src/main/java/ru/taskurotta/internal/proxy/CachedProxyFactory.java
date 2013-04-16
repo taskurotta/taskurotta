@@ -62,4 +62,13 @@ abstract public class CachedProxyFactory implements ProxyFactory {
         return annotationFound ? result : null;
     }
 
+    protected int positionParameter(Class<?>[] parameterTypes, Class needClass) {
+        for (int i = 0; i < parameterTypes.length; i++) {
+            if (parameterTypes[i].equals(needClass)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 }
