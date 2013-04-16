@@ -39,6 +39,8 @@ public class ProxyInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
+        long startTime = System.currentTimeMillis();
+
         MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
 
         ArgType[] argTypes = methodDescriptor.getArgTypes();
@@ -57,6 +59,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
             ActorSchedulingOptions actorSchedulingOptions = null;
             if (positionActorSchedulingOptions > -1) {
                 actorSchedulingOptions = (ActorSchedulingOptions)args[positionActorSchedulingOptions];
+                startTime = actorSchedulingOptions.getStartTime();
                 args = Arrays.copyOf(args, positionActorSchedulingOptions);
             }
 
@@ -78,7 +81,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
         UUID processId = runtimeContext.getProcessId();
 
         Task task = new TaskImpl(UUID.randomUUID(), processId, methodDescriptor.getTaskTarget(),
-                System.currentTimeMillis(), 0,
+                startTime, 0,
                 args, taskOptions);
 
         runtimeContext.handle(task);
