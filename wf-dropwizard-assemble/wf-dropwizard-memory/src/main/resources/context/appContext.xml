@@ -1,78 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:property-placeholder/>
-    <context:annotation-config/>
+	<context:property-placeholder />
+	<context:annotation-config />
 
-    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
-        <property name="taskServer" ref="taskServer"/>
+	<bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
+		<property name="taskServer" ref="taskServer" />
+	</bean>
+
+	<bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+		<property name="taskServer" ref="taskServer" />
+	</bean>
+
+	<bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+		<property name="taskServer" ref="taskServer" />
+	</bean>
+
+	<bean id="taskServer" class="ru.taskurotta.dropwizard.internal.TaskServerWrapper">
+		<property name="taskServer" ref="taskServerGeneral" />
+		<property name="daemonTasks">
+			<map>
+				<entry key="processRecovery" value-ref="PROCESS_START_TO_CLOSE_scheduler" />
+				<entry key="taskExpirationRecovery" value-ref="TASK_START_TO_CLOSE_scheduler" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer">
+		<constructor-arg name="configBackend" ref="configBackend" />
+		<constructor-arg name="dependencyBackend" ref="dependencyBackend" />
+		<constructor-arg name="processBackend" ref="processBackend" />
+		<constructor-arg name="queueBackend" ref="queueBackend" />
+		<constructor-arg name="taskBackend" ref="taskBackend" />
+	</bean>
+
+    <!-- Recovery schedulers -->
+    <bean id="PROCESS_START_TO_CLOSE_scheduler" class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
+        <property name="schedule" value="${schedule.slow}" />
+        <property name="name" value="PROCESS_START_TO_CLOSE" />
+        <property name="scheduledProcess" ref="processBackendEnqueueTaskRecovery" />
     </bean>
-
-    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
-        <property name="taskServer" ref="taskServer"/>
+    <bean id="TASK_START_TO_CLOSE_scheduler" class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
+        <property name="schedule" value="${schedule.normal}" />
+        <property name="name" value="TASK_START_TO_CLOSE" />
+        <property name="scheduledProcess" ref="taskBackendEnqueueTaskRecovery" />
     </bean>
+    <!-- /Recovery schedulers -->
 
-    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
-        <property name="taskServer" ref="taskServer"/>
+	<!-- Recoveries -->
+	<bean id = "recoveryParent" class="ru.taskurotta.server.recovery.base.AbstractIterableRecovery" abstract="true" >
+	   <property name="configBackend" ref="configBackend" />
+	   <property name="recoveryPeriod" value = "${recovery.period}" />
+	   <property name="recoveryPeriodUnit" value = "${recovery.period.unit}" />
+	   <property name="timeIterationStep" value = "${recovery.timeStep}" />
+	   <property name="timeIterationStepUnit" value = "${recovery.timeStep.unit}" />
+	</bean>
+
+	<bean id = "processBackendEnqueueTaskRecovery" class="ru.taskurotta.server.recovery.ProcessBackendEnqueueTaskRecovery" parent="recoveryParent">
+		<property name="processBackend" ref="processBackend" />
+		<property name="queueBackend" ref="queueBackend" />
+		<property name="taskBackend" ref="taskBackend" />
+		<property name="timeoutType" value = "PROCESS_START_TO_CLOSE" />
+	</bean>
+    <bean id = "taskBackendEnqueueTaskRecovery" class = "ru.taskurotta.server.recovery.TaskBackendEnqueueTaskRecovery" parent="recoveryParent">
+        <property name="queueBackend" ref="queueBackend" />
+        <property name="taskBackend" ref="taskBackend" />
+        <property name="timeoutType" value = "TASK_START_TO_CLOSE" />
     </bean>
+	<!-- /Recoveries -->
 
-    <bean id="taskServer" class="ru.taskurotta.dropwizard.internal.TaskServerWrapper">
-        <property name="taskServer" ref="taskServerGeneral"/>
-        <property name="daemonTasks">
-            <map>
-                <entry key="TaskExpirationRecovery" value-ref="taskExpirationRecoveryDaemon"/>
-            </map>
-        </property>
-    </bean>
+	<bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
+		<constructor-arg name="pollDelay" value="${pollDelay}" />
+		<constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+	</bean>
+	<bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+	<bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+		<constructor-arg name="taskDao" ref="taskDao" />
+	</bean>
+	<bean id="dependencyBackend"
+		class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+		<constructor-arg name="graphDao" ref="graphDao" />
+		<constructor-arg name="retryTimes" value="${retryTimes}" />
+	</bean>
 
-    <bean id="taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer">
-        <constructor-arg name="configBackend" ref="configBackend"/>
-        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
-        <constructor-arg name="processBackend" ref="processBackend"/>
-        <constructor-arg name="queueBackend" ref="queueBackend"/>
-        <constructor-arg name="taskBackend" ref="taskBackend"/>
-    </bean>
+	<bean id="graphDao" class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
 
-    <bean id="taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskExpirationRecovery">
+	<bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
+	<bean id="configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend" />
 
-        <property name="queueBackend" ref="queueBackend"/>
-        <property name="taskBackend" ref="taskBackend"/>
-        <property name="configBackend" ref="configBackend"/>
-
-        <property name="schedule" value="${recovery.task_start_to_close.schedule}"/>
-        <property name="recoveryPeriod" value="${recovery.task_start_to_close.period}"/>
-        <property name="recoveryPeriodUnit" value="${recovery.task_start_to_close.period_unit}"/>
-        <property name="timeIterationStep" value="${recovery.task_start_to_close.time_step}"/>
-        <property name="timeIterationStepUnit" value = "${recovery.task_start_to_close.time_step_unit}" />
-
-    </bean>
-
-    <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}"/>
-        <constructor-arg name="pollDelayUnit" value = "${pollDelayUnit}" />
-    </bean>
-    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao"/>
-    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
-        <constructor-arg name="taskDao" ref="taskDao"/>
-    </bean>
-    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
-        <constructor-arg name="graphDao" ref="graphDao"/>
-        <constructor-arg name="retryTimes" value="${retryTimes}"/>
-    </bean>
-
-    <bean id="graphDao" class="ru.taskurotta.backend.dependency.links.MemoryGraphDao"/>
-
-    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend"/>
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend"/>
-
-    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server"/>
-        <property name="taskServer" ref="taskServer"/>
-    </bean>
+	<bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+		<constructor-arg name="name" value="check task server" />
+		<property name="taskServer" ref="taskServer" />
+	</bean>
 
 </beans>

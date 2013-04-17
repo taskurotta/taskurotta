@@ -38,13 +38,16 @@ public class MemoryCheckpointService implements CheckpointService {
 
     private Set<Checkpoint> getTypedSet(TimeoutType type, boolean createIfMissing) {
         Set<Checkpoint> result = null;
+
         if(type!=null) {
             result = checkpointStorage.get(type);
             if(createIfMissing && result==null) {
                 synchronized (this) {
-                    //TODO: some other threadsafe implementation?
-                    result = Collections.synchronizedSet(new HashSet<Checkpoint>());
-                    checkpointStorage.put(type, result);
+                    result = checkpointStorage.get(type);
+                    if(createIfMissing && result==null) {
+                        result = Collections.synchronizedSet(new HashSet<Checkpoint>());
+                        checkpointStorage.put(type, result);
+                    }
                 }
             }
         }

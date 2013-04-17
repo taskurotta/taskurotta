@@ -17,6 +17,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 /**
  * User: romario
@@ -83,7 +84,7 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
 
-        if (configBackend.isActorBlocked(actorDefinition)) {
+        if (configBackend.isActorBlocked(ActorUtils.getActorId(actorDefinition))) {
             // TODO: ? We should inform client about block. It should catch exception and try to sleep some time ?
             // TODO: ? Or we should sleep 60 seconds as usual ?
             return null;

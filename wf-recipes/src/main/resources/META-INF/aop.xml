@@ -1,0 +1,13 @@
+<aspectj>
+
+    <aspects>
+        <aspect name="ru.taskurotta.test.monkey.MonkeyAspect"/>
+        <include within="ru.taskurotta..*"/>
+    </aspects>
+
+    <weaver options="-verbose">
+        <include within="ru.taskurotta.backend.queue.MemoryQueueBackend"/>
+    </weaver>
+
+</aspectj>
+

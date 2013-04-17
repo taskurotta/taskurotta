@@ -29,7 +29,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
+    private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
     private CheckpointService checkpointService = new MemoryCheckpointService();
     private Lock lock = new ReentrantLock();
 
@@ -99,7 +99,6 @@ public class MemoryQueueBackend implements QueueBackend {
 
     @Override
     public UUID poll(String actorId, String taskList) {
-
         DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
 
         UUID taskId = null;
@@ -109,6 +108,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
             if (delayedTaskObject != null) {
                 taskId = delayedTaskObject.taskId;
+                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
             }
 
         } catch (InterruptedException e) {
@@ -131,6 +131,7 @@ public class MemoryQueueBackend implements QueueBackend {
     @Override
     public void pollCommit(String actorId, UUID taskId) {
         checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
+        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override
@@ -151,19 +152,18 @@ public class MemoryQueueBackend implements QueueBackend {
 
     private DelayQueue<DelayedTaskElement> getQueue(String queueName) {
 
-        try {
-            lock.lock();
+        DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+        if (queue == null) {
+            synchronized (queues) {
 
-            DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
-            if (queue == null) {
-                queue = new DelayQueue<DelayedTaskElement>();
-                queues.put(queueName, queue);
+                queue = queues.get(queueName);
+                if (queue == null) {
+                    queue = new DelayQueue<DelayedTaskElement>();
+                    queues.put(queueName, queue);
+                }
             }
-
-            return queue;
-        } finally {
-            lock.unlock();
         }
+        return queue;
     }
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
