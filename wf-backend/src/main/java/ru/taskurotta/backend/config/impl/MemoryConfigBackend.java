@@ -14,7 +14,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 
 	private int defaultTimeout = 4;
 	private TimeUnit defaultTimeunit  = TimeUnit.SECONDS;
-	private boolean fallBackToDefaults = false;
+	private boolean fallBackToDefaults = true;
 
 	@Override
 	public boolean isActorBlocked(String actorId) {
