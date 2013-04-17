@@ -39,10 +39,15 @@
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
+    <bean id="oraGraphDao" class="ru.taskurotta.backend.ora.dependency.OraGraphDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
     <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
         <constructor-arg name="dataSource" ref="dataSource"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="checkpointService" ref="checkpointService"/>
+        <constructor-arg name="graphDao" ref="oraGraphDao"/>
     </bean>
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">

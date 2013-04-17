@@ -12,8 +12,8 @@ import ru.taskurotta.bootstrap.Bootstrap;
  */
 public class Main {
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
-        if(args.length == 0) {
-            new Bootstrap("ru/taskurotta/example/notification/wf-config.yml").start();
+        if (args.length == 0) {
+            new Bootstrap("ru/taskurotta/example/calculate/wf-config-jersey.yml").start();
         } else {
             new Bootstrap(args).start();
         }

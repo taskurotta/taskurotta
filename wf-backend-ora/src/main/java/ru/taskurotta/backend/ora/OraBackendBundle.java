@@ -1,12 +1,14 @@
 package ru.taskurotta.backend.ora;
 
+import javax.sql.DataSource;
+
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
-import ru.taskurotta.backend.dependency.MemoryDependencyBackend;
-import ru.taskurotta.backend.ora.dao.DbConnect;
+import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
+import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.ora.queue.OraQueueBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
@@ -14,8 +16,6 @@ import ru.taskurotta.backend.storage.MemoryProcessBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
-
-import javax.sql.DataSource;
 
 
 public class OraBackendBundle implements BackendBundle {
@@ -27,11 +27,11 @@ public class OraBackendBundle implements BackendBundle {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
-    public OraBackendBundle(DataSource dataSource, TaskDao taskDao, CheckpointService checkpointService) {
+    public OraBackendBundle(DataSource dataSource, TaskDao taskDao, CheckpointService checkpointService, GraphDao graphDao) {
         this.processBackend = new MemoryProcessBackend();
         this.taskBackend = new GeneralTaskBackend(taskDao, checkpointService);
         this.queueBackend = new OraQueueBackend(dataSource);
-        this.dependencyBackend = new MemoryDependencyBackend();
+        this.dependencyBackend = new GeneralDependencyBackend(graphDao, 100000);
         this.configBackend = new MemoryConfigBackend();
     }
 
