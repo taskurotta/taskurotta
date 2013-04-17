@@ -27,8 +27,8 @@
         <property name="taskServer" ref="taskServerGeneral" />
         <property name="daemonTasks">
             <map>
-                <entry key="processRecovery" value-ref="PROCESS_START_TO_CLOSE_scheduler" />
-                <entry key="taskExpirationRecovery" value-ref="TASK_START_TO_CLOSE_scheduler" />
+                <entry key="TASK_POLL_TO_COMMIT_scheduler" value-ref="TASK_POLL_TO_COMMIT_scheduler" />
+                <entry key="TASK_START_TO_CLOSE_scheduler" value-ref="TASK_START_TO_CLOSE_scheduler" />
             </map>
         </property>
     </bean>
@@ -42,18 +42,19 @@
     </bean>
 
     <!-- Recovery schedulers -->
-    <bean id="PROCESS_START_TO_CLOSE_scheduler"
-        class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
-        <property name="schedule" value="${schedule.slow}" />
-        <property name="name" value="PROCESS_START_TO_CLOSE" />
-        <property name="scheduledProcess" ref="processBackendEnqueueTaskRecovery" />
-    </bean>
     <bean id="TASK_START_TO_CLOSE_scheduler"
         class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
         <property name="schedule" value="${schedule.normal}" />
         <property name="name" value="TASK_START_TO_CLOSE" />
-        <property name="scheduledProcess" ref="taskBackendEnqueueTaskRecovery" />
+        <property name="scheduledProcess" ref="TASK_START_TO_CLOSE_recovery" />
     </bean>
+    <bean id="TASK_POLL_TO_COMMIT_scheduler"
+        class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
+        <property name="schedule" value="${schedule.normal}" />
+        <property name="name" value="TASK_POLL_TO_COMMIT" />
+        <property name="scheduledProcess" ref="TASK_POLL_TO_COMMIT_recovery" />
+    </bean>
+
     <!-- /Recovery schedulers -->
 
     <!-- Recoveries -->
@@ -67,31 +68,21 @@
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
     </bean>
 
-    <bean id="PROCESS_SCHEDULE_TO_START_recovery"
-        class="ru.taskurotta.server.recovery.ProcessBackendEnqueueTaskRecovery"
-        parent="recoveryParent">
-        <property name="processBackend" ref="processBackend" />
-        <property name="queueBackend" ref="queueBackend" />
-        <property name="taskBackend" ref="taskBackend" />
-        <property name="timeoutType" value="PROCESS_START_TO_CLOSE" />
-    </bean>
-
-    <bean id="PROCESS_START_TO_CLOSE_recovery"
-        class="ru.taskurotta.server.recovery.ProcessBackendEnqueueTaskRecovery"
-        parent="recoveryParent">
-        <property name="processBackend" ref="processBackend" />
-        <property name="queueBackend" ref="queueBackend" />
-        <property name="taskBackend" ref="taskBackend" />
-        <property name="timeoutType" value="PROCESS_START_TO_CLOSE" />
-    </bean>
-
-    <bean id="taskBackendEnqueueTaskRecovery"
+    <bean id="TASK_START_TO_CLOSE_recovery"
         class="ru.taskurotta.server.recovery.TaskBackendEnqueueTaskRecovery"
         parent="recoveryParent">
         <property name="queueBackend" ref="queueBackend" />
         <property name="taskBackend" ref="taskBackend" />
         <property name="timeoutType" value="TASK_START_TO_CLOSE" />
     </bean>
+    <bean id="TASK_POLL_TO_COMMIT_recovery"
+        class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery"
+        parent="recoveryParent">
+        <property name="queueBackend" ref="queueBackend" />
+        <property name="taskBackend" ref="taskBackend" />
+        <property name="timeoutType" value="TASK_POLL_TO_COMMIT" />
+    </bean>
+
     <!-- /Recoveries -->
 
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">

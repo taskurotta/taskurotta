@@ -16,7 +16,8 @@
         </encoder>
     </appender>
 
-	<logger name="ru.taskurotta" level="DEBUG" />
+	<logger name="ru.taskurotta" level="TRACE" />
+	<logger name="ru.taskurotta.server.json.ObjectFactory" level="WARN" />
     <logger name="org.springframework" level="OFF"/>
 
 	<root>

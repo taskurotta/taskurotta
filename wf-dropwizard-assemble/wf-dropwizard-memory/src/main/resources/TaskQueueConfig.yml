@@ -5,7 +5,6 @@ contextLocation: "classpath*:context/appContext.xml"
 actorConfig:
   actorPreferences:
     - id: "default"
-      type: "default"
       timeoutPolicies:
         PROCESS_START_TO_CLOSE: "timeout 5 seconds"
         PROCESS_SCHEDULE_TO_START: "timeout 5 seconds"

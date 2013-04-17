@@ -1,5 +1,7 @@
 package ru.taskurotta.bootstrap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -12,6 +14,7 @@ import ru.taskurotta.core.TaskDecision;
  * Time: 19:29
  */
 public class ActorExecutor implements Runnable {
+    private final static Logger log = LoggerFactory.getLogger(ActorExecutor.class);
 
     private Profiler profiler;
     private RuntimeProcessor runtimeProcessor;
@@ -45,6 +48,8 @@ public class ActorExecutor implements Runnable {
 
                 taskSpreader.release(taskDecision);
 
+            } catch (Throwable t) {
+                log.error("Exception caught", t);
             } finally {
                 profiler.cycleFinish();
             }
