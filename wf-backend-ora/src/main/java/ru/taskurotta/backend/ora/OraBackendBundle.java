@@ -14,6 +14,8 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
+import javax.sql.DataSource;
+
 
 public class OraBackendBundle implements BackendBundle {
 
@@ -24,10 +26,10 @@ public class OraBackendBundle implements BackendBundle {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
-    public OraBackendBundle(DbConnect dbConnect, TaskDao taskDao) {
+    public OraBackendBundle(DataSource dataSource, TaskDao taskDao) {
         this.processBackend = new MemoryProcessBackend();
         this.taskBackend = new GeneralTaskBackend(taskDao);
-        this.queueBackend = new OraQueueBackend(dbConnect);
+        this.queueBackend = new OraQueueBackend(dataSource);
         this.dependencyBackend = new MemoryDependencyBackend();
         this.configBackend = new MemoryConfigBackend();
     }

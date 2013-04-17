@@ -4,7 +4,9 @@ import org.apache.commons.dbcp.BasicDataSource;
 
 /**
  * User: greg
+ * Used only for test enviroment
  */
+@Deprecated
 public class DbConnect {
 
     private BasicDataSource dataSource;

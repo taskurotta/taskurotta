@@ -12,6 +12,8 @@ import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 
+import javax.sql.DataSource;
+
 /**
  * User: moroz
  * Date: 04.04.13
@@ -26,8 +28,8 @@ public class OraQueueBackend implements QueueBackend {
 
     private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
 
-    public OraQueueBackend(DbConnect dbConnect) {
-        dbDAO = new OraQueueDao(dbConnect.getDataSource());
+    public OraQueueBackend(DataSource dataSource) {
+        dbDAO = new OraQueueDao(dataSource);
         try {
             queueNames.putAll(dbDAO.getQueueNames());
             log.warn("Initial queues count [{}] ", queueNames.size());

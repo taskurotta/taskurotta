@@ -8,7 +8,12 @@
 
     <context:property-placeholder/>
 
-    <bean id="dbConnect" class="ru.taskurotta.backend.ora.dao.DbConnect"/>
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@//taskurotta-db:1521/orcl"/>
+        <property name="username" value="taskurotta"/>
+        <property name="password" value="taskurotta"/>
+    </bean>
 
     <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
         <property name="taskServer" ref="taskServer"/>
@@ -27,11 +32,11 @@
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.ora.storage.OraTaskDao">
-        <constructor-arg name="dbConnect" ref="dbConnect"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
     <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
-        <constructor-arg name="dbConnect" ref="dbConnect"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
     </bean>
 

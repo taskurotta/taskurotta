@@ -43,6 +43,8 @@ public class OracleCheckpointService implements CheckpointService {
             ps.setLong(4, checkpoint.getTime());
             ps.executeUpdate();
         } catch (SQLException ex) {
+            logger.error("Database error", ex);
+        } finally {
             closeResources(ps, connection);
         }
     }

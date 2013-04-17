@@ -29,8 +29,8 @@ public class OraTaskDao implements TaskDao {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public OraTaskDao(DbConnect dbConnect) {
-        this.dataSource = dbConnect.getDataSource();
+    public OraTaskDao(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
