@@ -141,11 +141,8 @@ public class MemoryQueueBackend implements QueueBackend {
         queue.add(new DelayedTaskElement(taskId, startTime));
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        Checkpoint scheduleToStartCpt = new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime);
-        checkpointService.addCheckpoint(scheduleToStartCpt);
-        Checkpoint scheduleToClose = new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime);
-        checkpointService.addCheckpoint(scheduleToClose);
-
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 

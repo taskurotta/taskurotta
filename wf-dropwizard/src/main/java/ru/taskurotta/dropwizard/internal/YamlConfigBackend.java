@@ -10,17 +10,7 @@ public class YamlConfigBackend implements ConfigBackend, ConfigBackendAware {
 
     @Override
     public boolean isActorBlocked(String actorId) {
-        boolean result = false;
-        ActorPreferences[] actorPreferences = getActorPreferences();
-        if(actorPreferences!=null && actorPreferences.length>0) {
-            for(ActorPreferences aPref: actorPreferences) {
-                if(aPref.getId().equals(actorId)) {
-                    result = aPref.isBlocked();
-                    break;
-                }
-            }
-        }
-        return result;
+        return config.isActorBlocked(actorId);
     }
 
     @Override

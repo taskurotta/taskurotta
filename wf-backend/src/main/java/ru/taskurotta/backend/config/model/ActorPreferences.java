@@ -2,10 +2,12 @@ package ru.taskurotta.backend.config.model;
 
 import java.util.Properties;
 
+/**
+ * Server-side preferences of registered actor
+ */
 public class ActorPreferences {
 
     private String id;
-    private String type;
     private boolean blocked = false;
     private Properties timeoutPolicies;
 
@@ -21,12 +23,6 @@ public class ActorPreferences {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
-    public String getType() {
-        return type;
-    }
-    public void setType(String type) {
-        this.type = type;
-    }
     public Properties getTimeoutPolicies() {
         return timeoutPolicies;
     }
@@ -35,8 +31,8 @@ public class ActorPreferences {
     }
     @Override
     public String toString() {
-        return "ActorPreferences [id=" + id + ", type=" + type + ", blocked="
-                + blocked + ", timeoutPolicies=" + timeoutPolicies + "]";
+        return "ActorPreferences [id=" + id + ", blocked=" + blocked
+                + ", timeoutPolicies=" + timeoutPolicies + "]";
     }
 
 }

@@ -18,15 +18,19 @@ public class TaskBackendEnqueueTaskRecovery extends AbstractIterableRecovery {
         return taskBackend.getCheckpointService();
     }
 
-    @Override
-    protected TaskContainer getTaskByCheckpoint(Checkpoint checkpoint) {
+    private TaskContainer getTaskByCheckpoint(Checkpoint checkpoint) {
         return taskBackend.getTask(checkpoint.getGuid());
     }
 
     @Override
-    protected void recoverTask(TaskContainer target, Checkpoint checkpoint,
-            TimeoutType timeoutType) {
-        queueBackend.enqueueItem(target.getActorId(), target.getTaskId(), target.getStartTime(), null);
+    protected boolean recover(Checkpoint checkpoint, TimeoutType timeoutType) {
+        boolean result = false;
+        TaskContainer task = getTaskByCheckpoint(checkpoint);
+        if(task!=null) {
+            queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime(), null);
+            result = true;
+        }
+        return result;
     }
 
     public void setTaskBackend(TaskBackend taskBackend) {
