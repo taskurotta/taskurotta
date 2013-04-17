@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.ora;
 
 import ru.taskurotta.backend.BackendBundle;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -26,9 +27,9 @@ public class OraBackendBundle implements BackendBundle {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
-    public OraBackendBundle(DataSource dataSource, TaskDao taskDao) {
+    public OraBackendBundle(DataSource dataSource, TaskDao taskDao, CheckpointService checkpointService) {
         this.processBackend = new MemoryProcessBackend();
-        this.taskBackend = new GeneralTaskBackend(taskDao);
+        this.taskBackend = new GeneralTaskBackend(taskDao, checkpointService);
         this.queueBackend = new OraQueueBackend(dataSource);
         this.dependencyBackend = new MemoryDependencyBackend();
         this.configBackend = new MemoryConfigBackend();
