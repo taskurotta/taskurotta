@@ -1,9 +1,5 @@
 package ru.taskurotta.backend.dependency.links;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is not thread safe object. It should be synchronized with backend by version value.
@@ -57,7 +57,6 @@ public class Graph {
     }
 
     public Graph(UUID graphId, UUID startItem) {
-
         this.graphId = graphId;
         notFinishedItems.add(startItem);
     }
@@ -186,7 +185,7 @@ public class Graph {
             for (UUID item : newLinks.keySet()) {
                 Set<UUID> newItemLinks = newLinks.get(item);
 
-                for (UUID newItemLink: newItemLinks) {
+                for (UUID newItemLink : newItemLinks) {
 
                     // prevent link to already finished item.
                     // it is possible case for @NoWait Promise which are used on deep child task

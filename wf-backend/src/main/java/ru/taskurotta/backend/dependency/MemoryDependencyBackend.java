@@ -24,6 +24,7 @@ import ru.taskurotta.core.ArgType;
  * Date: 4/1/13
  * Time: 4:39 PM
  */
+@Deprecated
 public class MemoryDependencyBackend implements DependencyBackend {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryDependencyBackend.class);
