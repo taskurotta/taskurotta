@@ -26,10 +26,11 @@ public class GeneralTaskBackend implements TaskBackend {
 
     private TaskDao taskDao;
 
-    private CheckpointService checkpointService = new MemoryCheckpointService();//Default memory implementation
+    private CheckpointService checkpointService;
 
-    public GeneralTaskBackend(TaskDao taskDao) {
+    public GeneralTaskBackend(TaskDao taskDao, CheckpointService checkpointService) {
         this.taskDao = taskDao;
+        this.checkpointService = checkpointService;
     }
 
     @Override

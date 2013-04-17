@@ -28,7 +28,7 @@ public class OracleCheckpointService implements CheckpointService {
 
     private DataSource dataSource;
 
-    public void setDataSource(DataSource dataSource) {
+    public OracleCheckpointService(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 

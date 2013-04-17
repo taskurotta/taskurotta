@@ -1,5 +1,6 @@
 package ru.taskurotta.backend;
 
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -30,7 +31,7 @@ public class MemoryBackendBundle implements BackendBundle {
 
     public MemoryBackendBundle(int pollDelay, TaskDao taskDao) {
         this.processBackend = new MemoryProcessBackend();
-        this.taskBackend = new GeneralTaskBackend(taskDao);
+        this.taskBackend = new GeneralTaskBackend(taskDao, new MemoryCheckpointService());
         this.queueBackend = new MemoryQueueBackend(pollDelay);
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao, 100000); // ToDo: reduce this if TaskExpirationRecovery works
