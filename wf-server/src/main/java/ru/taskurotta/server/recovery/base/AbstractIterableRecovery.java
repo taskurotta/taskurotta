@@ -12,7 +12,6 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ExpirationPolicy;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 
 
 /**
@@ -55,13 +54,14 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
         if(stepCheckpoints!= null && !stepCheckpoints.isEmpty()) {
             for(Checkpoint checkpoint: stepCheckpoints) {
                 if(isReadyToRecover(checkpoint)) {
-                    TaskContainer task = getTaskByCheckpoint(checkpoint);
                     try {
-                        recoverTask(task, checkpoint, timeoutType);
+                        boolean success = recover(checkpoint, timeoutType);
                         checkpointService.removeCheckpoint(checkpoint);
-                        counter++;
+                        if(success) {
+                            counter++;
+                        }
                     } catch (Exception e) {
-                        logger.error("Cannot recover task[" + task.getTaskId() + "] by TimeoutType["+timeoutType+"]", e);
+                        logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+timeoutType+"]", e);
                     }
                 }
             }
@@ -72,9 +72,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
 
     protected abstract CheckpointService getCheckpointService();
 
-    protected abstract TaskContainer getTaskByCheckpoint(Checkpoint checkpoint);
-
-    protected abstract void recoverTask(TaskContainer target, Checkpoint checkpoint, TimeoutType timeoutType);
+    protected abstract boolean recover(Checkpoint checkpoint, TimeoutType timeoutType);
 
     protected boolean isReadyToRecover(Checkpoint checkpoint) {
         boolean result = false;

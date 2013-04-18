@@ -5,7 +5,7 @@ package ru.taskurotta.test.monkey;
  */
 public class CrazyException extends RuntimeException {
 
-    public static final String SORRY = "Sorry, dog was crazy. I must to shut em. ";
+    public static final String SORRY = "Sorry, dog was crazy. I must to shut'em. ";
 
     public CrazyException() {
         super(SORRY);

@@ -3,22 +3,36 @@ package ru.taskurotta.backend.config.impl;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 
+/**
+ * Configuration storing
+ */
 public class MemoryConfigBackend implements ConfigBackend {
 
 	private ActorPreferences[] actorPreferences;
 	private ExpirationPolicyConfig[] expirationPolicies;
 
-	private int defaultTimeout = 4;
+	private int defaultTimeout = 1;
 	private TimeUnit defaultTimeunit  = TimeUnit.SECONDS;
-	private boolean fallBackToDefaults = false;
-
+	
 	@Override
 	public boolean isActorBlocked(String actorId) {
-		return false;
+        boolean result = false;
+        ActorPreferences[] actorPreferences = getActorPreferences();
+        if(actorPreferences!=null && actorPreferences.length>0) {
+            for(ActorPreferences aPref: actorPreferences) {
+                if(aPref.getId().equals(actorId)) {
+                    result = aPref.isBlocked();
+                    break;
+                }
+            }
+        }
+        return result;
+
 	}
 
 	private ActorPreferences[] getDefaultActorPreferences() {
@@ -26,15 +40,10 @@ public class MemoryConfigBackend implements ConfigBackend {
 	    ActorPreferences defaultActorPrefs = new ActorPreferences();
 	    defaultActorPrefs.setBlocked(false);
 	    defaultActorPrefs.setId("default");
-	    defaultActorPrefs.setType("default");
 	    Properties expirationPolicies = new Properties();
-	    expirationPolicies.put("PROCESS_SCHEDULE_TO_START", "default_timeout_policy");
-	    expirationPolicies.put("PROCESS_SCHEDULE_TO_CLOSE", "default_timeout_policy");
-	    expirationPolicies.put("TASK_POLL_TO_COMMIT", "default_timeout_policy");
-	    expirationPolicies.put("TASK_RELEASE_TO_COMMIT", "default_timeout_policy");
-	    expirationPolicies.put("TASK_SCHEDULE_TO_CLOSE", "default_timeout_policy");
-	    expirationPolicies.put("TASK_SCHEDULE_TO_START", "default_timeout_policy");
-	    expirationPolicies.put("TASK_START_TO_CLOSE", "default_timeout_policy");
+	    for(TimeoutType timeoutType: TimeoutType.values()) {
+	        expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
+	    }
 	    defaultActorPrefs.setTimeoutPolicies(expirationPolicies);
 	    result[0] = defaultActorPrefs;
 	    return result;
@@ -55,7 +64,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 
 	@Override
 	public ActorPreferences[] getActorPreferences() {
-	    if(actorPreferences == null && fallBackToDefaults) {
+	    if(actorPreferences == null) {
 	        actorPreferences = getDefaultActorPreferences();
 	    }
 		return actorPreferences;
@@ -67,7 +76,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 
 	@Override
     public ExpirationPolicyConfig[] getExpirationPolicies() {
-	    if(expirationPolicies == null && fallBackToDefaults) {
+	    if(expirationPolicies == null) {
 	        expirationPolicies = getDefaultPolicies(defaultTimeout, defaultTimeunit);
 	    }
         return expirationPolicies;
@@ -83,10 +92,6 @@ public class MemoryConfigBackend implements ConfigBackend {
 
     public void setDefaultTimeunit(TimeUnit defaultTimeunit) {
         this.defaultTimeunit = defaultTimeunit;
-    }
-
-    public void setFallBackToDefaults(boolean fallBackToDefaults) {
-        this.fallBackToDefaults = fallBackToDefaults;
     }
 
 }

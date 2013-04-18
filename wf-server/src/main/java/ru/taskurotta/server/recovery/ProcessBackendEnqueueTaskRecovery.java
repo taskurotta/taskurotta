@@ -1,5 +1,9 @@
 package ru.taskurotta.server.recovery;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
@@ -20,15 +24,34 @@ public class ProcessBackendEnqueueTaskRecovery extends AbstractIterableRecovery 
         return processBackend.getCheckpointService();
     }
 
-    @Override
-    protected TaskContainer getTaskByCheckpoint(Checkpoint checkpoint) {
-        return taskBackend.getTask(checkpoint.getGuid());
+    private List<TaskContainer> getProcessTasks(UUID processId) {
+        List<TaskContainer> result = null;
+        List<TaskContainer> tasks = taskBackend.getAllRunProcesses();
+        if(tasks!=null && !tasks.isEmpty()) {
+            result = new ArrayList<TaskContainer>();
+            for(TaskContainer item: tasks) {
+                if(processId.equals(item.getProcessId())) {
+                    result.add(item);
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override
-    protected void recoverTask(TaskContainer target, Checkpoint checkpoint,
-            TimeoutType timeoutType) {
-        queueBackend.enqueueItem(target.getActorId(), target.getTaskId(), target.getStartTime(), null);
+    protected boolean recover(Checkpoint checkpoint, TimeoutType timeoutType) {
+        boolean result = false;
+
+        //TODO: Checkpoint.guid is a process guid. Should it be process starter task guid instead? And recovery would just enqueue that task again?
+        List<TaskContainer> processTasks = getProcessTasks(checkpoint.getGuid());
+        if(processTasks!=null && processTasks.isEmpty()) {
+            for(TaskContainer task: processTasks) {
+                queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime(), null);
+            }
+            result = true;
+        }
+        return result;
     }
 
     public void setTaskBackend(TaskBackend taskBackend) {

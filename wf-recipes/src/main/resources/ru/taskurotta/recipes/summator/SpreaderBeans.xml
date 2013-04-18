@@ -2,9 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:property-placeholder/>
 
@@ -14,7 +15,7 @@
         <property name="clientServiceManager" ref="clientServiceManager"/>
     </bean>
 
-    <bean id="taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery" init-method="init">
+    <bean id="taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery" >
 
         <property name="queueBackend">
             <bean factory-bean="clientServiceManager" factory-method="getQueueBackend" />
@@ -26,11 +27,18 @@
             <bean factory-bean="clientServiceManager" factory-method="getConfigBackend" />
         </property>
 
-        <property name="recoveryPeriod" value = "1" />
+        <property name="recoveryPeriod" value = "86400" />
         <property name="recoveryPeriodUnit" value = "SECONDS" />
-        <property name="timeIterationStep" value="200" />
+        <property name="timeIterationStep" value="1000" />
         <property name="timeIterationStepUnit" value="MILLISECONDS" />
+        <property name="timeoutType" value="TASK_POLL_TO_COMMIT" />
     </bean>
+
+    <task:scheduled-tasks scheduler="resendScheduler">
+        <task:scheduled ref="taskExpirationRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
+    </task:scheduled-tasks>
+    <task:scheduler id="resendScheduler" pool-size="1"/>
+
 
     <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />
 </beans>
