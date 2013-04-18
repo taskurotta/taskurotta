@@ -99,7 +99,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
     @Override
     public UUID poll(String actorId, String taskList) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
         UUID taskId = null;
         try {
@@ -137,7 +137,7 @@ public class MemoryQueueBackend implements QueueBackend {
     @Override
     public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
 
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         queue.add(new DelayedTaskElement(taskId, startTime));
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
@@ -164,7 +164,7 @@ public class MemoryQueueBackend implements QueueBackend {
     }
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
 
         DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, 0);
 
@@ -180,5 +180,7 @@ public class MemoryQueueBackend implements QueueBackend {
         this.checkpointService = checkpointService;
     }
 
-
+    private String createQueueName(String actorId, String taskList) {
+        return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
 }
