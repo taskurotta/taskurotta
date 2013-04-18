@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ru.taskurotta.backend.checkpoint.TimeoutType;
@@ -13,6 +14,7 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.TaskServer;
 
+@Ignore
 public class TestQueueRecovery {
 
     @Test

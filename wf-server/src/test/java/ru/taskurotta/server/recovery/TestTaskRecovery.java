@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ru.taskurotta.backend.checkpoint.TimeoutType;
@@ -13,6 +14,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.util.ActorUtils;
 
+@Ignore
 public class TestTaskRecovery {
 
     @Test
@@ -31,25 +33,25 @@ public class TestTaskRecovery {
         taskServer.startProcess(startTask);//enqueue task
 
         List<TaskContainer> polledTasks = pollForTasks(startTask.getActorId(), 2);
-        Assert.assertEquals("Only one task should be polled out", polledTasks.size(), 1);
+        Assert.assertEquals("Only one task should be polled out", 1, polledTasks.size());
 
         RecoveryFactory.ensureExpiration();//Wait to ensure that task is now expired
         startToCloseRecovery.run();
 
         //Task should be enqueued again
         List<TaskContainer> recoveredTasks = pollForTasks(startTask.getActorId(), 2);
-        Assert.assertEquals("Only one task should be polled out after recovery", recoveredTasks.size(), 1);
+        Assert.assertEquals("Only one task should be polled out after recovery", 1, recoveredTasks.size());
 
         taskServer.startProcess(startTask);//enqueue task
         List<TaskContainer> polledTasks2 = pollForTasks(startTask.getActorId(), 2);
-        Assert.assertEquals("Only one task should be polled out", polledTasks2.size(), 1);
+        Assert.assertEquals("Only one task should be polled out", 1, polledTasks2.size());
 
         RecoveryFactory.ensureExpiration();//Wait to ensure that task is now expired
         pollToCommitRecovery.run();
 
         //Task should not be recovered: timeout type mismatch
         List<TaskContainer> recoveredTasks2 = pollForTasks(startTask.getActorId(), 2);
-        Assert.assertEquals("Tasks with unchecked timeout should not be recovered", recoveredTasks2.size(), 0);
+        Assert.assertEquals("Tasks with unchecked timeout should not be recovered", 0, recoveredTasks2.size());
 
 
     }
