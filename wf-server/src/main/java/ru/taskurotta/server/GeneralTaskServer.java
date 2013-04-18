@@ -14,6 +14,8 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
@@ -74,7 +76,7 @@ public class GeneralTaskServer implements TaskServer {
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
-        enqueueTask(task.getTaskId(), task.getActorId(), task.getStartTime());
+        enqueueTask(task.getTaskId(), task.getActorId(), task.getStartTime(), getTaskList(task));
 
 
         processBackend.startProcessCommit(task);
@@ -91,7 +93,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // atomic statement
-        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), null);
+        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
 
         if (taskId == null) {
             return null;
@@ -124,7 +126,7 @@ public class GeneralTaskServer implements TaskServer {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
-                enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime());
+                enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
             }
 
             taskBackend.addDecisionCommit(taskDecision);
@@ -156,7 +158,7 @@ public class GeneralTaskServer implements TaskServer {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
-                enqueueTask(taskId2Queue, asyncTask.getActorId(), asyncTask.getStartTime());
+                enqueueTask(taskId2Queue, asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
             }
 
         }
@@ -169,13 +171,25 @@ public class GeneralTaskServer implements TaskServer {
         taskBackend.addDecisionCommit(taskDecision);
     }
 
-    private void enqueueTask(UUID taskId, String actorId, long startTime) {
+    private void enqueueTask(UUID taskId, String actorId, long startTime, String taskList) {
 
         // set it to current time for precisely repeat
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        queueBackend.enqueueItem(actorId, taskId, startTime, null);
+        queueBackend.enqueueItem(actorId, taskId, startTime, taskList);
     }
 
+
+    private String getTaskList(TaskContainer taskContainer) {
+        String taskList = null;
+        if (taskContainer.getOptions() != null) {
+            TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
+            if (taskOptionsContainer.getActorSchedulingOptions() != null) {
+                taskList = taskOptionsContainer.getActorSchedulingOptions().getTaskList();
+            }
+        }
+
+        return  taskList;
+    }
 }
