@@ -11,6 +11,7 @@ import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
 import ru.taskurotta.core.ArgType;
+import ru.taskurotta.core.Promise;
 
 import java.util.UUID;
 
@@ -139,7 +140,18 @@ public class GeneralDependencyBackend implements DependencyBackend {
                 }
 
                 modification.linkItem(childTaskId, arg.getTaskId());
+            }
 
+            Promise<?>[] promisesWaitFor = taskOptionsContainer == null ? null : taskOptionsContainer.getPromisesWaitFor();
+            if (promisesWaitFor != null) {
+                for (Promise<?> promise : promisesWaitFor) {
+                    // skip resolved promises
+                    if (promise.isReady()) {
+                        continue;
+                    }
+
+                    modification.linkItem(childTaskId, promise.getId());
+                }
             }
         }
 
