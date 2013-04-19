@@ -15,7 +15,7 @@
         <property name="clientServiceManager" ref="clientServiceManager"/>
     </bean>
 
-    <bean id="taskPollExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery" >
+    <bean id="taskPollRecoveryDaemon" class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery" >
 
         <property name="queueBackend">
             <bean factory-bean="clientServiceManager" factory-method="getQueueBackend" />
@@ -34,7 +34,12 @@
         <property name="timeoutType" value="TASK_POLL_TO_COMMIT" />
     </bean>
 
-    <bean id="taskExecutionExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskBackendEnqueueTaskRecovery" >
+    <task:scheduled-tasks scheduler="pollRecoveryScheduler">
+        <task:scheduled ref="taskPollRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
+    </task:scheduled-tasks>
+    <task:scheduler id="pollRecoveryScheduler" pool-size="1"/>
+
+    <bean id="taskExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskBackendEnqueueTaskRecovery" >
 
         <property name="queueBackend">
             <bean factory-bean="clientServiceManager" factory-method="getQueueBackend" />
@@ -53,18 +58,10 @@
         <property name="timeoutType" value="TASK_START_TO_CLOSE" />
     </bean>
 
-
-    <task:scheduled-tasks scheduler="resendScheduler">
-        <task:scheduled ref="taskPollExpirationRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
+    <task:scheduled-tasks scheduler="taskRecoveryScheduler">
+        <task:scheduled ref="taskExpirationRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
     </task:scheduled-tasks>
-    <task:scheduler id="resendScheduler" pool-size="1"/>
-
-    <task:scheduled-tasks scheduler="resendScheduler">
-        <task:scheduled ref="taskExecutionExpirationRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
-    </task:scheduled-tasks>
-
-    <task:scheduler id="resendScheduler" pool-size="1"/>
-
+    <task:scheduler id="taskRecoveryScheduler" pool-size="1"/>
 
 
     <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />

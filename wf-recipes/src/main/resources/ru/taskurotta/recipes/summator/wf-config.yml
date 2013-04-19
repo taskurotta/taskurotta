@@ -47,6 +47,9 @@ logback:
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:
+        - ru.taskurotta:
+             key: name
+             \@level: WARN
         - ru.taskurotta.recipes.summator:
              key: name
              \@level: WARN
