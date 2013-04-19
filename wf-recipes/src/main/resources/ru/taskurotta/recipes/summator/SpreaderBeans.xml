@@ -45,17 +45,15 @@
         </property>
     </bean>
 
-    <task:scheduled-tasks scheduler="queueBackendRecoveryScheduler">
-        <task:scheduled ref="queueBackendRecovery"
-            method="run" cron="*/2 * * * * ?" />
-    </task:scheduled-tasks>
-    <task:scheduler id="queueBackendRecoveryScheduler" pool-size="1" />
-
     <task:scheduled-tasks scheduler="taskBackendRecoveryScheduler">
-        <task:scheduled ref="taskBackendRecovery"
-            method="run" cron="*/2 * * * * ?" />
+        <task:scheduled ref="taskBackendRecovery" method="run" cron="*/2 * * * * ?"/>
     </task:scheduled-tasks>
     <task:scheduler id="taskBackendRecoveryScheduler" pool-size="1" />
+
+    <task:scheduled-tasks scheduler="queueBackendRecoveryScheduler">
+        <task:scheduled ref="queueBackendRecovery" method="run" cron="*/2 * * * * ?"/>
+    </task:scheduled-tasks>
+    <task:scheduler id="queueBackendRecoveryScheduler" pool-size="1" />
 
     <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />
 

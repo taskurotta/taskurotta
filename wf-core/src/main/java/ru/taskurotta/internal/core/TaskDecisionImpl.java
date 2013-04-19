@@ -20,7 +20,7 @@ public class TaskDecisionImpl implements TaskDecision {
     private Task[] tasks;
     private Throwable exception;
     private boolean error;
-    private long restartTime = -1; // ToDo: use global constant, maybe ru.taskurotta.policy.PolicyConstants
+    private long restartTime = NO_RESTART;
 
 	public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks) {
         this.uuid = uuid;
