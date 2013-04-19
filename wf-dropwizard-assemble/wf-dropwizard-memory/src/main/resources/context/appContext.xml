@@ -27,8 +27,10 @@
         <property name="taskServer" ref="taskServerGeneral" />
         <property name="daemonTasks">
             <map>
-                <entry key="TASK_POLL_TO_COMMIT_scheduler" value-ref="TASK_POLL_TO_COMMIT_scheduler" />
-                <entry key="TASK_START_TO_CLOSE_scheduler" value-ref="TASK_START_TO_CLOSE_scheduler" />
+                <entry key="TASK_POLL_TO_COMMIT_scheduler"
+                    value-ref="TASK_POLL_TO_COMMIT_scheduler" />
+                <entry key="TASK_START_TO_CLOSE_scheduler"
+                    value-ref="TASK_START_TO_CLOSE_scheduler" />
             </map>
         </property>
     </bean>
@@ -58,29 +60,27 @@
     <!-- /Recovery schedulers -->
 
     <!-- Recoveries -->
-    <bean id="recoveryParent"
-        class="ru.taskurotta.server.recovery.base.AbstractIterableRecovery"
+    <bean id="recoveryParent" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery"
         abstract="true">
         <property name="configBackend" ref="configBackend" />
+        <property name="taskBackend" ref="taskBackend" />
+        <property name="queueBackend" ref="queueBackend" />
         <property name="recoveryPeriod" value="${recovery.period}" />
         <property name="recoveryPeriodUnit" value="${recovery.period.unit}" />
         <property name="timeIterationStep" value="${recovery.timeStep}" />
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
     </bean>
 
-    <bean id="TASK_START_TO_CLOSE_recovery"
-        class="ru.taskurotta.server.recovery.TaskBackendEnqueueTaskRecovery"
-        parent="recoveryParent">
-        <property name="queueBackend" ref="queueBackend" />
-        <property name="taskBackend" ref="taskBackend" />
-        <property name="timeoutType" value="TASK_START_TO_CLOSE" />
+    <bean id="TASK_START_TO_CLOSE_recovery" parent="recoveryParent">
+        <property name="checkpointService">
+            <bean factory-bean="taskBackend" factory-method="getCheckpointService" />
+        </property>
     </bean>
-    <bean id="TASK_POLL_TO_COMMIT_recovery"
-        class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery"
-        parent="recoveryParent">
-        <property name="queueBackend" ref="queueBackend" />
-        <property name="taskBackend" ref="taskBackend" />
-        <property name="timeoutType" value="TASK_POLL_TO_COMMIT" />
+
+    <bean id="TASK_POLL_TO_COMMIT_recovery" parent="recoveryParent">
+        <property name="checkpointService">
+            <bean factory-bean="taskBackend" factory-method="getCheckpointService" />
+        </property>
     </bean>
 
     <!-- /Recoveries -->
@@ -89,7 +89,9 @@
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
     </bean>
+
     <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />
     </bean>

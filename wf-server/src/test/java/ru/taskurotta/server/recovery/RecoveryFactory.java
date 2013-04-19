@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -20,17 +19,22 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.core.TaskType;
 import ru.taskurotta.server.GeneralTaskServer;
 
+/**
+ * Creates and stores entities for test needs
+ */
 public class RecoveryFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(RecoveryFactory.class);
 
-    public static final int timeout = 100;
-    public static final TimeUnit timeoutUnit = TimeUnit.MILLISECONDS;
+    public int timeout = 100;
+    public TimeUnit timeoutUnit = TimeUnit.MILLISECONDS;
 
-    private static MemoryBackendBundle backends;
-    private static GeneralTaskServer taskServer;
+    private MemoryBackendBundle backends;
+    private GeneralTaskServer taskServer;
 
-    static {
+    public RecoveryFactory(int timeout, TimeUnit timeoutUnit) {
+        this.timeout = timeout;
+        this.timeoutUnit = timeoutUnit;
         backends = new MemoryBackendBundle(1, new MemoryTaskDao());
         ConfigBackend config = backends.getConfigBackend();
         if(config instanceof MemoryConfigBackend) {
@@ -38,19 +42,17 @@ public class RecoveryFactory {
             ((MemoryConfigBackend) config).setDefaultTimeunit(timeoutUnit);
         }
         taskServer = new GeneralTaskServer(backends);
-
     }
 
-
-    public static GeneralTaskServer getTaskServer() {
+    public GeneralTaskServer getTaskServer() {
         return taskServer;
     }
 
-    public static QueueBackend getQueueBackend() {
+    public QueueBackend getQueueBackend() {
         return backends.getQueueBackend();
     }
 
-    public static CheckpointService getCheckpointService(Class<?> backendClazz) {
+    public CheckpointService getCheckpointService(Class<?> backendClazz) {
         if(QueueBackend.class.isAssignableFrom(backendClazz)) {
             return getQueueBackend().getCheckpointService();
         } else if(TaskBackend.class.isAssignableFrom(backendClazz)) {
@@ -61,88 +63,37 @@ public class RecoveryFactory {
         return null;
     }
 
-    public static ConfigBackend getConfigBackend() {
+    public ConfigBackend getConfigBackend() {
         return backends.getConfigBackend();
     }
 
-    public static ProcessBackend getProcessBackend() {
+    public ProcessBackend getProcessBackend() {
         return backends.getProcessBackend();
     }
 
-    public static DependencyBackend getDependencyBackend() {
+    public DependencyBackend getDependencyBackend() {
         return backends.getDependencyBackend();
     }
 
-    public static TaskBackend getTaskBackend() {
+    public TaskBackend getTaskBackend() {
         return backends.getTaskBackend();
     }
 
-    public static MemoryBackendBundle getMemoryBackendBundle() {
+    public MemoryBackendBundle getMemoryBackendBundle() {
         return backends;
     }
 
-    public static TaskContainer getWorkerTaskContainer(UUID taskId, UUID processId) {
-        return new TaskContainer(taskId, processId, "testMethod1", "testWorker#0.1", TaskType.WORKER, System.currentTimeMillis(), 5, null, null);
+    public RetryEnqueueRecovery getRecoveryProcess(Class<?> backendClazz) {
+        RetryEnqueueRecovery result = new RetryEnqueueRecovery();
+        result.setCheckpointService(getCheckpointService(backendClazz));
+        result.setConfigBackend(backends.getConfigBackend());
+        result.setQueueBackend(backends.getQueueBackend());
+        result.setRecoveryPeriod(100);
+        result.setRecoveryPeriodUnit(TimeUnit.SECONDS);
+        result.setTaskBackend(backends.getTaskBackend());
+        result.setTimeIterationStep(500);
+        result.setTimeIterationStepUnit(TimeUnit.MILLISECONDS);
+        return result;
     }
-
-    public static TaskContainer getDeciderTaskContainer(UUID taskId, UUID processId) {
-        return new TaskContainer(taskId, processId, "testMethod2", "testDecider#0.1", TaskType.DECIDER_START, System.currentTimeMillis(), 5, null, null);
-    }
-
-    public static TaskBackendEnqueueTaskRecovery getTaskRecoveryProcess(TimeoutType timeoutType) {
-
-        TaskBackendEnqueueTaskRecovery recovery = new TaskBackendEnqueueTaskRecovery();
-        recovery.setConfigBackend(RecoveryFactory.getConfigBackend());
-        recovery.setTaskBackend(RecoveryFactory.getTaskBackend());
-        recovery.setQueueBackend(RecoveryFactory.getQueueBackend());
-        recovery.setRecoveryPeriod(10);
-        recovery.setRecoveryPeriodUnit(TimeUnit.MINUTES);
-        recovery.setTimeIterationStep(500);
-        recovery.setTimeIterationStepUnit(TimeUnit.SECONDS);
-        recovery.setTimeoutType(timeoutType);
-
-        return recovery;
-    }
-
-    public static QueueBackendEnqueueTaskRecovery getQueueRecoveryProcess(TimeoutType timeoutType) {
-
-        QueueBackendEnqueueTaskRecovery recovery = new QueueBackendEnqueueTaskRecovery();
-        recovery.setConfigBackend(RecoveryFactory.getConfigBackend());
-        recovery.setTaskBackend(RecoveryFactory.getTaskBackend());
-        recovery.setQueueBackend(RecoveryFactory.getQueueBackend());
-        recovery.setRecoveryPeriod(10);
-        recovery.setRecoveryPeriodUnit(TimeUnit.MINUTES);
-        recovery.setTimeIterationStep(500);
-        recovery.setTimeIterationStepUnit(TimeUnit.SECONDS);
-        recovery.setTimeoutType(timeoutType);
-
-        return recovery;
-    }
-
-    public static ProcessBackendEnqueueTaskRecovery getProcessRecoveryProcess(TimeoutType timeoutType) {
-
-        ProcessBackendEnqueueTaskRecovery recovery = new ProcessBackendEnqueueTaskRecovery();
-        recovery.setConfigBackend(RecoveryFactory.getConfigBackend());
-        recovery.setProcessBackend(RecoveryFactory.getProcessBackend());
-        recovery.setTaskBackend(RecoveryFactory.getTaskBackend());
-        recovery.setQueueBackend(RecoveryFactory.getQueueBackend());
-        recovery.setRecoveryPeriod(10);
-        recovery.setRecoveryPeriodUnit(TimeUnit.MINUTES);
-        recovery.setTimeIterationStep(500);
-        recovery.setTimeIterationStepUnit(TimeUnit.SECONDS);
-        recovery.setTimeoutType(timeoutType);
-
-        return recovery;
-    }
-
-    public static void ensureExpiration() {
-        long sleepFor = timeoutUnit.toMillis(timeout);
-        try {
-            Thread.sleep(sleepFor);
-        } catch (InterruptedException e) {
-            logger.error("Thread sleep for["+sleepFor+"] interrupted!", e);
-        }
-    }
-
 
 }

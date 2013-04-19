@@ -1,71 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:task="http://www.springframework.org/schema/task"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <context:property-placeholder/>
+    <context:property-placeholder />
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory"/>
+    <bean id="clientServiceManager"
+        class="ru.taskurotta.client.memory.ClientServiceManagerMemory" />
 
-    <bean id="taskCreator" class="ru.taskurotta.recipes.summator.TaskCreator" init-method="createStartTask">
-        <property name="clientServiceManager" ref="clientServiceManager"/>
+    <bean id="taskCreator" class="ru.taskurotta.recipes.summator.TaskCreator"
+        init-method="createStartTask">
+        <property name="clientServiceManager" ref="clientServiceManager" />
     </bean>
 
-    <bean id="taskPollExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.QueueBackendEnqueueTaskRecovery" >
+    <bean id="queueBackend" factory-bean="clientServiceManager"
+        factory-method="getQueueBackend" />
+    <bean id="taskBackend" factory-bean="clientServiceManager"
+        factory-method="getTaskBackend" />
+    <bean id="configBackend" factory-bean="clientServiceManager"
+        factory-method="getConfigBackend" />
 
-        <property name="queueBackend">
-            <bean factory-bean="clientServiceManager" factory-method="getQueueBackend" />
-        </property>
-        <property name="taskBackend">
-            <bean factory-bean="clientServiceManager" factory-method="getTaskBackend" />
-        </property>
-        <property name="configBackend">
-            <bean factory-bean="clientServiceManager" factory-method="getConfigBackend" />
-        </property>
-
-        <property name="recoveryPeriod" value = "86400" />
-        <property name="recoveryPeriodUnit" value = "SECONDS" />
+    <bean id="baseRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery" abstract="true">
+        <property name="queueBackend" ref="queueBackend" />
+        <property name="taskBackend" ref="taskBackend" />
+        <property name="configBackend" ref="configBackend" />
+        <property name="recoveryPeriod" value="86400" />
+        <property name="recoveryPeriodUnit" value="SECONDS" />
         <property name="timeIterationStep" value="1000" />
         <property name="timeIterationStepUnit" value="MILLISECONDS" />
-        <property name="timeoutType" value="TASK_POLL_TO_COMMIT" />
     </bean>
 
-    <bean id="taskExecutionExpirationRecoveryDaemon" class="ru.taskurotta.server.recovery.TaskBackendEnqueueTaskRecovery" >
-
-        <property name="queueBackend">
-            <bean factory-bean="clientServiceManager" factory-method="getQueueBackend" />
+    <bean id="taskBackendRecovery" parent="baseRecovery">
+        <property name="checkpointService">
+            <bean factory-bean="taskBackend" factory-method="getCheckpointService" />
         </property>
-        <property name="taskBackend">
-            <bean factory-bean="clientServiceManager" factory-method="getTaskBackend" />
-        </property>
-        <property name="configBackend">
-            <bean factory-bean="clientServiceManager" factory-method="getConfigBackend" />
-        </property>
-
-        <property name="recoveryPeriod" value = "86400" />
-        <property name="recoveryPeriodUnit" value = "SECONDS" />
-        <property name="timeIterationStep" value="1000" />
-        <property name="timeIterationStepUnit" value="MILLISECONDS" />
-        <property name="timeoutType" value="TASK_START_TO_CLOSE" />
     </bean>
 
+    <bean id="queueBackendRecovery" parent="baseRecovery">
+        <property name="checkpointService">
+            <bean factory-bean="queueBackend" factory-method="getCheckpointService" />
+        </property>
+    </bean>
 
-    <task:scheduled-tasks scheduler="resendScheduler">
-        <task:scheduled ref="taskPollExpirationRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
+    <task:scheduled-tasks scheduler="queueBackendRecoveryScheduler">
+        <task:scheduled ref="queueBackendRecovery"
+            method="run" cron="*/2 * * * * ?" />
     </task:scheduled-tasks>
-    <task:scheduler id="resendScheduler" pool-size="1"/>
+    <task:scheduler id="queueBackendRecoveryScheduler" pool-size="1" />
 
-    <task:scheduled-tasks scheduler="resendScheduler">
-        <task:scheduled ref="taskExecutionExpirationRecoveryDaemon" method="run" cron="*/2 * * * * ?"/>
+    <task:scheduled-tasks scheduler="taskBackendRecoveryScheduler">
+        <task:scheduled ref="taskBackendRecovery"
+            method="run" cron="*/2 * * * * ?" />
     </task:scheduled-tasks>
-
-    <task:scheduler id="resendScheduler" pool-size="1"/>
-
-
+    <task:scheduler id="taskBackendRecoveryScheduler" pool-size="1" />
 
     <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />
+
 </beans>

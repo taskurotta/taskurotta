@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicy;
@@ -19,7 +20,9 @@ import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
  */
 public abstract class AbstractRecovery implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractRecovery.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractRecovery.class);
+
+    protected CheckpointService checkpointService;
 
     protected int recoveryPeriod = Integer.MAX_VALUE;//Parameter to limit recovery for the given period in the past id needed
     protected TimeUnit recoveryPeriodUnit = TimeUnit.DAYS;
@@ -30,8 +33,12 @@ public abstract class AbstractRecovery implements Runnable {
 
     @Override
     public void run() {
-        logger.debug("Recovery process started, expirationPolicies are [{}]", expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
-        processRecoveryIteration();
+        if(checkpointService!=null) {
+            logger.debug("Recovery process started, expirationPolicies are [{}]", expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
+            processRecoveryIteration();
+        } else {
+            logger.error("Cannot start recovery process: CheckpointService is not set");
+        }
     }
 
     protected void initConfigs(ActorPreferences[] actorPrefs, ExpirationPolicyConfig[] expPolicies) {
@@ -108,6 +115,10 @@ public abstract class AbstractRecovery implements Runnable {
     }
     public void setRecoveryPeriodUnit(TimeUnit recoveryPeriodUnit) {
         this.recoveryPeriodUnit = recoveryPeriodUnit;
+    }
+
+    public void setCheckpointService(CheckpointService checkpointService) {
+        this.checkpointService = checkpointService;
     }
 
 }

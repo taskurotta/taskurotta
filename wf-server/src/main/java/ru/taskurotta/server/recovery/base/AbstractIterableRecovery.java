@@ -3,10 +3,6 @@ package ru.taskurotta.server.recovery.base;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
@@ -20,9 +16,6 @@ import ru.taskurotta.backend.config.model.ExpirationPolicy;
  */
 public abstract class AbstractIterableRecovery extends AbstractRecovery {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractIterableRecovery.class);
-
-    protected TimeoutType timeoutType;//type of timeout to recover
     private int timeIterationStep = 10000;//period of time step iteration
     private TimeUnit timeIterationStepUnit = TimeUnit.MILLISECONDS;
 
@@ -41,44 +34,49 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
 
     }
 
+    protected abstract TimeoutType[] getSupportedTimeouts();
+
     protected int processStep(int stepNumber, long timeFrom, long timeTill) {
         int counter = 0;
-        CheckpointService checkpointService = getCheckpointService();
+        TimeoutType[] timeouts = getSupportedTimeouts();//type of timeout to recover
+        if(timeouts!=null && timeouts.length>0) {
+            for(TimeoutType timeoutType: timeouts) {//TODO: specify timeouts collection in CheckpointQuery
+                CheckpointQuery query = new CheckpointQuery(timeoutType);
+                query.setMaxTime(timeTill);
+                query.setMinTime(timeFrom);
 
-        CheckpointQuery query = new CheckpointQuery(timeoutType);
-        query.setMaxTime(timeTill);
-        query.setMinTime(timeFrom);
+                List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
 
-        List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
-
-        if(stepCheckpoints!= null && !stepCheckpoints.isEmpty()) {
-            for(Checkpoint checkpoint: stepCheckpoints) {
-                if(isReadyToRecover(checkpoint)) {
-                    try {
-                        boolean success = recover(checkpoint, timeoutType);
-                        checkpointService.removeCheckpoint(checkpoint);
-                        if(success) {
-                            counter++;
+                if(stepCheckpoints!= null && !stepCheckpoints.isEmpty()) {
+                    for(Checkpoint checkpoint: stepCheckpoints) {
+                        if(isReadyToRecover(checkpoint)) {
+                            try {
+                                boolean success = recover(checkpoint);
+                                checkpointService.removeCheckpoint(checkpoint);
+                                if(success) {
+                                    counter++;
+                                }
+                            } catch (Exception e) {
+                                logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+timeoutType+"]", e);
+                            }
                         }
-                    } catch (Exception e) {
-                        logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+timeoutType+"]", e);
                     }
                 }
             }
+        } else {
+            logger.error("Recovery process cannot proceed: supported timeoutTypes are not set");
         }
 
         return counter;
     }
 
-    protected abstract CheckpointService getCheckpointService();
-
-    protected abstract boolean recover(Checkpoint checkpoint, TimeoutType timeoutType);
+    protected abstract boolean recover(Checkpoint checkpoint);
 
     protected boolean isReadyToRecover(Checkpoint checkpoint) {
         boolean result = false;
         if(checkpoint != null) {
             if(checkpoint.getEntityType() != null) {
-                ExpirationPolicy expPolicy = getExpirationPolicy(checkpoint.getEntityType(), timeoutType);
+                ExpirationPolicy expPolicy = getExpirationPolicy(checkpoint.getEntityType(), checkpoint.getTimeoutType());
                 if(expPolicy != null) {
                     result = expPolicy.readyToRecover(checkpoint.getGuid())
                             && (System.currentTimeMillis() > expPolicy.getExpirationTime(checkpoint.getGuid(), checkpoint.getTime()));
@@ -92,9 +90,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
     public void setConfigBackend(ConfigBackend configBackend) {
         initConfigs(configBackend.getActorPreferences(), configBackend.getExpirationPolicies());//initialize expiration policies
     }
-    public void setTimeoutType(TimeoutType timeoutType) {
-        this.timeoutType = timeoutType;
-    }
+
     public void setTimeIterationStep(int timeIterationStep) {
         this.timeIterationStep = timeIterationStep;
     }
