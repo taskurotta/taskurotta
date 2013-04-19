@@ -41,7 +41,7 @@ public class TimeoutPolicy implements ExpirationPolicy {
 
     @Override
     public long getExpirationTime(UUID taskUuid, long forTime) {
-        //foeTime + fixed timeout
+        //forTime + fixed timeout
         return forTime + timeUnit.toMillis(timeout);
     }
 
