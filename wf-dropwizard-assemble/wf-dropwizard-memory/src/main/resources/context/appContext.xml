@@ -100,9 +100,11 @@
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+    <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="checkpointService" ref="checkpointService"/>
     </bean>
     <bean id="dependencyBackend"
         class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
