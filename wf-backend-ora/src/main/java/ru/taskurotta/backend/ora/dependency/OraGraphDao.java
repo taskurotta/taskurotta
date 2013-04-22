@@ -134,7 +134,7 @@ public class OraGraphDao implements GraphDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("SELECT  GRAPH_DECISION FROM GRAPH WHERE GRAPH_ID = ?");
+            ps = connection.prepareStatement("SELECT  READY_ITEMS FROM GRAPH_DECISION WHERE GRAPH_ID = ?");
             ps.setString(1, finishedTaskId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
