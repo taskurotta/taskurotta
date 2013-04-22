@@ -1,7 +1,6 @@
 package ru.taskurotta.dropwizard.client.serialization;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -13,15 +12,15 @@ import java.io.IOException;
 public class ActorDefinitionDeserializer extends JsonDeserializer<ActorDefinition> implements Constants{
 
     @Override
-    public ActorDefinition deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException,
-    JsonProcessingException {
+    public ActorDefinition deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
         ObjectCodec oc = jp.getCodec();
         JsonNode rootNode = oc.readTree(jp);
 
         String name = rootNode.get(ACTOR_DEFINITION_NAME).textValue();
         String version = rootNode.get(ACTOR_DEFINITION_VERSION).textValue();
+        String taskList = rootNode.get(ACTOR_DEFINITION_TASK_LIST).textValue();
 
-        return ActorDefinition.valueOf(name, version);
+        return ActorDefinition.valueOf(name, version, taskList);
     }
 
 }

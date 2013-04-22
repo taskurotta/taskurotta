@@ -2,12 +2,14 @@ package ru.taskurotta.backend.config.model;
 
 import java.util.Properties;
 
+/**
+ * Server-side preferences of registered actor
+ */
 public class ActorPreferences {
 
     private String id;
-    private String type;
     private boolean blocked = false;
-    private ExpirationPolicyConfig expirationPolicy;
+    private Properties timeoutPolicies;
 
     public String getId() {
         return id;
@@ -21,48 +23,16 @@ public class ActorPreferences {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
-    public ExpirationPolicyConfig getExpirationPolicy() {
-        return expirationPolicy;
+    public Properties getTimeoutPolicies() {
+        return timeoutPolicies;
     }
-    public void setExpirationPolicy(ExpirationPolicyConfig expirationPolicy) {
-        this.expirationPolicy = expirationPolicy;
+    public void setTimeoutPolicies(Properties timeoutPolicies) {
+        this.timeoutPolicies = timeoutPolicies;
     }
-    public String getType() {
-        return type;
-    }
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public class ExpirationPolicyConfig {
-
-        private String className;
-        private Properties properties;
-
-        public String getClassName() {
-            return className;
-        }
-        public void setClassName(String className) {
-            this.className = className;
-        }
-        public Properties getProperties() {
-            return properties;
-        }
-        public void setProperties(Properties properties) {
-            this.properties = properties;
-        }
-
-        @Override
-        public String toString() {
-            return "ExpirationPolicyConfig [className=" + className
-                    + ", properties=" + properties + "]";
-        }
-    }
-
     @Override
     public String toString() {
-        return "ActorPreferences [id=" + id + ", type=" + type + ", blocked="
-                + blocked + ", expirationPolicy=" + expirationPolicy + "]";
+        return "ActorPreferences [id=" + id + ", blocked=" + blocked
+                + ", timeoutPolicies=" + timeoutPolicies + "]";
     }
 
 }

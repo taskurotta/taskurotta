@@ -1,7 +1,7 @@
 package ru.taskurotta.backend.config;
 
 import ru.taskurotta.backend.config.model.ActorPreferences;
-import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 
 /**
  * User: romario
@@ -9,9 +9,11 @@ import ru.taskurotta.util.ActorDefinition;
  * Time: 12:08 PM
  */
 public interface ConfigBackend {
-	
-    public boolean isActorBlocked(ActorDefinition actorDefinition);
-    
+
+    public boolean isActorBlocked(String actorId);
+
     public ActorPreferences[] getActorPreferences();
-    
+
+    public ExpirationPolicyConfig[] getExpirationPolicies();
+
 }

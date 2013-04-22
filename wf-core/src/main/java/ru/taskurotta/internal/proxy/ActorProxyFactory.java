@@ -1,6 +1,8 @@
 package ru.taskurotta.internal.proxy;
 
 import org.springframework.util.StringUtils;
+import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
@@ -72,7 +74,10 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
         Method[] targetMethods = clientInterface.getMethods();
         for (Method method : targetMethods) {
             TaskTarget taskTarget = new TaskTargetImpl(annotationExplorer.getTaskType(), actorName, actorVersion, method.getName());
-            MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method));
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
+            int positionPromisesWaitFor = positionParameter(parameterTypes, Promise[].class);
+            MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
             method2TaskTargetCache.put(method, descriptor);
         }
         return method2TaskTargetCache;

@@ -29,7 +29,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
+    private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
     private CheckpointService checkpointService = new MemoryCheckpointService();
     private Lock lock = new ReentrantLock();
 
@@ -99,8 +99,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
     @Override
     public UUID poll(String actorId, String taskList) {
-
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
         UUID taskId = null;
         try {
@@ -109,6 +108,7 @@ public class MemoryQueueBackend implements QueueBackend {
 
             if (delayedTaskObject != null) {
                 taskId = delayedTaskObject.taskId;
+                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
             }
 
         } catch (InterruptedException e) {
@@ -131,43 +131,40 @@ public class MemoryQueueBackend implements QueueBackend {
     @Override
     public void pollCommit(String actorId, UUID taskId) {
         checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
+        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override
     public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
 
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorId);
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         queue.add(new DelayedTaskElement(taskId, startTime));
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        Checkpoint scheduleToStartCpt = new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime);
-        checkpointService.addCheckpoint(scheduleToStartCpt);
-        Checkpoint scheduleToClose = new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime);
-        checkpointService.addCheckpoint(scheduleToClose);
-
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
 
     private DelayQueue<DelayedTaskElement> getQueue(String queueName) {
 
-        try {
-            lock.lock();
+        DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+        if (queue == null) {
+            synchronized (queues) {
 
-            DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
-            if (queue == null) {
-                queue = new DelayQueue<DelayedTaskElement>();
-                queues.put(queueName, queue);
+                queue = queues.get(queueName);
+                if (queue == null) {
+                    queue = new DelayQueue<DelayedTaskElement>();
+                    queues.put(queueName, queue);
+                }
             }
-
-            return queue;
-        } finally {
-            lock.unlock();
         }
+        return queue;
     }
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(actorDefinition.getFullName());
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
 
         DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, 0);
 
@@ -183,5 +180,7 @@ public class MemoryQueueBackend implements QueueBackend {
         this.checkpointService = checkpointService;
     }
 
-
+    private String createQueueName(String actorId, String taskList) {
+        return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
 }

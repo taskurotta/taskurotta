@@ -7,4 +7,6 @@ package ru.taskurotta.core;
  */
 public interface TaskOptions {
     ArgType[] getArgTypes();
+    ActorSchedulingOptions getActorSchedulingOptions();
+    Promise<?>[] getPromisesWaitFor();
 }

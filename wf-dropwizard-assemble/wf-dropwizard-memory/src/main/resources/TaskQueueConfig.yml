@@ -1,32 +1,63 @@
+#Location of Spring application context:
 contextLocation: "classpath*:context/appContext.xml"
 
+#Configuration of actors served by this server:
 actorConfig:
   actorPreferences:
     - id: "default"
-      type: "default"
-      expirationPolicy:
-        className: "ru.taskurotta.server.config.expiration.FixedRetryPolicy"
-        properties:
-          retry: 50
-          timeout: 1
-          timeUnit: "SECONDS"
+      timeoutPolicies:
+        PROCESS_START_TO_CLOSE: "skipping holidays 1 day timeout"
+        PROCESS_SCHEDULE_TO_START: "timeout 15 seconds"
+        PROCESS_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
+        TASK_START_TO_CLOSE: "timeout 15 seconds"
+        TASK_SCHEDULE_TO_START: "timeout 15 seconds"
+        TASK_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
+        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
+        TASK_RELEASE_TO_COMMIT: "timeout 15 seconds"
 
+#List of expiration policies available for actors: \\TODO: Should be parameterized somehow
+  expirationPolicies:
+    - name: "timeout 15 seconds"
+      className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
+      properties:
+        timeout: 15
+        timeUnit: "SECONDS"
+    - name: "retriable 60 seconds timeout"
+      className: "ru.taskurotta.server.config.expiration.impl.TimeoutWithFixedRetryPolicy"
+      properties:
+        timeout: 60
+        timeUnit: "SECONDS"
+        retry: 10
+    - name: "skipping holidays 1 day timeout"
+      className: "ru.taskurotta.server.config.expiration.impl.SkippingHolidaysTimeoutPolicy"
+      properties:
+        timeout: "1 days"
+        location: "target/classes/holidays.txt"
+        format: "yyyy-MM-dd"
+
+#Task server common properties (will be available as placeholders in spring context):
 properties:
   pollDelay: 2
   pollDelayUnit: "SECONDS"
   retryTimes: 10
-  recovery.task_start_to_close.schedule: "50 SECONDS"
-  recovery.task_start_to_close.period: 60
-  recovery.task_start_to_close.period_unit: "SECONDS"
-  recovery.task_start_to_close.time_step: 200
-  recovery.task_start_to_close.time_step_unit: "MILLISECONDS"
+  schedule.fast: "20 SECONDS"
+  schedule.normal: "40 SECONDS"
+  schedule.slow: "100 SECONDS"
+  recovery.period: 60
+  recovery.period.unit: "SECONDS"
+  recovery.timeStep: 200
+  recovery.timeStep.unit: "MILLISECONDS"
 
+#Http server configuration:
 logging:
     level: WARN
     loggers:
         ru.taskurotta: DEBUG
+        ru.taskurotta.dropwizard.resources: INFO
+        ru.taskurotta.backend: INFO
         com.yammer: INFO
     file:
         enabled: true
         currentLogFilename: ./target/logs/requests.log
         archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+#config can be extended here

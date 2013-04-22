@@ -42,18 +42,26 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel.log
+             file: ./logs/recipes-summator.log
              append: true
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: DEBUG
+             \@level: WARN
+        - ru.taskurotta.recipes.summator:
+             key: name
+             \@level: WARN
+        - ru.taskurotta.server.json:
+             key: name
+             \@level: WARN
         - org.springframework:
              key: name
              \@level: !!!str OFF
     root:
         appender-ref:
-            - FICTION:
+            - STDOUT:
+                key: ref
+            - FILE:
                 key: ref

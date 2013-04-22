@@ -17,10 +17,11 @@ public class RuntimeContext {
 
     private List<Task> tasks;
     private UUID processId;
+    private long startTime;
 
     public RuntimeContext(UUID processId) {
-
         this.processId = processId;
+        this.startTime = System.currentTimeMillis();
     }
 
 
@@ -66,5 +67,9 @@ public class RuntimeContext {
 
     public UUID getProcessId() {
         return processId;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 }
