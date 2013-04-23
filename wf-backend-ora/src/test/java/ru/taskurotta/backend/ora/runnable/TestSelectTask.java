@@ -1,12 +1,11 @@
 package ru.taskurotta.backend.ora.runnable;
 
-import java.sql.SQLException;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.util.StopWatch;
 import ru.taskurotta.backend.ora.queue.OraQueueDao;
+
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * User: greg
@@ -33,16 +32,11 @@ public class TestSelectTask implements Runnable {
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        try {
+        while (count < OPERATION_COUNT) {
+            count++;
 
-            while (count < OPERATION_COUNT) {
-                count++;
+            dbDAO.pollTask("QUEUE_BUS");
 
-                dbDAO.pollTask("QUEUE_BUS");
-
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         stopWatch.stop();
         countDownLatch.countDown();

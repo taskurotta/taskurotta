@@ -1,18 +1,15 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 
 import javax.sql.DataSource;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: moroz
@@ -30,46 +27,36 @@ public class OraQueueBackend implements QueueBackend {
 
     public OraQueueBackend(DataSource dataSource) {
         dbDAO = new OraQueueDao(dataSource);
-        try {
-            queueNames.putAll(dbDAO.getQueueNames());
-            log.warn("Initial queues count [{}] ", queueNames.size());
-        } catch (SQLException e) {
-            log.error("Error creating db connection", e);
-        }
+        queueNames.putAll(dbDAO.getQueueNames());
+        log.warn("Initial queues count [{}] ", queueNames.size());
+
     }
 
     @Override
     public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
-        try {
-            //String queueName = getQueueName(actorDefinition.getName(), actorDefinition.getVersion());
-            log.debug("addTaskToQueue taskId = [{}]", taskId);
 
-            synchronized (queueNames) {
-                if (!queueNames.containsKey(actorId)) {
-                    log.warn("Create queue for target [{}]", actorId);
-                    long queueId = dbDAO.registerQueue(actorId);
-                    queueNames.put(actorId, queueId);
-                    log.warn("Queues count [{}] ", queueNames.size());
-                    dbDAO.createQueue(TABLE_PREFIX + queueId);
-                }
+        log.debug("addTaskToQueue taskId = [{}]", taskId);
+
+        synchronized (queueNames) {
+            if (!queueNames.containsKey(actorId)) {
+                log.warn("Create queue for target [{}]", actorId);
+                long queueId = dbDAO.registerQueue(actorId);
+                queueNames.put(actorId, queueId);
+                log.warn("Queues count [{}] ", queueNames.size());
+                dbDAO.createQueue(TABLE_PREFIX + queueId);
             }
-
-            dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), getTableName(actorId));
-        } catch (SQLException ex) {
-            log.error("Database error", ex);
         }
+
+        dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), getTableName(actorId));
+
     }
 
     @Override
     public UUID poll(String actorId, String taskList) {
         String queueName = getTableName(actorId);
         if (queueName != null) {
-            try {
-                final UUID taskId = dbDAO.pollTask(queueName);
-                return taskId;
-            } catch (SQLException ex) {
-                log.error("Database error", ex);
-            }
+            final UUID taskId = dbDAO.pollTask(queueName);
+            return taskId;
         }
         return null;
     }
