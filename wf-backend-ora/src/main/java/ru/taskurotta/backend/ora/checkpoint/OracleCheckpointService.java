@@ -7,7 +7,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
-import ru.taskurotta.backend.ora.tools.SqlParam1;
+import ru.taskurotta.backend.ora.tools.SqlParam;
 import ru.taskurotta.exception.BackendCriticalException;
 
 import javax.sql.DataSource;
@@ -96,24 +96,24 @@ public class OracleCheckpointService implements CheckpointService {
         if (command != null && command.getTimeoutType() != null) {
             try {
                 connection = dataSource.getConnection();
-                final List<SqlParam1> sqlParams = Lists.newArrayList();
+                final List<SqlParam> sqlParams = Lists.newArrayList();
                 final List<Checkpoint> checkpoints = Lists.newArrayList();
                 final String query = "select * from TR_CHECKPOINTS where TYPE_TIMEOUT=?";
                 final StringBuilder stringBuilder = new StringBuilder(query);
-                sqlParams.add(new SqlParam1(1, command.getTimeoutType().toString()));
+                sqlParams.add(new SqlParam(1, command.getTimeoutType().toString()));
                 int idx = 2;
                 if (command.getMinTime() > 0) {
-                    sqlParams.add(new SqlParam1(idx, command.getMinTime()));
+                    sqlParams.add(new SqlParam(idx, command.getMinTime()));
                     stringBuilder.append(" and CHECKPOINT_TIME > ?");
                     idx++;
                 }
                 if (command.getMaxTime() > 0) {
-                    sqlParams.add(new SqlParam1(idx, command.getMaxTime()));
+                    sqlParams.add(new SqlParam(idx, command.getMaxTime()));
                     stringBuilder.append(" and CHECKPOINT_TIME < ?");
                     idx++;
                 }
                 if (command.getEntityType() != null) {
-                    sqlParams.add(new SqlParam1(idx, command.getEntityType()));
+                    sqlParams.add(new SqlParam(idx, command.getEntityType()));
                     stringBuilder.append(" and ENTITY_TYPE = ?");
                 }
                 ps = createPreparedStatementWithSqlParams(connection, sqlParams, stringBuilder.toString());
