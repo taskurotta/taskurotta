@@ -1,17 +1,16 @@
 package ru.taskurotta.dropwizard.internal;
 
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.recovery.schedule.SimpleScheduler;
 import ru.taskurotta.util.ActorDefinition;
+
+import javax.annotation.PostConstruct;
+import java.util.Map;
 
 public class TaskServerWrapper implements TaskServer {
 
@@ -19,16 +18,17 @@ public class TaskServerWrapper implements TaskServer {
 
     private TaskServer taskServer;
 
-    private Map<String, Runnable> daemonTasks;
+    private Map<Runnable, String> daemonTasks;
 
     @PostConstruct
     public void init() {
         if(daemonTasks!=null && !daemonTasks.isEmpty()) {
-            for(String daemonName: daemonTasks.keySet()) {
-                Thread runner = new Thread(daemonTasks.get(daemonName));
-                runner.setDaemon(true);
-                runner.setName(daemonName);
-                runner.start();
+            for(Runnable daemon: daemonTasks.keySet()) {
+                SimpleScheduler scheduler = new SimpleScheduler();
+                scheduler.setScheduledProcess(daemon);
+                scheduler.setName(daemon.getClass().getName());
+                scheduler.setSchedule(daemonTasks.get(daemon));
+                scheduler.start();
             }
             logger.info("Started [{}] daemon tasks: [{}]", daemonTasks.size(), daemonTasks.keySet());
         }
@@ -47,7 +47,7 @@ public class TaskServerWrapper implements TaskServer {
         taskServer.release(taskResult);
     }
 
-    public void setDaemonTasks(Map<String, Runnable> daemonTasks) {
+    public void setDaemonTasks(Map<Runnable, String> daemonTasks) {
         this.daemonTasks = daemonTasks;
     }
 

@@ -1,18 +1,18 @@
 package ru.taskurotta.server.recovery.base;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicy;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Abstract recovery process launched periodically.
@@ -22,7 +22,7 @@ public abstract class AbstractRecovery implements Runnable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractRecovery.class);
 
-    protected CheckpointService checkpointService;
+    protected List<CheckpointService> checkpointServices;
 
     protected int recoveryPeriod = Integer.MAX_VALUE;//Parameter to limit recovery for the given period in the past id needed
     protected TimeUnit recoveryPeriodUnit = TimeUnit.DAYS;
@@ -33,8 +33,9 @@ public abstract class AbstractRecovery implements Runnable {
 
     @Override
     public void run() {
-        if(checkpointService!=null) {
-            logger.debug("Recovery process started, expirationPolicies are [{}]", expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
+        List<CheckpointService> cs = getCheckpointServices();
+        if(cs!=null && !cs.isEmpty()) {
+            logger.debug("Recovery process started, checkpointServices count[{}], expirationPolicies are [{}]", cs.size(), expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
             processRecoveryIteration();
         } else {
             logger.error("Cannot start recovery process: CheckpointService is not set");
@@ -117,8 +118,11 @@ public abstract class AbstractRecovery implements Runnable {
         this.recoveryPeriodUnit = recoveryPeriodUnit;
     }
 
-    public void setCheckpointService(CheckpointService checkpointService) {
-        this.checkpointService = checkpointService;
+    public void setCheckpointServices(List<CheckpointService> checkpointServices) {
+        this.checkpointServices = checkpointServices;
     }
 
+    public List<CheckpointService> getCheckpointServices() {
+        return checkpointServices;
+    }
 }

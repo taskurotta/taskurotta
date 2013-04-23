@@ -1,5 +1,6 @@
 package ru.taskurotta.server.recovery.base;
 
+import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
@@ -46,6 +47,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
                 query.setMaxTime(timeTill);
                 query.setMinTime(timeFrom);
 
+                for(CheckpointService checkpointService: getCheckpointServices()){
                 List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
 
                 if(stepCheckpoints!= null && !stepCheckpoints.isEmpty()) {
@@ -59,6 +61,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
                                 }
                             } catch (Exception e) {
                                 logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+timeoutType+"]", e);
+                                }
                             }
                         }
                     }

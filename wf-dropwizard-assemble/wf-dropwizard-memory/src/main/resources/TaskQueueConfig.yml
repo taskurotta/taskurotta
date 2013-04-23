@@ -40,9 +40,7 @@ properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
   retryTimes: 10
-  schedule.fast: "20 SECONDS"
-  schedule.normal: "20 SECONDS"
-  schedule.slow: "100 SECONDS"
+  recovery.schedule: "20 SECONDS"
   recovery.period: 180
   recovery.period.unit: "SECONDS"
   recovery.timeStep: 500
@@ -52,7 +50,7 @@ properties:
 logging:
     level: WARN
     loggers:
-        ru.taskurotta: DEBUG
+        ru.taskurotta: INFO
         ru.taskurotta.dropwizard.resources: INFO
         ru.taskurotta.backend: INFO
         com.yammer: INFO
@@ -60,4 +58,8 @@ logging:
         enabled: true
         currentLogFilename: ./target/logs/requests.log
         archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+http:
+    gzip:
+        enabled: false
 #config can be extended here
+#http://dropwizard.codahale.com/manual/core/#configuration-defaults

@@ -1,5 +1,6 @@
 package ru.taskurotta.server.recovery;
 
+import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.queue.QueueBackend;
@@ -7,6 +8,8 @@ import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.recovery.base.AbstractIterableRecovery;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -20,6 +23,8 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
     private TimeoutType[] supportedTimeouts = TimeoutType.values();//tries to recover all types of timeouts by default
     private TaskBackend taskBackend;
     private QueueBackend queueBackend;
+
+    private List<CheckpointService> defaultCheckpointServices;
 
     @Override
     protected boolean recover(Checkpoint checkpoint) {
@@ -77,4 +82,21 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
         this.supportedTimeouts = supportedTimeouts;
     }
 
+    @Override
+    public List<CheckpointService> getCheckpointServices() {
+        if(checkpointServices!=null) {
+            return checkpointServices;
+        } else {
+            return defaultCheckpointServices();
+        }
+    }
+
+    private List<CheckpointService> defaultCheckpointServices() {
+       if(defaultCheckpointServices == null) {
+           defaultCheckpointServices = new ArrayList<CheckpointService>();
+           defaultCheckpointServices.add(taskBackend.getCheckpointService());
+           defaultCheckpointServices.add(queueBackend.getCheckpointService());
+       }
+       return defaultCheckpointServices;
+    }
 }

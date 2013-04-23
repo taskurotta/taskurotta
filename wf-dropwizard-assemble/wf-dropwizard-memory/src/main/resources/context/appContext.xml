@@ -27,12 +27,8 @@
         <property name="taskServer" ref="taskServerGeneral" />
         <property name="daemonTasks">
             <map>
-                <entry key="taskBE"
-                    value-ref="taskBackendRecoveryScheduler" />
-                <!--<entry key="queueBE"-->
-                    <!--value-ref="queueBackendRecoveryScheduler" />-->
-                <!--<entry key="processBE"-->
-                    <!--value-ref="processBackendRecoveryScheduler" />-->
+                <entry key-ref="expiredTaskRecovery"
+                    value="${recovery.schedule}" />
             </map>
         </property>
     </bean>
@@ -45,30 +41,8 @@
         <constructor-arg name="taskBackend" ref="taskBackend" />
     </bean>
 
-    <!-- Recovery schedulers -->
-    <bean id="taskBackendRecoveryScheduler"
-        class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
-        <property name="schedule" value="${schedule.normal}" />
-        <property name="name" value="Task backend task expiration recovery" />
-        <property name="scheduledProcess" ref="taskBackendRecovery" />
-    </bean>
-    <!--<bean id="queueBackendRecoveryScheduler"-->
-        <!--class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">-->
-        <!--<property name="schedule" value="${schedule.normal}" />-->
-        <!--<property name="name" value="Queue backend task expiration recovery" />-->
-        <!--<property name="scheduledProcess" ref="queueBackendRecovery" />-->
-    <!--</bean>-->
-    <!--<bean id="processBackendRecoveryScheduler"-->
-        <!--class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">-->
-        <!--<property name="schedule" value="${schedule.normal}" />-->
-        <!--<property name="name" value="Process backend start task expiration recovery" />-->
-        <!--<property name="scheduledProcess" ref="processBackendRecovery" />-->
-    <!--</bean>-->
-    <!-- /Recovery schedulers -->
-
     <!-- Recoveries -->
-    <bean id="recoveryParent" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery"
-        abstract="true">
+    <bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
         <property name="configBackend" ref="configBackend" />
         <property name="taskBackend" ref="taskBackend" />
         <property name="queueBackend" ref="queueBackend" />
@@ -77,26 +51,6 @@
         <property name="timeIterationStep" value="${recovery.timeStep}" />
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
     </bean>
-    <bean id="taskBackendRecovery" parent="recoveryParent">
-        <property name="checkpointService">
-            <bean factory-bean="taskBackend" factory-method="getCheckpointService" />
-        </property>
-        <property name="supportedTimeouts">
-            <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
-                <value>TASK_START_TO_CLOSE</value>
-            </array>
-        </property>
-    </bean>
-    <!--<bean id="queueBackendRecovery" parent="recoveryParent">-->
-        <!--<property name="checkpointService">-->
-            <!--<bean factory-bean="queueBackend" factory-method="getCheckpointService" />-->
-        <!--</property>-->
-    <!--</bean>-->
-    <!--<bean id="processBackendRecovery" parent="recoveryParent">-->
-        <!--<property name="checkpointService">-->
-            <!--<bean factory-bean="processBackend" factory-method="getCheckpointService" />-->
-        <!--</property>-->
-    <!--</bean>-->
     <!-- /Recoveries -->
 
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">

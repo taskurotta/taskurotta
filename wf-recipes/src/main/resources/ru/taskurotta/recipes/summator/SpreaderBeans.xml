@@ -23,7 +23,7 @@
     <bean id="configBackend" factory-bean="clientServiceManager"
         factory-method="getConfigBackend" />
 
-    <bean id="baseRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery" abstract="true">
+    <bean id="taskExpirationRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
         <property name="queueBackend" ref="queueBackend" />
         <property name="taskBackend" ref="taskBackend" />
         <property name="configBackend" ref="configBackend" />
@@ -33,27 +33,10 @@
         <property name="timeIterationStepUnit" value="MILLISECONDS" />
     </bean>
 
-    <bean id="taskBackendRecovery" parent="baseRecovery">
-        <property name="checkpointService">
-            <bean factory-bean="taskBackend" factory-method="getCheckpointService" />
-        </property>
-    </bean>
-
-    <bean id="queueBackendRecovery" parent="baseRecovery">
-        <property name="checkpointService">
-            <bean factory-bean="queueBackend" factory-method="getCheckpointService" />
-        </property>
-    </bean>
-
-    <task:scheduled-tasks scheduler="taskBackendRecoveryScheduler">
-        <task:scheduled ref="taskBackendRecovery" method="run" cron="*/2 * * * * ?"/>
+    <task:scheduled-tasks scheduler="taskExpirationRecoveryScheduler">
+        <task:scheduled ref="taskExpirationRecovery" method="run" cron="*/2 * * * * ?"/>
     </task:scheduled-tasks>
-    <task:scheduler id="taskBackendRecoveryScheduler" pool-size="1" />
-
-    <task:scheduled-tasks scheduler="queueBackendRecoveryScheduler">
-        <task:scheduled ref="queueBackendRecovery" method="run" cron="*/2 * * * * ?"/>
-    </task:scheduled-tasks>
-    <task:scheduler id="queueBackendRecoveryScheduler" pool-size="1" />
+    <task:scheduler id="taskExpirationRecoveryScheduler" pool-size="1" />
 
     <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />
 

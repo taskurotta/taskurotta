@@ -1,11 +1,7 @@
 package ru.taskurotta.server.recovery;
 
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.config.ConfigBackend;
@@ -15,9 +11,11 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.core.TaskType;
 import ru.taskurotta.server.GeneralTaskServer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Creates and stores entities for test needs
@@ -85,7 +83,6 @@ public class RecoveryFactory {
 
     public RetryEnqueueRecovery getRecoveryProcess(Class<?> backendClazz) {
         RetryEnqueueRecovery result = new RetryEnqueueRecovery();
-        result.setCheckpointService(getCheckpointService(backendClazz));
         result.setConfigBackend(backends.getConfigBackend());
         result.setQueueBackend(backends.getQueueBackend());
         result.setRecoveryPeriod(100);
@@ -93,6 +90,11 @@ public class RecoveryFactory {
         result.setTaskBackend(backends.getTaskBackend());
         result.setTimeIterationStep(500);
         result.setTimeIterationStepUnit(TimeUnit.MILLISECONDS);
+
+        List<CheckpointService> checkpointServices = new ArrayList<CheckpointService>();
+        checkpointServices.add(getCheckpointService(backendClazz));
+        result.setCheckpointServices(checkpointServices);
+
         return result;
     }
 
