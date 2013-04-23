@@ -16,18 +16,17 @@ spreader:
         properties:
           count: 185
           endpoint: "http://localhost:8080"
-          threadPoolSize: 10
-          readTimeout: 3000
+          threadPoolSize: 15
+          readTimeout: 500
           connectTimeout: 3000
-          loggerPeriod: 8000
-          maxConnectionsPerHost: 10
+          maxConnectionsPerHost: 15
 
 profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
       instance:
         singleton: true
-        logPeriod: 6000
+        logPeriod: 30000
 
 actor:
   - MathActionDecider:

@@ -29,10 +29,10 @@
             <map>
                 <entry key="taskBE"
                     value-ref="taskBackendRecoveryScheduler" />
-                <entry key="queueBE"
-                    value-ref="queueBackendRecoveryScheduler" />
-                <entry key="processBE"
-                    value-ref="processBackendRecoveryScheduler" />
+                <!--<entry key="queueBE"-->
+                    <!--value-ref="queueBackendRecoveryScheduler" />-->
+                <!--<entry key="processBE"-->
+                    <!--value-ref="processBackendRecoveryScheduler" />-->
             </map>
         </property>
     </bean>
@@ -52,18 +52,18 @@
         <property name="name" value="Task backend task expiration recovery" />
         <property name="scheduledProcess" ref="taskBackendRecovery" />
     </bean>
-    <bean id="queueBackendRecoveryScheduler"
-        class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
-        <property name="schedule" value="${schedule.normal}" />
-        <property name="name" value="Queue backend task expiration recovery" />
-        <property name="scheduledProcess" ref="queueBackendRecovery" />
-    </bean>
-    <bean id="processBackendRecoveryScheduler"
-        class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">
-        <property name="schedule" value="${schedule.normal}" />
-        <property name="name" value="Process backend start task expiration recovery" />
-        <property name="scheduledProcess" ref="processBackendRecovery" />
-    </bean>
+    <!--<bean id="queueBackendRecoveryScheduler"-->
+        <!--class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">-->
+        <!--<property name="schedule" value="${schedule.normal}" />-->
+        <!--<property name="name" value="Queue backend task expiration recovery" />-->
+        <!--<property name="scheduledProcess" ref="queueBackendRecovery" />-->
+    <!--</bean>-->
+    <!--<bean id="processBackendRecoveryScheduler"-->
+        <!--class="ru.taskurotta.server.recovery.schedule.SimpleScheduler">-->
+        <!--<property name="schedule" value="${schedule.normal}" />-->
+        <!--<property name="name" value="Process backend start task expiration recovery" />-->
+        <!--<property name="scheduledProcess" ref="processBackendRecovery" />-->
+    <!--</bean>-->
     <!-- /Recovery schedulers -->
 
     <!-- Recoveries -->
@@ -81,17 +81,22 @@
         <property name="checkpointService">
             <bean factory-bean="taskBackend" factory-method="getCheckpointService" />
         </property>
-    </bean>
-    <bean id="queueBackendRecovery" parent="recoveryParent">
-        <property name="checkpointService">
-            <bean factory-bean="queueBackend" factory-method="getCheckpointService" />
+        <property name="supportedTimeouts">
+            <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
+                <value>TASK_START_TO_CLOSE</value>
+            </array>
         </property>
     </bean>
-    <bean id="processBackendRecovery" parent="recoveryParent">
-        <property name="checkpointService">
-            <bean factory-bean="processBackend" factory-method="getCheckpointService" />
-        </property>
-    </bean>
+    <!--<bean id="queueBackendRecovery" parent="recoveryParent">-->
+        <!--<property name="checkpointService">-->
+            <!--<bean factory-bean="queueBackend" factory-method="getCheckpointService" />-->
+        <!--</property>-->
+    <!--</bean>-->
+    <!--<bean id="processBackendRecovery" parent="recoveryParent">-->
+        <!--<property name="checkpointService">-->
+            <!--<bean factory-bean="processBackend" factory-method="getCheckpointService" />-->
+        <!--</property>-->
+    <!--</bean>-->
     <!-- /Recoveries -->
 
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">

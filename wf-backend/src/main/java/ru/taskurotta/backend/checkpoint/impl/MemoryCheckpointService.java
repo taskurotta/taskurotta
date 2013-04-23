@@ -133,7 +133,7 @@ public class MemoryCheckpointService implements CheckpointService {
             if(set != null) {
                 synchronized (set) {
                     for(Checkpoint item: set) {
-                        if(item.getGuid().equals(uuid)) {
+                        if(item.getEntityGuid().equals(uuid)) {
                             result.add(item);
                         }
                     }

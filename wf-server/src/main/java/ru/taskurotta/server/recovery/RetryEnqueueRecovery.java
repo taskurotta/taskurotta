@@ -28,9 +28,9 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
 
         //TODO: make it in some better way
         if(timeoutType.toString().toUpperCase().startsWith("TASK")) {//try to enqueue task again
-            result = retryTaskEnqueue(checkpoint.getGuid());
+            result = retryTaskEnqueue(checkpoint.getEntityGuid());
         } else if(timeoutType.toString().toUpperCase().startsWith("PROCESS")) {//Try to recover process by enqueue first task
-            retryProcessStartTaskEnqueue(checkpoint.getGuid());
+            retryProcessStartTaskEnqueue(checkpoint.getEntityGuid());
         } else {
             logger.error("Unknown timeout type [{}] - cannot recover!", timeoutType);
         }

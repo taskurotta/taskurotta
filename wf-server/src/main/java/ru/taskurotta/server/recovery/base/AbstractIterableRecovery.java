@@ -79,8 +79,8 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             if(checkpoint.getEntityType() != null) {
                 ExpirationPolicy expPolicy = getExpirationPolicy(checkpoint.getEntityType(), checkpoint.getTimeoutType());
                 if(expPolicy != null) {
-                    result = expPolicy.readyToRecover(checkpoint.getGuid())
-                            && (System.currentTimeMillis() > expPolicy.getExpirationTime(checkpoint.getGuid(), checkpoint.getTime()));
+                    result = expPolicy.readyToRecover(checkpoint.getEntityGuid())
+                            && (System.currentTimeMillis() > expPolicy.getExpirationTime(checkpoint.getEntityGuid(), checkpoint.getTime()));
                 }
             }
 

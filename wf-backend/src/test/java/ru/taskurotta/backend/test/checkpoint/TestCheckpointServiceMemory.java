@@ -57,7 +57,7 @@ public class TestCheckpointServiceMemory {
         Assert.assertNotNull(result2);
         Assert.assertEquals("Must find 1 checkpoints", 1, result2.size());
 
-        checkpointService.removeCheckpoint(new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, c1.getGuid(), c1.getEntityType(), c1.getTime()));
+        checkpointService.removeCheckpoint(new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, c1.getEntityGuid(), c1.getEntityType(), c1.getTime()));
         List<Checkpoint> result3 = checkpointService.listCheckpoints(query1);
         Assert.assertNotNull(result3);
         Assert.assertEquals("Must find 1 checkpoints", 1, result3.size());

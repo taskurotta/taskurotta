@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.checkpoint.model;
 
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.TimeoutType;
+
+import java.util.UUID;
 
 /**
  * Description for common entity having specified time (checkpoint time).
@@ -10,8 +10,8 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
  */
 public class Checkpoint {
 
-    //Entity guid
-    private UUID guid;
+    //Entity entityGuid
+    private UUID entityGuid;
 
     //Type of entity quid field references to
     private String entityType;
@@ -22,25 +22,25 @@ public class Checkpoint {
     //Checkpoint time
     private long time;
 
-    public Checkpoint(TimeoutType timeoutType, UUID guid, String entityType, long time) {
-        this.guid = guid;
+    public Checkpoint(TimeoutType timeoutType, UUID entityGuid, String entityType, long time) {
+        this.entityGuid = entityGuid;
         this.time = time;
         this.entityType = entityType;
         this.timeoutType = timeoutType;
     }
 
-    public Checkpoint(TimeoutType timeoutType, UUID guid, long time) {
-        this(timeoutType, guid, null, time);
+    public Checkpoint(TimeoutType timeoutType, UUID entityGuid, long time) {
+        this(timeoutType, entityGuid, null, time);
     }
 
     public Checkpoint() {
     }
 
-    public UUID getGuid() {
-        return guid;
+    public UUID getEntityGuid() {
+        return entityGuid;
     }
-    public void setGuid(UUID guid) {
-        this.guid = guid;
+    public void setEntityGuid(UUID entityGuid) {
+        this.entityGuid = entityGuid;
     }
 
     public long getTime() {
@@ -68,7 +68,7 @@ public class Checkpoint {
 
     @Override
     public String toString() {
-        return "Checkpoint [guid=" + guid + ", entityType=" + entityType
+        return "Checkpoint [entityGuid=" + entityGuid + ", entityType=" + entityType
                 + ", timeoutType=" + timeoutType + ", time=" + time + "]";
     }
 
@@ -78,7 +78,7 @@ public class Checkpoint {
         int result = 1;
         result = prime * result
                 + ((entityType == null) ? 0 : entityType.hashCode());
-        result = prime * result + ((guid == null) ? 0 : guid.hashCode());
+        result = prime * result + ((entityGuid == null) ? 0 : entityGuid.hashCode());
         result = prime * result + (int) (time ^ (time >>> 32));
         result = prime * result
                 + ((timeoutType == null) ? 0 : timeoutType.hashCode());
@@ -99,10 +99,10 @@ public class Checkpoint {
                 return false;
         } else if (!entityType.equals(other.entityType))
             return false;
-        if (guid == null) {
-            if (other.guid != null)
+        if (entityGuid == null) {
+            if (other.entityGuid != null)
                 return false;
-        } else if (!guid.equals(other.guid))
+        } else if (!entityGuid.equals(other.entityGuid))
             return false;
         if (time != other.time)
             return false;

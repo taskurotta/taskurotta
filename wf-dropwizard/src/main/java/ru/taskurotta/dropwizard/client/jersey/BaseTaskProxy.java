@@ -1,20 +1,18 @@
 package ru.taskurotta.dropwizard.client.jersey;
 
-import javax.ws.rs.core.MediaType;
-
+import com.sun.jersey.api.client.WebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-
-import com.sun.jersey.api.client.WebResource;
-
+import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
+
+import javax.ws.rs.core.MediaType;
 
 public class BaseTaskProxy implements TaskServer {
 
@@ -37,7 +35,10 @@ public class BaseTaskProxy implements TaskServer {
     @Override
     public void startProcess(TaskContainer task) {
         try {
-            startResource.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(new TaskContainerWrapper(task));
+            WebResource.Builder rb = startResource.getRequestBuilder();
+            rb.type(MediaType.APPLICATION_JSON);
+            rb.accept(MediaType.APPLICATION_JSON);
+            rb.post(new TaskContainerWrapper(task));
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
                 logger.debug("Read timeout at start process for task["+task+"]", ex);
@@ -54,8 +55,10 @@ public class BaseTaskProxy implements TaskServer {
     public TaskContainer poll(ActorDefinition actorDefinition) {
         TaskContainer result = null;
         try {
-            result =  pullResource.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
-                    .post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
+            WebResource.Builder rb = pullResource.getRequestBuilder();
+            rb.type(MediaType.APPLICATION_JSON);
+            rb.accept(MediaType.APPLICATION_JSON);
+            result =  rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
                 logger.debug("Read timeout pulling task for [{}]", actorDefinition);
@@ -73,7 +76,10 @@ public class BaseTaskProxy implements TaskServer {
     @Override
     public void release(DecisionContainer taskResult) {
         try {
-            releaseResource.type(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).post(new DecisionContainerWrapper(taskResult));
+            WebResource.Builder rb = releaseResource.getRequestBuilder();
+            rb.type(MediaType.APPLICATION_JSON);
+            rb.accept(MediaType.APPLICATION_JSON);
+            rb.post(new DecisionContainerWrapper(taskResult));
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
                 logger.debug("Read timeout releasing [{}]", taskResult);
