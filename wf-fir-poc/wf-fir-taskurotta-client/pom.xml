@@ -13,6 +13,10 @@
     <packaging>jar</packaging>
     <name>Taskurotta :: FIR :: POC :: FIR client</name>
 
+    <properties>
+        <activemq.version>5.3.0-fuse-01-00</activemq.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>ru.taskurotta</groupId>
@@ -26,7 +30,12 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-core</artifactId>
-            <version>5.3.0-fuse-01-00</version>
+            <version>${activemq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-pool</artifactId>
+            <version>${activemq.version}</version>
         </dependency>
 
         <dependency>
