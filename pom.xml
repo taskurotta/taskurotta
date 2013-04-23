@@ -36,6 +36,7 @@
         <module>wf-dropwizard-assemble</module>
         <module>wf-backend</module>
         <module>wf-backend-ora</module>
+        <module>wf-fir-poc</module>
     </modules>
 
     <dependencies>
