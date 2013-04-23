@@ -99,15 +99,15 @@ public abstract class AbstractRecovery implements Runnable {
         if(entityType!=null && expirationPolicyMap!=null) {
             Map<TimeoutType, ExpirationPolicy> valueMap = expirationPolicyMap.get(entityType);
             if(valueMap == null) {
+                logger.trace("Not found expiration policy config for entityType[{}], timeoutType[{}]. Applying defaults[{}]", entityType, timeoutType, valueMap);
                 valueMap = expirationPolicyMap.get("default");
-                logger.debug("Not found expiration policy config for entityType[{}], timeoutType[{}]. Applying defaults[{}]", entityType, timeoutType, valueMap);
             }
 
             if(valueMap != null) {
                 result = valueMap.get(timeoutType);
             }
         }
-        logger.debug("ExpirationPolicy getted for entityType[{}] is [{}]", entityType, result);
+        logger.trace("ExpirationPolicy getted for entityType[{}] is [{}]", entityType, result);
         return result;
     }
 

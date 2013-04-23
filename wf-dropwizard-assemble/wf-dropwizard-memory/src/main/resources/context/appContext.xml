@@ -41,6 +41,12 @@
         <property name="recoveryPeriodUnit" value="${recovery.period.unit}" />
         <property name="timeIterationStep" value="${recovery.timeStep}" />
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
+        <property name="supportedTimeouts">
+            <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
+                <value>TASK_START_TO_CLOSE</value>
+                <value>TASK_POLL_TO_COMMIT</value>
+            </array>
+        </property>
     </bean>
     <!-- /Recoveries -->
     
