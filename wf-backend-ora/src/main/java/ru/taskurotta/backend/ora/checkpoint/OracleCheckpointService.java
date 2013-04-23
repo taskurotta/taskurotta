@@ -7,6 +7,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
+import ru.taskurotta.exception.BackendCriticalException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -46,6 +47,7 @@ public class OracleCheckpointService implements CheckpointService {
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
@@ -66,11 +68,13 @@ public class OracleCheckpointService implements CheckpointService {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("delete from TR_CHECKPOINTS where CHECKPOINT_ID = ?");
+            ps = connection.prepareStatement("delete from TR_CHECKPOINTS where CHECKPOINT_ID = ? and TYPE_TIMEOUT = ?");
             ps.setString(1, checkpoint.getGuid().toString());
+            ps.setString(2, checkpoint.getTimeoutType().toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
@@ -90,20 +94,27 @@ public class OracleCheckpointService implements CheckpointService {
         if (command != null && command.getTimeoutType() != null) {
             try {
                 connection = dataSource.getConnection();
+                final List<SQLParam> sqlParams = Lists.newArrayList();
                 final List<Checkpoint> checkpoints = Lists.newArrayList();
                 final String query = "select * from TR_CHECKPOINTS where TYPE_TIMEOUT=?";
                 final StringBuilder stringBuilder = new StringBuilder(query);
+                sqlParams.add(new SQLParam(1, command.getTimeoutType().toString()));
+                int idx = 2;
                 if (command.getMinTime() > 0) {
-                    stringBuilder.append(" and CHECKPOINT_TIME > ").append(command.getMinTime());
+                    sqlParams.add(new SQLParam(idx, command.getMinTime()));
+                    stringBuilder.append(" and CHECKPOINT_TIME > ?");
+                    idx++;
                 }
                 if (command.getMaxTime() > 0) {
-                    stringBuilder.append(" and CHECKPOINT_TIME < ").append(command.getMaxTime());
+                    sqlParams.add(new SQLParam(idx, command.getMaxTime()));
+                    stringBuilder.append(" and CHECKPOINT_TIME < ?");
+                    idx++;
                 }
                 if (command.getEntityType() != null) {
-                    stringBuilder.append(" and ENTITY_TYPE = '").append(command.getEntityType()).append("'");
+                    sqlParams.add(new SQLParam(idx, command.getEntityType()));
+                    stringBuilder.append(" and ENTITY_TYPE = ?");
                 }
-                ps = connection.prepareStatement(stringBuilder.toString());
-                ps.setString(1, command.getTimeoutType().toString());
+                ps = createPreparedStatementWithSqlParams(connection, sqlParams, stringBuilder.toString());
                 final ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     final Checkpoint checkpoint = new Checkpoint();
@@ -116,12 +127,24 @@ public class OracleCheckpointService implements CheckpointService {
                 return checkpoints;
             } catch (SQLException ex) {
                 logger.error("Database error", ex);
+                throw new BackendCriticalException("Database error", ex);
             } finally {
                 closeResources(connection, ps);
             }
-            return null;
         }
         return null;
+    }
+
+    private PreparedStatement createPreparedStatementWithSqlParams(Connection connection, List<SQLParam> sqlParams, String query) throws SQLException {
+        final PreparedStatement ps = connection.prepareStatement(query);
+        for (SQLParam param : sqlParams) {
+            if (param.getLongParam() != -1) {
+                ps.setLong(param.getIndex(), param.getLongParam());
+            } else {
+                ps.setString(param.getIndex(), param.getStringParam());
+            }
+        }
+        return ps;
     }
 
 
@@ -137,9 +160,38 @@ public class OracleCheckpointService implements CheckpointService {
             return ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
-        return 0;
+    }
+
+    private static class SQLParam {
+        private int index;
+        private String stringParam;
+        private long longParam = -1;
+
+        private SQLParam(int index, String stringParam) {
+            this.index = index;
+            this.stringParam = stringParam;
+        }
+
+        private SQLParam(int index, long longParam) {
+            this.index = index;
+            this.longParam = longParam;
+        }
+
+        private int getIndex() {
+            return index;
+        }
+
+        private String getStringParam() {
+            return stringParam;
+        }
+
+        private long getLongParam() {
+            return longParam;
+        }
+
     }
 }
