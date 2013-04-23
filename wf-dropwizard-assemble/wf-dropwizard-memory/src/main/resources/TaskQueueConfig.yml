@@ -53,13 +53,21 @@ logging:
         ru.taskurotta: INFO
         ru.taskurotta.dropwizard.resources: INFO
         ru.taskurotta.backend: INFO
+        ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO
     file:
         enabled: true
-        currentLogFilename: ./target/logs/requests.log
-        archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+        archive: true
+        currentLogFilename: ./target/logs/service.log
+        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
 http:
     gzip:
         enabled: false
+    requestLog:
+        file:
+            enabled: true
+            archive: true
+            currentLogFilename: ./target/logs/requests.log
+            archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
 #config can be extended here
 #http://dropwizard.codahale.com/manual/core/#configuration-defaults

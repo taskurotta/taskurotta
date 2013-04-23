@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractRecovery implements Runnable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractRecovery.class);
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected List<CheckpointService> checkpointServices;
 

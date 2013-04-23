@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:property-placeholder />
     <context:annotation-config />
@@ -23,17 +24,7 @@
         <property name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id="taskServer" class="ru.taskurotta.dropwizard.internal.TaskServerWrapper">
-        <property name="taskServer" ref="taskServerGeneral" />
-        <property name="daemonTasks">
-            <map>
-                <entry key-ref="expiredTaskRecovery"
-                    value="${recovery.schedule}" />
-            </map>
-        </property>
-    </bean>
-
-    <bean id="taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer">
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
         <constructor-arg name="configBackend" ref="configBackend" />
         <constructor-arg name="dependencyBackend" ref="dependencyBackend" />
         <constructor-arg name="processBackend" ref="processBackend" />
@@ -52,7 +43,12 @@
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
     </bean>
     <!-- /Recoveries -->
-
+    
+    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
+    <task:scheduled-tasks scheduler="taskExpirationRecovery">
+        <task:scheduled ref="expiredTaskRecovery" method="run" cron="*/15 * * * * ?"/>
+    </task:scheduled-tasks>
+    
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
