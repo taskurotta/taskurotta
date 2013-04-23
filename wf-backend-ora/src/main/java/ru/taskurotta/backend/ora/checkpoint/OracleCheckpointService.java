@@ -7,6 +7,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
+import ru.taskurotta.backend.ora.tools.SqlParam;
 import ru.taskurotta.exception.BackendCriticalException;
 
 import javax.sql.DataSource;
@@ -17,6 +18,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+import static ru.taskurotta.backend.ora.tools.SqlParamHelper.createPreparedStatementWithSqlParams;
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 
@@ -94,24 +96,24 @@ public class OracleCheckpointService implements CheckpointService {
         if (command != null && command.getTimeoutType() != null) {
             try {
                 connection = dataSource.getConnection();
-                final List<SQLParam> sqlParams = Lists.newArrayList();
+                final List<SqlParam> sqlParams = Lists.newArrayList();
                 final List<Checkpoint> checkpoints = Lists.newArrayList();
                 final String query = "select * from TR_CHECKPOINTS where TYPE_TIMEOUT=?";
                 final StringBuilder stringBuilder = new StringBuilder(query);
-                sqlParams.add(new SQLParam(1, command.getTimeoutType().toString()));
+                sqlParams.add(new SqlParam(1, command.getTimeoutType().toString()));
                 int idx = 2;
                 if (command.getMinTime() > 0) {
-                    sqlParams.add(new SQLParam(idx, command.getMinTime()));
+                    sqlParams.add(new SqlParam(idx, command.getMinTime()));
                     stringBuilder.append(" and CHECKPOINT_TIME > ?");
                     idx++;
                 }
                 if (command.getMaxTime() > 0) {
-                    sqlParams.add(new SQLParam(idx, command.getMaxTime()));
+                    sqlParams.add(new SqlParam(idx, command.getMaxTime()));
                     stringBuilder.append(" and CHECKPOINT_TIME < ?");
                     idx++;
                 }
                 if (command.getEntityType() != null) {
-                    sqlParams.add(new SQLParam(idx, command.getEntityType()));
+                    sqlParams.add(new SqlParam(idx, command.getEntityType()));
                     stringBuilder.append(" and ENTITY_TYPE = ?");
                 }
                 ps = createPreparedStatementWithSqlParams(connection, sqlParams, stringBuilder.toString());
@@ -135,19 +137,6 @@ public class OracleCheckpointService implements CheckpointService {
         return null;
     }
 
-    private PreparedStatement createPreparedStatementWithSqlParams(Connection connection, List<SQLParam> sqlParams, String query) throws SQLException {
-        final PreparedStatement ps = connection.prepareStatement(query);
-        for (SQLParam param : sqlParams) {
-            if (param.getLongParam() != -1) {
-                ps.setLong(param.getIndex(), param.getLongParam());
-            } else {
-                ps.setString(param.getIndex(), param.getStringParam());
-            }
-        }
-        return ps;
-    }
-
-
     @Override
     public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType) {
         Connection connection = null;
@@ -166,32 +155,4 @@ public class OracleCheckpointService implements CheckpointService {
         }
     }
 
-    private static class SQLParam {
-        private int index;
-        private String stringParam;
-        private long longParam = -1;
-
-        private SQLParam(int index, String stringParam) {
-            this.index = index;
-            this.stringParam = stringParam;
-        }
-
-        private SQLParam(int index, long longParam) {
-            this.index = index;
-            this.longParam = longParam;
-        }
-
-        private int getIndex() {
-            return index;
-        }
-
-        private String getStringParam() {
-            return stringParam;
-        }
-
-        private long getLongParam() {
-            return longParam;
-        }
-
-    }
 }
