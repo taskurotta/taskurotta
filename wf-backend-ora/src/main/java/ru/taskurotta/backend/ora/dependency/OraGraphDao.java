@@ -1,22 +1,21 @@
 package ru.taskurotta.backend.ora.dependency;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-import javax.sql.DataSource;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
+import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 /**
  * User: moroz
@@ -24,18 +23,12 @@ import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
  */
 public class OraGraphDao implements GraphDao {
 
-    private static ObjectMapper mapper = new ObjectMapper();
-
     private static final Logger logger = LoggerFactory.getLogger(OraGraphDao.class);
     private static final JsonSerializer<Graph> graphJsonSerializer = new JsonSerializer<Graph>(Graph.class);
     private static final JsonSerializer<Modification> modificationJsonSerializer = new JsonSerializer<Modification>(Modification.class);
     private static final JsonSerializer<UUID[]> itemsJsonSerializer = new JsonSerializer<UUID[]>(UUID[].class);
 
     private DataSource dataSource;
-
-    static {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    }
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -67,6 +60,7 @@ public class OraGraphDao implements GraphDao {
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
@@ -89,6 +83,7 @@ public class OraGraphDao implements GraphDao {
 
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
@@ -120,6 +115,7 @@ public class OraGraphDao implements GraphDao {
 
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
@@ -144,6 +140,7 @@ public class OraGraphDao implements GraphDao {
 
         } catch (SQLException ex) {
             logger.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(ps, connection);
         }
