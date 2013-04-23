@@ -14,9 +14,9 @@ public final class SqlParamHelper {
 
     }
 
-    public static PreparedStatement createPreparedStatementWithSqlParams(Connection connection, List<SqlParam> sqlParams, String query) throws SQLException {
+    public static PreparedStatement createPreparedStatementWithSqlParams(Connection connection, List<SqlParam1> sqlParams, String query) throws SQLException {
         final PreparedStatement ps = connection.prepareStatement(query);
-        for (SqlParam param : sqlParams) {
+        for (SqlParam1 param : sqlParams) {
             if (param.getLongParam() != -1) {
                 ps.setLong(param.getIndex(), param.getLongParam());
             } else {

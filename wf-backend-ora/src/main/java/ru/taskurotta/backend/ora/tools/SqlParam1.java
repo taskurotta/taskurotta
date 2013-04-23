@@ -3,17 +3,17 @@ package ru.taskurotta.backend.ora.tools;
 /**
 * User: greg
 */
-public class SqlParam {
+public class SqlParam1 {
     private int index;
     private String stringParam;
     private long longParam = -1;
 
-    public SqlParam(int index, String stringParam) {
+    public SqlParam1(int index, String stringParam) {
         this.index = index;
         this.stringParam = stringParam;
     }
 
-    public SqlParam(int index, long longParam) {
+    public SqlParam1(int index, long longParam) {
         this.index = index;
         this.longParam = longParam;
     }
