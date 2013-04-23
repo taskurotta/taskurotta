@@ -1,12 +1,11 @@
 package ru.taskurotta.dropwizard.client.jersey;
 
-import javax.annotation.PostConstruct;
-
+import com.sun.jersey.client.apache.ApacheHttpClient;
+import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
-import com.sun.jersey.client.apache.ApacheHttpClient;
-import com.sun.jersey.client.apache.ApacheHttpClientHandler;
+import javax.annotation.PostConstruct;
 
 public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
 

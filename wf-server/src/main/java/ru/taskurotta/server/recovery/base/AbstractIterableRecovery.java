@@ -1,13 +1,13 @@
 package ru.taskurotta.server.recovery.base;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ExpirationPolicy;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -20,6 +20,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
     private TimeUnit timeIterationStepUnit = TimeUnit.MILLISECONDS;
 
     protected void processRecoveryIteration() {
+        long start = System.currentTimeMillis();
         int counter = 0;
         int step = 0;
         long timeFrom = System.currentTimeMillis() - recoveryPeriodUnit.toMillis(recoveryPeriod);
@@ -30,7 +31,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             timeFrom = timeTill;
         }
 
-        logger.info("[{}]: recovered [{}] tasks", getClass(), counter);
+        logger.info("Recovered [{}] tasks in [{}]ms", counter, (System.currentTimeMillis()-start));
 
     }
 
@@ -78,8 +79,8 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             if(checkpoint.getEntityType() != null) {
                 ExpirationPolicy expPolicy = getExpirationPolicy(checkpoint.getEntityType(), checkpoint.getTimeoutType());
                 if(expPolicy != null) {
-                    result = expPolicy.readyToRecover(checkpoint.getGuid())
-                            && (System.currentTimeMillis() > expPolicy.getExpirationTime(checkpoint.getGuid(), checkpoint.getTime()));
+                    result = expPolicy.readyToRecover(checkpoint.getEntityGuid())
+                            && (System.currentTimeMillis() > expPolicy.getExpirationTime(checkpoint.getEntityGuid(), checkpoint.getTime()));
                 }
             }
 

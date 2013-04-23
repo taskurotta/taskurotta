@@ -6,14 +6,14 @@ actorConfig:
   actorPreferences:
     - id: "default"
       timeoutPolicies:
-        PROCESS_START_TO_CLOSE: "skipping holidays 1 day timeout"
-        PROCESS_SCHEDULE_TO_START: "timeout 15 seconds"
-        PROCESS_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
+#        PROCESS_START_TO_CLOSE: "skipping holidays 1 day timeout"
+#        PROCESS_SCHEDULE_TO_START: "timeout 15 seconds"
+#        PROCESS_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
         TASK_START_TO_CLOSE: "timeout 15 seconds"
-        TASK_SCHEDULE_TO_START: "timeout 15 seconds"
-        TASK_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
-        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
-        TASK_RELEASE_TO_COMMIT: "timeout 15 seconds"
+#        TASK_SCHEDULE_TO_START: "timeout 15 seconds"
+#        TASK_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
+#        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
+#        TASK_RELEASE_TO_COMMIT: "timeout 15 seconds"
 
 #List of expiration policies available for actors: \\TODO: Should be parameterized somehow
   expirationPolicies:
@@ -37,15 +37,15 @@ actorConfig:
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
-  pollDelay: 2
+  pollDelay: 10
   pollDelayUnit: "SECONDS"
   retryTimes: 10
   schedule.fast: "20 SECONDS"
-  schedule.normal: "40 SECONDS"
+  schedule.normal: "20 SECONDS"
   schedule.slow: "100 SECONDS"
-  recovery.period: 60
+  recovery.period: 180
   recovery.period.unit: "SECONDS"
-  recovery.timeStep: 200
+  recovery.timeStep: 500
   recovery.timeStep.unit: "MILLISECONDS"
 
 #Http server configuration:
