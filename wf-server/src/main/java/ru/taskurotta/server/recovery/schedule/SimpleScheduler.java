@@ -1,9 +1,9 @@
 package ru.taskurotta.server.recovery.schedule;
 
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Simple scheduler with non-cron schedule String
@@ -21,7 +21,7 @@ public class SimpleScheduler implements Runnable {
      * starts the scheduler
      */
     public void start() {
-        Thread runner = new Thread();
+        Thread runner = new Thread(scheduledProcess);
         runner.setDaemon(true);
         runner.setName(name);
         runner.start();
