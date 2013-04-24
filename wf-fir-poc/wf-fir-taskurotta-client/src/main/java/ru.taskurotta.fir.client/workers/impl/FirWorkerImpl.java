@@ -1,4 +1,6 @@
-package ru.taskurotta.fir.client.workers;
+package ru.taskurotta.fir.client.workers.impl;
+
+import ru.taskurotta.fir.client.workers.FirWorker;
 
 /**
  * User: stukushin

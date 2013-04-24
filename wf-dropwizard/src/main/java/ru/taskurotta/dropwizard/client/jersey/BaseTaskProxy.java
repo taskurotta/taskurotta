@@ -9,6 +9,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
+import ru.taskurotta.exception.Retriable;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.util.ActorDefinition;
 
@@ -41,12 +42,12 @@ public class BaseTaskProxy implements TaskServer {
             rb.post(new TaskContainerWrapper(task));
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
-                logger.debug("Read timeout at start process for task["+task+"]", ex);
+                logger.debug("Read timeout at start process for task[" + task + "]", ex);//TODO: or error level here?
+                throw new Retriable("Process start failed, retry operation required... Task["+task+"]");
             } else {
                 logger.error("Unexpected error at start task["+task+"]", ex);
+                throw new RuntimeException(ex);
             }
-            throw new RuntimeException(ex);
-
         }
 
     }
@@ -83,6 +84,7 @@ public class BaseTaskProxy implements TaskServer {
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
                 logger.debug("Read timeout releasing [{}]", taskResult);
+                //TODO: just return and rely on recovery? Or try to release again?
             } else {
                 logger.error("Unexpected error at releasing task["+taskResult+"]", ex);
                 throw new RuntimeException(ex);

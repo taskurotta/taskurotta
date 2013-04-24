@@ -2,8 +2,8 @@ package ru.taskurotta.fir.client.deciders;
 
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.fir.client.workers.BusWorkerClient;
-import ru.taskurotta.fir.client.workers.FirWorkerClient;
+import ru.taskurotta.fir.client.workers.client.BusWorkerClient;
+import ru.taskurotta.fir.client.workers.client.FirWorkerClient;
 
 
 /**

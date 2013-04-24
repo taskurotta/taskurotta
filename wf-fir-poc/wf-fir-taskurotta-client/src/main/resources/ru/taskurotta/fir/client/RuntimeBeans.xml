@@ -10,19 +10,19 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
-    <bean id="busWorker" class="ru.taskurotta.fir.client.workers.BusWorkerImpl"/>
+    <bean id="busWorker" class="ru.taskurotta.fir.client.workers.impl.BusWorkerImpl"/>
 
-    <bean id="firWorker" class="ru.taskurotta.fir.client.workers.FirWorkerImpl" />
+    <bean id="firWorker" class="ru.taskurotta.fir.client.workers.impl.FirWorkerImpl" />
 
     <bean id="firDecider" class="ru.taskurotta.fir.client.deciders.FirDeciderImpl">
         <property name="firWorker">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
-                <constructor-arg value="ru.taskurotta.fir.client.workers.FirWorkerClient"/>
+                <constructor-arg value="ru.taskurotta.fir.client.workers.client.FirWorkerClient"/>
             </bean>
         </property>
         <property name="busWorker">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
-                <constructor-arg value="ru.taskurotta.fir.client.workers.BusWorkerClient"/>
+                <constructor-arg value="ru.taskurotta.fir.client.workers.client.BusWorkerClient"/>
             </bean>
         </property>
         <property name="asynchronous">
