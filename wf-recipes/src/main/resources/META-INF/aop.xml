@@ -11,7 +11,7 @@
         <include within="ru.taskurotta..*"/>
     </aspects>
 
-    <weaver options="-verbose">
+    <weaver options="-verbose -showWeaveInfo">
         <include within="ru.taskurotta.backend.queue.MemoryQueueBackend"/>
     </weaver>
 

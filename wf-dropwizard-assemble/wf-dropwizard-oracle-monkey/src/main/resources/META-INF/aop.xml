@@ -4,15 +4,14 @@
         <concrete-aspect name="ru.taskurotta.test.monkey.MonkeyAspect"
                          extends="ru.taskurotta.test.monkey.AbstractMonkeyAspect">
             <pointcut name="pointCut"
-                      expression="execution(* ru.taskurotta.backend.ora.queue.OraQueueBackend.pollCommit(..))"/>
+                      expression="execution(* java.sql.PreparedStatement.execute*(..))"/>
 
         </concrete-aspect>
 
         <include within="ru.taskurotta..*"/>
     </aspects>
 
-    <weaver options="-verbose">
-        <include within="ru.taskurotta.backend.ora..*"/>
+    <weaver options="-Xset:weaveJavaxPackages=true -Xset:weaveJavaPackages=true -showWeaveInfo">
     </weaver>
 
 </aspectj>
