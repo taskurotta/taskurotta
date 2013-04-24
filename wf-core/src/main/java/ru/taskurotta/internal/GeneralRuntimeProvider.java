@@ -165,7 +165,9 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
                 taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
-            taskTargetsMap.put(key, new TargetReference(deciderBean, method));
+            RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
+
+            taskTargetsMap.put(key, new TargetReference(deciderBean, method, retryPolicy));
         }
 
         /**
