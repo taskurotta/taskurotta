@@ -44,11 +44,6 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
         private Method method;
         private RetryPolicy retryPolicy;
 
-        private TargetReference(Object actorObject, Method method) {
-            this.actorObject = actorObject;
-            this.method = method;
-        }
-
         private TargetReference(Object actorObject, Method method, RetryPolicy retryPolicy) {
             this.actorObject = actorObject;
             this.method = method;
