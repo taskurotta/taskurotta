@@ -38,6 +38,4 @@
     </task:scheduled-tasks>
     <task:scheduler id="taskExpirationRecoveryScheduler" pool-size="1" />
 
-    <bean class="ru.taskurotta.test.monkey.MonkeyAspect" />
-
 </beans>

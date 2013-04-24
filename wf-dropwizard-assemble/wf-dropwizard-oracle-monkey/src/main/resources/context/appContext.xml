@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder/>
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"/>
+        <property name="username" value="taskurotta"/>
+        <property name="password" value="taskurotta"/>
+    </bean>
+
+    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="executorServiceFactory" class="ru.taskurotta.dropwizard.internal.pooling.ExecutorServiceFactory">
+        <property name="threads" value="${internalPool.poolSize}"/>
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.backend.ora.storage.OraTaskDao">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="checkpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="oraGraphDao" class="ru.taskurotta.backend.ora.dependency.OraGraphDao">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="checkpointService" ref="checkpointService"/>
+        <constructor-arg name="graphDao" ref="oraGraphDao"/>
+    </bean>
+
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
+        <constructor-arg name="backendBundle" ref="oraBundle"/>
+    </bean>
+
+
+    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+        <constructor-arg name="name" value="check task server"/>
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+
+
+</beans>
