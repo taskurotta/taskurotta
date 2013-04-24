@@ -1,6 +1,7 @@
-package ru.taskurotta.fir.client.workers;
+package ru.taskurotta.fir.client.workers.client;
 
 import ru.taskurotta.annotation.WorkerClient;
+import ru.taskurotta.fir.client.workers.BusWorker;
 
 /**
  * User: stukushin

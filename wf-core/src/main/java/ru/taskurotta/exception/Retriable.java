@@ -1,12 +1,22 @@
 package ru.taskurotta.exception;
 
 /**
- * Indicates that implementing class is aware if its execution retry policy
+ * Marker exception that indicates that operation retry required
  */
-public interface Retriable {
+public class Retriable extends RuntimeException {
 
-    boolean isShouldBeRestarted();
+    public Retriable() {
+    }
 
-    long getRestartTime();
+    public Retriable(String message) {
+        super(message);
+    }
 
+    public Retriable(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public Retriable(Throwable cause) {
+        super(cause);
+    }
 }

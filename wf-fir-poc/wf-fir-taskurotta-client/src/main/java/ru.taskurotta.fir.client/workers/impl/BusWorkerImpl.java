@@ -1,7 +1,8 @@
-package ru.taskurotta.fir.client.workers;
+package ru.taskurotta.fir.client.workers.impl;
 
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import ru.taskurotta.fir.client.workers.BusWorker;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

@@ -8,7 +8,7 @@
         </encoder>
     </appender>
 
-    <logger name="ru.taskurotta" level="DEBUG"/>
+    <logger name="ru.taskurotta.dropwizard.client.jersey" level="DEBUG"/>
     <logger name="org.springframework" level="OFF"/>
     <logger name="com.sun.jersey.client.apache" level="OFF"/>
     <logger name="org.apache.commons" level="OFF"/>
