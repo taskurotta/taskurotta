@@ -1,11 +1,14 @@
 package ru.taskurotta.dropwizard.client.jersey;
 
-import javax.annotation.PostConstruct;
-
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
+import javax.annotation.PostConstruct;
+
+/**
+ * TaskServer implementation as a simple native jersey client proxy.
+ */
 public class JerseyTaskServerProxy extends BaseTaskProxy {
 
     @PostConstruct

@@ -61,7 +61,7 @@ public class BaseTaskProxy implements TaskServer {
             result =  rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
-                logger.debug("Read timeout pulling task for [{}]", actorDefinition);
+                logger.debug("Read timeout polling task for [{}]", actorDefinition);
                 //Just return null as if no task getted
             } else {
                 logger.error("Unexpected error at poll task["+actorDefinition+"] ", ex);
@@ -111,9 +111,14 @@ public class BaseTaskProxy implements TaskServer {
         this.endpoint = endpoint;
     }
 
+    //Returns true if exception or any of it's nested causes is a java.net.SocketTimeoutException
     public boolean isReadTimeout(Throwable ex) {
-        return java.net.SocketTimeoutException.class.isAssignableFrom(ex.getClass())
-                || (ex.getCause()!=null && java.net.SocketTimeoutException.class.isAssignableFrom(ex.getCause().getClass()));
+        boolean result = false;
+        if(ex!=null) {
+            result = java.net.SocketTimeoutException.class.isAssignableFrom(ex.getClass())
+                    || isReadTimeout(ex.getCause());
+        }
+        return result;
     }
 
 }

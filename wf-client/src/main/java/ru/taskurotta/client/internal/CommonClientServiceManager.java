@@ -1,16 +1,23 @@
-package ru.taskurotta.dropwizard.client.jersey;
+package ru.taskurotta.client.internal;
 
-import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.client.TaskSpreaderProvider;
-import ru.taskurotta.client.internal.DeciderClientProviderCommon;
-import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.server.TaskServer;
 
-public class JerseyClientServiceManager implements ClientServiceManager {
+/**
+ * ClientServiceManager common implementation based on passed TaskServer instance
+ * User: dimadin
+ * Date: 24.04.13
+ * Time: 11:24
+ */
+public class CommonClientServiceManager implements ClientServiceManager {
 
     private TaskServer taskServer;
+
+    public CommonClientServiceManager(TaskServer taskServer) {
+        this.taskServer = taskServer;
+    }
 
     @Override
     public DeciderClientProvider getDeciderClientProvider() {
@@ -20,11 +27,6 @@ public class JerseyClientServiceManager implements ClientServiceManager {
     @Override
     public TaskSpreaderProvider getTaskSpreaderProvider() {
         return new TaskSpreaderProviderCommon(taskServer);
-    }
-
-    @Required
-    public void setTaskServer(TaskServer taskServer) {
-        this.taskServer = taskServer;
     }
 
 }

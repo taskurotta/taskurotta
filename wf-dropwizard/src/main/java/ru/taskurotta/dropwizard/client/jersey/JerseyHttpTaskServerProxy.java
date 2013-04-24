@@ -7,6 +7,9 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * TaskServer implementation as a jersey client proxy. Uses embedded apache HTTP client for connection pooling
+ */
 public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
 
     private int maxConnectionsPerHost;
