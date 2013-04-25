@@ -6,7 +6,6 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.exception.Retriable;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.util.concurrent.TimeUnit;
@@ -67,20 +66,24 @@ public class Inspector {
 
             @Override
             public void release(TaskDecision taskDecision) {
-                try {
-                    taskSpreader.release(taskDecision);
-                    releaseCounterThreadLocal.set(null);
-                    actorThreadPool.wakeThreadPool();
-                } catch(Retriable ex) {
-                    PolicyCounters releaseCounter = getRetryCounter(releaseCounterThreadLocal);
-                    releaseCounter.numberOfTries++;
-                    if(isRetryPolicyApplied(releaseCounter)) {
-                        logger.info("Try to release taskDecision[{}] again", taskDecision);
-                        release(taskDecision);
-                    }  else {
-                        releaseCounterThreadLocal.set(null);
-                    }
-                }
+                taskSpreader.release(taskDecision);
+
+//                No retry for task release yet
+//                try {
+//                    taskSpreader.release(taskDecision);
+//                    releaseCounterThreadLocal.set(null);
+//                    actorThreadPool.wakeThreadPool();
+//                } catch(TaskurottaServerException ex) {
+//                    PolicyCounters releaseCounter = getRetryCounter(releaseCounterThreadLocal);
+//                    releaseCounter.numberOfTries++;
+//                    if(isRetryPolicyApplied(releaseCounter)) {
+//                        logger.info("Try to release taskDecision[{}] again", taskDecision);
+//                        release(taskDecision);
+//                    }  else {
+//                        releaseCounterThreadLocal.set(null);
+//                    }
+//                }
+
             }
         };
     }
@@ -99,7 +102,7 @@ public class Inspector {
         long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(policyCounters.firstAttempt, System.currentTimeMillis(), policyCounters.numberOfTries);
         if(nextRetryDelaySeconds < 0) {//maximum attempt exceeded
             result =  false;
-            if(actorThreadPool.muteThreadPool()) {//if thread will stop just exit method
+            if(actorThreadPool.muteThreadPool()) {//if thread should stop just exit method without unnecessary sleep
                 return result;
             }
             nextRetryDelaySeconds = waitForActivitySeconds;
