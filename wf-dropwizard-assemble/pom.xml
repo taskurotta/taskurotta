@@ -18,6 +18,7 @@
     <modules>
         <module>wf-dropwizard-memory</module>
         <module>wf-dropwizard-oracle</module>
+        <module>wf-dropwizard-oracle-monkey</module>
     </modules>
 
 </project>

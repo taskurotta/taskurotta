@@ -1,5 +1,14 @@
 package ru.taskurotta.backend.ora.dependency;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+import javax.sql.DataSource;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -7,15 +16,6 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 /**
  * User: moroz
@@ -47,16 +47,17 @@ public class OraGraphDao implements GraphDao {
         try {
             connection = dataSource.getConnection();
             ps = connection.prepareStatement("MERGE INTO GRAPH USING dual ON (id=? )\n" +
-                    "        WHEN MATCHED THEN UPDATE SET version=? , JSON_STR = ?\n" +
+                    "        WHEN MATCHED THEN UPDATE SET version=? , JSON_STR = ? WHERE  version=?\n" +
                     "        WHEN NOT MATCHED THEN INSERT (ID, VERSION, JSON_STR)\n" +
                     "        VALUES ( ?, ?, ?)");
 
             ps.setString(1, graph.getGraphId().toString());
             ps.setInt(2, graph.getVersion());
             ps.setString(3, (String) graphJsonSerializer.serialize(graph));
-            ps.setString(4, graph.getGraphId().toString());
-            ps.setInt(5, graph.getVersion());
-            ps.setString(6, (String) graphJsonSerializer.serialize(graph));
+            ps.setInt(4, graph.getVersion() - 1);
+            ps.setString(5, graph.getGraphId().toString());
+            ps.setInt(6, graph.getVersion());
+            ps.setString(7, (String) graphJsonSerializer.serialize(graph));
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
