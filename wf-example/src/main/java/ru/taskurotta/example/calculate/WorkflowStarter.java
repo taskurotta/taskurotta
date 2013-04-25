@@ -1,13 +1,14 @@
 package ru.taskurotta.example.calculate;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.example.calculate.decider.MathActionDeciderClient;
+import ru.taskurotta.exception.TaskurottaServerException;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class WorkflowStarter {
 
@@ -24,10 +25,16 @@ public class WorkflowStarter {
 
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SS");
         logger.info("Start work time [{}], count[{}]", sdf.format(new Date()), count);
+        int started = 0;
         for (int i = 0; i < count; i++) {
-            decider.performAction();
+            try{
+                decider.performAction();
+                started++;
+            } catch(TaskurottaServerException ex) {
+                logger.error("Error at start new process. Message: " + ex.getMessage());
+            }
         }
-
+        logger.info(String.valueOf(started) + " tasks started");
     }
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {

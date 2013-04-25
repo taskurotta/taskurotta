@@ -1,15 +1,61 @@
+#Location of Spring application context:
 contextLocation: "classpath*:context/appContext.xml"
-internalPoolConfig:
-  poolSize: 100
-  threadTimeout: 2000
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default" #applied if actorId not found in config
+      timeoutPolicies:
+        TASK_START_TO_CLOSE: "timeout 15 seconds" #consider checkpoint as expired after 15 seconds
+        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
+    - id: "some other actor" #Every real actor should be described here
+      timeoutPolicies:
+        TASK_START_TO_CLOSE: "timeout 15 seconds"
+        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
+
+#List of expiration policies available for actors by name: \\TODO: Should be simplified
+  expirationPolicies:
+    - name: "timeout 15 seconds"
+      className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
+      properties:
+        timeout: 15
+        timeUnit: "SECONDS"
+
+#Task server common properties (will be available as placeholders in spring context):
 properties:
-  pollDelay: 1  
+  db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
+  db.user: "taskurotta"
+  db.password: "taskurotta"
+  retryTimes: 10 #retry for dependency graph modification
+  recovery.schedule: "*/40 * * * * ?" #run recovery every 40 seconds
+  recovery.period: 1 #recoveru scans for checkpoints created 1 day ago
+  recovery.period.unit: "DAYS"
+  recovery.timeStep: 5
+  recovery.timeStep.unit: "MINUTES"
+
+
+#Http server configuration:
 logging:
     level: WARN
     loggers:
-        ru.taskurotta: DEBUG
+        ru.taskurotta: INFO
+        ru.taskurotta.backend.queue: DEBUG
+        ru.taskurotta.backend: DEBUG
+        ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO
     file:
         enabled: true
-        currentLogFilename: ./target/logs/requests.log
-        archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+        archive: true
+        currentLogFilename: ./target/logs/service.log
+        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+http:
+    gzip:
+        enabled: false
+    requestLog:
+        file:
+            enabled: true
+            archive: true
+            currentLogFilename: ./target/logs/requests.log
+            archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+#config can be extended here
+#http://dropwizard.codahale.com/manual/core/#configuration-defaults

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:property-placeholder/>
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"/>
-        <property name="username" value="taskurotta"/>
-        <property name="password" value="taskurotta"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.password}"/>
     </bean>
 
     <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
@@ -27,15 +27,32 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="executorServiceFactory" class="ru.taskurotta.dropwizard.internal.pooling.ExecutorServiceFactory">
-        <property name="threads" value="${internalPool.poolSize}"/>
+
+
+
+    <!--<bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">-->
+        <!--<constructor-arg name="dataSource" ref="dataSource"/>-->
+        <!--<constructor-arg name="taskDao" ref="taskDao"/>-->
+        <!--<constructor-arg name="checkpointService" ref="checkpointService"/>-->
+        <!--<constructor-arg name="graphDao" ref="oraGraphDao"/>-->
+    <!--</bean>-->
+
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
+        <constructor-arg name="configBackend" ref="configBackend" />
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend" />
+        <constructor-arg name="processBackend" ref="processBackend" />
+        <constructor-arg name="queueBackend" ref="queueBackend" />
+        <constructor-arg name="taskBackend" ref="taskBackend" />
+    </bean>
+
+    <!-- Backends -->
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.ora.queue.OraQueueBackend">
+        <constructor-arg name="dataSource" ref="dataSource" />
+        <property name="checkpointService" ref="checkpointService" />
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.ora.storage.OraTaskDao">
-        <constructor-arg name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="checkpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
@@ -43,22 +60,55 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
+    <bean id="checkpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
         <constructor-arg name="dataSource" ref="dataSource"/>
-        <constructor-arg name="taskDao" ref="taskDao"/>
+    </bean>
+
+    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+        <constructor-arg name="taskDao" ref="taskDao" />
         <constructor-arg name="checkpointService" ref="checkpointService"/>
-        <constructor-arg name="graphDao" ref="oraGraphDao"/>
     </bean>
 
-    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
-        <constructor-arg name="backendBundle" ref="oraBundle"/>
+    <bean id="dependencyBackend"
+          class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="oraGraphDao" />
+        <constructor-arg name="retryTimes" value="${retryTimes}" />
     </bean>
 
+    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" >
+        <property name="checkpointService" ref="checkpointService" />
+    </bean>
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend" />
 
+    <!-- /Backends -->
+
+    <!-- This class should be proper implemented -->
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
         <constructor-arg name="name" value="check task server"/>
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
+    <!-- Recoveries -->
+    <bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
+        <property name="configBackend" ref="configBackend" />
+        <property name="taskBackend" ref="taskBackend" />
+        <property name="queueBackend" ref="queueBackend" />
+        <property name="recoveryPeriod" value="${recovery.period}" />
+        <property name="recoveryPeriodUnit" value="${recovery.period.unit}" />
+        <property name="timeIterationStep" value="${recovery.timeStep}" />
+        <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
+        <property name="supportedTimeouts">
+            <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
+                <value>TASK_START_TO_CLOSE</value>
+                <value>TASK_POLL_TO_COMMIT</value>
+            </array>
+        </property>
+    </bean>
+    <!-- /Recoveries -->
+
+    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
+    <task:scheduled-tasks scheduler="taskExpirationRecovery">
+        <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
+    </task:scheduled-tasks>
 
 </beans>

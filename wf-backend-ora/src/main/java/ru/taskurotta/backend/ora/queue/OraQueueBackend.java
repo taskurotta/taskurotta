@@ -3,6 +3,7 @@ package ru.taskurotta.backend.ora.queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 
@@ -24,6 +25,8 @@ public class OraQueueBackend implements QueueBackend {
     private final OraQueueDao dbDAO;
 
     private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
+
+    private CheckpointService checkpointService = new MemoryCheckpointService();//memory as default, can be overriden with setter
 
     public OraQueueBackend(DataSource dataSource) {
         dbDAO = new OraQueueDao(dataSource);
@@ -77,6 +80,10 @@ public class OraQueueBackend implements QueueBackend {
 
     @Override
     public CheckpointService getCheckpointService() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return checkpointService;
+    }
+
+    public void setCheckpointService(CheckpointService checkpointService) {
+        this.checkpointService = checkpointService;
     }
 }
