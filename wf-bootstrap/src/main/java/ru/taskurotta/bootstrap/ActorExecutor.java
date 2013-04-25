@@ -20,7 +20,12 @@ public class ActorExecutor implements Runnable {
     private RuntimeProcessor runtimeProcessor;
     private TaskSpreader taskSpreader;
 
-    private boolean shutdown = false;
+    private ThreadLocal<Boolean> shutdown = new ThreadLocal<Boolean>(){
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
 
     public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {
         this.profiler = profiler;
@@ -30,13 +35,14 @@ public class ActorExecutor implements Runnable {
 
     @Override
     public void run() {
-
-        while (!shutdown) {
+        log.trace("Started executor thread [{}]", Thread.currentThread().getName());
+        shutdown.set(Boolean.FALSE);
+        while (!shutdown.get()) {
 
             profiler.cycleStart();
 
             try {
-
+                log.trace("Poll executor thread [{}]", Thread.currentThread().getName());
                 Task task = taskSpreader.poll();
 
                 if (task == null) {
@@ -55,10 +61,11 @@ public class ActorExecutor implements Runnable {
             }
 
         }
+        log.trace("Exit executor thread [{}]", Thread.currentThread().getName());
     }
 
     public void stop() {
-        shutdown = true;
+        shutdown.set(Boolean.TRUE);
     }
 }
 

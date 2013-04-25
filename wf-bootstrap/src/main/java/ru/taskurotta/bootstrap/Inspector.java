@@ -1,21 +1,28 @@
 package ru.taskurotta.bootstrap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.exception.Retriable;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- * User: stukushin
+ * User: stukushin, dudin
  * Date: 10.04.13
  * Time: 16:45
  */
 public class Inspector {
 
-    private RetryPolicy retryPolicy;
+    private static final Logger logger = LoggerFactory.getLogger(Inspector.class);
+    private RetryPolicy retryPolicy;//TaskServer poll policy of inspected actor
+    private ActorThreadPool actorThreadPool; //pool of threads for given actor
+
+    private final int waitForActivitySeconds = 60;//time to wait if taskServer unavailable or have no tasks for the actor
 
     protected class PolicyCounters {
         long firstAttempt;
@@ -27,10 +34,13 @@ public class Inspector {
         }
     }
 
-    private ThreadLocal<PolicyCounters> policyConfigThreadLocal = new ThreadLocal<PolicyCounters>();
+    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<PolicyCounters>();
+    private ThreadLocal<PolicyCounters> releaseCounterThreadLocal = new ThreadLocal<PolicyCounters>();
 
-    public Inspector(RetryPolicy retryPolicy) {
+
+    public Inspector(RetryPolicy retryPolicy, ActorThreadPool actorThreadPool) {
         this.retryPolicy = retryPolicy;
+        this.actorThreadPool = actorThreadPool;
     }
 
     public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
@@ -44,18 +54,12 @@ public class Inspector {
                 Task task = taskSpreader.poll();
 
                 if (task == null) {
-                    PolicyCounters policyCounters = policyConfigThreadLocal.get();
-
-                    if (policyCounters == null) {
-                        policyCounters = new PolicyCounters(System.currentTimeMillis(), 0);
-                        policyConfigThreadLocal.set(policyCounters);
-                    }
-
+                    PolicyCounters policyCounters = getRetryCounter(pollCounterThreadLocal);
                     policyCounters.numberOfTries++;
-
-                    useRetryPolicy(policyCounters);
+                    isRetryPolicyApplied(policyCounters);
                 } else {
-                    policyConfigThreadLocal.set(null);
+                    pollCounterThreadLocal.set(null);
+                    actorThreadPool.wakeThreadPool();
                 }
 
                 return task;
@@ -63,19 +67,49 @@ public class Inspector {
 
             @Override
             public void release(TaskDecision taskDecision) {
-                taskSpreader.release(taskDecision);
+                try {
+                    taskSpreader.release(taskDecision);
+                    releaseCounterThreadLocal.set(null);
+                    actorThreadPool.wakeThreadPool();
+                } catch(Retriable ex) {
+                    PolicyCounters releaseCounter = getRetryCounter(releaseCounterThreadLocal);
+                    releaseCounter.numberOfTries++;
+                    if(isRetryPolicyApplied(releaseCounter)) {
+                        logger.info("Try to release taskDecision[{}] again", taskDecision);
+                        release(taskDecision);
+                    }  else {
+                        releaseCounterThreadLocal.set(null);
+                    }
+                }
             }
         };
     }
 
-    private void useRetryPolicy(PolicyCounters policyCounters) {
-        if (policyCounters.numberOfTries > 2) {
-            long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(policyCounters.firstAttempt, System.currentTimeMillis(), policyCounters.numberOfTries);
-            try {
-                TimeUnit.SECONDS.sleep(nextRetryDelaySeconds);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+    private PolicyCounters getRetryCounter(ThreadLocal<PolicyCounters> source) {
+        PolicyCounters result = source.get();
+        if (result == null) {
+            result = new PolicyCounters(System.currentTimeMillis(), 0);
+            source.set(result);
         }
+        return result;
+    }
+
+    private boolean isRetryPolicyApplied(PolicyCounters policyCounters) {
+        boolean result = true;
+        long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(policyCounters.firstAttempt, System.currentTimeMillis(), policyCounters.numberOfTries);
+        if(nextRetryDelaySeconds < 0) {//maximum attempt exceeded
+            result =  false;
+            if(actorThreadPool.muteThreadPool()) {//if thread will stop just exit method
+                return result;
+            }
+            nextRetryDelaySeconds = waitForActivitySeconds;
+            logger.info("Communication with TaskServer was idle, waiting for [{}] seconds to continue", nextRetryDelaySeconds);
+        }
+        try {
+            TimeUnit.SECONDS.sleep(nextRetryDelaySeconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }

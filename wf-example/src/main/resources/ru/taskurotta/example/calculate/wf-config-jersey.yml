@@ -14,7 +14,7 @@ spreader:
       instance:
         context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 10000
+          count: 5000
           endpoint: "http://localhost:8080"
           threadPoolSize: 10
           readTimeout: 500
@@ -26,8 +26,9 @@ policy:
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
-          initialRetryIntervalSeconds: 10
-          maximumRetryIntervalSeconds: 300
+          initialRetryIntervalSeconds: 3
+          maximumRetryIntervalSeconds: 10
+          maximumAttempts: 3
 
 profiler:
   - MainProfilerConfig:
@@ -51,7 +52,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 2
+      count: 5
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
@@ -59,7 +60,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 2
+      count: 5
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
@@ -67,4 +68,4 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 2
+      count: 5

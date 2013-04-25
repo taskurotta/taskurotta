@@ -1,5 +1,13 @@
 package ru.taskurotta.backend.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.util.ActorDefinition;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,15 +16,6 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario
@@ -42,6 +41,28 @@ public class MemoryQueueBackend implements QueueBackend {
 
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
+
+        if (logger.isTraceEnabled()) {
+            Thread monitor = new Thread(){
+                @Override
+                public void run() {
+                    while(true) {
+                        try {
+                            Thread.sleep(30000l);
+                            StringBuilder sb = new StringBuilder();
+                            for(String queue: queues.keySet()) {
+                                sb.append(queue).append(": count ").append(getQueue(queue).size()).append("\n");
+                            }
+                            logger.trace("Queue monitor: \n {}", sb.toString());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+            monitor.setDaemon(true);
+            monitor.start();
+        }
     }
 
 

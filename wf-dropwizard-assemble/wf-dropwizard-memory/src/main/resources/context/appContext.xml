@@ -52,7 +52,7 @@
     
     <task:scheduler id="taskExpirationRecovery" pool-size="1" />
     <task:scheduled-tasks scheduler="taskExpirationRecovery">
-        <task:scheduled ref="expiredTaskRecovery" method="run" cron="*/15 * * * * ?"/>
+        <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
     </task:scheduled-tasks>
     
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">

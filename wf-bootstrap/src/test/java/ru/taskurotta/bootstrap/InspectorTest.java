@@ -34,7 +34,7 @@ public class InspectorTest {
 
     @Before
     public void setUp() throws Exception {
-        inspector = new Inspector(new BlankRetryPolicy());
+        inspector = new Inspector(new BlankRetryPolicy(), null);
     }
 
     @Test

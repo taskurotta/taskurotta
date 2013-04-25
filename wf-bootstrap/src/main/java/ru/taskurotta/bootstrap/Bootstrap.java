@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * User: stukushin
@@ -129,26 +126,17 @@ public class Bootstrap {
 
             RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
             RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
-            Inspector inspector = new Inspector(retryPolicy);
+
+            int count = actorConfig.getCount();
+            ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, count);
+            Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
 			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
 			executors.add(actorExecutor);
-
-			int count = actorConfig.getCount();
-			ExecutorService executorService = Executors.newFixedThreadPool(count, new ThreadFactory() {
-                private int count;
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, actorClass.getSimpleName()+"-"+ (++count));
-                }
-            });
-
-			for (int i = 0; i < count; i++) {
-                logger.debug("add thread for [{}]", actorClass);
-                executorService.execute(actorExecutor);
-			}
+            actorThreadPool.startExecution(actorExecutor);
 		}
 	}
+
 
 	public void stop() {
 		for (ActorExecutor executor : executors) {

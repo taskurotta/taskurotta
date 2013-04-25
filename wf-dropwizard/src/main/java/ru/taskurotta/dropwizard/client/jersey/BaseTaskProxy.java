@@ -43,7 +43,7 @@ public class BaseTaskProxy implements TaskServer {
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
                 logger.debug("Read timeout at start process for task[" + task + "]", ex);//TODO: or error level here?
-                throw new Retriable("Process start failed, retry operation required... Task["+task+"]");
+                throw new Retriable("Process start failed, retry operation required. Task["+task+"]");
             } else {
                 logger.error("Unexpected error at start task["+task+"]", ex);
                 throw new RuntimeException(ex);
@@ -54,6 +54,7 @@ public class BaseTaskProxy implements TaskServer {
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
+        logger.trace("Polling task thread name[{}]", Thread.currentThread().getName());
         TaskContainer result = null;
         try {
             WebResource.Builder rb = pullResource.getRequestBuilder();
@@ -76,6 +77,7 @@ public class BaseTaskProxy implements TaskServer {
 
     @Override
     public void release(DecisionContainer taskResult) {
+        logger.trace("Releasing task thread name[{}]", Thread.currentThread().getName());
         try {
             WebResource.Builder rb = releaseResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
@@ -84,7 +86,7 @@ public class BaseTaskProxy implements TaskServer {
         } catch(Throwable ex) {
             if(isReadTimeout(ex)) {
                 logger.debug("Read timeout releasing [{}]", taskResult);
-                //TODO: just return and rely on recovery? Or try to release again?
+                throw new Retriable("Task release failed, operation retry required. taskResult["+taskResult+"]");
             } else {
                 logger.error("Unexpected error at releasing task["+taskResult+"]", ex);
                 throw new RuntimeException(ex);

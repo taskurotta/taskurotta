@@ -68,15 +68,11 @@ public class ExponentialRetryPolicy extends TimeRetryPolicyBase {
     @Override
     public long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries) {
 
-        if (numberOfTries < 2) {
-            throw new IllegalArgumentException("attempt is less then 2: " + numberOfTries);
-        }
-
         if (maximumAttempts > PolicyConstants.NONE && numberOfTries > maximumAttempts) {
             return PolicyConstants.NONE;
         }
 
-        long result = (long) (initialRetryIntervalSeconds * Math.pow(backoffCoefficient, numberOfTries - 2));
+        long result = (long) (initialRetryIntervalSeconds * Math.pow(backoffCoefficient, numberOfTries));
         result = maximumRetryIntervalSeconds > PolicyConstants.NONE ? Math.min(result, maximumRetryIntervalSeconds) : result;
         int secondsSinceFirstAttempt = (int) ((recordedFailure - firstAttempt) / 1000);
         if (retryExpirationIntervalSeconds > PolicyConstants.NONE

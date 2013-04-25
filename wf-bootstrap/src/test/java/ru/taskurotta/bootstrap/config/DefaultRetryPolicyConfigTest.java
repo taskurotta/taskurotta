@@ -53,7 +53,7 @@ public class DefaultRetryPolicyConfigTest {
 
         Profiler profiler = new SimpleProfiler(TestDecider.class);
         RetryPolicy retryPolicy = new LinearRetryPolicy(2);
-        Inspector inspector = new Inspector(retryPolicy);
+        Inspector inspector = new Inspector(retryPolicy, null);
 
         ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
         ExecutorService executorService = Executors.newFixedThreadPool(1);

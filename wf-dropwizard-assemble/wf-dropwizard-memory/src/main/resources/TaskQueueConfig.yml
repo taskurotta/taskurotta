@@ -40,18 +40,19 @@ properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
   retryTimes: 10
-  recovery.schedule: "20 SECONDS"
-  recovery.period: 180
-  recovery.period.unit: "SECONDS"
-  recovery.timeStep: 500
-  recovery.timeStep.unit: "MILLISECONDS"
+  recovery.schedule: "*/35 * * * * ?"
+  recovery.period: 1
+  recovery.period.unit: "DAYS"
+  recovery.timeStep: 5
+  recovery.timeStep.unit: "MINUTES"
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
         ru.taskurotta: INFO
-        ru.taskurotta.dropwizard.resources: INFO
+        ru.taskurotta.dropwizard.resources: DEBUG
+        ru.taskurotta.backend.queue: DEBUG
         ru.taskurotta.backend: INFO
         ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO

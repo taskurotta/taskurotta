@@ -1,8 +1,5 @@
 package ru.taskurotta.example.calculate.decider;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
@@ -12,6 +9,9 @@ import ru.taskurotta.example.calculate.RandomException;
 import ru.taskurotta.example.calculate.worker.client.MultiplierClient;
 import ru.taskurotta.example.calculate.worker.client.NumberGeneratorClient;
 import ru.taskurotta.example.calculate.worker.client.SummarizerClient;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MathActionDeciderImpl implements MathActionDecider {
 
@@ -25,12 +25,6 @@ public class MathActionDeciderImpl implements MathActionDecider {
     @Override
     @Execute
     public void performAction() {
-
-// No retries for decider
-//        if(RandomException.isEventHappened(errPossibility)) {
-//            logger.error("MathActionDecider: RANDOMLY FAILED!");
-//            throw new RandomException("Its exception time");
-//        }
 
         long start = System.currentTimeMillis();
         Promise<Integer> a = numberGeneratorClient.getNumber();

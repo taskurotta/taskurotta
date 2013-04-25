@@ -1,10 +1,9 @@
 package ru.taskurotta.dropwizard.service;
 
-import java.util.Map;
-import java.util.Properties;
-
-import javax.ws.rs.Path;
-
+import com.yammer.dropwizard.Service;
+import com.yammer.dropwizard.config.Bootstrap;
+import com.yammer.dropwizard.config.Environment;
+import com.yammer.metrics.core.HealthCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -14,14 +13,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
-
 import ru.taskurotta.dropwizard.TaskQueueConfig;
 import ru.taskurotta.dropwizard.internal.ConfigBackendAware;
 
-import com.yammer.dropwizard.Service;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
-import com.yammer.metrics.core.HealthCheck;
+import javax.ws.rs.Path;
+import java.util.Map;
+import java.util.Properties;
 
 public class TaskQueueService extends Service<TaskQueueConfig> {
 
@@ -106,7 +103,7 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
                 HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
                 environment.addHealthCheck(healthCheck);
             }
-            logger.info("Registered[{}] healchChecks from application context location [{}]", healthChecks.size(), contextLocation);
+            logger.info("Registered[{}] healthChecks from application context location [{}]", healthChecks.size(), contextLocation);
         }
 
     }
