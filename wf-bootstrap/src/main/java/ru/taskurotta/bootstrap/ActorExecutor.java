@@ -7,6 +7,7 @@ import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.exception.TaskurottaServerException;
 
 /**
  * User: stukushin
@@ -54,8 +55,10 @@ public class ActorExecutor implements Runnable {
 
                 taskSpreader.release(taskDecision);
 
+            } catch(TaskurottaServerException ex) {
+                log.error("Error at client-server communication", ex);
             } catch (Throwable t) {
-                log.error("Exception caught", t);
+                log.error("Unexpected actor execution error", t);
             } finally {
                 profiler.cycleFinish();
             }
