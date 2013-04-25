@@ -5,8 +5,10 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
 import ru.taskurotta.bootstrap.ActorExecutor;
 import ru.taskurotta.bootstrap.Inspector;
+import ru.taskurotta.bootstrap.MockActorThreadPool;
 import ru.taskurotta.bootstrap.TestDecider;
 import ru.taskurotta.bootstrap.TestTaskSpreader;
+import ru.taskurotta.bootstrap.TestWorker;
 import ru.taskurotta.bootstrap.TestWorkerImpl;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
@@ -17,8 +19,6 @@ import ru.taskurotta.policy.retry.RetryPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -53,20 +53,23 @@ public class DefaultRetryPolicyConfigTest {
 
         Profiler profiler = new SimpleProfiler(TestDecider.class);
         RetryPolicy retryPolicy = new LinearRetryPolicy(2);
-        Inspector inspector = new Inspector(retryPolicy, null);
+
+        MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class, 1);
+        Inspector inspector = new Inspector(retryPolicy, actorExecutorsPool);
 
         ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(actorExecutor);
+//        ExecutorService executorService = Executors.newFixedThreadPool(1);
+//        executorService.execute(actorExecutor);
+        actorExecutorsPool.startExecution(actorExecutor);
 
         TimeUnit.SECONDS.sleep(5);
 
         actorExecutor.stop();
-        executorService.shutdown();
+        actorExecutorsPool.shutdown();
 
         List<Integer> retryTimeouts = new ArrayList<Integer>();
-        retryTimeouts.add(0);
-        retryTimeouts.add(0);
+       // retryTimeouts.add(0); ignoring of first two retry policy attempts was removed from inspector
+       // retryTimeouts.add(0);
         retryTimeouts.add(0);
         retryTimeouts.add(2);
         retryTimeouts.add(2);

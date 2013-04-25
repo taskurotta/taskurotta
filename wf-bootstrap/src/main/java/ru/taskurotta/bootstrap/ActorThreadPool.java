@@ -85,4 +85,8 @@ public class ActorThreadPool {
         }
     }
 
+    public void shutdown() {
+        poolService.shutdown();
+    }
+
 }
