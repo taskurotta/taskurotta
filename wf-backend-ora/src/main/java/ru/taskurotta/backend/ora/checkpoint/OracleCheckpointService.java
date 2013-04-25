@@ -41,7 +41,7 @@ public class OracleCheckpointService implements CheckpointService {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("insert into TR_CHECKPOINTS(CHECKPOINT_ID, ENTITY_TYPE, TYPE_TIMEOUT,CHECKPOINT_TIME) values (?,?,?,?)");
+            ps = connection.prepareStatement("insert into TR_CHECKPOINTS(ENTITY_ID, ENTITY_TYPE, TYPE_TIMEOUT,CHECKPOINT_TIME) values (?,?,?,?)");
             ps.setString(1, checkpoint.getEntityGuid().toString());
             ps.setString(2, checkpoint.getEntityType());
             ps.setString(3, checkpoint.getTimeoutType().toString());
@@ -70,7 +70,7 @@ public class OracleCheckpointService implements CheckpointService {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("delete from TR_CHECKPOINTS where CHECKPOINT_ID = ? and TYPE_TIMEOUT = ?");
+            ps = connection.prepareStatement("delete from TR_CHECKPOINTS where ENTITY_ID = ? and TYPE_TIMEOUT = ?");
             ps.setString(1, checkpoint.getEntityGuid().toString());
             ps.setString(2, checkpoint.getTimeoutType().toString());
             ps.executeUpdate();
@@ -120,7 +120,7 @@ public class OracleCheckpointService implements CheckpointService {
                 final ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     final Checkpoint checkpoint = new Checkpoint();
-                    checkpoint.setEntityGuid(UUID.fromString(rs.getString("CHECKPOINT_ID")));
+                    checkpoint.setEntityGuid(UUID.fromString(rs.getString("ENTITY_ID")));
                     checkpoint.setEntityType(rs.getString("ENTITY_TYPE"));
                     checkpoint.setTimeoutType(TimeoutType.forValue(rs.getString("TYPE_TIMEOUT")));
                     checkpoint.setTime(rs.getLong("CHECKPOINT_TIME"));
@@ -143,7 +143,7 @@ public class OracleCheckpointService implements CheckpointService {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("delete from TR_CHECKPOINTS where ENTITY_TYPE = ? and TYPE_TIMEOUT=?");
+            ps = connection.prepareStatement("delete from TR_CHECKPOINTS where ENTITY_ID = ? and TYPE_TIMEOUT=?");
             ps.setString(1, uuid.toString());
             ps.setString(2, timeoutType.toString());
             return ps.executeUpdate();
