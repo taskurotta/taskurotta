@@ -99,9 +99,7 @@
         <property name="supportedTimeouts">
             <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
                 <value>TASK_START_TO_CLOSE</value>
-
-                <!--Ora queue backend implementation doesn't set any checkpoints-->
-                <!--<value>TASK_POLL_TO_COMMIT</value>-->
+                <value>TASK_POLL_TO_COMMIT</value>
             </array>
         </property>
         <property name="checkpointServices">

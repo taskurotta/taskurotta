@@ -7,17 +7,23 @@ actorConfig:
     - id: "default" #applied if actorId not found in config
       timeoutPolicies:
         TASK_START_TO_CLOSE: "timeout 15 seconds" #consider checkpoint as expired after 15 seconds
-#        TASK_POLL_TO_COMMIT: "timeout 15 seconds" #ora queue backend doesn't support it anyway
+        TASK_POLL_TO_COMMIT: "timeout 5 seconds"
     - id: "some other actor" #Every real actor should be described here
       timeoutPolicies:
         TASK_START_TO_CLOSE: "timeout 15 seconds"
+#        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
 
 #List of expiration policies available for actors by name: \\TODO: Should be simplified
   expirationPolicies:
-    - name: "timeout 15 seconds"
+    - name: "timeout 5 seconds"
       className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
       properties:
         timeout: 15
+        timeUnit: "SECONDS"
+    - name: "timeout 5 seconds"
+      className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
+      properties:
+        timeout: 5
         timeUnit: "SECONDS"
 
 #Task server common properties (will be available as placeholders in spring context):
