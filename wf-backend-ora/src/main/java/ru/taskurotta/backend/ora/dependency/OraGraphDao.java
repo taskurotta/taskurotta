@@ -1,14 +1,5 @@
 package ru.taskurotta.backend.ora.dependency;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-import javax.sql.DataSource;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -16,6 +7,15 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
 
 /**
  * User: moroz
@@ -42,6 +42,7 @@ public class OraGraphDao implements GraphDao {
     }
 
     private void insertUpdateGraph(Graph graph) {
+        logger.debug("insertUpdateGraph(graph) with graph [{}]", graph);
         Connection connection = null;
         PreparedStatement ps = null;
         try {
@@ -110,7 +111,7 @@ public class OraGraphDao implements GraphDao {
             int newVersion = modifiedGraph.getVersion();
 
             if (graph.getVersion() == newVersion - 1) {
-                insertUpdateGraph(graph);
+                insertUpdateGraph(modifiedGraph);
                 result = true;
             }
 
@@ -120,6 +121,7 @@ public class OraGraphDao implements GraphDao {
         } finally {
             closeResources(ps, connection);
         }
+        logger.debug("Update graph result is [{}]", result);
         return result;
 
     }

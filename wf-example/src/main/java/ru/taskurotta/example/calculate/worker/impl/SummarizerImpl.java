@@ -14,7 +14,7 @@ public class SummarizerImpl implements Summarizer {
 
     @Override
     public Integer summarize(Integer a, Integer b) {
-
+        logger.trace("summarize() called");
         if(RandomException.isEventHappened(errPossibility)) {
             logger.error("Summarizer: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");

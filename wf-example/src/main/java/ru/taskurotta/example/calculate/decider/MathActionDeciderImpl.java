@@ -25,6 +25,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
     @Override
     @Execute
     public void performAction() {
+        logger.trace("performAction started");
 
         long start = System.currentTimeMillis();
         Promise<Integer> a = numberGeneratorClient.getNumber();
@@ -35,6 +36,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
 
     @Asynchronous
     public void callExecutor(Promise<Integer> a, long startTime) {
+        logger.trace("callExecutor started");
 
         if(RandomException.isEventHappened(errPossibility)) {
             throw new RandomException("Its exception time");
@@ -61,6 +63,8 @@ public class MathActionDeciderImpl implements MathActionDecider {
 
     @Asynchronous
     public void logResult(Promise<Integer> result, String action, long startTime) {
+        logger.trace("logResult started");
+
         if(RandomException.isEventHappened(errPossibility)) {
             throw new RandomException("Its exception time");
         }

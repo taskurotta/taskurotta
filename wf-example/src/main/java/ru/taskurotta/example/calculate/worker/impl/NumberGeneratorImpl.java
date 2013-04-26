@@ -18,6 +18,7 @@ public class NumberGeneratorImpl implements NumberGenerator {
 
     @Override
     public Integer getNumber() {
+        logger.trace("getNumber() called");
 
         if(RandomException.isEventHappened(errPossibility)) {
             logger.error("NumberGenerator: RANDOMLY FAILED!");

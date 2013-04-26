@@ -16,7 +16,7 @@ public class MultiplierImpl implements Multiplier {
 
     @Override
     public Integer multiply(Integer a, Integer b) {
-
+        logger.trace("multiply() called");
         if(RandomException.isEventHappened(errPossibility)) {
             logger.error("Multiplier: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
