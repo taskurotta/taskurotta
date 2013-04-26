@@ -27,6 +27,22 @@ public class OraQueueDao {
         this.dataSource = dataSource;
     }
 
+    public void deleteTask(UUID taskId, String queueName) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement("delete from " + queueName + " task_id=? ");
+            ps.setString(1, taskId.toString());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            log.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
+        } finally {
+            closeResources(ps, connection);
+        }
+    }
+
     public void enqueueTask(SimpleTask task, String queueName) {
         Connection connection = null;
         PreparedStatement ps = null;
