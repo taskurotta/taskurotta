@@ -15,7 +15,7 @@ actorConfig:
 
 #List of expiration policies available for actors by name: \\TODO: Should be simplified
   expirationPolicies:
-    - name: "timeout 5 seconds"
+    - name: "timeout 15 seconds"
       className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
       properties:
         timeout: 15
