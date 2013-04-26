@@ -39,7 +39,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-        long startTime = System.currentTimeMillis();
+        long startTime = -1;
 
         MethodDescriptor methodDescriptor = method2TaskTargetCache.get(method);
 
@@ -79,7 +79,9 @@ public class ProxyInvocationHandler implements InvocationHandler {
         }
 
         UUID processId = runtimeContext.getProcessId();
-        startTime = runtimeContext.getStartTime();
+        if (startTime < 0) {
+            startTime = runtimeContext.getStartTime();
+        }
 
         Task task = new TaskImpl(UUID.randomUUID(), processId, methodDescriptor.getTaskTarget(),
                 startTime, 1,
