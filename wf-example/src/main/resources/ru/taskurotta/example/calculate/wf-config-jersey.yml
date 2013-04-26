@@ -14,7 +14,7 @@ spreader:
       instance:
         context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 1
+          count: 5000
           endpoint: "http://localhost:8080"
           threadPoolSize: 10
           readTimeout: 10000
@@ -26,8 +26,8 @@ policy:
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
-          initialRetryIntervalSeconds: 3
-          maximumRetryIntervalSeconds: 10
+          initialRetryIntervalSeconds: 1
+          maximumRetryIntervalSeconds: 50
           maximumAttempts: 3
 
 profiler:
