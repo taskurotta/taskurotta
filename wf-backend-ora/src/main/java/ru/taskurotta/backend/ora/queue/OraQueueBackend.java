@@ -61,7 +61,7 @@ public class OraQueueBackend implements QueueBackend {
         String queueName = getTableName(actorId);
         if (queueName != null) {
             final UUID taskId = dbDAO.pollTask(queueName);
-            checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, new Date().getTime()));
+            checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, new Date().getTime()));
             dbDAO.deleteTask(taskId, queueName);
             return taskId;
         }
@@ -70,7 +70,7 @@ public class OraQueueBackend implements QueueBackend {
 
     @Override
     public void pollCommit(String actorId, UUID taskId) {
-        checkpointService.removeCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, 0));
+        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
 
