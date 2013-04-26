@@ -36,7 +36,11 @@ public abstract class AbstractRecovery implements Runnable {
         List<CheckpointService> cs = getCheckpointServices();
         if(cs!=null && !cs.isEmpty()) {
             logger.debug("Recovery process started, checkpointServices count[{}], expirationPolicies are [{}]", cs.size(), expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
-            processRecoveryIteration();
+            try {
+                processRecoveryIteration();
+            } catch(Throwable ex) {//Recovery should try to survive no matter what
+               logger.error("Unexpected error at recovery process. Recover will continue as scheduled...", ex);
+            }
         } else {
             logger.error("Cannot start recovery process: CheckpointService is not set");
         }

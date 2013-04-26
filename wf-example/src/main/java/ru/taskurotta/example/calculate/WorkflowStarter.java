@@ -26,7 +26,7 @@ public class WorkflowStarter {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SS");
         logger.info("Start work time [{}], count[{}]", sdf.format(new Date()), count);
         int started = 0;
-        for (int i = 0; i < count; i++) {
+        while (started < count) {
             try{
                 decider.performAction();
                 started++;
@@ -34,7 +34,6 @@ public class WorkflowStarter {
                 logger.error("Error at start new process. Message: " + ex.getMessage());
             }
         }
-        logger.info(String.valueOf(started) + " tasks started");
     }
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {

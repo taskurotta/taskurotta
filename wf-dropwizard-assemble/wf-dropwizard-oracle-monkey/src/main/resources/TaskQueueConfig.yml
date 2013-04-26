@@ -7,11 +7,10 @@ actorConfig:
     - id: "default" #applied if actorId not found in config
       timeoutPolicies:
         TASK_START_TO_CLOSE: "timeout 15 seconds" #consider checkpoint as expired after 15 seconds
-        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
+#        TASK_POLL_TO_COMMIT: "timeout 15 seconds" #ora queue backend doesn't support it anyway
     - id: "some other actor" #Every real actor should be described here
       timeoutPolicies:
         TASK_START_TO_CLOSE: "timeout 15 seconds"
-        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
 
 #List of expiration policies available for actors by name: \\TODO: Should be simplified
   expirationPolicies:
@@ -27,11 +26,11 @@ properties:
   db.user: "taskurotta"
   db.password: "taskurotta"
   retryTimes: 10 #retry for dependency graph modification
-  recovery.schedule: "*/40 * * * * ?" #run recovery every 40 seconds
+  recovery.schedule: "*/10 * * * * ?" #run recovery every 10 seconds
   recovery.period: 1 #recoveru scans for checkpoints created 1 day ago
   recovery.period.unit: "DAYS"
-  recovery.timeStep: 5
-  recovery.timeStep.unit: "MINUTES"
+  recovery.timeStep: 8 #recovery time step | for monkey test with 10% failChance, recovery period should be covered in less then ~10 steps or it would fail forever
+  recovery.timeStep.unit: "HOURS"
 
 
 #Http server configuration:
@@ -39,7 +38,8 @@ logging:
     level: WARN
     loggers:
         ru.taskurotta: INFO
-        ru.taskurotta.backend.queue: DEBUG
+#        ru.taskurotta.backend.queue: DEBUG
+#        ru.taskurotta.backend.task: DEBUG
         ru.taskurotta.backend: DEBUG
         ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO

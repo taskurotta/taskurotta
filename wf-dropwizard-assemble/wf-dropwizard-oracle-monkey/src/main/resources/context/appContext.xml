@@ -27,9 +27,6 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-
-
-
     <!--<bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">-->
         <!--<constructor-arg name="dataSource" ref="dataSource"/>-->
         <!--<constructor-arg name="taskDao" ref="taskDao"/>-->
@@ -49,7 +46,7 @@
 
     <bean id="queueBackend" class="ru.taskurotta.backend.ora.queue.OraQueueBackend">
         <constructor-arg name="dataSource" ref="dataSource" />
-        <property name="checkpointService" ref="checkpointService" />
+        <property name="checkpointService" ref="oraCheckpointService" />
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.ora.storage.OraTaskDao">
@@ -60,13 +57,15 @@
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="checkpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
+    <bean id="oraCheckpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
+    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService" />
+
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />
-        <constructor-arg name="checkpointService" ref="checkpointService"/>
+        <constructor-arg name="checkpointService" ref="oraCheckpointService"/>
     </bean>
 
     <bean id="dependencyBackend"
@@ -76,7 +75,7 @@
     </bean>
 
     <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" >
-        <property name="checkpointService" ref="checkpointService" />
+        <property name="checkpointService" ref="voidCheckpointService" />
     </bean>
     <bean id="configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend" />
 
@@ -100,8 +99,15 @@
         <property name="supportedTimeouts">
             <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
                 <value>TASK_START_TO_CLOSE</value>
-                <value>TASK_POLL_TO_COMMIT</value>
+
+                <!--Ora queue backend implementation doesn't set any checkpoints-->
+                <!--<value>TASK_POLL_TO_COMMIT</value>-->
             </array>
+        </property>
+        <property name="checkpointServices">
+            <list value-type="ru.taskurotta.backend.checkpoint.CheckpointService">
+                <ref bean="oraCheckpointService" />
+            </list>
         </property>
     </bean>
     <!-- /Recoveries -->
