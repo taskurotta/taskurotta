@@ -32,7 +32,7 @@ public class OraQueueDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("delete from " + queueName + " task_id=? ");
+            ps = connection.prepareStatement("delete from " + queueName + " where task_id=? ");
             ps.setString(1, taskId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
