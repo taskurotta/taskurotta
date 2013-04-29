@@ -14,6 +14,8 @@
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="jdbc:oracle:thin:@//taskurotta-db:1521/orcl"/>
+        <property name="initialSize" value="20"/>
+        <property name="maxActive" value="40"/>
         <property name="username" value="taskurotta"/>
         <property name="password" value="taskurotta"/>
     </bean>
