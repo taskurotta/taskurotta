@@ -3,9 +3,13 @@ package ru.taskurotta.backend.storage.model.serialization;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 
 /**
  * User: moroz
@@ -19,6 +23,14 @@ public class JsonSerializer<T> implements ModelSerializer<T> {
 
     public JsonSerializer(Class<T> tClass) {
         this.genericType = tClass;
+
+        SimpleModule module = new SimpleModule("ActorSchedulingOptions", Version.unknownVersion());
+        module.addAbstractTypeMapping(ActorSchedulingOptions.class, ActorSchedulingOptionsImpl.class);
+        mapper.registerModule(module);
+    }
+
+    protected ObjectMapper getMapper() {
+        return mapper;
     }
 
     @Override

@@ -1,17 +1,23 @@
 package ru.taskurotta.backend.ora.queue;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import javax.sql.DataSource;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 /**
  * User: greg
@@ -48,11 +54,12 @@ public class OraQueueDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, task_list, date_start) values (?,?,?,?)");
+            ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, task_list, date_start, INSERT_DATE) values (?,?,?,?,?)");
             ps.setString(1, task.getTaskId().toString());
             ps.setInt(2, task.getStatusId());
             ps.setString(3, task.getTaskList());
             ps.setDate(4, new java.sql.Date(task.getDate().getTime()));
+            ps.setDate(5, new java.sql.Date(task.getDate().getTime()));
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("Database error", ex);
@@ -114,6 +121,7 @@ public class OraQueueDao {
                     " STATUS_ID NUMBER NOT NULL ENABLE, \n" +
                     " TASK_LIST VARCHAR(54) NOT NULL ENABLE, \n" +
                     " DATE_START DATE, \n" +
+                    " INSERT_DATE DATE, \n" +
                     " PRIMARY KEY (TASK_ID))";
             String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
             statement = connection.createStatement();
@@ -136,14 +144,17 @@ public class OraQueueDao {
         try {
             connection = dataSource.getConnection();
             String query = "begin\n" +
-                    "UPDATE %s\n" +
-                    "SET STATUS_ID = 1\n" +
-                    "WHERE\n" +
-                    "STATUS_ID = 0\n" +
-                    "AND DATE_START <= CURRENT_TIMESTAMP\n" +
-                    "AND ROWNUM = 1\n" +
+                    "update %qt t\n" +
+                    "   set STATUS_ID = 1\n" +
+                    " where T.TASK_ID = (select TASK_ID\n" +
+                    "                      from (select TT.TASK_ID\n" +
+                    "                              from %qt TT\n" +
+                    "                             where TT.STATUS_ID = 0\n" +
+                    "                               and tt.DATE_START <= current_timestamp\n" +
+                    "                               and ROWNUM = 1\n" +
+                    "                             order by TT.INSERT_DATE asc))" +
                     "RETURNING TASK_ID INTO ?;END;";
-            cs = connection.prepareCall(String.format(query, queueName));
+            cs = connection.prepareCall(query.replace("%qt", queueName));
             cs.registerOutParameter(1, Types.VARCHAR);
             cs.execute();
             return (cs.getString(1) != null) ? UUID.fromString(cs.getString(1)) : null;
