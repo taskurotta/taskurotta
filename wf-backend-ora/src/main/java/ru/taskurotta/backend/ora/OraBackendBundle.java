@@ -10,9 +10,9 @@ import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.ora.queue.OraQueueBackend;
+import ru.taskurotta.backend.ora.storage.OraProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
-import ru.taskurotta.backend.storage.MemoryProcessBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -28,7 +28,7 @@ public class OraBackendBundle implements BackendBundle {
     private ConfigBackend configBackend;
 
     public OraBackendBundle(DataSource dataSource, TaskDao taskDao, CheckpointService checkpointService, GraphDao graphDao) {
-        this.processBackend = new MemoryProcessBackend();
+        this.processBackend = new OraProcessBackend(dataSource, checkpointService);
         this.taskBackend = new GeneralTaskBackend(taskDao, checkpointService);
         this.queueBackend = new OraQueueBackend(dataSource);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao, 100000);

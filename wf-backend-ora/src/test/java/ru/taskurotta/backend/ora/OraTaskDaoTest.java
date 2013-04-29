@@ -29,14 +29,17 @@ public class OraTaskDaoTest {
 
     @Test
     public void addReadDecisionTest() {
-        DecisionContainer task = SerializationTest.createDecisionContainer(false);
-        dao.addDecision(task);
+        TaskContainer task = SerializationTest.createTaskContainer();
+        dao.addTask(task);
+        DecisionContainer taskDecision = SerializationTest.createDecisionContainer(false, task.getTaskId());
 
-        DecisionContainer task1 = dao.getDecision(task.getTaskId());
-        Assert.assertEquals(task.getTaskId(), task1.getTaskId());
-        Assert.assertEquals(task.containsError(), task1.containsError());
+        dao.addDecision(taskDecision);
 
-        Assert.assertTrue(dao.isTaskReleased(task.getTaskId()));
+        DecisionContainer task1 = dao.getDecision(taskDecision.getTaskId());
+        Assert.assertEquals(taskDecision.getTaskId(), task1.getTaskId());
+        Assert.assertEquals(taskDecision.containsError(), task1.containsError());
+
+        Assert.assertTrue(dao.isTaskReleased(taskDecision.getTaskId()));
 
     }
 }

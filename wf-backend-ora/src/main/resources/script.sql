@@ -31,11 +31,11 @@ NOCOMPRESS
 
 
 CREATE TABLE TR_CHECKPOINTS (
-  ID              NUMBER NOT NULL,
-  ENTITY_ID       VARCHAR2(36) NOT NULL,
+  ID              NUMBER        NOT NULL,
+  ENTITY_ID       VARCHAR2(36)  NOT NULL,
   ENTITY_TYPE     VARCHAR2(255) NOT NULL,
-  TYPE_TIMEOUT    VARCHAR2(36) NOT NULL,
-  CHECKPOINT_TIME NUMBER       NOT NULL,
+  TYPE_TIMEOUT    VARCHAR2(36)  NOT NULL,
+  CHECKPOINT_TIME NUMBER        NOT NULL,
   PRIMARY KEY (ID)
 )
 NOCOMPRESS
@@ -68,9 +68,26 @@ FOR EACH ROW
   BEGIN
     IF :NEW.id IS NULL
     THEN
-      SELECT QB$CHECKPOINT_SEQUENCE.NEXTVAL
+      SELECT
+        QB$CHECKPOINT_SEQUENCE.NEXTVAL
       INTO :NEW.id
       FROM DUAL;
     END IF;
   END;
+
+CREATE TABLE process (
+  process_id    VARCHAR2(36)  NOT NULL,
+  start_task_id VARCHAR2(36)  NOT NULL,
+  custom_id     VARCHAR2(256) NULL,
+  start_time    NUMBER        NOT NULL,
+  end_time      NUMBER        NULL,
+  state         NUMBER        NOT NULL,
+  return_value  CLOB          NULL,
+  PRIMARY KEY (process_id)
+)
+NOCOMPRESS
+;
+
+ALTER TABLE process ADD CONSTRAINT custom_id_uq UNIQUE (custom_id);
 /
+

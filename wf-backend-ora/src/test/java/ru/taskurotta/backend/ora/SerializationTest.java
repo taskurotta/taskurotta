@@ -11,9 +11,11 @@ import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.ErrorContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskType;
+import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 
 /**
  * User: moroz
@@ -42,13 +44,16 @@ public class SerializationTest {
 
 
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
-        TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
+        ActorSchedulingOptions actoropts = new ActorSchedulingOptionsImpl();
+        actoropts.setCustomId(null);
+        TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actoropts, null);
+
 
         return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
     }
 
-    public static DecisionContainer createDecisionContainer(boolean isError) {
-        UUID taskId = UUID.randomUUID();
+    public static DecisionContainer createDecisionContainer(boolean isError, UUID taskId) {
+        taskId = (taskId != null) ? taskId : UUID.randomUUID();
         UUID processId = UUID.randomUUID();
         TaskContainer[] tasks = new TaskContainer[2];
         tasks[0] = createTaskContainer();
