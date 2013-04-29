@@ -74,6 +74,7 @@ FOR EACH ROW
       FROM DUAL;
     END IF;
   END;
+/
 
 CREATE TABLE process (
   process_id    VARCHAR2(36)  NOT NULL,
@@ -89,5 +90,5 @@ NOCOMPRESS
 ;
 
 ALTER TABLE process ADD CONSTRAINT custom_id_uq UNIQUE (custom_id);
-/
+
 
