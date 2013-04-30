@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.example.calculate.decider.MathActionDeciderClient;
-import ru.taskurotta.exception.TaskurottaServerException;
+import ru.taskurotta.exception.server.ServerException;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,21 +19,26 @@ public class WorkflowStarter {
     private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
     public void startWork() {
-        DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
-        MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
+        final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
+        final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
 
-
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SS");
-        logger.info("Start work time [{}], count[{}]", sdf.format(new Date()), count);
-        int started = 0;
-        while (started < count) {
-            try{
-                decider.performAction();
-                started++;
-            } catch(TaskurottaServerException ex) {
-                logger.error("Error at start new process. Message: " + ex.getMessage());
+        Thread starter = new Thread () {
+            @Override
+            public void run() {
+                int started = 0;
+                while (started < count) {
+                    try{
+                        decider.performAction();
+                        started++;
+                    } catch(ServerException ex) {
+                        logger.error("Error at start new process. Strted ["+started+"] of ["+count+"]. Message: " + ex.getMessage());
+                    }
+                }
             }
-        }
+        };
+
+        starter.start();
+        logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
     }
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {
