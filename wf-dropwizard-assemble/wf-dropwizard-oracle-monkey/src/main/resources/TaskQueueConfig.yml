@@ -6,25 +6,21 @@ actorConfig:
   actorPreferences:
     - id: "default" #applied if actorId not found in config
       timeoutPolicies:
-        TASK_START_TO_CLOSE: "timeout 15 seconds" #consider checkpoint as expired after 15 seconds
-        TASK_POLL_TO_COMMIT: "timeout 5 seconds"
+        TASK_START_TO_CLOSE: "TIMEOUT: 30 SECONDS" #TIMEOUT: prefix can be used to specify simple timeouts (template: "TIMEOUT: <int> <TimeUnit>")
+        TASK_POLL_TO_COMMIT: "custom policy" #<-- MATCH
     - id: "some other actor" #Every real actor should be described here
       timeoutPolicies:
-        TASK_START_TO_CLOSE: "timeout 15 seconds"
+        TASK_START_TO_CLOSE: "TIMEOUT: 45 SECONDS"
 #        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
 
-#List of expiration policies available for actors by name: \\TODO: Should be simplified
+#List of expiration policies available for actors by name (new instance per actor):
   expirationPolicies:
-    - name: "timeout 15 seconds"
-      className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
-      properties:
-        timeout: 15
-        timeUnit: "SECONDS"
-    - name: "timeout 5 seconds"
-      className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
+    - name: "custom policy" #<-- MATCH
+      className: "ru.taskurotta.server.config.expiration.impl.TimeoutWithFixedRetryPolicy"
       properties:
         timeout: 5
         timeUnit: "SECONDS"
+        retry: 10
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
@@ -32,10 +28,10 @@ properties:
   db.user: "taskurotta"
   db.password: "taskurotta"
   retryTimes: 10 #retry for dependency graph modification
-  recovery.schedule: "*/10 * * * * ?" #run recovery every 10 seconds
-  recovery.period: 1 #recoveru scans for checkpoints created 1 day ago
+  recovery.schedule: "*/20 * * * * ?" #run recovery every 20 seconds
+  recovery.period: 2 #recoveru scans for checkpoints created 1 day ago
   recovery.period.unit: "DAYS"
-  recovery.timeStep: 8 #recovery time step | for monkey test with 10% failChance, recovery period should be covered in less then ~10 steps or it would fail forever
+  recovery.timeStep: 12 #recovery time step | for monkey test with 10% failChance, recovery period should be covered in less then ~10 steps or it would fail forever
   recovery.timeStep.unit: "HOURS"
 
 

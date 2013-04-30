@@ -45,6 +45,8 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 8
+      properties:
+        failover: "10 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
@@ -53,6 +55,8 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 8
+      properties:
+        failover: "80 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
@@ -61,6 +65,8 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 10
+      properties:
+        failover: "15 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
@@ -69,3 +75,5 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 8
+      properties:
+        failover: "80 SECONDS"

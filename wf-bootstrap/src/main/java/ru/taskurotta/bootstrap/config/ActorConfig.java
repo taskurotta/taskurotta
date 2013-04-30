@@ -1,5 +1,7 @@
 package ru.taskurotta.bootstrap.config;
 
+import java.util.Properties;
+
 /**
  * User: stukushin
  * Date: 04.02.13
@@ -13,6 +15,7 @@ public class ActorConfig {
     private String profilerConfig;
     private String policyConfig;
     private int count = 1;
+    private Properties properties;
 
     public String getActorInterface() {
         return actorInterface;
@@ -60,5 +63,17 @@ public class ActorConfig {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public Object getProperty(String name) {
+        return properties!=null? properties.getProperty(name): null;
     }
 }

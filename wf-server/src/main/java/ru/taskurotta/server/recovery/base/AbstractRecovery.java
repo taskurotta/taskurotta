@@ -7,6 +7,7 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicy;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.server.config.expiration.impl.TimeoutPolicy;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Contains Map of actors configuration defined timeout policies
  */
 public abstract class AbstractRecovery implements Runnable {
-
+    public static final String SIMPLE_TIMEOUT_POLICY = "TIMEOUT:";
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected List<CheckpointService> checkpointServices;
@@ -35,11 +36,11 @@ public abstract class AbstractRecovery implements Runnable {
     public void run() {
         List<CheckpointService> cs = getCheckpointServices();
         if(cs!=null && !cs.isEmpty()) {
-            logger.debug("Recovery process started, checkpointServices count[{}], expirationPolicies are [{}]", cs.size(), expirationPolicyMap!=null? expirationPolicyMap.keySet(): null);
+            logger.debug("Recovery process started, checkpointServices count[{}], recovery period[{}], [{}]", cs.size(), recoveryPeriod, recoveryPeriodUnit);
             try {
                 processRecoveryIteration();
             } catch(Throwable ex) {//Recovery should try to survive no matter what
-               logger.error("Unexpected error at recovery process. Recover will continue as scheduled...", ex);
+                logger.error("Unexpected error at recovery process. Recover will continue as scheduled...", ex);
             }
         } else {
             logger.error("Cannot start recovery process: CheckpointService is not set");
@@ -88,7 +89,25 @@ public abstract class AbstractRecovery implements Runnable {
     }
 
     private ExpirationPolicyConfig getPolicyByName(String name, ExpirationPolicyConfig[] expPolicies) {
-        if(expPolicies!=null) {
+        if(name.trim().toUpperCase().startsWith(SIMPLE_TIMEOUT_POLICY)) {//shortcut can be for simple timeout
+            ExpirationPolicyConfig result = new ExpirationPolicyConfig();
+            result.setName(name);
+            result.setClassName(TimeoutPolicy.class.getName());
+
+            Properties props = new Properties();
+            String timeout = name.replaceAll("\\D", "").trim();
+            if(timeout.length() > 0) {
+                props.put("timeout", Integer.valueOf(timeout));
+            }
+
+            String timeunit = name.replace(SIMPLE_TIMEOUT_POLICY, "").replaceAll("\\d", "").trim();
+            if(timeunit.length() > 0) {
+                props.put("timeUnit", TimeUnit.valueOf(timeunit.toUpperCase()));
+            }
+            result.setProperties(props);
+            return result;
+
+        } else if(expPolicies != null) {
             for(ExpirationPolicyConfig item: expPolicies) {
                 if(name.equals(item.getName())) {
                     return item;

@@ -131,6 +131,11 @@ public class Bootstrap {
             ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, count);
             Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
+            String actorFailoverTime = (String)actorConfig.getProperty(Inspector.FAILOVER_PROPERTY);
+            if(actorFailoverTime!=null) {
+                inspector.setFailover(actorFailoverTime);
+            }
+
 			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
 			executors.add(actorExecutor);
             actorThreadPool.startExecution(actorExecutor);
