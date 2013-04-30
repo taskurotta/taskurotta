@@ -1,9 +1,9 @@
 package ru.taskurotta.bootstrap.config;
 
+import ru.taskurotta.bootstrap.profiler.Profiler;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
-
-import ru.taskurotta.bootstrap.profiler.Profiler;
 
 /**
  * User: stukushin
@@ -17,23 +17,15 @@ public class DefaultProfilerConfig implements ProfilerConfig {
 
 	@Override
 	public Profiler getProfiler(Class actorInterface) {
-		Profiler profiler = null;
+		Profiler profiler;
 
-		try {
-			profiler = (Profiler) Class.forName(className).getConstructor(Class.class, Properties.class).newInstance(actorInterface, properties);
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+        try {
+            profiler = (Profiler) Class.forName(className).getConstructor(Class.class, Properties.class).newInstance(actorInterface, properties);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
-		return profiler;
+        return profiler;
 	}
 
 	public void setClass(String className) {

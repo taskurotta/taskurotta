@@ -34,8 +34,6 @@ public class Inspector {
     }
 
     private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<PolicyCounters>();
-    private ThreadLocal<PolicyCounters> releaseCounterThreadLocal = new ThreadLocal<PolicyCounters>();
-
 
     public Inspector(RetryPolicy retryPolicy, ActorThreadPool actorThreadPool) {
         this.retryPolicy = retryPolicy;
@@ -67,23 +65,6 @@ public class Inspector {
             @Override
             public void release(TaskDecision taskDecision) {
                 taskSpreader.release(taskDecision);
-
-//                No retry for task release yet
-//                try {
-//                    taskSpreader.release(taskDecision);
-//                    releaseCounterThreadLocal.set(null);
-//                    actorThreadPool.wakeThreadPool();
-//                } catch(TaskurottaServerException ex) {
-//                    PolicyCounters releaseCounter = getRetryCounter(releaseCounterThreadLocal);
-//                    releaseCounter.numberOfTries++;
-//                    if(isRetryPolicyApplied(releaseCounter)) {
-//                        logger.info("Try to release taskDecision[{}] again", taskDecision);
-//                        release(taskDecision);
-//                    }  else {
-//                        releaseCounterThreadLocal.set(null);
-//                    }
-//                }
-
             }
         };
     }

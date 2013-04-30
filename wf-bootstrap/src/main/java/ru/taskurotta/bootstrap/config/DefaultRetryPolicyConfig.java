@@ -18,7 +18,7 @@ public class DefaultRetryPolicyConfig implements RetryPolicyConfig {
 
     @Override
     public RetryPolicy getRetryPolicy() {
-        TimeRetryPolicyBase retryPolicy = null;
+        TimeRetryPolicyBase retryPolicy;
 
         long initialRetryIntervalSeconds = properties.containsKey("initialRetryIntervalSeconds") ?
                 Long.parseLong(String.valueOf(properties.get("initialRetryIntervalSeconds"))) : 10;
@@ -41,16 +41,8 @@ public class DefaultRetryPolicyConfig implements RetryPolicyConfig {
             if (properties.containsKey("maximumAttempts")) {
                 retryPolicy.setMaximumAttempts(Integer.parseInt(String.valueOf(properties.get("maximumAttempts"))));
             }
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
 
         return retryPolicy;

@@ -1,14 +1,6 @@
 package ru.taskurotta.bootstrap.config;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -21,6 +13,13 @@ import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * User: stukushin
@@ -43,7 +42,7 @@ public class LoggingConfig {
         public static final String YAML_LOGBACK_APPENDER_REF = "appender-ref";
 
         @Override
-        public LoggingConfig deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public LoggingConfig deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException {
             LoggingConfig loggingConfig = new LoggingConfig();
             ObjectCodec objectCodec = jsonParser.getCodec();
 

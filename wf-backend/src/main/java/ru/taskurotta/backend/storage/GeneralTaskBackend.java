@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.storage.model.ArgContainer;
@@ -48,50 +47,53 @@ public class GeneralTaskBackend implements TaskBackend {
         // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
         // due guarantees for its immutability.
 
-        ArgContainer[] args = task.getArgs();
+        if (task != null) {
+            ArgContainer[] args = task.getArgs();
 
-        if (args != null) {
+            if (args != null) {
 
-            for (int i = 0; i < args.length; i++) {
-                ArgContainer arg = args[i];
+                for (int i = 0; i < args.length; i++) {
+                    ArgContainer arg = args[i];
 
-                if (!arg.isPromise()) {
-                    continue;
+                    if (!arg.isPromise()) {
+                        continue;
+                    }
+
+                    if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+
+                        // set real value to Actor tasks
+                        args[i] = new ArgContainer(arg.getClassName(), false, arg.getTaskId(), true, arg.getJSONValue(),
+                                arg.isArray());
+                        continue;
+                    }
+
+                    ArgContainer value = getTaskValue(arg.getTaskId());
+                    if (value == null) {
+                        // value may be null for NoWait promises
+                        // leave it in peace...
+                        continue;
+                    }
+
+                    if (!task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+
+                        // swap promise with real value for Actor tasks
+                        args[i] = value;
+                    } else {
+
+                        // set real value into promise for Decider tasks
+                        args[i] = new ArgContainer(value.getClassName(), true, arg.getTaskId(), true, value.getJSONValue(),
+                                arg.isArray());
+                    }
                 }
 
-                if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-
-                    // set real value to Actor tasks
-                    args[i] = new ArgContainer(arg.getClassName(), false, arg.getTaskId(), true, arg.getJSONValue(),
-                            arg.isArray());
-                    continue;
-                }
-
-                ArgContainer value = getTaskValue(arg.getTaskId());
-                if (value == null) {
-                    // value may be null for NoWait promises
-                    // leave it in peace...
-                    continue;
-                }
-
-                if (!task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-
-                    // swap promise with real value for Actor tasks
-                    args[i] = value;
-                } else {
-
-                    // set real value into promise for Decider tasks
-                    args[i] = new ArgContainer(value.getClassName(), true, arg.getTaskId(), true, value.getJSONValue(),
-                            arg.isArray());
-                }
             }
 
+
+            //Setting TASK_START checkpoint
+            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());
+            checkpointService.addCheckpoint(startCheckpoint);
+
         }
-
-        //Setting TASK_START checkpoint
-        Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());
-        checkpointService.addCheckpoint(startCheckpoint);
-
         return task;
     }
 
@@ -154,7 +156,7 @@ public class GeneralTaskBackend implements TaskBackend {
         }
 
         TaskContainer[] taskContainers = taskDecision.getTasks();
-        if (taskContainers!=null) {
+        if (taskContainers != null) {
             for (TaskContainer taskContainer : taskContainers) {
                 taskDao.addTask(taskContainer);
             }

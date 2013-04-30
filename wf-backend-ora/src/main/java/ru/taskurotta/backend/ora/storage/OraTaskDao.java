@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.ora.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.UUID;
+import javax.sql.DataSource;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -7,17 +17,8 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 /**
  * User: moroz
@@ -31,6 +32,10 @@ public class OraTaskDao implements TaskDao {
 
     private ObjectMapper mapper = new ObjectMapper();
 
+    private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<TaskContainer>(TaskContainer.class);
+    private JsonSerializer<DecisionContainer> decisionSerializer = new JsonSerializer<DecisionContainer>(DecisionContainer.class);
+
+
     public OraTaskDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -41,15 +46,14 @@ public class OraTaskDao implements TaskDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("INSERT INTO DECISION (TASK_ID,PROCESS_ID,DESICION_JSON) VALUES (?,?,?)");
+            ps = connection.prepareStatement("INSERT INTO DECISION (TASK_ID,PROCESS_ID,DESICION_JSON, IS_ERROR, DECISION_DATE) VALUES (?,?,?,?,?)");
             ps.setString(1, taskDecision.getTaskId().toString());
             ps.setString(2, taskDecision.getProcessId().toString());
-            String str = mapper.writeValueAsString(taskDecision);
+            String str = (String) decisionSerializer.serialize(taskDecision);
             ps.setString(3, str);
+            ps.setInt(4, (taskDecision.containsError()) ? 1 : 0);
+            ps.setLong(5, (new Date()).getTime());
             ps.executeUpdate();
-        } catch (JsonProcessingException ex) {
-            log.error("Serialization exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Serialization exception", ex);
         } catch (SQLException ex) {
             log.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
@@ -70,11 +74,8 @@ public class OraTaskDao implements TaskDao {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String json = rs.getString(1);
-                result = mapper.readValue(json, DecisionContainer.class);
+                result = decisionSerializer.deserialize(json);
             }
-        } catch (IOException ex) {
-            log.error("Serialization exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Serialization exception", ex);
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
@@ -97,11 +98,8 @@ public class OraTaskDao implements TaskDao {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 String json = rs.getString(1);
-                result = mapper.readValue(json, TaskContainer.class);
+                result = taskSerializer.deserialize(json);
             }
-        } catch (IOException e) {
-            log.error("Serialization exception: " + e.getMessage(), e);
-            throw new BackendCriticalException("Serialization exception:", e);
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
@@ -118,14 +116,13 @@ public class OraTaskDao implements TaskDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("INSERT INTO TASK (UUID,JSON_VALUE) VALUES (?,?)");
+            ps = connection.prepareStatement("INSERT INTO TASK (UUID,JSON_VALUE,NUMBER_OF_ATTEMPTS, ACTOR_ID) VALUES (?,?,?,?)");
             ps.setString(1, taskContainer.getTaskId().toString());
-            String str = mapper.writeValueAsString(taskContainer);
-            ps.setString(2, str);
+            //String str = mapper.writeValueAsString(taskContainer);
+            ps.setString(2, (String) taskSerializer.serialize(taskContainer));
+            ps.setInt(3, taskContainer.getNumberOfAttempts());
+            ps.setString(4, taskContainer.getActorId());
             ps.executeUpdate();
-        } catch (IOException e) {
-            log.error("Serialization exception: " + e.getMessage(), e);
-            throw new BackendCriticalException("Serialization exception:", e);
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
@@ -165,10 +162,11 @@ public class OraTaskDao implements TaskDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("UPDATE TASK SET JSON_VALUE = ? WHERE UUID = ?");
+            ps = connection.prepareStatement("UPDATE TASK SET JSON_VALUE = ?, NUMBER_OF_ATTEMPTS = ? WHERE UUID = ?");
             String str = mapper.writeValueAsString(taskContainer);
             ps.setString(1, str);
-            ps.setString(2, taskContainer.getTaskId().toString());
+            ps.setInt(2, taskContainer.getNumberOfAttempts());
+            ps.setString(3, taskContainer.getTaskId().toString());
             ps.executeUpdate();
         } catch (JsonProcessingException ex) {
             log.error("Serialization exception: " + ex.getMessage(), ex);
