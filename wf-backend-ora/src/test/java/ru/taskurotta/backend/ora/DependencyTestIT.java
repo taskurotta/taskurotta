@@ -34,6 +34,8 @@ public class DependencyTestIT {
         modification.setCompletedItem(UUID.randomUUID());
         graph.apply(modification);
         dao.updateGraph(graph);
+        graph.setVersion(graph.getVersion() + 1);
+        dao.updateGraph(graph);
 
     }
 
