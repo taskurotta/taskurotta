@@ -15,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
 
 /**
  * User: moroz
@@ -43,15 +42,12 @@ public class OraGraphDao implements GraphDao {
 
     private void insertUpdateGraph(Graph graph) {
         logger.debug("insertUpdateGraph(graph) with graph [{}]", graph);
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("MERGE INTO GRAPH USING dual ON (id=? )\n" +
-                    "        WHEN MATCHED THEN UPDATE SET version=? , JSON_STR = ? WHERE  version=?\n" +
-                    "        WHEN NOT MATCHED THEN INSERT (ID, VERSION, JSON_STR)\n" +
-                    "        VALUES ( ?, ?, ?)");
-
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("MERGE INTO GRAPH USING dual ON (id=? )\n" +
+                     "        WHEN MATCHED THEN UPDATE SET version=? , JSON_STR = ? WHERE  version=?\n" +
+                     "        WHEN NOT MATCHED THEN INSERT (ID, VERSION, JSON_STR)\n" +
+                     "        VALUES ( ?, ?, ?)")
+        ) {
             ps.setString(1, graph.getGraphId().toString());
             ps.setInt(2, graph.getVersion());
             ps.setString(3, (String) graphJsonSerializer.serialize(graph));
@@ -63,19 +59,15 @@ public class OraGraphDao implements GraphDao {
         } catch (SQLException ex) {
             logger.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
     }
 
     @Override
     public Graph getGraph(UUID graphId) {
-        Connection connection = null;
-        PreparedStatement ps = null;
         Graph result = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("SELECT  JSON_STR FROM GRAPH WHERE ID = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT  JSON_STR FROM GRAPH WHERE ID = ?")
+        ) {
             ps.setString(1, graphId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -86,8 +78,6 @@ public class OraGraphDao implements GraphDao {
         } catch (SQLException ex) {
             logger.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
         return result;
     }
@@ -95,13 +85,10 @@ public class OraGraphDao implements GraphDao {
     @Override
     public boolean updateGraph(Graph modifiedGraph) {
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
-
-        Connection connection = null;
-        PreparedStatement ps = null;
         boolean result = false;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("insert into GRAPH_DECISION(GRAPH_ID, READY_ITEMS, MODIFICATION_JSON) values (?,?,?)");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("insert into GRAPH_DECISION(GRAPH_ID, READY_ITEMS, MODIFICATION_JSON) values (?,?,?)")
+        ) {
             ps.setString(1, modifiedGraph.getModification().getCompletedItem().toString());
             ps.setString(2, (String) itemsJsonSerializer.serialize(modifiedGraph.getReadyItems()));
             ps.setString(3, (String) modificationJsonSerializer.serialize(modifiedGraph.getModification()));
@@ -114,12 +101,9 @@ public class OraGraphDao implements GraphDao {
                 insertUpdateGraph(modifiedGraph);
                 result = true;
             }
-
         } catch (SQLException ex) {
             logger.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
         logger.debug("Update graph result is [{}]", result);
         return result;
@@ -129,11 +113,9 @@ public class OraGraphDao implements GraphDao {
     @Override
     public UUID[] getReadyTasks(UUID finishedTaskId) {
         UUID[] result = new UUID[0];
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("SELECT  READY_ITEMS FROM GRAPH_DECISION WHERE GRAPH_ID = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT  READY_ITEMS FROM GRAPH_DECISION WHERE GRAPH_ID = ?")
+        ) {
             ps.setString(1, finishedTaskId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -144,8 +126,6 @@ public class OraGraphDao implements GraphDao {
         } catch (SQLException ex) {
             logger.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
         return result;
     }
