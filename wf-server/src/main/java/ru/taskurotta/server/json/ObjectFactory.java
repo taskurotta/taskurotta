@@ -2,6 +2,7 @@ package ru.taskurotta.server.json;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,7 +55,7 @@ public class ObjectFactory {
         Object value = null;
 
         String json = argContainer.getJSONValue();
-        boolean isArray = argContainer.isArray();
+        boolean isArray = ArgContainer.ValueType.ARRAY.equals(argContainer.getType());
 
         if (json != null) {
 
@@ -88,53 +89,48 @@ public class ObjectFactory {
         return mapper.readValue(json, loadedClass);
     }
 
-    private Object getArrayValue(String json, String arrayItemClass) throws Exception {
+    private Object getArrayValue(String json, String arrayItemClassName) throws Exception {
         JsonNode node = mapper.readTree(json);
-        Class clazz = Class.forName(arrayItemClass);
-        Object array = Array.newInstance(clazz, node.size());
-        Iterator<JsonNode> iterator = node.elements();
-        int i = 0;
-        while(iterator.hasNext()) {
-            JsonNode item = iterator.next();
-            Array.set(array, i++, clazz.getConstructor(String.class).newInstance(item.textValue()));
+        ObjectCodec objectCodec = mapper.treeAsTokens(node).getCodec();
+
+        Object array = ArrayFactory.newInstance(arrayItemClassName, node.size());
+        Class<?> componentType = array.getClass().getComponentType();
+
+        for (int i = 0; i < node.size(); i++) {
+            Array.set(array, i, objectCodec.treeToValue(node.get(i), componentType));
         }
         return array;
     }
 
     public ArgContainer dumpArg(Object arg) {
-
         if (arg == null) {
             return null;
         }
-        boolean isArray =arg.getClass().isArray();
+
+        ArgContainer.ValueType type = ArgContainer.ValueType.PLAIN;
         String className = null;
-        boolean isPromise = false;
         UUID taskId = null;
         boolean isReady = false;
         String jsonValue = null;
 
         if (arg instanceof Promise) {
-            isPromise = true;
+            type = ArgContainer.ValueType.PROMISE;
             taskId = ((Promise) arg).getId();
             isReady = ((Promise) arg).isReady();
 
-            if (isReady) {
-                arg = ((Promise) arg).get();
-            } else {
-                arg = null;
-            }
+            arg = isReady? ((Promise) arg).get() : null;
         }
 
         if (arg != null) {
-
-            if(isArray) {
+            if (arg.getClass().isArray()) {
                 className = arg.getClass().getComponentType().getName();
+                type = ArgContainer.ValueType.ARRAY;
             } else {
                 className = arg.getClass().getName();
             }
 
             try {
-                jsonValue = isArray? writeAsJsonArray(arg): mapper.writeValueAsString(arg);
+                jsonValue = arg.getClass().isArray()? writeAsJsonArray(arg) : mapper.writeValueAsString(arg);
                 logger.debug("Arg container JsonValue getted is [{}]", jsonValue);
             } catch (JsonProcessingException e) {
                 // TODO: create new RuntimeException type
@@ -142,7 +138,7 @@ public class ObjectFactory {
             }
         }
 
-        ArgContainer result =  new ArgContainer(className, isPromise, taskId, isReady, jsonValue, isArray);
+        ArgContainer result =  new ArgContainer(className, type, taskId, isReady, jsonValue);
         logger.debug("Created new ArgContainer[{}]", result);
         return result;
     }
@@ -239,13 +235,13 @@ public class ObjectFactory {
     }
 
 
-    private String writeAsJsonArray(Object array) throws ArrayIndexOutOfBoundsException, JsonProcessingException, IllegalArgumentException {
+    private String writeAsJsonArray(Object array) throws JsonProcessingException {
         ArrayNode arrayNode = mapper.createArrayNode();
         if(array!=null) {
 
             int size = Array.getLength(array);
             for(int i = 0; i<size; i++) {
-                String itemValue =mapper.writeValueAsString(Array.get(array, i));
+                String itemValue = mapper.writeValueAsString(Array.get(array, i));
                 arrayNode.add(itemValue);
             }
         }

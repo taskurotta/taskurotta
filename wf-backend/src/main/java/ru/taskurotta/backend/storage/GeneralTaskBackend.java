@@ -62,8 +62,8 @@ public class GeneralTaskBackend implements TaskBackend {
                     if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
 
                         // set real value to Actor tasks
-                        args[i] = new ArgContainer(arg.getClassName(), false, arg.getTaskId(), true, arg.getJSONValue(),
-                                arg.isArray());
+                        args[i] = new ArgContainer(arg.getClassName(), ArgContainer.ValueType.PLAIN, arg.getTaskId(), true,
+                                arg.getJSONValue());
                         continue;
                     }
 
@@ -81,8 +81,8 @@ public class GeneralTaskBackend implements TaskBackend {
                     } else {
 
                         // set real value into promise for Decider tasks
-                        args[i] = new ArgContainer(value.getClassName(), true, arg.getTaskId(), true, value.getJSONValue(),
-                                arg.isArray());
+                        args[i] = new ArgContainer(value.getClassName(), ArgContainer.ValueType.PROMISE, arg.getTaskId(),
+                                true, value.getJSONValue());
                     }
                 }
 

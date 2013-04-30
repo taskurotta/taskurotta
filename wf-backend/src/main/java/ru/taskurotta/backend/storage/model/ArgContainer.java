@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.storage.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -8,33 +11,56 @@ import java.util.UUID;
  * Time: 3:07 PM
  */
 public class ArgContainer implements Cloneable {
+    public enum ValueType {
+        PLAIN, PROMISE, ARRAY, PROMISE_ARRAY
+    }
 
     private String className;
-    private boolean isPromise;
     private UUID taskId;
     private boolean isReady;
     private String JSONValue;
-    private boolean isArray;
-
+    private ValueType type;
+    private int[] data;
 
     public ArgContainer() {
     }
 
-    public ArgContainer(String className, boolean isPromise, UUID taskId, boolean isReady, String JSONValue, boolean isArray) {
+    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, String JSONValue) {
+        this.type = type;
         this.className = className;
-        this.isPromise = isPromise;
         this.taskId = taskId;
         this.isReady = isReady;
         this.JSONValue = JSONValue;
-        this.isArray = isArray;
+    }
+
+    public ArgContainer(String className, boolean isPromise, UUID taskId, boolean isReady, String JSONValue) {
+        this.type = ValueType.PLAIN;
+        this.className = className;
+        this.taskId = taskId;
+        this.isReady = isReady;
+        this.JSONValue = JSONValue;
     }
 
     public String getClassName() {
         return className;
     }
 
+    @JsonIgnore
     public boolean isPromise() {
-        return isPromise;
+        return ValueType.PROMISE.equals(type);
+    }
+
+    @JsonIgnore
+    public boolean isArray() {
+        return ValueType.ARRAY.equals(type);
+    }
+
+    public ValueType getType() {
+        return type;
+    }
+
+    public void setType(ValueType type) {
+        this.type = type;
     }
 
     public UUID getTaskId() {
@@ -57,20 +83,8 @@ public class ArgContainer implements Cloneable {
         this.className = className;
     }
 
-    public void setPromise(boolean promise) {
-        isPromise = promise;
-    }
-
     public void setReady(boolean ready) {
         isReady = ready;
-    }
-
-    public boolean isArray() {
-        return isArray;
-    }
-
-    public void setArray(boolean array) {
-        isArray = array;
     }
 
     @Override
@@ -80,8 +94,12 @@ public class ArgContainer implements Cloneable {
 
     @Override
     public String toString() {
-        return "ArgContainer [className=" + className + ", isPromise="
-                + isPromise + ", taskId=" + taskId + ", isReady=" + isReady
-                + ", JSONValue=" + JSONValue + ", isArray=" + isArray + "]";
+        return "ArgContainer{" +
+                "className='" + className + '\'' +
+                ", taskId=" + taskId +
+                ", isReady=" + isReady +
+                ", JSONValue='" + JSONValue + '\'' +
+                ", type=" + type +
+                '}';
     }
 }
