@@ -14,7 +14,7 @@ import ru.taskurotta.backend.ora.dependency.OraGraphDao;
  * User: moroz
  * Date: 17.04.13
  */
-public class DependencyTest {
+public class DependencyTestIT {
 
     OraGraphDao dao = new OraGraphDao();
 
