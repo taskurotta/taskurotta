@@ -8,8 +8,6 @@ import java.util.Date;
 import java.util.UUID;
 import javax.sql.DataSource;
 
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -40,36 +38,32 @@ public class OraTaskDao implements TaskDao {
         this.dataSource = dataSource;
     }
 
+
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("INSERT INTO DECISION (TASK_ID,PROCESS_ID,DESICION_JSON, IS_ERROR, DECISION_DATE) VALUES (?,?,?,?,?)");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("begin add_decision(?,?,?,?,?); end;")
+        ) {
+            String str = (String) decisionSerializer.serialize(taskDecision);
             ps.setString(1, taskDecision.getTaskId().toString());
             ps.setString(2, taskDecision.getProcessId().toString());
-            String str = (String) decisionSerializer.serialize(taskDecision);
             ps.setString(3, str);
             ps.setInt(4, (taskDecision.containsError()) ? 1 : 0);
             ps.setLong(5, (new Date()).getTime());
+
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
     }
 
     @Override
     public DecisionContainer getDecision(UUID taskId) {
         DecisionContainer result = null;
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("SELECT  DESICION_JSON FROM DECISION WHERE TASK_ID = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT  DESICION_JSON FROM DECISION WHERE TASK_ID = ?")
+        ) {
             ps.setString(1, taskId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -79,21 +73,16 @@ public class OraTaskDao implements TaskDao {
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
-
         return result;
     }
 
     @Override
     public TaskContainer getTask(UUID taskId) {
         TaskContainer result = null;
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("SELECT JSON_VALUE FROM TASK WHERE UUID = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT JSON_VALUE FROM TASK WHERE UUID = ?")
+        ) {
             ps.setString(1, taskId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -103,8 +92,6 @@ public class OraTaskDao implements TaskDao {
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
 
         return result;
@@ -112,11 +99,9 @@ public class OraTaskDao implements TaskDao {
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("INSERT INTO TASK (UUID,JSON_VALUE,NUMBER_OF_ATTEMPTS, ACTOR_ID) VALUES (?,?,?,?)");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO TASK (UUID,JSON_VALUE,NUMBER_OF_ATTEMPTS, ACTOR_ID) VALUES (?,?,?,?)")
+        ) {
             ps.setString(1, taskContainer.getTaskId().toString());
             //String str = mapper.writeValueAsString(taskContainer);
             ps.setString(2, (String) taskSerializer.serialize(taskContainer));
@@ -126,8 +111,6 @@ public class OraTaskDao implements TaskDao {
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
     }
 
@@ -135,11 +118,9 @@ public class OraTaskDao implements TaskDao {
     @Override
     public boolean isTaskReleased(UUID taskId) {
         boolean result = false;
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("SELECT COUNT(*) FROM DECISION WHERE TASK_ID = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM DECISION WHERE TASK_ID = ?")
+        ) {
             ps.setString(1, taskId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -150,19 +131,15 @@ public class OraTaskDao implements TaskDao {
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
 
     }
 
     @Override
     public void updateTask(TaskContainer taskContainer) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("UPDATE TASK SET JSON_VALUE = ?, NUMBER_OF_ATTEMPTS = ? WHERE UUID = ?");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE TASK SET JSON_VALUE = ?, NUMBER_OF_ATTEMPTS = ? WHERE UUID = ?")
+        ) {
             String str = mapper.writeValueAsString(taskContainer);
             ps.setString(1, str);
             ps.setInt(2, taskContainer.getNumberOfAttempts());
@@ -174,8 +151,6 @@ public class OraTaskDao implements TaskDao {
         } catch (SQLException ex) {
             log.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
         }
     }
 }

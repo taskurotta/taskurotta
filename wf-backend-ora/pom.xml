@@ -12,6 +12,19 @@
     <artifactId>wf-backend-ora</artifactId>
     <name>Taskurotta :: Backend Oracle implementation</name>
 
+    <profiles>
+        <profile>
+            <id>integration</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>oracle-jdbc15</artifactId>
+                    <version>11.1.0.7.0</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>commons-dbcp</groupId>
@@ -23,11 +36,7 @@
             <artifactId>commons-codec</artifactId>
             <version>1.5</version>
         </dependency>
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>oracle-jdbc15</artifactId>
-            <version>11.1.0.7.0</version>
-        </dependency>
+
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>wf-server</artifactId>

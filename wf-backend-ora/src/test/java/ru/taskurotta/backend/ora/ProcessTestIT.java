@@ -10,7 +10,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
  * User: moroz
  * Date: 29.04.13
  */
-public class ProcessTest {
+public class ProcessTestIT {
 
     private DbConnect connection = new DbConnect();
     private OraProcessBackend dao = new OraProcessBackend(connection.getDataSource(), new OracleCheckpointService(connection.getDataSource()));

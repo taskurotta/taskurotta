@@ -14,7 +14,7 @@ import ru.taskurotta.backend.ora.dependency.OraGraphDao;
  * User: moroz
  * Date: 17.04.13
  */
-public class DependencyTest {
+public class DependencyTestIT {
 
     OraGraphDao dao = new OraGraphDao();
 
@@ -33,6 +33,8 @@ public class DependencyTest {
         Modification modification = new Modification();
         modification.setCompletedItem(UUID.randomUUID());
         graph.apply(modification);
+        dao.updateGraph(graph);
+        graph.setVersion(graph.getVersion() + 1);
         dao.updateGraph(graph);
 
     }

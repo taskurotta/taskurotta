@@ -11,7 +11,7 @@ import ru.taskurotta.backend.storage.model.TaskContainer;
  * User: moroz
  * Date: 10.04.13
  */
-public class OraTaskDaoTest {
+public class OraTaskDaoTestIT {
 
     private DbConnect connection = new DbConnect();
     private OraTaskDao dao = new OraTaskDao(connection.getDataSource());
