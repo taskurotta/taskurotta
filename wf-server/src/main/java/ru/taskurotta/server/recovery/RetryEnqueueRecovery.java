@@ -47,10 +47,19 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
         boolean result = false;
         TaskContainer task = taskBackend.getTask(taskGuid);
         if(task!=null) {
-            queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime(), null);
+
+            queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getStartTime(), extractTaskList(task));
             result = true;
         } else {
             logger.error("Task not found by GUID["+taskGuid+"]");
+        }
+        return result;
+    }
+
+    private String extractTaskList(TaskContainer task) {
+        String result = null;
+        if(task.getOptions()!= null && task.getOptions().getActorSchedulingOptions() != null) {
+            result = task.getOptions().getActorSchedulingOptions().getTaskList();
         }
         return result;
     }
