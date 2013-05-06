@@ -62,7 +62,7 @@ public class OraTaskDao implements TaskDao {
     public DecisionContainer getDecision(UUID taskId) {
         DecisionContainer result = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT  DESICION_JSON FROM DECISION WHERE TASK_ID = ?")
+             PreparedStatement ps = connection.prepareStatement("SELECT DECISION_JSON FROM DECISION WHERE TASK_ID = ?")
         ) {
             ps.setString(1, taskId.toString());
             ResultSet rs = ps.executeQuery();
