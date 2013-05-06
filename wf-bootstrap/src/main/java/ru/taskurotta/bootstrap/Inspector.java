@@ -16,12 +16,13 @@ import java.util.concurrent.TimeUnit;
  * Time: 16:45
  */
 public class Inspector {
-
+    public static final String FAILOVER_PROPERTY = "failover";
     private static final Logger logger = LoggerFactory.getLogger(Inspector.class);
     private RetryPolicy retryPolicy;//TaskServer poll policy of inspected actor
     private ActorThreadPool actorThreadPool; //pool of threads for given actor
 
-    private final int waitForActivitySeconds = 60;//time to wait if taskServer unavailable or have no tasks for the actor
+    private int failoverCheckTime = 60;//time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
+    private TimeUnit failoverCheckTimeUnit = TimeUnit.SECONDS;
 
     protected class PolicyCounters {
         long firstAttempt;
@@ -86,7 +87,7 @@ public class Inspector {
             if(actorThreadPool.muteThreadPool()) {//if thread should stop just exit method without unnecessary sleep
                 return result;
             }
-            nextRetryDelaySeconds = waitForActivitySeconds;
+            nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
             logger.info("Communication with TaskServer was idle, waiting for [{}] seconds to continue", nextRetryDelaySeconds);
         }
         try {
@@ -95,5 +96,18 @@ public class Inspector {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public void setFailover(String timeExpression) {
+        if(timeExpression != null) {
+            String time = timeExpression.replaceAll("\\D", "").trim();
+            if(time.length() > 0) {
+                this.failoverCheckTime = Integer.valueOf(time);
+            }
+            String timeUnit = timeExpression.replaceAll("\\d", "").trim().toUpperCase();
+            if(timeUnit.length() > 0) {
+                this.failoverCheckTimeUnit = TimeUnit.valueOf(timeUnit);
+            }
+        }
     }
 }

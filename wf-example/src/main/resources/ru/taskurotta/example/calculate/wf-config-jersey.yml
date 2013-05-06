@@ -14,10 +14,10 @@ spreader:
       instance:
         context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 5000
+          count: 100
           endpoint: "http://localhost:8080"
-          threadPoolSize: 10
-          readTimeout: 10000
+          threadPoolSize: 15
+          readTimeout: 5000
           connectTimeout: 3000
 
 policy:
@@ -27,7 +27,7 @@ policy:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
           initialRetryIntervalSeconds: 1
-          maximumRetryIntervalSeconds: 50
+          maximumRetryIntervalSeconds: 10
           maximumAttempts: 3
 
 profiler:
@@ -44,7 +44,9 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 5
+      count: 1
+      properties:
+        failover: "10 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
@@ -52,7 +54,9 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 5
+      count: 1
+      properties:
+        failover: "80 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
@@ -60,7 +64,9 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 5
+      count: 1
+      properties:
+        failover: "15 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
@@ -68,4 +74,6 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 5
+      count: 1
+      properties:
+        failover: "80 SECONDS"

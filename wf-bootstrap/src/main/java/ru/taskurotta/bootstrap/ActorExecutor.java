@@ -7,7 +7,8 @@ import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.exception.TaskurottaServerException;
+import ru.taskurotta.exception.server.ServerConnectionException;
+import ru.taskurotta.exception.server.ServerException;
 
 /**
  * User: stukushin
@@ -53,9 +54,12 @@ public class ActorExecutor implements Runnable {
 
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
+                long start = System.currentTimeMillis();
                 taskSpreader.release(taskDecision);
-
-            } catch(TaskurottaServerException ex) {
+                log.trace("Release took [{}]", (System.currentTimeMillis() - start));
+            } catch(ServerConnectionException ex) {
+                log.error("Connection to task server error. {}: {}", ex.getCause().getClass(), ex.getMessage());
+            } catch(ServerException ex) {
                 log.error("Error at client-server communication", ex);
             } catch (Throwable t) {
                 log.error("Unexpected actor execution error", t);

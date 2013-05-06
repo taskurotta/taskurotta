@@ -74,8 +74,9 @@
         <constructor-arg name="retryTimes" value="${retryTimes}" />
     </bean>
 
-    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" >
-        <property name="checkpointService" ref="voidCheckpointService" />
+    <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend" >
+        <constructor-arg name="checkpointService" ref="oraCheckpointService" />
+        <constructor-arg name="dataSource" ref="dataSource" />
     </bean>
     <bean id="configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend" />
 
