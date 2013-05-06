@@ -1,5 +1,13 @@
 package ru.taskurotta.backend.ora.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -9,14 +17,6 @@ import ru.taskurotta.backend.storage.model.DecisionContainer;
 import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * User: moroz
@@ -38,17 +38,19 @@ public class OraTaskDao implements TaskDao {
         this.dataSource = dataSource;
     }
 
+
     @Override
     public void addDecision(DecisionContainer taskDecision) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO DECISION (TASK_ID,PROCESS_ID,DESICION_JSON, IS_ERROR, DECISION_DATE) VALUES (?,?,?,?,?)")
+             PreparedStatement ps = connection.prepareStatement("begin add_decision(?,?,?,?,?); end;")
         ) {
+            String str = (String) decisionSerializer.serialize(taskDecision);
             ps.setString(1, taskDecision.getTaskId().toString());
             ps.setString(2, taskDecision.getProcessId().toString());
-            String str = (String) decisionSerializer.serialize(taskDecision);
             ps.setString(3, str);
             ps.setInt(4, (taskDecision.containsError()) ? 1 : 0);
             ps.setLong(5, (new Date()).getTime());
+
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("Database error", ex);

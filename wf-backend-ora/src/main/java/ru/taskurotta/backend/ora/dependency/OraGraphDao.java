@@ -1,5 +1,12 @@
 package ru.taskurotta.backend.ora.dependency;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -7,14 +14,6 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
-
 
 /**
  * User: moroz
@@ -87,7 +86,7 @@ public class OraGraphDao implements GraphDao {
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
         boolean result = false;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("insert into GRAPH_DECISION(GRAPH_ID, READY_ITEMS, MODIFICATION_JSON) values (?,?,?)")
+             PreparedStatement ps = connection.prepareStatement("call  add_graph_decision(?,?,?)")
         ) {
             ps.setString(1, modifiedGraph.getModification().getCompletedItem().toString());
             ps.setString(2, (String) itemsJsonSerializer.serialize(modifiedGraph.getReadyItems()));
@@ -114,7 +113,7 @@ public class OraGraphDao implements GraphDao {
     public UUID[] getReadyTasks(UUID finishedTaskId) {
         UUID[] result = new UUID[0];
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT  READY_ITEMS FROM GRAPH_DECISION WHERE GRAPH_ID = ?")
+             PreparedStatement ps = connection.prepareStatement("SELECT  READY_ITEMS FROM GRAPH_DECISION WHERE FINISHED_TASK_ID = ?")
         ) {
             ps.setString(1, finishedTaskId.toString());
             ResultSet rs = ps.executeQuery();
