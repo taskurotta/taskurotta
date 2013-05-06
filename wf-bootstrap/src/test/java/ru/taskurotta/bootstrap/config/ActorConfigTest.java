@@ -1,11 +1,11 @@
 package ru.taskurotta.bootstrap.config;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * User: stukushin

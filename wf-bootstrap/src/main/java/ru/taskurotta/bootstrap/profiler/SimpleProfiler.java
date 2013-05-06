@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public class SimpleProfiler implements Profiler {
 
-    public SimpleProfiler(Class actorClass) {
+    public SimpleProfiler() {
     }
 
     @Override

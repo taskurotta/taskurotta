@@ -14,12 +14,12 @@ public class MockActorThreadPool extends ActorThreadPool {
     }
 
     @Override
-    public synchronized boolean muteThreadPool() {
+    public synchronized boolean mute() {
         return false;
     }
 
     @Override
-    public synchronized void wakeThreadPool() {
+    public synchronized void wake() {
         return;
     }
 }

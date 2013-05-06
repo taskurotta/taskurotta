@@ -22,8 +22,6 @@ import ru.taskurotta.policy.retry.RetryPolicy;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * User: stukushin
@@ -34,9 +32,8 @@ public class Bootstrap {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	private Config config;
-	private List<ActorExecutor> executors = new LinkedList<ActorExecutor>();
 
-	public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
+    public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
 		config = parseArgs(args);
 	}
 
@@ -122,13 +119,13 @@ public class Bootstrap {
 			RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
 
 			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
-			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler(actorClass) : profilerConfig.getProfiler(actorClass);
+			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler() : profilerConfig.getProfiler(actorClass);
 
             RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
             RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
 
             int count = actorConfig.getCount();
-            ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, count);
+            final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, count);
             Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
             String actorFailoverTime = (String)actorConfig.getProperty(Inspector.FAILOVER_PROPERTY);
@@ -137,16 +134,16 @@ public class Bootstrap {
             }
 
 			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
-			executors.add(actorExecutor);
-            actorThreadPool.startExecution(actorExecutor);
+            actorThreadPool.start(actorExecutor);
+
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    logger.debug("Invoke shutdown hook for actor [{}]'s actor executor", actorClass);
+
+                    actorThreadPool.shutdown();
+                }
+            });
 		}
 	}
-
-
-	public void stop() {
-		for (ActorExecutor executor : executors) {
-			executor.stop();
-		}
-	}
-
 }
