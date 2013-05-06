@@ -29,7 +29,7 @@ public class TaskReleaserResource {
         try {
             taskServer.release(resultContainer.getResultContainer());
         } catch(Throwable e) {
-            logger.error("Starting of task["+resultContainer+"] failed!", e);
+            logger.error("Releasing of task["+resultContainer+"] failed!", e);
             return Response.serverError().build();
         }
 

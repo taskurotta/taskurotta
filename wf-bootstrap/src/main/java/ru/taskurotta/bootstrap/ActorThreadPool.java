@@ -26,6 +26,7 @@ public class ActorThreadPool {
 
     //Initial run of the job. Starts only one thread, which would wake the whole pool on (if) next success iteration
     public void startExecution(ActorExecutor actorExecutor) {
+
         this.actorExecutor = actorExecutor;
         poolService.execute(actorExecutor);
         logger.debug("ActorThreadPool sized[{}], started for actor[{}]", size, actorClass);
@@ -81,7 +82,7 @@ public class ActorThreadPool {
             for(int i = 0; i < canBeExecuted; i++) {
                 poolService.execute(actorExecutor);
             }
-            logger.debug("Actor[{}]'s threadpool has been waked. [{}] threads added, [{}] active now", actorClass, canBeExecuted, poolService.getActiveCount());
+            logger.info("Actor[{}]'s threadpool has been waked. [{}] threads added, [{}] active now", actorClass, canBeExecuted, poolService.getActiveCount());
         }
     }
 

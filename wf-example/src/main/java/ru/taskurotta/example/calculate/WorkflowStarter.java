@@ -22,23 +22,36 @@ public class WorkflowStarter {
         final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
         final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
 
+        //startAllTasks(decider);
+        startAllTasksInBackground(decider);
+
+        logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
+    }
+
+
+    private void startAllTasksInBackground(final MathActionDeciderClient decider) {
         Thread starter = new Thread () {
             @Override
             public void run() {
-                int started = 0;
-                while (started < count) {
-                    try{
-                        decider.performAction();
-                        started++;
-                    } catch(ServerException ex) {
-                        logger.error("Error at start new process. Strted ["+started+"] of ["+count+"]. Message: " + ex.getMessage());
-                    }
-                }
+                startAllTasks(decider);
             }
         };
-
         starter.start();
-        logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
+    }
+
+    private void startAllTasks(MathActionDeciderClient decider) {
+        int started = 0;
+        while (started < count) {
+            try{
+                decider.performAction();
+                started++;
+                if(started%10 == 0) {
+                    logger.info("Started [{}] processes", started);
+                }
+            } catch(ServerException ex) {
+                logger.error("Error at start new process. Started ["+started+"] of ["+count+"]. Message: " + ex.getMessage());
+            }
+        }
     }
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {

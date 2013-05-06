@@ -27,7 +27,7 @@ properties:
   db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
   db.user: "taskurotta"
   db.password: "taskurotta"
-  retryTimes: 10 #retry for dependency graph modification
+  retryTimes: 50 #retry for dependency graph modification
   recovery.schedule: "*/20 * * * * ?" #run recovery every 20 seconds
   recovery.period: 2 #recoveru scans for checkpoints created 1 day ago
   recovery.period.unit: "DAYS"
@@ -42,7 +42,7 @@ logging:
         ru.taskurotta: INFO
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend.task: DEBUG
-        ru.taskurotta.backend: DEBUG
+        ru.taskurotta.backend: INFO
         ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO
     file:

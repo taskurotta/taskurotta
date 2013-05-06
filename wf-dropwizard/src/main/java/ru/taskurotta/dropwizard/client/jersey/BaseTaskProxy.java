@@ -46,18 +46,15 @@ public class BaseTaskProxy implements TaskServer {
             rb.post(new TaskContainerWrapper(task));
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            logger.error("Server responded with ["+status+"] error at start process with task["+task+"]", ex);
             if(status>=400 && status<500) {
-                throw new InvalidServerRequestException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error", ex);
+                throw new InvalidServerRequestException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
             } else {
-                throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error", ex);
+                throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
             }
         } catch(ClientHandlerException ex) {//client processing error
-            logger.error("Client failed to process request for task["+task+"]", ex);
-            throw new ServerConnectionException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error", ex);
+            throw new ServerConnectionException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
         } catch(Throwable ex) {//unexpected error
-            logger.error("Unexpected error at start process for task ["+task+"]", task);
-            throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error", ex);
+            throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
         }
 
     }
@@ -73,18 +70,15 @@ public class BaseTaskProxy implements TaskServer {
             result =  rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            logger.error("Server responded with ["+(ex.getResponse()!=null? ex.getResponse().getStatus():"no response code")+"] error at polling task for["+actorDefinition+"]", ex);
             if(status>=400 && status<500) {
-                throw new InvalidServerRequestException("Poll error for actor["+actorDefinition+"]", ex);
+                throw new InvalidServerRequestException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
             } else {
-                throw new ServerException("Poll error for actor["+actorDefinition+"]", ex);
+                throw new ServerException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
             }
         } catch(ClientHandlerException ex) {//client processing error
-            logger.error("Client failed to process poll request for actorDefinition["+actorDefinition+"]", ex);
-            throw new ServerConnectionException("Poll error for actor["+actorDefinition+"]", ex);
+            throw new ServerConnectionException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
         } catch(Throwable ex) {//unexpected error
-            logger.error("Unexpected error at poll request for actorDefinition["+actorDefinition+"]", ex);
-            throw new ServerException("Poll error for actor["+actorDefinition+"]", ex);
+            throw new ServerException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
         }
         return result;
     }
@@ -99,18 +93,15 @@ public class BaseTaskProxy implements TaskServer {
             rb.post(new DecisionContainerWrapper(taskResult));
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            logger.error("Server responded with ["+(ex.getResponse()!=null? ex.getResponse().getStatus():"no response code")+"] error at releasing taskResult["+taskResult+"]", ex);
             if(status>=400 && status<500) {
-                throw new InvalidServerRequestException("Task release ["+taskResult.getTaskId()+"] error", ex);
+                throw new InvalidServerRequestException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
             } else{
-                throw new ServerException("Task release ["+taskResult.getTaskId()+"] error", ex);
+                throw new ServerException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
             }
         } catch(ClientHandlerException ex) {//client processing error
-            logger.error("Client failed to process release request for taskresult["+taskResult+"]", ex);
-            throw new ServerConnectionException("Task release ["+taskResult.getTaskId()+"] error", ex);
+            throw new ServerConnectionException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
         } catch(Throwable ex) {//unexpected error
-            logger.error("Unexpected error at release request for taskResult["+taskResult+"]", ex);
-            throw new ServerException("Task release ["+taskResult.getTaskId()+"] error", ex);
+            throw new ServerException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
         }
     }
 
