@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit;
 public class Inspector {
     public static final String FAILOVER_PROPERTY = "failover";
     private static final Logger logger = LoggerFactory.getLogger(Inspector.class);
-    private RetryPolicy retryPolicy;//TaskServer poll policy of inspected actor
+    private RetryPolicy retryPolicy; //TaskServer poll policy of inspected actor
     private ActorThreadPool actorThreadPool; //pool of threads for given actor
 
-    private int failoverCheckTime = 60;//time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
+    private int failoverCheckTime = 60; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
     private TimeUnit failoverCheckTimeUnit = TimeUnit.SECONDS;
 
     protected class PolicyCounters {
@@ -34,7 +34,7 @@ public class Inspector {
         }
     }
 
-    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<PolicyCounters>();
+    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<>();
 
     public Inspector(RetryPolicy retryPolicy, ActorThreadPool actorThreadPool) {
         this.retryPolicy = retryPolicy;
@@ -54,7 +54,7 @@ public class Inspector {
                 if (task == null) {
                     PolicyCounters policyCounters = getRetryCounter(pollCounterThreadLocal);
                     policyCounters.numberOfTries++;
-                    isRetryPolicyApplied(policyCounters);
+                    applyRetryPolicy(policyCounters);
                 } else {
                     pollCounterThreadLocal.set(null);
                     actorThreadPool.wake();
@@ -79,24 +79,26 @@ public class Inspector {
         return result;
     }
 
-    private boolean isRetryPolicyApplied(PolicyCounters policyCounters) {
-        boolean result = true;
+    private void applyRetryPolicy(PolicyCounters policyCounters) {
         long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(policyCounters.firstAttempt, System.currentTimeMillis(), policyCounters.numberOfTries);
-        if(nextRetryDelaySeconds < 0) {//maximum attempt exceeded
-            result =  false;
+
+        if(nextRetryDelaySeconds < 0) {//maximum attempts exceeded
+            logger.trace("Amount to maximum tries (now [{}]) for thread [{}]", policyCounters.numberOfTries, Thread.currentThread().getName());
+
             if(actorThreadPool.mute()) {//if thread should stop just exit method without unnecessary sleep
-                return result;
+                return;
             }
+
             nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
             logger.info("Communication with TaskServer was idle, waiting for [{}] seconds to continue", nextRetryDelaySeconds);
         }
+
         try {
-            logger.trace("Sleep thread [{}] for [{}] seconds by retry policy", Thread.currentThread().getName(), nextRetryDelaySeconds);
+            logger.trace("Sleep thread [{}] for [{}] seconds after [{}] tries by retry policy", Thread.currentThread().getName(), nextRetryDelaySeconds, policyCounters.numberOfTries);
             TimeUnit.SECONDS.sleep(nextRetryDelaySeconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return result;
     }
 
     public void setFailover(String timeExpression) {

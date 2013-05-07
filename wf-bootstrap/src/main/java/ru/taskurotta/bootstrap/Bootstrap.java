@@ -129,7 +129,7 @@ public class Bootstrap {
             Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
             String actorFailoverTime = (String)actorConfig.getProperty(Inspector.FAILOVER_PROPERTY);
-            if(actorFailoverTime!=null) {
+            if(actorFailoverTime != null) {
                 inspector.setFailover(actorFailoverTime);
             }
 
