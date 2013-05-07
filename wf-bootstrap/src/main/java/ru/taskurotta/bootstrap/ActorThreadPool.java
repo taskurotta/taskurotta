@@ -37,11 +37,7 @@ public class ActorThreadPool {
         this.actorExecutor = actorExecutor;
 
         for (int i = 0; i < size; i++) {
-            Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + i);
-            actorExecutorThreads[i] = thread;
-            thread.start();
-
-            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
+            createActorExecutorThread(i);
         }
 
         activeActorExecutorThreadCount = size;
@@ -85,25 +81,24 @@ public class ActorThreadPool {
         }
 
         int count = 0;
-        for (Thread thread : actorExecutorThreads) {
-            if (thread.isAlive()) {
+        for (int i = 0; i < size; i++) {
+            if (actorExecutorThreads[i].isAlive()) {
                 continue;
             }
 
-            thread.start();
+            createActorExecutorThread(i);
             count++;
-            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
         }
 
         activeActorExecutorThreadCount = size;
-        logger.debug("Actor [{}]'s [{}] threads added, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount);
+        logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount);
     }
 
     /**
      * Gracefully shutdown pool
      */
     public void shutdown() {
-        logger.info("Start gracefully shutdown pool for actor [{}]", actorClass.getName());
+        logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), SHUTDOWN_TIMEOUT / 1000);
 
         actorExecutor.stopInstance();
 
@@ -123,9 +118,13 @@ public class ActorThreadPool {
 
         try {
             while (hasAlive.get()) {
+
+                System.out.print("."); // show user that it's work
+
                 for (Thread thread : actorExecutorThreads) {
                     if (thread.isAlive()) {
                         if (System.currentTimeMillis() - startTime.get() >= SHUTDOWN_TIMEOUT) {
+                            System.out.println(); // for new line in log console output
                             logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
                             return;
                         }
@@ -141,10 +140,19 @@ public class ActorThreadPool {
                 }
             }
 
-            logger.info("Successfully shutdown pool for actor [{}]", actorClass.getName());
+            System.out.println(); // for new line in log console output
+            logger.info("Successfully shutdown pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - startTime.get()) / 1000);
         } catch (InterruptedException e) {
             logger.error("Throw exception while try to gracefully shutdown actor [" + actorClass.getName() + "]", e);
             // just exit
         }
+    }
+
+    private void createActorExecutorThread(int i) {
+        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + i);
+        actorExecutorThreads[i] = thread;
+        thread.start();
+
+        logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
     }
 }
