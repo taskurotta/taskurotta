@@ -72,7 +72,7 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
-             \@level: DEBUG
+             \@level: INFO
         - org.springframework:
              key: name
              \@level: !!!str OFF

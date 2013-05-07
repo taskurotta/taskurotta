@@ -57,7 +57,7 @@ public class Inspector {
                     isRetryPolicyApplied(policyCounters);
                 } else {
                     pollCounterThreadLocal.set(null);
-                    actorThreadPool.wakeThreadPool();
+                    actorThreadPool.wake();
                 }
 
                 return task;
@@ -84,13 +84,14 @@ public class Inspector {
         long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(policyCounters.firstAttempt, System.currentTimeMillis(), policyCounters.numberOfTries);
         if(nextRetryDelaySeconds < 0) {//maximum attempt exceeded
             result =  false;
-            if(actorThreadPool.muteThreadPool()) {//if thread should stop just exit method without unnecessary sleep
+            if(actorThreadPool.mute()) {//if thread should stop just exit method without unnecessary sleep
                 return result;
             }
             nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
             logger.info("Communication with TaskServer was idle, waiting for [{}] seconds to continue", nextRetryDelaySeconds);
         }
         try {
+            logger.trace("Sleep thread [{}] for [{}] seconds by retry policy", Thread.currentThread().getName(), nextRetryDelaySeconds);
             TimeUnit.SECONDS.sleep(nextRetryDelaySeconds);
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -1,13 +1,5 @@
 package ru.taskurotta.bootstrap.profiler.logback;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Clock;
 import com.yammer.metrics.core.Counter;
@@ -24,6 +16,14 @@ import com.yammer.metrics.reporting.AbstractPollingReporter;
 import com.yammer.metrics.stats.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
