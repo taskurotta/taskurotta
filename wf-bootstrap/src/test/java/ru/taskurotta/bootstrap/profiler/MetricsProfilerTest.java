@@ -1,9 +1,9 @@
 package ru.taskurotta.bootstrap.profiler;
 
-import java.util.Properties;
-
 import org.junit.BeforeClass;
 import ru.taskurotta.bootstrap.TestWorker;
+
+import java.util.Properties;
 
 /**
  * User: romario, stukushin

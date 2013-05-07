@@ -1,14 +1,5 @@
 package ru.taskurotta.bootstrap.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.util.ContextInitializer;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -24,6 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.StaticLoggerBinder;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * User: romario
  * Date: 2/12/13
@@ -34,11 +34,11 @@ public class Config {
 
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
-    public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<String, RuntimeConfig>();
-    public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<String, SpreaderConfig>();
-    public Map<String, ProfilerConfig> profilerConfigs = new HashMap<String, ProfilerConfig>();
-    public Map<String, RetryPolicyConfig> policyConfigs = new HashMap<String, RetryPolicyConfig>();
-    public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
+    public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<>();
+    public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<>();
+    public Map<String, ProfilerConfig> profilerConfigs = new HashMap<>();
+    public Map<String, RetryPolicyConfig> policyConfigs = new HashMap<>();
+    public List<ActorConfig> actorConfigs = new LinkedList<>();
 
     public static Config valueOf(File configFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());

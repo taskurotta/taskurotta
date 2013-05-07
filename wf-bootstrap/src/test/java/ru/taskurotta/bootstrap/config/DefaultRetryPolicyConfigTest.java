@@ -6,7 +6,6 @@ import ru.taskurotta.RuntimeProvider;
 import ru.taskurotta.bootstrap.ActorExecutor;
 import ru.taskurotta.bootstrap.Inspector;
 import ru.taskurotta.bootstrap.MockActorThreadPool;
-import ru.taskurotta.bootstrap.TestDecider;
 import ru.taskurotta.bootstrap.TestTaskSpreader;
 import ru.taskurotta.bootstrap.TestWorker;
 import ru.taskurotta.bootstrap.TestWorkerImpl;
@@ -51,25 +50,21 @@ public class DefaultRetryPolicyConfigTest {
         RuntimeProvider runtimeProvider = new GeneralRuntimeProvider();
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new TestWorkerImpl());
 
-        Profiler profiler = new SimpleProfiler(TestDecider.class);
+        Profiler profiler = new SimpleProfiler();
         RetryPolicy retryPolicy = new LinearRetryPolicy(2);
 
         MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class, 1);
         Inspector inspector = new Inspector(retryPolicy, actorExecutorsPool);
 
         ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
-//        ExecutorService executorService = Executors.newFixedThreadPool(1);
-//        executorService.execute(actorExecutor);
-        actorExecutorsPool.startExecution(actorExecutor);
+        actorExecutorsPool.start(actorExecutor);
 
         TimeUnit.SECONDS.sleep(5);
 
-        actorExecutor.stop();
+        actorExecutor.stopInstance();
         actorExecutorsPool.shutdown();
 
-        List<Integer> retryTimeouts = new ArrayList<Integer>();
-       // retryTimeouts.add(0); ignoring of first two retry policy attempts was removed from inspector
-       // retryTimeouts.add(0);
+        List<Integer> retryTimeouts = new ArrayList<>();
         retryTimeouts.add(0);
         retryTimeouts.add(2);
         retryTimeouts.add(2);

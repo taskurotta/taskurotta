@@ -1,7 +1,6 @@
 package ru.taskurotta.bootstrap.profiler;
 
 import org.junit.BeforeClass;
-import ru.taskurotta.bootstrap.TestWorker;
 
 /**
  * User: stukushin
@@ -12,7 +11,7 @@ public class SimpleProfilerTest extends ProfilerTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        profiler = new SimpleProfiler(TestWorker.class);
+        profiler = new SimpleProfiler();
     }
 
 }
