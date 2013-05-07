@@ -31,14 +31,14 @@ profiler:
           consoleOutputPeriod: 10
 
 policy:
-  - MainPolicyConfig:
+  - LinearRertyPolicyConfig:
       class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
-          initialRetryIntervalSeconds: 10
-          maximumRetryIntervalSeconds: 300
-          maximumAttempts: 100
+          initialRetryIntervalSeconds: 3
+          maximumRetryIntervalSeconds: 30
+          maximumAttempts: 3
 
 actor:
   - PiDecider:
@@ -46,6 +46,7 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
       count: 1
 
   - PiWorker:
@@ -53,6 +54,7 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
       count: 10
 
 logback:

@@ -3,8 +3,6 @@ package ru.taskurotta.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,64 +16,104 @@ import java.util.concurrent.TimeUnit;
 public class ActorThreadPool {
     private static final Logger logger = LoggerFactory.getLogger(ActorThreadPool.class);
 
+    public static final int SHUTDOWN_TIMEOUT = 90 * 1000;
+    public static final int SLEEP_TIMEOUT = 1;
+
     private Class actorClass;//actor class served by this pool
     private int size = 0;//pool size
     private ActorExecutor actorExecutor;//ActorExecutor task instance for the pool
     private volatile int activeActorExecutorThreadCount;
 
-    private List<Thread> actorExecutorThreads = new ArrayList<>();
+    private Thread[] actorExecutorThreads;
 
     public ActorThreadPool(final Class actorClass, int size) {
         this.actorClass = actorClass;
         this.size = size;
+
+        actorExecutorThreads = new Thread[size];
     }
 
     public void start(ActorExecutor actorExecutor) {
         this.actorExecutor = actorExecutor;
 
         for (int i = 0; i < size; i++) {
-            startActorExecutorThread();
+            Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + i);
+            actorExecutorThreads[i] = thread;
+            thread.start();
+
+            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
         }
 
         activeActorExecutorThreadCount = size;
     }
 
-
-    //Shuts current thread of ActorExecutor if there are active others in pool. Should always leave at least one active
-    //thread for polling taskServer
-    //returns false if already muted
+    /**
+     * Shuts current thread of ActorExecutor if there are active others in pool.
+     * Should always leave at least one active thread for polling taskServer.
+     *
+     * Return false if already muted
+     *
+     * @return boolean
+     */
     public synchronized boolean mute() {
+        logger.trace("Try to stop actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+
         if (activeActorExecutorThreadCount == 1) {
-            logger.debug("Only one active actor [{}]'s thread [{}]", actorClass, Thread.currentThread().getName());
+            logger.debug("Only one active actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
             return false;
         }
 
-        logger.debug("Stopping actor [{}]'s thread[{}]", actorClass, Thread.currentThread().getName());
+        logger.trace("Stopping actor [{}]'s thread[{}]", actorClass.getName(), Thread.currentThread().getName());
         actorExecutor.stopThread();
         activeActorExecutorThreadCount--;
+        logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount);
 
         return true;
     }
 
-    //Submits new task to the pool, expanding it to max size. (meaning task server is now active and actors ready for full scale execution)
+    /**
+     * Submits new task to the pool, expanding it to max size. (meaning task server is now active and actors ready for full scale execution).
+     */
     public synchronized void wake() {
-        int canBeExecuted = size - activeActorExecutorThreadCount;
-        if(canBeExecuted > 0) {
-            for(int i = 0; i < canBeExecuted; i++) {
-                startActorExecutorThread();
+        if (activeActorExecutorThreadCount == size) {
+            logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount);
+            return;
+        }
+
+        if (actorExecutorThreads == null || actorExecutorThreads.length == 0) {
+            throw new RuntimeException("Pool has not been initialized");
+        }
+
+        int count = 0;
+        for (Thread thread : actorExecutorThreads) {
+            if (thread.isAlive()) {
+                continue;
             }
 
-            logger.debug("Actor[{}]'s [{}] threads added, [{}] active now", actorClass, canBeExecuted, activeActorExecutorThreadCount);
+            thread.start();
+            count++;
+            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
         }
+
+        activeActorExecutorThreadCount = size;
+        logger.debug("Actor [{}]'s [{}] threads added, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount);
     }
 
+    /**
+     * Gracefully shutdown pool
+     */
     public void shutdown() {
-        logger.info("Start gracefully shutdown ActorThreadPool for actor [{}]", actorClass);
+        logger.info("Start gracefully shutdown pool for actor [{}]", actorClass.getName());
 
         actorExecutor.stopInstance();
 
-        boolean hasAlive = true;
-        int timeout = 90 * 1000; // seconds
+        ThreadLocal<Boolean> hasAlive = new ThreadLocal<Boolean>(){
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.TRUE;
+            }
+        };
+
         ThreadLocal<Long> startTime = new ThreadLocal<Long>(){
             @Override
             protected Long initialValue() {
@@ -83,36 +121,30 @@ public class ActorThreadPool {
             }
         };
 
-        while (hasAlive) {
-            for (Thread thread : actorExecutorThreads) {
-                if (thread.isAlive()) {
-                    if (System.currentTimeMillis() - startTime.get() >= timeout) {
-                        logger.debug("Wait [{}] seconds while thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, thread.getName());
-                        return;
-                    }
+        try {
+            while (hasAlive.get()) {
+                for (Thread thread : actorExecutorThreads) {
+                    if (thread.isAlive()) {
+                        if (System.currentTimeMillis() - startTime.get() >= SHUTDOWN_TIMEOUT) {
+                            logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
+                            return;
+                        }
 
-                    logger.trace("Thread [{}] is alive, wait util thread dies", thread.getName());
+                        logger.trace("Actor [{}]'s thread [{}] is alive, wait util thread dies", actorClass.getName(), thread.getName());
 
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                        hasAlive = true;
+                        TimeUnit.SECONDS.sleep(SLEEP_TIMEOUT);
+                        hasAlive.set(Boolean.TRUE);
                         break;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
                     }
+
+                    hasAlive.set(Boolean.FALSE);
                 }
-
-                hasAlive = false;
             }
+
+            logger.info("Successfully shutdown pool for actor [{}]", actorClass.getName());
+        } catch (InterruptedException e) {
+            logger.error("Throw exception while try to gracefully shutdown actor [" + actorClass.getName() + "]", e);
+            // just exit
         }
-    }
-
-    private void startActorExecutorThread() {
-        activeActorExecutorThreadCount++;
-        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + activeActorExecutorThreadCount);
-        actorExecutorThreads.add(thread);
-        thread.start();
-
-        logger.trace("Start actor [{}]'s thread [{}]", actorClass, thread.getName());
     }
 }

@@ -61,7 +61,6 @@ public class DefaultRetryPolicyConfigTest {
 
         TimeUnit.SECONDS.sleep(5);
 
-        actorExecutor.stopInstance();
         actorExecutorsPool.shutdown();
 
         List<Integer> retryTimeouts = new ArrayList<>();
