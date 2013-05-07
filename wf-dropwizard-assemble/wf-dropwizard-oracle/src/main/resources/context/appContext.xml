@@ -60,27 +60,41 @@
         <constructor-arg name="backendBundle" ref="oraBundle"/>
     </bean>
 
-    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="dataSource"/>
-    </bean>
-
-
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
         <constructor-arg name="name" value="check task server"/>
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <tx:advice id="txAdvice" transaction-manager="txManager">
+    <!-- Transactions -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:advice id="generalTransactions" transaction-manager="txManager">
         <tx:attributes>
             <tx:method name="poll" propagation="REQUIRES_NEW"/>
             <tx:method name="release" propagation="REQUIRES_NEW"/>
             <tx:method name="startProcess" propagation="REQUIRES_NEW"/>
         </tx:attributes>
     </tx:advice>
+    <tx:advice id="checkpointTransactions" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="addCheckpoint" propagation="REQUIRED"/>
+            <tx:method name="addCheckpoints" propagation="REQUIRED"/>
+            <tx:method name="removeCheckpoint" propagation="REQUIRED"/>
+            <tx:method name="removeCheckpoints" propagation="REQUIRED"/>
+            <tx:method name="removeEntityCheckpoints" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
     <aop:config>
         <aop:pointcut id="serviceOperation"
                       expression="execution(* ru.taskurotta.server.GeneralTaskServer.*(..))"/>
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation"/>
+        <aop:advisor advice-ref="generalTransactions" pointcut-ref="serviceOperation"/>
+    </aop:config>
+    <aop:config>
+        <aop:pointcut id="checkpointOperation"
+                      expression="execution(* ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService.*(..))"/>
+        <aop:advisor advice-ref="checkpointTransactions" pointcut-ref="checkpointOperation"/>
     </aop:config>
 
 

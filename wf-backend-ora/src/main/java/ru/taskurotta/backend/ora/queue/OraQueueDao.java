@@ -1,23 +1,17 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import javax.sql.DataSource;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 /**
  * User: greg
@@ -62,24 +56,10 @@ public class OraQueueDao {
             ps.setDate(5, new java.sql.Date(task.getDate().getTime()));
             ps.executeUpdate();
         } catch (SQLException ex) {
-            log.error("Database error", ex);
-            throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
-        }
-    }
-
-    public void dequeueTask(UUID taskId, String queueName) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("delete from " + queueName + " where task_id = ?");
-            ps.setString(1, taskId.toString());
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            log.error("Database error", ex);
-            throw new BackendCriticalException("Database error", ex);
+            if (!ex.getMessage().contains("ORA-00001")) {
+                log.error("Database error", ex);
+                throw new BackendCriticalException("Database error", ex);
+            }
         } finally {
             closeResources(ps, connection);
         }
