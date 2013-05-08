@@ -28,6 +28,7 @@ import ru.taskurotta.exception.BackendCriticalException;
 public class OraQueueDao {
 
     private final static Logger log = LoggerFactory.getLogger(OraQueueDao.class);
+    public static final String ORACLE_CONSTRAINT_VIOLATION = "ORA-00001";
 
     private DataSource dataSource;
 
@@ -70,7 +71,7 @@ public class OraQueueDao {
             ps.setString(2, task.getTaskId().toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            if (!ex.getMessage().contains("ORA-00001")) {
+            if (!ex.getMessage().contains(ORACLE_CONSTRAINT_VIOLATION)) {
                 log.error("Database error", ex);
                 throw new BackendCriticalException("Database error", ex);
             }
