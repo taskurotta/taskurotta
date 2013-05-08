@@ -129,17 +129,17 @@ public class Bootstrap {
             Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
             String actorFailoverTime = (String)actorConfig.getProperty(Inspector.FAILOVER_PROPERTY);
-            if(actorFailoverTime!=null) {
+            if(actorFailoverTime != null) {
                 inspector.setFailover(actorFailoverTime);
             }
 
 			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
             actorThreadPool.start(actorExecutor);
 
-            Runtime.getRuntime().addShutdownHook(new Thread() {
+            Runtime.getRuntime().addShutdownHook(new Thread(actorClass.getSimpleName() + " shutdowner") {
                 @Override
                 public void run() {
-                    logger.debug("Invoke shutdown hook for actor [{}]'s actor executor", actorClass);
+                    logger.debug("Invoke shutdown hook for actor [{}]'s actor executor", actorClass.getName());
 
                     actorThreadPool.shutdown();
                 }

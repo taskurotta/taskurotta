@@ -81,7 +81,7 @@ public class ActorExecutor implements Runnable {
     /**
      * stop all threads
      */
-    public void stopInstance() {
+    void stopInstance() {
         log.debug("Shutdown ActorExecutor");
         instanceRun = false;
     }

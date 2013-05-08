@@ -2,10 +2,12 @@ package ru.taskurotta.backend.ora.queue;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,28 +60,20 @@ public class OraQueueDao {
             ps.setString(1, task.getTaskId().toString());
             ps.setInt(2, task.getStatusId());
             ps.setString(3, task.getTaskList());
-            ps.setDate(4, new java.sql.Date(task.getDate().getTime()));
-            ps.setDate(5, new java.sql.Date(task.getDate().getTime()));
+            Date startTime = new java.sql.Date(task.getDate().getTime());
+            ps.setTimestamp(4, new Timestamp(startTime.getTime()));
+            ps.setTimestamp(5, new Timestamp(task.getDate().getTime()));
             ps.executeUpdate();
-        } catch (SQLException ex) {
-            log.error("Database error", ex);
-            throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(ps, connection);
-        }
-    }
 
-    public void dequeueTask(UUID taskId, String queueName) {
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement("delete from " + queueName + " where task_id = ?");
-            ps.setString(1, taskId.toString());
+            ps = connection.prepareStatement("UPDATE TASK  SET START_TIME = ? WHERE UUID = ? AND START_TIME IS NULL");
+            ps.setTimestamp(1, new Timestamp(startTime.getTime()));
+            ps.setString(2, task.getTaskId().toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            log.error("Database error", ex);
-            throw new BackendCriticalException("Database error", ex);
+            if (!ex.getMessage().contains("ORA-00001")) {
+                log.error("Database error", ex);
+                throw new BackendCriticalException("Database error", ex);
+            }
         } finally {
             closeResources(ps, connection);
         }
@@ -120,8 +114,8 @@ public class OraQueueDao {
                     " TASK_ID VARCHAR(36) NOT NULL ENABLE, \n" +
                     " STATUS_ID NUMBER NOT NULL ENABLE, \n" +
                     " TASK_LIST VARCHAR(54) NOT NULL ENABLE, \n" +
-                    " DATE_START DATE, \n" +
-                    " INSERT_DATE DATE, \n" +
+                    " DATE_START TIMESTAMP, \n" +
+                    " INSERT_DATE TIMESTAMP, \n" +
                     " PRIMARY KEY (TASK_ID))";
             String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
             statement = connection.createStatement();
