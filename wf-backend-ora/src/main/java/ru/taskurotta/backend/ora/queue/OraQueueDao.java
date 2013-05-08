@@ -1,25 +1,17 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import javax.sql.DataSource;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.*;
 
 /**
  * User: greg
@@ -28,7 +20,7 @@ import ru.taskurotta.exception.BackendCriticalException;
 public class OraQueueDao {
 
     private final static Logger log = LoggerFactory.getLogger(OraQueueDao.class);
-    public static final String ORACLE_CONSTRAINT_VIOLATION = "ORA-00001";
+    private static final String ORACLE_CONSTRAINT_VIOLATION = "ORA-00001";
 
     private DataSource dataSource;
 
@@ -71,7 +63,9 @@ public class OraQueueDao {
             ps.setString(2, task.getTaskId().toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            if (!ex.getMessage().contains(ORACLE_CONSTRAINT_VIOLATION)) {
+            if (ex.getMessage().contains(ORACLE_CONSTRAINT_VIOLATION)) {
+                log.error(String.format("Constraint violation!!! Task with ID:%s Queue name:%s", task.getTaskId(), queueName));
+            } else {
                 log.error("Database error", ex);
                 throw new BackendCriticalException("Database error", ex);
             }
