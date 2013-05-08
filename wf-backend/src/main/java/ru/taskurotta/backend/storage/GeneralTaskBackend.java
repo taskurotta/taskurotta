@@ -62,32 +62,27 @@ public class GeneralTaskBackend implements TaskBackend {
                     if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
 
                         // set real value to Actor tasks
-                        args[i] = new ArgContainer(arg.getClassName(), ArgContainer.ValueType.PLAIN, arg.getTaskId(), true,
-                                arg.getJSONValue());
+                        args[i] = arg.updateType(ArgContainer.ValueType.PLAIN);
                         continue;
                     }
 
-                    ArgContainer value = getTaskValue(arg.getTaskId());
-                    if (value == null) {
+                    ArgContainer taskValue = getTaskValue(arg.getTaskId());
+                    if (taskValue == null) {
                         // value may be null for NoWait promises
                         // leave it in peace...
                         continue;
                     }
 
-                    if (!task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-
-                        // swap promise with real value for Actor tasks
-                        args[i] = value;
-                    } else {
-
+                    if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
                         // set real value into promise for Decider tasks
-                        args[i] = new ArgContainer(value.getClassName(), ArgContainer.ValueType.PROMISE, arg.getTaskId(),
-                                true, value.getJSONValue());
+                        args[i] = arg.updateValue(taskValue);
+                    } else {
+                        // swap promise with real value for Actor tasks
+                        args[i] = taskValue;
                     }
                 }
 
             }
-
 
             //Setting TASK_START checkpoint
             Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());

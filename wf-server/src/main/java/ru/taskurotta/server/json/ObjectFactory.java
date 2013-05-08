@@ -1,10 +1,8 @@
 package ru.taskurotta.server.json;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -27,7 +25,6 @@ import ru.taskurotta.util.ActorUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.Iterator;
 import java.util.UUID;
 
 /**
@@ -53,38 +50,44 @@ public class ObjectFactory {
         }
 
         Object value = null;
-
         String json = argContainer.getJSONValue();
-        boolean isArray = ArgContainer.ValueType.ARRAY.equals(argContainer.getType());
-
         if (json != null) {
 
             String className = argContainer.getClassName();
-            Class loadedClass = null;
-
             try {
-                value = isArray? getArrayValue(json, className): getSimpleValue(json, className);
+                value = argContainer.isArray()? getArrayValue(json, className): getSimpleValue(json, className);
             } catch (Exception e) {
                 // TODO: create new RuntimeException type
                 throw new RuntimeException("Can not instantiate Object from json. JSON value: " + argContainer.getJSONValue(), e);
             }
+        } else {
+            ArgContainer[] compositeValue = argContainer.getCompositeValue();
+            if (null != compositeValue) {
+                try {
+                    value = Array.newInstance(Class.forName(argContainer.getClassName()), compositeValue.length);
+                    for (int i = 0; i < compositeValue.length; i++) {
+                        Array.set(value, i, parseArg(compositeValue[i]));
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException("Can not instantiate ObjectArray", e);
+                }
+            }
         }
 
+
         if (argContainer.isPromise()) {
-
             Promise promise = Promise.createInstance(argContainer.getTaskId());
-
             if (argContainer.isReady()) {
+                //noinspection unchecked
                 promise.set(value);
             }
-
             return promise;
         }
 
         return value;
     }
 
-    private Object getSimpleValue(String json, String valueClass) throws ClassNotFoundException, JsonParseException, JsonMappingException, IOException {
+    private Object getSimpleValue(String json, String valueClass) throws ClassNotFoundException, IOException {
         Class loadedClass = Thread.currentThread().getContextClassLoader().loadClass(valueClass);
         return mapper.readValue(json, loadedClass);
     }
@@ -108,37 +111,44 @@ public class ObjectFactory {
         }
 
         ArgContainer.ValueType type = ArgContainer.ValueType.PLAIN;
-        String className = null;
         UUID taskId = null;
         boolean isReady = false;
-        String jsonValue = null;
 
         if (arg instanceof Promise) {
             type = ArgContainer.ValueType.PROMISE;
             taskId = ((Promise) arg).getId();
             isReady = ((Promise) arg).isReady();
-
             arg = isReady? ((Promise) arg).get() : null;
         }
 
+        ArgContainer result = null;
+        String className;
+        String jsonValue;
         if (arg != null) {
-            if (arg.getClass().isArray()) {
-                className = arg.getClass().getComponentType().getName();
-                type = ArgContainer.ValueType.ARRAY;
-            } else {
-                className = arg.getClass().getName();
-            }
-
             try {
-                jsonValue = arg.getClass().isArray()? writeAsJsonArray(arg) : mapper.writeValueAsString(arg);
-                logger.debug("Arg container JsonValue getted is [{}]", jsonValue);
+                if (arg.getClass().isArray()) {
+                    className = arg.getClass().getComponentType().getName();
+                    if (arg.getClass().getComponentType().isAssignableFrom(Promise.class)) {
+                        type = ArgContainer.ValueType.OBJECT_ARRAY;
+                        ArgContainer[] compositeValue = writeAsObjectArray(arg) ;
+                        result = new ArgContainer(className, type, taskId, isReady, compositeValue);
+                    } else {
+                        type = ArgContainer.ValueType.ARRAY;
+                        jsonValue = writeAsArray(arg) ;
+                        result = new ArgContainer(className, type, taskId, isReady, jsonValue);
+                    }
+                } else {
+                    className = arg.getClass().getName();
+                    jsonValue = mapper.writeValueAsString(arg);
+                    result = new ArgContainer(className, type, taskId, isReady, jsonValue);
+                }
+
             } catch (JsonProcessingException e) {
                 // TODO: create new RuntimeException type
                 throw new RuntimeException("Can not create json String from Object: " + arg, e);
             }
         }
 
-        ArgContainer result =  new ArgContainer(className, type, taskId, isReady, jsonValue);
         logger.debug("Created new ArgContainer[{}]", result);
         return result;
     }
@@ -227,7 +237,7 @@ public class ObjectFactory {
     }
 
     public ErrorContainer dumpError(Throwable e) {
-        if(e == null) {
+        if (e == null) {
             return null;
         }
 
@@ -235,17 +245,31 @@ public class ObjectFactory {
     }
 
 
-    private String writeAsJsonArray(Object array) throws JsonProcessingException {
+    private String writeAsArray(Object array) throws JsonProcessingException {
         ArrayNode arrayNode = mapper.createArrayNode();
-        if(array!=null) {
+        if (array != null) {
 
             int size = Array.getLength(array);
-            for(int i = 0; i<size; i++) {
+            for (int i = 0; i<size; i++) {
                 String itemValue = mapper.writeValueAsString(Array.get(array, i));
                 arrayNode.add(itemValue);
             }
         }
 
         return arrayNode.toString();
+    }
+
+    private ArgContainer[] writeAsObjectArray(Object array) throws JsonProcessingException {
+        ArgContainer[] result = null;
+
+        if (array != null) {
+            int size = Array.getLength(array);
+            result = new ArgContainer[size];
+            for (int i = 0; i<size; i++) {
+                result[i] = dumpArg(Array.get(array, i));
+            }
+        }
+
+        return result;
     }
 }

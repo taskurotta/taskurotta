@@ -152,6 +152,24 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void argContainerArrayPromise() {
+        Promise<?>[] arg = new Promise<?>[10];
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = Promise.asPromise(Math.random());
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        Promise<?>[] newArg = (Promise<?>[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
     public void argContainerListInt() {
         List<Integer> arg = new ArrayList<Integer>(10);
         for (int i = 0; i < 10; i++) {

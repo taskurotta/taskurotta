@@ -29,7 +29,7 @@ public class BasicFlowArbiter implements FlowArbiter {
 		log.debug("notified about tag [{}]; Stage list: {}", tag, stages);
 
 		synchronized (stages) {
-			Stage current = stages.get(0);
+			Stage current = stages.size() > 0 ? stages.get(0) : null;
 
 			if (current == null) {
 				throw new IncorrectFlowException("Expected flow finished. Called with " + tag);

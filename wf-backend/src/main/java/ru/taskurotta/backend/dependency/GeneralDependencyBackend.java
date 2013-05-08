@@ -125,21 +125,31 @@ public class GeneralDependencyBackend implements DependencyBackend {
             for (int j = 0; j < args.length; j++) {
                 ArgContainer arg = args[j];
 
-                boolean isPromise = arg.isPromise();
-
-                // skip not promises or resolved promises
-                if (!isPromise || (isPromise && arg.isReady())) {
-                    continue;
-                }
-
-                // skip @NoWait promises
-                if (argTypes != null) {
-                    if (ArgType.NO_WAIT.equals(argTypes[j])) {
+                if (arg.isPromise()) {
+                    // skip resolved promises
+                    if (arg.isReady()) {
                         continue;
                     }
-                }
 
-                modification.linkItem(childTaskId, arg.getTaskId());
+                    // skip @NoWait promises
+                    if (argTypes != null) {
+                        if (ArgType.NO_WAIT.equals(argTypes[j])) {
+                            continue;
+                        }
+                    }
+
+                    modification.linkItem(childTaskId, arg.getTaskId());
+
+                } else if (arg.isObjectArray() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
+/*
+                    Collection c = arg.getValueList();
+                    for (Object obj : c) {
+                        if (obj instanceof Promise && !((Promise)obj).isReady()) {
+                            modification.linkItem(childTaskId, ((Promise)obj).getId());
+                        }
+                    }
+*/
+                }
             }
 
             Promise<?>[] promisesWaitFor = taskOptionsContainer == null ? null : taskOptionsContainer.getPromisesWaitFor();
