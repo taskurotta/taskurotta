@@ -112,7 +112,7 @@ public class ObjectFactory {
 
         ArgContainer.ValueType type = ArgContainer.ValueType.PLAIN;
         UUID taskId = null;
-        boolean isReady = false;
+        boolean isReady = true;
 
         if (arg instanceof Promise) {
             type = ArgContainer.ValueType.PROMISE;
