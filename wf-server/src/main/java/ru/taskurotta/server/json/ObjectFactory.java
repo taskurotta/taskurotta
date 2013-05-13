@@ -121,9 +121,9 @@ public class ObjectFactory {
             arg = isReady? ((Promise) arg).get() : null;
         }
 
-        ArgContainer result = null;
-        String className;
-        String jsonValue;
+        ArgContainer result;
+        String className = null;
+        String jsonValue = null;
         if (arg != null) {
             try {
                 if (arg.getClass().isArray()) {
@@ -147,6 +147,8 @@ public class ObjectFactory {
                 // TODO: create new RuntimeException type
                 throw new RuntimeException("Can not create json String from Object: " + arg, e);
             }
+        } else {
+            result = new ArgContainer(className, type, taskId, isReady, jsonValue);
         }
 
         logger.debug("Created new ArgContainer[{}]", result);
