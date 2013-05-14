@@ -11,7 +11,7 @@
 
     <context:property-placeholder/>
 
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="jdbc:oracle:thin:@//taskurotta-db:1521/orcl"/>
         <property name="initialSize" value="20"/>
@@ -66,6 +66,10 @@
     </bean>
 
     <!-- Transactions -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <constructor-arg name="targetDataSource" ref="originalDataSource"/>
+    </bean>
+
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>
