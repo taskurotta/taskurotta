@@ -106,9 +106,6 @@ public class ObjectFactory {
     }
 
     public ArgContainer dumpArg(Object arg) {
-        if (arg == null) {
-            return null;
-        }
 
         ArgContainer.ValueType type = ArgContainer.ValueType.PLAIN;
         UUID taskId = null;

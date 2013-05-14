@@ -214,6 +214,11 @@ public class ObjectFactoryTest {
         testInternal(arg);
     }
 
+    @Test
+    public void argContainerWithNull() {
+        testInternal(null);
+    }
+
     private void testInternal(Object arg) {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);

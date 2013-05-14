@@ -52,9 +52,7 @@ public class ActorExecutor implements Runnable {
 
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
-                long start = System.currentTimeMillis();
                 taskSpreader.release(taskDecision);
-                log.trace("Release took [{}]", (System.currentTimeMillis() - start));
             } catch(ServerConnectionException ex) {
                 log.error("Connection to task server error. {}: {}", ex.getCause().getClass(), ex.getMessage());
             } catch(ServerException ex) {
