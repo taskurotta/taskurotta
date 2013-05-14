@@ -22,11 +22,6 @@
         <property name="password" value="${db.password}"/>
     </bean>
 
-    <!-- Required for transactions to work -->
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy" >
-        <constructor-arg name="targetDataSource" ref="originalDataSource" />
-    </bean>
-
     <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
@@ -51,9 +46,9 @@
 
     <bean id="queueBackend" class="ru.taskurotta.backend.ora.queue.OraQueueBackend">
         <constructor-arg name="dataSource" ref="dataSource"/>
-        <constructor-arg name="configBackend" ref="configBackend" />
-        <constructor-arg name="validating" value="${db.validating}" />
-        <constructor-arg name="autocreating" value="${db.autocreating}" />
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="validating" value="${db.validating}"/>
+        <constructor-arg name="autocreating" value="${db.autocreating}"/>
         <property name="checkpointService" ref="oraCheckpointService"/>
 
     </bean>
@@ -126,6 +121,12 @@
     </task:scheduled-tasks>
 
     <!-- Transactions -->
+
+    <!-- Required for transactions to work -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <constructor-arg name="targetDataSource" ref="originalDataSource"/>
+    </bean>
+
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>

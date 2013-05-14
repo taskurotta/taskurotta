@@ -18,32 +18,12 @@ public final class SqlResourceCloser {
 
     }
 
-    public static void closeResources(Object... resources) {
-        for (Object obj : resources) {
-            if (obj instanceof Connection) {
-                closeConnection((Connection) obj);
-            } else if (obj instanceof Statement) {
-                closeStatement((Statement) obj);
-            }
-        }
-    }
-
-    public static void closeConnection(Connection connection) {
-        if (connection != null) {
+    public static void closeResources(AutoCloseable... resources) {
+        for (AutoCloseable obj : resources) {
             try {
-                connection.close();
-            } catch (SQLException e) {
-                logger.error("Fatal db error", e);
-            }
-        }
-    }
-
-    public static void closeStatement(Statement statement) {
-        if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                logger.error("Fatal db error", e);
+                obj.close();
+            } catch (Exception e) {
+                logger.error("Error close resource", e);
             }
         }
     }
