@@ -28,6 +28,7 @@ public class TaskStarterResource {
 
         try {
             taskServer.startProcess(taskContainerWrapper.getTaskContainer());
+            logger.debug("Successfully started process task[{}]", taskContainerWrapper.getTaskContainer());
         } catch(Throwable e) {
             logger.error("Starting of task["+taskContainerWrapper+"] failed!", e);
             return Response.serverError().build();

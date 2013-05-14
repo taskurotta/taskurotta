@@ -31,7 +31,7 @@ public class TaskPullerResource {
 
         try {
             result = taskServer.poll(actorDefinitionWrapper.getActorDefinition());
-            logger.debug("Task getted is[{}]", result);
+            logger.debug("Task pulled for[{}] is[{}]",actorDefinitionWrapper.getActorDefinition().getName(), result);
         } catch (Throwable e) {
             logger.error("Pulling task for[" + actorDefinitionWrapper + "] failed!", e);
             return Response.serverError().build();

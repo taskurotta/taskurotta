@@ -14,7 +14,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import ru.taskurotta.dropwizard.TaskQueueConfig;
-import ru.taskurotta.dropwizard.internal.ConfigBackendAware;
+import ru.taskurotta.dropwizard.internal.YamlConfigBackend;
 
 import javax.ws.rs.Path;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
 
         }
 
-
+        //Initializes YamlConfigBackend bean with actor preferences parsed from DW server YAML configuration
         if(configuration.getActorConfig() != null) {
             appContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
                 @Override
@@ -56,8 +56,10 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
                         @Override
                         public Object postProcessBeforeInitialization(Object bean, String beanName)
                                 throws BeansException {
-                            if(bean instanceof ConfigBackendAware) {
-                                ((ConfigBackendAware)bean).setConfigBackend(configuration.getActorConfig());
+                            if(bean instanceof YamlConfigBackend) {
+                                YamlConfigBackend yamlBean = (YamlConfigBackend)bean;
+                                yamlBean.setActorPreferences(configuration.getActorConfig().getAllActorPreferences());
+                                yamlBean.setExpirationPolicies(configuration.getActorConfig().getAllExpirationPolicies());
                             }
                             return bean;
                         }
@@ -71,16 +73,6 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
             });
         }
         appContext.refresh();
-
-        //		if(configuration.getServerConfig() != null) {
-        //			Map<String, ServerConfigAware> serverConfigAwareBeans = appContext.getBeansOfType(ServerConfigAware.class);
-        //			if(serverConfigAwareBeans!=null && !serverConfigAwareBeans.isEmpty()) {
-        //				for(ServerConfigAware sca: serverConfigAwareBeans.values()) {
-        //					sca.setServerConfig(configuration.getServerConfig());
-        //				}
-        //			}
-        //		}
-
 
         //Register resources
         Map<String, Object> resources = appContext.getBeansWithAnnotation(Path.class);

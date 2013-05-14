@@ -1,30 +1,7 @@
 package ru.taskurotta.dropwizard.internal;
 
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.model.ActorPreferences;
-import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 
-public class YamlConfigBackend implements ConfigBackend, ConfigBackendAware {
-
-    private ConfigBackend config;
-
-    @Override
-    public boolean isActorBlocked(String actorId) {
-        return config.isActorBlocked(actorId);
-    }
-
-    @Override
-    public ActorPreferences[] getActorPreferences() {
-        return config!=null? config.getActorPreferences(): null;
-    }
-
-    @Override
-    public void setConfigBackend(ConfigBackend config) {
-        this.config = config;
-    }
-
-    public ExpirationPolicyConfig[] getExpirationPolicies() {
-        return config.getExpirationPolicies();
-    }
-
+//Marker class indicating that ActorPreferences should be initialized with YAML configuration
+public class YamlConfigBackend extends MemoryConfigBackend {
 }

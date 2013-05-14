@@ -28,6 +28,7 @@ public class TaskReleaserResource {
 
         try {
             taskServer.release(resultContainer.getResultContainer());
+            logger.debug("Task successfully released, [{}]", resultContainer.getResultContainer());
         } catch(Throwable e) {
             logger.error("Releasing of task["+resultContainer+"] failed!", e);
             return Response.serverError().build();
