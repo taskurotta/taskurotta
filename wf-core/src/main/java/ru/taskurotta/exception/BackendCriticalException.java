@@ -12,4 +12,8 @@ public class BackendCriticalException extends RuntimeException {
     public BackendCriticalException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public BackendCriticalException(String message) {
+       super(message);
+    }
 }
