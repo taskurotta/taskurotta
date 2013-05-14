@@ -1,5 +1,11 @@
 package ru.taskurotta.backend.ora.queue;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -11,12 +17,6 @@ import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * User: moroz, dudin
@@ -42,12 +42,12 @@ public class OraQueueBackend implements QueueBackend {
         this.configBackend = configBackend;
         dbDAO = new OraQueueDao(dataSource);
 
-        if(autocreating) {
+        if (autocreating) {
             queuesCreationHandler = new QueuesCreationHandler(dataSource);
             queuesCreationHandler.initQueueNames();
         }
 
-        if(validating) {//Validate configured queues existence at oracle
+        if (validating) {//Validate configured queues existence at oracle
             validateQueues();
         }
 
@@ -61,26 +61,26 @@ public class OraQueueBackend implements QueueBackend {
 
     private void validateQueues() throws BackendCriticalException {
 
-        if(configBackend.getAllActorPreferences() == null || configBackend.getAllActorPreferences().length == 0) {
+        if (configBackend.getAllActorPreferences() == null || configBackend.getAllActorPreferences().length == 0) {
             throw new BackendCriticalException("There are no actor preferences configured for this TaskServer!");
         }
 
         Set<String> errorQueues = new HashSet<String>();
-        for(ActorPreferences actorPref: configBackend.getAllActorPreferences()) {
-            if(actorPref.getId().equalsIgnoreCase("default")) {//Reserved actor config -> just skip it
-                 continue;
+        for (ActorPreferences actorPref : configBackend.getAllActorPreferences()) {
+            if (actorPref.getId().equalsIgnoreCase("default")) {//Reserved actor config -> just skip it
+                continue;
             }
 
-            if(actorPref.getQueueName() == null) {
-                throw new BackendCriticalException("There are no queue configured for actor["+actorPref.getId()+"]");
+            if (actorPref.getQueueName() == null) {
+                throw new BackendCriticalException("There are no queue configured for actor[" + actorPref.getId() + "]");
             }
 
-            if(!dbDAO.isQueueExists(actorPref.getQueueName())) {
+            if (!dbDAO.isQueueExists(actorPref.getQueueName())) {
                 errorQueues.add(actorPref.getQueueName());
             }
         }
-        if(errorQueues.size() > 0) {
-          throw new BackendCriticalException("Cannot validate queues (require manual creation?)["+errorQueues+"]");
+        if (errorQueues.size() > 0) {
+            throw new BackendCriticalException("Cannot validate queues (require manual creation?)[" + errorQueues + "]");
         }
 
     }
@@ -92,15 +92,6 @@ public class OraQueueBackend implements QueueBackend {
 
         String tableName = getTableName(actorId, taskList);
 
-        if(tableName==null && autocreating) {
-            queuesCreationHandler.registerAndCreateQueue(actorId);
-            tableName = queuesCreationHandler.getTableName(actorId);
-        }
-
-        if(tableName == null) {
-            throw new RuntimeException("Cannot determine queue to enqueue task["+taskId+"] for: actorId["+actorId+"], taskList["+taskList+"]!");
-        }
-
         dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), tableName);
 
     }
@@ -109,17 +100,8 @@ public class OraQueueBackend implements QueueBackend {
     public UUID poll(String actorId, String taskList) {
         String queueName = getTableName(actorId, taskList);
 
-        if(queueName == null && autocreating) {
-            queuesCreationHandler.registerAndCreateQueue(actorId);
-            queueName = queuesCreationHandler.getTableName(actorId);
-        }
-
-        if(queueName == null) {
-            throw new RuntimeException("Cannot determine queue to poll tasks for: actorId["+actorId+"], taskList["+taskList+"]!");
-        }
-
         final UUID taskId = dbDAO.pollTask(queueName);
-        if(taskId != null) {//there can be no tasks in the queue
+        if (taskId != null) {//there can be no tasks in the queue
             Checkpoint pollCheckpoint = new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis());
             checkpointService.addCheckpoint(pollCheckpoint);
             dbDAO.deleteTask(taskId, queueName);
@@ -135,8 +117,19 @@ public class OraQueueBackend implements QueueBackend {
 
     private String getTableName(String actorId, String taskList) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
-        String queueName = actorPreferences != null? actorPreferences.getQueueName(): null;
+        String queueName = actorPreferences != null ? actorPreferences.getQueueName() : null;
         log.debug("actorPreferences getted for actor[{}] is [{}], queueName getted is[{}]", actorId, actorPreferences, queueName);
+
+        //Create queue if need
+        if (queueName == null && autocreating) {
+            queuesCreationHandler.registerAndCreateQueue(actorId);
+            queueName = queuesCreationHandler.getTableName(actorId);
+        }
+
+        if (queueName == null) {
+            throw new BackendCriticalException("Cannot determine queue for: actorId[" + actorId + "], taskList[" + taskList + "]!");
+        }
+
         return queueName;
     }
 
