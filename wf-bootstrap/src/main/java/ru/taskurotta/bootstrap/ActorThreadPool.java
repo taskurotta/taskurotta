@@ -59,7 +59,7 @@ public class ActorThreadPool {
             return false;
         }
 
-        logger.trace("Stopping actor [{}]'s thread[{}]", actorClass.getName(), Thread.currentThread().getName());
+        logger.trace("Stopping actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
         actorExecutor.stopThread();
         activeActorExecutorThreadCount--;
         logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount);
@@ -146,6 +146,10 @@ public class ActorThreadPool {
             logger.error("Throw exception while try to gracefully shutdown actor [" + actorClass.getName() + "]", e);
             // just exit
         }
+    }
+
+    public int getActiveActorExecutorThreadCount() {
+        return activeActorExecutorThreadCount;
     }
 
     private void createActorExecutorThread(int i) {
