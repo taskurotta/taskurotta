@@ -13,14 +13,18 @@
 
     <context:property-placeholder/>
 
-
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="${db.url}"/>
         <property name="initialSize" value="20"/>
         <property name="maxActive" value="40"/>
         <property name="username" value="${db.user}"/>
         <property name="password" value="${db.password}"/>
+    </bean>
+
+    <!-- Required for transactions to work -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy" >
+        <constructor-arg name="targetDataSource" ref="originalDataSource" />
     </bean>
 
     <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
