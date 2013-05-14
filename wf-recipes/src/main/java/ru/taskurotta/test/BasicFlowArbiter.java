@@ -29,14 +29,14 @@ public class BasicFlowArbiter implements FlowArbiter {
 		log.debug("notified about tag [{}]; Stage list: {}", tag, stages);
 
 		synchronized (stages) {
-			Stage current = stages.get(0);
+			Stage current = stages.size() > 0 ? stages.get(0) : null;
 
 			if (current == null) {
-				throw new IncorrectFlowException("Expected flow finished. Called with " + tag);
+				throw new IncorrectFlowException("Expected flow finished. Called with '" + tag + "'");
 			}
 
 			if (!current.remove(tag) && isStrictFlowCheck()) {
-				throw new IncorrectFlowException("Wrong tag: expected "+ current +" but found {"+ tag +"}");
+				throw new IncorrectFlowException("Wrong tag: expected '"+ current +"' but found '"+ tag +"'");
 			}
 			if (current.isEmpty()) {
 				stages.remove(0);
@@ -58,7 +58,7 @@ public class BasicFlowArbiter implements FlowArbiter {
 				timeToWait = endTime - System.currentTimeMillis();
 			}
 			if (timeToWait <= 0) {
-				throw new IncorrectFlowException("Tag "+ tag +" doesn't checked");
+				throw new IncorrectFlowException("Tag '"+ tag +"' doesn't checked");
 			}
 		} catch (InterruptedException e) {
 			// just go away

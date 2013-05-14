@@ -16,6 +16,7 @@ import ru.taskurotta.test.TestTasks;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,12 +46,127 @@ public class ObjectFactoryTest {
         testInternal(arg);
     }
 
-    //FixMe: it fails
-    @org.junit.Ignore
+    @Test
+    public void argContainerArrayBoolean() {
+        boolean[] arg = new boolean[10];
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = Math.random() > 0.5;
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        boolean[] newArg = (boolean[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
     @Test
     public void argContainerArrayInt() {
         int[] arg = new int[10];
-        testInternal(arg);
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = i;
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        int[] newArg = (int[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
+    public void argContainerArrayByte() {
+        byte[] arg = new byte[10];
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        byte[] newArg = (byte[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
+    public void argContainerArrayShort() {
+        short[] arg = new short[10];
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = (short)i;
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        short[] newArg = (short[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
+    public void argContainerArrayLong() {
+        long[] arg = new long[10];
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = i;
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        long[] newArg = (long[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
+    public void argContainerArrayDouble() {
+        double[] arg = new double[10];
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = Math.random();
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        double[] newArg = (double[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
+    public void argContainerArrayPromise() {
+        Promise<?>[] arg = new Promise<?>[10];
+        for (int i = 0; i < arg.length; i++) {
+            arg[i] = Promise.asPromise(Math.random());
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        Promise<?>[] newArg = (Promise<?>[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
     }
 
     @Test

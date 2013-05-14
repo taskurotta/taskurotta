@@ -49,13 +49,13 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
-             \@level: WARN
+             \@level: DEBUG
         - ru.taskurotta.recipes.summator:
              key: name
-             \@level: WARN
+             \@level: DEBUG
         - ru.taskurotta.server.json:
              key: name
-             \@level: WARN
+             \@level: DEBUG
         - org.springframework:
              key: name
              \@level: !!!str OFF

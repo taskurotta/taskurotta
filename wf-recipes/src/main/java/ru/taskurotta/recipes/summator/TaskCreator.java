@@ -12,7 +12,7 @@ import java.util.List;
  * Created by void 05.04.13 18:54
  */
 public class TaskCreator {
-    public static final int ARRAY_SIZE = 250;
+    public static final int ARRAY_SIZE = 5;
     public static final int MAX_VALUE = 100;
     private ClientServiceManager clientServiceManager;
 

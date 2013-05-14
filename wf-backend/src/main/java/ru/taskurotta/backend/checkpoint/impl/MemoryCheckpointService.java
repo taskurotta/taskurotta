@@ -30,6 +30,7 @@ public class MemoryCheckpointService implements CheckpointService {
         if(hasTimeoutType(checkpoint)) {
             Set<Checkpoint> set = getTypedSet(checkpoint.getTimeoutType(), true);
             set.add(checkpoint);
+            logger.debug("created checkpoint[{}]", checkpoint);
         } else {
             logger.error("Cannot add empty type Checkpoint [{}]", checkpoint);
         }
@@ -58,7 +59,11 @@ public class MemoryCheckpointService implements CheckpointService {
         if(hasTimeoutType(checkpoint)) {
             Set<Checkpoint> set = getTypedSet(checkpoint.getTimeoutType(), false);
             if(set != null) {
-                set.remove(checkpoint);
+                if (set.remove(checkpoint)) {
+                    logger.debug("removed checkpoint[{}]", checkpoint);
+                } else {
+                    logger.debug("not removed checkpoint[{}] ", checkpoint);
+                }
             } else {
                 logger.debug("Skipping checkpoint[{}] removal: storage for timeout type[{}] have not been created yet", checkpoint, checkpoint.getTimeoutType());
             }

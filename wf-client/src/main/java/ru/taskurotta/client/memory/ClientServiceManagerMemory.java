@@ -24,7 +24,11 @@ public class ClientServiceManagerMemory implements ClientServiceManager {
     private MemoryBackendBundle memoryBackendBundle;
 
     public ClientServiceManagerMemory() {
-        memoryBackendBundle = new MemoryBackendBundle(60, new MemoryTaskDao());
+        this(60);
+    }
+
+    public ClientServiceManagerMemory(int pollDelay) {
+        memoryBackendBundle = new MemoryBackendBundle(pollDelay, new MemoryTaskDao());
         taskServer = new GeneralTaskServer(memoryBackendBundle);
     }
 
