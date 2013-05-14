@@ -1,12 +1,12 @@
 package ru.taskurotta.backend.config.impl;
 
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Configuration storing
@@ -22,7 +22,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 	@Override
 	public boolean isActorBlocked(String actorId) {
         boolean result = false;
-        ActorPreferences[] actorPreferences = getActorPreferences();
+        ActorPreferences[] actorPreferences = getAllActorPreferences();
         if(actorPreferences!=null && actorPreferences.length>0) {
             for(ActorPreferences aPref: actorPreferences) {
                 if(aPref.getId().equals(actorId)) {
@@ -63,7 +63,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 	}
 
 	@Override
-	public ActorPreferences[] getActorPreferences() {
+	public ActorPreferences[] getAllActorPreferences() {
 	    if(actorPreferences == null) {
 	        actorPreferences = getDefaultActorPreferences();
 	    }
@@ -75,11 +75,25 @@ public class MemoryConfigBackend implements ConfigBackend {
 	}
 
 	@Override
-    public ExpirationPolicyConfig[] getExpirationPolicies() {
+    public ExpirationPolicyConfig[] getAllExpirationPolicies() {
 	    if(expirationPolicies == null) {
 	        expirationPolicies = getDefaultPolicies(defaultTimeout, defaultTimeunit);
 	    }
         return expirationPolicies;
+    }
+
+    @Override
+    public ActorPreferences getActorPreferences(String actorId) {
+        ActorPreferences result = null;
+        if(actorPreferences!=null) {
+            for(ActorPreferences ap: actorPreferences) {
+                if(ap.getId()!=null && ap.getId().equals(actorId)) {
+                    result = ap;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     public void setExpirationPolicies(ExpirationPolicyConfig[] expirationPolicies) {

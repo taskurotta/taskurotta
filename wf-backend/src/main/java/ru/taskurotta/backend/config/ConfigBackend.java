@@ -12,8 +12,10 @@ public interface ConfigBackend {
 
     public boolean isActorBlocked(String actorId);
 
-    public ActorPreferences[] getActorPreferences();
+    public ActorPreferences[] getAllActorPreferences();
 
-    public ExpirationPolicyConfig[] getExpirationPolicies();
+    public ExpirationPolicyConfig[] getAllExpirationPolicies();
+
+    public ActorPreferences getActorPreferences(String actorId);
 
 }

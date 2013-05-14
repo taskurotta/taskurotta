@@ -9,6 +9,7 @@ public class ActorPreferences {
 
     private String id;
     private boolean blocked = false;
+    private String queueName;
     private Properties timeoutPolicies;
 
     public String getId() {
@@ -16,6 +17,12 @@ public class ActorPreferences {
     }
     public void setId(String id) {
         this.id = id;
+    }
+    public String getQueueName() {
+        return queueName;
+    }
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
     public boolean isBlocked() {
         return blocked;
@@ -29,10 +36,15 @@ public class ActorPreferences {
     public void setTimeoutPolicies(Properties timeoutPolicies) {
         this.timeoutPolicies = timeoutPolicies;
     }
+
     @Override
     public String toString() {
-        return "ActorPreferences [id=" + id + ", blocked=" + blocked
-                + ", timeoutPolicies=" + timeoutPolicies + "]";
+        return "ActorPreferences{" +
+                "id='" + id + '\'' +
+                ", blocked=" + blocked +
+                ", queueName='" + queueName + '\'' +
+                ", timeoutPolicies=" + timeoutPolicies +
+                '}';
     }
 
 }
