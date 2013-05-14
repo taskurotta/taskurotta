@@ -1,7 +1,5 @@
 package ru.taskurotta.backend.ora;
 
-import javax.sql.DataSource;
-
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.config.ConfigBackend;
@@ -17,6 +15,8 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
+import javax.sql.DataSource;
+
 
 public class OraBackendBundle implements BackendBundle {
 
@@ -28,11 +28,12 @@ public class OraBackendBundle implements BackendBundle {
     private ConfigBackend configBackend;
 
     public OraBackendBundle(DataSource dataSource, TaskDao taskDao, CheckpointService checkpointService, GraphDao graphDao) {
+        this.configBackend = new MemoryConfigBackend();
         this.processBackend = new OraProcessBackend(dataSource, checkpointService);
         this.taskBackend = new GeneralTaskBackend(taskDao, checkpointService);
-        this.queueBackend = new OraQueueBackend(dataSource);
+        this.queueBackend = new OraQueueBackend(dataSource, this.configBackend);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao, 100000);
-        this.configBackend = new MemoryConfigBackend();
+
     }
 
     public ConfigBackend getConfigBackend() {

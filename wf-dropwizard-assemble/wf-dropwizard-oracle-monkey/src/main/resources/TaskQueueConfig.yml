@@ -4,14 +4,23 @@ contextLocation: "classpath*:context/appContext.xml"
 #Configuration of actors served by this server:
 actorConfig:
   actorPreferences:
-    - id: "default" #applied if actorId not found in config
+
+    #applied if actorId not found in config when searching for timeoutPolicy - just for config simplifications
+    - id: "default"
+      queueName: "default"
       timeoutPolicies:
         TASK_START_TO_CLOSE: "TIMEOUT: 30 SECONDS" #TIMEOUT: prefix can be used to specify simple timeouts (template: "TIMEOUT: <int> <TimeUnit>")
         TASK_POLL_TO_COMMIT: "custom policy" #<-- MATCH
-    - id: "some other actor" #Every real actor should be described here
-      timeoutPolicies:
-        TASK_START_TO_CLOSE: "TIMEOUT: 45 SECONDS"
-#        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
+
+    #wf-example/calculate actors
+    - id: "ru.taskurotta.example.calculate.worker.Multiplier#1.0"
+      queueName: "qb$multiplier"
+    - id: "ru.taskurotta.example.calculate.worker.NumberGenerator#1.0"
+      queueName: "qb$number_generator"
+    - id: "ru.taskurotta.example.calculate.worker.Summarizer#1.0"
+      queueName: "qb$summarizer"
+    - id: "ru.taskurotta.example.calculate.decider.MathActionDecider#1.0"
+      queueName: "qb$math_action_decider"
 
 #List of expiration policies available for actors by name (new instance per actor):
   expirationPolicies:
@@ -20,18 +29,20 @@ actorConfig:
       properties:
         timeout: 5
         timeUnit: "SECONDS"
-        retry: 10
+        retry: 50
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
   db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
   db.user: "taskurotta"
   db.password: "taskurotta"
+  db.validating: true  #validate queues existence in DB
+  db.autocreating: false #auto create new queues in DB if there are no explicitly configured
   retryTimes: 50 #retry for dependency graph modification
   recovery.schedule: "*/20 * * * * ?" #run recovery every 20 seconds
-  recovery.period: 2 #recoveru scans for checkpoints created 1 day ago
+  recovery.period: 2 #recoveru scans for checkpoints created {this.value} days ago
   recovery.period.unit: "DAYS"
-  recovery.timeStep: 12 #recovery time step | for monkey test with 10% failChance, recovery period should be covered in less then ~10 steps or it would fail forever
+  recovery.timeStep: 18 #recovery time step | for monkey test with 10% failChance, recovery period should be covered in less then ~10 steps or it would fail forever
   recovery.timeStep.unit: "HOURS"
 
 
@@ -42,8 +53,10 @@ logging:
         ru.taskurotta: INFO
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend.task: DEBUG
-        ru.taskurotta.backend: INFO
-        ru.taskurotta.server.recovery: DEBUG
+#        ru.taskurotta.backend: INFO
+#        ru.taskurotta.server.recovery: INFO
+#        ru.taskurotta.dropwizard.resources: INFO
+#        ru.taskurotta.backend.ora.queue: INFO
         com.yammer: INFO
     file:
         enabled: true
@@ -58,6 +71,6 @@ http:
             enabled: true
             archive: true
             currentLogFilename: ./target/logs/requests.log
-            archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+            archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
 #config can be extended here
 #http://dropwizard.codahale.com/manual/core/#configuration-defaults

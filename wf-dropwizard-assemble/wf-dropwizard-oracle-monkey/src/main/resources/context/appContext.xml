@@ -16,11 +16,11 @@
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@//taskurotta-db:1521/orcl"/>
+        <property name="url" value="${db.url}"/>
         <property name="initialSize" value="20"/>
         <property name="maxActive" value="40"/>
-        <property name="username" value="taskurotta"/>
-        <property name="password" value="taskurotta"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.password}"/>
     </bean>
 
     <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
@@ -47,7 +47,11 @@
 
     <bean id="queueBackend" class="ru.taskurotta.backend.ora.queue.OraQueueBackend">
         <constructor-arg name="dataSource" ref="dataSource"/>
+        <constructor-arg name="configBackend" ref="configBackend" />
+        <constructor-arg name="validating" value="${db.validating}" />
+        <constructor-arg name="autocreating" value="${db.autocreating}" />
         <property name="checkpointService" ref="oraCheckpointService"/>
+
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.ora.storage.OraTaskDao">
