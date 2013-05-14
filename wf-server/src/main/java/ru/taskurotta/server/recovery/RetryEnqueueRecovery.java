@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 public class RetryEnqueueRecovery extends AbstractIterableRecovery {
 
-    private TimeoutType[] supportedTimeouts = TimeoutType.values();//tries to recover all types of timeouts by default
+    private TimeoutType[] supportedTimeouts = new TimeoutType[]{TimeoutType.PROCESS_START_TO_CLOSE, TimeoutType.TASK_START_TO_CLOSE, TimeoutType.TASK_POLL_TO_COMMIT};//tries to recover all types of timeouts by default
     private TaskBackend taskBackend;
     private QueueBackend queueBackend;
 

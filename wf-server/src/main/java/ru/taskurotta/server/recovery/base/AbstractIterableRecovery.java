@@ -55,8 +55,8 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
                             if(isReadyToRecover(checkpoint)) {
                                 try {
                                     boolean success = recover(checkpoint);
-                                    checkpointService.removeCheckpoint(checkpoint);
                                     if(success) {
+                                        checkpointService.removeCheckpoint(checkpoint);
                                         counter++;
                                     }
                                 } catch (Exception e) {
@@ -89,7 +89,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
     }
 
     public void setConfigBackend(ConfigBackend configBackend) {
-        initConfigs(configBackend.getActorPreferences(), configBackend.getExpirationPolicies());//initialize expiration policies
+        initConfigs(configBackend.getAllActorPreferences(), configBackend.getAllExpirationPolicies());//initialize expiration policies
     }
 
     public void setTimeIterationStep(int timeIterationStep) {
