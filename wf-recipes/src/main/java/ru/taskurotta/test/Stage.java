@@ -16,7 +16,9 @@ public class Stage {
 		if (source.contains(",")) {
 			String[] splitted = source.split(",");
             tagList = new ArrayList<String>(splitted.length);
-            Collections.addAll(tagList, splitted);
+            for (String tag : splitted) {
+                tagList.add(tag.trim());
+            }
 
 		} else {
             tagList = new ArrayList<String>(1);
