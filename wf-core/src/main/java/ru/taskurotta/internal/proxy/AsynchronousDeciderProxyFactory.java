@@ -107,10 +107,12 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 }
 
                 TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_ASYNCHRONOUS, deciderName, deciderVersion, method.getName());
+/*              ToDo: ActorSchedulingOptions and Wait list is not supported for asynchronous decider methods
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
-                int positionPromisesWaitFor = positionParameter(parameterTypes, Promise[].class);
-                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
+                int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
+*/
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1);
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -135,7 +137,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                     if (implementationMethod.getName().equals(interfaceMethod)) {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
                         int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), ActorSchedulingOptions.class);
-                        int positionPromisesWaitFor = positionParameter(method.getParameterTypes(), Promise[].class);
+                        int positionPromisesWaitFor = positionOfWaitList(method.getParameterTypes(), positionActorSchedulingOptions);
                         MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
