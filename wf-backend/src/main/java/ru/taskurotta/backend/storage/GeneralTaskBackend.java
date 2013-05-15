@@ -55,30 +55,44 @@ public class GeneralTaskBackend implements TaskBackend {
                 for (int i = 0; i < args.length; i++) {
                     ArgContainer arg = args[i];
 
-                    if (!arg.isPromise()) {
-                        continue;
-                    }
+                    if (arg.isPromise()) {
 
-                    if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+                        if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
 
-                        // set real value to Actor tasks
-                        args[i] = arg.updateType(ArgContainer.ValueType.PLAIN);
-                        continue;
-                    }
+                            // set real value to Actor tasks
+                            args[i] = arg.updateType(ArgContainer.ValueType.PLAIN);
+                            continue;
+                        }
 
-                    ArgContainer taskValue = getTaskValue(arg.getTaskId());
-                    if (taskValue == null) {
-                        // value may be null for NoWait promises
-                        // leave it in peace...
-                        continue;
-                    }
+                        ArgContainer taskValue = getTaskValue(arg.getTaskId());
+                        if (taskValue == null) {
+                            // value may be null for NoWait promises
+                            // leave it in peace...
+                            continue;
+                        }
 
-                    if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-                        // set real value into promise for Decider tasks
-                        args[i] = arg.updateValue(taskValue);
-                    } else {
-                        // swap promise with real value for Actor tasks
-                        args[i] = taskValue;
+                        if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+                            // set real value into promise for Decider tasks
+                            args[i] = arg.updateValue(taskValue);
+                        } else {
+                            // swap promise with real value for Actor tasks
+                            args[i] = taskValue;
+                        }
+                    } else if (arg.isObjectArray()) {
+
+                        ArgContainer[] compositeValue = arg.getCompositeValue();
+                        for (int j = 0; j < compositeValue.length; j++) {
+                            ArgContainer innerArg = compositeValue[j];
+                            ArgContainer taskValue = getTaskValue(innerArg.getTaskId());
+
+                            if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+                                // set real value into promise for Decider tasks
+                                compositeValue[j] = innerArg.updateValue(taskValue);
+                            } else {
+                                // swap promise with real value for Actor tasks
+                                compositeValue[j] = taskValue;
+                            }
+                        }
                     }
                 }
 

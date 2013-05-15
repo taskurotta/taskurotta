@@ -91,82 +91,78 @@ public class GeneralDependencyBackend implements DependencyBackend {
      */
     private Modification createLinksModification(DecisionContainer taskDecision) {
 
-        UUID completedTaskId = taskDecision.getTaskId();
-
         Modification modification = new Modification();
         modification.setCompletedItem(taskDecision.getTaskId());
-
-        TaskContainer[] newTasks = taskDecision.getTasks();
 
         ArgContainer value = taskDecision.getValue();
         if (value != null && value.isPromise() && !value.isReady()) {
             modification.setWaitForAfterRelease(value.getTaskId());
         }
 
-        if (newTasks == null) {
-            return modification;
-        }
-
-        // - registration of all new tasks
-        for (TaskContainer newTask : newTasks) {
-
-            UUID childTaskId = newTask.getTaskId();
-
-            modification.addNewItem(childTaskId);
-
-            ArgContainer args[] = newTask.getArgs();
-            if (args == null) {
-                continue;
-            }
-
-            TaskOptionsContainer taskOptionsContainer = newTask.getOptions();
-            ArgType[] argTypes = taskOptionsContainer != null ? taskOptionsContainer.getArgTypes() : null;
-
-            for (int j = 0; j < args.length; j++) {
-                ArgContainer arg = args[j];
-
-                if (arg.isPromise()) {
-                    // skip resolved promises
-                    if (arg.isReady()) {
-                        continue;
-                    }
-
-                    // skip @NoWait promises
-                    if (argTypes != null) {
-                        if (ArgType.NO_WAIT.equals(argTypes[j])) {
-                            continue;
-                        }
-                    }
-
-                    modification.linkItem(childTaskId, arg.getTaskId());
-
-                } else if (arg.isObjectArray() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
-/*
-                    Collection c = arg.getValueList();
-                    for (Object obj : c) {
-                        if (obj instanceof Promise && !((Promise)obj).isReady()) {
-                            modification.linkItem(childTaskId, ((Promise)obj).getId());
-                        }
-                    }
-*/
-                }
-            }
-
-            Promise<?>[] promisesWaitFor = taskOptionsContainer == null ? null : taskOptionsContainer.getPromisesWaitFor();
-            if (promisesWaitFor != null) {
-                for (Promise<?> promise : promisesWaitFor) {
-                    // skip resolved promises
-                    if (promise.isReady()) {
-                        continue;
-                    }
-
-                    modification.linkItem(childTaskId, promise.getId());
-                }
+        TaskContainer[] newTasks = taskDecision.getTasks();
+        if (newTasks != null) {
+            for (TaskContainer newTask : newTasks) {
+                registerNewTask(modification, newTask);
             }
         }
 
         return modification;
+    }
 
+    private void registerNewTask(Modification modification, TaskContainer newTask) {
+        UUID childTaskId = newTask.getTaskId();
+
+        modification.addNewItem(childTaskId);
+
+        ArgContainer args[] = newTask.getArgs();
+        if (args == null) {
+            return;
+        }
+
+        TaskOptionsContainer taskOptionsContainer = newTask.getOptions();
+        ArgType[] argTypes = taskOptionsContainer != null ? taskOptionsContainer.getArgTypes() : null;
+
+        for (int j = 0; j < args.length; j++) {
+            ArgContainer arg = args[j];
+
+            if (arg.isPromise()) {
+                // skip resolved promises
+                if (arg.isReady()) {
+                    continue;
+                }
+
+                // skip @NoWait promises
+                if (argTypes != null && ArgType.NO_WAIT.equals(argTypes[j])) {
+                    continue;
+                }
+
+                modification.linkItem(childTaskId, arg.getTaskId());
+
+            } else if (arg.isObjectArray() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
+
+                processWaitArray(modification, childTaskId, arg);
+            }
+        }
+
+        Promise<?>[] promisesWaitFor = taskOptionsContainer == null ? null : taskOptionsContainer.getPromisesWaitFor();
+        if (promisesWaitFor != null) {
+            for (Promise<?> promise : promisesWaitFor) {
+                if (!promise.isReady()) {
+                    modification.linkItem(childTaskId, promise.getId());
+                }
+            }
+        }
+    }
+
+    private void processWaitArray(Modification modification, UUID childTaskId, ArgContainer parentArg) {
+        ArgContainer[] innerValues = parentArg.getCompositeValue();
+        for (ArgContainer arg : innerValues) {
+            if (arg.isObjectArray()) {
+                processWaitArray(modification, childTaskId, arg);
+            } else if (arg.isPromise() && !arg.isReady()) {
+                modification.linkItem(childTaskId, arg.getTaskId());
+            }
+        }
     }
 
 }

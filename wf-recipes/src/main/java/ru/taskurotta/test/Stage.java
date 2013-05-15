@@ -1,36 +1,38 @@
 package ru.taskurotta.test;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by void 03.04.13 17:37
  */
 public class Stage {
-	private final HashSet<String> tags;
+	private final List<String> tagList;
 
 	public Stage(String source) {
 		if (source.contains(",")) {
 			String[] splitted = source.split(",");
-			tags = new HashSet<String>(splitted.length);
-			for (String tag : splitted) {
-				tags.add(tag.trim());
-			}
+            tagList = new ArrayList<String>(splitted.length);
+            for (String tag : splitted) {
+                tagList.add(tag.trim());
+            }
+
 		} else {
-			tags = new HashSet<String>(1);
-			tags.add(source);
+            tagList = new ArrayList<String>(1);
+            tagList.add(source);
 		}
 	}
 
 	public boolean contains(String tag) {
-		return tags.contains(tag);
+		return tagList.contains(tag);
 	}
 
 	public boolean isEmpty() {
-		return tags.isEmpty();
+		return tagList.isEmpty();
 	}
 
 	public int size() {
-		return tags.size();
+		return tagList.size();
 	}
 
 	/**
@@ -39,7 +41,7 @@ public class Stage {
 	 * @return true if stage is not empty
 	 */
 	public boolean remove(String tag) {
-		return tags.remove(tag);
+		return tagList.remove(tag);
 	}
 
 	@Override
@@ -49,18 +51,18 @@ public class Stage {
 
 		Stage stage = (Stage) o;
 
-		if (!tags.equals(stage.tags)) return false;
+		if (!tagList.equals(stage.tagList)) return false;
 
 		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return tags.hashCode();
+		return tagList.hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return "{" + tags + '}';
+		return "{" + tagList + '}';
 	}
 }

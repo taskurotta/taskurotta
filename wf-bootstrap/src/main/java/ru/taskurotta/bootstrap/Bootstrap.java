@@ -22,16 +22,19 @@ import ru.taskurotta.policy.retry.RetryPolicy;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: stukushin
  * Date: 06.02.13
  * Time: 14:53
  */
-public class Bootstrap {
+public class Bootstrap implements BootstrapMBean {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	private Config config;
+    private List<Thread> shutdownHookThreads = new ArrayList<>();
 
     public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
 		config = parseArgs(args);
@@ -100,7 +103,14 @@ public class Bootstrap {
 		start(config);
 	}
 
-	public void start(Config config) {
+    @Override
+    public void stop() {
+        for (Thread thread : shutdownHookThreads) {
+            thread.start();
+        }
+    }
+
+    public void start(Config config) {
 		for (ActorConfig actorConfig : config.actorConfigs) {
 
 			final Class actorClass;
@@ -136,14 +146,17 @@ public class Bootstrap {
 			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
             actorThreadPool.start(actorExecutor);
 
-            Runtime.getRuntime().addShutdownHook(new Thread(actorClass.getSimpleName() + " shutdowner") {
+            Thread thread = new Thread(actorClass.getSimpleName() + " shutdowner") {
                 @Override
                 public void run() {
                     logger.debug("Invoke shutdown hook for actor [{}]'s actor executor", actorClass.getName());
 
                     actorThreadPool.shutdown();
                 }
-            });
+            };
+
+            shutdownHookThreads.add(thread);
+            Runtime.getRuntime().addShutdownHook(thread);
 		}
 	}
 }

@@ -76,7 +76,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
             TaskTarget taskTarget = new TaskTargetImpl(annotationExplorer.getTaskType(), actorName, actorVersion, method.getName());
             Class<?>[] parameterTypes = method.getParameterTypes();
             int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
-            int positionPromisesWaitFor = positionParameter(parameterTypes, Promise[].class);
+            int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
             MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
             method2TaskTargetCache.put(method, descriptor);
         }
