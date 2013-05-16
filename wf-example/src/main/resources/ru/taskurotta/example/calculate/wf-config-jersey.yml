@@ -15,6 +15,7 @@ spreader:
         context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
         properties:
           count: 10
+          startTasks: false
           endpoint: "http://localhost:8080"
           threadPoolSize: 15
           readTimeout: 5000
