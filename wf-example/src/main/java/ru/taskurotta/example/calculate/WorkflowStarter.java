@@ -16,16 +16,20 @@ public class WorkflowStarter {
 
     private int count;
 
+    private boolean startTasks = false;
+
     private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
     public void startWork() {
-        final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
-        final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
+        if(startTasks) {
+            final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
+            final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
 
-        //startAllTasks(decider);
-        startAllTasksInBackground(decider);
+            //startAllTasks(decider);
+            startAllTasksInBackground(decider);
 
-        logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
+            logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
+        }
     }
 
 
@@ -62,4 +66,7 @@ public class WorkflowStarter {
         this.count = count;
     }
 
+    public void setStartTasks(boolean startTasks) {
+        this.startTasks = startTasks;
+    }
 }

@@ -24,6 +24,7 @@
     <bean id="taskCreator" class="ru.taskurotta.example.calculate.WorkflowStarter" init-method="startWork">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>
+        <property name="startTasks" value = "${startTasks}" />
     </bean>
 
 </beans>
