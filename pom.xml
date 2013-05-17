@@ -38,6 +38,7 @@
         <module>wf-backend</module>
         <module>wf-backend-ora</module>
         <module>wf-util</module>
+        <module>wf-console</module>
         <!--<module>wf-fir-poc</module>-->
     </modules>
 

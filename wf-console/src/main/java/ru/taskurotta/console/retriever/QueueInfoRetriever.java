@@ -1,0 +1,10 @@
+package ru.taskurotta.console.retriever;
+
+/**
+ * Task queues information retriever. Provides information such as number
+ * of queues, queue names, task count and such
+ * User: dimadin
+ * Date: 17.05.13 16:05
+ */
+public interface QueueInfoRetriever {
+}

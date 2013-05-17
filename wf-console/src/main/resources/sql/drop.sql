@@ -1,0 +1,1 @@
+-- Drops console DB structure

@@ -1,0 +1,33 @@
+#Location of Spring application context:
+contextLocation: "classpath*:spring/context.xml"
+
+#Common properties (will be available as placeholders in spring context):
+properties:
+  db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
+  db.user: "taskurotta"
+  db.password: "taskurotta"
+
+
+#Http server configuration:
+logging:
+    level: WARN
+    loggers:
+        ru.taskurotta: INFO
+        com.yammer: INFO
+    file:
+        enabled: true
+        archive: true
+        currentLogFilename: ./target/logs/console.log
+        archivedLogFilenamePattern: ./target/logs/console-%d.log.gz
+http:
+    gzip:
+        enabled: false
+    requestLog:
+        file:
+            enabled: true
+            archive: true
+            currentLogFilename: ./target/logs/requests.log
+            archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+
+#config can be extended, see props here:
+#http://dropwizard.codahale.com/manual/core/#configuration-defaults
