@@ -18,22 +18,22 @@ import javax.ws.rs.core.Response;
 @Path("/tasks/poll")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TaskPullerResource {
-    private static final Logger logger = LoggerFactory.getLogger(TaskPullerResource.class);
+public class TaskPollerResource {
+    private static final Logger logger = LoggerFactory.getLogger(TaskPollerResource.class);
     private TaskServer taskServer;
 
     @POST
     @Timed
-    public Response pullAction(ActorDefinitionWrapper actorDefinitionWrapper) throws Exception {
-        logger.debug("pullAction called with entity[{}]", actorDefinitionWrapper);
+    public Response poll(ActorDefinitionWrapper actorDefinitionWrapper) throws Exception {
+        logger.debug("poll called with entity[{}]", actorDefinitionWrapper);
 
         TaskContainer result = null;
 
         try {
             result = taskServer.poll(actorDefinitionWrapper.getActorDefinition());
-            logger.debug("Task pulled for[{}] is[{}]",actorDefinitionWrapper.getActorDefinition().getName(), result);
+            logger.debug("Task polled for[{}] is[{}]",actorDefinitionWrapper.getActorDefinition().getName(), result);
         } catch (Throwable e) {
-            logger.error("Pulling task for[" + actorDefinitionWrapper + "] failed!", e);
+            logger.error("Poll task for[" + actorDefinitionWrapper + "] failed!", e);
             return Response.serverError().build();
         }
 

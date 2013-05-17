@@ -21,7 +21,7 @@
     </bean>
 
 
-    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
+    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
 

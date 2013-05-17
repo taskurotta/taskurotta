@@ -54,10 +54,15 @@ public class TaskSubmitter {
                 throw new Exception("Field \"task\"-> \"method\" should be specified!");
             }
             int submitted = 0;
+            Client client = Client.create();
+            WebResource startResource = client.resource(getContextUrl(config.getEndpoint(), START_RESOURCE));
             while(submitted < config.getCount()) {
                 try {
-                    submitNewTask(extendTask(config.getTask()), config.getEndpoint());
+                    submitNewTask(extendTask(config.getTask()), startResource);
                     submitted++;
+                    if(submitted % 100 == 0) {
+                        System.out.println("Submitted "+submitted+" tasks out of " + config.getCount());
+                    }
                 } catch(Throwable ex) {
                     System.out.println("Cannot submit task("+submitted+"/"+config.getCount()+"): " + ex.getMessage());
                     ex.printStackTrace();
@@ -136,9 +141,7 @@ public class TaskSubmitter {
     }
 
     //copied from wf-dropwizard
-    public static void submitNewTask(TaskContainer task, String endpoint) {
-        Client client = Client.create();
-        WebResource startResource = client.resource(getContextUrl(endpoint, START_RESOURCE));
+    public static void submitNewTask(TaskContainer task, WebResource startResource) {
         try {
             WebResource.Builder rb = startResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);

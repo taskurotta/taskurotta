@@ -23,14 +23,14 @@ public class TaskStarterResource {
 
     @POST
     @Timed
-    public Response startAction(TaskContainerWrapper taskContainerWrapper) {
-        logger.debug("startAction resource called with entity[{}]", taskContainerWrapper);
+    public Response startProcess(TaskContainerWrapper taskContainerWrapper) {
+        logger.debug("startProcess resource called with entity[{}]", taskContainerWrapper);
 
         try {
             taskServer.startProcess(taskContainerWrapper.getTaskContainer());
             logger.debug("Successfully started process task[{}]", taskContainerWrapper.getTaskContainer());
         } catch(Throwable e) {
-            logger.error("Starting of task["+taskContainerWrapper+"] failed!", e);
+            logger.error("Starting of process by task["+taskContainerWrapper+"] failed!", e);
             return Response.serverError().build();
         }
 

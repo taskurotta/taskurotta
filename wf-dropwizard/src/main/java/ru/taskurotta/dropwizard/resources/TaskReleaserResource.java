@@ -23,8 +23,8 @@ public class TaskReleaserResource {
 
     @POST
     @Timed
-    public Response releaseAction(DecisionContainerWrapper resultContainer) {
-        logger.debug("releaseAction resource called with entity[{}]", resultContainer);
+    public Response release(DecisionContainerWrapper resultContainer) {
+        logger.debug("release resource called with entity[{}]", resultContainer);
 
         try {
             taskServer.release(resultContainer.getResultContainer());

@@ -10,7 +10,7 @@
         <property name="password" value="taskurotta"/>
     </bean>
 
-    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPullerResource">
+    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServerGeneral"/>
     </bean>
 
