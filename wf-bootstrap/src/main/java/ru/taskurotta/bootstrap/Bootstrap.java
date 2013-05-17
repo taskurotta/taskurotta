@@ -18,12 +18,15 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.policy.retry.BlankRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
+import ru.taskurotta.util.ActorDefinition;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * User: stukushin
@@ -34,7 +37,9 @@ public class Bootstrap implements BootstrapMBean {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	private Config config;
-    private List<Thread> shutdownHookThreads = new ArrayList<>();
+    private Map<String, Thread> shutdownHookThreadMap = new HashMap<>();
+    private Map<String, ActorConfig> actorConfigMap = new HashMap<>();
+    private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<>();
 
     public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
 		config = parseArgs(args);
@@ -104,59 +109,138 @@ public class Bootstrap implements BootstrapMBean {
 	}
 
     @Override
-    public void stop() {
-        for (Thread thread : shutdownHookThreads) {
+    public Map<String, Integer> getActorPoolSizes() {
+        Map<String, Integer> actorPoolSizes = new HashMap<>();
+
+        Set<String> actorPoolIdSet = actorThreadPoolMap.keySet();
+
+        for (String actorPoolId : actorPoolIdSet) {
+            actorPoolSizes.put(actorPoolId, actorThreadPoolMap.get(actorPoolId).getCurrentSize());
+        }
+
+        return actorPoolSizes;
+    }
+
+    @Override
+    public synchronized void startActorPool(String actorId, int poolSize) {
+        ActorConfig actorConfig = actorConfigMap.get(actorId);
+
+        if (actorConfig == null) {
+            logger.error("Not found actorConfig for actorId [{}]", actorId);
+            return;
+        }
+
+        final Class actorClass = getActorClass(actorConfig.getActorInterface());
+
+        SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
+        TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+
+        RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
+        RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
+
+        ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
+        Profiler profiler = (profilerConfig == null) ? new SimpleProfiler() : profilerConfig.getProfiler(actorClass);
+
+        RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
+        RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
+
+        if (poolSize < 1) {
+            poolSize = actorConfig.getCount();
+        }
+
+        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, poolSize);
+        final String actorPoolId = saveActorPool(actorId, actorThreadPool);
+        Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
+
+        String actorFailoverTime = (String) actorConfig.getProperty(Inspector.FAILOVER_PROPERTY);
+        if(actorFailoverTime != null) {
+            inspector.setFailover(actorFailoverTime);
+        }
+
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
+        actorThreadPool.start(actorExecutor);
+
+        Thread thread = new Thread(actorClass.getSimpleName() + " shutdowner") {
+            @Override
+            public void run() {
+                logger.debug("Invoke shutdown hook for actor [{}] pool [{}]", actorClass.getName(), actorPoolId);
+
+                actorThreadPool.shutdown();
+            }
+        };
+
+        shutdownHookThreadMap.put(actorPoolId, thread);
+        Runtime.getRuntime().addShutdownHook(thread);
+    }
+
+    @Override
+    public synchronized void stopActorPool(String actorPoolId) {
+        Thread thread = shutdownHookThreadMap.get(actorPoolId);
+
+        if (thread == null) {
+            logger.error("Not found shutdown hook thread for actorPoolId [{}]", actorPoolId);
+            return;
+        }
+
+        thread.start();
+        shutdownHookThreadMap.remove(actorPoolId);
+        actorThreadPoolMap.remove(actorPoolId);
+    }
+
+    @Override
+    public void shutdown() {
+        Collection<Thread> threads = shutdownHookThreadMap.values();
+
+        if (threads.isEmpty()) {
+            logger.error("Not found shutdown hook threads");
+            return;
+        }
+
+        for (Thread thread : threads) {
             thread.start();
         }
     }
 
     public void start(Config config) {
 		for (ActorConfig actorConfig : config.actorConfigs) {
+            Class actorClass = getActorClass(actorConfig.getActorInterface());
 
-			final Class actorClass;
+            ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
+            String actorId = actorDefinition.getFullName();
 
-			try {
-				actorClass = Class.forName(actorConfig.getActorInterface());
-			} catch (ClassNotFoundException e) {
-				logger.error("Not found class [{}]", actorConfig.getActorInterface());
-				throw new RuntimeException("Not found class " + actorConfig.getActorInterface(), e);
-			}
+            actorConfigMap.put(actorId, actorConfig);
 
-			SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
-			TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
-
-			RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
-			RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
-
-			ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
-			Profiler profiler = (profilerConfig == null) ? new SimpleProfiler() : profilerConfig.getProfiler(actorClass);
-
-            RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
-            RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
-
-            int count = actorConfig.getCount();
-            final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, count);
-            Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
-
-            String actorFailoverTime = (String)actorConfig.getProperty(Inspector.FAILOVER_PROPERTY);
-            if(actorFailoverTime != null) {
-                inspector.setFailover(actorFailoverTime);
-            }
-
-			ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
-            actorThreadPool.start(actorExecutor);
-
-            Thread thread = new Thread(actorClass.getSimpleName() + " shutdowner") {
-                @Override
-                public void run() {
-                    logger.debug("Invoke shutdown hook for actor [{}]'s actor executor", actorClass.getName());
-
-                    actorThreadPool.shutdown();
-                }
-            };
-
-            shutdownHookThreads.add(thread);
-            Runtime.getRuntime().addShutdownHook(thread);
+            startActorPool(actorId, actorConfig.getCount());
 		}
 	}
+
+    private Class getActorClass(String actorInterfaceName) {
+        try {
+            return Class.forName(actorInterfaceName);
+        } catch (ClassNotFoundException e) {
+            logger.error("Not found class [{}]", actorInterfaceName);
+            throw new RuntimeException("Not found class " + actorInterfaceName, e);
+        }
+    }
+
+    private String saveActorPool(String actorId, ActorThreadPool actorThreadPool) {
+        Set<String> actorPoolIdSet = actorThreadPoolMap.keySet();
+
+        int number = 0;
+        for (String actorPoolId : actorPoolIdSet) {
+            if (actorPoolId.contains(actorId)) {
+                number++;
+            }
+        }
+
+        String newActorPoolId = createActorPoolId(actorId, number);
+
+        actorThreadPoolMap.put(newActorPoolId, actorThreadPool);
+
+        return newActorPoolId;
+    }
+
+    private String createActorPoolId(String actorId, int number) {
+        return actorId + "[" + number + "]";
+    }
 }

@@ -3,18 +3,12 @@ package ru.taskurotta.bootstrap;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.RuntimeProcessor;
-import ru.taskurotta.RuntimeProvider;
-import ru.taskurotta.RuntimeProviderManager;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
-import ru.taskurotta.client.internal.TaskSpreaderCommon;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.internal.GeneralRuntimeProcessor;
-import ru.taskurotta.policy.retry.BlankRetryPolicy;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
-import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -81,14 +75,14 @@ public class ActorThreadPoolTest {
     public void testStart() throws Exception {
         TimeUnit.SECONDS.sleep(1);
 
-        assertEquals(size, actorThreadPool.getActiveActorExecutorThreadCount());
+        assertEquals(size, actorThreadPool.getCurrentSize());
     }
 
     @Test
     public void testMute() throws Exception {
         TimeUnit.SECONDS.sleep(5);
 
-        assertEquals(1, actorThreadPool.getActiveActorExecutorThreadCount());
+        assertEquals(1, actorThreadPool.getCurrentSize());
     }
 
     @Test
@@ -99,6 +93,6 @@ public class ActorThreadPoolTest {
 
         TimeUnit.SECONDS.sleep(1);
 
-        assertEquals(10, actorThreadPool.getActiveActorExecutorThreadCount());
+        assertEquals(10, actorThreadPool.getCurrentSize());
     }
 }

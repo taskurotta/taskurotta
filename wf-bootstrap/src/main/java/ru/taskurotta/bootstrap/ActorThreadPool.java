@@ -3,6 +3,7 @@ package ru.taskurotta.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -148,12 +149,12 @@ public class ActorThreadPool {
         }
     }
 
-    public int getActiveActorExecutorThreadCount() {
+    public int getCurrentSize() {
         return activeActorExecutorThreadCount;
     }
 
     private void createActorExecutorThread(int i) {
-        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + i);
+        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + new Date() + "-" + i);
         actorExecutorThreads[i] = thread;
         thread.start();
 
