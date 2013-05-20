@@ -42,7 +42,7 @@ public class ActorExecutor implements Runnable {
             profiler.cycleStart();
 
             try {
-                log.trace("Poll executor thread [{}]", Thread.currentThread().getName());
+                log.trace("Thread [{}]: Poll", Thread.currentThread().getName());
                 Task task = taskSpreader.poll();
 
                 if (task == null) {
@@ -50,8 +50,10 @@ public class ActorExecutor implements Runnable {
                     continue;
                 }
 
+                log.trace("Thread [{}]: execute task [{}]", Thread.currentThread().getName(), task);
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
+                log.trace("Thread [{}]: Release decision [{}] of task [{}]", Thread.currentThread().getName(), taskDecision, task);
                 taskSpreader.release(taskDecision);
             } catch(ServerConnectionException ex) {
                 log.error("Connection to task server error. {}: {}", ex.getCause().getClass(), ex.getMessage());

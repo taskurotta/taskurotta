@@ -119,13 +119,9 @@ public class ActorThreadPool {
 
         try {
             while (hasAlive.get()) {
-
-                System.out.print("."); // show user that it's work
-
                 for (Thread thread : actorExecutorThreads) {
                     if (thread.isAlive()) {
                         if (System.currentTimeMillis() - startTime.get() >= SHUTDOWN_TIMEOUT) {
-                            System.out.println(); // for new line in log console output
                             logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
                             return;
                         }
@@ -141,7 +137,6 @@ public class ActorThreadPool {
                 }
             }
 
-            System.out.println(); // for new line in log console output
             logger.info("Successfully shutdown pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - startTime.get()) / 1000);
         } catch (InterruptedException e) {
             logger.error("Throw exception while try to gracefully shutdown actor [" + actorClass.getName() + "]", e);
