@@ -1,13 +1,13 @@
 package ru.taskurotta.backend.storage;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 
 /**
  * User: moroz

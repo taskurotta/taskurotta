@@ -1,4 +1,4 @@
-package ru.taskurotta.core;
+package ru.taskurotta.transport.model;
 
 /**
  * Created by void 22.03.13 13:27

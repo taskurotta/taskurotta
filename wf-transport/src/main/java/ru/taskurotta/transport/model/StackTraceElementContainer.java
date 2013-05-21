@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.storage.model;
+package ru.taskurotta.transport.model;
 
 public class StackTraceElementContainer {
     private String declaringClass;

@@ -1,19 +1,19 @@
 package ru.taskurotta.client.memory;
 
-import java.util.UUID;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Assert;
 import org.junit.Test;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
+
+import java.util.UUID;
+
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: stukushin

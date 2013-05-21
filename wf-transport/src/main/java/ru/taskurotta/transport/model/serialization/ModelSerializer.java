@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.storage.model.serialization;
+package ru.taskurotta.transport.model.serialization;
 
 /**
  * User: moroz

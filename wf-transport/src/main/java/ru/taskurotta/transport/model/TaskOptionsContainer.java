@@ -1,7 +1,4 @@
-package ru.taskurotta.backend.storage.model;
-
-import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.ArgType;
+package ru.taskurotta.transport.model;
 
 import java.util.Arrays;
 
@@ -11,7 +8,7 @@ import java.util.Arrays;
 public class TaskOptionsContainer {
 
     private ArgType[] argTypes;
-    private ActorSchedulingOptions actorSchedulingOptions;
+    private ActorSchedulingOptionsContainer actorSchedulingOptions;
     private ArgContainer[] promisesWaitFor;
 
     public TaskOptionsContainer() {
@@ -21,7 +18,7 @@ public class TaskOptionsContainer {
         this.argTypes = argTypes;
     }
 
-    public TaskOptionsContainer(ArgType[] argTypes, ActorSchedulingOptions actorSchedulingOptions, ArgContainer[] promisesWaitFor) {
+    public TaskOptionsContainer(ArgType[] argTypes, ActorSchedulingOptionsContainer actorSchedulingOptions, ArgContainer[] promisesWaitFor) {
         this.argTypes = argTypes;
         this.actorSchedulingOptions = actorSchedulingOptions;
         this.promisesWaitFor = promisesWaitFor;
@@ -31,7 +28,7 @@ public class TaskOptionsContainer {
         return argTypes;
     }
 
-    public ActorSchedulingOptions getActorSchedulingOptions() {
+    public ActorSchedulingOptionsContainer getActorSchedulingOptions() {
         return actorSchedulingOptions;
     }
 

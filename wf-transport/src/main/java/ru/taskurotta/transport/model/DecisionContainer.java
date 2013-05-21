@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.storage.model;
+package ru.taskurotta.transport.model;
 
 import java.util.Arrays;
 import java.util.UUID;

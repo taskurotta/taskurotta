@@ -1,16 +1,16 @@
 package ru.taskurotta.dropwizard.test.client.serialization;
 
-import java.util.UUID;
-
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
+
+import java.util.UUID;
 
 public class EntitiesFactory {
 

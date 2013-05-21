@@ -1,8 +1,8 @@
 package ru.taskurotta.internal.core;
 
-import ru.taskurotta.core.ArgType;
+import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.TaskType;
 
 /**
  * Created by void 22.03.13 13:26

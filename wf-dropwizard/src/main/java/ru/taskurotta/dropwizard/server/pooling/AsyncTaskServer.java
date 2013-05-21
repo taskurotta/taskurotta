@@ -1,11 +1,11 @@
 package ru.taskurotta.dropwizard.server.pooling;
 
-import java.util.concurrent.Callable;
-
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
+
+import java.util.concurrent.Callable;
 
 
 /**

@@ -3,7 +3,7 @@ package ru.taskurotta.internal.proxy;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;

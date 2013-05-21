@@ -2,7 +2,7 @@ package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.annotation.WorkerClient;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.TaskType;
 
 import java.lang.annotation.Annotation;
 

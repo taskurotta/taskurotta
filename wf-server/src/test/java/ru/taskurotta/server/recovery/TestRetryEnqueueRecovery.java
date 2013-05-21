@@ -1,23 +1,21 @@
 package ru.taskurotta.server.recovery;
 
+import junit.framework.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
+import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.util.ActorUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
-
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.core.TaskType;
-import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.util.ActorUtils;
 
 public class TestRetryEnqueueRecovery {
 

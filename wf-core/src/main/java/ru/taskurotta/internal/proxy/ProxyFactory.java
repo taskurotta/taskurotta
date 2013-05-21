@@ -1,6 +1,6 @@
 package ru.taskurotta.internal.proxy;
 
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.internal.RuntimeContext;
 
 import java.lang.annotation.Annotation;

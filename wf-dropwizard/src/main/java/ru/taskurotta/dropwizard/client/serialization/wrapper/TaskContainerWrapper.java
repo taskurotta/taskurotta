@@ -1,6 +1,6 @@
 package ru.taskurotta.dropwizard.client.serialization.wrapper;
 
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 public class TaskContainerWrapper {
 

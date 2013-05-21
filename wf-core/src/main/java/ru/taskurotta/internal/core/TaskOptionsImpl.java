@@ -1,7 +1,7 @@
 package ru.taskurotta.internal.core;
 
 import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.ArgType;
+import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskOptions;
 

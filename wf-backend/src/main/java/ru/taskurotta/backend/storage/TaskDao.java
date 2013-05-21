@@ -1,9 +1,9 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.UUID;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import java.util.UUID;
 
 /**
  * User: moroz

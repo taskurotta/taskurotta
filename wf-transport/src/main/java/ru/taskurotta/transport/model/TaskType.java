@@ -1,4 +1,4 @@
-package ru.taskurotta.core;
+package ru.taskurotta.transport.model;
 
 /**
  * User: stukushin

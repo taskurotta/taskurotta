@@ -6,8 +6,8 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.storage.ProcessBackend;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

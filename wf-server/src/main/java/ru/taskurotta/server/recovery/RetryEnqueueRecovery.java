@@ -5,8 +5,8 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.server.recovery.base.AbstractIterableRecovery;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.List;

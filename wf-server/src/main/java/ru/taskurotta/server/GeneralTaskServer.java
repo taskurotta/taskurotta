@@ -1,8 +1,5 @@
 package ru.taskurotta.server;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
@@ -12,14 +9,16 @@ import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario

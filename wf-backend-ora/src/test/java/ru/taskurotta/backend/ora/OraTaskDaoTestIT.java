@@ -4,8 +4,8 @@ import junit.framework.Assert;
 import org.junit.Test;
 import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.storage.OraTaskDao;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * User: moroz

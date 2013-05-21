@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.dependency;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.dependency.model.TaskDependency;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -8,16 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.backend.dependency.model.TaskDependency;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.core.ArgType;
 
 /**
  * User: romario

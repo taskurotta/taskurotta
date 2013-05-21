@@ -1,19 +1,16 @@
 package ru.taskurotta.dropwizard.test.client.serialization;
 
-import java.io.File;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
+import ru.taskurotta.transport.model.TaskContainer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
 
 public class TaskContainerSerializationTest {
 

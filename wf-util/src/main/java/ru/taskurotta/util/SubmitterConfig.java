@@ -1,6 +1,6 @@
 package ru.taskurotta.util;
 
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * Configuration of a task to start.
