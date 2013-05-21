@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.internal;
+package ru.taskurotta.dropwizard.server;
 
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 

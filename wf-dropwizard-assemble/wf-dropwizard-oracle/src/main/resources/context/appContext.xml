@@ -33,7 +33,7 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="executorServiceFactory" class="ru.taskurotta.dropwizard.internal.pooling.ExecutorServiceFactory">
+    <bean id="executorServiceFactory" class="ru.taskurotta.dropwizard.server.pooling.ExecutorServiceFactory">
         <property name="threads" value="${internalPool.poolSize}"/>
     </bean>
 

@@ -33,6 +33,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-console</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <version>${spring.version}</version>
@@ -48,6 +53,7 @@
             <artifactId>aspectjweaver</artifactId>
             <version>1.6.7</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -89,7 +95,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>ru.taskurotta.dropwizard.service.TaskQueueService</mainClass>
+                                    <mainClass>ru.taskurotta.dropwizard.server.core.SpringTaskServer</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

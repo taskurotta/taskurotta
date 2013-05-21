@@ -1,0 +1,34 @@
+<!-- Top navbar -->
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="#">Console actions: </a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li ng-class="isActiveTab('/console/home')"><a href="#console/home">Home</a></li>
+                    <li ng-class="isActiveTab('/console/actors')"><a href="#console/actors">Actors</a></li>
+                    <li ng-class="isActiveTab('/console/queues')"><a href="#console/queues">Queues</a></li>
+                    <li ng-class="isActiveTab('/console/processes')"><a href="#console/processes">Processes</a></li>
+                    <li><a href="#console/tasks">Tasks</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Statistics <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="nav-header">Daily</li>
+                            <li><a href="#console/stat">Type one</a></li>
+                            <li><a href="#console/stat">Type two</a></li>
+                            <li class="divider"></li>
+                            <li class="nav-header">Aggregated</li>
+                            <li><a href="#console/stat">Type one</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#console/about">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

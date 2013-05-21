@@ -1,6 +1,7 @@
-package ru.taskurotta.dropwizard.service;
+package ru.taskurotta.dropwizard.server.core;
 
 import com.yammer.dropwizard.Service;
+import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.metrics.core.HealthCheck;
@@ -13,24 +14,24 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
-import ru.taskurotta.dropwizard.TaskQueueConfig;
-import ru.taskurotta.dropwizard.internal.YamlConfigBackend;
+import ru.taskurotta.dropwizard.server.YamlConfigBackend;
 
 import javax.ws.rs.Path;
 import java.util.Map;
 import java.util.Properties;
 
-public class TaskQueueService extends Service<TaskQueueConfig> {
+public class SpringTaskServer extends Service<TaskServerConfig> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskQueueService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpringTaskServer.class);
 
     @Override
-    public void initialize(Bootstrap<TaskQueueConfig> bootstrap) {
+    public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
+        bootstrap.addBundle(new AssetsBundle("/assets", "/console"));
     }
 
     @Override
-    public void run(final TaskQueueConfig configuration, Environment environment)
+    public void run(final TaskServerConfig configuration, Environment environment)
             throws Exception {
 
         logger.debug("YAML config custom properties getted[{}]", configuration.getProperties());
@@ -101,7 +102,7 @@ public class TaskQueueService extends Service<TaskQueueConfig> {
     }
 
     public static void main(String[] args) throws Exception {
-        new TaskQueueService().run(args);
+        new SpringTaskServer().run(args);
     }
 
 }

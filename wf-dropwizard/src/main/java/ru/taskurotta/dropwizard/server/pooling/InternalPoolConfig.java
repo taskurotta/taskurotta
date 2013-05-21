@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.internal.pooling;
+package ru.taskurotta.dropwizard.server.pooling;
 
 import java.util.Properties;
 

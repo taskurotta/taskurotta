@@ -1,16 +1,14 @@
-package ru.taskurotta.dropwizard;
-
-import java.util.Properties;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
-import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
-import ru.taskurotta.dropwizard.internal.pooling.InternalPoolConfig;
+package ru.taskurotta.dropwizard.server.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
+import org.hibernate.validator.constraints.NotEmpty;
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
+import ru.taskurotta.dropwizard.server.pooling.InternalPoolConfig;
 
-public class TaskQueueConfig extends Configuration {
+import java.util.Properties;
+
+public class TaskServerConfig extends Configuration {
 
     @JsonProperty
     private Properties properties;

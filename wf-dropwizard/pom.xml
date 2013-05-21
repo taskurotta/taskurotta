@@ -52,6 +52,11 @@
             <artifactId>jersey-apache-client</artifactId>
             <version>1.17.1</version>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.bazaarvoice.dropwizard</groupId>-->
+            <!--<artifactId>dropwizard-configurable-assets-bundle</artifactId>-->
+            <!--<version>0.1.9</version>-->
+        <!--</dependency>-->
 
     </dependencies>
 

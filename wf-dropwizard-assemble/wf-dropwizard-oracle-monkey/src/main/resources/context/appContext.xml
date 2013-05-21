@@ -82,7 +82,7 @@
         <constructor-arg name="checkpointService" ref="oraCheckpointService"/>
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.internal.YamlConfigBackend"/>
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend"/>
 
     <!-- /Backends -->
 
