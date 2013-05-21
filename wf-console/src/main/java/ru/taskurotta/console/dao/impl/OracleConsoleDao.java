@@ -8,4 +8,7 @@ import ru.taskurotta.console.dao.ConsoleDao;
  * Date: 17.05.13 16:37
  */
 public class OracleConsoleDao implements ConsoleDao {
+
+    //TODO: implement it
+
 }

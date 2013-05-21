@@ -33,7 +33,11 @@
             <artifactId>cglib-nodep</artifactId>
             <version>2.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-backend</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

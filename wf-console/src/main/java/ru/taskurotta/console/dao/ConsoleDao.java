@@ -7,4 +7,7 @@ package ru.taskurotta.console.dao;
  * Date: 17.05.13 16:04
  */
 public interface ConsoleDao {
+
+    //TODO: implement it
+
 }
