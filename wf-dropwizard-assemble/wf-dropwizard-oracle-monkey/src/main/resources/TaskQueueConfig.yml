@@ -51,6 +51,7 @@ logging:
     level: WARN
     loggers:
         ru.taskurotta: INFO
+        ru.taskurotta.console: INFO
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend.task: DEBUG
 #        ru.taskurotta.backend: INFO

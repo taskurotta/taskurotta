@@ -25,4 +25,12 @@ public class QueueVO {
     public void setCount(int count) {
         this.count = count;
     }
+
+    @Override
+    public String toString() {
+        return "QueueVO{" +
+                "name='" + name + '\'' +
+                ", count=" + count +
+                '}';
+    }
 }

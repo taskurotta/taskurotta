@@ -33,6 +33,27 @@ public class OraQueueDao {
         this.dataSource = dataSource;
     }
 
+
+    public int countTasks(String queueName) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        int result = 0;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement("select count(task_id) cnt from " + queueName);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                result = rs.getInt("cnt");
+            }
+            return result;
+        } catch (SQLException ex) {
+            log.error("Count task database error for queue["+queueName+"]", ex);
+            throw new BackendCriticalException("Count task database error for queue[\"+queueName+\"]", ex);
+        } finally {
+            closeResources(ps, connection);
+        }
+    }
+
     public void deleteTask(UUID taskId, String queueName) {
         Connection connection = null;
         PreparedStatement ps = null;

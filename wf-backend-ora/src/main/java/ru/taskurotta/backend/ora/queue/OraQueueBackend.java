@@ -1,11 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -16,13 +10,22 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * User: moroz, dudin
  * Date: 04.04.13
  */
-public class OraQueueBackend implements QueueBackend {
+public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private final static Logger log = LoggerFactory.getLogger(OraQueueBackend.class);
 
@@ -141,5 +144,26 @@ public class OraQueueBackend implements QueueBackend {
 
     public void setCheckpointService(CheckpointService checkpointService) {
         this.checkpointService = checkpointService;
+    }
+
+    @Override
+    public List<String> getQueueList() {
+        List<String> result = null;
+        ActorPreferences[] configuredActors = configBackend.getAllActorPreferences();
+        if(configuredActors!=null && configuredActors.length > 0) {
+            result = new ArrayList<String>();
+            for(ActorPreferences actorConfig: configuredActors) {
+                if(!"default".equalsIgnoreCase(actorConfig.getQueueName())) {//skipping default actor
+                    result.add(actorConfig.getQueueName());
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public int getQueueTaskCount(String queueName) {
+        //TODO: implement it
+        return 0;
     }
 }

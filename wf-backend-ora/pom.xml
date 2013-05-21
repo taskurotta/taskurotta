@@ -46,6 +46,11 @@
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-console</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
             <artifactId>wf-backend</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

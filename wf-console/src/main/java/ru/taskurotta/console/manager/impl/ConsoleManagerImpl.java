@@ -1,5 +1,6 @@
 package ru.taskurotta.console.manager.impl;
 
+import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.console.manager.ConsoleManager;
 import ru.taskurotta.console.model.QueueVO;
 import ru.taskurotta.console.retriever.CheckpointInfoRetriever;
@@ -9,6 +10,7 @@ import ru.taskurotta.console.retriever.TaskInfoRetriever;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -36,6 +38,17 @@ public class ConsoleManagerImpl implements ConsoleManager {
             }
         }
         return result;
+    }
+
+    @Override
+    public List<TaskContainer> getProcessTasks(UUID processUuid) {
+        return taskInfo.getProcessTasks(processUuid);
+    }
+
+    @Override
+    public List<TaskContainer> getEnqueueTasks(String queueName) {
+        //TODO: implement it
+        return null;
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

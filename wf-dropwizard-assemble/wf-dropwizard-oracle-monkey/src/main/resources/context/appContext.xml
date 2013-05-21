@@ -22,6 +22,8 @@
         <property name="password" value="${db.password}"/>
     </bean>
 
+
+    <!-- REST resources -->
     <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
@@ -32,6 +34,15 @@
 
     <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
         <property name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id = "consoleQueueResources" class = "ru.taskurotta.console.resources.QueueListResource">
+        <property name="consoleManager" ref="consoleManager" />
+    </bean>
+    <!-- /REST resources -->
+
+    <bean id = "consoleManager" class = "ru.taskurotta.console.manager.impl.ConsoleManagerImpl">
+        <property name="queueInfo" ref="queueBackend" />
     </bean>
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
