@@ -1,15 +1,15 @@
 package ru.taskurotta.server.recovery;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * First pre-mega-supa-alfa of full recovery process;

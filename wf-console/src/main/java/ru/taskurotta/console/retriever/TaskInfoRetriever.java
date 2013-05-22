@@ -1,6 +1,6 @@
 package ru.taskurotta.console.retriever;
 
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.List;
 import java.util.UUID;

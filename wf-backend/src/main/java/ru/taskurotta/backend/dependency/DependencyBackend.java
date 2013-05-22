@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.dependency;
 
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * User: romario

@@ -3,7 +3,7 @@ package ru.taskurotta.internal.proxy;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.DeciderClient;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.TaskType;
 
 import java.lang.annotation.Annotation;
 

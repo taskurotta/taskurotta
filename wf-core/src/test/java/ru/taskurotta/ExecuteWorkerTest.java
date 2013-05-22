@@ -6,9 +6,9 @@ import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.test.TestTasks;
+import ru.taskurotta.transport.model.TaskType;
 
 import java.util.UUID;
 

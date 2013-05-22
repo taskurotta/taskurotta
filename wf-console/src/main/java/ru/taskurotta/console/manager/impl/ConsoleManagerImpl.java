@@ -1,12 +1,12 @@
 package ru.taskurotta.console.manager.impl;
 
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.console.manager.ConsoleManager;
 import ru.taskurotta.console.model.QueueVO;
 import ru.taskurotta.console.retriever.CheckpointInfoRetriever;
 import ru.taskurotta.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.console.retriever.TaskInfoRetriever;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         List<QueueVO> result = null;
         List<String> queues = queueInfo.getQueueList();
         if(queues!=null && !queues.isEmpty()) {
-            result = new ArrayList<QueueVO>();
+            result = new ArrayList<>();
             for(String queueName: queues) {
                 QueueVO queueVO = new QueueVO();
                 queueVO.setName(queueName);

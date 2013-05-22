@@ -1,18 +1,17 @@
 package ru.taskurotta.dropwizard.server.pooling;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.util.ActorDefinition;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
-
-import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.util.ActorDefinition;
 
 /**
  * TaskServer interface implementation with task execution via ExecutorService,

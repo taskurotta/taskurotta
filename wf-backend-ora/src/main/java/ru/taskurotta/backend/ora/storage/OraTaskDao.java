@@ -1,22 +1,22 @@
 package ru.taskurotta.backend.ora.storage;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.storage.TaskDao;
+import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.serialization.JsonSerializer;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.UUID;
-import javax.sql.DataSource;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.storage.TaskDao;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
-import ru.taskurotta.exception.BackendCriticalException;
 
 /**
  * User: moroz
@@ -30,8 +30,8 @@ public class OraTaskDao implements TaskDao {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<TaskContainer>(TaskContainer.class);
-    private JsonSerializer<DecisionContainer> decisionSerializer = new JsonSerializer<DecisionContainer>(DecisionContainer.class);
+    private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
+    private JsonSerializer<DecisionContainer> decisionSerializer = new JsonSerializer<>(DecisionContainer.class);
 
 
     public OraTaskDao(DataSource dataSource) {

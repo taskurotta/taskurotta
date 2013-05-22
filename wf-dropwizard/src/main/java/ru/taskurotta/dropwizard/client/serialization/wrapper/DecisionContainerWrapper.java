@@ -1,6 +1,6 @@
 package ru.taskurotta.dropwizard.client.serialization.wrapper;
 
-import ru.taskurotta.backend.storage.model.DecisionContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
 
 public class DecisionContainerWrapper {
 

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
-import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
+import ru.taskurotta.transport.model.serialization.JsonSerializer;
 import ru.taskurotta.exception.BackendCriticalException;
 
 /**

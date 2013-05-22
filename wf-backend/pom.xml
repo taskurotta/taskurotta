@@ -17,6 +17,11 @@
 			<artifactId>wf-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-transport</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	</dependencies>
 
 </project>

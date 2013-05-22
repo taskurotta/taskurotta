@@ -1,5 +1,7 @@
 package ru.taskurotta.core;
 
+import ru.taskurotta.transport.model.TaskType;
+
 /**
  * Instance of TaskTarget implementation should be immutable object.
  * TODO: Method overloading. You should use different method names (in worker and decider).

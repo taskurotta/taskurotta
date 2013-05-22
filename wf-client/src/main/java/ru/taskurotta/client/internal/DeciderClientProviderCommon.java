@@ -1,12 +1,12 @@
 package ru.taskurotta.client.internal;
 
 import ru.taskurotta.ProxyFactory;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.UUID;
 

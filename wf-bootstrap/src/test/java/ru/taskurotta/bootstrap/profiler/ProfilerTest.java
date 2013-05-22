@@ -15,10 +15,10 @@ import ru.taskurotta.client.memory.ClientServiceManagerMemory;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.GeneralRuntimeProvider;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;

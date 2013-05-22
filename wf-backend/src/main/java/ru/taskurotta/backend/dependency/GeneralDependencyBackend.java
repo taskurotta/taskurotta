@@ -6,12 +6,11 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.core.ArgType;
-import ru.taskurotta.core.Promise;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.UUID;
 
@@ -144,11 +143,12 @@ public class GeneralDependencyBackend implements DependencyBackend {
             }
         }
 
-        Promise<?>[] promisesWaitFor = taskOptionsContainer == null ? null : taskOptionsContainer.getPromisesWaitFor();
-        if (promisesWaitFor != null) {
-            for (Promise<?> promise : promisesWaitFor) {
-                if (!promise.isReady()) {
-                    modification.linkItem(childTaskId, promise.getId());
+        if (taskOptionsContainer != null && taskOptionsContainer.getPromisesWaitFor() != null) {
+            ArgContainer[] promisesWaitForArgContainers = taskOptionsContainer.getPromisesWaitFor();
+
+            for (ArgContainer argContainer : promisesWaitForArgContainers) {
+                if (argContainer.isReady()) {
+                    modification.linkItem(childTaskId, argContainer.getTaskId());
                 }
             }
         }

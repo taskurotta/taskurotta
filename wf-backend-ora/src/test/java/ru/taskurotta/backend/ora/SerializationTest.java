@@ -1,21 +1,20 @@
 package ru.taskurotta.backend.ora;
 
-import java.util.Date;
-import java.util.UUID;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.ErrorContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.ArgType;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskType;
-import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
+import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.TaskType;
+
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * User: moroz
@@ -44,9 +43,9 @@ public class SerializationTest {
 
 
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
-        ActorSchedulingOptions actoropts = new ActorSchedulingOptionsImpl();
-        actoropts.setCustomId(null);
-        TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actoropts, null);
+        ActorSchedulingOptionsContainer actorSchedulingOptions = new ActorSchedulingOptionsContainer();
+        actorSchedulingOptions.setCustomId(null);
+        TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actorSchedulingOptions, null);
 
 
         return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);

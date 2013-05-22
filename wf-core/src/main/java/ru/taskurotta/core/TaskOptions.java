@@ -1,5 +1,7 @@
 package ru.taskurotta.core;
 
+import ru.taskurotta.transport.model.ArgType;
+
 /**
  * User: stukushin
  * Date: 15.04.13

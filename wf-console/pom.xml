@@ -38,6 +38,11 @@
             <artifactId>wf-backend</artifactId>
             <version>${parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-transport</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

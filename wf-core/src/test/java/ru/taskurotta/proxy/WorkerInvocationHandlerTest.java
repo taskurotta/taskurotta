@@ -3,11 +3,11 @@ package ru.taskurotta.proxy;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.proxy.ProxyInvocationHandler;
+import ru.taskurotta.transport.model.TaskType;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

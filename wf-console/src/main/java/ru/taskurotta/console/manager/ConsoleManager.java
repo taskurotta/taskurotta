@@ -1,7 +1,7 @@
 package ru.taskurotta.console.manager;
 
-import ru.taskurotta.backend.storage.model.TaskContainer;
 import ru.taskurotta.console.model.QueueVO;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.List;
 import java.util.UUID;

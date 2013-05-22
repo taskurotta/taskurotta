@@ -1,11 +1,11 @@
 package ru.taskurotta.backend.storage;
 
+import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+
 import java.util.List;
 import java.util.UUID;
-
-import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
-import ru.taskurotta.backend.storage.model.DecisionContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
 
 /**
  * User: romario

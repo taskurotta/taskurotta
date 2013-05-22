@@ -1,7 +1,7 @@
 package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.ArgType;
+import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;

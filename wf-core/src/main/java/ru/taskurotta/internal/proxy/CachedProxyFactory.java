@@ -2,7 +2,7 @@ package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
-import ru.taskurotta.core.ArgType;
+import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.internal.RuntimeContext;
 

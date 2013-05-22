@@ -1,12 +1,12 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.UUID;
 
 /**
  * User: romario

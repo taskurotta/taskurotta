@@ -1,7 +1,5 @@
 package ru.taskurotta.client.memory;
 
-import java.util.UUID;
-
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
@@ -17,13 +15,15 @@ import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.test.TestTasks;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
+
+import java.util.UUID;
 
 /**
  * User: romario

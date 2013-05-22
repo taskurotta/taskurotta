@@ -1,15 +1,15 @@
 package ru.taskurotta.backend.test.storage.serialization;
 
-import java.util.UUID;
-
 import org.junit.Assert;
 import org.junit.Test;
-import ru.taskurotta.backend.storage.model.ArgContainer;
-import ru.taskurotta.backend.storage.model.TaskContainer;
-import ru.taskurotta.backend.storage.model.TaskOptionsContainer;
-import ru.taskurotta.backend.storage.model.serialization.JsonSerializer;
-import ru.taskurotta.core.ArgType;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.transport.model.serialization.JsonSerializer;
+
+import java.util.UUID;
 
 /**
  * User: moroz

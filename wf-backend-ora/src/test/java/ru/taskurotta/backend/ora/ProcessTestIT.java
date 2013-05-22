@@ -4,7 +4,7 @@ import org.junit.Test;
 import ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService;
 import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.storage.OraProcessBackend;
-import ru.taskurotta.backend.storage.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * User: moroz

@@ -13,7 +13,7 @@ import ru.taskurotta.annotation.LinearRetry;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.core.TaskType;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.exception.TaskTargetRequiredException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
@@ -118,7 +118,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.WORKER, workerName, version, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
+                taskTargetsMap = new HashMap<>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
@@ -157,7 +157,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.DECIDER_ASYNCHRONOUS, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
+                taskTargetsMap = new HashMap<>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
@@ -194,7 +194,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.DECIDER_START, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
+                taskTargetsMap = new HashMap<>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
