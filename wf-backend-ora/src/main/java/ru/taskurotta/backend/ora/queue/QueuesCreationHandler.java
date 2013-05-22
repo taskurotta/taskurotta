@@ -1,10 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,8 +10,13 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.sql.DataSource;
 
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.exception.BackendCriticalException;
 
 /**
  * Handler containing logic for queues auto creation.
@@ -27,7 +27,7 @@ public class QueuesCreationHandler {
     private final static Logger log = LoggerFactory.getLogger(QueuesCreationHandler.class);
 
     private static final String TABLE_PREFIX = "qb$";
-    private final ConcurrentHashMap<String, Long> queueNames = new ConcurrentHashMap<String, Long>();
+    private final ConcurrentHashMap<String, String> queueNames = new ConcurrentHashMap<String, String>();
 
     private DataSource dataSource;
 
@@ -44,40 +44,43 @@ public class QueuesCreationHandler {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
-            String query = "SELECT COUNT(*) cnt FROM dba_tables where table_name = ?";
+            String query = "SELECT 1 FROM " + queueName;
             ps = connection.prepareStatement(query);
-            ps.setString(1, queueName.toUpperCase());
             ResultSet rs = ps.executeQuery();
-            int count = 0;
-            if (rs.next()) {
-                count = rs.getInt("cnt");
-            }
-            return count > 0;
+            rs.next();
+            return true;
         } catch (SQLException ex) {
-            log.error("Database error", ex);
-            throw new BackendCriticalException("Database error", ex);
+            return false;
         } finally {
             closeResources(ps, connection);
         }
-
     }
 
 
     public void registerAndCreateQueue(String actorId) {
+        registerAndCreateQueue(actorId, null);
+    }
+
+
+    public void registerAndCreateQueue(String actorId, String queueTableName) {
         synchronized (queueNames) {
             if (!queueNames.containsKey(actorId)) {
                 log.warn("Create queue for target [{}]", actorId);
-                long queueId = registerQueue(actorId);
-                queueNames.put(actorId, queueId);
+                long queueId = registerQueue(actorId, queueTableName);
+                if (queueTableName == null) {
+                    queueTableName = TABLE_PREFIX + queueId;
+                }
+                queueNames.put(actorId, queueTableName);
                 log.warn("Queues count [{}] ", queueNames.size());
-                createQueue(TABLE_PREFIX + queueId);
+                if (!queueExists(queueTableName)) {
+                    createQueue(queueTableName);
+                }
             }
         }
     }
 
-    public void createQueue(String queueName) {
-
-        log.warn("!!!!! Creating queue = " + queueName);
+    public void createQueue(String queueTableName) {
+        log.warn("!!!!! Creating queue = " + queueTableName);
         Connection connection = null;
         Statement statement = null;
         try {
@@ -93,8 +96,8 @@ public class QueuesCreationHandler {
                     " PRIMARY KEY (TASK_ID))";
             String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
             statement = connection.createStatement();
-            statement.addBatch(createQuery.replace(":queue_name", queueName));
-            statement.addBatch(indexQuery.replace(":queue_name", queueName));
+            statement.addBatch(createQuery.replace(":queue_name", queueTableName));
+            statement.addBatch(indexQuery.replace(":queue_name", queueTableName));
             statement.executeBatch();
             connection.commit();
             connection.setAutoCommit(true);
@@ -106,17 +109,18 @@ public class QueuesCreationHandler {
         }
     }
 
-    public Map<String, Long> getQueueNames() {
+    public Map<String, String> getQueueNames() {
         PreparedStatement ps = null;
         Connection connection = null;
         try {
-            Map<String, Long> result = new HashMap<String, Long>();
+            Map<String, String> result = new HashMap<String, String>();
             connection = dataSource.getConnection();
             String query = "SELECT * FROM QB$QUEUE_NAMES";
             ps = connection.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                result.put(rs.getString("queue_name"), rs.getLong("queue_id"));
+                String queueTableName = (rs.getString("queue_table_name") == null) ? TABLE_PREFIX + rs.getLong("queue_id") : rs.getString("queue_table_name");
+                result.put(rs.getString("queue_name"), queueTableName);
             }
             return result;
         } catch (SQLException ex) {
@@ -128,17 +132,25 @@ public class QueuesCreationHandler {
     }
 
     public long registerQueue(String queueName) {
+        return registerQueue(queueName, null);
+    }
+
+
+    public long registerQueue(String queueName, String queueTableName) {
         Connection connection = null;
         CallableStatement ps = null;
         try {
             long result;
             connection = dataSource.getConnection();
-            String query = "begin\n INSERT INTO QB$QUEUE_NAMES (QUEUE_ID, QUEUE_NAME) VALUES (QB$SEQUENCE.nextval,?) RETURNING QUEUE_ID INTO ?;END;";
+            String query = "begin\n " +
+                    "INSERT INTO QB$QUEUE_NAMES (QUEUE_ID, QUEUE_NAME,QUEUE_TABLE_NAME) VALUES (QB$SEQUENCE.nextval,?, ?) RETURNING QUEUE_ID INTO ?;" +
+                    "END;";
             ps = connection.prepareCall(query);
             ps.setString(1, queueName);
-            ps.registerOutParameter(2, Types.BIGINT);
+            ps.setString(2, queueTableName);
+            ps.registerOutParameter(3, Types.BIGINT);
             ps.execute();
-            result = ps.getLong(2);
+            result = ps.getLong(3);
             return result;
         } catch (SQLException ex) {
             log.error("Database error", ex);
@@ -148,14 +160,8 @@ public class QueuesCreationHandler {
         }
     }
 
+
     public String getTableName(String queueName) {
-        Long id = queueNames.get(queueName);
-        if (id != null) {
-            return TABLE_PREFIX + id;
-        }
-        return null;
+        return queueNames.get(queueName);
     }
-
-
-
 }
