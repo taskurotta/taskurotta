@@ -243,6 +243,9 @@ public class ObjectFactory {
         return new ErrorContainer(e);
     }
 
+    public String writeAsString(Object object) throws JsonProcessingException {
+        return mapper.writeValueAsString(object);
+    }
 
     private String writeAsArray(Object array) throws JsonProcessingException {
         ArrayNode arrayNode = mapper.createArrayNode();
