@@ -1,5 +1,6 @@
 package ru.taskurotta.client.external;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.DeciderClient;
@@ -10,6 +11,7 @@ import ru.taskurotta.annotation.Execute;
  * Date: 22.05.13
  * Time: 16:35
  */
+@Ignore
 public class JerseyDeciderClientProviderTest {
 
     @Decider
