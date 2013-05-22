@@ -40,8 +40,6 @@
         <module>wf-util</module>
         <module>wf-console</module>
         <module>wf-transport</module>
-        <module>wf-adapter</module>
-        <!--<module>wf-fir-poc</module>-->
     </modules>
 
     <profiles>
