@@ -3,7 +3,7 @@ package ru.taskurotta.dropwizard.resources;
 import com.yammer.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.dropwizard.client.serialization.wrapper.TaskContainerWrapper;
+import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
 
 import javax.ws.rs.Consumes;
