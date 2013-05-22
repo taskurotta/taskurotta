@@ -21,6 +21,8 @@ actorConfig:
       queueName: "qb$summarizer"
     - id: "ru.taskurotta.example.calculate.decider.MathActionDecider#1.0"
       queueName: "qb$math_action_decider"
+    - id: "ru.taskurotta.example.calculate.decider.TestActionDecider#1.0"
+      queueName: "qb$test_decider"
 
 #List of expiration policies available for actors by name (new instance per actor):
   expirationPolicies:

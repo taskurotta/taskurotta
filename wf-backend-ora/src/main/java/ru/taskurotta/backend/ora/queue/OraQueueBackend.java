@@ -1,5 +1,13 @@
 package ru.taskurotta.backend.ora.queue;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -12,14 +20,6 @@ import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * User: moroz, dudin
@@ -45,10 +45,11 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.configBackend = configBackend;
         dbDAO = new OraQueueDao(dataSource);
 
-        if (autocreating) {
-            queuesCreationHandler = new QueuesCreationHandler(dataSource);
-            queuesCreationHandler.initQueueNames();
-        }
+        //Load all queue table names
+        queuesCreationHandler = new QueuesCreationHandler(dataSource);
+        queuesCreationHandler.initQueueNames();
+
+        createQueueTablesw();
 
         if (validating) {//Validate configured queues existence at oracle
             validateQueues();
@@ -60,6 +61,16 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     public OraQueueBackend(DataSource dataSource, ConfigBackend configBackend) {
         this(dataSource, configBackend, false, true);
+    }
+
+    private void createQueueTablesw() {
+        if (configBackend.getAllActorPreferences() == null || configBackend.getAllActorPreferences().length == 0) {
+            throw new BackendCriticalException("There are no actor preferences configured for this TaskServer!");
+        }
+
+        for (ActorPreferences actorPref : configBackend.getAllActorPreferences()) {
+            queuesCreationHandler.registerAndCreateQueue(actorPref.getId(), actorPref.getQueueName());
+        }
     }
 
     private void validateQueues() throws BackendCriticalException {
@@ -150,10 +161,10 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
     public List<String> getQueueList() {
         List<String> result = null;
         ActorPreferences[] configuredActors = configBackend.getAllActorPreferences();
-        if(configuredActors!=null && configuredActors.length > 0) {
+        if (configuredActors != null && configuredActors.length > 0) {
             result = new ArrayList<String>();
-            for(ActorPreferences actorConfig: configuredActors) {
-                if(!"default".equalsIgnoreCase(actorConfig.getQueueName())) {//skipping default actor
+            for (ActorPreferences actorConfig : configuredActors) {
+                if (!"default".equalsIgnoreCase(actorConfig.getQueueName())) {//skipping default actor
                     result.add(actorConfig.getQueueName());
                 }
             }
