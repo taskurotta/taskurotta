@@ -32,7 +32,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             timeFrom = timeTill;
         }
 
-        logger.info("Recovered [{}] tasks in [{}]ms", counter, (System.currentTimeMillis()-start));
+        logger.debug("Recovered [{}] tasks in [{}]ms", counter, (System.currentTimeMillis()-start));
 
     }
 

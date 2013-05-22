@@ -16,7 +16,7 @@ spreader:
         properties:
           count: 10
           startTasks: false
-          endpoint: "http://localhost:8080"
+          endpoint: "http://tsks-ora.fccland.ru"
           threadPoolSize: 15
           readTimeout: 5000
           connectTimeout: 3000

@@ -21,11 +21,8 @@ import javax.ws.rs.core.MediaType;
 
 public class BaseTaskProxy implements TaskServer {
 
+    public static final String REST_SERVICE_PREFIX = "/rest/";
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-    public static final String PULLER_RESOURCE = "/tasks/poll";
-    public static final String START_RESOURCE = "/tasks/start";
-    public static final String RELEASER_RESOURCE = "/tasks/release";
 
     protected Integer threadPoolSize = 0;//0 = new thread per request || thread pool size
     protected Integer connectTimeout = 0;//0 = infinite || value in ms
@@ -106,7 +103,7 @@ public class BaseTaskProxy implements TaskServer {
     }
 
     protected String getContextUrl(String path) {
-        return endpoint.replaceAll("/*$", "") + "/" + path.replaceAll("^/*", "");
+        return endpoint.replaceAll("/*$", "") + REST_SERVICE_PREFIX + path.replaceAll("^/*", "");
     }
 
     public void setThreadPoolSize(Integer threadPoolSize) {

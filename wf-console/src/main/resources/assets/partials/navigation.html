@@ -7,26 +7,26 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="brand" href="#">Console actions: </a>
+            <a class="brand" href="#">Console navigation: </a>
             <div class="nav-collapse collapse">
                 <ul class="nav">
-                    <li ng-class="isActiveTab('/console/home')"><a href="#console/home">Home</a></li>
-                    <li ng-class="isActiveTab('/console/actors')"><a href="#console/actors">Actors</a></li>
-                    <li ng-class="isActiveTab('/console/queues')"><a href="#console/queues">Queues</a></li>
-                    <li ng-class="isActiveTab('/console/processes')"><a href="#console/processes">Processes</a></li>
-                    <li><a href="#console/tasks">Tasks</a></li>
-                    <li class="dropdown">
+                    <li ng-class="isActiveTab('/home')"><a href="#/home">Home</a></li>
+                    <li ng-class="isActiveTab('/actors')"><a href="#/actors">Actors</a></li>
+                    <li ng-class="isActiveTab('/queues')"><a href="#/queues">Queues</a></li>
+                    <li ng-class="isActiveTab('/processes')"><a href="#/processes">Processes</a></li>
+                    <li ng-class="isActiveTab('/tasks')"><a href="#/tasks">Tasks</a></li>
+                    <li class="dropdown ng-class:isActiveTab('/stat');">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Statistics <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li class="nav-header">Daily</li>
-                            <li><a href="#console/stat">Type one</a></li>
-                            <li><a href="#console/stat">Type two</a></li>
+                            <li><a href="#/stat">Type one</a></li>
+                            <li><a href="#/stat">Type two</a></li>
                             <li class="divider"></li>
                             <li class="nav-header">Aggregated</li>
-                            <li><a href="#console/stat">Type one</a></li>
+                            <li><a href="#/stat">Type one</a></li>
                         </ul>
                     </li>
-                    <li><a href="#console/about">About</a></li>
+                    <li ng-class="isActiveTab('/about')"><a href="#/about">About</a></li>
                 </ul>
             </div>
         </div>

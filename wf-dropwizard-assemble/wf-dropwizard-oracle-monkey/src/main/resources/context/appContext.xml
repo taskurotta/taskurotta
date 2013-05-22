@@ -36,7 +36,10 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id = "consoleQueueResources" class = "ru.taskurotta.console.resources.QueueListResource">
+    <bean id = "consoleQueueListResource" class = "ru.taskurotta.console.resources.QueueListResource">
+        <property name="consoleManager" ref="consoleManager" />
+    </bean>
+    <bean id = "consoleQueueContentResource" class = "ru.taskurotta.console.resources.QueueContentResource">
         <property name="consoleManager" ref="consoleManager" />
     </bean>
     <!-- /REST resources -->

@@ -62,6 +62,7 @@ logging:
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
 http:
+    rootPath: "/rest/*"
     gzip:
         enabled: false
     requestLog:

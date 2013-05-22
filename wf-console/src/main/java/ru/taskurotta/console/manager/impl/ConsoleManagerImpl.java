@@ -2,6 +2,7 @@ package ru.taskurotta.console.manager.impl;
 
 import ru.taskurotta.console.manager.ConsoleManager;
 import ru.taskurotta.console.model.QueueVO;
+import ru.taskurotta.console.model.QueuedTaskVO;
 import ru.taskurotta.console.retriever.CheckpointInfoRetriever;
 import ru.taskurotta.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.console.retriever.QueueInfoRetriever;
@@ -46,9 +47,8 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public List<TaskContainer> getEnqueueTasks(String queueName) {
-        //TODO: implement it
-        return null;
+    public List<QueuedTaskVO> getEnqueueTasks(String queueName) {
+        return queueInfo.getQueueContent(queueName);
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

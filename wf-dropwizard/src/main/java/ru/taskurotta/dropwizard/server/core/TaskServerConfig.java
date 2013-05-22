@@ -8,7 +8,7 @@ import ru.taskurotta.dropwizard.server.pooling.InternalPoolConfig;
 
 import java.util.Properties;
 
-public class TaskServerConfig extends Configuration {
+public class TaskServerConfig extends Configuration /*implements AssetsBundleConfiguration*/ {
 
     @JsonProperty
     private Properties properties;
@@ -22,6 +22,9 @@ public class TaskServerConfig extends Configuration {
     @NotEmpty
     @JsonProperty
     private String contextLocation;
+
+//    @JsonProperty
+//    private AssetsConfiguration assets;
 
     public Properties getProperties() {
         return properties;
@@ -55,4 +58,8 @@ public class TaskServerConfig extends Configuration {
         this.actorConfig = actorConfig;
     }
 
+//    @Override
+//    public AssetsConfiguration getAssetsConfiguration() {
+//        return assets;
+//    }
 }

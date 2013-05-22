@@ -3,6 +3,7 @@ package ru.taskurotta.dropwizard.resources;
 import com.yammer.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.dropwizard.TaskurottaResource;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
@@ -15,7 +16,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("/tasks/poll")
+@Path(TaskurottaResource.POLL)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class TaskPollerResource {

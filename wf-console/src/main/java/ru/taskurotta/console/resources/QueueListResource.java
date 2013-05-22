@@ -13,7 +13,7 @@ import java.util.List;
  * User: dimadin
  * Date: 21.05.13 11:49
  */
-@Path("/info/queues")
+@Path("/console/queues")
 public class QueueListResource extends BaseResource {
 
     @GET
@@ -23,7 +23,7 @@ public class QueueListResource extends BaseResource {
             logger.debug("QueueState getted is [{}]", queuesState);
             return Response.ok(queuesState, MediaType.APPLICATION_JSON).build();
         } catch(Throwable e) {
-            logger.error("Error at getting queues list");
+            logger.error("Error at getting queues list", e);
             return Response.serverError().build();
         }
     }

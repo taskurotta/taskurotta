@@ -14,6 +14,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
@@ -144,6 +146,37 @@ public class OraQueueDao {
             throw new BackendCriticalException("Database error", ex);
         } finally {
             closeResources(cs, connection);
+        }
+    }
+
+
+    public List<QueueItem> getQueueContent(String queueName) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            List<QueueItem> result = new ArrayList<QueueItem>();
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement("select * from " + queueName);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                QueueItem qi = new QueueItem();
+
+                String taskIdStr = rs.getString("task_id");
+                qi.setId(taskIdStr!=null? UUID.fromString(taskIdStr): null);
+                qi.setTaskList(rs.getString("task_list"));
+                qi.setStatus(rs.getInt("status_id"));
+                qi.setStartDate(rs.getTimestamp("date_start"));
+                qi.setInsertDate(rs.getTimestamp("insert_date"));
+
+                result.add(qi);
+
+            }
+            return result;
+        } catch (SQLException ex) {
+            log.error("Queue["+queueName+"] content extraction error!", ex);
+            throw new BackendCriticalException("Queue["+queueName+"] content extraction error!", ex);
+        } finally {
+            closeResources(ps, connection);
         }
     }
 }

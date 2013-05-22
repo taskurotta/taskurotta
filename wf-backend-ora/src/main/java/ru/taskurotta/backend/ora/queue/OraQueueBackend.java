@@ -18,6 +18,7 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.console.model.QueuedTaskVO;
 import ru.taskurotta.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.exception.BackendCriticalException;
 
@@ -174,7 +175,25 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public int getQueueTaskCount(String queueName) {
-        //TODO: implement it
-        return 0;
+        return dbDAO.countTasks(queueName);
+    }
+
+    @Override
+    public List<QueuedTaskVO> getQueueContent(String queueName) {
+        List<QueuedTaskVO> result = null;
+        List<QueueItem> queueItems = dbDAO.getQueueContent(queueName);
+        if(queueItems!=null && !queueItems.isEmpty()) {
+            result = new ArrayList<QueuedTaskVO>();
+            for(QueueItem qi: queueItems) {
+                QueuedTaskVO qt = new QueuedTaskVO();
+                qt.setId(qi.getId());
+                qt.setTaskList(qi.getTaskList());
+                qt.setInsertTime(qi.getInsertDate()!=null? qi.getInsertDate().getTime(): -1);
+                qt.setStartTime(qi.getStartDate()!=null? qi.getStartDate().getTime(): -1);
+                result.add(qt);
+            }
+        }
+
+        return result;
     }
 }

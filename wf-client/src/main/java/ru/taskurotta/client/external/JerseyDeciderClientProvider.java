@@ -90,6 +90,6 @@ public class JerseyDeciderClientProvider implements DeciderClientProvider {
     }
 
     private static String getContextUrl(String endpoint, String path) {
-        return endpoint.replaceAll("/*$", "") + "/" + path.replaceAll("^/*", "");
+        return endpoint.replaceAll("/*$", "") + "/rest/" + path.replaceAll("^/*", "");
     }
 }

@@ -1,6 +1,13 @@
 #Location of Spring application context:
 contextLocation: "classpath*:context/appContext.xml"
 
+#Used for static resource serving in development mode
+#assets:
+#  overrides:
+#    /: ../../wf-console/src/main/resources/assets/
+
+
+
 #Configuration of actors served by this server:
 actorConfig:
   actorPreferences:
@@ -53,7 +60,7 @@ logging:
     level: WARN
     loggers:
         ru.taskurotta: INFO
-        ru.taskurotta.console: INFO
+        ru.taskurotta.console: DEBUG
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend.task: DEBUG
 #        ru.taskurotta.backend: INFO
@@ -67,6 +74,7 @@ logging:
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
 http:
+    rootPath: "/rest/*"
     gzip:
         enabled: false
     requestLog:
@@ -75,5 +83,6 @@ http:
             archive: true
             currentLogFilename: ./target/logs/requests.log
             archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+
 #config can be extended here
 #http://dropwizard.codahale.com/manual/core/#configuration-defaults

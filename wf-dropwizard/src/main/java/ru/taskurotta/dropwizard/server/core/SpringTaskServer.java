@@ -27,7 +27,8 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     @Override
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
-        bootstrap.addBundle(new AssetsBundle("/assets", "/console"));
+        bootstrap.addBundle(new AssetsBundle("/assets", "/"));
+        //bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
     }
 
     @Override
