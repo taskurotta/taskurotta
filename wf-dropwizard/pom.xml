@@ -16,16 +16,20 @@
     <packaging>jar</packaging>
     <name>Taskurotta :: Dropwizard (REST) transport implementation</name>
 
+    <properties>
+        <dropwizard.version>0.6.1</dropwizard.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
-            <version>0.6.1</version>
+            <version>${dropwizard.version}</version>
         </dependency>
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
             <artifactId>dropwizard-client</artifactId>
-            <version>0.6.1</version>
+            <version>${dropwizard.version}</version>
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
@@ -40,12 +44,10 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib-nodep</artifactId>
-            <version>2.2</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey.contribs</groupId>
@@ -56,6 +58,12 @@
             <groupId>ru.taskurotta</groupId>
             <artifactId>wf-console</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <!--<dependency>-->
             <!--<groupId>com.bazaarvoice.dropwizard</groupId>-->
