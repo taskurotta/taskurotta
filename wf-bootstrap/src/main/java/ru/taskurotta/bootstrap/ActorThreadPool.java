@@ -3,6 +3,8 @@ package ru.taskurotta.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -149,7 +151,8 @@ public class ActorThreadPool {
     }
 
     private void createActorExecutorThread(int i) {
-        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-" + new Date() + "-" + i);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-(" + simpleDateFormat.format(new Date()) + ")-" + i);
         actorExecutorThreads[i] = thread;
         thread.start();
 
