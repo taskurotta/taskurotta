@@ -18,15 +18,14 @@
             <artifactId>wf-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.6.7</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.6.7</version>
         </dependency>
 
         <dependency>

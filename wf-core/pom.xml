@@ -32,9 +32,10 @@
             <artifactId>guava</artifactId>
             <version>13.0.1</version>
         </dependency>
+
         <dependency>
             <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
+            <artifactId>cglib-nodep</artifactId>
         </dependency>
 
         <dependency>
