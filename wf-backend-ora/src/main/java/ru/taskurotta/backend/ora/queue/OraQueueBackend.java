@@ -1,13 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -16,11 +8,19 @@ import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.console.model.QueuedTaskVO;
-import ru.taskurotta.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * User: moroz, dudin

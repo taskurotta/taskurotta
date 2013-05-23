@@ -6,8 +6,13 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Date: 4/1/13
  * Time: 4:11 PM
  */
-public class MemoryQueueBackend implements QueueBackend {
+public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryQueueBackend.class);
 
@@ -65,6 +70,34 @@ public class MemoryQueueBackend implements QueueBackend {
         }
     }
 
+    @Override
+    public List<String> getQueueList() {
+        List<String> result = new ArrayList<>();
+        result.addAll(queues.keySet());
+        return result;
+    }
+
+    @Override
+    public int getQueueTaskCount(String queueName) {
+        return getQueue(queueName).size();
+    }
+
+    @Override
+    public List<QueuedTaskVO> getQueueContent(String queueName) {
+        List<QueuedTaskVO> result = new ArrayList<QueuedTaskVO>();
+        Iterator<DelayedTaskElement> iterator = getQueue(queueName).iterator();
+        while(iterator.hasNext()) {
+            DelayedTaskElement dte = iterator.next();
+            QueuedTaskVO qt = new QueuedTaskVO();
+            qt.setId(dte.taskId);
+            qt.setStartTime(dte.startTime);
+            qt.setInsertTime(dte.enqueueTime);
+            result.add(qt);
+        }
+
+        return result;
+    }
+
 
     /**
      * Helper class for Delayed queue
@@ -75,10 +108,13 @@ public class MemoryQueueBackend implements QueueBackend {
 
         protected long startTime;
 
-        public DelayedTaskElement(UUID taskId, long startTime) {
+        protected long enqueueTime;
+
+        public DelayedTaskElement(UUID taskId, long startTime, long enqueueTime) {
 
             this.taskId = taskId;
             this.startTime = startTime;
+            this.enqueueTime = enqueueTime;
         }
 
         @Override
@@ -159,7 +195,7 @@ public class MemoryQueueBackend implements QueueBackend {
     public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
-        queue.add(new DelayedTaskElement(taskId, startTime));
+        queue.add(new DelayedTaskElement(taskId, startTime, System.currentTimeMillis()));
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime));
@@ -187,7 +223,7 @@ public class MemoryQueueBackend implements QueueBackend {
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
 
-        DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, 0);
+        DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, 0, System.currentTimeMillis());
 
         return queue.contains(delayedTaskElement);
     }

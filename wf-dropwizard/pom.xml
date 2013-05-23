@@ -55,12 +55,6 @@
             <version>1.17.1</version>
         </dependency>
         <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-console</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>

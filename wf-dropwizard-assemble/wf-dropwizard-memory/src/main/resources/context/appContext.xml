@@ -9,20 +9,32 @@
     <context:property-placeholder />
     <context:annotation-config />
 
+    <!-- REST resources -->
     <bean id="taskPullerResource"
         class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer" />
     </bean>
-
     <bean id="taskReleaserResource"
         class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
         <property name="taskServer" ref="taskServer" />
     </bean>
-
     <bean id="taskStarterResource"
         class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
         <property name="taskServer" ref="taskServer" />
     </bean>
+
+    <bean id = "consoleQueueListResource" class = "ru.taskurotta.dropwizard.resources.console.QueueListResource">
+        <property name="consoleManager" ref="consoleManager" />
+    </bean>
+    <bean id = "consoleQueueContentResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource">
+        <property name="consoleManager" ref="consoleManager" />
+    </bean>
+    <!-- /REST resources -->
+
+    <bean id = "consoleManager" class = "ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
+        <property name="queueInfo" ref="queueBackend" />
+    </bean>
+
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
         <constructor-arg name="configBackend" ref="configBackend" />
@@ -48,13 +60,15 @@
             </array>
         </property>
     </bean>
-    <!-- /Recoveries -->
-    
+
     <task:scheduler id="taskExpirationRecovery" pool-size="1" />
     <task:scheduled-tasks scheduler="taskExpirationRecovery">
         <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
     </task:scheduled-tasks>
+
+    <!-- /Recoveries -->
     
+
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />

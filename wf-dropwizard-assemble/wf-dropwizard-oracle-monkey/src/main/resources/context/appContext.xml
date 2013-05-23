@@ -36,15 +36,15 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id = "consoleQueueListResource" class = "ru.taskurotta.console.resources.QueueListResource">
+    <bean id = "consoleQueueListResource" class = "ru.taskurotta.dropwizard.resources.console.QueueListResource">
         <property name="consoleManager" ref="consoleManager" />
     </bean>
-    <bean id = "consoleQueueContentResource" class = "ru.taskurotta.console.resources.QueueContentResource">
+    <bean id = "consoleQueueContentResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource">
         <property name="consoleManager" ref="consoleManager" />
     </bean>
     <!-- /REST resources -->
 
-    <bean id = "consoleManager" class = "ru.taskurotta.console.manager.impl.ConsoleManagerImpl">
+    <bean id = "consoleManager" class = "ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend" />
     </bean>
 

@@ -1,1 +1,0 @@
--- Creates DB structure for console

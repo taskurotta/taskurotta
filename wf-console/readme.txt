@@ -1,1 +1,0 @@
-Console homepage available at localhost:8080/console/index.html by default
