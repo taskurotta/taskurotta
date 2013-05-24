@@ -1,6 +1,5 @@
 package ru.taskurotta.util;
 
-import org.springframework.util.StringUtils;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.exception.ActorRuntimeException;
@@ -52,7 +51,7 @@ public class ActorDefinition {
             actorDefinition.name = workerAnnotation.name();
             actorDefinition.version = workerAnnotation.version();
 
-            if (!StringUtils.hasText(actorDefinition.name)) {
+            if (StringUtils.isBlank(actorDefinition.name)) {
                 actorDefinition.name = workerInterface.getName();
             }
 
@@ -71,7 +70,7 @@ public class ActorDefinition {
             actorDefinition.name = deciderAnnotation.name();
             actorDefinition.version = deciderAnnotation.version();
 
-            if (!StringUtils.hasText(actorDefinition.name)) {
+            if (StringUtils.isBlank(actorDefinition.name)) {
                 actorDefinition.name = deciderInterface.getName();
             }
 

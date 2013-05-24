@@ -1,7 +1,5 @@
 package ru.taskurotta.util;
 
-import org.springframework.util.Assert;
-
 import java.lang.annotation.Annotation;
 
 /**
@@ -28,7 +26,9 @@ public class AnnotationUtils {
      * @return the class with annotation found, or <code>null</code> if none found
      */
     public static <A extends Annotation> Class<?> findAnnotatedClass(Class<?> clazz, Class<A> annotationType) {
-        Assert.notNull(clazz, "Class must not be null");
+        if(clazz == null) {
+            throw new IllegalArgumentException("Class must not be null");
+        }
         Annotation annotation = clazz.getAnnotation(annotationType);
         if (annotation != null) {
             return clazz;

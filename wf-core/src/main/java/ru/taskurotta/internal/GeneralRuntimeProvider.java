@@ -2,7 +2,6 @@ package ru.taskurotta.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
 import ru.taskurotta.annotation.Asynchronous;
@@ -13,7 +12,6 @@ import ru.taskurotta.annotation.LinearRetry;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.exception.TaskTargetRequiredException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
@@ -22,7 +20,9 @@ import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.AnnotationUtils;
+import ru.taskurotta.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -107,7 +107,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
         Worker worker = workerInterface.getAnnotation(Worker.class);
 
         String workerName = worker.name();
-        if (!StringUtils.hasText(workerName)) {
+        if (StringUtils.isBlank(workerName)) {
             workerName = workerInterface.getName();
         }
 
