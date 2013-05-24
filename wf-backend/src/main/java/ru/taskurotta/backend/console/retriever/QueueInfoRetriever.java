@@ -1,8 +1,9 @@
 package ru.taskurotta.backend.console.retriever;
 
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-
 import java.util.List;
+
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
 
 /**
  * Task queues information retriever. Provides information such as number
@@ -12,7 +13,7 @@ import java.util.List;
  */
 public interface QueueInfoRetriever {
 
-    public List<String> getQueueList();
+    public GenericPage<String> getQueueList(int pageNum, int pageSize);
 
     public int getQueueTaskCount(String queueName);
 

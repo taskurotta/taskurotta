@@ -64,16 +64,18 @@ public class QueuesCreationHandler {
 
     public void registerAndCreateQueue(String actorId, String queueTableName) {
         synchronized (queueNames) {
-            if (!queueNames.containsKey(actorId)) {
-                log.warn("Create queue for target [{}]", actorId);
-                long queueId = registerQueue(actorId, queueTableName);
-                if (queueTableName == null) {
-                    queueTableName = TABLE_PREFIX + queueId;
-                }
-                queueNames.put(actorId, queueTableName);
-                log.warn("Queues count [{}] ", queueNames.size());
-                if (!queueExists(queueTableName)) {
-                    createQueue(queueTableName);
+            if (!"default".equals(queueTableName) && !"default".equals(actorId)) {
+                if (!queueNames.containsKey(actorId)) {
+                    log.warn("Create queue for target [{}]", actorId);
+                    long queueId = registerQueue(actorId, queueTableName);
+                    if (queueTableName == null) {
+                        queueTableName = TABLE_PREFIX + queueId;
+                    }
+                    queueNames.put(actorId, queueTableName);
+                    log.warn("Queues count [{}] ", queueNames.size());
+                    if (!queueExists(queueTableName)) {
+                        createQueue(queueTableName);
+                    }
                 }
             }
         }
@@ -83,29 +85,32 @@ public class QueuesCreationHandler {
         log.warn("!!!!! Creating queue = " + queueTableName);
         Connection connection = null;
         Statement statement = null;
-        try {
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(false);
-            String createQuery = "CREATE TABLE :queue_name \n" +
-                    "   (\n" +
-                    " TASK_ID VARCHAR(36) NOT NULL ENABLE, \n" +
-                    " STATUS_ID NUMBER NOT NULL ENABLE, \n" +
-                    " TASK_LIST VARCHAR(54) NOT NULL ENABLE, \n" +
-                    " DATE_START TIMESTAMP, \n" +
-                    " INSERT_DATE TIMESTAMP, \n" +
-                    " PRIMARY KEY (TASK_ID))";
-            String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
-            statement = connection.createStatement();
-            statement.addBatch(createQuery.replace(":queue_name", queueTableName));
-            statement.addBatch(indexQuery.replace(":queue_name", queueTableName));
-            statement.executeBatch();
-            connection.commit();
-            connection.setAutoCommit(true);
-        } catch (SQLException ex) {
-            log.error("Database error", ex);
-            throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResources(statement, connection);
+
+        if (!"default".equals(queueTableName)) {
+            try {
+                connection = dataSource.getConnection();
+                connection.setAutoCommit(false);
+                String createQuery = "CREATE TABLE :queue_name \n" +
+                        "   (\n" +
+                        " TASK_ID VARCHAR(36) NOT NULL ENABLE, \n" +
+                        " STATUS_ID NUMBER NOT NULL ENABLE, \n" +
+                        " TASK_LIST VARCHAR(54) NOT NULL ENABLE, \n" +
+                        " DATE_START TIMESTAMP, \n" +
+                        " INSERT_DATE TIMESTAMP, \n" +
+                        " PRIMARY KEY (TASK_ID))";
+                String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
+                statement = connection.createStatement();
+                statement.addBatch(createQuery.replace(":queue_name", queueTableName));
+                statement.addBatch(indexQuery.replace(":queue_name", queueTableName));
+                statement.executeBatch();
+                connection.commit();
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                log.error("Database error", ex);
+                throw new BackendCriticalException("Database error", ex);
+            } finally {
+                closeResources(statement, connection);
+            }
         }
     }
 

@@ -1,5 +1,13 @@
 package ru.taskurotta.backend.ora.queue;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -8,19 +16,12 @@ import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
+import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * User: moroz, dudin
@@ -159,18 +160,8 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public List<String> getQueueList() {
-        List<String> result = null;
-        ActorPreferences[] configuredActors = configBackend.getAllActorPreferences();
-        if (configuredActors != null && configuredActors.length > 0) {
-            result = new ArrayList<String>();
-            for (ActorPreferences actorConfig : configuredActors) {
-                if (!"default".equalsIgnoreCase(actorConfig.getQueueName())) {//skipping default actor
-                    result.add(actorConfig.getQueueName());
-                }
-            }
-        }
-        return result;
+    public GenericPage<String> getQueueList(int pageNum, int pageSize) {
+        return dbDAO.getQueueList(pageNum, pageSize, true);
     }
 
     @Override
@@ -182,14 +173,14 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
     public List<QueuedTaskVO> getQueueContent(String queueName) {
         List<QueuedTaskVO> result = null;
         List<QueueItem> queueItems = dbDAO.getQueueContent(queueName);
-        if(queueItems!=null && !queueItems.isEmpty()) {
+        if (queueItems != null && !queueItems.isEmpty()) {
             result = new ArrayList<QueuedTaskVO>();
-            for(QueueItem qi: queueItems) {
+            for (QueueItem qi : queueItems) {
                 QueuedTaskVO qt = new QueuedTaskVO();
                 qt.setId(qi.getId());
                 qt.setTaskList(qi.getTaskList());
-                qt.setInsertTime(qi.getInsertDate()!=null? qi.getInsertDate().getTime(): -1);
-                qt.setStartTime(qi.getStartDate()!=null? qi.getStartDate().getTime(): -1);
+                qt.setInsertTime(qi.getInsertDate() != null ? qi.getInsertDate().getTime() : -1);
+                qt.setStartTime(qi.getStartDate() != null ? qi.getStartDate().getTime() : -1);
                 result.add(qt);
             }
         }

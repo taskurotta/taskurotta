@@ -1,11 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.ora.domain.SimpleTask;
-import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
@@ -17,8 +11,16 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.sql.DataSource;
 
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.ora.domain.SimpleTask;
+import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
+import ru.taskurotta.exception.BackendCriticalException;
 
 /**
  * User: greg
@@ -44,12 +46,12 @@ public class OraQueueDao {
             connection = dataSource.getConnection();
             ps = connection.prepareStatement("select count(task_id) cnt from " + queueName);
             ResultSet rs = ps.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 result = rs.getInt("cnt");
             }
             return result;
         } catch (SQLException ex) {
-            log.error("Count task database error for queue["+queueName+"]", ex);
+            log.error("Count task database error for queue[" + queueName + "]", ex);
             throw new BackendCriticalException("Count task database error for queue[\"+queueName+\"]", ex);
         } finally {
             closeResources(ps, connection);
@@ -158,11 +160,11 @@ public class OraQueueDao {
             connection = dataSource.getConnection();
             ps = connection.prepareStatement("select * from " + queueName);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()) {
+            while (rs.next()) {
                 QueueItem qi = new QueueItem();
 
                 String taskIdStr = rs.getString("task_id");
-                qi.setId(taskIdStr!=null? UUID.fromString(taskIdStr): null);
+                qi.setId(taskIdStr != null ? UUID.fromString(taskIdStr) : null);
                 qi.setTaskList(rs.getString("task_list"));
                 qi.setStatus(rs.getInt("status_id"));
                 qi.setStartDate(rs.getTimestamp("date_start"));
@@ -173,11 +175,52 @@ public class OraQueueDao {
             }
             return result;
         } catch (SQLException ex) {
-            log.error("Queue["+queueName+"] content extraction error!", ex);
-            throw new BackendCriticalException("Queue["+queueName+"] content extraction error!", ex);
+            log.error("Queue[" + queueName + "] content extraction error!", ex);
+            throw new BackendCriticalException("Queue[" + queueName + "] content extraction error!", ex);
         } finally {
             closeResources(ps, connection);
         }
     }
+
+    public GenericPage<String> getQueueList(int pageNum, int pageSize, boolean paging) {
+        PreparedStatement ps = null;
+        Connection connection = null;
+
+        List<String> tmpResult = new ArrayList<>();
+        long totalCount = 0;
+        try {
+            String query = "SELECT queue_table_name FROM QB$QUEUE_NAMES";
+            if (paging) {
+                query = PagedQueryBuilder.createPagesQuery("SELECT queue_table_name FROM QB$QUEUE_NAMES");
+            }
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
+            if (paging) {
+                int startIndex = (pageNum - 1) * pageSize + 1;
+                int endIndex = startIndex + pageSize - 1;
+                ps.setInt(1, endIndex);
+                ps.setInt(2, startIndex);
+            }
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String queueName = rs.getString("queue_table_name");
+                if (!"default".equals(queueName)) {
+                    tmpResult.add(queueName);
+                }
+                if (paging) {
+                    totalCount = rs.getLong("cnt");
+                }
+            }
+        } catch (SQLException ex) {
+            log.error("Get queue page error", ex);
+            throw new BackendCriticalException("Can't  get queue list", ex);
+        } finally {
+            closeResources(ps, connection);
+        }
+
+        return new GenericPage<String>(tmpResult, pageNum, pageSize, (paging) ? totalCount : tmpResult.size());
+    }
+
 }
 

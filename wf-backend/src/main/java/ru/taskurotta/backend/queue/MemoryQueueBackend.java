@@ -1,15 +1,5 @@
 package ru.taskurotta.backend.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.util.ActorDefinition;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +11,17 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario
@@ -48,14 +49,14 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.pollDelayUnit = pollDelayUnit;
 
         if (logger.isTraceEnabled()) {
-            Thread monitor = new Thread(){
+            Thread monitor = new Thread() {
                 @Override
                 public void run() {
-                    while(true) {
+                    while (true) {
                         try {
                             Thread.sleep(30000l);
                             StringBuilder sb = new StringBuilder();
-                            for(String queue: queues.keySet()) {
+                            for (String queue : queues.keySet()) {
                                 sb.append(queue).append(": count ").append(getQueue(queue).size()).append("\n");
                             }
                             logger.trace("Queue monitor: \n {}", sb.toString());
@@ -71,10 +72,14 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public List<String> getQueueList() {
+    public GenericPage<String> getQueueList(int pageNum, int pageSize) {
         List<String> result = new ArrayList<>();
-        result.addAll(queues.keySet());
-        return result;
+        String[] queueNames = new String[queues.keySet().size()];
+        queueNames = queues.keySet().toArray(queueNames);
+        for (int i = pageNum; i <= pageSize; i++) {
+            result.add(queueNames[i]);
+        }
+        return new GenericPage<String>(result, pageNum, pageSize, result.size());
     }
 
     @Override
@@ -86,7 +91,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     public List<QueuedTaskVO> getQueueContent(String queueName) {
         List<QueuedTaskVO> result = new ArrayList<QueuedTaskVO>();
         Iterator<DelayedTaskElement> iterator = getQueue(queueName).iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             DelayedTaskElement dte = iterator.next();
             QueuedTaskVO qt = new QueuedTaskVO();
             qt.setId(dte.taskId);

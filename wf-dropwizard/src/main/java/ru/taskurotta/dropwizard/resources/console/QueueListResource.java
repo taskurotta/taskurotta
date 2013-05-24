@@ -1,12 +1,14 @@
 package ru.taskurotta.dropwizard.resources.console;
 
-import ru.taskurotta.backend.console.model.QueueVO;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+
+import com.google.common.base.Optional;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueueVO;
 
 /**
  * Resource for obtaining queue list info
@@ -16,16 +18,19 @@ import java.util.List;
 @Path("/console/queues")
 public class QueueListResource extends BaseResource {
 
+    private static int DEFAULT_START_PAGE = 1;
+    private static int DEFAULT_PAGE_SIZE = 10;
+
     @GET
-    public Response getQueuesInfo() {
+    public Response getQueuesInfo(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
         try {
-            List<QueueVO> queuesState = consoleManager.getQueuesState();
-            logger.debug("Queues list getted is [{}]", queuesState);
+            int pgSize = pageSize.or(-1);
+            GenericPage<QueueVO> queuesState = consoleManager.getQueuesState(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
+            logger.debug("QueueState getted is [{}]", queuesState);
             return Response.ok(queuesState, MediaType.APPLICATION_JSON).build();
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             logger.error("Error at getting queues list", e);
             return Response.serverError().build();
         }
     }
-
 }

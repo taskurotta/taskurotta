@@ -1,5 +1,6 @@
 <div>
     <h3>Task queues list</h3>
+
     <div style="float: left;">
         <a class="btn btn-link" ng-click="update()">Refresh</a>
     </div>
@@ -20,23 +21,56 @@
     <div ng-hide="!angular.isDefined(feedback)" class="err-message">Error at updating: <span>{{feedback}}</span></div>
     <table class="table table-striped table-bordered table-hover">
         <thead>
-            <tr>
-                <th>№</th>
-                <th>Queue name</th>
-                <th>Tasks count</th>
-            </tr>
+        <th style="width: 10%">№</th>
+        <th>Queue name</th>
+        <th style="width: 15%">Tasks count</th>
         </thead>
+
+        <tfoot>
+        <td colspan="3">
+            <div class="pagination pull-left" style="width: 60%">
+                <span class="muted">Show </span>
+                <select ng-model="queuesPage.pageSize" style="height:30px;width:55px;" ng-change="update()">
+                    <option value="2">2</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="muted"> entries</span>
+
+                <span class="muted info-text">Showing <b>{{(queuesPage.pageNumber - 1) * queuesPage.pageSize + 1}}</b> to <b>{{getMaxIndex()}}</b> of <b>{{queuesPage.totalCount}}</b> entries</span>
+
+            </div>
+
+            <div class="pagination pull-right">
+                <ul>
+                    <li ng-class="{disabled: queuesPage.pageNumber == 1}">
+                        <a href ng-click="prevPage()">« Prev</a>
+                    </li>
+                    <li>
+                        <span>{{queuesPage.pageNumber}} of {{totalPages()}}</span>
+                    </li>
+                    <li ng-class="{disabled: queuesPage.pageNumber == totalPages()}">
+                        <a href ng-click="nextPage()">Next »</a>
+                    </li>
+                </ul>
+            </div>
+        </td>
+        </tfoot>
+
         <tbody>
-            <tr ng-repeat="queue in queues">
-                <td>{{$index+1}}</td>
-                <td>
-                    <a clas="btn btn-link" style="cursor: pointer;" ng-href="#/queues/queue/{{encodeURI(queue.name)}}">{{queue.name}}</a>
-                </td>
-                <td>{{queue.count}}</td>
-            </tr>
+        <tr ng-repeat="queue in queuesPage.items">
+            <td>{{$index+1}}</td>
+            <td>
+                <a clas="btn btn-link" style="cursor: pointer;"
+                   ng-href="#/queues/queue/{{encodeURI(queue.name)}}">{{queue.name}}</a>
+            </td>
+            <td>{{queue.count}}</td>
+        </tr>
         </tbody>
     </table>
 
-    <div>Total: <b>{{totalTasks()}}</b> tasks in <b>{{queues.length}}</b> queues</div>
+    <div>Total: <b>{{totalTasks()}}</b> tasks in <b>{{queuesPage.items.length}}</b> queues</div>
 
 </div>
