@@ -12,7 +12,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import ru.taskurotta.util.StringUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -183,7 +183,7 @@ public class LoggingConfig {
                         element.addContent(parseNode(node.get(name), new Element(name), ""));
                     } else {
                         String value = node.get(name).textValue();
-                        if (StringUtils.hasText(value) && value.contains("\\%")) {
+                        if (!StringUtils.isBlank(value) && value.contains("\\%")) {
                             value = value.replaceAll("\\\\%", "%");
                         }
                         element.addContent(createSimpleElement(name, value));

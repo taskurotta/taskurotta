@@ -1,12 +1,11 @@
 package ru.taskurotta.internal.proxy;
 
-import org.springframework.util.StringUtils;
 import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -63,7 +62,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
         Annotation actorAnnotation = actorInterface.getAnnotation(actorAnnotationClass);
 
         String actorName = annotationExplorer.getActorName(actorAnnotation);
-        if (!StringUtils.hasText(actorName)) {
+        if (StringUtils.isBlank(actorName)) {
             actorName = actorInterface.getName();
         }
 

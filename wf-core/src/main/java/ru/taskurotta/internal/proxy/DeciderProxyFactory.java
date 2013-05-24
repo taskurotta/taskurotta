@@ -1,9 +1,9 @@
 package ru.taskurotta.internal.proxy;
 
-import org.springframework.util.StringUtils;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 
@@ -44,7 +44,7 @@ public class DeciderProxyFactory extends ActorProxyFactory {
         Decider deciderAnnotation = deciderInterface.getAnnotation(Decider.class);
 
         String deciderName = deciderAnnotation.name();
-        if (!StringUtils.hasText(deciderName)) {
+        if (StringUtils.isBlank(deciderName)) {
             deciderName = deciderInterface.getName();
         }
 
