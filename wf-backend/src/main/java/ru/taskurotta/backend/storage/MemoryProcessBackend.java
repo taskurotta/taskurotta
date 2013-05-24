@@ -4,26 +4,34 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.ProcessVO;
+import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
  * Date: 4/2/13
  * Time: 8:02 PM
  */
-public class MemoryProcessBackend implements ProcessBackend {
+public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
     private CheckpointService checkpointService = new MemoryCheckpointService();
+    private Map<UUID, ProcessVO> processesStorage = new ConcurrentHashMap<>();
 
     @Override
     public void startProcess(TaskContainer task) {
+        ProcessVO process = new ProcessVO();
+        process.setStartTime(System.currentTimeMillis());
+        process.setProcessUuid(task.getProcessId());
+        process.setStartTaskUuid(task.getTaskId());
+        processesStorage.put(task.getProcessId(), process);
+
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getProcessId(), task.getActorId(), task.getStartTime()));
-
-        //method body
-
     }
 
     @Override
@@ -36,6 +44,11 @@ public class MemoryProcessBackend implements ProcessBackend {
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
+
+        ProcessVO process = processesStorage.get(processId);
+        process.setEndTime(System.currentTimeMillis());
+        process.setReturnValueJson(returnValue);
+        processesStorage.put(processId, process);
 
         //should be at the end of the method
         checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
@@ -51,4 +64,8 @@ public class MemoryProcessBackend implements ProcessBackend {
         this.checkpointService = checkpointService;
     }
 
+    @Override
+    public ProcessVO getProcess(UUID processUUID) {
+        return processesStorage.get(processUUID);
+    }
 }

@@ -1,5 +1,7 @@
 package ru.taskurotta.dropwizard.server.core;
 
+import com.bazaarvoice.dropwizard.assets.AssetsBundleConfiguration;
+import com.bazaarvoice.dropwizard.assets.AssetsConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -8,7 +10,7 @@ import ru.taskurotta.dropwizard.server.pooling.InternalPoolConfig;
 
 import java.util.Properties;
 
-public class TaskServerConfig extends Configuration /*implements AssetsBundleConfiguration*/ {
+public class TaskServerConfig extends Configuration implements AssetsBundleConfiguration {
 
     @JsonProperty
     private Properties properties;
@@ -23,8 +25,8 @@ public class TaskServerConfig extends Configuration /*implements AssetsBundleCon
     @JsonProperty
     private String contextLocation;
 
-//    @JsonProperty
-//    private AssetsConfiguration assets;
+    @JsonProperty
+    private AssetsConfiguration assets;
 
     public Properties getProperties() {
         return properties;
@@ -58,8 +60,8 @@ public class TaskServerConfig extends Configuration /*implements AssetsBundleCon
         this.actorConfig = actorConfig;
     }
 
-//    @Override
-//    public AssetsConfiguration getAssetsConfiguration() {
-//        return assets;
-//    }
+    @Override
+    public AssetsConfiguration getAssetsConfiguration() {
+        return assets;
+    }
 }

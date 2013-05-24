@@ -23,16 +23,21 @@
         <property name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id = "consoleQueueListResource" class = "ru.taskurotta.dropwizard.resources.console.QueueListResource">
+    <bean id = "baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
         <property name="consoleManager" ref="consoleManager" />
     </bean>
-    <bean id = "consoleQueueContentResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource">
-        <property name="consoleManager" ref="consoleManager" />
-    </bean>
+    <bean id = "consoleQueueListResource" class = "ru.taskurotta.dropwizard.resources.console.QueueListResource" parent="baseConsoleResource"/>
+    <bean id = "consoleQueueCardResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource" parent="baseConsoleResource"/>
+    <bean id = "consoleTaskCardResource" class = "ru.taskurotta.dropwizard.resources.console.TaskResource" parent="baseConsoleResource" />
+    <bean id = "consoleProcessCardResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessResource" parent="baseConsoleResource" />
+    <bean id = "consoleProcessTaskListResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessTaskResource" parent="baseConsoleResource" />
+
     <!-- /REST resources -->
 
     <bean id = "consoleManager" class = "ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend" />
+        <property name="taskInfo" ref="taskBackend" />
+        <property name="processInfo" ref="processBackend" />
     </bean>
 
 

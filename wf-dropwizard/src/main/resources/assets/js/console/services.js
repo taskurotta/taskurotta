@@ -5,11 +5,19 @@ consoleServices.factory("$$data", function($resource, $http) {
     //TODO: use benefits(if there are any) of a $resource service?
     var resultService = {
         getQueueContent: function(queueName) {
-            return $http.get('/rest/console/queue/'+queueName);
+            return $http.get('/rest/console/queue/'+encodeURIComponent(queueName));
         },
-
         getQueueList: function() {
             return $http.get('/rest/console/queues/');
+        },
+        getTask: function(taskId) {
+            return $http.get('/rest/console/task/' + encodeURIComponent(taskId));
+        },
+        getProcess: function(processId) {
+            return $http.get('/rest/console/process/' + encodeURIComponent(processId));
+        },
+        getProcessTasks: function(processId){
+            return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
         }
     };
 

@@ -33,7 +33,6 @@ public class OraBackendBundle implements BackendBundle {
         this.taskBackend = new GeneralTaskBackend(taskDao, checkpointService);
         this.queueBackend = new OraQueueBackend(dataSource, this.configBackend);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao, 100000);
-
     }
 
     public ConfigBackend getConfigBackend() {

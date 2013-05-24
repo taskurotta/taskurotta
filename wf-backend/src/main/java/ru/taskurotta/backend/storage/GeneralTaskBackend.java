@@ -6,6 +6,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
+import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -19,7 +20,7 @@ import java.util.UUID;
  * Date: 4/1/13
  * Time: 9:34 PM
  */
-public class GeneralTaskBackend implements TaskBackend {
+public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(GeneralTaskBackend.class);
 
@@ -146,6 +147,11 @@ public class GeneralTaskBackend implements TaskBackend {
     @Override
     public TaskContainer getTask(UUID taskId) {
         return taskDao.getTask(taskId);
+    }
+
+    @Override
+    public List<TaskContainer> getProcessTasks(UUID processId) {
+        return taskDao.getProcessTasks(processId);
     }
 
     @Override

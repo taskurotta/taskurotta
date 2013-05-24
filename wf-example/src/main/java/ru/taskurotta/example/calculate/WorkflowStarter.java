@@ -18,6 +18,8 @@ public class WorkflowStarter {
 
     private boolean startTasks = false;
 
+    private boolean startTasksInBackground = false;
+
     private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
     public void startWork() {
@@ -25,8 +27,11 @@ public class WorkflowStarter {
             final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
             final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
 
-            //startAllTasks(decider);
-            startAllTasksInBackground(decider);
+            if(startTasksInBackground) {
+                startAllTasksInBackground(decider);
+            } else {
+                startAllTasks(decider);
+            }
 
             logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
         }
@@ -68,5 +73,9 @@ public class WorkflowStarter {
 
     public void setStartTasks(boolean startTasks) {
         this.startTasks = startTasks;
+    }
+
+    public void setStartTasksInBackground(boolean startTasksInBackground) {
+        this.startTasksInBackground = startTasksInBackground;
     }
 }

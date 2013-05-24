@@ -1,0 +1,40 @@
+<div>
+
+    <table width="100%">
+        <tr>
+            <td style="text-align: left;"><h3>Process properties:</h3></td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <div>
+        <a class="btn btn-link" ng-href="#/tasks/search/process_id/?processId={{process.processUuid}}">List task for this process</a>
+    </div>
+
+    <table width="100%" class="table">
+        <tr>
+            <td class="form-header">ID: </td>
+            <td>{{process.processUuid}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Start task ID: </td>
+            <td><a ng-href="#/tasks/task/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a></td>
+        </tr>
+        <tr>
+            <td class="form-header">Custom ID: </td>
+            <td>{{process.customId}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Start time: </td>
+            <td>{{process.startTime}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">End time: </td>
+            <td>{{process.endTime}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Return value: </td>
+            <td>{{process.returnValueJson}}</td>
+        </tr>
+    </table>
+</div>

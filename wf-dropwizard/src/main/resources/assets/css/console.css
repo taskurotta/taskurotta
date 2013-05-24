@@ -112,3 +112,10 @@ code {
 .fade-enter-start {
     opacity: 1;
 }
+
+
+
+.form-header {
+    width: 150px;
+    font-weight:bold;
+}

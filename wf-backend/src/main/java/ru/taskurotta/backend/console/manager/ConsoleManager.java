@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.console.manager;
 
+import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -19,5 +20,9 @@ public interface ConsoleManager {
     public List<TaskContainer> getProcessTasks(UUID processUuid);
 
     public List<QueuedTaskVO> getEnqueueTasks(String queueName);
+
+    public TaskContainer getTask(UUID taskId);
+
+    public ProcessVO getProcess(UUID processUuid);
 
 }

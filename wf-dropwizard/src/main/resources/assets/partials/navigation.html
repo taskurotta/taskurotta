@@ -11,19 +11,17 @@
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     <li ng-class="isActiveTab('/home')"><a href="#/home">Home</a></li>
-                    <li ng-class="isActiveTab('/actors')"><a href="#/actors">Actors</a></li>
                     <li ng-class="isActiveTab('/queues')"><a href="#/queues">Queues</a></li>
                     <li ng-class="isActiveTab('/processes')"><a href="#/processes">Processes</a></li>
-                    <li ng-class="isActiveTab('/tasks')"><a href="#/tasks">Tasks</a></li>
-                    <li class="dropdown ng-class:isActiveTab('/stat');">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Statistics <b class="caret"></b></a>
+                    <li class="dropdown ng-class:isActiveTab('/tasks');">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tasks <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li class="nav-header">Daily</li>
-                            <li><a href="#/stat">Type one</a></li>
-                            <li><a href="#/stat">Type two</a></li>
+                            <li class="nav-header">Find</li>
+                            <li><a href="#/tasks/search/task_id">By ID...</a></li>
+                            <li><a href="#/tasks/search/process_id">By process ID...</a></li>
                             <li class="divider"></li>
-                            <li class="nav-header">Aggregated</li>
-                            <li><a href="#/stat">Type one</a></li>
+                            <li class="nav-header">List</li>
+                            <li><a href="#/tasks/">Just show em all!</a></li>
                         </ul>
                     </li>
                     <li ng-class="isActiveTab('/about')"><a href="#/about">About</a></li>

@@ -15,7 +15,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -100,13 +102,14 @@ public class OraTaskDao implements TaskDao {
     @Override
     public void addTask(TaskContainer taskContainer) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO TASK (UUID,JSON_VALUE,NUMBER_OF_ATTEMPTS, ACTOR_ID) VALUES (?,?,?,?)")
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO TASK (UUID, JSON_VALUE, NUMBER_OF_ATTEMPTS, ACTOR_ID, PROCESS_ID) VALUES (?,?,?,?,?)")
         ) {
             ps.setString(1, taskContainer.getTaskId().toString());
             //String str = mapper.writeValueAsString(taskContainer);
             ps.setString(2, (String) taskSerializer.serialize(taskContainer));
             ps.setInt(3, taskContainer.getNumberOfAttempts());
             ps.setString(4, taskContainer.getActorId());
+            ps.setString(5, taskContainer.getProcessId().toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
@@ -133,6 +136,29 @@ public class OraTaskDao implements TaskDao {
             throw new BackendCriticalException("Database error", ex);
         }
 
+    }
+
+    @Override
+    public List<TaskContainer> getProcessTasks(UUID processUuid) {
+        if(processUuid == null) {
+            return null;
+        }
+        List<TaskContainer> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM TASK WHERE PROCESS_ID = ?")
+        ) {
+            ps.setString(1, processUuid.toString());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String json = rs.getString(1);
+                result.add(taskSerializer.deserialize(json));
+            }
+        } catch (SQLException ex) {
+            log.error("DataBase exception at getting process["+processUuid+"] tasks: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error at getting process["+processUuid+"] tasks", ex);
+        }
+
+        return result;
     }
 
     @Override

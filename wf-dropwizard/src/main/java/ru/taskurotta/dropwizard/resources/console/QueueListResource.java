@@ -20,7 +20,7 @@ public class QueueListResource extends BaseResource {
     public Response getQueuesInfo() {
         try {
             List<QueueVO> queuesState = consoleManager.getQueuesState();
-            logger.debug("QueueState getted is [{}]", queuesState);
+            logger.debug("Queues list getted is [{}]", queuesState);
             return Response.ok(queuesState, MediaType.APPLICATION_JSON).build();
         } catch(Throwable e) {
             logger.error("Error at getting queues list", e);

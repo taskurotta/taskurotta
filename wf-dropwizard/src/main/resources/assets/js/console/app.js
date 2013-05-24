@@ -7,11 +7,7 @@ consoleApp.config(function($routeProvider, $locationProvider) {
         controller: "homeController"
     });
 
-    $routeProvider.when('/actors', {
-        templateUrl: '/partials/view/actors.html',
-        controller: "actorsController"
-    });
-
+    //queues
     $routeProvider.when('/queues', {
         templateUrl: '/partials/view/queues.html',
         controller: "queueListController"
@@ -19,28 +15,49 @@ consoleApp.config(function($routeProvider, $locationProvider) {
 
     $routeProvider.when('/queues/queue/:queueName', {
         templateUrl: '/partials/view/queue.html',
-        controller: "queueContentController"
+        controller: "queueCardController"
     });
 
+    //processes
     $routeProvider.when('/processes', {
         templateUrl: '/partials/view/processes.html',
-        controller: "processesController"
+        controller: "processListController"
+    });
+    $routeProvider.when('/processes/process/:processId', {
+        templateUrl: '/partials/view/process.html',
+        controller: "processCardController"
+    });
+    $routeProvider.when('/processes/search/:type', {
+        templateUrl: '/partials/view/process_search.html',
+        controller: "processSearchController"
     });
 
+
+    //tasks
     $routeProvider.when('/tasks', {
         templateUrl: '/partials/view/tasks.html',
         controller: "taskListController"
     });
 
-    $routeProvider.when('/about', {
-        templateUrl: '/partials/view/about.html',
-        controller: "aboutController"
+    $routeProvider.when('/tasks/search/:type', {
+        templateUrl: '/partials/view/task_search.html',
+        controller: "taskSearchController"
     });
 
     $routeProvider.when('/tasks/task/:id', {
         templateUrl: '/partials/view/task.html',
-        controller: "taskController"
+        controller: "taskCardController"
     });
+
+//unused
+//    $routeProvider.when('/about', {
+//        templateUrl: '/partials/view/about.html',
+//        controller: "aboutController"
+//    });
+//    $routeProvider.when('/actors', {
+//        templateUrl: '/partials/view/actors.html',
+//        controller: "actorsController"
+//    });
 
     $routeProvider.otherwise({
         redirectTo: '/home'

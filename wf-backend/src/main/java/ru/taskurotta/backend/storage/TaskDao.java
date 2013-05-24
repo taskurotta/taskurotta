@@ -3,6 +3,7 @@ package ru.taskurotta.backend.storage;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -21,4 +22,6 @@ public interface TaskDao {
     DecisionContainer getDecision(UUID taskId);
 
     boolean isTaskReleased(UUID taskId);
+
+    List<TaskContainer> getProcessTasks(UUID processUuid);
 }

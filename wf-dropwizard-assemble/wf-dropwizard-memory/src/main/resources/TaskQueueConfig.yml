@@ -2,9 +2,9 @@
 contextLocation: "classpath*:context/appContext.xml"
 
 #Used for static resource serving in development mode
-#assets:
-#  overrides:
-#    /: ../../wf-console/src/main/resources/assets/
+assets:
+  overrides:
+    /: ../../wf-dropwizard/src/main/resources/assets/
 
 #Configuration of actors served by this server:
 actorConfig:
@@ -53,11 +53,11 @@ properties:
 
 #Http server configuration:
 logging:
-    level: WARN
+    level: INFO
     loggers:
         ru.taskurotta: INFO
-        ru.taskurotta.console: DEBUG
-#        ru.taskurotta.dropwizard.resources: DEBUG
+        ru.taskurotta.backend.console: DEBUG
+        ru.taskurotta.dropwizard.resources.console: DEBUG
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend: INFO
 #        ru.taskurotta.server.recovery: DEBUG

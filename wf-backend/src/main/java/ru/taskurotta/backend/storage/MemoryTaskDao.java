@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +49,21 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
+    public List<TaskContainer> getProcessTasks(UUID processUuid) {
+        if(processUuid == null) {
+            return null;
+        }
+        List<TaskContainer> result = new ArrayList<>();
+        for(TaskContainer tc: id2TaskMap.values()) {
+            if(processUuid.equals(tc.getProcessId())) {
+                result.add(tc);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public void updateTask(TaskContainer taskContainer) {
-        //Для памяти нет необходимости реализовывать
+        //No need to implement it for in-memory storage case
     }
 }

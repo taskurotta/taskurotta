@@ -1,5 +1,48 @@
 <div>
-    <div class="page-header">
-        <h1>Tasks</h1>
-    </div>
+
+    <table width="100%">
+        <tr>
+            <td style="text-align: left;"><h3>Task properties:</h3></td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <table width="100%" class="table">
+        <tr>
+            <td class="form-header">ID: </td>
+            <td>{{task.taskId}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Process ID: </td>
+            <td><a class="btn btn-link" ng-href="#/processes/process/{{task.processId}}" >{{task.processId}}</a></td>
+        </tr>
+        <tr>
+            <td class="form-header">Method: </td>
+            <td>{{task.method}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Actor id: </td>
+            <td>{{task.actorId}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Type: </td>
+            <td>{{task.type}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Start time: </td>
+            <td>{{task.startTime}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Number of attemts: </td>
+            <td>{{task.numberOfAttempts}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Args: </td>
+            <td>{{task.args}}</td>
+        </tr>
+        <tr>
+            <td class="form-header">Options: </td>
+            <td>{{task.options}}</td>
+        </tr>
+    </table>
 </div>
