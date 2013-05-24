@@ -71,6 +71,14 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
         return pagesCount
     };
 
+    $scope.getMinIndex = function () {
+        var minIndex = ($scope.queuesPage.pageNumber - 1) * $scope.queuesPage.pageSize + 1;
+        if ($scope.queuesPage.totalCount <= 0) {
+            minIndex = 0;
+        }
+        return minIndex;
+    };
+
     $scope.getMaxIndex = function () {
         var maxIndex = $scope.queuesPage.totalCount;
         if ($scope.queuesPage.pageNumber < $scope.totalPages()) {

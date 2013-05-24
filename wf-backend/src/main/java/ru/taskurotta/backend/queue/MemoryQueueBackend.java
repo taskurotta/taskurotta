@@ -76,10 +76,12 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         List<String> result = new ArrayList<>();
         String[] queueNames = new String[queues.keySet().size()];
         queueNames = queues.keySet().toArray(queueNames);
-        for (int i = pageNum; i <= pageSize; i++) {
-            result.add(queueNames[i]);
+        if (!queues.isEmpty()) {
+            for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (queueNames.length)) ? (queueNames.length) - 1 : pageSize * pageNum - 1); i++) {
+                result.add(queueNames[i]);
+            }
         }
-        return new GenericPage<String>(result, pageNum, pageSize, result.size());
+        return new GenericPage<String>(result, pageNum, pageSize, queues.size());
     }
 
     @Override

@@ -39,7 +39,7 @@
                 </select>
                 <span class="muted"> entries</span>
 
-                <span class="muted info-text">Showing <b>{{(queuesPage.pageNumber - 1) * queuesPage.pageSize + 1}}</b> to <b>{{getMaxIndex()}}</b> of <b>{{queuesPage.totalCount}}</b> entries</span>
+                <span class="muted info-text">Showing <b>{{getMinIndex()}}</b> to <b>{{getMaxIndex()}}</b> of <b>{{queuesPage.totalCount}}</b> entries</span>
 
             </div>
 
@@ -51,7 +51,7 @@
                     <li>
                         <span>{{queuesPage.pageNumber}} of {{totalPages()}}</span>
                     </li>
-                    <li ng-class="{disabled: queuesPage.pageNumber == totalPages()}">
+                    <li ng-class="{disabled: queuesPage.pageNumber >= totalPages()}">
                         <a href ng-click="nextPage()">Next »</a>
                     </li>
                 </ul>
