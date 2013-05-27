@@ -25,7 +25,6 @@
 
     <modules>
         <module>wf-core</module>
-        <module>wf-mongo</module>
         <module>wf-mongotest</module>
         <module>wf-bootstrap</module>
         <module>wf-client</module>
