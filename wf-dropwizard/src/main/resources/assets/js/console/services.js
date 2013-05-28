@@ -42,7 +42,7 @@ consoleServices.factory('$$timeUtil', ["$timeout",
                 }, interval);
 
                 $scope.$on('$destroy', function (e) {//cancel interval on change view
-                    this.clearInterval(_internalId);
+                    $timeout.cancel(_intervals[_internalId]);
                 });
 
                 return _internalId;

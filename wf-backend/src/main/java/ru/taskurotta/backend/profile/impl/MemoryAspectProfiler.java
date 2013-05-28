@@ -23,7 +23,7 @@ public class MemoryAspectProfiler extends AbstractAspectProfiler implements Prof
         if(time > profile.getMax()) {
             profile.setMax(time);
         }
-        if(time < profile.getMin()) {
+        if(profile.getMin()==0 || time < profile.getMin()) {
             profile.setMin(time);
         }
 
