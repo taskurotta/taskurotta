@@ -2,6 +2,7 @@ package ru.taskurotta.backend.dependency;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
@@ -33,6 +34,7 @@ public class GeneralDependencyBackend implements DependencyBackend {
     }
 
     @Override
+    @Profiled
     public DependencyDecision applyDecision(DecisionContainer taskDecision) {
 
         logger.debug("applyDecision() taskDecision = [{}]", taskDecision);
@@ -75,6 +77,7 @@ public class GeneralDependencyBackend implements DependencyBackend {
     }
 
     @Override
+    @Profiled
     public void startProcess(TaskContainer task) {
         logger.debug("startProcess() task = [{}]", task);
 

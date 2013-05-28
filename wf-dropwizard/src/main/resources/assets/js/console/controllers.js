@@ -159,6 +159,27 @@ consoleControllers.controller("processListController", function ($scope) {
 
 });
 
+consoleControllers.controller("profilesController", function ($scope, $$data, $log) {
+    $scope.feedback = "";
+    $scope.profiles = [];
+
+    //Updates profiles by polling REST resource
+    $scope.update = function () {
+        $$data.getProfiles().then(function (value) {
+            $scope.profiles = angular.fromJson(value.data || {});
+            $log.info("profilesController: successfully updated profiles");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("profilesController: profiles update failed: " + errReason);
+        });
+
+    };
+
+    //Initialization:
+    $scope.update();
+
+});
+
 consoleControllers.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
     $scope.process = {};
     $scope.feedback = "";

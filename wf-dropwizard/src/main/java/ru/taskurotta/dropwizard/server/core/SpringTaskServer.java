@@ -1,7 +1,7 @@
 package ru.taskurotta.dropwizard.server.core;
 
+import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
 import com.yammer.dropwizard.Service;
-import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import com.yammer.metrics.core.HealthCheck;
@@ -28,8 +28,8 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
         logger.info("Dropwizard bootstrap commands are [{}]", bootstrap.getCommands());
-        bootstrap.addBundle(new AssetsBundle("/assets", "/"));
-        //bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
+        //bootstrap.addBundle(new AssetsBundle("/assets", "/"));
+        bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
     }
 
     @Override

@@ -13,6 +13,9 @@
 
     <context:property-placeholder/>
 
+    <aop:aspectj-autoproxy/>
+    <bean id="profilingAspect" class="ru.taskurotta.backend.profile.impl.MemoryAspectProfiler"/>
+
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="${db.url}"/>
@@ -43,10 +46,13 @@
     <bean id = "consoleQueueCardResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource" parent="baseConsoleResource"/>
     <bean id = "consoleTaskCardResource" class = "ru.taskurotta.dropwizard.resources.console.TaskResource" parent="baseConsoleResource" />
     <bean id = "consoleProcessCardResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessResource" parent="baseConsoleResource" />
+    <bean id = "consoleProfilesResource" class = "ru.taskurotta.dropwizard.resources.console.ProfilesResource" parent="baseConsoleResource" />
     <!-- /REST resources -->
 
     <bean id = "consoleManager" class = "ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend" />
+        <property name="profileInfo" ref="profilingAspect" />
+        <property name="taskInfo" ref="taskBackend" />
     </bean>
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">

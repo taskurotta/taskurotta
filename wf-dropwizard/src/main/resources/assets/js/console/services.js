@@ -18,6 +18,9 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getProcessTasks: function (processId) {
             return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
+        },
+        getProfiles: function() {
+            return $http.get('/rest/console/profiles');
         }
     };
 

@@ -1,19 +1,21 @@
 package ru.taskurotta.backend.console.manager.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
+import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -26,7 +28,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private ProcessInfoRetriever processInfo;
     private TaskInfoRetriever taskInfo;
     private CheckpointInfoRetriever checkpointInfo;
-
+    private ProfileInfoRetriever profileInfo;
 
     @Override
     public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
@@ -79,6 +81,14 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return processInfo.getProcess(processUuid);
     }
 
+    @Override
+    public List<ProfileVO> getProfilesInfo() {
+        if(profileInfo == null) {
+            return null;
+        }
+        return profileInfo.getProfileInfo();
+    }
+
     public void setQueueInfo(QueueInfoRetriever queueInfo) {
         this.queueInfo = queueInfo;
     }
@@ -93,5 +103,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     public void setCheckpointInfo(CheckpointInfoRetriever checkpointInfo) {
         this.checkpointInfo = checkpointInfo;
+    }
+
+    public void setProfileInfo(ProfileInfoRetriever profileInfo) {
+        this.profileInfo = profileInfo;
     }
 }

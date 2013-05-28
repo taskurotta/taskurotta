@@ -1,5 +1,17 @@
 package ru.taskurotta.backend.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.annotation.Profiled;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.util.ActorDefinition;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,17 +23,6 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario
@@ -162,6 +163,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
+    @Profiled(notNull = true)
     public UUID poll(String actorId, String taskList) {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
@@ -193,12 +195,14 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
+    @Profiled
     public void pollCommit(String actorId, UUID taskId) {
         checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
         checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override
+    @Profiled
     public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));

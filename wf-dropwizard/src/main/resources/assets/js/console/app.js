@@ -49,15 +49,21 @@ consoleApp.config(function($routeProvider, $locationProvider) {
         controller: "taskCardController"
     });
 
+    //profiles
+    $routeProvider.when('/profiles', {
+        templateUrl: '/partials/view/profiles.html',
+        controller: "profilesController"
+    });
+
 //unused
-//    $routeProvider.when('/about', {
-//        templateUrl: '/partials/view/about.html',
-//        controller: "aboutController"
-//    });
-//    $routeProvider.when('/actors', {
-//        templateUrl: '/partials/view/actors.html',
-//        controller: "actorsController"
-//    });
+    $routeProvider.when('/about', {
+        templateUrl: '/partials/view/about.html',
+        controller: "aboutController"
+    });
+    $routeProvider.when('/actors', {
+        templateUrl: '/partials/view/actors.html',
+        controller: "actorsController"
+    });
 
     $routeProvider.otherwise({
         redirectTo: '/home'
