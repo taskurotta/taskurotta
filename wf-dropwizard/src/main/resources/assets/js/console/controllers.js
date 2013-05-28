@@ -20,13 +20,14 @@ consoleControllers.controller("rootController", function ($rootScope, $scope, $l
 consoleControllers.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
 
     $scope.feedback = "";
-    $scope.refreshRate = 0;
 
     //Init paging object
-    $scope.queuesPage = {};
-    $scope.queuesPage.items = [];
-    $scope.queuesPage.pageNumber = 1;
-    $scope.queuesPage.pageSize = 5;
+    $scope.queuesPage = {
+        pageSize: 5,
+        pageNumber: 1,
+        totalCount: 0,
+        items: []
+    };
 
     $scope.totalTasks = function () {
         var result = 0;
@@ -39,11 +40,6 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
-        //If user is on the last page and change pageSize, we can get situation when current page number > total pages count
-        if ($scope.queuesPage.pageNumber > $scope.totalPages()) {
-            $scope.queuesPage.pageNumber = $scope.totalPages();
-        }
-
         $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize).then(function (value) {
             $scope.queuesPage = angular.fromJson(value.data || {});
             $log.info("queueListController: successfully updated queue state");
@@ -54,62 +50,6 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
 
     };
 
-    //Show previous page
-    $scope.prevPage = function () {
-        if ($scope.queuesPage.pageNumber > 1) {
-            $scope.queuesPage.pageNumber--;
-        }
-        $scope.update();
-    };
-
-    $scope.totalPages = function () {
-        var reminder = $scope.queuesPage.totalCount % $scope.queuesPage.pageSize;
-        var pagesCount = Math.floor($scope.queuesPage.totalCount / $scope.queuesPage.pageSize);
-        if (reminder > 0) {
-            pagesCount++;
-        }
-        return pagesCount
-    };
-
-    $scope.getMinIndex = function () {
-        var minIndex = ($scope.queuesPage.pageNumber - 1) * $scope.queuesPage.pageSize + 1;
-        if ($scope.queuesPage.totalCount <= 0) {
-            minIndex = 0;
-        }
-        return minIndex;
-    };
-
-    $scope.getMaxIndex = function () {
-        var maxIndex = $scope.queuesPage.totalCount;
-        if ($scope.queuesPage.pageNumber < $scope.totalPages()) {
-            maxIndex = $scope.queuesPage.pageNumber * $scope.queuesPage.pageSize;
-        }
-        return maxIndex
-    };
-
-    //Show next page
-    $scope.nextPage = function () {
-        if ($scope.queuesPage.pageNumber < $scope.totalPages()) {
-            $scope.queuesPage.pageNumber++;
-        }
-        $scope.update();
-    };
-
-
-    //Auto refresh feature. re triggers auto refreshing on refresh rate changes
-    var currentRefreshIntervalId = -1;
-    $scope.$watch(function () {
-        return $scope.refreshRate;
-    }, function (value) {
-        if (currentRefreshIntervalId > 0) {
-            $$timeUtil.clearInterval(currentRefreshIntervalId);
-        }
-        if ($scope.refreshRate > 0) {
-            currentRefreshIntervalId = $$timeUtil.setInterval($scope.update, $scope.refreshRate * 1000, $scope);//Start autoUpdate
-        }
-    }, true);
-
-
     //Initialization:
     $scope.update();
 
@@ -118,7 +58,6 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
 consoleControllers.controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
 
     $scope.feedback = "";
-    $scope.refreshRate = 0;
 
     $scope.queueItems = [];
     $scope.queueName = $routeParams.queueName;
@@ -135,20 +74,6 @@ consoleControllers.controller("queueCardController", function ($scope, $$data, $
         });
 
     };
-
-    //Auto refresh feature. re triggers auto refreshing on refresh rate changes
-    var currentRefreshIntervalId = -1;
-    $scope.$watch(function () {
-        return $scope.refreshRate;
-    }, function (value) {
-        if (currentRefreshIntervalId > 0) {
-            $$timeUtil.clearInterval(currentRefreshIntervalId);
-        }
-        if ($scope.refreshRate > 0) {
-            currentRefreshIntervalId = $$timeUtil.setInterval($scope.update, $scope.refreshRate * 1000, $scope);//Start autoUpdate
-        }
-    }, true);
-
 
     //Initialization:
     $scope.update();

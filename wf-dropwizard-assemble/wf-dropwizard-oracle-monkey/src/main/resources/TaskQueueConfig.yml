@@ -2,9 +2,9 @@
 contextLocation: "classpath*:context/appContext.xml"
 
 #Used for static resource serving in development mode
-#assets:
-#  overrides:
-#    /: ../../wf-console/src/main/resources/assets/
+assets:
+  overrides:
+    /: ../../wf-dropwizard/src/main/resources/assets/
 
 
 
@@ -30,6 +30,14 @@ actorConfig:
       queueName: "qb$math_action_decider"
     - id: "ru.taskurotta.example.calculate.decider.TestActionDecider#1.0"
       queueName: "qb$test_decider"
+#    - id: "paginationTest1"
+#      queueName: "qb$test1"
+#    - id: "paginationTest2"
+#      queueName: "qb$test2"
+#    - id: "paginationTest3"
+#      queueName: "qb$test3"
+#    - id: "paginationTest4"
+#      queueName: "qb$test4"
 
 #List of expiration policies available for actors by name (new instance per actor):
   expirationPolicies:
@@ -46,7 +54,7 @@ properties:
   db.user: "taskurotta"
   db.password: "taskurotta"
   db.validating: true  #validate queues existence in DB
-  db.autocreating: false #auto create new queues in DB if there are no explicitly configured
+  db.autocreating: true #auto create new queues in DB if there are no explicitly configured
   retryTimes: 50 #retry for dependency graph modification
   recovery.schedule: "*/20 * * * * ?" #run recovery every 20 seconds
   recovery.period: 2 #recoveru scans for checkpoints created {this.value} days ago

@@ -29,7 +29,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
         bootstrap.setName("task-queue-service");
         logger.info("Dropwizard bootstrap commands are [{}]", bootstrap.getCommands());
         bootstrap.addBundle(new AssetsBundle("/assets", "/"));
-        //bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
+//        bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
     }
 
     @Override

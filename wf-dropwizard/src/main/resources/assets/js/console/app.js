@@ -1,4 +1,4 @@
-var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation']);
+var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives']);
 
 consoleApp.config(function($routeProvider, $locationProvider) {
 
