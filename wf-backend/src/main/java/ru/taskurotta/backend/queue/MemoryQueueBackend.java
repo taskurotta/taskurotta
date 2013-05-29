@@ -1,5 +1,16 @@
 package ru.taskurotta.backend.queue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
@@ -11,18 +22,6 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: romario
@@ -91,19 +90,22 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public List<QueuedTaskVO> getQueueContent(String queueName) {
+    public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
         List<QueuedTaskVO> result = new ArrayList<QueuedTaskVO>();
-        Iterator<DelayedTaskElement> iterator = getQueue(queueName).iterator();
-        while (iterator.hasNext()) {
-            DelayedTaskElement dte = iterator.next();
-            QueuedTaskVO qt = new QueuedTaskVO();
-            qt.setId(dte.taskId);
-            qt.setStartTime(dte.startTime);
-            qt.setInsertTime(dte.enqueueTime);
-            result.add(qt);
-        }
+        DelayedTaskElement[] tasks = new DelayedTaskElement[getQueue(queueName).size()];
+        tasks = getQueue(queueName).toArray(tasks);
 
-        return result;
+        if (tasks.length > 0) {
+            for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (tasks.length)) ? (tasks.length) - 1 : pageSize * pageNum - 1); i++) {
+                DelayedTaskElement dte = tasks[i];
+                QueuedTaskVO qt = new QueuedTaskVO();
+                qt.setId(dte.taskId);
+                qt.setInsertTime(dte.enqueueTime);
+                qt.setStartTime(dte.startTime);
+                result.add(qt);
+            }
+        }
+        return new GenericPage<QueuedTaskVO>(result, pageNum, pageSize, tasks.length);
     }
 
 

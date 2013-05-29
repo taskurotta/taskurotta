@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.ora.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -9,16 +19,6 @@ import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: moroz
@@ -140,22 +140,22 @@ public class OraTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if(processUuid == null) {
+        if (processUuid == null) {
             return null;
         }
         List<TaskContainer> result = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT * FROM TASK WHERE PROCESS_ID = ?")
+             PreparedStatement ps = connection.prepareStatement("SELECT JSON_VALUE FROM TASK WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processUuid.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                String json = rs.getString(1);
+                String json = rs.getString("json_value");
                 result.add(taskSerializer.deserialize(json));
             }
         } catch (SQLException ex) {
-            log.error("DataBase exception at getting process["+processUuid+"] tasks: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error at getting process["+processUuid+"] tasks", ex);
+            log.error("DataBase exception at getting process[" + processUuid + "] tasks: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error at getting process[" + processUuid + "] tasks", ex);
         }
 
         return result;

@@ -1,5 +1,13 @@
 package ru.taskurotta.backend.ora.queue;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
@@ -15,14 +23,6 @@ import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * User: moroz, dudin
@@ -175,21 +175,22 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     @Profiled
-    public List<QueuedTaskVO> getQueueContent(String queueName) {
+    public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
         List<QueuedTaskVO> result = null;
-        List<QueueItem> queueItems = dbDAO.getQueueContent(queueName);
-        if (queueItems != null && !queueItems.isEmpty()) {
+        GenericPage<QueueItem> tmpPage = dbDAO.getQueueContent(queueName, pageNum, pageSize);
+
+        if (tmpPage != null && !tmpPage.getItems().isEmpty()) {
             result = new ArrayList<QueuedTaskVO>();
-            for (QueueItem qi : queueItems) {
+            for (QueueItem qi : tmpPage.getItems()) {
                 QueuedTaskVO qt = new QueuedTaskVO();
                 qt.setId(qi.getId());
                 qt.setTaskList(qi.getTaskList());
-                qt.setInsertTime(qi.getInsertDate() != null ? qi.getInsertDate().getTime() : -1);
-                qt.setStartTime(qi.getStartDate() != null ? qi.getStartDate().getTime() : -1);
+                qt.setInsertTime(qi.getInsertDate() != null ? qi.getInsertDate().getTime() : 0);
+                qt.setStartTime(qi.getStartDate() != null ? qi.getStartDate().getTime() : 0);
                 result.add(qt);
             }
         }
 
-        return result;
+        return new GenericPage<QueuedTaskVO>(result, tmpPage.getPageNumber(), tmpPage.getPageSize(), tmpPage.getTotalCount());
     }
 }

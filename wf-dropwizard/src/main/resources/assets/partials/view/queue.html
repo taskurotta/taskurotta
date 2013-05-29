@@ -15,6 +15,7 @@
         <tsk-autorefresh update-action="update()"></tsk-autorefresh>
     </div>
     <div ng-hide="!angular.isDefined(feedback)" class="err-message">Error at updating: <span>{{feedback}}</span></div>
+
     <table class="table table-striped table-bordered table-hover">
         <thead>
         <tr>
@@ -25,19 +26,29 @@
             <th>Insert time</th>
         </tr>
         </thead>
+
+
         <tbody>
-        <tr ng-repeat="queueItem in queueItems">
-            <td>{{$index+1}}</td>
+        <tr ng-repeat="queueItem in queueTasksPage.items">
+            <td>{{getStartIndex(queueTasksPage.pageNumber, queueTasksPage.pageSize)+$index}}</td>
+
             <td>
                 <a class="btn btn-link" style="cursor: pointer;" ng-href="#/tasks/task/{{queueItem.id}}">{{queueItem.id}}</a>
             </td>
             <td>{{queueItem.taskList}}</td>
-            <td>{{queueItem.startTime}}</td>
-            <td>{{queueItem.insertTime}}</td>
+            <td>{{queueItem.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
+            <td>{{queueItem.insertTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
         </tr>
         </tbody>
+
+        <tfoot>
+        <td colspan="5">
+            <tsk-paginator generic-page="queueTasksPage" update-action="update()"></tsk-paginator>
+        </td>
+        </tfoot>
+
     </table>
 
-    <div>Total: <b><b>{{queueItems.length}}</b></b> tasks</div>
+    <div>Total: <b><b>{{queueTasksPage.totalCount}}</b></b> tasks</div>
 
 </div>

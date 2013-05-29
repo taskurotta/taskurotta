@@ -59,14 +59,20 @@ consoleControllers.controller("queueCardController", function ($scope, $$data, $
 
     $scope.feedback = "";
 
-    $scope.queueItems = [];
-    $scope.queueName = $routeParams.queueName;
+    //Init paging object
+    $scope.queueTasksPage = {
+        pageSize: 5,
+        pageNumber: 1,
+        totalCount: 0,
+        items: []
+    };
 
+    $scope.queueName = $routeParams.queueName;
 
     //Updates queue items by polling REST resource
     $scope.update = function () {
-        $$data.getQueueContent($scope.queueName).then(function (value) {
-            $scope.queueItems = angular.fromJson(value.data || {});
+        $$data.getQueueContent($scope.queueName, $scope.queueTasksPage.pageNumber, $scope.queueTasksPage.pageSize).then(function (value) {
+            $scope.queueTasksPage = angular.fromJson(value.data || {});
             $log.info("queueContentController: successfully updated queue content");
         }, function (errReason) {
             $scope.feedback = errReason;
@@ -147,22 +153,22 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
 });
 
 consoleControllers.controller("taskSearchController", function ($scope, $routeParams, $$data, $log) {
-    $scope.taskId = $routeParams.taskId;
-    $scope.processId = $routeParams.processId;
+    $scope.taskId = $routeParams.id || '';
+    $scope.processId = $routeParams.id || '';
     $scope.type = $routeParams.type;
     $scope.tasks = [];
 
     $scope.update = function () {
-        if (angular.isDefined($routeParams.taskId)) { //searching task by ID
-            $$data.getTask($routeParams.taskId).then(function (value) {
+        if ($scope.type == 'task_id') { //searching task by ID
+            $$data.getTask($scope.taskId).then(function (value) {
                 $scope.tasks = [angular.fromJson(value.data || {})];
                 $log.info("taskSearchController: successfully updated task[" + $routeParams.taskId + "] content");
             }, function (errReason) {
                 $scope.feedback = errReason;
                 $log.error("taskSearchController: task[" + $routeParams.taskId + "] update failed: " + errReason);
             });
-        } else if (angular.isDefined($routeParams.processId)) {//searching tasks for given process
-            $$data.getProcessTasks($routeParams.processId).then(function (value) {
+        } else if ($scope.type == 'process_id') {//searching tasks for given process
+            $$data.getProcessTasks($scope.processId).then(function (value) {
                 $scope.tasks = angular.fromJson(value.data || {});
                 $log.info("taskSearchController: successfully updated process[" + $routeParams.processId + "] tasks list");
             }, function (errReason) {

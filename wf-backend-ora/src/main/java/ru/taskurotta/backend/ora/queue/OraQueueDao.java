@@ -152,13 +152,18 @@ public class OraQueueDao {
     }
 
 
-    public List<QueueItem> getQueueContent(String queueName) {
+    public GenericPage<QueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
         Connection connection = null;
         PreparedStatement ps = null;
         try {
-            List<QueueItem> result = new ArrayList<QueueItem>();
+            List<QueueItem> tmpresult = new ArrayList<QueueItem>();
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("select * from " + queueName);
+            ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("select * from " + queueName));
+            int startIndex = (pageNum - 1) * pageSize + 1;
+            int endIndex = startIndex + pageSize - 1;
+            ps.setInt(1, endIndex);
+            ps.setInt(2, startIndex);
+            long totalCount = 0;
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 QueueItem qi = new QueueItem();
@@ -169,11 +174,11 @@ public class OraQueueDao {
                 qi.setStatus(rs.getInt("status_id"));
                 qi.setStartDate(rs.getTimestamp("date_start"));
                 qi.setInsertDate(rs.getTimestamp("insert_date"));
-
-                result.add(qi);
+                totalCount = rs.getLong("cnt");
+                tmpresult.add(qi);
 
             }
-            return result;
+            return new GenericPage(tmpresult, pageNum, pageSize, totalCount);
         } catch (SQLException ex) {
             log.error("Queue[" + queueName + "] content extraction error!", ex);
             throw new BackendCriticalException("Queue[" + queueName + "] content extraction error!", ex);

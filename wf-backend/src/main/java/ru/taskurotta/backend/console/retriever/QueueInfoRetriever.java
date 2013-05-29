@@ -1,7 +1,5 @@
 package ru.taskurotta.backend.console.retriever;
 
-import java.util.List;
-
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 
@@ -17,6 +15,6 @@ public interface QueueInfoRetriever {
 
     public int getQueueTaskCount(String queueName);
 
-    public List<QueuedTaskVO> getQueueContent(String queueName);
+    public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize);
 
 }

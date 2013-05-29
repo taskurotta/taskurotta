@@ -16,7 +16,7 @@
 
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@//taskurotta-db:1521/orcl"/>
+        <property name="url" value="jdbc:oracle:thin:@//10.129.3.163:1531/testext"/>
         <property name="initialSize" value="20"/>
         <property name="maxActive" value="40"/>
         <property name="username" value="taskurotta"/>
@@ -36,42 +36,78 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id = "baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
-        <property name="consoleManager" ref="consoleManager" />
+    <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
+        <property name="consoleManager" ref="consoleManager"/>
     </bean>
-    <bean id = "consoleQueueListResource" class = "ru.taskurotta.dropwizard.resources.console.QueueListResource" parent="baseConsoleResource"/>
-    <bean id = "consoleQueueCardResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource" parent="baseConsoleResource"/>
-    <bean id = "consoleTaskCardResource" class = "ru.taskurotta.dropwizard.resources.console.TaskResource" parent="baseConsoleResource" />
-    <bean id = "consoleProcessCardResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessResource" parent="baseConsoleResource" />
-    <bean id = "consoleProcessTaskListResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessTaskResource" parent="baseConsoleResource" />
-    <bean id = "consoleProfilesResource" class = "ru.taskurotta.dropwizard.resources.console.ProfilesResource" parent="baseConsoleResource" />
+    <bean id="consoleQueueListResource" class="ru.taskurotta.dropwizard.resources.console.QueueListResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.QueueContentResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleTaskCardResource" class="ru.taskurotta.dropwizard.resources.console.TaskResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleProcessCardResource" class="ru.taskurotta.dropwizard.resources.console.ProcessResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleProcessTaskListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessTaskResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleProfilesResource" class="ru.taskurotta.dropwizard.resources.console.ProfilesResource"
+          parent="baseConsoleResource"/>
 
-    <bean id = "consoleManager" class = "ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
-        <property name="profileInfo" ref="profilingAspect" />
-    </bean>
 
-    <bean id="executorServiceFactory" class="ru.taskurotta.dropwizard.server.pooling.ExecutorServiceFactory">
-        <property name="threads" value="${internalPool.poolSize}"/>
-    </bean>
-
+    <!--DAO-->
     <bean id="taskDao" class="ru.taskurotta.backend.ora.storage.OraTaskDao">
-        <constructor-arg name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="checkpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
     <bean id="oraGraphDao" class="ru.taskurotta.backend.ora.dependency.OraGraphDao">
         <property name="dataSource" ref="dataSource"/>
     </bean>
+    <!--DAO-->
 
-    <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
+    <!--Backend-->
+    <bean id="queueBackend" class="ru.taskurotta.backend.ora.queue.OraQueueBackend">
         <constructor-arg name="dataSource" ref="dataSource"/>
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="validating" value="${db.validating}"/>
+        <constructor-arg name="autocreating" value="${db.autocreating}"/>
+    </bean>
+
+    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="checkpointService" ref="checkpointService"/>
-        <constructor-arg name="graphDao" ref="oraGraphDao"/>
     </bean>
+
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="oraGraphDao"/>
+        <constructor-arg name="retryTimes" value="${retryTimes}"/>
+    </bean>
+
+    <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
+        <constructor-arg name="checkpointService" ref="checkpointService"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend"/>
+
+    <bean id="checkpointService" class="ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--Backend-->
+
+    <bean id="oraBundle" class="ru.taskurotta.backend.ora.OraBackendBundle">
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+    </bean>
+
+    <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
+        <property name="queueInfo" ref="queueBackend"/>
+        <property name="taskInfo" ref="taskBackend"/>
+        <property name="processInfo" ref="processBackend"/>
+        <property name="profileInfo" ref="profilingAspect"/>
+    </bean>
+
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
         <constructor-arg name="backendBundle" ref="oraBundle"/>

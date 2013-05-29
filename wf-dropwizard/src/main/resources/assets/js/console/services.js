@@ -4,8 +4,8 @@ consoleServices.factory("$$data", function ($resource, $http) {
 
     //TODO: use benefits(if there are any) of a $resource service?
     var resultService = {
-        getQueueContent: function (queueName) {
-            return $http.get('/rest/console/queue/' + encodeURIComponent(queueName));
+        getQueueContent: function (queueName, pageNumber, pageSize) {
+            return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
         getQueueList: function (pageNumber, pageSize) {
             return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
@@ -19,7 +19,7 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getProcessTasks: function (processId) {
             return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
         },
-        getProfiles: function() {
+        getProfiles: function () {
             return $http.get('/rest/console/profiles');
         }
     };

@@ -4,7 +4,7 @@ contextLocation: "classpath*:context/appContext.xml"
 #Used for static resource serving in development mode
 assets:
   overrides:
-    /: ../../wf-console/src/main/resources/assets/
+    /: ../../wf-dropwizard/src/main/resources/assets/
 
 
 

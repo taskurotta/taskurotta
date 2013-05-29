@@ -1,5 +1,9 @@
 package ru.taskurotta.backend.console.manager.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
@@ -12,10 +16,6 @@ import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -58,11 +58,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public List<QueuedTaskVO> getEnqueueTasks(String queueName) {
+    public GenericPage<QueuedTaskVO> getEnqueueTasks(String queueName, int pageNum, int pageSize) {
         if (queueInfo == null) {
             return null;
         }
-        return queueInfo.getQueueContent(queueName);
+        return queueInfo.getQueueContent(queueName, pageNum, pageSize);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     @Override
     public List<ProfileVO> getProfilesInfo() {
-        if(profileInfo == null) {
+        if (profileInfo == null) {
             return null;
         }
         return profileInfo.getProfileInfo();

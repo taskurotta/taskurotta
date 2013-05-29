@@ -23,7 +23,7 @@
 
         <tbody>
         <tr ng-repeat="queue in queuesPage.items">
-            <td>{{$index+1}}</td>
+            <td>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</td>
             <td>
                 <a clas="btn btn-link" style="cursor: pointer;"
                    ng-href="#/queues/queue/{{encodeURI(queue.name)}}">{{queue.name}}</a>

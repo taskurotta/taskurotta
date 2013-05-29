@@ -9,39 +9,39 @@
 
     <table width="100%" class="table">
         <tr>
-            <td class="form-header">ID: </td>
+            <td class="form-header">ID:</td>
             <td>{{task.taskId}}</td>
         </tr>
         <tr>
-            <td class="form-header">Process ID: </td>
-            <td><a class="btn btn-link" ng-href="#/processes/process/{{task.processId}}" >{{task.processId}}</a></td>
+            <td class="form-header">Process ID:</td>
+            <td><a class="btn btn-link" ng-href="#/processes/process/{{task.processId}}">{{task.processId}}</a></td>
         </tr>
         <tr>
-            <td class="form-header">Method: </td>
+            <td class="form-header">Method:</td>
             <td>{{task.method}}</td>
         </tr>
         <tr>
-            <td class="form-header">Actor id: </td>
+            <td class="form-header">Actor id:</td>
             <td>{{task.actorId}}</td>
         </tr>
         <tr>
-            <td class="form-header">Type: </td>
+            <td class="form-header">Type:</td>
             <td>{{task.type}}</td>
         </tr>
         <tr>
-            <td class="form-header">Start time: </td>
-            <td>{{task.startTime}}</td>
+            <td class="form-header">Start time:</td>
+            <td>{{task.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
         </tr>
         <tr>
-            <td class="form-header">Number of attemts: </td>
+            <td class="form-header">Number of attemts:</td>
             <td>{{task.numberOfAttempts}}</td>
         </tr>
         <tr>
-            <td class="form-header">Args: </td>
+            <td class="form-header">Args:</td>
             <td>{{task.args}}</td>
         </tr>
         <tr>
-            <td class="form-header">Options: </td>
+            <td class="form-header">Options:</td>
             <td>{{task.options}}</td>
         </tr>
     </table>

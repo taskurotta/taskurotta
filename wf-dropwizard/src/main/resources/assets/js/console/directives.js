@@ -1,6 +1,6 @@
 var consoleDirectives = angular.module("console.directives", []);
 
-consoleDirectives.directive('tskPaginator', ['$http', function($http) {
+consoleDirectives.directive('tskPaginator', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -8,9 +8,9 @@ consoleDirectives.directive('tskPaginator', ['$http', function($http) {
             genericPage: "=genericPage",
             updateAction: "&updateAction"
         },
-        controller: ['$scope', '$element', '$attrs', '$transclude', function($scope, $element, $attrs, $transclude) {
+        controller: ['$scope', '$element', '$attrs', '$transclude', function ($scope, $element, $attrs, $transclude) {
 
-            $scope.updatePageSize = function() {
+            $scope.updatePageSize = function () {
 
                 //If user is on the last page and change pageSize, we can get situation when current page number > total pages count
                 if ($scope.genericPage.pageNumber > $scope.totalPages()) {
@@ -63,20 +63,29 @@ consoleDirectives.directive('tskPaginator', ['$http', function($http) {
                 $scope.updateAction();
             };
 
+            $scope.firstPage = function () {
+                $scope.genericPage.pageNumber = 1;
+                $scope.updateAction();
+            };
+
+            $scope.lastPage = function () {
+                $scope.genericPage.pageNumber = $scope.totalPages();
+                $scope.updateAction();
+            };
         }],
         templateUrl: "/partials/widget/paginator_bar.html",
         replace: true
     };
 }]);
 
-consoleDirectives.directive('tskAutorefresh', ['$http', function($http) {
+consoleDirectives.directive('tskAutorefresh', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
         scope: {
             updateAction: "&updateAction"
         },
-        controller: ['$scope', '$element', '$attrs', '$transclude', '$$timeUtil', function($scope, $element, $attrs, $transclude, $$timeUtil) {
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $$timeUtil) {
             $scope.refreshRate = 0;
 
             //Auto refresh feature. triggers auto refreshing on refresh rate changes

@@ -1,13 +1,15 @@
 package ru.taskurotta.dropwizard.resources.console;
 
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+
+import com.google.common.base.Optional;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
 
 /**
  * Resource for obtaining info for task in queue
@@ -17,19 +19,20 @@ import java.util.List;
 @Path("/console/queue/{name}")
 public class QueueContentResource extends BaseResource {
 
+    private static int DEFAULT_START_PAGE = 1;
+    private static int DEFAULT_PAGE_SIZE = 10;
+
     @GET
-    public Response getQueueInfo(@PathParam("name")String name) {
+    public Response getQueueInfo(@PathParam("name") String name, @QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
         try {
-            List<QueuedTaskVO> queuesTasks = consoleManager.getEnqueueTasks(name);
+            GenericPage<QueuedTaskVO> queuesTasks = consoleManager.getEnqueueTasks(name, pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
             logger.debug("Queue[{}] content getted is [{}]", name, queuesTasks);
             return Response.ok(queuesTasks, MediaType.APPLICATION_JSON).build();
-        } catch(Throwable e) {
-            logger.error("Error at getting queue["+name+"] content", e);
+        } catch (Throwable e) {
+            logger.error("Error at getting queue[" + name + "] content", e);
             return Response.serverError().build();
         }
     }
-
-
 
 
 }

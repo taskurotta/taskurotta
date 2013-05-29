@@ -1,6 +1,6 @@
 var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives']);
 
-consoleApp.config(function($routeProvider, $locationProvider) {
+consoleApp.config(function ($routeProvider, $locationProvider) {
 
     $routeProvider.when('/home', {
         templateUrl: '/partials/view/home.html',
@@ -32,7 +32,6 @@ consoleApp.config(function($routeProvider, $locationProvider) {
         controller: "processSearchController"
     });
 
-
     //tasks
     $routeProvider.when('/tasks', {
         templateUrl: '/partials/view/tasks.html',
@@ -40,6 +39,11 @@ consoleApp.config(function($routeProvider, $locationProvider) {
     });
 
     $routeProvider.when('/tasks/search/:type', {
+        templateUrl: '/partials/view/task_search.html',
+        controller: "taskSearchController"
+    });
+
+    $routeProvider.when('/tasks/search/:type/:id', {
         templateUrl: '/partials/view/task_search.html',
         controller: "taskSearchController"
     });
@@ -75,3 +79,8 @@ consoleApp.config(function($routeProvider, $locationProvider) {
 
 });
 
+consoleApp.run(function ($rootScope) {
+    $rootScope.getStartIndex = function (pageNum, pageSize) {
+        return (pageNum - 1) * pageSize + 1;
+    }
+});
