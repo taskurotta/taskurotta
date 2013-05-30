@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>wf-util</artifactId>
-    <name>Taskurotta :: Utils</name>
+    <name>Taskurotta :: ru.hazelcast.Utils</name>
 
     <dependencies>
         <dependency>

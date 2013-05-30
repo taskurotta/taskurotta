@@ -38,6 +38,7 @@
         <module>wf-backend-ora</module>
         <module>wf-util</module>
         <module>wf-transport</module>
+        <module>hazelcast</module>
     </modules>
 
     <profiles>

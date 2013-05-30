@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-2.5.xsd"
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <properties>
+        <property name="hazelcast.jmx">true</property>
+        <property name="hazelcast.jmx.detailed">true</property>
+        <property name="hazelcast.logging.type">slf4j</property>
+    </properties>
+
+    <map name="default">
+        <!--
+            Number of backups. If 1 is set as the backup-count for example,
+            then all entries of the map will be copied to another JVM for
+            fail-safety. 0 means no backup.
+        -->
+        <backup-count>1</backup-count>
+
+        <!--
+            Number of async backups. 0 means no backup.
+        -->
+        <async-backup-count>1</async-backup-count>
+
+        <!--
+            Maximum number of seconds for each item to live.
+            Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+        -->
+        <time-to-live-seconds>0</time-to-live-seconds>
+
+        <!--
+            Maximum number of seconds for each item to stay idle (untouched).
+            Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+        -->
+        <max-idle-seconds>0</max-idle-seconds>
+        <!--
+            Valid values are:
+            NONE (no eviction),
+            LRU (Least Recently Used),
+            LFU (Least Frequently Used).
+            NONE is the default.
+        -->
+        <eviction-policy>LRU</eviction-policy>
+        <!--
+            Maximum size of the map. When max size is reached,
+            map is evicted based on the policy defined.
+            Any integer between 0 and Integer.MAX_VALUE. 0 means
+            Integer.MAX_VALUE. Default is 0.
+        -->
+        <max-size policy="map_size_per_jvm">10</max-size>
+        <!--
+            When max. size is reached, specified percentage of
+            the map will be evicted. Any integer between 0 and 100.
+            If 25 is set for example, 25% of the entries will
+            get evicted.
+        -->
+        <eviction-percentage>50</eviction-percentage>
+
+
+        <map-store enabled="true">
+            <class-name>com.hazelcast.examples.DummyStore</class-name>
+            <write-delay-seconds>1</write-delay-seconds>
+        </map-store>
+
+        <!-- HEAP or OFFHEAP -->
+        <storage-type>HEAP</storage-type>
+    </map>
+
+</hazelcast>
