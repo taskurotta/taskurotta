@@ -16,7 +16,9 @@
         </encoder>
     </appender>
 
-	<logger name="ru.hazelcast" level="DEBUG" />
+	<logger name="ru.hazelcast" level="INFO" />
+	<logger name="ru.hazelcast.store" level="DEBUG" />
+	<logger name="ru.hazelcast.listener" level="DEBUG" />
 	<!--<logger name="com.hazelcast" level="INFO" />-->
 	<logger name="org.springframework" level="INFO" />
 

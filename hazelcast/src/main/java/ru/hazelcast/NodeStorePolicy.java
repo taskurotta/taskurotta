@@ -3,9 +3,9 @@ package ru.hazelcast;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.hazelcast.listener.ReturnEntryListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +39,8 @@ public class NodeStorePolicy implements Runnable {
         logger.info("Config = [{}]", config);
         instance = Hazelcast.newHazelcastInstance(config);
 
+        instance.getMap(hzMapName).addEntryListener(new ReturnEntryListener(instance, hzMapName), true);
+
         logger.info("Before filling, hazelcast map [{}]([{}]) , original map [{}]([{}])", Utils.hzMapToString(instance.getMap(hzMapName)), instance.getMap(hzMapName).size(), originalMap, originalMap.size());
 
         fill(originalMap, startPosition, mapSize + startPosition);
@@ -48,11 +50,17 @@ public class NodeStorePolicy implements Runnable {
         logger.info("Sleep for [{}] seconds for apply store policy", sleep);
         sleep(sleep);
 
-        logger.info("After sleep hazelcast map [{}]([{}]), original map [{}]([{}])", Utils.hzMapToString(instance.getMap(hzMapName)), instance.getMap(hzMapName).size(), originalMap, originalMap.size());
+        logger.info("After first sleep hazelcast map [{}]([{}]), original map [{}]([{}])", Utils.hzMapToString(instance.getMap(hzMapName)), instance.getMap(hzMapName).size(), originalMap, originalMap.size());
+        logger.info("Original map and hazelcast map is equals = [{}]", originalMap.equals(instance.getMap(hzMapName)));
+
+        logger.info("Sleep for [{}] seconds for apply store policy", sleep);
+        sleep(sleep);
+
+        logger.info("After second sleep hazelcast map [{}]([{}]), original map [{}]([{}])", Utils.hzMapToString(instance.getMap(hzMapName)), instance.getMap(hzMapName).size(), originalMap, originalMap.size());
         logger.info("Original map and hazelcast map is equals = [{}]", originalMap.equals(instance.getMap(hzMapName)));
     }
 
-    private void fill(Map originalMap, int start, int length) {
+    private void fill(Map<Integer, Integer> originalMap, int start, int length) {
         logger.info("Add [{}] elements from [{}] to [{}]", length - start, start, length);
         for (int i = start; i < length; i++) {
             originalMap.put(i, i);

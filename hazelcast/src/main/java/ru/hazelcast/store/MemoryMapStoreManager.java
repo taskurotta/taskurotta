@@ -1,4 +1,4 @@
-package ru.hazelcast;
+package ru.hazelcast.store;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

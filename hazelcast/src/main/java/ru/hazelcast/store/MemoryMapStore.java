@@ -1,4 +1,4 @@
-package ru.hazelcast;
+package ru.hazelcast.store;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapLoaderLifecycleSupport;

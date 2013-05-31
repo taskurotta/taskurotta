@@ -8,6 +8,8 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.spring.mongodb.MongoMapStore;
 import com.mongodb.MongoClient;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.hazelcast.store.MemoryMapStore;
+import ru.hazelcast.store.MemoryMapStoreManager;
 
 import java.net.UnknownHostException;
 import java.util.Map;
