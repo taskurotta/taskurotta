@@ -1,21 +1,23 @@
 package ru.taskurotta.backend.console.manager.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -90,11 +92,52 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
+    public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
+        if(taskInfo == null) {
+            return null;
+        }
+        return taskInfo.listTasks(pageNumber, pageSize);
+    }
+
+    @Override
     public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
         if (processInfo == null) {
             return null;
         }
         return processInfo.listProcesses(pageNumber, pageSize);
+    }
+
+    @Override
+    public TaskTreeVO getTreeForTask(UUID taskId) {
+        TaskTreeVO result = new TaskTreeVO(taskId);
+        TaskContainer task = taskInfo.getTask(taskId);
+        if(task!=null) {
+            result.setDesc(task.getActorId() + " - " + task.getMethod());
+        }
+        DecisionContainer decision = taskInfo.getTaskDecision(taskId);
+        if(decision!=null && decision.getTasks()!=null && decision.getTasks().length!=0) {
+            TaskTreeVO[] childs = new TaskTreeVO[decision.getTasks().length];
+            for(int i = 0; i< decision.getTasks().length; i++) {
+                TaskContainer childTask = decision.getTasks()[i];
+                TaskTreeVO childTree = getTreeForTask(childTask.getTaskId());
+                childTree.setParent(taskId);
+                childTree.setDesc(childTask.getActorId() + " - " + childTask.getMethod());
+                childs[i] = childTree;
+            }
+            result.setChildren(childs);
+        }
+
+        return result;
+    }
+
+    @Override
+    public TaskTreeVO getTreeForProcess(UUID processUuid) {
+        TaskTreeVO result = null;
+        ProcessVO process = processInfo.getProcess(processUuid);
+        if(process!=null && process.getStartTaskUuid()!=null) {
+            result = getTreeForTask(process.getStartTaskUuid());
+        }
+        return result;
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

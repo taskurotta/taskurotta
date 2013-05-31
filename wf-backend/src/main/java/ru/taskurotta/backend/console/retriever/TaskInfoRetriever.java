@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.console.retriever;
 
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.List;
@@ -15,5 +17,9 @@ public interface TaskInfoRetriever {
     public TaskContainer getTask(UUID taskId);
 
     public List<TaskContainer> getProcessTasks(UUID processId);
+
+    public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
+
+    public DecisionContainer getTaskDecision(UUID taskId);
 
 }

@@ -7,42 +7,66 @@
         </tr>
     </table>
 
-    <table width="100%" class="table">
-        <tr>
-            <td class="form-header">ID:</td>
-            <td>{{task.taskId}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Process ID:</td>
-            <td><a class="btn btn-link" ng-href="#/processes/process/{{task.processId}}">{{task.processId}}</a></td>
-        </tr>
-        <tr>
-            <td class="form-header">Method:</td>
-            <td>{{task.method}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Actor id:</td>
-            <td>{{task.actorId}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Type:</td>
-            <td>{{task.type}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Start time:</td>
-            <td>{{task.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Number of attemts:</td>
-            <td>{{task.numberOfAttempts}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Args:</td>
-            <td>{{task.args}}</td>
-        </tr>
-        <tr>
-            <td class="form-header">Options:</td>
-            <td>{{task.options}}</td>
-        </tr>
-    </table>
+    <div ng-hide="task.taskId.length > 0" class="text-warning">
+        Task not found by id {{id}}
+    </div>
+    <div ng-show="task.taskId.length > 0">
+        <table width="100%" class="table">
+            <tr>
+                <td class="form-header">ID:</td>
+                <td>{{task.taskId}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Process ID:</td>
+                <td><a class="btn btn-link" ng-href="#/processes/process/{{task.processId}}">{{task.processId}}</a></td>
+            </tr>
+            <tr>
+                <td class="form-header">Method:</td>
+                <td>{{task.method}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Actor id:</td>
+                <td>{{task.actorId}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Type:</td>
+                <td>{{task.type}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Start time:</td>
+                <td>{{task.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Number of attemts:</td>
+                <td>{{task.numberOfAttempts}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Args:</td>
+                <td>{{task.args}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Options:</td>
+                <td>{{task.options}}</td>
+            </tr>
+        </table>
+
+        <div style="background-color: #f5f5f5;padding:2px;">
+            <h3>Task tree:</h3>
+            <b>&#8595<a ng-href="#/tasks/task/{{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>
+            <div class="tree">
+                <ul style="border: 1px dotted grey;" ng-show="taskTree.children.length>0">
+                    <li ng-repeat="child in taskTree.children" tsk-tree>
+                        <div>
+                            <a ng-href="#/tasks/task/{{child.id}}" class="btn btn-link">{{child.id}}</a>
+                            <span class="muted">{{child.desc}}</span>
+                        </div>
+                        <ul style="border: 1px dotted grey;" ng-show="child.children.length>0">
+                            <branch></branch>
+                        </ul>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
 </div>

@@ -79,8 +79,8 @@ consoleApp.config(function ($routeProvider, $locationProvider) {
 
 });
 
-consoleApp.run(function ($rootScope) {
+consoleApp.run(function ($rootScope, $log) {
     $rootScope.getStartIndex = function (pageNum, pageSize) {
         return (pageNum - 1) * pageSize + 1;
-    }
+    };
 });

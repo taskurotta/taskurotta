@@ -128,3 +128,16 @@ code {
     float: right;
     margin: 5px;
 }
+
+div.tree{
+    margin-left: 30px;
+}
+.tree ul {
+    margin:0;
+}
+.tree li {
+    padding:0;
+    margin:1px;
+    border:1px dotted #ddd;
+    padding:0.25em;
+}

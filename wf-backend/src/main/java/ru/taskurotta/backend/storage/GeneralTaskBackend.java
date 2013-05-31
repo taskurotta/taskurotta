@@ -7,6 +7,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
+import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -149,12 +150,24 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     @Override
     @Profiled
     public TaskContainer getTask(UUID taskId) {
-        return taskDao.getTask(taskId);
+        TaskContainer task = taskDao.getTask(taskId);
+        logger.debug("Task getted by uuid[{}] is[{}]", taskId, task);
+        return task;
     }
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processId) {
         return taskDao.getProcessTasks(processId);
+    }
+
+    @Override
+    public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
+        return taskDao.listTasks(pageNumber, pageSize);
+    }
+
+    @Override
+    public DecisionContainer getTaskDecision(UUID taskId) {
+        return taskDao.getDecision(taskId);
     }
 
     @Override

@@ -13,8 +13,20 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getTask: function (taskId) {
             return $http.get('/rest/console/task/' + encodeURIComponent(taskId));
         },
+        getTaskTree: function (taskId) {
+            return $http.get('/rest/console/tree/task/' + encodeURIComponent(taskId));
+        },
+        listTasks: function(pageNumber, pageSize) {
+            return $http.get('/rest/console/tasks/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        },
         getProcess: function (processId) {
             return $http.get('/rest/console/process/' + encodeURIComponent(processId));
+        },
+        getProcess: function (processId) {
+            return $http.get('/rest/console/process/' + encodeURIComponent(processId));
+        },
+        getProcessTree: function (processId) {
+            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId));
         },
         getProcessesList: function (pageNumber, pageSize) {
             return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize);

@@ -28,6 +28,8 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
         logger.info("Dropwizard bootstrap commands are [{}]", bootstrap.getCommands());
+
+        //TODO: configure develop/production mode bundle by external command or config
         bootstrap.addBundle(new AssetsBundle("/assets", "/"));
 //        bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
     }
@@ -39,7 +41,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
         logger.debug("YAML config custom properties getted[{}]", configuration.getProperties());
 
         String contextLocation = configuration.getContextLocation();
-        AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(new String[]{contextLocation}, false);
+        AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(contextLocation.split(","), false);
         if(configuration.getProperties()!=null && !configuration.getProperties().isEmpty()) {
             appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", configuration.getProperties()));
             if(configuration.getInternalPoolConfig()!=null) {

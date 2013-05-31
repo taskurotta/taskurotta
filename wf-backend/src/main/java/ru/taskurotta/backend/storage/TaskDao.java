@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.storage;
 
+import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -24,4 +25,6 @@ public interface TaskDao {
     boolean isTaskReleased(UUID taskId);
 
     List<TaskContainer> getProcessTasks(UUID processUuid);
+
+    GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 }

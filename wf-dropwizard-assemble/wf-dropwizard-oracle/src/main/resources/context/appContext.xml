@@ -11,9 +11,6 @@
 
     <context:property-placeholder/>
 
-    <aop:aspectj-autoproxy/>
-    <bean id="profilingAspect" class="ru.taskurotta.backend.profile.impl.MemoryAspectProfiler"/>
-
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="jdbc:oracle:thin:@//172.16.21.142:1521/WPSDB"/>
@@ -35,24 +32,6 @@
     <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
-
-    <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
-        <property name="consoleManager" ref="consoleManager"/>
-    </bean>
-    <bean id="consoleQueueListResource" class="ru.taskurotta.dropwizard.resources.console.QueueListResource"
-          parent="baseConsoleResource"/>
-    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.QueueContentResource"
-          parent="baseConsoleResource"/>
-    <bean id="consoleTaskCardResource" class="ru.taskurotta.dropwizard.resources.console.TaskResource"
-          parent="baseConsoleResource"/>
-    <bean id="consoleProcessCardResource" class="ru.taskurotta.dropwizard.resources.console.ProcessResource"
-          parent="baseConsoleResource"/>
-    <bean id="consoleProcessTaskListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessTaskResource"
-          parent="baseConsoleResource"/>
-    <bean id="consoleProfilesResource" class="ru.taskurotta.dropwizard.resources.console.ProfilesResource"
-          parent="baseConsoleResource"/>
-    <bean id="consoleProcessListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessListResource"
-          parent="baseConsoleResource"/>
 
 
     <!--DAO-->
@@ -101,13 +80,6 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-    </bean>
-
-    <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
-        <property name="queueInfo" ref="queueBackend"/>
-        <property name="taskInfo" ref="taskBackend"/>
-        <property name="processInfo" ref="processBackend"/>
-        <property name="profileInfo" ref="profilingAspect"/>
     </bean>
 
 

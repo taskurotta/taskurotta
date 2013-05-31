@@ -100,10 +100,10 @@ consoleControllers.controller("processListController", function ($scope, $$data,
 
         $$data.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize).then(function (value) {
             $scope.processesPage = angular.fromJson(value.data || {});
-            $log.info("queueListController: successfully updated queue state");
+            $log.info("processListController: successfully updated processes list");
         }, function (errReason) {
             $scope.feedback = errReason;
-            $log.error("queueListController: queue state update failed: " + errReason);
+            $log.error("processListController: process list update failed: " + errReason);
         });
 
     };
@@ -135,7 +135,10 @@ consoleControllers.controller("profilesController", function ($scope, $$data, $l
 
 consoleControllers.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
     $scope.process = {};
+    $scope.taskTree = {};
+    $scope.id = $routeParams.processId;
     $scope.feedback = "";
+
     $scope.update = function () {
         $$data.getProcess($routeParams.processId).then(function (value) {
             $scope.process = angular.fromJson(value.data || {});
@@ -144,6 +147,15 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
             $scope.feedback = errReason;
             $log.error("processCardController: process[" + $routeParams.id + "] update failed: " + errReason);
         });
+
+        $$data.getProcessTree($routeParams.processId).then(function (value) {
+            $scope.taskTree = angular.fromJson(value.data || {});
+            $log.info("processCardController: successfully updated process[" + $routeParams.processId + "] tree");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("processCardController: process[" + $routeParams.id + "] tree update failed: " + errReason);
+        });
+
     };
 
     $scope.update();
@@ -153,12 +165,40 @@ consoleControllers.controller("processSearchController", function ($scope) {
 
 });
 
-consoleControllers.controller("taskListController", function ($scope) {
+consoleControllers.controller("taskListController", function ($scope, $$data, $log) {
+
+    $scope.feedback = "";
+
+    //Init paging object
+    $scope.tasksPage = {
+        pageSize: 5,
+        pageNumber: 1,
+        totalCount: 0,
+        items: []
+    };
+
+    //Updates queues states  by polling REST resource
+    $scope.update = function () {
+
+        $$data.listTasks($scope.tasksPage.pageNumber, $scope.tasksPage.pageSize).then(function (value) {
+            $scope.tasksPage = angular.fromJson(value.data || {});
+            $log.info("taskListController: successfully updated tasks page");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("queueListController: tasks page update failed: " + errReason);
+        });
+
+    };
+
+    //Initialization:
+    $scope.update();
 
 });
 
 consoleControllers.controller("taskCardController", function ($scope, $$data, $routeParams, $log) {
     $scope.task = {};
+    $scope.taskTree = {};
+    $scope.id = $routeParams.id;
     $scope.feedback = "";
     $scope.update = function () {
         $$data.getTask($routeParams.id).then(function (value) {
@@ -167,6 +207,13 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
         }, function (errReason) {
             $scope.feedback = errReason;
             $log.error("taskController: task[" + $routeParams.id + "] update failed: " + errReason);
+        });
+        $$data.getTaskTree($routeParams.id).then(function (value) {
+            $scope.taskTree = angular.fromJson(value.data || {});
+            $log.info("taskController: successfully updated task tree[" + $routeParams.id + "] content");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("taskController: task[" + $routeParams.id + "] tree update failed: " + errReason);
         });
     };
 

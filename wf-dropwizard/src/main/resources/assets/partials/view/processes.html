@@ -18,7 +18,7 @@
 
         <tfoot>
         <td colspan="6">
-            <tsk-paginator generic-page="processesPage" update-action="update()"></tsk-paginator>
+            <div tsk-paginator generic-page="processesPage" update-action="update()"></div>
         </td>
         </tfoot>
 
@@ -48,6 +48,6 @@
         </tbody>
     </table>
 
-    <div>Total: <b>{{totalTasks()}}</b> tasks in <b>{{queuesPage.items.length}}</b> queues</div>
+    <div>Total: <b>{{queuesPage.items.length}}</b> processes</div>
 
 </div>

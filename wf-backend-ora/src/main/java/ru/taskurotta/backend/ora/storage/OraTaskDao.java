@@ -1,5 +1,18 @@
 package ru.taskurotta.backend.ora.storage;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
+import ru.taskurotta.backend.storage.TaskDao;
+import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.serialization.JsonSerializer;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,17 +21,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import javax.sql.DataSource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.storage.TaskDao;
-import ru.taskurotta.exception.BackendCriticalException;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.serialization.JsonSerializer;
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
 
 /**
  * User: moroz
@@ -88,7 +92,7 @@ public class OraTaskDao implements TaskDao {
             ps.setString(1, taskId.toString());
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                String json = rs.getString(1);
+                String json = rs.getString("JSON_VALUE");
                 result = taskSerializer.deserialize(json);
             }
         } catch (SQLException ex) {
@@ -159,6 +163,34 @@ public class OraTaskDao implements TaskDao {
         }
 
         return result;
+    }
+
+    @Override
+    public GenericPage<TaskContainer> listTasks(int pageNum, int pageSize) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            List<TaskContainer> tmpresult = new ArrayList<TaskContainer>();
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("select * from task "));
+            int startIndex = (pageNum - 1) * pageSize + 1;
+            int endIndex = startIndex + pageSize - 1;
+            ps.setInt(1, endIndex);
+            ps.setInt(2, startIndex);
+            long totalCount = 0;
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                totalCount = rs.getLong("cnt");
+                String json = rs.getString("json_value");
+                tmpresult.add(taskSerializer.deserialize(json));
+            }
+            return new GenericPage(tmpresult, pageNum, pageSize, totalCount);
+        } catch (SQLException ex) {
+            log.error("List tasks for pageNum["+pageNum+"], pageSize["+pageSize+"]error!", ex);
+            throw new BackendCriticalException("List tasks for pageNum["+pageNum+"], pageSize["+pageSize+"]error!", ex);
+        } finally {
+            closeResources(ps, connection);
+        }
     }
 
     @Override

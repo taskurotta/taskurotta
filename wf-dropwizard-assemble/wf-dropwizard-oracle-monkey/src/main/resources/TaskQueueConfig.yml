@@ -1,5 +1,5 @@
 #Location of Spring application context:
-contextLocation: "classpath*:context/appContext.xml"
+contextLocation: "classpath*:context/appContext.xml, classpath*:context/console-context.xml"
 
 #Used for static resource serving in development mode
 assets:
@@ -68,7 +68,8 @@ logging:
     level: WARN
     loggers:
         ru.taskurotta: INFO
-        ru.taskurotta.console: DEBUG
+        ru.taskurotta.dropwizard.resources.console: DEBUG
+        ru.taskurotta.backend.storage: DEBUG
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend.task: DEBUG
 #        ru.taskurotta.backend: INFO
