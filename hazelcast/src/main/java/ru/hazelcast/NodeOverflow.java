@@ -7,6 +7,7 @@ import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class NodeOverflow implements Runnable {
 
     @Override
     public void run() {
-        Map<Integer, Integer> originalMap = new HashMap<>();
+        Map<Integer, Date> originalMap = new HashMap<>();
 
         config = Utils.getConfig();
         HazelcastInstance instance = Hazelcast.newHazelcastInstance(config);
@@ -50,8 +51,8 @@ public class NodeOverflow implements Runnable {
     private void fill(Map originalMap, IMap hzMap, int start, int length) {
         logger.info("Add [{}] elements from [{}] to [{}]", length - start, start, length);
         for (int i = start; i < length; i++) {
-            originalMap.put(i, i);
-            hzMap.put(i, i);
+            originalMap.put(i, new Date());
+            hzMap.put(i, new Date());
         }
     }
 

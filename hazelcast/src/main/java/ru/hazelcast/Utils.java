@@ -27,7 +27,6 @@ public class Utils {
 
         MapStoreConfig mapStoreConfig = new MapStoreConfig();
         mapStoreConfig.setEnabled(true);
-        // mapStoreConfig.setWriteDelaySeconds(1);
         setMemoryMapStore(mapStoreConfig);
         // setMongoMapStore(mapStoreConfig);
 
@@ -55,13 +54,15 @@ public class Utils {
 
     private static void setMongoMapStore(MapStoreConfig mapStoreConfig) {
         String dbName = "hazelcast-store";
+
         MongoClient mongoClient = null;
         try {
             mongoClient = new MongoClient("localhost");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        //mongoClient.dropDatabase(dbName);
+
+        mongoClient.dropDatabase(dbName);
         MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, dbName);
 
         MongoMapStore mongoMapStore = new MongoMapStore();
