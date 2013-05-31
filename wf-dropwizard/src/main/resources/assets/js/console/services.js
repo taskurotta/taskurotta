@@ -16,6 +16,9 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getProcess: function (processId) {
             return $http.get('/rest/console/process/' + encodeURIComponent(processId));
         },
+        getProcessesList: function (pageNumber, pageSize) {
+            return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        },
         getProcessTasks: function (processId) {
             return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
         },

@@ -16,7 +16,7 @@
 
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@//10.129.3.163:1531/testext"/>
+        <property name="url" value="jdbc:oracle:thin:@//172.16.21.142:1521/WPSDB"/>
         <property name="initialSize" value="20"/>
         <property name="maxActive" value="40"/>
         <property name="username" value="taskurotta"/>
@@ -50,6 +50,8 @@
     <bean id="consoleProcessTaskListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessTaskResource"
           parent="baseConsoleResource"/>
     <bean id="consoleProfilesResource" class="ru.taskurotta.dropwizard.resources.console.ProfilesResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleProcessListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessListResource"
           parent="baseConsoleResource"/>
 
 

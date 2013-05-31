@@ -1,16 +1,19 @@
 package ru.taskurotta.backend.storage;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -67,5 +70,19 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     @Override
     public ProcessVO getProcess(UUID processUUID) {
         return processesStorage.get(processUUID);
+    }
+
+    @Override
+    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
+        List<ProcessVO> result = new ArrayList<>();
+        ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
+        processes = processesStorage.values().toArray(processes);
+        if (!processesStorage.isEmpty()) {
+            for (int i = (pageNumber - 1) * pageSize; i <= ((pageSize * pageNumber >= (processes.length)) ? (processes.length) - 1 : pageSize * pageNumber - 1); i++) {
+                result.add(processes[i]);
+            }
+        }
+        return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
+
     }
 }

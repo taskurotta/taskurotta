@@ -9,63 +9,64 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <context:property-placeholder />
-    <context:annotation-config />
+    <context:property-placeholder/>
+    <context:annotation-config/>
 
     <aop:aspectj-autoproxy/>
     <bean id="profilingAspect" class="ru.taskurotta.backend.profile.impl.MemoryAspectProfiler"/>
 
     <!-- REST resources -->
     <bean id="taskPullerResource"
-        class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
-        <property name="taskServer" ref="taskServer" />
+          class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
+        <property name="taskServer" ref="taskServer"/>
     </bean>
     <bean id="taskReleaserResource"
-        class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
-        <property name="taskServer" ref="taskServer" />
+          class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServer"/>
     </bean>
     <bean id="taskStarterResource"
-        class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
-        <property name="taskServer" ref="taskServer" />
+          class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id = "baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
-        <property name="consoleManager" ref="consoleManager" />
+    <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
+        <property name="consoleManager" ref="consoleManager"/>
     </bean>
-    <bean id = "consoleQueueListResource" class = "ru.taskurotta.dropwizard.resources.console.QueueListResource" parent="baseConsoleResource"/>
-    <bean id = "consoleQueueCardResource" class = "ru.taskurotta.dropwizard.resources.console.QueueContentResource" parent="baseConsoleResource"/>
-    <bean id = "consoleTaskCardResource" class = "ru.taskurotta.dropwizard.resources.console.TaskResource" parent="baseConsoleResource" />
-    <bean id = "consoleProcessCardResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessResource" parent="baseConsoleResource" />
-    <bean id = "consoleProcessTaskListResource" class = "ru.taskurotta.dropwizard.resources.console.ProcessTaskResource" parent="baseConsoleResource" />
-    <bean id = "consoleProfilesResource" class = "ru.taskurotta.dropwizard.resources.console.ProfilesResource" parent="baseConsoleResource" />
+    <bean id="consoleQueueListResource" class="ru.taskurotta.dropwizard.resources.console.QueueListResource" parent="baseConsoleResource"/>
+    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.QueueContentResource" parent="baseConsoleResource"/>
+    <bean id="consoleTaskCardResource" class="ru.taskurotta.dropwizard.resources.console.TaskResource" parent="baseConsoleResource"/>
+    <bean id="consoleProcessCardResource" class="ru.taskurotta.dropwizard.resources.console.ProcessResource" parent="baseConsoleResource"/>
+    <bean id="consoleProcessTaskListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessTaskResource" parent="baseConsoleResource"/>
+    <bean id="consoleProfilesResource" class="ru.taskurotta.dropwizard.resources.console.ProfilesResource" parent="baseConsoleResource"/>
+    <bean id="consoleProcessListResource" class="ru.taskurotta.dropwizard.resources.console.ProcessListResource" parent="baseConsoleResource"/>
 
     <!-- /REST resources -->
 
-    <bean id = "consoleManager" class = "ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
-        <property name="queueInfo" ref="queueBackend" />
-        <property name="taskInfo" ref="taskBackend" />
-        <property name="processInfo" ref="processBackend" />
-        <property name="profileInfo" ref="profilingAspect" />
+    <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
+        <property name="queueInfo" ref="queueBackend"/>
+        <property name="taskInfo" ref="taskBackend"/>
+        <property name="processInfo" ref="processBackend"/>
+        <property name="profileInfo" ref="profilingAspect"/>
     </bean>
 
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
-        <constructor-arg name="configBackend" ref="configBackend" />
-        <constructor-arg name="dependencyBackend" ref="dependencyBackend" />
-        <constructor-arg name="processBackend" ref="processBackend" />
-        <constructor-arg name="queueBackend" ref="queueBackend" />
-        <constructor-arg name="taskBackend" ref="taskBackend" />
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
     </bean>
 
     <!-- Recoveries -->
     <bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
-        <property name="configBackend" ref="configBackend" />
-        <property name="taskBackend" ref="taskBackend" />
-        <property name="queueBackend" ref="queueBackend" />
-        <property name="recoveryPeriod" value="${recovery.period}" />
-        <property name="recoveryPeriodUnit" value="${recovery.period.unit}" />
-        <property name="timeIterationStep" value="${recovery.timeStep}" />
-        <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}" />
+        <property name="configBackend" ref="configBackend"/>
+        <property name="taskBackend" ref="taskBackend"/>
+        <property name="queueBackend" ref="queueBackend"/>
+        <property name="recoveryPeriod" value="${recovery.period}"/>
+        <property name="recoveryPeriodUnit" value="${recovery.period.unit}"/>
+        <property name="timeIterationStep" value="${recovery.timeStep}"/>
+        <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>
         <property name="supportedTimeouts">
             <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
                 <value>TASK_START_TO_CLOSE</value>
@@ -74,41 +75,41 @@
         </property>
     </bean>
 
-    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
+    <task:scheduler id="taskExpirationRecovery" pool-size="1"/>
     <task:scheduled-tasks scheduler="taskExpirationRecovery">
         <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
     </task:scheduled-tasks>
 
     <!-- /Recoveries -->
-    
+
 
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}" />
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+        <constructor-arg name="pollDelay" value="${pollDelay}"/>
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao"/>
     <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
-        <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="checkpointService" ref="checkpointService"/>
     </bean>
     <bean id="dependencyBackend"
-        class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
-        <constructor-arg name="graphDao" ref="graphDao" />
-        <constructor-arg name="retryTimes" value="${retryTimes}" />
+          class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="retryTimes" value="${retryTimes}"/>
     </bean>
 
     <bean id="graphDao"
-        class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+          class="ru.taskurotta.backend.dependency.links.MemoryGraphDao"/>
 
-    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
+    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend"/>
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend"/>
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server" />
-        <property name="taskServer" ref="taskServer" />
+        <constructor-arg name="name" value="check task server"/>
+        <property name="taskServer" ref="taskServer"/>
     </bean>
 
 </beans>

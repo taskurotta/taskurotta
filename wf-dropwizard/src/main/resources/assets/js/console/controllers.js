@@ -86,8 +86,30 @@ consoleControllers.controller("queueCardController", function ($scope, $$data, $
 
 });
 
-consoleControllers.controller("processListController", function ($scope) {
+consoleControllers.controller("processListController", function ($scope, $$data, $$timeUtil, $log) {
+    //Init paging object
+    $scope.processesPage = {
+        pageSize: 5,
+        pageNumber: 1,
+        totalCount: 0,
+        items: []
+    };
 
+    //Updates queues states  by polling REST resource
+    $scope.update = function () {
+
+        $$data.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize).then(function (value) {
+            $scope.processesPage = angular.fromJson(value.data || {});
+            $log.info("queueListController: successfully updated queue state");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("queueListController: queue state update failed: " + errReason);
+        });
+
+    };
+
+    //Initialization:
+    $scope.update();
 });
 
 consoleControllers.controller("profilesController", function ($scope, $$data, $log) {

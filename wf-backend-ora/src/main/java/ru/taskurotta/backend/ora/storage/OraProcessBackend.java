@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 
@@ -13,8 +15,10 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -108,4 +112,40 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         }
         return result;
     }
+
+    @Override
+    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
+        List<ProcessVO> result = null;
+        long totalCount = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS"));
+        ) {
+            int startIndex = (pageNumber - 1) * pageSize + 1;
+            int endIndex = startIndex + pageSize - 1;
+            ps.setInt(1, endIndex);
+            ps.setInt(2, startIndex);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                if (result == null) {
+                    result = new ArrayList<>();
+                }
+                ProcessVO process = new ProcessVO();
+                process.setProcessUuid(UUID.fromString(rs.getString("process_id")));
+                process.setStartTaskUuid(UUID.fromString(rs.getString("start_task_id")));
+                process.setCustomId(rs.getString("custom_id"));
+                process.setStartTime(rs.getLong("start_time"));
+                process.setEndTime(rs.getLong("end_time"));
+                process.setReturnValueJson(rs.getString("return_value"));
+                result.add(process);
+                totalCount = rs.getLong("cnt");
+            }
+        } catch (SQLException ex) {
+            log.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+
+        return new GenericPage(result, pageNumber, pageSize, totalCount);
+    }
 }
+

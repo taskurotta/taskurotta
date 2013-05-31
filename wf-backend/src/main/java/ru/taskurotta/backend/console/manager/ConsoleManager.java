@@ -29,4 +29,6 @@ public interface ConsoleManager {
 
     public List<ProfileVO> getProfilesInfo();
 
+    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize);
+
 }

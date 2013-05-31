@@ -89,6 +89,14 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return profileInfo.getProfileInfo();
     }
 
+    @Override
+    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
+        if (processInfo == null) {
+            return null;
+        }
+        return processInfo.listProcesses(pageNumber, pageSize);
+    }
+
     public void setQueueInfo(QueueInfoRetriever queueInfo) {
         this.queueInfo = queueInfo;
     }
@@ -108,4 +116,6 @@ public class ConsoleManagerImpl implements ConsoleManager {
     public void setProfileInfo(ProfileInfoRetriever profileInfo) {
         this.profileInfo = profileInfo;
     }
+
+
 }
