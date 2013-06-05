@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.sf.cglib.core.CollectionUtils;
+import net.sf.cglib.core.Predicate;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
@@ -14,10 +16,6 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -28,6 +26,7 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
 
     private CheckpointService checkpointService = new MemoryCheckpointService();
     private Map<UUID, ProcessVO> processesStorage = new ConcurrentHashMap<>();
+
 
     @Override
     public void startProcess(TaskContainer task) {
@@ -88,5 +87,30 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         }
         return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
 
+    }
+
+    @Override
+    public List<ProcessVO> findProcesses(String type, final String id) {
+        List<ProcessVO> result = new ArrayList<>();
+        if ((id != null) && (!id.isEmpty())) {
+            if (SEARCH_BY_ID.equals(type)) {
+                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
+                    @Override
+                    public boolean evaluate(Object o) {
+                        ProcessVO process = (ProcessVO) o;
+                        return process.getProcessUuid().toString().startsWith(id);
+                    }
+                }));
+            } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
+                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
+                    @Override
+                    public boolean evaluate(Object o) {
+                        ProcessVO process = (ProcessVO) o;
+                        return process.getCustomId().startsWith(id);
+                    }
+                }));
+            }
+        }
+        return result;
     }
 }

@@ -8,11 +8,20 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="brand" href="#">Console navigation: </a>
+
             <div class="nav-collapse collapse">
                 <ul class="nav">
                     <li ng-class="isActiveTab('/home')"><a href="#/home">Home</a></li>
                     <li ng-class="isActiveTab('/queues')"><a href="#/queues">Queues</a></li>
-                    <li ng-class="isActiveTab('/processes')"><a href="#/processes">Processes</a></li>
+                    <li class="dropdown ng-class:isActiveTab('/processes');">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Processes <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#/processes">Processes list</a></li>
+                            <li class="nav-header">Find</li>
+                            <li><a href="#/processes/search/process_id">By ID...</a></li>
+                            <li><a href="#/processes/search/custom_id">By custom ID...</a></li>
+                        </ul>
+                    </li>
                     <li class="dropdown ng-class:isActiveTab('/tasks');">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tasks <b class="caret"></b></a>
                         <ul class="dropdown-menu">

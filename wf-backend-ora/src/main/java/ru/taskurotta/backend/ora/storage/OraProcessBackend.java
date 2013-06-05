@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.ora.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -12,16 +22,6 @@ import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: moroz
@@ -146,5 +146,34 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         }
 
         return new GenericPage(result, pageNumber, pageSize, totalCount);
+    }
+
+    @Override
+    public List<ProcessVO> findProcesses(String type, String id) {
+        List<ProcessVO> result = new ArrayList<>();
+        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS WHERE %ST LIKE ? AND ROWNUM <= 200";
+        query = (!SEARCH_BY_CUSTOM_ID.equals(type)) ? query.replace("%ST", "PROCESS_ID") : query.replace("%ST", "CUSTOM_ID");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(query);
+        ) {
+            if ((id != null) && (!id.isEmpty())) {
+                ps.setString(1, id + "%");
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    ProcessVO process = new ProcessVO();
+                    process.setProcessUuid(UUID.fromString(rs.getString("process_id")));
+                    process.setStartTaskUuid(UUID.fromString(rs.getString("start_task_id")));
+                    process.setCustomId(rs.getString("custom_id"));
+                    process.setStartTime(rs.getLong("start_time"));
+                    process.setEndTime(rs.getLong("end_time"));
+                    process.setReturnValueJson(rs.getString("return_value"));
+                    result.add(process);
+                }
+            }
+        } catch (SQLException ex) {
+            log.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+        return result;
     }
 }

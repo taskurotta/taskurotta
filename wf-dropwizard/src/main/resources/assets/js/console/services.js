@@ -16,14 +16,14 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getTaskTree: function (taskId) {
             return $http.get('/rest/console/tree/task/' + encodeURIComponent(taskId));
         },
-        listTasks: function(pageNumber, pageSize) {
+        listTasks: function (pageNumber, pageSize) {
             return $http.get('/rest/console/tasks/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
         getProcess: function (processId) {
             return $http.get('/rest/console/process/' + encodeURIComponent(processId));
         },
-        getProcess: function (processId) {
-            return $http.get('/rest/console/process/' + encodeURIComponent(processId));
+        findProcess: function (searchType, id) {
+            return $http.get('/rest/console/process/search?type=' + encodeURIComponent(searchType) + "&id=" + encodeURIComponent(id));
         },
         getProcessTree: function (processId) {
             return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId));

@@ -161,7 +161,32 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
     $scope.update();
 });
 
-consoleControllers.controller("processSearchController", function ($scope) {
+consoleControllers.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
+    $scope.id = $routeParams.id || '';
+    $scope.type = $routeParams.type;
+    $scope.processes = [];
+
+    $scope.update = function () {
+        if ($scope.type == 'custom_id') { //searching process by customID
+            $$data.findProcess($scope.type, $scope.id).then(function (value) {
+                $scope.processes = angular.fromJson(value.data || {});
+                $log.info("processSearchController: successfully found processes with customId started with[" + $scope.id + "]");
+            }, function (errReason) {
+                $scope.feedback = errReason;
+                $log.error("processSearchController: search for processes with customId started wirh [" + $scope.id + "] failed: " + errReason);
+            });
+        } else if ($scope.type == 'process_id') {//searching process by ID
+            $$data.findProcess($scope.type, $scope.id).then(function (value) {
+                $scope.processes = angular.fromJson(value.data || {});
+                $log.info("processSearchController: successfully found processes with Id started with[" + $scope.id + "]");
+            }, function (errReason) {
+                $scope.feedback = errReason;
+                $log.error("processSearchController: search for processes with Id started wirh [" + $scope.id + "] failed: " + errReason);
+            });
+        }
+    };
+
+    $scope.update();
 
 });
 

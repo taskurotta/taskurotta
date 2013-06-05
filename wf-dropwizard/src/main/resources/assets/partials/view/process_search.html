@@ -1,3 +1,64 @@
 <div>
-    Process search
+    <table width="100%">
+        <tr>
+            <td style="text-align: left;"><h3>Find tasks by <span ng-show="type == 'process_id'">process</span> GUID:</h3></td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <div>
+
+        <form class="form-search">
+
+            <span ng-show="type == 'custom_id'" class="muted">
+                CustomId: <input type="text" ng-model="id" class="input-medium search-query" style="width: 300px"/>
+            </span>
+            <span ng-show="type == 'process_id'" class="muted">
+                ProcessId: <input type="text" ng-model="id" class="input-medium search-query" style="width: 300px"/>
+            </span>
+            <button class="btn" ng-click="update()">Search</button>
+            <br/><br/>
+            <span ng-show="processes.length >= 200" style="text-align: center;" class="error-box">
+            Search result contains more than 200 lines. Please, refine your search.
+        </span>
+        </form>
+
+
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+            <th style="width: 10%">№</th>
+            <th>Process id</th>
+            <th>Start task</th>
+            <th>Custom id</th>
+            <th>Start time</th>
+            <th>End id</th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="process in processes">
+                <td>
+                    {{$index+1}}
+                </td>
+                <td>
+                    <a class="btn btn-link"
+                       ng-href="#/processes/process/{{process.processUuid}}">{{process.processUuid}}</a>
+                </td>
+                <td>
+                    <a ng-href="#/tasks/task/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
+                </td>
+                <td>
+                    {{process.customId}}
+                </td>
+                <td>
+                    {{process.startTime | date:'dd-MM-yyyy HH:mm:ss'}}
+                </td>
+                <td>
+                    {{process.endTime | date:'dd-MM-yyyy HH:mm:ss'}}
+                </td>
+
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
 </div>

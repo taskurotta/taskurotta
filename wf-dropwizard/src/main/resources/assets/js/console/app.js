@@ -27,7 +27,11 @@ consoleApp.config(function ($routeProvider, $locationProvider) {
         templateUrl: '/partials/view/process.html',
         controller: "processCardController"
     });
-    $routeProvider.when('/processes/search/:type', {
+    $routeProvider.when('/processes/search/:type/', {
+        templateUrl: '/partials/view/process_search.html',
+        controller: "processSearchController"
+    });
+    $routeProvider.when('/processes/search/:type/:id', {
         templateUrl: '/partials/view/process_search.html',
         controller: "processSearchController"
     });
