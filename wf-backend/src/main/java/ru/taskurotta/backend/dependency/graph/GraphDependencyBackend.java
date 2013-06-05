@@ -29,7 +29,6 @@ public class GraphDependencyBackend implements DependencyBackend {
 
     private TaskNodeDao taskNodeDao;
 
-
     public static GraphDependencyBackend getDefaultInstance() {
         GraphDependencyBackend gdb = new GraphDependencyBackend();
         gdb.setTaskNodeDao(new MemoryTaskNodeDao());
@@ -52,25 +51,35 @@ public class GraphDependencyBackend implements DependencyBackend {
 
         boolean released = taskNodeDao.releaseNode(taskDecision.getTaskId(), taskDecision.getProcessId());
         DependencyDecision result = new DependencyDecision();
+
         if(released) {
-            UUID[] readyTasks = taskNodeDao.getReadyTasks(taskDecision.getProcessId());
-            result = result.withReadyTasks(readyTasks);
-            if(readyTasks==null || readyTasks.length == 0) {
-                boolean isProcessReady = taskNodeDao.isProcessReady(taskDecision.getProcessId());
+            UUID[] readyTasks = getReadyTasks(taskDecision.getProcessId());
+
+            //There are new tasks, process is still running
+            if(readyTasks!=null && readyTasks.length>0) {
+                for(UUID readyTask: readyTasks) {
+                    if(taskNodeDao.scheduleNode(readyTask, taskDecision.getProcessId())) {
+                        result.addReadyTask(readyTask);
+                    }
+                }
+
+            }
+
+            boolean hasReadyTask = result.getReadyTasks()!=null && !result.getReadyTasks().isEmpty();
+
+            if(!hasReadyTask && isProcessReady(taskDecision.getProcessId())) {
                 result.setFinishedProcessId(taskDecision.getProcessId());
+                result.setProcessFinished(true);
+                int deleted = taskNodeDao.deleteProcessNodes(taskDecision.getProcessId());
+                logger.debug("Deleted [{}] dependency nodes on process[{}] finish", deleted, taskDecision.getProcessId());
             }
         }
 
         return result;
     }
 
-    //is promise and have no Nowait annotation
-    private static boolean isDepends(ArgContainer[] args, ArgType[] argTypes, int itemIndex) {
-        boolean result = (args!=null && args[itemIndex].isPromise());
-        if(result && argTypes!=null) {
-            result = result && !ArgType.NO_WAIT.equals(argTypes[itemIndex]);
-        }
-        return result;
+    private static boolean hasNowait(ArgType[] argTypes, int itemIndex) {
+        return argTypes!=null && ArgType.NO_WAIT.equals(argTypes[itemIndex]);
     }
 
     @Override
@@ -84,24 +93,78 @@ public class GraphDependencyBackend implements DependencyBackend {
     private TaskNode createTaskNode(TaskContainer tc) {
         TaskNode newNode = new TaskNode(tc.getTaskId(), tc.getProcessId());
         ArgContainer[] args = tc.getArgs();
+        ArgContainer[] waits = tc.getOptions()!=null? tc.getOptions().getPromisesWaitFor(): null;
         ArgType[] argTypes = tc.getOptions()!=null? tc.getOptions().getArgTypes(): null;
+        List<UUID> depends = new ArrayList<>();
+
         if(args!=null && args.length>0) {
-            List<UUID> depends = new ArrayList<>();
             for(int i = 0; i<args.length; i++) {
                 ArgContainer arg = args[i];
-                if(isDepends(args, argTypes, i)) {
-                    depends.add(arg.getTaskId());
+                if(arg!=null && arg.isPromise()) {
+                    if(!hasNowait(argTypes, i)) {
+                        depends.add(arg.getTaskId());
+                    }
                 }
-
             }
-            newNode.setDepends(depends);
-            newNode.setType(tc.getType());
         }
+
+        if(waits!=null && waits.length>0) {
+            for(ArgContainer wait: waits) {
+                depends.add(wait.getTaskId());
+            }
+        }
+
+        newNode.setDepends(depends);
+        newNode.setType(tc.getType());
+
         return newNode;
+    }
+
+    private UUID[] getReadyTasks(UUID processId) {
+        List<UUID> result = new ArrayList<>();
+        List<TaskNode> nodes = taskNodeDao.getActiveProcessNodes(processId);
+
+        for(TaskNode node: nodes) {
+            boolean released = node.isReleased();
+            boolean scheduled = node.isScheduled();
+            boolean isAllDepReady = isAllDependenciesReady(nodes, node.getDepends());
+            if(!(released||scheduled) && isAllDepReady) {
+                logger.debug("Node[{}] released[{}], scheduled[{}], allDepReady[{}]", node.getId(), released, scheduled, isAllDepReady);
+                result.add(node.getId());
+            }
+        }
+
+        UUID[] resultAsArray = result.toArray(new UUID[result.size()]);
+        logger.debug("Ready tasks for processId[{}] are[{}]", processId, resultAsArray);
+
+        return resultAsArray;
+    }
+
+    private boolean isProcessReady(UUID processId) {
+        List<TaskNode> nodes = taskNodeDao.getActiveProcessNodes(processId);
+        return nodes==null || nodes.isEmpty();
+    }
+
+    private boolean isAllDependenciesReady(List<TaskNode> nodes, List<UUID> dependencyIds) {
+
+        if(nodes!=null && !nodes.isEmpty() && dependencyIds!=null && !dependencyIds.isEmpty()) {
+            for(TaskNode node: nodes) {
+                if(dependencyIds.contains(node.getId())) {//is dependency node
+                    if(!node.isReleased()) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;//null or empty nodeIds list means AllReady==true
     }
 
     public void setTaskNodeDao(TaskNodeDao taskNodeDao) {
         this.taskNodeDao = taskNodeDao;
     }
 
+    public TaskNodeDao getTaskNodeDao() {
+        return taskNodeDao;
+    }
 }

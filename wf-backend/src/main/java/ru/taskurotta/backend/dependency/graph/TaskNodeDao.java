@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.dependency.graph;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -15,8 +16,10 @@ public interface TaskNodeDao {
 
     public boolean releaseNode(UUID id, UUID processId);
 
-    public UUID[] getReadyTasks(UUID processId);
+    public boolean scheduleNode(UUID id, UUID processId);
 
-    public boolean isProcessReady(UUID processId);
+    public List<TaskNode> getActiveProcessNodes(UUID processId);
+
+    public int deleteProcessNodes(UUID processId);
 
 }

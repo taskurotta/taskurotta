@@ -21,6 +21,7 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
     //TODO: Break into separate storages per process?
     private Map<UUID, TaskNode> simpleStorage = new ConcurrentHashMap<>();
 
+
     @Override
     public TaskNode getNode(UUID taskId, UUID processId) {
         return simpleStorage.get(taskId);
@@ -48,71 +49,51 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
             simpleStorage.put(id, taskNode);
             logger.debug("Node released id[{}], processId[{}]", id, processId);
         } else {
-           logger.error("Cannot release node for id["+id+"], processId["+processId+"]: node not found in storage!");
-           throw new IllegalStateException("Cannot release node for id["+id+"], processId["+processId+"]: node not found in storage!");
+           logger.warn("Cannot release node for id[" + id + "], processId[" + processId + "]: node not found in storage!");
+            return false;
         }
         return true;
     }
 
     @Override
-    public UUID[] getReadyTasks(UUID processId) {
-        List<UUID> result = new ArrayList<>();
-        List<TaskNode> nodes = getProcessNodes(processId);
-
-        for(TaskNode node: nodes) {
-            if(!node.isReleased() && isAllReady(node.getDepends(), processId)) {
-                result.add(node.getId());
+    public boolean scheduleNode(UUID id, UUID processId) {
+        TaskNode taskNode = getNode(id, processId);
+        if(taskNode!=null) {
+            if(taskNode.isScheduled()) {//was previously scheduled
+                return false;
             }
+            taskNode.setScheduled(true);
+            simpleStorage.put(id, taskNode);
+            logger.debug("Node scheduled id[{}], processId[{}]", id, processId);
+        } else {
+            logger.error("Cannot schedule node for id["+id+"], processId["+processId+"]: node not found in storage!");
+            return false;
         }
-
-        UUID[] resultAsArray = result.toArray(new UUID[result.size()]);
-        logger.debug("Ready tasks for processId[{}] are[{}]", processId, resultAsArray);
-
-        return resultAsArray;
+        return true;
     }
 
     @Override
-    public boolean isProcessReady(UUID processId) {
-        boolean result = true;
-        List<TaskNode> nodes = getProcessNodes(processId);
-
-        if(nodes!=null && !nodes.isEmpty()) {
-            for(TaskNode node: nodes) {
-                if(!node.isReleased()) {
-                    result = false;
-                    break;
-                }
-            }
-        }
-
-        logger.debug("Process[{}] ready is[{}]", processId, result);
-        return result;
-    }
-
-    private boolean isAllReady(List<UUID> nodeIds, UUID processId) {
-        boolean result = true;//null or empty nodeIds list means AllReady==true
-
-        if(nodeIds!=null && !nodeIds.isEmpty()) {
-            for(UUID nodeId: nodeIds) {
-                TaskNode node = getNode(nodeId, processId);
-                if(node!=null && !node.isReleased()) {
-                    result = false;
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private List<TaskNode> getProcessNodes(UUID processId) {
+    public List<TaskNode> getActiveProcessNodes(UUID processId) {
         List<TaskNode> result = new ArrayList<>();
         for(TaskNode node: simpleStorage.values()) {
-            if(processId.equals(node.getProcessId())) {
+            if(processId.equals(node.getProcessId()) && !node.isReleased()) {
                  result.add(node);
             }
         }
         logger.debug("Got [{}] nodes for process[{}]", result.size(), processId);
+        return result;
+    }
+
+    @Override
+    public int deleteProcessNodes(UUID processId) {
+        int result = 0;
+        for(UUID nodeId: simpleStorage.keySet()) {
+            TaskNode node = simpleStorage.get(nodeId);
+            if(processId.equals(node.getProcessId())) {
+                simpleStorage.remove(nodeId);
+                result++;
+            }
+        }
         return result;
     }
 

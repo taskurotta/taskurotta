@@ -56,8 +56,8 @@ logging:
     level: INFO
     loggers:
         ru.taskurotta: INFO
-        ru.taskurotta.backend.console: DEBUG
-        ru.taskurotta.dropwizard.resources.console: DEBUG
+#        ru.taskurotta.dropwizard.resources.console: DEBUG
+#        ru.taskurotta.backend.dependency.graph: DEBUG
 #        ru.taskurotta.backend.queue: DEBUG
 #        ru.taskurotta.backend: INFO
 #        ru.taskurotta.server.recovery: DEBUG

@@ -16,7 +16,10 @@ public class TaskNode {
     private UUID processId;
     private TaskType type;
     private List<UUID> depends;
+
     private boolean released = false;
+    private boolean scheduled = false;
+
 
     public TaskNode() {
     }
@@ -66,6 +69,14 @@ public class TaskNode {
         this.depends = depends;
     }
 
+    public boolean isScheduled() {
+        return scheduled;
+    }
+
+    public void setScheduled(boolean scheduled) {
+        this.scheduled = scheduled;
+    }
+
     @Override
     public String toString() {
         return "TaskNode{" +
@@ -74,6 +85,8 @@ public class TaskNode {
                 ", type=" + type +
                 ", depends=" + depends +
                 ", released=" + released +
+                ", scheduled=" + scheduled +
                 '}';
     }
+
 }

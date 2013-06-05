@@ -2,7 +2,6 @@ package ru.taskurotta.backend.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
@@ -36,13 +35,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
-    @Profiled
     public void startProcess(TaskContainer taskContainer) {
         taskDao.addTask(taskContainer);
     }
 
     @Override
-    @Profiled
     public TaskContainer getTaskToExecute(UUID taskId) {
 
         logger.debug("getTaskToExecute() taskId = [{}]", taskId);
@@ -148,7 +145,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
 
     @Override
-    @Profiled
     public TaskContainer getTask(UUID taskId) {
         TaskContainer task = taskDao.getTask(taskId);
         logger.debug("Task getted by uuid[{}] is[{}]", taskId, task);
@@ -171,7 +167,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
-    @Profiled
     public void addDecision(DecisionContainer taskDecision) {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
@@ -198,7 +193,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
-    @Profiled
     public void addDecisionCommit(DecisionContainer taskDecision) {
         //Removing checkpoints
         checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_START_TO_CLOSE);
