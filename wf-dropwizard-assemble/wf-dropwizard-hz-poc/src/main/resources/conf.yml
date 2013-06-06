@@ -1,0 +1,50 @@
+#Location of Spring application context:
+contextLocation: "classpath*:context/appContext.xml, classpath*:context/console-context.xml"
+
+#Used for static resource serving in development mode
+assets:
+  overrides:
+    /: ../../wf-dropwizard/src/main/resources/assets/
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default"
+      timeoutPolicies:
+        TASK_START_TO_CLOSE: "TIMEOUT: 15 seconds"
+
+#Task server common properties (will be available as placeholders in spring context):
+properties:
+  pollDelay: 10
+  pollDelayUnit: "SECONDS"
+  retryTimes: 10
+  recovery.schedule: "*/35 * * * * ?"
+  recovery.period: 2
+  recovery.period.unit: "DAYS"
+  recovery.timeStep: 1
+  recovery.timeStep.unit: "DAYS"
+  hz.port: 7777
+
+#Http server configuration:
+logging:
+    level: WARN
+    loggers:
+        ru.taskurotta.dropwizard.hz: DEBUG
+        com.yammer: INFO
+    file:
+        enabled: true
+        archive: true
+#        currentLogFilename: ./target/logs/service.log
+        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+http:
+    rootPath: "/rest/*"
+    gzip:
+        enabled: false
+    requestLog:
+        file:
+            enabled: false
+            archive: true
+            currentLogFilename: ./target/logs/requests.log
+            archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+#config can be extended here
+#http://dropwizard.codahale.com/manual/core/#configuration-defaults

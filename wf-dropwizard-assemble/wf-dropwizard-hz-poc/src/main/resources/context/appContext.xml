@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config/>
+
+    <hz:hazelcast id="hzInstance">
+        <hz:config>
+            <hz:network port="${hz.port}" port-auto-increment="true" />
+        </hz:config>
+    </hz:hazelcast>
+
+    <hz:set name="hzSet" id="hzSet" instance-ref="hzInstance" />
+    <hz:map name="hzMap" id="hzMap" instance-ref="hzInstance"></hz:map>
+    <hz:queue id="hzQueue" name="hzQueue" instance-ref="hzInstance"></hz:queue>
+
+
+    <bean id="taskServer" class="ru.taskurotta.dropwizard.hz.HzTaskServer" init-method="init">
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+
+        <property name="hzInstance" ref="hzInstance" />
+        <property name="hzMap" ref="hzMap" />
+        <property name="hzQueue" ref="hzQueue" />
+        <property name="hzSet" ref="hzSet" />
+        <property name="hzPort" value = "${hz.port}" />
+
+    </bean>
+
+
+    <!--<mongo:mongo id="mongo" host="localhost" port="27017"/>-->
+
+    <!--<bean id="mongoTemplate"-->
+          <!--class="org.springframework.data.mongodb.core.MongoTemplate">-->
+        <!--<constructor-arg ref="mongo"/>-->
+        <!--<constructor-arg name="databaseName" value="test"/>-->
+    <!--</bean>-->
+
+    <!--<bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongomapstore">-->
+        <!--<property name="mongoTemplate" ref="mongoTemplate" />-->
+    <!--</bean>-->
+
+    <!-- REST resources -->
+    <bean id="taskPullerResource"
+          class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskReleaserResource"
+          class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskStarterResource"
+          class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <!-- /REST resources -->
+
+    <!-- Recoveries -->
+    <bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
+        <property name="configBackend" ref="configBackend"/>
+        <property name="taskBackend" ref="taskBackend"/>
+        <property name="queueBackend" ref="queueBackend"/>
+        <property name="recoveryPeriod" value="${recovery.period}"/>
+        <property name="recoveryPeriodUnit" value="${recovery.period.unit}"/>
+        <property name="timeIterationStep" value="${recovery.timeStep}"/>
+        <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>
+        <property name="supportedTimeouts">
+            <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
+                <value>TASK_START_TO_CLOSE</value>
+                <value>TASK_POLL_TO_COMMIT</value>
+            </array>
+        </property>
+    </bean>
+
+    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
+    <task:scheduled-tasks scheduler="taskExpirationRecovery">
+        <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
+    </task:scheduled-tasks>
+
+    <!-- /Recoveries -->
+
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
+        <constructor-arg name="pollDelay" value="${pollDelay}" />
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+    <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
+
+    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+        <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="checkpointService" ref="checkpointService"/>
+    </bean>
+    <bean id="dependencyBackend"
+          class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="graphDao" />
+        <constructor-arg name="retryTimes" value="${retryTimes}" />
+    </bean>
+
+    <!--<bean id="dependencyBackend"-->
+    <!--class="ru.taskurotta.backend.dependency.graph.GraphDependencyBackend">-->
+    <!--<property name="taskNodeDao">-->
+    <!--<bean class="ru.taskurotta.backend.dependency.graph.MemoryTaskNodeDao" />-->
+    <!--</property>-->
+    <!--</bean>-->
+
+    <bean id="graphDao"
+          class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+
+    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
+
+    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+        <constructor-arg name="name" value="check task server" />
+        <property name="taskServer" ref="taskServer" />
+    </bean>
+
+</beans>
