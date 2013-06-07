@@ -2,6 +2,7 @@ package ru.taskurotta.transport.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
  * Time: 3:07 PM
  */
 @SuppressWarnings("UnusedDeclaration")
-public class ArgContainer implements Cloneable {
+public class ArgContainer implements Cloneable, Serializable {
     public enum ValueType {
         PLAIN, PROMISE, ARRAY, OBJECT_ARRAY
     }
