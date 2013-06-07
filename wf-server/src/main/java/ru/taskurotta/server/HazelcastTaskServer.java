@@ -2,7 +2,6 @@ package ru.taskurotta.server;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.PartitionAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
@@ -13,6 +12,7 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.server.hazelcast.ProcessPartitionKey;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -20,7 +20,8 @@ import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
-import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,10 +52,11 @@ public class HazelcastTaskServer implements TaskServer {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
-    private final IMap<UUID, Queue<DecisionContainer>> decisionQueues;
+    private final IMap<ProcessPartitionKey, Queue<DecisionContainer>> decisionQueues;
     private static final String DECISION_QUEUE_MAP_NAME = "decisionQueueMap";
 
     private int coordinatorPoolSize = 10;
+    public String taskServerName = null;
 
     public HazelcastTaskServer(BackendBundle backendBundle, HazelcastInstance hazelcastInstance) {
         this.processBackend = backendBundle.getProcessBackend();
@@ -62,6 +64,12 @@ public class HazelcastTaskServer implements TaskServer {
         this.queueBackend = backendBundle.getQueueBackend();
         this.dependencyBackend = backendBundle.getDependencyBackend();
         this.configBackend = backendBundle.getConfigBackend();
+
+        try {
+            taskServerName = HazelcastTaskServer.class.getName() + "-" + InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
         this.decisionQueues = hazelcastInstance.getMap(DECISION_QUEUE_MAP_NAME);
 
@@ -87,20 +95,20 @@ public class HazelcastTaskServer implements TaskServer {
 
                 if (!decisionQueues.isEmpty()) {
 
-                    for(UUID queueId : decisionQueues.keySet()) {
+                    for(ProcessPartitionKey processPartitionKey : decisionQueues.keySet()) {
 
-                        if (blockingQueueIds.contains(queueId)) {
+                        if (blockingQueueIds.contains(processPartitionKey.getProcessId())) {
                             continue;
                         }
 
-                        if (decisionQueues.get(queueId).isEmpty()) {
+                        if (decisionQueues.get(processPartitionKey).isEmpty()) {
                             continue;
                         }
 
-                        blockingQueueIds.add(queueId);
-                        logger.trace("Lock queue id [{}]", queueId);
+                        blockingQueueIds.add(processPartitionKey.getProcessId());
+                        logger.trace("Lock queue id [{}]", processPartitionKey);
 
-                        Future<UUID> future = executorService.submit(new ApplyDecisionTask(decisionQueues.get(queueId).poll()));
+                        Future<UUID> future = executorService.submit(new ApplyDecisionTask(decisionQueues.get(processPartitionKey).poll()));
                         futures.add(future);
                     }
                 }
@@ -260,12 +268,14 @@ public class HazelcastTaskServer implements TaskServer {
         }
 
         synchronized (decisionQueues) {
-            if (decisionQueues.containsKey(taskDecision.getProcessId())) {
-                decisionQueues.get(taskDecision.getProcessId()).add(taskDecision);
+            ProcessPartitionKey processPartitionKey = new ProcessPartitionKey(taskDecision.getProcessId(), taskServerName);
+
+            if (decisionQueues.containsKey(processPartitionKey)) {
+                decisionQueues.get(processPartitionKey).add(taskDecision);
             } else {
                 TransferQueue<DecisionContainer> decisionContainers = new LinkedTransferQueue<>();
                 decisionContainers.add(taskDecision);
-                decisionQueues.put(taskDecision.getProcessId(), decisionContainers);
+                decisionQueues.put(processPartitionKey, decisionContainers);
             }
         }
     }
