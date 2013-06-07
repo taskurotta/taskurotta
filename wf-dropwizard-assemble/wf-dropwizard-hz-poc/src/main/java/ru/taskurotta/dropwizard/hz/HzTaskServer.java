@@ -52,9 +52,6 @@ public class HzTaskServer extends GeneralTaskServer {
         Set<Member> members = hzInstance.getCluster().getMembers();
         logger.info("Hazelcast members are [{}]", members);
 
-        IQueue unconfQueue = hzInstance.getQueue("unconfigured queue");
-        logger.info("Unconfigured queue getted is[{}]", unconfQueue);
-
         String nameKey = "Name";
         if(members.size() == 1) {//first instance
             List<String> value = new ArrayList<String>();
