@@ -201,7 +201,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
+    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         queue.add(new DelayedTaskElement(taskId, startTime, System.currentTimeMillis()));

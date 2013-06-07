@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.queue;
 
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
+
+import java.util.UUID;
 
 /**
  * User: romario
@@ -29,6 +29,6 @@ public interface QueueBackend extends CheckpointServiceProvider {
     public void pollCommit(String actorId, UUID taskId);
 
 
-    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList);
+    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
 
 }

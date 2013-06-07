@@ -1,13 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
@@ -23,6 +15,14 @@ import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * User: moroz, dudin
@@ -104,7 +104,7 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     @Profiled
-    public void enqueueItem(String actorId, UUID taskId, long startTime, String taskList) {
+    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
         log.debug("addTaskToQueue taskId = [{}]", taskId);
 

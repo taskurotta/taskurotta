@@ -53,13 +53,13 @@
     <!--<mongo:mongo id="mongo" host="localhost" port="27017"/>-->
 
     <!--<bean id="mongoTemplate"-->
-          <!--class="org.springframework.data.mongodb.core.MongoTemplate">-->
-        <!--<constructor-arg ref="mongo"/>-->
-        <!--<constructor-arg name="databaseName" value="test"/>-->
+    <!--class="org.springframework.data.mongodb.core.MongoTemplate">-->
+    <!--<constructor-arg ref="mongo"/>-->
+    <!--<constructor-arg name="databaseName" value="test"/>-->
     <!--</bean>-->
 
     <!--<bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongomapstore">-->
-        <!--<property name="mongoTemplate" ref="mongoTemplate" />-->
+    <!--<property name="mongoTemplate" ref="mongoTemplate" />-->
     <!--</bean>-->
 
     <!-- REST resources -->
