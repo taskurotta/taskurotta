@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
+import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -16,7 +17,9 @@ import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.server.GeneralTaskServer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * General task server with injected Hazelcast entities
@@ -35,8 +38,6 @@ public class HzTaskServer extends GeneralTaskServer {
 
     protected ISet<String> hzSet;
 
-    protected int hzPort;
-
     public HzTaskServer(BackendBundle backendBundle) {
         super(backendBundle);
     }
@@ -48,10 +49,11 @@ public class HzTaskServer extends GeneralTaskServer {
     public void init() {
         logger.info("Initialize task server with hazelcast instance name [{}], networkConfig[{}] ", hzInstance.getName(), hzInstance.getConfig().getNetworkConfig());
 
-        int port = hzInstance.getConfig().getNetworkConfig().getPort();
-        String nameKey = "Name";
+        Set<Member> members = hzInstance.getCluster().getMembers();
+        logger.info("Hazelcast members are [{}]", members);
 
-        if(port == hzPort) {//first instance (with not incremented default port)
+        String nameKey = "Name";
+        if(members.size() == 1) {//first instance
             List<String> value = new ArrayList<String>();
             value.add("Mary");
             value.add("Harry");
@@ -60,20 +62,20 @@ public class HzTaskServer extends GeneralTaskServer {
             logger.info("Added values[{}] to shared map", value);
 
             String[] martinis = new String[]{"Rosso", "Bianco", "Rosato", "D’Oro", "Fiero", "Rosso", "Bianco"};
+            logger.info("Try to add to set[{}] and enqueue to queue[{}] values [{}]", hzSet.getName(), hzQueue.getName(), Arrays.asList(martinis));
             for(String martini: martinis) {
-                logger.info("Try to add to set and enqueue value [{}]", martini);
                 if(!hzQueue.offer(martini)){
                     logger.info("Failed to enqueue item[{}]", martini);
                 }
                 if(!hzSet.add(martini)) {
-                    logger.info("Value already present in set[{}]", martini);
+                    logger.info("Value already present in set[{}]", Arrays.asList(martini));
                 }
             }
         }
 
         logger.info("Map contents: [{}]", hzMap.get(nameKey));
-        logger.info("Set content is: [{}]", hzSet.toArray());
-        logger.info("Two polled values from queue are: [{}]", new String[]{hzQueue.poll(), hzQueue.poll()});
+        logger.info("Set content is: [{}]", new ArrayList(hzSet));
+        logger.info("Two polled values from queue are: [{}]", Arrays.asList(new String[]{hzQueue.poll(), hzQueue.poll()}));
 
     }
 
@@ -97,8 +99,4 @@ public class HzTaskServer extends GeneralTaskServer {
         this.hzSet = hzSet;
     }
 
-    @Required
-    public void setHzPort(int hzPort) {
-        this.hzPort = hzPort;
-    }
 }

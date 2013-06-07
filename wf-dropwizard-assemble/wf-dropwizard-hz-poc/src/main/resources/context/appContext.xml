@@ -16,13 +16,23 @@
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
-            <hz:network port="${hz.port}" port-auto-increment="true" />
+            <hz:network port="${hz.port}" port-auto-increment="true" >
+                <hz:join>
+                    <hz:multicast enabled="false"
+                                  multicast-group="224.2.2.3"
+                                  multicast-port="54327"/>
+                    <hz:tcp-ip enabled="true">
+                        <hz:members>127.0.0.1</hz:members>
+                    </hz:tcp-ip>
+                </hz:join>
+            </hz:network>
+            <hz:queue name="${hz.queue.name}" max-size-per-jvm="5000" />
         </hz:config>
     </hz:hazelcast>
 
     <hz:set name="hzSet" id="hzSet" instance-ref="hzInstance" />
     <hz:map name="hzMap" id="hzMap" instance-ref="hzInstance"></hz:map>
-    <hz:queue id="hzQueue" name="hzQueue" instance-ref="hzInstance"></hz:queue>
+    <hz:queue id="hzQueue" name="${hz.queue.name}" instance-ref="hzInstance"></hz:queue>
 
 
     <bean id="taskServer" class="ru.taskurotta.dropwizard.hz.HzTaskServer" init-method="init">
@@ -36,7 +46,6 @@
         <property name="hzMap" ref="hzMap" />
         <property name="hzQueue" ref="hzQueue" />
         <property name="hzSet" ref="hzSet" />
-        <property name="hzPort" value = "${hz.port}" />
 
     </bean>
 

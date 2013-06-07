@@ -24,13 +24,15 @@ properties:
   recovery.timeStep: 1
   recovery.timeStep.unit: "DAYS"
   hz.port: 7777
+  hz.queue.name: "hzTestQueue"
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
+        com.hazelcast: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
-        com.yammer: INFO
+        com.yammer: WARN
     file:
         enabled: true
         archive: true
