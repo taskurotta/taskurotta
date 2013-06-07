@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +51,7 @@ public class HazelcastTaskServer implements TaskServer {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
-    private final IMap<PartitionKey, Queue<DecisionContainer>> decisionQueues;
+    private final IMap<UUID, Queue<DecisionContainer>> decisionQueues;
     private static final String DECISION_QUEUE_MAP_NAME = "decisionQueueMap";
 
     private int coordinatorPoolSize = 10;
@@ -68,6 +70,7 @@ public class HazelcastTaskServer implements TaskServer {
 
     class Coordinator implements Runnable {
 
+        private Set<UUID> blockingQueueIds = new TreeSet<>();
         private List<Future<UUID>> futures = new LinkedList<>();
 
         private ExecutorService executorService;
@@ -84,9 +87,9 @@ public class HazelcastTaskServer implements TaskServer {
 
                 if (!decisionQueues.isEmpty()) {
 
-                    for(PartitionKey queueId : decisionQueues.keySet()) {
+                    for(UUID queueId : decisionQueues.keySet()) {
 
-                        if (decisionQueues.isLocked(queueId)) {
+                        if (blockingQueueIds.contains(queueId)) {
                             continue;
                         }
 
@@ -94,7 +97,7 @@ public class HazelcastTaskServer implements TaskServer {
                             continue;
                         }
 
-                        decisionQueues.lock(queueId);
+                        blockingQueueIds.add(queueId);
                         logger.trace("Lock queue id [{}]", queueId);
 
                         Future<UUID> future = executorService.submit(new ApplyDecisionTask(decisionQueues.get(queueId).poll()));
@@ -112,7 +115,7 @@ public class HazelcastTaskServer implements TaskServer {
                             try {
                                 UUID queueId = future.get();
 
-                                decisionQueues.unlock(new PartitionKey(queueId, Thread.currentThread().getName()));
+                                blockingQueueIds.remove(queueId);
                                 logger.trace("Unlock queue id [{}]", queueId);
 
                                 futures.remove(future);
@@ -172,34 +175,6 @@ public class HazelcastTaskServer implements TaskServer {
             taskBackend.addDecisionCommit(taskDecision);
 
             return taskDecision.getProcessId();
-        }
-    }
-
-    class PartitionKey implements Serializable, PartitionAware {
-
-        private UUID key;
-        private Object partitionKey;
-
-        PartitionKey(UUID key, Object partitionKey) {
-            this.key = key;
-            this.partitionKey = partitionKey;
-        }
-
-        UUID getKey() {
-            return key;
-        }
-
-        void setKey(UUID key) {
-            this.key = key;
-        }
-
-        void setPartitionKey(Object partitionKey) {
-            this.partitionKey = partitionKey;
-        }
-
-        @Override
-        public Object getPartitionKey() {
-            return partitionKey;
         }
     }
 
@@ -285,14 +260,12 @@ public class HazelcastTaskServer implements TaskServer {
         }
 
         synchronized (decisionQueues) {
-            PartitionKey partitionKey = new PartitionKey(taskDecision.getProcessId(), Thread.currentThread().getName());
-
-            if (decisionQueues.containsKey(partitionKey)) {
-                decisionQueues.get(partitionKey).add(taskDecision);
+            if (decisionQueues.containsKey(taskDecision.getProcessId())) {
+                decisionQueues.get(taskDecision.getProcessId()).add(taskDecision);
             } else {
                 TransferQueue<DecisionContainer> decisionContainers = new LinkedTransferQueue<>();
                 decisionContainers.add(taskDecision);
-                decisionQueues.put(partitionKey, decisionContainers);
+                decisionQueues.put(taskDecision.getProcessId(), decisionContainers);
             }
         }
     }
