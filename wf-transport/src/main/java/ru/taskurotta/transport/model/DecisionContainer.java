@@ -1,5 +1,6 @@
 package ru.taskurotta.transport.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -8,7 +9,7 @@ import java.util.UUID;
  * Date: 2/25/13
  * Time: 3:14 PM
  */
-public class DecisionContainer {
+public class DecisionContainer implements Serializable {
 
     private UUID taskId;
     private UUID processId;

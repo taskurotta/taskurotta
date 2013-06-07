@@ -19,6 +19,7 @@
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.6.7</aspectj.version>
+        <hazelcast.version>2.6</hazelcast.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
@@ -86,6 +87,12 @@
                 <version>${spring.version}</version>
             </dependency>
             <!-- /spring -->
+
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-all</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>cglib</groupId>
