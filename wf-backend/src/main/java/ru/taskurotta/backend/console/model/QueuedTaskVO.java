@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.console.model;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -7,7 +8,7 @@ import java.util.UUID;
  * User: dimadin
  * Date: 22.05.13 15:19
  */
-public class QueuedTaskVO {
+public class QueuedTaskVO implements Serializable {
 
     private UUID id;
     private String taskList;
