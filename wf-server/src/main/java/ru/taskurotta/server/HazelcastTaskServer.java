@@ -52,6 +52,8 @@ public class HazelcastTaskServer implements TaskServer {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
+    private final HazelcastInstance hazelcastInstance;
+
     private final IMap<ProcessPartitionKey, Queue<DecisionContainer>> decisionQueues;
     private static final String DECISION_QUEUE_MAP_NAME = "decisionQueueMap";
 
@@ -65,18 +67,21 @@ public class HazelcastTaskServer implements TaskServer {
         this.dependencyBackend = backendBundle.getDependencyBackend();
         this.configBackend = backendBundle.getConfigBackend();
 
+        this.hazelcastInstance = hazelcastInstance;
+
         try {
             taskServerName = HazelcastTaskServer.class.getName() + "-" + InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("Catch exception while get task server address", e);
+            throw new RuntimeException(e);
         }
 
         this.decisionQueues = hazelcastInstance.getMap(DECISION_QUEUE_MAP_NAME);
 
-        new Thread(new Coordinator(coordinatorPoolSize), "Coordinator-" + Thread.currentThread().getName()).start();
+        Executors.newSingleThreadExecutor().submit(new Coordinator(coordinatorPoolSize));
     }
 
-    class Coordinator implements Runnable {
+    class Coordinator implements Callable {
 
         private Set<UUID> blockingQueueIds = new TreeSet<>();
         private List<Future<UUID>> futures = new LinkedList<>();
@@ -88,7 +93,7 @@ public class HazelcastTaskServer implements TaskServer {
         }
 
         @Override
-        public void run() {
+        public Void call() {
             logger.trace("Start Coordinator thread [{}]", Thread.currentThread().getName());
 
             while (true) {
@@ -97,16 +102,16 @@ public class HazelcastTaskServer implements TaskServer {
 
                     for(ProcessPartitionKey processPartitionKey : decisionQueues.keySet()) {
 
-                        if (blockingQueueIds.contains(processPartitionKey.getProcessId())) {
-                            continue;
-                        }
-
                         if (decisionQueues.get(processPartitionKey).isEmpty()) {
                             continue;
                         }
 
+                        if (blockingQueueIds.contains(processPartitionKey.getProcessId())) {
+                            continue;
+                        }
+
                         blockingQueueIds.add(processPartitionKey.getProcessId());
-                        logger.trace("Lock queue id [{}]", processPartitionKey);
+                        logger.trace("Lock process queue id [{}]", processPartitionKey);
 
                         Future<UUID> future = executorService.submit(new ApplyDecisionTask(decisionQueues.get(processPartitionKey).poll()));
                         futures.add(future);
@@ -124,11 +129,12 @@ public class HazelcastTaskServer implements TaskServer {
                                 UUID queueId = future.get();
 
                                 blockingQueueIds.remove(queueId);
-                                logger.trace("Unlock queue id [{}]", queueId);
+                                logger.trace("Unlock process queue id [{}]", queueId);
 
                                 futures.remove(future);
                             } catch (InterruptedException | ExecutionException e) {
-                                e.printStackTrace();
+                                logger.error("Catch exception while get future [" + future + "] value", e);
+                                throw new RuntimeException(e);
                             }
                         }
                     }
