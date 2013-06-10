@@ -1,6 +1,7 @@
 package ru.taskurotta.server;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -83,8 +82,7 @@ public class HazelcastTaskServer implements TaskServer {
 
     class Coordinator implements Callable {
 
-        private Set<UUID> blockingQueueIds = new TreeSet<>();
-        private List<Future<UUID>> futures = new LinkedList<>();
+        private List<Future<ProcessPartitionKey>> futures = new LinkedList<>();
 
         private ExecutorService executorService;
 
@@ -106,30 +104,39 @@ public class HazelcastTaskServer implements TaskServer {
                             continue;
                         }
 
-                        if (blockingQueueIds.contains(processPartitionKey.getProcessId())) {
+                        ILock lock = hazelcastInstance.getLock(processPartitionKey);
+
+                        if (lock.isLocked()) {
                             continue;
                         }
 
-                        blockingQueueIds.add(processPartitionKey.getProcessId());
-                        logger.trace("Lock process queue id [{}]", processPartitionKey);
+                        if (lock.tryLock()) {
+                            logger.trace("Lock process queue id [{}]", processPartitionKey);
 
-                        Future<UUID> future = executorService.submit(new ApplyDecisionTask(decisionQueues.get(processPartitionKey).poll()));
-                        futures.add(future);
+                            Future<ProcessPartitionKey> future = executorService.submit(new ApplyDecisionTask(processPartitionKey, decisionQueues.get(processPartitionKey).poll()));
+                            futures.add(future);
+                        }
                     }
                 }
 
                 if (!futures.isEmpty()) {
 
-                    Iterator<Future<UUID>> iterator = futures.iterator();
+                    Iterator<Future<ProcessPartitionKey>> iterator = futures.iterator();
                     while (iterator.hasNext()) {
-                        Future<UUID> future = iterator.next();
+                        Future<ProcessPartitionKey> future = iterator.next();
 
                         if (future.isDone()) {
                             try {
-                                UUID queueId = future.get();
+                                ProcessPartitionKey processPartitionKey = future.get();
 
-                                blockingQueueIds.remove(queueId);
-                                logger.trace("Unlock process queue id [{}]", queueId);
+                                ILock lock = hazelcastInstance.getLock(processPartitionKey);
+                                lock.forceUnlock();
+
+                                if (lock.isLocked()) {
+                                    continue;
+                                }
+
+                                logger.trace("Unlock process queue id [{}]", processPartitionKey);
 
                                 futures.remove(future);
                             } catch (InterruptedException | ExecutionException e) {
@@ -143,16 +150,18 @@ public class HazelcastTaskServer implements TaskServer {
         }
     }
 
-    class ApplyDecisionTask implements Callable<UUID> {
+    class ApplyDecisionTask implements Callable<ProcessPartitionKey> {
 
+        private ProcessPartitionKey processPartitionKey;
         private DecisionContainer taskDecision;
 
-        ApplyDecisionTask(DecisionContainer taskDecision) {
+        ApplyDecisionTask(ProcessPartitionKey processPartitionKey, DecisionContainer taskDecision) {
+            this.processPartitionKey = processPartitionKey;
             this.taskDecision = taskDecision;
         }
 
         @Override
-        public UUID call() throws Exception {
+        public ProcessPartitionKey call() throws Exception {
             // idempotent statement
             DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
 
@@ -165,7 +174,7 @@ public class HazelcastTaskServer implements TaskServer {
 
                 // leave release() method.
                 // RELEASE_TIMEOUT should be automatically fired
-                return taskDecision.getProcessId();
+                return processPartitionKey;
             }
 
             List<UUID> readyTasks = dependencyDecision.getReadyTasks();
@@ -188,7 +197,7 @@ public class HazelcastTaskServer implements TaskServer {
 
             taskBackend.addDecisionCommit(taskDecision);
 
-            return taskDecision.getProcessId();
+            return processPartitionKey;
         }
     }
 
