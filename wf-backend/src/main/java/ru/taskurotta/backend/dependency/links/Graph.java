@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.dependency.links;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * Date: 4/5/13
  * Time: 11:35 AM
  */
-public class Graph {
+public class Graph implements Serializable {
 
     private final static Logger logger = LoggerFactory.getLogger(Graph.class);
 
@@ -33,18 +34,18 @@ public class Graph {
     /**
      * Set of all not finished items in this process
      */
-    private Set<UUID> notFinishedItems = new HashSet<UUID>();
+    private Set<UUID> notFinishedItems = new HashSet<>();
 
     /**
      * Key UUID is a waiting items and value is Set of ready but frozen.
      */
-    private Map<UUID, Set<UUID>> frozenReadyItems = new HashMap<UUID, Set<UUID>>();
+    private Map<UUID, Set<UUID>> frozenReadyItems = new HashMap<>();
 
     /**
      * Links map where keys are tasks which depends from value set of other tasks.
      * For example, A(B, C) - A is a key and {B, C} is a set value of map.
      */
-    private Map<UUID, Set<UUID>> links = new HashMap<UUID, Set<UUID>>();
+    private Map<UUID, Set<UUID>> links = new HashMap<>();
 
 
     // modification stuff.
@@ -63,7 +64,7 @@ public class Graph {
 
 
     private static Map<UUID, Set<UUID>> reverseIt(Map<UUID, Set<UUID>> links) {
-        Map<UUID, Set<UUID>> reverseResult = new HashMap<UUID, Set<UUID>>();
+        Map<UUID, Set<UUID>> reverseResult = new HashMap<>();
 
         if (links.isEmpty()) {
             return reverseResult;
@@ -74,7 +75,7 @@ public class Graph {
 
                 Set<UUID> fromItems = reverseResult.get(toItem);
                 if (fromItems == null) {
-                    fromItems = new HashSet<UUID>();
+                    fromItems = new HashSet<>();
                     reverseResult.put(toItem, fromItems);
                 }
 
@@ -152,10 +153,6 @@ public class Graph {
 
         logger.debug("apply() modification = [{}]", modification);
 
-        if (this.modification != null) {
-            throw new IllegalStateException("Graph already contains Modification");
-        }
-
         this.modification = modification;
 
         version++;
@@ -196,7 +193,7 @@ public class Graph {
                     Set<UUID> itemLinks = links.get(item);
 
                     if (itemLinks == null) {
-                        itemLinks = new HashSet<UUID>();
+                        itemLinks = new HashSet<>();
                         links.put(item, itemLinks);
                     }
 
@@ -217,7 +214,7 @@ public class Graph {
         // find items without dependencies
         Set<UUID> reverseItemLinks = reverseLinks.get(finishedItem);
 
-        List readyItemsList = null;
+        List<UUID> readyItemsList = null;
 
         if (reverseItemLinks != null) {
 
@@ -238,7 +235,7 @@ public class Graph {
                     Set<UUID> frozenItemsSet = frozenReadyItems.get(waitForAfterRelease);
 
                     if (frozenItemsSet == null) {
-                        frozenItemsSet = new HashSet<UUID>();
+                        frozenItemsSet = new HashSet<>();
                         frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
                     }
 
@@ -250,7 +247,7 @@ public class Graph {
                     // or add it to ready list directly
                 } else {
                     if (readyItemsList == null) {
-                        readyItemsList = new LinkedList();
+                        readyItemsList = new LinkedList<>();
                     }
 
                     logger.debug("apply() after remove [{}] this item has no dependencies and added to readyItemsList " +
@@ -268,7 +265,7 @@ public class Graph {
                 if (newLinks == null || newLinks.get(newItem) == null) {
 
                     if (readyItemsList == null) {
-                        readyItemsList = new LinkedList();
+                        readyItemsList = new LinkedList<>();
                     }
 
                     logger.debug("apply() new item [{}] has no links and added to  readyItemsList", newItem);
@@ -289,7 +286,7 @@ public class Graph {
                 if (itemLinks == null || itemLinks.isEmpty()) {
 
                     if (readyItemsList == null) {
-                        readyItemsList = new LinkedList();
+                        readyItemsList = new LinkedList<>();
                     }
 
                     logger.debug("apply() new item [{}] has link to already finished item", item);
@@ -304,7 +301,7 @@ public class Graph {
         if (frozenItemsSet != null) {
 
             if (readyItemsList == null) {
-                readyItemsList = new LinkedList();
+                readyItemsList = new LinkedList<>();
             }
 
             logger.debug("apply() new frozen items [{}]", frozenItemsSet);
@@ -317,7 +314,7 @@ public class Graph {
         if (readyItemsList == null) {
             readyItems = EMPTY_ARRAY;
         } else {
-            readyItems = (UUID[]) readyItemsList.toArray(new UUID[readyItemsList.size()]);
+            readyItems = readyItemsList.toArray(new UUID[readyItemsList.size()]);
         }
 
     }
@@ -330,7 +327,7 @@ public class Graph {
             return reverseItemLinks;
         }
 
-        reverseItemLinks = new HashSet<UUID>();
+        reverseItemLinks = new HashSet<>();
         reverseLinks.put(item, reverseItemLinks);
 
         return reverseItemLinks;

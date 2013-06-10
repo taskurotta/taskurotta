@@ -12,15 +12,13 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
+        context: ru/taskurotta/example/calculate/SpreaderBeans-hazelcast.xml
         properties:
           count: 300
           startTasks: true
           startTasksInBackground: true
-          endpoint: "http://localhost:8811"
-          threadPoolSize: 15
-          readTimeout: 0
-          connectTimeout: 3000
+          loggingPeriod: 10000
+          taskPollDelay: 1
 
 policy:
   - MainPolicyConfig:
@@ -79,3 +77,43 @@ actor:
       count: 1
       properties:
         failover: "10 SECONDS"
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/example-calculate-hazelcast.log
+             append: true
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.server:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.server:
+             key: name
+             \@level: TRACE
+        - ru.taskurotta.server.json:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+        - com.hazelcast:
+             key: name
+             \@level: INFO
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref

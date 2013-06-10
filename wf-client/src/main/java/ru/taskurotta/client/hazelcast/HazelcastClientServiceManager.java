@@ -4,6 +4,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
+import ru.taskurotta.backend.hz.HazelcastBackendBundle;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
@@ -28,7 +29,8 @@ public class HazelcastClientServiceManager implements ClientServiceManager {
     }
 
     public HazelcastClientServiceManager(HazelcastInstance hazelcastInstance, int pollDelay) {
-        this.backendBundle = new MemoryBackendBundle(pollDelay, new MemoryTaskDao());
+//        this.backendBundle = new MemoryBackendBundle(pollDelay, new MemoryTaskDao());
+        this.backendBundle = new HazelcastBackendBundle(hazelcastInstance, new MemoryTaskDao(), pollDelay);
         this.taskServer = new HazelcastTaskServer(backendBundle, hazelcastInstance);
     }
 

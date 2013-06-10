@@ -59,13 +59,12 @@ public class HazelcastTaskServer implements TaskServer {
     private int coordinatorPoolSize = 10;
     public String taskServerName = null;
 
-    public HazelcastTaskServer(BackendBundle backendBundle, HazelcastInstance hazelcastInstance) {
-        this.processBackend = backendBundle.getProcessBackend();
-        this.taskBackend = backendBundle.getTaskBackend();
-        this.queueBackend = backendBundle.getQueueBackend();
-        this.dependencyBackend = backendBundle.getDependencyBackend();
-        this.configBackend = backendBundle.getConfigBackend();
-
+    public HazelcastTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend, HazelcastInstance hazelcastInstance) {
+        this.processBackend = processBackend;
+        this.taskBackend = taskBackend;
+        this.queueBackend = queueBackend;
+        this.dependencyBackend = dependencyBackend;
+        this.configBackend = configBackend;
         this.hazelcastInstance = hazelcastInstance;
 
         try {
@@ -78,6 +77,10 @@ public class HazelcastTaskServer implements TaskServer {
         this.decisionQueues = hazelcastInstance.getMap(DECISION_QUEUE_MAP_NAME);
 
         Executors.newSingleThreadExecutor().submit(new Coordinator(coordinatorPoolSize));
+    }
+
+    public HazelcastTaskServer(BackendBundle backendBundle, HazelcastInstance hazelcastInstance) {
+        this(backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), backendBundle.getQueueBackend(), backendBundle.getDependencyBackend(), backendBundle.getConfigBackend(), hazelcastInstance);
     }
 
     class Coordinator implements Callable {
@@ -95,6 +98,7 @@ public class HazelcastTaskServer implements TaskServer {
             logger.trace("Start Coordinator thread [{}]", Thread.currentThread().getName());
 
             while (true) {
+                logger.trace("Decision queues size [{}]", decisionQueues.size());
 
                 if (!decisionQueues.isEmpty()) {
 
@@ -119,20 +123,23 @@ public class HazelcastTaskServer implements TaskServer {
                     }
                 }
 
+                logger.trace("Futures list size [{}]", futures.size());
+
                 if (!futures.isEmpty()) {
 
-                    Iterator<Future<ProcessPartitionKey>> iterator = futures.iterator();
-                    while (iterator.hasNext()) {
-                        Future<ProcessPartitionKey> future = iterator.next();
-
+                    for (Future<ProcessPartitionKey> future : futures) {
                         if (future.isDone()) {
                             try {
                                 ProcessPartitionKey processPartitionKey = future.get();
 
                                 ILock lock = hazelcastInstance.getLock(processPartitionKey);
-                                lock.forceUnlock();
 
                                 if (lock.isLocked()) {
+                                    lock.unlock();
+                                }
+
+                                if (lock.isLocked()) {
+                                    logger.trace("Process queue id [{}] can't unlock", processPartitionKey);
                                     continue;
                                 }
 
@@ -162,17 +169,15 @@ public class HazelcastTaskServer implements TaskServer {
 
         @Override
         public ProcessPartitionKey call() throws Exception {
+            logger.trace("Try to apply task decision [{}] for process id [{}]", taskDecision, processPartitionKey.getProcessId());
+
             // idempotent statement
             DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
-
-            logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
+            logger.trace("Received dependency decision [{}] after apply task decision [{}]", dependencyDecision, taskDecision);
 
             if (dependencyDecision.isFail()) {
+                logger.warn("Failed apply task decision id [{}]. Apply task decision should be retried after RELEASE_TIMEOUT", taskDecision.getTaskId());
 
-                logger.debug("release() failed dependencyDecision. release() should be retried after " +
-                        "RELEASE_TIMEOUT");
-
-                // leave release() method.
                 // RELEASE_TIMEOUT should be automatically fired
                 return processPartitionKey;
             }
@@ -182,7 +187,6 @@ public class HazelcastTaskServer implements TaskServer {
             if (readyTasks != null) {
 
                 for (UUID taskId2Queue : readyTasks) {
-
                     // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                     TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
                     enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
@@ -191,11 +195,12 @@ public class HazelcastTaskServer implements TaskServer {
             }
 
             if (dependencyDecision.isProcessFinished()) {
-                processBackend.finishProcess(dependencyDecision.getFinishedProcessId(),
-                        dependencyDecision.getFinishedProcessValue());
+                processBackend.finishProcess(dependencyDecision.getFinishedProcessId(), dependencyDecision.getFinishedProcessValue());
             }
 
             taskBackend.addDecisionCommit(taskDecision);
+
+            logger.debug("Successfully apply task decision id [{}] for process id [{}]", taskDecision.getTaskId(), processPartitionKey.getProcessId());
 
             return processPartitionKey;
         }
@@ -226,8 +231,9 @@ public class HazelcastTaskServer implements TaskServer {
         // idempotent statement
         enqueueTask(task.getTaskId(), task.getProcessId(),task.getActorId(), task.getStartTime(), getTaskList(task));
 
-
         processBackend.startProcessCommit(task);
+
+        logger.debug("Successfully start process from task [{}]", task);
     }
 
 
@@ -292,6 +298,8 @@ public class HazelcastTaskServer implements TaskServer {
                 decisionContainers.add(taskDecision);
                 decisionQueues.put(processPartitionKey, decisionContainers);
             }
+
+            logger.trace("Add task decision [{}] for process queue id [{}]", taskDecision, processPartitionKey);
         }
     }
 
