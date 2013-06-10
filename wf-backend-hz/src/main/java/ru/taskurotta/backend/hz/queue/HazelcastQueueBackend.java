@@ -6,6 +6,7 @@ import com.hazelcast.core.InstanceEvent;
 import com.hazelcast.core.InstanceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
@@ -13,8 +14,6 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.backend.hz.support.HzPartitionResolver;
-import ru.taskurotta.backend.hz.support.PartitionResolver;
 import ru.taskurotta.backend.queue.QueueBackend;
 
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
     private String queueListName = "tsQueuesList";
-    private PartitionResolver partitionResolver;
 
     public HazelcastQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
@@ -69,12 +67,12 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     @Override
     public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
         List<QueuedTaskVO> result = new ArrayList<QueuedTaskVO>();
-        IQueue<PartitionedQueuedTaskVO> queue = hazelcastInstance.getQueue(queueName);
-        PartitionedQueuedTaskVO[] queueItems = queue.toArray(new PartitionedQueuedTaskVO[queue.size()]);
+        IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(queueName);
+        QueuedTaskVO[] queueItems = queue.toArray(new QueuedTaskVO[queue.size()]);
 
         if (queueItems.length > 0) {
             for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (queueItems.length)) ? (queueItems.length) - 1 : pageSize * pageNum - 1); i++) {
-                PartitionedQueuedTaskVO item = queueItems[i];
+                QueuedTaskVO item = queueItems[i];
                 QueuedTaskVO qt = new QueuedTaskVO();
                 qt.setId(item.getId());
                 qt.setInsertTime(item.getInsertTime());
@@ -106,13 +104,14 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     }
 
     @Override
+    @Profiled(notNull = true)
     public UUID poll(String actorId, String taskList) {
-        IQueue<PartitionedQueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+        IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
 
         UUID taskId = null;
         try {
 
-            PartitionedQueuedTaskVO queueItem = queue.poll(pollDelay, pollDelayUnit);
+            QueuedTaskVO queueItem = queue.poll(pollDelay, pollDelayUnit);
 
             if (queueItem != null) {
                 taskId = queueItem.getId();
@@ -138,13 +137,10 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     @Override
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
-        Object partitionKey = partitionResolver!=null? partitionResolver.resolveByUUID(processId): 0;
-
-        IQueue<PartitionedQueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
-        PartitionedQueuedTaskVO item = new PartitionedQueuedTaskVO();
+        IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+        QueuedTaskVO item = new QueuedTaskVO();
         item.setId(taskId);
         item.setStartTime(startTime);
-        item.setPartitionKey(partitionKey);
         item.setInsertTime(System.currentTimeMillis());
         item.setTaskList(taskList);
         queue.add(item);
@@ -172,7 +168,4 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
         this.queueListName = queueListName;
     }
 
-    public void setPartitionResolver(HzPartitionResolver partitionResolver) {
-        this.partitionResolver = partitionResolver;
-    }
 }
