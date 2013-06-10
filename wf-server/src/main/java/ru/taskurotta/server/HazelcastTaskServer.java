@@ -1,6 +1,7 @@
 package ru.taskurotta.server;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -52,6 +51,8 @@ public class HazelcastTaskServer implements TaskServer {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
 
+    private final HazelcastInstance hazelcastInstance;
+
     private final IMap<ProcessPartitionKey, Queue<DecisionContainer>> decisionQueues;
     private static final String DECISION_QUEUE_MAP_NAME = "decisionQueueMap";
 
@@ -65,21 +66,23 @@ public class HazelcastTaskServer implements TaskServer {
         this.dependencyBackend = backendBundle.getDependencyBackend();
         this.configBackend = backendBundle.getConfigBackend();
 
+        this.hazelcastInstance = hazelcastInstance;
+
         try {
             taskServerName = HazelcastTaskServer.class.getName() + "-" + InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("Catch exception while get task server address", e);
+            throw new RuntimeException(e);
         }
 
         this.decisionQueues = hazelcastInstance.getMap(DECISION_QUEUE_MAP_NAME);
 
-        new Thread(new Coordinator(coordinatorPoolSize), "Coordinator-" + Thread.currentThread().getName()).start();
+        Executors.newSingleThreadExecutor().submit(new Coordinator(coordinatorPoolSize));
     }
 
-    class Coordinator implements Runnable {
+    class Coordinator implements Callable {
 
-        private Set<UUID> blockingQueueIds = new TreeSet<>();
-        private List<Future<UUID>> futures = new LinkedList<>();
+        private List<Future<ProcessPartitionKey>> futures = new LinkedList<>();
 
         private ExecutorService executorService;
 
@@ -88,7 +91,7 @@ public class HazelcastTaskServer implements TaskServer {
         }
 
         @Override
-        public void run() {
+        public Void call() {
             logger.trace("Start Coordinator thread [{}]", Thread.currentThread().getName());
 
             while (true) {
@@ -97,38 +100,48 @@ public class HazelcastTaskServer implements TaskServer {
 
                     for(ProcessPartitionKey processPartitionKey : decisionQueues.keySet()) {
 
-                        if (blockingQueueIds.contains(processPartitionKey.getProcessId())) {
-                            continue;
-                        }
-
                         if (decisionQueues.get(processPartitionKey).isEmpty()) {
                             continue;
                         }
 
-                        blockingQueueIds.add(processPartitionKey.getProcessId());
-                        logger.trace("Lock queue id [{}]", processPartitionKey);
+                        ILock lock = hazelcastInstance.getLock(processPartitionKey);
 
-                        Future<UUID> future = executorService.submit(new ApplyDecisionTask(decisionQueues.get(processPartitionKey).poll()));
-                        futures.add(future);
+                        if (lock.isLocked()) {
+                            continue;
+                        }
+
+                        if (lock.tryLock()) {
+                            logger.trace("Lock process queue id [{}]", processPartitionKey);
+
+                            Future<ProcessPartitionKey> future = executorService.submit(new ApplyDecisionTask(processPartitionKey, decisionQueues.get(processPartitionKey).poll()));
+                            futures.add(future);
+                        }
                     }
                 }
 
                 if (!futures.isEmpty()) {
 
-                    Iterator<Future<UUID>> iterator = futures.iterator();
+                    Iterator<Future<ProcessPartitionKey>> iterator = futures.iterator();
                     while (iterator.hasNext()) {
-                        Future<UUID> future = iterator.next();
+                        Future<ProcessPartitionKey> future = iterator.next();
 
                         if (future.isDone()) {
                             try {
-                                UUID queueId = future.get();
+                                ProcessPartitionKey processPartitionKey = future.get();
 
-                                blockingQueueIds.remove(queueId);
-                                logger.trace("Unlock queue id [{}]", queueId);
+                                ILock lock = hazelcastInstance.getLock(processPartitionKey);
+                                lock.forceUnlock();
+
+                                if (lock.isLocked()) {
+                                    continue;
+                                }
+
+                                logger.trace("Unlock process queue id [{}]", processPartitionKey);
 
                                 futures.remove(future);
                             } catch (InterruptedException | ExecutionException e) {
-                                e.printStackTrace();
+                                logger.error("Catch exception while get future [" + future + "] value", e);
+                                throw new RuntimeException(e);
                             }
                         }
                     }
@@ -137,16 +150,18 @@ public class HazelcastTaskServer implements TaskServer {
         }
     }
 
-    class ApplyDecisionTask implements Callable<UUID> {
+    class ApplyDecisionTask implements Callable<ProcessPartitionKey> {
 
+        private ProcessPartitionKey processPartitionKey;
         private DecisionContainer taskDecision;
 
-        ApplyDecisionTask(DecisionContainer taskDecision) {
+        ApplyDecisionTask(ProcessPartitionKey processPartitionKey, DecisionContainer taskDecision) {
+            this.processPartitionKey = processPartitionKey;
             this.taskDecision = taskDecision;
         }
 
         @Override
-        public UUID call() throws Exception {
+        public ProcessPartitionKey call() throws Exception {
             // idempotent statement
             DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
 
@@ -159,7 +174,7 @@ public class HazelcastTaskServer implements TaskServer {
 
                 // leave release() method.
                 // RELEASE_TIMEOUT should be automatically fired
-                return taskDecision.getProcessId();
+                return processPartitionKey;
             }
 
             List<UUID> readyTasks = dependencyDecision.getReadyTasks();
@@ -182,7 +197,7 @@ public class HazelcastTaskServer implements TaskServer {
 
             taskBackend.addDecisionCommit(taskDecision);
 
-            return taskDecision.getProcessId();
+            return processPartitionKey;
         }
     }
 
