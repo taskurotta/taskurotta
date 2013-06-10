@@ -14,6 +14,7 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.hz.support.HzPartitionResolver;
+import ru.taskurotta.backend.hz.support.PartitionResolver;
 import ru.taskurotta.backend.queue.QueueBackend;
 
 import java.util.ArrayList;
@@ -36,17 +37,15 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
     private String queueListName = "tsQueuesList";
-    private HzPartitionResolver partitionResolver = new HzPartitionResolver();
+    private PartitionResolver partitionResolver;
 
     public HazelcastQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
-    }
 
-    public void registerHzListeners() {
         this.hazelcastInstance.addInstanceListener(this);
-        this.hazelcastInstance.getCluster().addMembershipListener(partitionResolver);
+        logger.debug("HazelcastQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override
@@ -139,7 +138,7 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     @Override
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
-        Object partitionKey = partitionResolver.resolveByUUID(processId);
+        Object partitionKey = partitionResolver!=null? partitionResolver.resolveByUUID(processId): 0;
 
         IQueue<PartitionedQueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
         PartitionedQueuedTaskVO item = new PartitionedQueuedTaskVO();
@@ -167,5 +166,13 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
 
     private String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
+
+    public void setQueueListName(String queueListName) {
+        this.queueListName = queueListName;
+    }
+
+    public void setPartitionResolver(HzPartitionResolver partitionResolver) {
+        this.partitionResolver = partitionResolver;
     }
 }

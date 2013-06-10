@@ -26,41 +26,20 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
-            <hz:queue name="${hz.queue.name}" max-size-per-jvm="500" />
+            <hz:listeners>
+                <hz:listener implementation="hzPartitionResolver" />
+            </hz:listeners>
         </hz:config>
     </hz:hazelcast>
 
-    <hz:set name="hzSet" id="hzSet" instance-ref="hzInstance" />
-    <hz:map name="hzMap" id="hzMap" instance-ref="hzInstance"></hz:map>
-    <hz:queue id="hzQueue" name="${hz.queue.name}" instance-ref="hzInstance"></hz:queue>
 
-
-    <bean id="taskServer" class="ru.taskurotta.dropwizard.hz.HzTaskServer" init-method="init">
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-
-        <property name="hzInstance" ref="hzInstance" />
-        <property name="hzMap" ref="hzMap" />
-        <property name="hzQueue" ref="hzQueue" />
-        <property name="hzSet" ref="hzSet" />
-
     </bean>
-
-
-    <!--<mongo:mongo id="mongo" host="localhost" port="27017"/>-->
-
-    <!--<bean id="mongoTemplate"-->
-    <!--class="org.springframework.data.mongodb.core.MongoTemplate">-->
-    <!--<constructor-arg ref="mongo"/>-->
-    <!--<constructor-arg name="databaseName" value="test"/>-->
-    <!--</bean>-->
-
-    <!--<bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongomapstore">-->
-    <!--<property name="mongoTemplate" ref="mongoTemplate" />-->
-    <!--</bean>-->
 
     <!-- REST resources -->
     <bean id="taskPullerResource"
@@ -87,12 +66,6 @@
         <property name="recoveryPeriodUnit" value="${recovery.period.unit}"/>
         <property name="timeIterationStep" value="${recovery.timeStep}"/>
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>
-        <property name="supportedTimeouts">
-            <array value-type="ru.taskurotta.backend.checkpoint.TimeoutType">
-                <value>TASK_START_TO_CLOSE</value>
-                <value>TASK_POLL_TO_COMMIT</value>
-            </array>
-        </property>
     </bean>
 
     <task:scheduler id="taskExpirationRecovery" pool-size="1" />
@@ -103,10 +76,17 @@
     <!-- /Recoveries -->
 
 
-    <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HazelcastQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+
+        <property name="queueListName" value = "queueListName" />
+        <property name="partitionResolver" ref="hzPartitionResolver" />
     </bean>
+
+    <bean id="hzPartitionResolver" class="ru.taskurotta.backend.hz.support.HzPartitionResolver" />
 
     <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
     <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
@@ -120,13 +100,6 @@
         <constructor-arg name="graphDao" ref="graphDao" />
         <constructor-arg name="retryTimes" value="${retryTimes}" />
     </bean>
-
-    <!--<bean id="dependencyBackend"-->
-    <!--class="ru.taskurotta.backend.dependency.graph.GraphDependencyBackend">-->
-    <!--<property name="taskNodeDao">-->
-    <!--<bean class="ru.taskurotta.backend.dependency.graph.MemoryTaskNodeDao" />-->
-    <!--</property>-->
-    <!--</bean>-->
 
     <bean id="graphDao"
           class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />

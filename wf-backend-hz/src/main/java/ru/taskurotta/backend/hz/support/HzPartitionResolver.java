@@ -12,11 +12,15 @@ import java.util.UUID;
  * User: dudin
  * Date: 07.06.13 12:45
  */
-public class HzPartitionResolver implements MembershipListener {
+public class HzPartitionResolver implements MembershipListener, PartitionResolver {
 
     private static final Logger logger = LoggerFactory.getLogger(HzPartitionResolver.class);
 
     private int nodesCount = 1;
+
+    public HzPartitionResolver() {
+        logger.debug("HzPartitionResolver instance created");
+    }
 
     public Object resolveByUUID(UUID uuid) {
         int result = 1;

@@ -1,1 +1,1 @@
-start java -Ddw.http.port=8811 -Ddw.http.adminPort=8812 -Ddw.logging.file.currentLogFilename="./target/logs/service1.log" -jar target/wf-dropwizard-hz-poc-0.1.0-SNAPSHOT.jar server target/classes/conf.yml
+start java -Ddw.http.port=8811 -Ddw.http.adminPort=8812 -Ddw.logging.file.currentLogFilename="./target/logs/service1.log" -jar target/wf-dropwizard-hz-poc-0.1.0-SNAPSHOT.jar server src/main/resources/conf.yml

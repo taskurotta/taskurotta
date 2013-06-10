@@ -170,7 +170,7 @@ public class HazelcastTaskServer implements TaskServer {
 
                     // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                     TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
-                    enqueueTask(taskId2Queue, asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
+                    enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
                 }
 
             }
@@ -209,7 +209,7 @@ public class HazelcastTaskServer implements TaskServer {
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
-        enqueueTask(task.getTaskId(), task.getActorId(), task.getStartTime(), getTaskList(task));
+        enqueueTask(task.getTaskId(), task.getProcessId(),task.getActorId(), task.getStartTime(), getTaskList(task));
 
 
         processBackend.startProcessCommit(task);
@@ -259,7 +259,7 @@ public class HazelcastTaskServer implements TaskServer {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
-                enqueueTask(taskId, asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
+                enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
             }
 
             taskBackend.addDecisionCommit(taskDecision);
@@ -280,13 +280,13 @@ public class HazelcastTaskServer implements TaskServer {
         }
     }
 
-    private void enqueueTask(UUID taskId, String actorId, long startTime, String taskList) {
+    private void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
 
         // set it to current time for precisely repeat
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        queueBackend.enqueueItem(actorId, taskId, startTime, taskList);
+        queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
     }
 
 
