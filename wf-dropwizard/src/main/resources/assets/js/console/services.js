@@ -36,6 +36,12 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getProfiles: function () {
             return $http.get('/rest/console/profiles');
+        },
+        getHoveringQueues: function (periodSize) {
+            return $http.get('/rest/console/hoveringQueues/?periodSize=' + periodSize);
+        },
+        getRepeatedTasks: function (iterationCount) {
+            return $http.get('/rest/console/repeatedTasks/?iterationCount=' + iterationCount);
         }
     };
 

@@ -33,7 +33,14 @@
                             <li><a href="#/tasks/">Just show em all!</a></li>
                         </ul>
                     </li>
-                    <li ng-class="isActiveTab('/profiles')"><a href="#/profiles">Profiles</a></li>
+                    <li class="dropdown ng-class:isActiveTab('/monitoring');">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Monitoring<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#/monitoring/profiles">Profiles</a></li>
+                            <li><a href="#/monitoring/hoveringQueues">Hovering Queues</a></li>
+                            <li><a href="#/monitoring/repeatedTasks">Hovering tasks list</a></li>
+                        </ul>
+                    </li>
                     <li ng-class="isActiveTab('/about')"><a href="#/about">About</a></li>
                 </ul>
             </div>

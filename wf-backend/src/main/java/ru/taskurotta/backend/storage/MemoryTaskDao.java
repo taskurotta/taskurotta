@@ -1,16 +1,18 @@
 package ru.taskurotta.backend.storage;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import net.sf.cglib.core.CollectionUtils;
+import net.sf.cglib.core.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * User: moroz
@@ -51,12 +53,12 @@ public class MemoryTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if(processUuid == null) {
+        if (processUuid == null) {
             return null;
         }
         List<TaskContainer> result = new ArrayList<>();
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if(processUuid.equals(tc.getProcessId())) {
+        for (TaskContainer tc : id2TaskMap.values()) {
+            if (processUuid.equals(tc.getProcessId())) {
                 result.add(tc);
             }
         }
@@ -70,17 +72,29 @@ public class MemoryTaskDao implements TaskDao {
         int endIndex = startIndex + pageSize - 1;
         long totalCount = 0;
         int index = 0;
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if(index > endIndex) {
+        for (TaskContainer tc : id2TaskMap.values()) {
+            if (index > endIndex) {
                 totalCount = id2TaskMap.values().size();
                 break;
-            } else if(index>=startIndex && index<=endIndex) {
+            } else if (index >= startIndex && index <= endIndex) {
                 tmpResult.add(tc);
             }
             index++;
         }
 
         return new GenericPage(tmpResult, pageNumber, pageSize, totalCount);
+    }
+
+    @Override
+    public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
+        List<TaskContainer> result = new ArrayList(CollectionUtils.filter(id2TaskMap.values(), new Predicate() {
+            @Override
+            public boolean evaluate(Object o) {
+                TaskContainer task = (TaskContainer) o;
+                return task.getNumberOfAttempts() >= iterationCount;
+            }
+        }));
+        return result;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override

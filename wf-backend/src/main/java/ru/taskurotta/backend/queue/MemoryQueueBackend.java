@@ -1,5 +1,21 @@
 package ru.taskurotta.backend.queue;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import net.sf.cglib.core.CollectionUtils;
+import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -10,17 +26,6 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: romario
@@ -248,5 +253,31 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
+
+    @Override
+    public Map<String, Integer> getHoveringCount(float periodSize) {
+        Map<String, Integer> result = new HashMap<>();
+        String[] queueNames = new String[queues.keySet().size()];
+        int days = (int) (periodSize / 1);
+        int hours = (int) ((periodSize - days) * 24);
+        Calendar endDate = Calendar.getInstance();
+        endDate.add(Calendar.DATE, -days);
+        endDate.add(Calendar.HOUR, -hours);
+        final Date tmpDate = endDate.getTime();
+        if (!queues.isEmpty()) {
+            for (String queueName : queueNames) {
+                DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+                int count = CollectionUtils.filter(queue, new Predicate() {
+                    @Override
+                    public boolean evaluate(Object o) {
+                        DelayedTaskElement task = (DelayedTaskElement) o;
+                        return task.startTime < tmpDate.getTime();
+                    }
+                }).size();
+                result.put(queueName, count);
+            }
+        }
+        return result;
     }
 }

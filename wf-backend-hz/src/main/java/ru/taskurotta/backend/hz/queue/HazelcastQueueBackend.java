@@ -1,5 +1,12 @@
 package ru.taskurotta.backend.hz.queue;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.InstanceEvent;
@@ -15,12 +22,6 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.queue.QueueBackend;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -51,7 +52,7 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
         List<String> result = new ArrayList<>();
         Set<String> queueNamesSet = hazelcastInstance.getSet(queueListName);
         String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
-        if (queueNames!=null && queueNames.length>0) {
+        if (queueNames != null && queueNames.length > 0) {
             for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (queueNames.length)) ? (queueNames.length) - 1 : pageSize * pageNum - 1); i++) {
                 result.add(queueNames[i]);
             }
@@ -85,9 +86,9 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
 
     @Override
     public void instanceCreated(InstanceEvent event) {
-        if(event.getInstanceType().isQueue()) {//storing all new queues name
+        if (event.getInstanceType().isQueue()) {//storing all new queues name
             Set<String> queueNames = hazelcastInstance.getSet(queueListName);
-            String queueName = ((IQueue)event.getInstance()).getName();
+            String queueName = ((IQueue) event.getInstance()).getName();
             queueNames.add(queueName);
             logger.debug("Queue [[]] added to cluster", queueName);
         }
@@ -95,9 +96,9 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
 
     @Override
     public void instanceDestroyed(InstanceEvent event) {
-        if(event.getInstanceType().isQueue()) {//removing queues names
+        if (event.getInstanceType().isQueue()) {//removing queues names
             Set<String> queueNames = hazelcastInstance.getSet(queueListName);
-            String queueName = ((IQueue)event.getInstance()).getName();
+            String queueName = ((IQueue) event.getInstance()).getName();
             queueNames.remove(queueName);
             logger.debug("Queue [[]] removed from cluster", queueName);
         }
@@ -154,6 +155,11 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     @Override
     public CheckpointService getCheckpointService() {
         return checkpointService;
+    }
+
+    @Override
+    public Map<String, Integer> getHoveringCount(float periodSize) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void setCheckpointService(CheckpointService checkpointService) {

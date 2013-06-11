@@ -1,11 +1,11 @@
 package ru.taskurotta.backend.storage;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: moroz
@@ -27,4 +27,6 @@ public interface TaskDao {
     List<TaskContainer> getProcessTasks(UUID processUuid);
 
     GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
+
+    public List<TaskContainer> getRepeatedTasks(int iterationCount);
 }
