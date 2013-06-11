@@ -26,6 +26,7 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -127,7 +128,11 @@ public class HazelcastTaskServer implements TaskServer {
 
                 if (!futures.isEmpty()) {
 
-                    for (Future<ProcessPartitionKey> future : futures) {
+                    ListIterator<Future<ProcessPartitionKey>> listIterator = futures.listIterator();
+                    while (listIterator.hasNext()) {
+
+                        Future<ProcessPartitionKey> future = listIterator.next();
+
                         if (future.isDone()) {
                             try {
                                 ProcessPartitionKey processPartitionKey = future.get();
@@ -145,7 +150,7 @@ public class HazelcastTaskServer implements TaskServer {
 
                                 logger.trace("Unlock process queue id [{}]", processPartitionKey);
 
-                                futures.remove(future);
+                                listIterator.remove();
                             } catch (InterruptedException | ExecutionException e) {
                                 logger.error("Catch exception while get future [" + future + "] value", e);
                                 throw new RuntimeException(e);

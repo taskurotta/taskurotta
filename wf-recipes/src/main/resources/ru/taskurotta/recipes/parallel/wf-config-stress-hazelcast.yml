@@ -75,7 +75,7 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.server:
+        - com.hazelcast:
              key: name
              \@level: INFO
         - org.springframework:
