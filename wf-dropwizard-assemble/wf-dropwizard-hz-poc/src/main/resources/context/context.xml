@@ -24,9 +24,6 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
-            <hz:listeners>
-                <hz:listener implementation="hzPartitionResolver" />
-            </hz:listeners>
         </hz:config>
     </hz:hazelcast>
 
@@ -82,7 +79,6 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
         <property name="queueListName" value = "queueListName" />
-        <property name="partitionResolver" ref="hzPartitionResolver" />
     </bean>
 
     <bean id="hzPartitionResolver" class="ru.taskurotta.backend.hz.support.HzPartitionResolver" />
