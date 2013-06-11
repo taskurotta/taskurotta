@@ -1,0 +1,119 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/example/calculate/RuntimeBeans.xml
+        properties:
+          sleep: -1
+          failChance: 0.0
+
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/example/calculate/SpreaderBeans-hazelcast.xml
+        properties:
+          count: 300
+          startTasks: true
+          startTasksInBackground: true
+          loggingPeriod: 10000
+          taskPollDelay: 1
+
+policy:
+  - MainPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 1
+          maximumRetryIntervalSeconds: 10
+          maximumAttempts: 3
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
+      instance:
+        singleton: true
+        logPeriod: 30000
+
+actor:
+  - MathActionDecider:
+      actorInterface: ru.taskurotta.example.calculate.decider.MathActionDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: MainPolicyConfig
+      count: 1
+      properties:
+        failover: "10 SECONDS"
+
+  - Multiplier:
+      actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: MainPolicyConfig
+      count: 1
+      properties:
+        failover: "10 SECONDS"
+
+  - NumberGenerator:
+      actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: MainPolicyConfig
+      count: 5
+      properties:
+        failover: "10 SECONDS"
+
+  - Summarizer:
+      actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: MainPolicyConfig
+      count: 1
+      properties:
+        failover: "10 SECONDS"
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/example-calculate-hazelcast.log
+             append: true
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.server:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.server:
+             key: name
+             \@level: TRACE
+        - ru.taskurotta.server.json:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+        - com.hazelcast:
+             key: name
+             \@level: INFO
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
