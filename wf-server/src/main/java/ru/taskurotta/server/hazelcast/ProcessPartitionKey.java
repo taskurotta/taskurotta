@@ -13,11 +13,9 @@ import java.util.UUID;
 public class ProcessPartitionKey implements Serializable, PartitionAware {
 
     private UUID processId;
-    private String taskServerId;
 
-    public ProcessPartitionKey(UUID processId, String taskServerId) {
+    public ProcessPartitionKey(UUID processId) {
         this.processId = processId;
-        this.taskServerId = taskServerId;
     }
 
     public UUID getProcessId() {
@@ -28,17 +26,9 @@ public class ProcessPartitionKey implements Serializable, PartitionAware {
         this.processId = processId;
     }
 
-    public String getTaskServerId() {
-        return taskServerId;
-    }
-
-    public void setTaskServerId(String taskServerId) {
-        this.taskServerId = taskServerId;
-    }
-
     @Override
     public Object getPartitionKey() {
-        return taskServerId;
+        return processId;
     }
 
     @Override
@@ -49,23 +39,19 @@ public class ProcessPartitionKey implements Serializable, PartitionAware {
         ProcessPartitionKey that = (ProcessPartitionKey) o;
 
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
-        if (taskServerId != null ? !taskServerId.equals(that.taskServerId) : that.taskServerId != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = processId != null ? processId.hashCode() : 0;
-        result = 31 * result + (taskServerId != null ? taskServerId.hashCode() : 0);
-        return result;
+        return processId != null ? processId.hashCode() : 0;
     }
 
     @Override
     public String toString() {
         return "ProcessPartitionKey{" +
                 "processId=" + processId +
-                ", taskServerId='" + taskServerId + '\'' +
                 "} " + super.toString();
     }
 }

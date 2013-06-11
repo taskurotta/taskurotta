@@ -23,17 +23,12 @@ import ru.taskurotta.util.ActorUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
@@ -86,8 +81,6 @@ public class HazelcastTaskServer implements TaskServer {
 
     class Coordinator implements Callable {
 
-        private List<Future<ProcessPartitionKey>> futures = new LinkedList<>();
-
         private ExecutorService executorService;
 
         Coordinator(int poolSize) {
@@ -99,7 +92,7 @@ public class HazelcastTaskServer implements TaskServer {
             logger.trace("Start Coordinator thread [{}]", Thread.currentThread().getName());
 
             while (true) {
-                logger.trace("Decision queues size [{}]", decisionQueues.size());
+                logger.trace("Decision queues map size [{}]", decisionQueues.size());
 
                 if (!decisionQueues.isEmpty()) {
 
@@ -118,43 +111,7 @@ public class HazelcastTaskServer implements TaskServer {
                         if (lock.tryLock()) {
                             logger.trace("Lock process queue id [{}]", processPartitionKey);
 
-                            Future<ProcessPartitionKey> future = executorService.submit(new ApplyDecisionTask(processPartitionKey, decisionQueues.get(processPartitionKey).poll()));
-                            futures.add(future);
-                        }
-                    }
-                }
-
-                logger.trace("Futures list size [{}]", futures.size());
-
-                if (!futures.isEmpty()) {
-
-                    ListIterator<Future<ProcessPartitionKey>> listIterator = futures.listIterator();
-                    while (listIterator.hasNext()) {
-
-                        Future<ProcessPartitionKey> future = listIterator.next();
-
-                        if (future.isDone()) {
-                            try {
-                                ProcessPartitionKey processPartitionKey = future.get();
-
-                                ILock lock = hazelcastInstance.getLock(processPartitionKey);
-
-                                if (lock.isLocked()) {
-                                    lock.unlock();
-                                }
-
-                                if (lock.isLocked()) {
-                                    logger.trace("Process queue id [{}] can't unlock", processPartitionKey);
-                                    continue;
-                                }
-
-                                logger.trace("Unlock process queue id [{}]", processPartitionKey);
-
-                                listIterator.remove();
-                            } catch (InterruptedException | ExecutionException e) {
-                                logger.error("Catch exception while get future [" + future + "] value", e);
-                                throw new RuntimeException(e);
-                            }
+                            executorService.submit(new ApplyDecisionTask(decisionQueues.get(processPartitionKey).poll(), processPartitionKey));
                         }
                     }
                 }
@@ -162,52 +119,33 @@ public class HazelcastTaskServer implements TaskServer {
         }
     }
 
-    class ApplyDecisionTask implements Callable<ProcessPartitionKey> {
+    class ApplyDecisionTask implements Callable<Void> {
 
-        private ProcessPartitionKey processPartitionKey;
         private DecisionContainer taskDecision;
+        private ProcessPartitionKey processPartitionKey;
 
-        ApplyDecisionTask(ProcessPartitionKey processPartitionKey, DecisionContainer taskDecision) {
-            this.processPartitionKey = processPartitionKey;
+        ApplyDecisionTask(DecisionContainer taskDecision, ProcessPartitionKey processPartitionKey) {
             this.taskDecision = taskDecision;
+            this.processPartitionKey = processPartitionKey;
         }
 
         @Override
-        public ProcessPartitionKey call() throws Exception {
-            logger.trace("Try to apply task decision [{}] for process id [{}]", taskDecision, processPartitionKey.getProcessId());
+        public Void call() throws Exception {
+            applyDecision(taskDecision, processPartitionKey);
 
-            // idempotent statement
-            DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
-            logger.trace("Received dependency decision [{}] after apply task decision [{}]", dependencyDecision, taskDecision);
+            ILock lock = hazelcastInstance.getLock(processPartitionKey);
 
-            if (dependencyDecision.isFail()) {
-                logger.warn("Failed apply task decision id [{}]. Apply task decision should be retried after RELEASE_TIMEOUT", taskDecision.getTaskId());
-
-                // RELEASE_TIMEOUT should be automatically fired
-                return processPartitionKey;
+            if (lock.isLocked()) {
+                lock.forceUnlock();
             }
 
-            List<UUID> readyTasks = dependencyDecision.getReadyTasks();
-
-            if (readyTasks != null) {
-
-                for (UUID taskId2Queue : readyTasks) {
-                    // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                    TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
-                    enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
-                }
-
+            if (lock.isLocked()) {
+                logger.error("Can't unlock process queue id [{}]", processPartitionKey);
+            } else {
+                logger.trace("Unlock process queue id [{}]", processPartitionKey);
             }
 
-            if (dependencyDecision.isProcessFinished()) {
-                processBackend.finishProcess(dependencyDecision.getFinishedProcessId(), dependencyDecision.getFinishedProcessValue());
-            }
-
-            taskBackend.addDecisionCommit(taskDecision);
-
-            logger.debug("Successfully apply task decision id [{}] for process id [{}]", taskDecision.getTaskId(), processPartitionKey.getProcessId());
-
-            return processPartitionKey;
+            return null;
         }
     }
 
@@ -294,7 +232,7 @@ public class HazelcastTaskServer implements TaskServer {
         }
 
         synchronized (decisionQueues) {
-            ProcessPartitionKey processPartitionKey = new ProcessPartitionKey(taskDecision.getProcessId(), taskServerName);
+            ProcessPartitionKey processPartitionKey = new ProcessPartitionKey(taskDecision.getProcessId());
 
             if (decisionQueues.containsKey(processPartitionKey)) {
                 decisionQueues.get(processPartitionKey).add(taskDecision);
@@ -308,18 +246,54 @@ public class HazelcastTaskServer implements TaskServer {
         }
     }
 
-    private void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
+    private void applyDecision(DecisionContainer taskDecision, ProcessPartitionKey processPartitionKey) {
+        // idempotent statement
+        DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
 
+        logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
+
+        if (dependencyDecision.isFail()) {
+
+            logger.debug("release() failed dependencyDecision. release() should be retried after " +
+                    "RELEASE_TIMEOUT");
+
+            // leave release() method.
+            // RELEASE_TIMEOUT should be automatically fired
+            return;
+        }
+
+        List<UUID> readyTasks = dependencyDecision.getReadyTasks();
+
+        if (readyTasks != null) {
+            for (UUID taskId2Queue : readyTasks) {
+                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
+                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
+                enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
+            }
+        }
+
+        if (dependencyDecision.isProcessFinished()) {
+            processBackend.finishProcess(dependencyDecision.getFinishedProcessId(), dependencyDecision.getFinishedProcessValue());
+
+            logger.debug("Remove process queue id [{}] because process finished", dependencyDecision.getFinishedProcessId());
+            decisionQueues.remove(processPartitionKey);
+        }
+
+        taskBackend.addDecisionCommit(taskDecision);
+    }
+
+    private void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
         // set it to current time for precisely repeat
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
+
         queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
     }
 
-
     private String getTaskList(TaskContainer taskContainer) {
         String taskList = null;
+
         if (taskContainer.getOptions() != null) {
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
             if (taskOptionsContainer.getActorSchedulingOptions() != null) {
