@@ -143,6 +143,11 @@ public class Graph implements Serializable {
         this.graphId = graphId;
     }
 
+    @JsonIgnore
+    public boolean isFinished() {
+        return notFinishedItems.isEmpty();
+    }
+
     /**
      * Method calculates or returns previous calculated released items.
      *

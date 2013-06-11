@@ -50,7 +50,7 @@ public class GraphDependencyBackend implements DependencyBackend {
         }
 
         boolean released = taskNodeDao.releaseNode(taskDecision.getTaskId(), taskDecision.getProcessId());
-        DependencyDecision result = new DependencyDecision();
+        DependencyDecision result = new DependencyDecision(taskDecision.getProcessId());
 
         if(released) {
             UUID[] readyTasks = getReadyTasks(taskDecision.getProcessId());

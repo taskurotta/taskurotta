@@ -18,6 +18,13 @@ public class DependencyDecision {
     private String finishedProcessValue;
     private boolean fail = false;
 
+    DependencyDecision() {
+    }
+
+    public DependencyDecision(UUID processId) {
+        this.finishedProcessId = processId;
+    }
+
     public void addReadyTask(UUID taskId) {
 
         if (readyTasks == null) {

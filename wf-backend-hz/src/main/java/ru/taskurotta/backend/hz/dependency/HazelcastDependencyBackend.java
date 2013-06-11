@@ -46,31 +46,27 @@ public class HazelcastDependencyBackend implements DependencyBackend {
 
         UUID finishedTaskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
+        DependencyDecision resultDecision = new DependencyDecision(processId);
 
         Modification modification = createLinksModification(taskDecision);
         Graph graph = getGraph(processId);
 
-        boolean successfullySaved = false;
-
         if (!graph.hasNotFinishedItem(finishedTaskId)) {
             UUID[] readyTasks = graphDao.getReadyTasks(finishedTaskId);
 
-            logger.warn("Won't apply graph modification");
-            return new DependencyDecision().withReadyTasks(readyTasks);
+            logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+            return resultDecision.withReadyTasks(readyTasks);
         }
 
         graph.apply(modification);
         if (graphDao.updateGraph(graph)) {
-            successfullySaved = true;
+            resultDecision.setProcessFinished(graph.isFinished());
+            return resultDecision.withReadyTasks(graph.getReadyItems());
         }
 
-        if (!successfullySaved) {
-            logger.warn("Can't apply graph modification");
-            // TODO: should be analyzed at TaskServer
-            return new DependencyDecision().withFail();
-        }
-
-        return new DependencyDecision().withReadyTasks(graph.getReadyItems());
+        logger.warn("Can't apply graph modification");
+        // TODO: should be analyzed at TaskServer
+        return resultDecision.withFail();
     }
 
     @Override
