@@ -1,12 +1,5 @@
 package ru.taskurotta.backend.hz.queue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.InstanceEvent;
@@ -22,6 +15,13 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.queue.QueueBackend;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -137,6 +137,11 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
 
     @Override
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+
+        // set it to current time for precisely repeat
+        if (startTime == 0L) {
+            startTime = System.currentTimeMillis();
+        }
 
         IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
         QueuedTaskVO item = new QueuedTaskVO();

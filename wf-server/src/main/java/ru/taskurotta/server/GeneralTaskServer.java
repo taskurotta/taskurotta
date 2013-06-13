@@ -29,11 +29,11 @@ public class GeneralTaskServer implements TaskServer {
 
     private final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
-    private ProcessBackend processBackend;
-    private TaskBackend taskBackend;
-    private QueueBackend queueBackend;
-    private DependencyBackend dependencyBackend;
-    private ConfigBackend configBackend;
+    protected ProcessBackend processBackend;
+    protected TaskBackend taskBackend;
+    protected QueueBackend queueBackend;
+    protected DependencyBackend dependencyBackend;
+    protected ConfigBackend configBackend;
 
 
     public GeneralTaskServer(BackendBundle backendBundle) {
@@ -170,7 +170,7 @@ public class GeneralTaskServer implements TaskServer {
         taskBackend.addDecisionCommit(taskDecision);
     }
 
-    private void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
+    protected void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
 
         // set it to current time for precisely repeat
         if (startTime == 0L) {
@@ -181,7 +181,7 @@ public class GeneralTaskServer implements TaskServer {
     }
 
 
-    private String getTaskList(TaskContainer taskContainer) {
+    protected String getTaskList(TaskContainer taskContainer) {
         String taskList = null;
         if (taskContainer.getOptions() != null) {
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();

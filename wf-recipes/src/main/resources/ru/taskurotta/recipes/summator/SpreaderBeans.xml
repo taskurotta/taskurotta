@@ -14,7 +14,6 @@
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.summator.TaskCreator" init-method="createStartTask">
         <property name="clientServiceManager" ref="clientServiceManager" />
-        <property name="arraySize" value="${array_size}"/>
     </bean>
 
     <bean id="queueBackend" factory-bean="clientServiceManager"

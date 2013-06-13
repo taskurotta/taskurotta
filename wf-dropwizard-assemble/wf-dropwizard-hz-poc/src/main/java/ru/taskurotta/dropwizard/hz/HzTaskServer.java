@@ -23,9 +23,12 @@ import java.util.Set;
 
 /**
  * General task server with injected Hazelcast entities
+ * Test purpose
  * User: dimadin
  * Date: 06.06.13 15:55
+ *
  */
+@Deprecated
 public class HzTaskServer extends GeneralTaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(HzTaskServer.class);
