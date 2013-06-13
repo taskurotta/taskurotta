@@ -14,7 +14,7 @@
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
-            <hz:network port="${hz.port}" port-auto-increment="true" >
+            <hz:network port="${hz.port}" port-auto-increment="true">
                 <hz:join>
                     <hz:multicast enabled="false"
                                   multicast-group="224.2.2.3"
@@ -24,8 +24,27 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
+            <hz:map name="decisionQueueMap">
+                <hz:map-store enabled="true" implementation="mongomapstore" write-delay-seconds="0"/>
+            </hz:map>
         </hz:config>
     </hz:hazelcast>
+
+
+    <bean id="mongo" class="com.mongodb.Mongo">
+        <constructor-arg name="host" value="127.0.0.1"/>
+    </bean>
+
+    <!---->
+    <bean id="mongoTemplate"
+          class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="test"/>
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
 
 
     <bean id="taskServer" class="ru.taskurotta.server.HazelcastTaskServer">
@@ -34,7 +53,7 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
     </bean>
 
     <!-- REST resources -->
@@ -64,7 +83,7 @@
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>
     </bean>
 
-    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
+    <task:scheduler id="taskExpirationRecovery" pool-size="1"/>
     <task:scheduled-tasks scheduler="taskExpirationRecovery">
         <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
     </task:scheduled-tasks>
@@ -73,38 +92,38 @@
 
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HazelcastQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}" />
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+        <constructor-arg name="pollDelay" value="${pollDelay}"/>
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
 
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
 
-        <property name="queueListName" value = "queueListName" />
+        <property name="queueListName" value="queueListName"/>
     </bean>
 
-    <bean id="hzPartitionResolver" class="ru.taskurotta.backend.hz.support.HzPartitionResolver" />
+    <bean id="hzPartitionResolver" class="ru.taskurotta.backend.hz.support.HzPartitionResolver"/>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao"/>
     <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
-        <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="checkpointService" ref="checkpointService"/>
     </bean>
     <bean id="dependencyBackend"
           class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
-        <constructor-arg name="graphDao" ref="graphDao" />
-        <constructor-arg name="retryTimes" value="${retryTimes}" />
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="retryTimes" value="${retryTimes}"/>
     </bean>
 
     <bean id="graphDao"
-          class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+          class="ru.taskurotta.backend.dependency.links.MemoryGraphDao"/>
 
-    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
+    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend"/>
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend"/>
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server" />
-        <property name="taskServer" ref="taskServer" />
+        <constructor-arg name="name" value="check task server"/>
+        <property name="taskServer" ref="taskServer"/>
     </bean>
 
 </beans>
