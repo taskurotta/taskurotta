@@ -276,6 +276,58 @@ consoleControllers.controller("taskSearchController", function ($scope, $routePa
 
 });
 
+consoleControllers.controller("hoveringQueuesController", function ($scope, $$data, $$timeUtil, $log) {
+
+    $scope.feedback = "";
+
+    //Init paging object
+    $scope.queues = [];
+
+    $scope.periodSize = 2;
+
+    $scope.totalTasks = function () {
+        var result = 0;
+        for (var i = 0; i < $scope.queues.length; i++) {
+            result = result + $scope.queues[i].count;
+        }
+        return result;
+    };
+
+    //Updates queues states  by polling REST resource
+    $scope.update = function () {
+
+        $$data.getHoveringQueues($scope.periodSize).then(function (value) {
+            $scope.queues = angular.fromJson(value.data || {});
+            $log.info("queueListController: successfully updated queue state");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("queueListController: queue state update failed: " + errReason);
+        });
+
+    };
+
+    //Initialization:
+    $scope.update();
+
+});
+
+consoleControllers.controller("repeatedTasksController", function ($scope, $routeParams, $$data, $log) {
+    $scope.iterationCount = 5;
+    $scope.tasks = [];
+
+    $scope.update = function () {
+        $$data.getRepeatedTasks($scope.iterationCount).then(function (value) {
+            $scope.tasks = angular.fromJson(value.data || {});
+            $log.info("repeatedTasksController: tasks loaded successfully");
+        }, function (errReason) {
+            $scope.feedback = errReason;
+            $log.error("repeatedTasksController: load repeated tasks failed: " + errReason);
+        });
+    };
+
+    $scope.update();
+
+});
 consoleControllers.controller("homeController", function ($scope) {
 });
 consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {

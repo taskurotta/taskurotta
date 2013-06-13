@@ -34,7 +34,7 @@ public class MemoryDependencyBackend implements DependencyBackend {
     @Override
     public DependencyDecision applyDecision(DecisionContainer taskDecision) {
 
-        DependencyDecision dependencyDecision = new DependencyDecision();
+        DependencyDecision dependencyDecision = new DependencyDecision(taskDecision.getProcessId());
 
         UUID taskId = taskDecision.getTaskId();
         ArgContainer value = taskDecision.getValue();

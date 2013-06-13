@@ -1,8 +1,11 @@
-package ru.taskurotta.backend.dependency;
+package ru.taskurotta.backend.hz.dependency;
 
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
+import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
@@ -16,51 +19,49 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
 import java.util.UUID;
 
 /**
- * User: romario
- * Date: 4/5/13
- * Time: 11:17 AM
+ * User: stukushin
+ * Date: 10.06.13
+ * Time: 16:29
  */
-public class GeneralDependencyBackend implements DependencyBackend {
+public class HazelcastDependencyBackend implements DependencyBackend {
 
-    private final static Logger logger = LoggerFactory.getLogger(GeneralDependencyBackend.class);
+    private static final Logger logger = LoggerFactory.getLogger(HazelcastDependencyBackend.class);
 
     private GraphDao graphDao;
-    private int retryTimes;
 
-    public GeneralDependencyBackend(GraphDao graphDao, int retryTimes) {
+    private IMap<UUID, Graph> processGraphMap;
 
+    public static final String PROCESS_GRAPH_MAP = "processGraphMap";
+
+    public HazelcastDependencyBackend(HazelcastInstance hazelcastInstance, GraphDao graphDao) {
         this.graphDao = graphDao;
-        this.retryTimes = retryTimes;
+
+        this.processGraphMap = hazelcastInstance.getMap(PROCESS_GRAPH_MAP);
     }
 
     @Override
     @Profiled
     public DependencyDecision applyDecision(DecisionContainer taskDecision) {
-
-        logger.debug("applyDecision() taskDecision = [{}]", taskDecision);
+        logger.trace("Try apply task decision [{}]", taskDecision);
 
         UUID finishedTaskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
         DependencyDecision resultDecision = new DependencyDecision(processId);
 
         Modification modification = createLinksModification(taskDecision);
+        Graph graph = getGraph(processId);
 
-        for (int i = 0; i < retryTimes; i++) {
+        if (!graph.hasNotFinishedItem(finishedTaskId)) {
+            UUID[] readyTasks = graphDao.getReadyTasks(finishedTaskId);
 
-            Graph graph = graphDao.getGraph(processId);
+            logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+            return resultDecision.withReadyTasks(readyTasks);
+        }
 
-            if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                UUID[] readyTasks = graphDao.getReadyTasks(finishedTaskId);
-
-                logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
-                return resultDecision.withReadyTasks(readyTasks);
-            }
-
-            graph.apply(modification);
-            if (graphDao.updateGraph(graph)) {
-                resultDecision.setProcessFinished(graph.isFinished());
-                return resultDecision.withReadyTasks(graph.getReadyItems());
-            }
+        graph.apply(modification);
+        if (graphDao.updateGraph(graph)) {
+            resultDecision.setProcessFinished(graph.isFinished());
+            return resultDecision.withReadyTasks(graph.getReadyItems());
         }
 
         logger.warn("Can't apply graph modification");
@@ -74,14 +75,15 @@ public class GeneralDependencyBackend implements DependencyBackend {
         logger.debug("startProcess() task = [{}]", task);
 
         graphDao.createGraph(task.getProcessId(), task.getTaskId());
-    }
 
+        getGraph(task.getProcessId());
+    }
 
     /**
      * Convert taskDecision to modification view
      *
-     * @param taskDecision
-     * @return
+     * @param taskDecision - decision container, which should br apply to graph
+     * @return modification for graph
      */
     private Modification createLinksModification(DecisionContainer taskDecision) {
 
@@ -160,4 +162,16 @@ public class GeneralDependencyBackend implements DependencyBackend {
         }
     }
 
+    private synchronized Graph getGraph(UUID graphId) {
+        Graph graph;
+
+        if (processGraphMap.containsKey(graphId)) {
+            graph = processGraphMap.get(graphId);
+        } else {
+            graph = graphDao.getGraph(graphId);
+            processGraphMap.put(graphId, graph);
+        }
+
+        return graph;
+    }
 }

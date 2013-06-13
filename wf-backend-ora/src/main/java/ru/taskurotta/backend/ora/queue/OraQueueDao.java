@@ -227,5 +227,27 @@ public class OraQueueDao {
         return new GenericPage<String>(tmpResult, pageNum, pageSize, (paging) ? totalCount : tmpResult.size());
     }
 
+
+    public int getHoveringCount(String queueName, float periodSize) {
+        int result = 0;
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            String query = "select COUNT(TASK_ID) cnt from " + queueName + "  where date_start < sysdate - ?";
+            ps = connection.prepareStatement(query);
+            ps.setFloat(1, periodSize);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                result = rs.getInt("cnt");
+            }
+        } catch (SQLException ex) {
+            log.error("Get queue page error", ex);
+            throw new BackendCriticalException("Can't  get queue list", ex);
+        } finally {
+            closeResources(ps, connection);
+        }
+        return result;
+    }
 }
 

@@ -40,4 +40,8 @@ public interface ConsoleManager {
 
     public List<ProcessVO> findProcesses(String type, String id);
 
+    public List<QueueVO> getQueuesHovering(float periodSize);
+
+    public List<TaskContainer> getRepeatedTasks(int iterationCount);
+
 }

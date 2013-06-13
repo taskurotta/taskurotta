@@ -1,5 +1,17 @@
 package ru.taskurotta.backend.ora.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import javax.sql.DataSource;
+
+import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -11,18 +23,6 @@ import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-
-import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
 
 /**
  * User: moroz
@@ -186,8 +186,8 @@ public class OraTaskDao implements TaskDao {
             }
             return new GenericPage(tmpresult, pageNum, pageSize, totalCount);
         } catch (SQLException ex) {
-            log.error("List tasks for pageNum["+pageNum+"], pageSize["+pageSize+"]error!", ex);
-            throw new BackendCriticalException("List tasks for pageNum["+pageNum+"], pageSize["+pageSize+"]error!", ex);
+            log.error("List tasks for pageNum[" + pageNum + "], pageSize[" + pageSize + "]error!", ex);
+            throw new BackendCriticalException("List tasks for pageNum[" + pageNum + "], pageSize[" + pageSize + "]error!", ex);
         } finally {
             closeResources(ps, connection);
         }
@@ -210,5 +210,24 @@ public class OraTaskDao implements TaskDao {
             log.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
         }
+    }
+
+    @Override
+    public List<TaskContainer> getRepeatedTasks(int iterationCount) {
+        List<TaskContainer> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT JSON_VALUE FROM TASK WHERE NUMBER_OF_ATTEMPTS >= ? AND ROWNUM <= 200")
+        ) {
+            ps.setInt(1, iterationCount);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String json = rs.getString("json_value");
+                result.add(taskSerializer.deserialize(json));
+            }
+        } catch (SQLException ex) {
+            log.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+        return result;
     }
 }

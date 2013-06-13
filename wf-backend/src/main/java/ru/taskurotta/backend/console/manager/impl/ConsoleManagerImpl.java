@@ -2,6 +2,7 @@ package ru.taskurotta.backend.console.manager.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import ru.taskurotta.backend.console.manager.ConsoleManager;
@@ -146,6 +147,31 @@ public class ConsoleManagerImpl implements ConsoleManager {
             return null;
         }
         return processInfo.findProcesses(type, id);
+    }
+
+    @Override
+    public List<QueueVO> getQueuesHovering(float periodSize) {
+        if (queueInfo == null) {
+            return null;
+        }
+        List<QueueVO> tmpResult = null;
+        Map<String, Integer> queues = queueInfo.getHoveringCount(periodSize);
+        if (queues != null) {
+            tmpResult = new ArrayList<>();
+            for (String queueName : queues.keySet()) {
+                QueueVO queueVO = new QueueVO();
+                queueVO.setName(queueName);
+                queueVO.setCount(queues.get(queueName));
+                tmpResult.add(queueVO);
+            }
+        }
+        return tmpResult;
+    }
+
+
+    @Override
+    public List<TaskContainer> getRepeatedTasks(int iterationCount) {
+        return taskInfo.getRepeatedTasks(iterationCount);
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

@@ -23,6 +23,8 @@
     <bean id="consoleProcessTaskResource" class="ru.taskurotta.dropwizard.resources.console.ProcessTaskResource" parent="baseConsoleResource"/>
     <bean id="consoleTaskTreeResource" class="ru.taskurotta.dropwizard.resources.console.TaskTreeResource" parent="baseConsoleResource"/>
     <bean id="consoleProcessSearchResource" class="ru.taskurotta.dropwizard.resources.console.ProcessSearchResource" parent="baseConsoleResource"/>
+    <bean id="hoveringQueuesResource" class="ru.taskurotta.dropwizard.resources.console.HoveringQueuesResource" parent="baseConsoleResource"/>
+    <bean id="repeatedTasks" class="ru.taskurotta.dropwizard.resources.console.RepeatedTasksResource" parent="baseConsoleResource"/>
 
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend"/>

@@ -58,9 +58,19 @@ consoleApp.config(function ($routeProvider, $locationProvider) {
     });
 
     //profiles
-    $routeProvider.when('/profiles', {
+    $routeProvider.when('/monitoring/profiles', {
         templateUrl: '/partials/view/profiles.html',
         controller: "profilesController"
+    });
+
+    $routeProvider.when('/monitoring/hoveringQueues', {
+        templateUrl: '/partials/view/hoveringQueues.html',
+        controller: "hoveringQueuesController"
+    });
+
+    $routeProvider.when('/monitoring/repeatedTasks', {
+        templateUrl: '/partials/view/repeatedTasks.html',
+        controller: "repeatedTasksController"
     });
 
 //unused
