@@ -24,7 +24,7 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
-            <hz:map name="decisionQueueMap">
+            <hz:map name="decisionQueueMap" max-size="100" eviction-percentage="50" eviction-policy="LRU">
                 <hz:map-store enabled="true" implementation="mongomapstore" write-delay-seconds="0"/>
             </hz:map>
         </hz:config>
@@ -39,7 +39,7 @@
     <bean id="mongoTemplate"
           class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongo"/>
-        <constructor-arg name="databaseName" value="test"/>
+        <constructor-arg name="databaseName" value="hazel-test"/>
     </bean>
 
     <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongomapstore">
