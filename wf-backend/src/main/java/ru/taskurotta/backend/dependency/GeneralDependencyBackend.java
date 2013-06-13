@@ -34,7 +34,6 @@ public class GeneralDependencyBackend implements DependencyBackend {
     }
 
     @Override
-    @Profiled
     public DependencyDecision applyDecision(DecisionContainer taskDecision) {
 
         logger.debug("applyDecision() taskDecision = [{}]", taskDecision);

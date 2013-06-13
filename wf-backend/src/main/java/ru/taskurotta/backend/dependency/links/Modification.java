@@ -1,6 +1,6 @@
 package ru.taskurotta.backend.dependency.links;
 
-import java.util.Collection;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,7 +14,7 @@ import java.util.UUID;
  * Date: 4/5/13
  * Time: 10:44 AM
  */
-public class Modification {
+public class Modification implements Serializable {
 
     private UUID completedItem;
 

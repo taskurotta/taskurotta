@@ -28,13 +28,17 @@
     </hz:hazelcast>
 
 
-    <bean id="taskServer" class="ru.taskurotta.server.HazelcastTaskServer">
+    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HzTaskServer" init-method="init">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+
+        <property name="decisionQueueNamesList" value = "${hz.decision.queue.list}" />
+        <property name="hzInstance" ref="hzInstance" />
+        <property name="queuesPerNode" value = "${hz.queues.per.node}" />
+
     </bean>
 
     <!-- REST resources -->
@@ -81,9 +85,10 @@
         <property name="queueListName" value = "queueListName" />
     </bean>
 
-    <bean id="hzPartitionResolver" class="ru.taskurotta.backend.hz.support.HzPartitionResolver" />
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+    </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
     <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
@@ -97,9 +102,14 @@
     </bean>
 
     <bean id="graphDao"
-          class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+          class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+    </bean>
 
-    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
+    <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend" >
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+    </bean>
+
     <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">

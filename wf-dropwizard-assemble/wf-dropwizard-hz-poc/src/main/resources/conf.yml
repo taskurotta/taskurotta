@@ -26,6 +26,8 @@ properties:
   recovery.timeStep.unit: "DAYS"
   hz.port: 7777
   hz.queue.name: "hzTestQueue"
+  hz.decision.queue.list: "decisionQueueNamesList"
+  hz.queues.per.node: 10
 
 #Http server configuration:
 logging:
@@ -33,7 +35,7 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz: DEBUG
+        ru.taskurotta.backend.hz.server: DEBUG
         com.yammer: WARN
     file:
         enabled: true
