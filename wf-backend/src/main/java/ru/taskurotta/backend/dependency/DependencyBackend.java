@@ -13,7 +13,7 @@ public interface DependencyBackend {
 
 
     /**
-     * @return tasks to start
+     * @return Dependency decision with tasks to start
      */
     public DependencyDecision applyDecision(DecisionContainer taskDecision);
 
