@@ -1,5 +1,10 @@
 package ru.taskurotta.dropwizard.hz;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
@@ -16,17 +21,11 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.server.GeneralTaskServer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
 /**
  * General task server with injected Hazelcast entities
  * Test purpose
  * User: dimadin
  * Date: 06.06.13 15:55
- *
  */
 @Deprecated
 public class HzTaskServer extends GeneralTaskServer {
@@ -56,7 +55,7 @@ public class HzTaskServer extends GeneralTaskServer {
         logger.info("Hazelcast members are [{}]", members);
 
         String nameKey = "Name";
-        if(members.size() == 1) {//first instance
+        if (members.size() == 1) {//first instance
             List<String> value = new ArrayList<String>();
             value.add("Mary");
             value.add("Harry");
@@ -66,11 +65,11 @@ public class HzTaskServer extends GeneralTaskServer {
 
             String[] martinis = new String[]{"Rosso", "Bianco", "Rosato", "D’Oro", "Fiero", "Rosso", "Bianco"};
             logger.info("Try to add to set[{}] and enqueue to queue[{}] values [{}]", hzSet.getName(), hzQueue.getName(), Arrays.asList(martinis));
-            for(String martini: martinis) {
-                if(!hzQueue.offer(martini)){
+            for (String martini : martinis) {
+                if (!hzQueue.offer(martini)) {
                     logger.info("Failed to enqueue item[{}]", martini);
                 }
-                if(!hzSet.add(martini)) {
+                if (!hzSet.add(martini)) {
                     logger.info("Value already present in set[{}]", Arrays.asList(martini));
                 }
             }

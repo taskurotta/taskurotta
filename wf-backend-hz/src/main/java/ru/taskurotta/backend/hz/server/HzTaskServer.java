@@ -1,5 +1,14 @@
 package ru.taskurotta.backend.hz.server;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.UUID;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.ILock;
@@ -19,15 +28,6 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Task server with async decision processing.
@@ -59,7 +59,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
     public void release(DecisionContainer taskDecision) {
         String decisionQueueName = determineDecisionQueueName(taskDecision.getProcessId());
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             IList<String[]> debug = hzInstance.getList("debugList");
             debug.add(new String[]{taskDecision.getProcessId().toString(), decisionQueueName});
         }
@@ -77,7 +77,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         logger.trace("determineDecisionQueueName for [{}]: membersCount[{}], nodeIndex[{}]", processID, membersCount, nodeIndex);
 
         Set<String> decisionQueues = hzInstance.getSet(decisionQueueNamesList);
-        if(decisionQueues == null || decisionQueues.isEmpty()) {
+        if (decisionQueues == null || decisionQueues.isEmpty()) {
             throw new IllegalStateException("Cannot determine queue for decision release: no queues found");
         }
         String result = decisionQueues.iterator().next();//default value to prevent NPE
@@ -85,12 +85,12 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         logger.trace("Nodes queues getted are [{}]", nodesQueues);
 
         int memberIdx = 0;
-        for(String memberId: nodesQueues.keySet()) {
-            if(memberIdx == nodeIndex) {
+        for (String memberId : nodesQueues.keySet()) {
+            if (memberIdx == nodeIndex) {
                 Set<String> nodeQueueNames = nodesQueues.get(memberId);
                 Integer queueIndexOnNode = getIndex(processID, nodeQueueNames.size());
-                for(String queueName: nodeQueueNames) {
-                    if(queueName.endsWith(String.valueOf(queueIndexOnNode))) {
+                for (String queueName : nodeQueueNames) {
+                    if (queueName.endsWith(String.valueOf(queueIndexOnNode))) {
                         result = queueName;
                         logger.trace("Queue name determined for decision for process[{}] is[{}]", processID, queueName);
                         break;
@@ -107,10 +107,10 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
     //Groups queues names by node id's  Map<nodeId, Set<NodeQueueNames>>
     private Map<String, Set<String>> getQueuesGroupedByNode(Set<String> names) {
         Map<String, Set<String>> result = new HashMap<>();
-        if(names!=null && !names.isEmpty()) {
-            for(String name: names) {
+        if (names != null && !names.isEmpty()) {
+            for (String name : names) {
                 String memberId = name.split(QUEUE_PREFIX)[0];
-                if(!result.containsKey(memberId)) {
+                if (!result.containsKey(memberId)) {
                     result.put(memberId, new HashSet<String>());
                 }
                 result.get(memberId).add(name);
@@ -123,7 +123,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
     public void init() {
         hzInstance.getCluster().addMembershipListener(this);
         String memberId = hzInstance.getCluster().getLocalMember().getUuid();
-        for(int i = 0; i<queuesPerNode; i++) {
+        for (int i = 0; i < queuesPerNode; i++) {
             String queueName = memberId + QUEUE_PREFIX + i;
             hzInstance.getSet(decisionQueueNamesList).add(queueName);
             Thread thread = new Thread(new ProcessDecisionJob(queueName));
@@ -132,18 +132,18 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         }
         logger.debug("Started [{}] thread-for-queue's for taskDecision processing", queuesPerNode);
 
-        if(logger.isDebugEnabled()) { //Debug monitor for logging decision queues contents
+        if (logger.isDebugEnabled()) { //Debug monitor for logging decision queues contents
             Thread monitor = new Thread() {
 
                 @Override
                 public void run() {
-                    while(true) {
+                    while (true) {
                         try {
                             Thread.sleep(20000);
 
                             StringBuilder sb = new StringBuilder();
                             Set<String> queueNames = hzInstance.getSet(decisionQueueNamesList);
-                            for(String queueName: queueNames) {
+                            for (String queueName : queueNames) {
                                 Queue<DecisionContainer> queue = hzInstance.getQueue(queueName);
                                 DecisionContainer[] content = queue.toArray(new DecisionContainer[queue.size()]);
                                 sb.append("\n").append("Queue: ").append(queueName).append(", size: ").append(queue.size()).append(", content: [").append(Arrays.asList(content)).append("]");
@@ -152,13 +152,13 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
 
                             StringBuilder sb2 = new StringBuilder();
                             Map<String, Set<String>> spreadingMap = getAsMap(hzInstance.<String[]>getList("debugList"));
-                            for(String str: spreadingMap.keySet()) {
+                            for (String str : spreadingMap.keySet()) {
                                 sb2.append("\n").append("ProcessId [").append(str).append("]: ").append(spreadingMap.get(str));
                             }
 
                             logger.debug("Release spreading monitor: " + sb2.toString());
 
-                        } catch(Throwable e) {
+                        } catch (Throwable e) {
                             logger.warn("Debug monitor failed", e);
                         }
                     }
@@ -173,14 +173,14 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
 
     private Map<String, Set<String>> getAsMap(IList<String[]> debugList) {
         Map<String, Set<String>> result = new HashMap<>();
-        for(String[] val:  debugList) {
+        for (String[] val : debugList) {
             Set<String> set = null;
-            if(result.containsKey(val[0])) {
+            if (result.containsKey(val[0])) {
                 set = result.get(val[0]);
             } else {
                 set = new HashSet<>();
             }
-             set.add(val[1]);
+            set.add(val[1]);
             result.put(val[0], set);
         }
         return result;
@@ -200,9 +200,9 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         @Override
         public void run() {
 
-            while(running) {
+            while (running) {
 
-                if(Thread.currentThread().isInterrupted()){
+                if (Thread.currentThread().isInterrupted()) {
                     logger.warn("Thread[{}] interruption detected, breaking the cycle", Thread.currentThread().getName());
                     break;
                 }
@@ -212,7 +212,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
 
                     DecisionContainer taskDecision = queue.poll();
 
-                    if(taskDecision == null) {
+                    if (taskDecision == null) {
                         Thread.sleep(200);
                         continue;
                     }
@@ -278,7 +278,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
 
                     taskBackend.addDecisionCommit(taskDecision);
 
-                } catch(Throwable e) {
+                } catch (Throwable e) {
                     logger.error("Error at process task decision", e);
                 }
             }
@@ -288,8 +288,8 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
     //Same uuid mapped to same int result
     private int getIndex(UUID uuid, int maxResult) {
         int result = 0;
-        if(uuid!=null && maxResult>0) {
-            result = Math.abs(uuid.hashCode()%maxResult);
+        if (uuid != null && maxResult > 0) {
+            result = Math.abs(uuid.hashCode() % maxResult);
         }
         return result;
     }
@@ -318,14 +318,14 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         try {
             lock.lock();
             Queue<DecisionContainer> targetQueue = getQueueToDrainTo(decisionQueues);
-            Set <String> queueNamesToDump = getQueuesGroupedByNode(decisionQueues).get(memberId);
+            Set<String> queueNamesToDump = getQueuesGroupedByNode(decisionQueues).get(memberId);
             logger.debug("Queues to dump are [{}]", queueNamesToDump);
-            if(queueNamesToDump!=null && !queueNamesToDump.isEmpty()) {
-                for(String name: queueNamesToDump)  {
+            if (queueNamesToDump != null && !queueNamesToDump.isEmpty()) {
+                for (String name : queueNamesToDump) {
                     IQueue<DecisionContainer> queue = hzInstance.getQueue(name);
-                    if(queue!=null) {
+                    if (queue != null) {
                         DecisionContainer[] items = queue.toArray(new DecisionContainer[queue.size()]);
-                        if(items!=null) {
+                        if (items != null) {
                             targetQueue.addAll(Arrays.asList(items));
                             logger.warn("[{}] items drained from [{}] on member[{}] removal", items.length, name, memberId);
                             queue.destroy();

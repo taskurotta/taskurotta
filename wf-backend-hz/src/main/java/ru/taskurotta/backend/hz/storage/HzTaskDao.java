@@ -1,5 +1,10 @@
 package ru.taskurotta.backend.hz.storage;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import com.hazelcast.core.HazelcastInstance;
 import net.sf.cglib.core.CollectionUtils;
 import net.sf.cglib.core.Predicate;
@@ -9,11 +14,6 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * TaskDao storing tasks in HZ shared maps
@@ -60,12 +60,12 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if(processUuid == null) {
+        if (processUuid == null) {
             return null;
         }
         List<TaskContainer> result = new ArrayList<>();
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if(processUuid.equals(tc.getProcessId())) {
+        for (TaskContainer tc : id2TaskMap.values()) {
+            if (processUuid.equals(tc.getProcessId())) {
                 result.add(tc);
             }
         }
@@ -79,11 +79,11 @@ public class HzTaskDao implements TaskDao {
         int endIndex = startIndex + pageSize - 1;
         long totalCount = 0;
         int index = 0;
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if(index > endIndex) {
+        for (TaskContainer tc : id2TaskMap.values()) {
+            if (index > endIndex) {
                 totalCount = id2TaskMap.values().size();
                 break;
-            } else if(index>=startIndex && index<=endIndex) {
+            } else if (index >= startIndex && index <= endIndex) {
                 tmpResult.add(tc);
             }
             index++;

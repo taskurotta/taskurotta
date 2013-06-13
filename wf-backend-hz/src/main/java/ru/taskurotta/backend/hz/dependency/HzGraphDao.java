@@ -1,5 +1,11 @@
 package ru.taskurotta.backend.hz.dependency;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.UUID;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,12 +16,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Memory graph dao with Hazelcast
@@ -53,7 +53,7 @@ public class HzGraphDao implements GraphDao {
     /**
      * Table of row contains current graph (process) state
      */
-    public static class GraphRow implements Serializable{
+    public static class GraphRow implements Serializable {
         private int version;
         private String jsonGraph;
 
