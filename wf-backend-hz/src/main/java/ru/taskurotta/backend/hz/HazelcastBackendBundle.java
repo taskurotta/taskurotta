@@ -7,7 +7,9 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
+import ru.taskurotta.backend.hz.config.HazelcastConfigBackend;
 import ru.taskurotta.backend.hz.dependency.HazelcastDependencyBackend;
+import ru.taskurotta.backend.hz.queue.HazelcastQueueBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
@@ -15,6 +17,8 @@ import ru.taskurotta.backend.storage.MemoryProcessBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -33,10 +37,10 @@ public class HazelcastBackendBundle implements BackendBundle {
     public HazelcastBackendBundle(HazelcastInstance hazelcastInstance, TaskDao taskDao, int pollDelay) {
         this.processBackend = new MemoryProcessBackend();
         this.taskBackend = new GeneralTaskBackend(taskDao, new MemoryCheckpointService());
-        this.queueBackend = new MemoryQueueBackend(pollDelay);
+        this.queueBackend = new HazelcastQueueBackend(pollDelay, TimeUnit.SECONDS, hazelcastInstance);
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyBackend = new HazelcastDependencyBackend(hazelcastInstance, memoryGraphDao);
-        this.configBackend = new MemoryConfigBackend();
+        this.configBackend = new HazelcastConfigBackend(hazelcastInstance);
     }
 
     @Override
