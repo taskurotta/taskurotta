@@ -76,7 +76,7 @@
     <!-- /Recoveries -->
 
 
-    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HazelcastQueueBackend">
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HztQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
 

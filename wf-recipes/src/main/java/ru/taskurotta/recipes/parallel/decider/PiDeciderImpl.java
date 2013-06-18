@@ -1,5 +1,7 @@
 package ru.taskurotta.recipes.parallel.decider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.recipes.parallel.workers.PiWorkerClient;
@@ -12,6 +14,9 @@ import ru.taskurotta.recipes.parallel.workers.PiWorkerClient;
  * use http://en.wikipedia.org/wiki/Leibniz_formula_for_%CF%80 for calculating PI
  */
 public class PiDeciderImpl implements PiDecider {
+
+    private static final Logger logger = LoggerFactory.getLogger(PiDeciderImpl.class);
+
     private PiWorkerClient piWorker;
     private PiDeciderImpl asynchronous;
 
@@ -34,7 +39,7 @@ public class PiDeciderImpl implements PiDecider {
 
     @Asynchronous
     public void show(Promise<Double> pi, long cycles, long accuracy) {
-        System.out.println("Calculating Pi: " + pi.get() + " by " + cycles + " cycles with " + accuracy + " accuracy");
+        logger.info("Calculating Pi: " + pi.get() + " by " + cycles + " cycles with " + accuracy + " accuracy");
         System.exit(0);
     }
 
