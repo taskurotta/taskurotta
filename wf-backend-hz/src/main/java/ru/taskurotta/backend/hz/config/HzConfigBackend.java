@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 17.06.13
  * Time: 15:35
  */
-public class HazelcastConfigBackend implements ConfigBackend {
+public class HzConfigBackend implements ConfigBackend {
 
     private HazelcastInstance hazelcastInstance;
 
@@ -26,11 +26,11 @@ public class HazelcastConfigBackend implements ConfigBackend {
     private int defaultTimeout = 1;
     private TimeUnit defaultTimeUnit = TimeUnit.SECONDS;
 
-    public HazelcastConfigBackend(HazelcastInstance hazelcastInstance) {
+    public HzConfigBackend(HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
     }
 
-    public HazelcastConfigBackend(HazelcastInstance hazelcastInstance, int defaultTimeout, TimeUnit defaultTimeUnit) {
+    public HzConfigBackend(HazelcastInstance hazelcastInstance, int defaultTimeout, TimeUnit defaultTimeUnit) {
         this.hazelcastInstance = hazelcastInstance;
         this.defaultTimeout = defaultTimeout;
         this.defaultTimeUnit = defaultTimeUnit;

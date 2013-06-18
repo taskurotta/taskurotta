@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by void, dudin 07.06.13 11:00
  */
-public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
+public class HztQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
 
-    private final static Logger logger = LoggerFactory.getLogger(HazelcastQueueBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(HztQueueBackend.class);
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
@@ -38,13 +38,13 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     private HazelcastInstance hazelcastInstance;
     private String queueListName = "tsQueuesList";
 
-    public HazelcastQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
+    public HztQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
         this.hazelcastInstance.addInstanceListener(this);
-        logger.debug("HazelcastQueueBackend created and registered as Hazelcast instance listener");
+        logger.debug("HztQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override
