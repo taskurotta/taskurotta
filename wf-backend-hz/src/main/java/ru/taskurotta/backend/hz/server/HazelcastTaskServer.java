@@ -3,8 +3,6 @@ package ru.taskurotta.backend.hz.server;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.PartitionAware;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -38,6 +36,16 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     private HazelcastTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
         super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
+    }
+
+    public static HazelcastTaskServer createInstance(BackendBundle backendBundle) {
+        synchronized (instanceMonitor) {
+            if (null == instance) {
+                instance = new HazelcastTaskServer(backendBundle);
+                instanceMonitor.notifyAll();
+            }
+        }
+        return instance;
     }
 
     public static HazelcastTaskServer createInstance(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
@@ -105,8 +113,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public Object call() throws Exception {
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
             IMap<UUID, DecisionContainer> decisions = taskServer.getHzInstance().getMap(DECISIONS_MAP_NAME);
-            DecisionContainer taskDecision = decisions.get(taskId);
-            taskServer.processDecision(taskDecision);
+            try {
+                decisions.lock(processId);
+                DecisionContainer taskDecision = decisions.get(taskId);
+                taskServer.processDecision(taskDecision);
+            } finally {
+                decisions.unlock(processId);
+            }
             return null;
         }
 
