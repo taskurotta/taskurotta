@@ -266,6 +266,9 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
 
                             // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                             TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
+                            if (asyncTask == null) {
+                                logger.warn("!!!! No task found with id " + taskDecision.getTaskId().toString());
+                            }
                             enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
                         }
 

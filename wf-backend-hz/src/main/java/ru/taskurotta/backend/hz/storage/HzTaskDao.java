@@ -24,8 +24,8 @@ public class HzTaskDao implements TaskDao {
 
     private final static Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
 
-    private Map<UUID, TaskContainer> id2TaskMap;
-    private Map<UUID, DecisionContainer> id2TaskDecisionMap;
+    private Map<String, TaskContainer> id2TaskMap;
+    private Map<String, DecisionContainer> id2TaskDecisionMap;
 
 
     public HzTaskDao(HazelcastInstance hzInstance) {
@@ -35,27 +35,28 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+        id2TaskDecisionMap.put(taskDecision.getTaskId().toString(), taskDecision);
     }
 
     @Override
     public TaskContainer getTask(UUID taskId) {
-        return id2TaskMap.get(taskId);
+        return id2TaskMap.get(taskId.toString());
     }
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
+        logger.warn("!!!!  Put task " + taskContainer.getTaskId().toString());
+        id2TaskMap.put(taskContainer.getTaskId().toString(), taskContainer);
     }
 
     @Override
     public DecisionContainer getDecision(UUID taskId) {
-        return id2TaskDecisionMap.get(taskId);
+        return id2TaskDecisionMap.get(taskId.toString());
     }
 
     @Override
     public boolean isTaskReleased(UUID taskId) {
-        return id2TaskDecisionMap.containsKey(taskId);
+        return id2TaskDecisionMap.containsKey(taskId.toString());
     }
 
     @Override

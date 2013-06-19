@@ -62,6 +62,9 @@ public class HzGraphDao implements GraphDao {
             dump(graph);
         }
 
+        public GraphRow() {
+        }
+
 
         /**
          * @param modifiedGraph

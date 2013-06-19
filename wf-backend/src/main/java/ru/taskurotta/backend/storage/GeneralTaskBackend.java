@@ -176,6 +176,9 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
         TaskContainer task = taskDao.getTask(taskDecision.getTaskId());
+        if (task == null) {
+            logger.warn("!!!! No task found with id " + taskDecision.getTaskId().toString());
+        }
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getActorId(), System.currentTimeMillis()));
 
         taskDao.addDecision(taskDecision);
