@@ -2,6 +2,7 @@ package ru.taskurotta.backend.hz.server;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
+import com.hazelcast.core.ISet;
 import com.hazelcast.core.MembershipEvent;
 import com.hazelcast.core.MembershipListener;
 import org.slf4j.Logger;
@@ -124,7 +125,8 @@ public class HzTaskServerV2 extends GeneralTaskServer implements MembershipListe
         int membersCount = hazelcastInstance.getCluster().getMembers().size();
         int index = getIndex(processId, membersCount * decisionQueuePerNode);
 
-        String[] decisionQueueNames = hazelcastInstance.getSet(DECISION_QUEUE_NAMES_SET_NAME).toArray(new String[0]);
+        ISet<String> set = hazelcastInstance.getSet(DECISION_QUEUE_NAMES_SET_NAME);
+        String[] decisionQueueNames = set.toArray(new String[set.size()]);
 
         if (decisionQueueNames.length <= index) {
             logger.warn("Decision for processId must be placed to [{}] queue, but now only [{}] queues", index, decisionQueueNames.length);

@@ -28,16 +28,14 @@
     </hz:hazelcast>
 
 
-    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HzTaskServer" init-method="init">
+    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
 
-        <property name="decisionQueueNamesList" value = "${hz.decision.queue.list}" />
         <property name="hzInstance" ref="hzInstance" />
-        <property name="queuesPerNode" value = "${hz.queues.per.node}" />
 
     </bean>
 

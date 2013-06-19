@@ -15,12 +15,14 @@ public class TaskCreator {
     public static final int ARRAY_SIZE = 5;
     public static final int MAX_VALUE = 100;
     private ClientServiceManager clientServiceManager;
+    private int arraySize = ARRAY_SIZE;
+    private int maxValue = MAX_VALUE;
 
 	public void createStartTask() {
 		DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
 		SummatorDeciderClient summator = deciderClientProvider.getDeciderClient(SummatorDeciderClient.class);
 
-		List<Integer> data = initData(ARRAY_SIZE, MAX_VALUE);
+		List<Integer> data = initData(arraySize, maxValue);
 
         summator.start(data);
 
@@ -44,4 +46,12 @@ public class TaskCreator {
 	public void setClientServiceManager(ClientServiceManager clientServiceManager) {
 		this.clientServiceManager = clientServiceManager;
 	}
+
+    public void setArraySize(int arraySize) {
+        this.arraySize = arraySize;
+    }
+
+    public void setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
+    }
 }

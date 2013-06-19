@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 public class GeneralTaskServer implements TaskServer {
 
-    private final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+    protected final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
     protected ProcessBackend processBackend;
     protected TaskBackend taskBackend;
@@ -112,15 +112,19 @@ public class GeneralTaskServer implements TaskServer {
 
         // save it firstly
         taskBackend.addDecision(taskDecision);
+        processDecision(taskDecision);
+    }
 
+    protected void processDecision(DecisionContainer taskDecision) {
         UUID taskId = taskDecision.getTaskId();
+
+        logger.debug("Start processing task decision[{}]", taskId);
 
         // if Error
         if (taskDecision.containsError()) {
-            final boolean isShouldBeRestarted = taskDecision.getRestartTime() != TaskDecision.NO_RESTART;
 
             // enqueue task immediately if needed
-            if (isShouldBeRestarted) {
+            if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer asyncTask = taskBackend.getTask(taskId);
@@ -129,7 +133,6 @@ public class GeneralTaskServer implements TaskServer {
             }
 
             taskBackend.addDecisionCommit(taskDecision);
-
             return;
         }
 
@@ -141,8 +144,7 @@ public class GeneralTaskServer implements TaskServer {
 
         if (dependencyDecision.isFail()) {
 
-            logger.debug("release() failed dependencyDecision. release() should be retried after " +
-                    "RELEASE_TIMEOUT");
+            logger.debug("release() failed dependencyDecision. release() should be retried after RELEASE_TIMEOUT");
 
             // leave release() method.
             // RELEASE_TIMEOUT should be automatically fired
@@ -168,14 +170,20 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         taskBackend.addDecisionCommit(taskDecision);
+
+        logger.debug("Finish processing task decision[{}]", taskId);
     }
 
+    /**
+     * Send task to the queue for processing
+     * @param taskId -
+     * @param processId -
+     * @param actorId -
+     * @param startTime time to start delayed task. set to 0 to start it immediately
+     * @param taskList -
+     */
     protected void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
 
-        // set it to current time for precisely repeat
-        if (startTime == 0L) {
-            startTime = System.currentTimeMillis();
-        }
         queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
 
     }

@@ -208,6 +208,11 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     @Override
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
+        // set it to current time for precisely repeat
+        if (startTime == 0L) {
+            startTime = System.currentTimeMillis();
+        }
+
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         queue.add(new DelayedTaskElement(taskId, startTime, System.currentTimeMillis()));
 
