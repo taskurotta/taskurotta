@@ -1,12 +1,5 @@
 package ru.taskurotta.backend.hz.queue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.InstanceEvent;
@@ -23,12 +16,20 @@ import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.queue.QueueBackend;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created by void, dudin 07.06.13 11:00
  */
-public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
+public class HztQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
 
-    private final static Logger logger = LoggerFactory.getLogger(HazelcastQueueBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(HztQueueBackend.class);
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
@@ -38,26 +39,26 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
     private HazelcastInstance hazelcastInstance;
     private String queueListName = "tsQueuesList";
 
-    public HazelcastQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
+    public HztQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
         this.hazelcastInstance.addInstanceListener(this);
-        logger.debug("HazelcastQueueBackend created and registered as Hazelcast instance listener");
+        logger.debug("HztQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>(pageSize);
         Set<String> queueNamesSet = hazelcastInstance.getSet(queueListName);
         String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
-        if (queueNames != null && queueNames.length > 0) {
-            for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (queueNames.length)) ? (queueNames.length) - 1 : pageSize * pageNum - 1); i++) {
-                result.add(queueNames[i]);
-            }
+        if (queueNames.length > 0) {
+            int pageStart = (pageNum - 1) * pageSize;
+            int pageEnd = pageSize * pageNum >= queueNames.length ? queueNames.length : pageSize * pageNum;
+            result.addAll(Arrays.asList(queueNames).subList(pageStart, pageEnd));
         }
-        return new GenericPage<String>(result, pageNum, pageSize, queueNames.length);
+        return new GenericPage<>(result, pageNum, pageSize, queueNames.length);
     }
 
     @Override
@@ -67,12 +68,12 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
 
     @Override
     public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
-        List<QueuedTaskVO> result = new ArrayList<QueuedTaskVO>();
+        List<QueuedTaskVO> result = new ArrayList<>();
         IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(queueName);
         QueuedTaskVO[] queueItems = queue.toArray(new QueuedTaskVO[queue.size()]);
 
         if (queueItems.length > 0) {
-            for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (queueItems.length)) ? (queueItems.length) - 1 : pageSize * pageNum - 1); i++) {
+            for (int i = (pageNum - 1) * pageSize; i < ((pageSize * pageNum >= queueItems.length) ? queueItems.length : pageSize * pageNum); i++) {
                 QueuedTaskVO item = queueItems[i];
                 QueuedTaskVO qt = new QueuedTaskVO();
                 qt.setId(item.getId());
@@ -81,7 +82,7 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
                 result.add(qt);
             }
         }
-        return new GenericPage<QueuedTaskVO>(result, pageNum, pageSize, queueItems.length);
+        return new GenericPage<>(result, pageNum, pageSize, queueItems.length);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
             Set<String> queueNames = hazelcastInstance.getSet(queueListName);
             String queueName = ((IQueue) event.getInstance()).getName();
             queueNames.add(queueName);
-            logger.debug("Queue [[]] added to cluster", queueName);
+            logger.debug("Queue [{}] added to cluster", queueName);
         }
     }
 
@@ -100,7 +101,7 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
             Set<String> queueNames = hazelcastInstance.getSet(queueListName);
             String queueName = ((IQueue) event.getInstance()).getName();
             queueNames.remove(queueName);
-            logger.debug("Queue [[]] removed from cluster", queueName);
+            logger.debug("Queue [{}] removed from cluster", queueName);
         }
     }
 
@@ -164,9 +165,10 @@ public class HazelcastQueueBackend implements QueueBackend, QueueInfoRetriever, 
 
     @Override
     public Map<String, Integer> getHoveringCount(float periodSize) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public void setCheckpointService(CheckpointService checkpointService) {
         this.checkpointService = checkpointService;
     }

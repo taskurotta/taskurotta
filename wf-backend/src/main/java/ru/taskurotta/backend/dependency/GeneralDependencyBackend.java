@@ -49,10 +49,8 @@ public class GeneralDependencyBackend implements DependencyBackend {
             Graph graph = graphDao.getGraph(processId);
 
             if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                UUID[] readyTasks = graphDao.getReadyTasks(finishedTaskId);
-
                 logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
-                return resultDecision.withReadyTasks(readyTasks);
+                return resultDecision; // ignore task decision and its tasks
             }
 
             graph.apply(modification);

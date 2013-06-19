@@ -113,6 +113,10 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         String tableName = getTableName(actorId, taskList);
 
+        // set it to current time for precisely repeat
+        if (startTime == 0L) {
+            startTime = System.currentTimeMillis();
+        }
         dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), tableName);
 
     }

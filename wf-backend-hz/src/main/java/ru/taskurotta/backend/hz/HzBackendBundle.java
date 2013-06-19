@@ -4,14 +4,15 @@ import com.hazelcast.core.HazelcastInstance;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
-import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
-import ru.taskurotta.backend.hz.queue.HazelcastQueueBackend;
+import ru.taskurotta.backend.dependency.links.GraphDao;
+import ru.taskurotta.backend.hz.config.HzConfigBackend;
+import ru.taskurotta.backend.hz.dependency.HzGraphDao;
+import ru.taskurotta.backend.hz.queue.HztQueueBackend;
+import ru.taskurotta.backend.hz.storage.HzProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
-import ru.taskurotta.backend.storage.MemoryProcessBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -30,16 +31,16 @@ public class HzBackendBundle implements BackendBundle {
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
-    private MemoryGraphDao memoryGraphDao;
+    private GraphDao graphDao;
 
 
     public HzBackendBundle(int pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
-        this.processBackend = new MemoryProcessBackend();
+        this.processBackend = new HzProcessBackend(hazelcastInstance);
         this.taskBackend = new GeneralTaskBackend(taskDao, new MemoryCheckpointService());
-        this.queueBackend = new HazelcastQueueBackend(pollDelay, TimeUnit.MILLISECONDS, hazelcastInstance);
-        this.memoryGraphDao = new MemoryGraphDao();
-        this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao, 10);
-        this.configBackend = new MemoryConfigBackend();
+        this.queueBackend = new HztQueueBackend(pollDelay, TimeUnit.SECONDS, hazelcastInstance);
+        this.graphDao = new HzGraphDao(hazelcastInstance);
+        this.dependencyBackend = new GeneralDependencyBackend(graphDao, 10);
+        this.configBackend = new HzConfigBackend(hazelcastInstance);
     }
 
     @Override
@@ -65,9 +66,5 @@ public class HzBackendBundle implements BackendBundle {
     @Override
     public ConfigBackend getConfigBackend() {
         return configBackend;
-    }
-
-    public MemoryGraphDao getMemoryGraphDao() {
-        return memoryGraphDao;
     }
 }

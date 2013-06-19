@@ -10,7 +10,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/summator/SpreaderBeans.xml
         properties:
-          foo: bar
+          array_size: 100
 
 profiler:
   - MainProfilerConfig:
