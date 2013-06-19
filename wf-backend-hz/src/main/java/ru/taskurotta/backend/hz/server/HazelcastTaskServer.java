@@ -1,10 +1,12 @@
 package ru.taskurotta.backend.hz.server;
 
+import java.io.Serializable;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.PartitionAware;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -13,10 +15,6 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
-
-import java.io.Serializable;
-import java.util.UUID;
-import java.util.concurrent.Callable;
 
 /**
  * Task server with async decision processing.

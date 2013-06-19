@@ -14,7 +14,7 @@
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
-            <hz:network port="${hz.port}" port-auto-increment="true" >
+            <hz:network port="${hz.port}" port-auto-increment="true">
                 <hz:join>
                     <hz:multicast enabled="false"
                                   multicast-group="224.2.2.3"
@@ -35,7 +35,7 @@
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
 
-        <property name="hzInstance" ref="hzInstance" />
+        <property name="hzInstance" ref="hzInstance"/>
 
     </bean>
 
@@ -66,7 +66,7 @@
         <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>
     </bean>
 
-    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
+    <task:scheduler id="taskExpirationRecovery" pool-size="1"/>
     <task:scheduled-tasks scheduler="taskExpirationRecovery">
         <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
     </task:scheduled-tasks>
@@ -75,44 +75,44 @@
 
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HztQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}" />
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+        <constructor-arg name="pollDelay" value="${pollDelay}"/>
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
 
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
 
-        <property name="queueListName" value = "queueListName" />
+        <property name="queueListName" value="queueListName"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
-        <constructor-arg name="hzInstance" ref="hzInstance" />
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
     </bean>
 
     <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
-        <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="checkpointService" ref="checkpointService"/>
     </bean>
     <bean id="dependencyBackend"
           class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
-        <constructor-arg name="graphDao" ref="graphDao" />
-        <constructor-arg name="retryTimes" value="${retryTimes}" />
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="retryTimes" value="${retryTimes}"/>
     </bean>
 
     <bean id="graphDao"
-          class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
-        <constructor-arg name="hzInstance" ref="hzInstance" />
+          class="ru.taskurotta.backend.hz.dependency.HzGraphDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
     </bean>
 
-    <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend" >
-        <constructor-arg name="hzInstance" ref="hzInstance" />
+    <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
     </bean>
 
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
+    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend"/>
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server" />
-        <property name="taskServer" ref="taskServer" />
+        <constructor-arg name="name" value="check task server"/>
+        <property name="taskServer" ref="taskServer"/>
     </bean>
 
 </beans>

@@ -9,7 +9,7 @@
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
 
     <context:property-placeholder/>
-    <context:annotation-config />
+    <context:annotation-config/>
 
     <hz:hazelcast id="hazelcastInstance">
         <hz:config>
@@ -22,14 +22,14 @@
     </hz:hazelcast>
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.hazelcast.HzClientServiceManager">
-        <constructor-arg name="hazelcastInstance" ref="hazelcastInstance" />
-        <constructor-arg name="pollDelay" value="60" />
+        <constructor-arg name="hazelcastInstance" ref="hazelcastInstance"/>
+        <constructor-arg name="pollDelay" value="60"/>
     </bean>
-    
+
     <bean id="taskCreator" class="ru.taskurotta.example.calculate.WorkflowStarter" init-method="startWork">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>
-        <property name="startTasks" value = "${startTasks}" />
+        <property name="startTasks" value="${startTasks}"/>
     </bean>
 
 </beans>

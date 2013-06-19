@@ -1,5 +1,12 @@
 package ru.taskurotta.backend.hz.server;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ISet;
@@ -18,13 +25,6 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin

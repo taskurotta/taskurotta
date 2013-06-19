@@ -10,7 +10,7 @@ import ru.taskurotta.recipes.parallel.workers.PiWorkerClient;
  * User: stukushin
  * Date: 18.03.13
  * Time: 14:42
- *
+ * <p/>
  * use http://en.wikipedia.org/wiki/Leibniz_formula_for_%CF%80 for calculating PI
  */
 public class PiDeciderImpl implements PiDecider {

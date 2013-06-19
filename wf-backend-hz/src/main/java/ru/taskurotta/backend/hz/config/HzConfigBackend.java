@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.hz.config;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.ISet;
@@ -7,9 +10,6 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -87,12 +87,12 @@ public class HzConfigBackend implements ConfigBackend {
         actorPreferences.setId("default");
 
         Properties expirationPolicies = new Properties();
-        for(TimeoutType timeoutType: TimeoutType.values()) {
+        for (TimeoutType timeoutType : TimeoutType.values()) {
             expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
         }
         actorPreferences.setTimeoutPolicies(expirationPolicies);
 
-        return new ActorPreferences[] {actorPreferences};
+        return new ActorPreferences[]{actorPreferences};
     }
 
     private ExpirationPolicyConfig[] getDefaultPolicies(Integer timeout, TimeUnit unit) {
@@ -105,7 +105,7 @@ public class HzConfigBackend implements ConfigBackend {
         policyProps.put("timeUnit", unit.toString());
         timeoutPolicy.setProperties(policyProps);
 
-        return new ExpirationPolicyConfig[] {timeoutPolicy};
+        return new ExpirationPolicyConfig[]{timeoutPolicy};
     }
 
     public int getDefaultTimeout() {
