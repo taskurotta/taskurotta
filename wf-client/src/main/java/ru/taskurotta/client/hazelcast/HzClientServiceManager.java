@@ -4,7 +4,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.hz.HzBackendBundle;
-import ru.taskurotta.backend.hz.server.HzTaskServerV2;
+import ru.taskurotta.backend.hz.server.HazelcastTaskServer;
 import ru.taskurotta.backend.hz.storage.HzTaskDao;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
@@ -29,7 +29,9 @@ public class HzClientServiceManager implements ClientServiceManager {
 
     public HzClientServiceManager(HazelcastInstance hazelcastInstance, int pollDelay) {
         this.backendBundle = new HzBackendBundle(pollDelay, new HzTaskDao(hazelcastInstance), hazelcastInstance);
-        this.taskServer = new HzTaskServerV2(backendBundle, hazelcastInstance);
+        HazelcastTaskServer hazelcastTaskServer = HazelcastTaskServer.createInstance(backendBundle);
+        hazelcastTaskServer.setHzInstance(hazelcastInstance);
+        this.taskServer = hazelcastTaskServer;
     }
 
     @Override

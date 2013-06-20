@@ -38,6 +38,16 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
     }
 
+    public static HazelcastTaskServer createInstance(BackendBundle backendBundle) {
+        synchronized (instanceMonitor) {
+            if (null == instance) {
+                instance = new HazelcastTaskServer(backendBundle);
+                instanceMonitor.notifyAll();
+            }
+        }
+        return instance;
+    }
+
     public static HazelcastTaskServer createInstance(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
         synchronized (instanceMonitor) {
             if (null == instance) {
@@ -103,8 +113,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public Object call() throws Exception {
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
             IMap<UUID, DecisionContainer> decisions = taskServer.getHzInstance().getMap(DECISIONS_MAP_NAME);
-            DecisionContainer taskDecision = decisions.get(taskId);
-            taskServer.processDecision(taskDecision);
+            try {
+                decisions.lock(processId);
+                DecisionContainer taskDecision = decisions.get(taskId);
+                taskServer.processDecision(taskDecision);
+            } finally {
+                decisions.unlock(processId);
+            }
             return null;
         }
 
