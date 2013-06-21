@@ -22,7 +22,7 @@ public class CheckpointQuery {
     //filter by timeout type
     private TimeoutType timeoutType;
 
-    //Filter by enity uuid
+    //Filter by entity uuid
     private UUID uuid;
 
     public CheckpointQuery(TimeoutType timeoutType, String entityType, long maxTime, long minTime) {

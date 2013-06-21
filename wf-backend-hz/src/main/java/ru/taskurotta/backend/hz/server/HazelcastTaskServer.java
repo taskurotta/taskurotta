@@ -113,8 +113,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public Object call() throws Exception {
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
             IMap<UUID, DecisionContainer> decisions = taskServer.getHzInstance().getMap(DECISIONS_MAP_NAME);
+            decisions.lock(processId);
             try {
-                decisions.lock(processId);
                 DecisionContainer taskDecision = decisions.get(taskId);
                 taskServer.processDecision(taskDecision);
             } finally {

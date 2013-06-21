@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
@@ -27,25 +26,25 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by void, dudin 07.06.13 11:00
  */
-public class HztQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
+public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
 
-    private final static Logger logger = LoggerFactory.getLogger(HztQueueBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(HzQueueBackend.class);
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private CheckpointService checkpointService = new MemoryCheckpointService();
+    private CheckpointService checkpointService;
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
     private String queueListName = "tsQueuesList";
 
-    public HztQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
+    public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
         this.hazelcastInstance.addInstanceListener(this);
-        logger.debug("HztQueueBackend created and registered as Hazelcast instance listener");
+        logger.debug("HzQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override

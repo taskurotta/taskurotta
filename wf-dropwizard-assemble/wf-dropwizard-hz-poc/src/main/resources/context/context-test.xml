@@ -109,7 +109,9 @@
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
-    <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
+    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl">
+        <property name="hzInstance" ref="hzInstance" />
+    </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />

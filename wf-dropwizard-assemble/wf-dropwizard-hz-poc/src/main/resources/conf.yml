@@ -34,9 +34,12 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.server: DEBUG
+        ru.taskurotta.server: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server: DEBUG
+        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.hz.storage: DEBUG
+        ru.taskurotta.backend.checkpoint: DEBUG
+        ru.taskurotta.backend.hz.checkpoint: DEBUG
         com.yammer: WARN
     file:
         enabled: true

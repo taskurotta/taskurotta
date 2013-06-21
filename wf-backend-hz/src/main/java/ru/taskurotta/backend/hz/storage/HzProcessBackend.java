@@ -3,9 +3,10 @@ package ru.taskurotta.backend.hz.storage;
 import com.hazelcast.core.HazelcastInstance;
 import net.sf.cglib.core.CollectionUtils;
 import net.sf.cglib.core.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
@@ -24,8 +25,9 @@ import java.util.UUID;
  * Date: 13.06.13 16:00
  */
 public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
+    private final static Logger logger = LoggerFactory.getLogger(HzProcessBackend.class);
 
-    private CheckpointService checkpointService = new MemoryCheckpointService();
+    private CheckpointService checkpointService;
     private Map<UUID, ProcessVO> processesStorage;
     private HazelcastInstance hzInstance;
 
@@ -74,6 +76,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     public void setCheckpointService(CheckpointService checkpointService) {
+        logger.debug("set checkpoint service [{}]", checkpointService);
         this.checkpointService = checkpointService;
     }
 
