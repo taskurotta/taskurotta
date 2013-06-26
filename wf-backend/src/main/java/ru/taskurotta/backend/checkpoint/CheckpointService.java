@@ -31,7 +31,7 @@ public interface CheckpointService {
     /**
      * Removes checkpoints for given timeout type
      */
-    public void removeCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoint);
+    public void removeCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoints);
 
     /**
      * returns list of current checkpoints fitting query criteria

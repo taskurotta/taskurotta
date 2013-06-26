@@ -27,21 +27,27 @@ properties:
   hz.port: 7777
   hz.queue.name: "hzTestQueue"
   hz.decision.queue.list: "decisionQueueNamesList"
-  hz.queues.per.node: 10
+  hz.queues.per.node: 3
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
+        ru.taskurotta.server: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server: DEBUG
+        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.hz.storage: DEBUG
+        ru.taskurotta.backend.checkpoint: DEBUG
+        ru.taskurotta.backend.hz.checkpoint: DEBUG
         com.yammer: WARN
     file:
         enabled: true
         archive: true
 #        currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+        logFormat: "%-4r [%t] %-5p %c - %m%n"
+
 http:
     rootPath: "/rest/*"
     gzip:

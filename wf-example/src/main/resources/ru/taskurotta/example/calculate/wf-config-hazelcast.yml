@@ -96,15 +96,6 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.server:
-             key: name
-             \@level: DEBUG
-        - ru.taskurotta.server:
-             key: name
-             \@level: TRACE
-        - ru.taskurotta.server.json:
-             key: name
-             \@level: INFO
         - org.springframework:
              key: name
              \@level: !!!str OFF

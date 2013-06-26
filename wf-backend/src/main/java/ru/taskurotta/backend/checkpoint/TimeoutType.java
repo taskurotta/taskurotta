@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.checkpoint;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Type of the monitored timeout
  */
@@ -34,6 +37,13 @@ public enum TimeoutType {
     TASK_SCHEDULE_TO_CLOSE ("TASK_SCHEDULE_TO_CLOSE");
 
 
+    private static final Map<String, TimeoutType> strToType = new HashMap<>(10);
+    static {
+        for (TimeoutType type : TimeoutType.values()) {
+            strToType.put(type.value, type);
+        }
+    }
+
     private String value;
 
     private TimeoutType(String value) {
@@ -42,31 +52,15 @@ public enum TimeoutType {
 
     @Override
     public String toString() {
-        return this.value!=null? this.value: super.toString();
+        return this.value != null? this.value : super.toString();
     }
 
     public static TimeoutType forValue(String value) {
-        if("PROCESS_START_TO_CLOSE".equalsIgnoreCase(value)) {
-            return TimeoutType.PROCESS_START_TO_CLOSE;
-        } else if("PROCESS_SCHEDULE_TO_START".equalsIgnoreCase(value)) {
-            return TimeoutType.PROCESS_SCHEDULE_TO_START;
-        } else if("PROCESS_SCHEDULE_TO_CLOSE".equalsIgnoreCase(value)) {
-            return TimeoutType.PROCESS_SCHEDULE_TO_CLOSE;
-        } else if("TASK_START_TO_CLOSE".equalsIgnoreCase(value)) {
-            return TimeoutType.TASK_START_TO_CLOSE;
-        } else if("TASK_SCHEDULE_TO_START".equalsIgnoreCase(value)) {
-            return TimeoutType.TASK_SCHEDULE_TO_START;
-        } else if("TASK_SCHEDULE_TO_CLOSE".equalsIgnoreCase(value)) {
-            return TimeoutType.TASK_SCHEDULE_TO_CLOSE;
-        } else if("TASK_POLL_TO_COMMIT".equalsIgnoreCase(value)) {
-            return TimeoutType.TASK_POLL_TO_COMMIT;
-        } else if("TASK_RELEASE_TO_COMMIT".equalsIgnoreCase(value)) {
-            return TimeoutType.TASK_RELEASE_TO_COMMIT;
-        } else if("PROCESS_START_TO_COMMIT".equalsIgnoreCase(value)) {
-            return TimeoutType.PROCESS_START_TO_COMMIT;
-        } else {
-            throw new IllegalArgumentException("Cannot create TimeoutType for value["+value+"]");
+        TimeoutType result = strToType.get(value);
+        if (null == result) {
+            throw new IllegalArgumentException("Can't create TimeoutType for value["+ value +"]");
         }
+        return result;
     }
 
 }

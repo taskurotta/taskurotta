@@ -25,9 +25,9 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
         int counter = 0;
         int step = 0;
         long timeFrom = System.currentTimeMillis() - recoveryPeriodUnit.toMillis(recoveryPeriod);
-        while(timeFrom < System.currentTimeMillis()) {
+        while (timeFrom < System.currentTimeMillis()) {
             step++;
-            long timeTill =  timeFrom+timeIterationStepUnit.toMillis(timeIterationStep);
+            long timeTill = timeFrom + timeIterationStepUnit.toMillis(timeIterationStep);
             counter += processStep(step, timeFrom, timeTill);
             timeFrom = timeTill;
         }
@@ -40,35 +40,35 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
 
     protected int processStep(int stepNumber, long timeFrom, long timeTill) {
         int counter = 0;
-        TimeoutType[] timeouts = getSupportedTimeouts();//type of timeout to recover
-        if(timeouts!=null && timeouts.length>0) {
-            for(TimeoutType timeoutType: timeouts) {//TODO: specify timeouts collection in CheckpointQuery
-                CheckpointQuery query = new CheckpointQuery(timeoutType);
-                query.setMaxTime(timeTill);
-                query.setMinTime(timeFrom);
+        TimeoutType[] timeouts = getSupportedTimeouts(); //type of timeout to recover
+        if (timeouts == null || timeouts.length <= 0) {
+            logger.error("Recovery process cannot proceed: supported timeoutTypes are not set");
+            return 0;
+        }
 
-                for(CheckpointService checkpointService: getCheckpointServices()){
-                    List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
+        for (TimeoutType timeoutType : timeouts) {//TODO: specify timeouts collection in CheckpointQuery
+            CheckpointQuery query = new CheckpointQuery(timeoutType);
+            query.setMaxTime(timeTill);
+            query.setMinTime(timeFrom);
 
-                    if(stepCheckpoints!= null && !stepCheckpoints.isEmpty()) {
-                        for(Checkpoint checkpoint: stepCheckpoints) {
-                            if(isReadyToRecover(checkpoint)) {
-                                try {
-                                    boolean success = recover(checkpoint);
-                                    if(success) {
-                                        checkpointService.removeCheckpoint(checkpoint);
-                                        counter++;
-                                    }
-                                } catch (Exception e) {
-                                    logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+timeoutType+"]", e);
+            for (CheckpointService checkpointService : getCheckpointServices()){
+                List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
+
+                if (stepCheckpoints != null) {
+                    for (Checkpoint checkpoint : stepCheckpoints) {
+                        if (isReadyToRecover(checkpoint)) {
+                            try {
+                                if (recover(checkpoint)) {
+                                    checkpointService.removeCheckpoint(checkpoint);
+                                    counter++;
                                 }
+                            } catch (Exception e) {
+                                logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+ timeoutType +"]", e);
                             }
                         }
                     }
                 }
             }
-        } else {
-            logger.error("Recovery process cannot proceed: supported timeoutTypes are not set");
         }
 
         return counter;

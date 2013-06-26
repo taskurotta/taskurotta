@@ -2,31 +2,40 @@ package ru.taskurotta.backend.checkpoint.model;
 
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Description for common entity having specified time (checkpoint time).
  * For instance, an expiration time for task having response timeout
  */
-public class Checkpoint {
+public class Checkpoint implements Serializable {
 
-    //Entity entityGuid
+    /**
+     * Entity entityGuid
+     */
     private UUID entityGuid;
 
-    //Type of entity quid field references to
+    /**
+     * Type of entity guid field references to
+     */
     private String entityType;
 
-    //Type of timeout for which checkpoint is set
+    /**
+     * Type of timeout for which checkpoint is set
+     */
     private TimeoutType timeoutType;
 
-    //Checkpoint time
+    /**
+     * Checkpoint time
+     */
     private long time;
 
     public Checkpoint(TimeoutType timeoutType, UUID entityGuid, String entityType, long time) {
-        this.entityGuid = entityGuid;
+        setEntityGuid(entityGuid);
         this.time = time;
         this.entityType = entityType;
-        this.timeoutType = timeoutType;
+        setTimeoutType(timeoutType);
     }
 
     public Checkpoint() {
@@ -36,6 +45,9 @@ public class Checkpoint {
         return entityGuid;
     }
     public void setEntityGuid(UUID entityGuid) {
+        if (null == entityGuid) {
+            throw new IllegalArgumentException("Entity guid cannot be null");
+        }
         this.entityGuid = entityGuid;
     }
 
@@ -59,6 +71,9 @@ public class Checkpoint {
     }
 
     public void setTimeoutType(TimeoutType timeoutType) {
+        if (null == timeoutType) {
+            throw new IllegalArgumentException("TimeoutType cannot be null");
+        }
         this.timeoutType = timeoutType;
     }
 
@@ -102,6 +117,7 @@ public class Checkpoint {
             return false;
         if (time != other.time)
             return false;
+        //noinspection RedundantIfStatement
         if (timeoutType != other.timeoutType)
             return false;
         return true;
