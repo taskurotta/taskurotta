@@ -18,7 +18,7 @@ public class DependencyDecision {
     private String finishedProcessValue;
     private boolean fail = false;
 
-    DependencyDecision() {
+    public DependencyDecision() {
     }
 
     public DependencyDecision(UUID processId) {

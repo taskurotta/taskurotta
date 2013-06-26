@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.snapshot.Snapshot;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -87,7 +88,7 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
 
             snapshot.setSnapshotId((UUID) rs.getObject("snapshotId"));
             snapshot.setTask(mapper.readValue(rs.getString("task"), Task.class));
-            snapshot.setTaskDecision(mapper.readValue(rs.getString("task_decision"), TaskDecision.class));
+            snapshot.setDependencyDecision(mapper.readValue(rs.getString("task_decision"), DependencyDecision.class));
             snapshot.setCreatedDate(rs.getDate("created_date"));
         } catch (IOException e) {
             log.error("deserialization error", e);
@@ -132,7 +133,7 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
             statement.setObject(1, snapshot.getSnapshotId());
             statement.setString(2, mapper.writeValueAsString(snapshot.getTask()));
             statement.setString(3, mapper.writeValueAsString(snapshot.getGraph()));
-            statement.setString(4, mapper.writeValueAsString(snapshot.getTaskDecision()));
+            statement.setString(4, mapper.writeValueAsString(snapshot.getDependencyDecision()));
             statement.setDate(5, new java.sql.Date(snapshot.getCreatedDate().getTime()));
             statement.executeUpdate();
         } catch (SQLException e) {

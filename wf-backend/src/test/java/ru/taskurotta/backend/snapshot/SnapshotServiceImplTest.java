@@ -6,6 +6,7 @@ import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
@@ -44,7 +45,7 @@ public class SnapshotServiceImplTest {
                         new Object[]{},
                         new TaskOptionsImpl(null)),
                 new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new DecisionContainer());
+                new DependencyDecision());
         when(snapshotDataSource.loadSnapshotById(snapshot.getSnapshotId())).thenReturn(snapshot);
         snapshotService = new SnapshotServiceImpl(snapshotDataSource);
 
