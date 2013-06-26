@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.sun.corba.se.impl.ior.ObjectReferenceFactoryImpl;
 import net.sf.cglib.core.CollectionUtils;
 import net.sf.cglib.core.Predicate;
 import ru.taskurotta.backend.checkpoint.CheckpointService;

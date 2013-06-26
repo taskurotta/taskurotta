@@ -272,7 +272,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
                     }
 
                     if (dependencyDecision.isProcessFinished()) {
-                        processBackend.finishProcess(dependencyDecision.getFinishedProcessId(),
+                        processBackend.finishProcess(dependencyDecision,
                                 dependencyDecision.getFinishedProcessValue());
                     }
 
