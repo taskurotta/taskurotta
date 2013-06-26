@@ -1,10 +1,8 @@
 package ru.taskurotta.backend.storage;
 
 import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.transport.model.TaskContainer;
-
-
-import java.util.UUID;
 
 /**
  * User: romario
@@ -34,5 +32,5 @@ public interface ProcessBackend extends CheckpointServiceProvider {
      * @param processId
      * @param returnValue JSON
      */
-    public void finishProcess(UUID processId, String returnValue);
+    public void finishProcess(DependencyDecision dependencyDecision, String returnValue);
 }

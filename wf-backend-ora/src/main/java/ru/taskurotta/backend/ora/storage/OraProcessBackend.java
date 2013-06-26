@@ -18,9 +18,11 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 /**
@@ -41,17 +43,17 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public void finishProcess(UUID processId, String returnValue) {
+    public void finishProcess(DependencyDecision dependencyDecision, String returnValue) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ? WHERE process_id = ?")
         ) {
             ps.setLong(1, (new Date()).getTime());
             ps.setInt(2, 1);
             ps.setString(3, returnValue);
-            ps.setString(4, processId.toString());
+            ps.setString(4, dependencyDecision.getFinishedProcessId().toString());
             ps.executeUpdate();
-            checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
-            checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+            checkpointService.removeEntityCheckpoints(dependencyDecision.getFinishedProcessId(), TimeoutType.PROCESS_START_TO_CLOSE);
+            checkpointService.removeEntityCheckpoints(dependencyDecision.getFinishedProcessId(), TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);

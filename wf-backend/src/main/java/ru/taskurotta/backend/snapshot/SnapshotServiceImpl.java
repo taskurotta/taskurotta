@@ -17,7 +17,6 @@ public class SnapshotServiceImpl implements SnapshotService {
 
     @Override
     public void createSnapshot(Snapshot snapshot) {
-        validateSnapshot(snapshot);
         dataSource.save(snapshot);
     }
 
@@ -25,12 +24,5 @@ public class SnapshotServiceImpl implements SnapshotService {
     public Snapshot getSnapshot(UUID snapshotId) {
         return dataSource.loadSnapshotById(snapshotId);
     }
-
-    private void validateSnapshot(Snapshot snapshot) {
-        if (snapshot.getTask() == null) {
-            throw new IllegalStateException("task property is null");
-        }
-    }
-
 
 }

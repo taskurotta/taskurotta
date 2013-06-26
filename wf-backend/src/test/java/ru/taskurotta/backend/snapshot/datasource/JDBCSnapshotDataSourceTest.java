@@ -12,6 +12,7 @@ import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskType;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class JDBCSnapshotDataSourceTest {
                         new Object[]{},
                         new TaskOptionsImpl(null)),
                 new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new TaskDecisionImpl(UUID.randomUUID(), UUID.randomUUID(), null, null));
+                new DecisionContainer());
     }
 
     @Test
@@ -66,7 +67,7 @@ public class JDBCSnapshotDataSourceTest {
                         new Object[]{},
                         new TaskOptionsImpl(null)),
                 new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new TaskDecisionImpl(UUID.randomUUID(), UUID.randomUUID(), null, null));
+                new DecisionContainer());
         snapshot.setCreatedDate(new Date());
         snapshotService.createSnapshot(snapshot);
 

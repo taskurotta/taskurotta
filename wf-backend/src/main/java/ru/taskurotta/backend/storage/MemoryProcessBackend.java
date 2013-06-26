@@ -17,9 +17,11 @@ import ru.taskurotta.backend.common.ObjectFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.snapshot.Snapshot;
 import ru.taskurotta.backend.snapshot.SnapshotService;
 import ru.taskurotta.backend.snapshot.SnapshotServiceImpl;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 /**
@@ -60,16 +62,19 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     }
 
     @Override
-    public void finishProcess(UUID processId, String returnValue) {
+    public void finishProcess(DependencyDecision dependencyDecision, String returnValue) {
 
-        ProcessVO process = processesStorage.get(processId);
+        ProcessVO process = processesStorage.get(dependencyDecision.getFinishedProcessId());
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
-        processesStorage.put(processId, process);
+        processesStorage.put(dependencyDecision.getFinishedProcessId(), process);
 
+        Snapshot snapshot = new Snapshot();
+        snapshot.setDependencyDecision(dependencyDecision);
+        snapshotService.createSnapshot(snapshot);
         //should be at the end of the method
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+        checkpointService.removeEntityCheckpoints(dependencyDecision.getFinishedProcessId(), TimeoutType.PROCESS_START_TO_CLOSE);
+        checkpointService.removeEntityCheckpoints(dependencyDecision.getFinishedProcessId(), TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 
     @Override

@@ -2,8 +2,9 @@ package ru.taskurotta.backend.snapshot;
 
 import com.google.common.base.Objects;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.transport.model.DecisionContainer;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,21 +13,21 @@ import java.util.UUID;
 /**
  * User: greg
  */
-public class Snapshot implements Serializable{
+public class Snapshot implements Serializable {
     private UUID snapshotId = UUID.randomUUID();
     private Task task;
     private Graph graph;
-    private TaskDecision taskDecision;
+    private DependencyDecision dependencyDecision;
     private Date createdDate = new Date();
 
-    public Snapshot(){
+    public Snapshot() {
 
     }
 
-    public Snapshot(Task task, Graph graph, TaskDecision taskDecision) {
+    public Snapshot(Task task, Graph graph, DependencyDecision dependencyDecision) {
         this.task = task;
         this.graph = graph;
-        this.taskDecision = taskDecision;
+        this.dependencyDecision = dependencyDecision;
     }
 
     public UUID getSnapshotId() {
@@ -53,12 +54,12 @@ public class Snapshot implements Serializable{
         this.graph = graph;
     }
 
-    public TaskDecision getTaskDecision() {
-        return taskDecision;
+    public DependencyDecision getDependencyDecision() {
+        return dependencyDecision;
     }
 
-    public void setTaskDecision(TaskDecision taskDecision) {
-        this.taskDecision = taskDecision;
+    public void setDependencyDecision(DependencyDecision dependencyDecision) {
+        this.dependencyDecision = dependencyDecision;
     }
 
     public Date getCreatedDate() {
@@ -76,12 +77,14 @@ public class Snapshot implements Serializable{
 
         Snapshot snapshot = (Snapshot) o;
 
+        if (createdDate != null ? !createdDate.equals(snapshot.createdDate) : snapshot.createdDate != null)
+            return false;
+        if (dependencyDecision != null ? !dependencyDecision.equals(snapshot.dependencyDecision) : snapshot.dependencyDecision != null) {
+            return false;
+        }
         if (graph != null ? !graph.equals(snapshot.graph) : snapshot.graph != null) return false;
         if (snapshotId != null ? !snapshotId.equals(snapshot.snapshotId) : snapshot.snapshotId != null) return false;
         if (task != null ? !task.equals(snapshot.task) : snapshot.task != null) return false;
-        if (taskDecision != null ? !taskDecision.equals(snapshot.taskDecision) : snapshot.taskDecision != null) {
-            return false;
-        }
 
         return true;
     }
@@ -91,7 +94,8 @@ public class Snapshot implements Serializable{
         int result = snapshotId != null ? snapshotId.hashCode() : 0;
         result = 31 * result + (task != null ? task.hashCode() : 0);
         result = 31 * result + (graph != null ? graph.hashCode() : 0);
-        result = 31 * result + (taskDecision != null ? taskDecision.hashCode() : 0);
+        result = 31 * result + (dependencyDecision != null ? dependencyDecision.hashCode() : 0);
+        result = 31 * result + (createdDate != null ? createdDate.hashCode() : 0);
         return result;
     }
 
@@ -101,7 +105,8 @@ public class Snapshot implements Serializable{
                 .add("snapshotId", snapshotId)
                 .add("task", task)
                 .add("graph", graph)
-                .add("taskDecision", taskDecision)
+                .add("dependencyDecision", dependencyDecision)
+                .add("createdDate", createdDate)
                 .toString();
     }
 }

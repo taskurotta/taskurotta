@@ -11,6 +11,7 @@ import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskType;
 
 import java.util.UUID;
@@ -43,7 +44,7 @@ public class SnapshotServiceImplTest {
                         new Object[]{},
                         new TaskOptionsImpl(null)),
                 new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new TaskDecisionImpl(UUID.randomUUID(), UUID.randomUUID(), null, null));
+                new DecisionContainer());
         when(snapshotDataSource.loadSnapshotById(snapshot.getSnapshotId())).thenReturn(snapshot);
         snapshotService = new SnapshotServiceImpl(snapshotDataSource);
 
