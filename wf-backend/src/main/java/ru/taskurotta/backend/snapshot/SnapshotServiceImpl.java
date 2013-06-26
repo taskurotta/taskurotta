@@ -27,14 +27,8 @@ public class SnapshotServiceImpl implements SnapshotService {
     }
 
     private void validateSnapshot(Snapshot snapshot) {
-        if (snapshot.getGraph() == null) {
-            throw new IllegalStateException("graph property is null");
-        }
         if (snapshot.getTask() == null) {
             throw new IllegalStateException("task property is null");
-        }
-        if (snapshot.getTaskDecision() == null) {
-            throw new IllegalStateException("task decision property is null");
         }
     }
 

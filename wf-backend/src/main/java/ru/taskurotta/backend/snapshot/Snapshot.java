@@ -17,7 +17,7 @@ public class Snapshot implements Serializable{
     private Task task;
     private Graph graph;
     private TaskDecision taskDecision;
-    private Date createdDate;
+    private Date createdDate = new Date();
 
     public Snapshot(){
 

@@ -6,15 +6,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.sun.corba.se.impl.ior.ObjectReferenceFactoryImpl;
 import net.sf.cglib.core.CollectionUtils;
 import net.sf.cglib.core.Predicate;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.common.ObjectFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.snapshot.Snapshot;
+import ru.taskurotta.backend.snapshot.SnapshotService;
+import ru.taskurotta.backend.snapshot.SnapshotServiceImpl;
 import ru.taskurotta.transport.model.TaskContainer;
 
 /**
@@ -26,7 +31,8 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
 
     private CheckpointService checkpointService = new MemoryCheckpointService();
     private Map<UUID, ProcessVO> processesStorage = new ConcurrentHashMap<>();
-
+    private SnapshotService snapshotService;
+    private ObjectFactory objectFactory;
 
     @Override
     public void startProcess(TaskContainer task) {
@@ -35,6 +41,11 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
         processesStorage.put(task.getProcessId(), process);
+
+        Snapshot snapshot = new Snapshot();
+        snapshot.setTask(objectFactory.parseTask(task));
+
+        snapshotService.createSnapshot(snapshot);
 
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getProcessId(), task.getActorId(), task.getStartTime()));
@@ -68,6 +79,10 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
 
     public void setCheckpointService(CheckpointService checkpointService) {
         this.checkpointService = checkpointService;
+    }
+
+    public void setSnapshotService(SnapshotService snapshotService) {
+        this.snapshotService = snapshotService;
     }
 
     @Override
