@@ -16,6 +16,10 @@ public class TaskOptionsImpl implements TaskOptions {
     private ActorSchedulingOptions actorSchedulingOptions;
     private Promise<?>[] promisesWaitFor;
 
+    public TaskOptionsImpl(){
+
+    }
+
 	public TaskOptionsImpl(ArgType[] argTypes) {
 		this.argTypes = argTypes;
 	}
