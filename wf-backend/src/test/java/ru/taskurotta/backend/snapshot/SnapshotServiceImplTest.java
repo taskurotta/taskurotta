@@ -1,10 +1,12 @@
 package ru.taskurotta.backend.snapshot;
 
-import org.junit.Before;
-import org.junit.Test;
+
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskOptionsImpl;
@@ -13,9 +15,9 @@ import ru.taskurotta.transport.model.TaskType;
 
 import java.util.UUID;
 
-import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.testng.Assert.assertEquals;
 
 /**
  * User: greg
@@ -28,7 +30,7 @@ public class SnapshotServiceImplTest {
     Snapshot snapshot;
     private SnapshotService snapshotService;
 
-    @Before
+    @BeforeTest
     public void init() {
         MockitoAnnotations.initMocks(this);
         snapshot = new Snapshot(

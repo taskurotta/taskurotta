@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.snapshot;
 
+import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
+
 import java.util.UUID;
 
 /**
