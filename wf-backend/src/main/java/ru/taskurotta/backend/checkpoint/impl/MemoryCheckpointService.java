@@ -26,10 +26,6 @@ public class MemoryCheckpointService implements CheckpointService {
 
     private Map<TimeoutType, Set<Checkpoint>> checkpointStorage = new ConcurrentHashMap<TimeoutType, Set<Checkpoint>>();
 
-    public MemoryCheckpointService() {
-        throw new IllegalArgumentException("!!!!!!!!!!!");
-    }
-
     public void addCheckpoint(Checkpoint checkpoint) {
         if (hasTimeoutType(checkpoint)) {
             Set<Checkpoint> set = getTypedSet(checkpoint.getTimeoutType(), true);
