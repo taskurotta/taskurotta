@@ -107,6 +107,10 @@ public class MemoryCheckpointService implements CheckpointService {
             if(command.getEntityType() != null) {
                 result = result && command.getEntityType().equals(checkpoint.getEntityType());
             }
+
+            if (command.getEntityGuid() != null) {
+                result = result && command.getEntityGuid().equals(checkpoint.getEntityGuid());
+            }
         }
         return result;
     }
