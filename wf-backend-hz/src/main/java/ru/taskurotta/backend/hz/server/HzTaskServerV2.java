@@ -30,7 +30,10 @@ import java.util.concurrent.TimeUnit;
  * User: stukushin
  * Date: 18.06.13
  * Time: 12:11
+ *
+ * @see HazelcastTaskServer
  */
+@Deprecated
 public class HzTaskServerV2 extends GeneralTaskServer implements MembershipListener {
 
     private static final Logger logger = LoggerFactory.getLogger(HzTaskServerV2.class);

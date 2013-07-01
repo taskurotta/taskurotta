@@ -4,13 +4,18 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:task="http://www.springframework.org/schema/task"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <import resource="console-context.xml" />
 
     <context:property-placeholder/>
     <context:annotation-config/>
+    <!--<aop:aspectj-autoproxy/>-->
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
@@ -27,6 +32,9 @@
         </hz:config>
     </hz:hazelcast>
 
+    <!--<bean id="decisionInfo" class="ru.taskurotta.backend.hz.dependency.HzDecisionInfoRetriever" >-->
+        <!--<constructor-arg name="hzInstance" ref="hzInstance" />-->
+    <!--</bean>-->
 
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
@@ -49,7 +57,6 @@
     <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
-
     <!-- /REST resources -->
 
     <!-- Recoveries -->

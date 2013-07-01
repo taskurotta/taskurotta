@@ -1,10 +1,5 @@
 package ru.taskurotta.backend.console.manager.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
@@ -13,12 +8,18 @@ import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
+import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -32,9 +33,21 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private TaskInfoRetriever taskInfo;
     private CheckpointInfoRetriever checkpointInfo;
     private ProfileInfoRetriever profileInfo;
+    private DecisionInfoRetriever decisionInfo;
+
 
     @Override
-    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
+    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize, QueueType queueType) {
+        if(QueueType.ACTOR.equals(queueType)) {
+            return getActorQueueState(pageNumber, pageSize);
+        } else if(QueueType.DECISION.equals(queueType)) {
+            return getDecisionQueueState(pageNumber, pageSize);
+        } else {
+            return null;
+        }
+    }
+
+    protected GenericPage<QueueVO> getActorQueueState(int pageNumber, int pageSize) {
         if (queueInfo == null) {
             return null;
         }
@@ -49,6 +62,26 @@ public class ConsoleManagerImpl implements ConsoleManager {
                 tmpResult.add(queueVO);
             }
         }
+        return new GenericPage<QueueVO>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
+    }
+
+    protected GenericPage<QueueVO> getDecisionQueueState(int pageNumber, int pageSize) {
+        if(decisionInfo == null) {
+            return null;
+        }
+
+        List<QueueVO> tmpResult = null;
+        GenericPage<String> queuesPage = decisionInfo.getQueueList(pageNumber, pageSize);
+        if (queuesPage != null) {
+            tmpResult = new ArrayList<>();
+            for (String queueName : queuesPage.getItems()) {
+                QueueVO queueVO = new QueueVO();
+                queueVO.setName(queueName);
+                queueVO.setCount(decisionInfo.getQueueItemCount(queueName));
+                tmpResult.add(queueVO);
+            }
+        }
+
         return new GenericPage<QueueVO>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
     }
 
@@ -194,5 +227,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         this.profileInfo = profileInfo;
     }
 
-
+    public void setDecisionInfo(DecisionInfoRetriever decisionInfo) {
+        this.decisionInfo = decisionInfo;
+    }
 }
