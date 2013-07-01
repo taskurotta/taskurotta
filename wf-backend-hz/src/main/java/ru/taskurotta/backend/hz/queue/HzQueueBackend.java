@@ -9,14 +9,17 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,11 +35,11 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private CheckpointService checkpointService;
+    private CheckpointService checkpointService = new MemoryCheckpointService();//default, can be overridden with setter
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
-    private String queueListName = "tsQueuesList";
+    private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
 
     public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
@@ -49,8 +52,10 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
+        Set<String> storedQueueNames = hazelcastInstance.<String>getSet(queueListName);
+        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(storedQueueNames));
+        Set <String> queueNamesSet = filterActorQueues(storedQueueNames);
         List<String> result = new ArrayList<>(pageSize);
-        Set<String> queueNamesSet = hazelcastInstance.getSet(queueListName);
         String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
         if (queueNames.length > 0) {
             int pageStart = (pageNum - 1) * pageSize;
@@ -58,6 +63,18 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             result.addAll(Arrays.asList(queueNames).subList(pageStart, pageEnd));
         }
         return new GenericPage<>(result, pageNum, pageSize, queueNames.length);
+    }
+
+    private Set<String> filterActorQueues(Set<String> queueNames) {
+        Set<String> result = new HashSet<>();
+        if(queueNames!=null && !queueNames.isEmpty()) {
+            for(String queueName: queueNames) {
+                if(!queueName.contains(Constants.DECISION_QUEUE_PREFIX)) {
+                    result.add(queueName);
+                }
+            }
+        }
+        return result;
     }
 
     @Override
