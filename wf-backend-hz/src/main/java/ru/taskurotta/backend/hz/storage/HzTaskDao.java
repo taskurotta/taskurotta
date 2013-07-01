@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.hz.storage;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import com.sun.istack.internal.Nullable;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -82,9 +82,9 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new com.google.common.base.Predicate<TaskContainer>() {
+        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
             @Override
-            public boolean apply(@Nullable TaskContainer taskContainer) {
+            public boolean apply(TaskContainer taskContainer) {
                 return taskContainer.getNumberOfAttempts() >= iterationCount;
             }
         });

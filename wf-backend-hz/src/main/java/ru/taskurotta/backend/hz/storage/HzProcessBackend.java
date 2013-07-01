@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.hz.storage;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -108,18 +108,18 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
             switch (type) {
                 case SEARCH_BY_ID:
-                    result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
+                    result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
                         @Override
-                        public boolean apply(@Nullable ProcessVO processVO) {
+                        public boolean apply(ProcessVO processVO) {
                             return processVO.getProcessUuid().toString().startsWith(id);
                         }
                     }));
                     break;
 
                 case SEARCH_BY_CUSTOM_ID:
-                    result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
+                    result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
                         @Override
-                        public boolean apply(@Nullable ProcessVO processVO) {
+                        public boolean apply(ProcessVO processVO) {
                             return processVO.getCustomId().startsWith(id);
                         }
                     }));
