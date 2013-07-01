@@ -52,8 +52,7 @@ public class CheckpointServiceImpl implements CheckpointService {
     @Override
     public void removeCheckpoint(Checkpoint checkpoint) {
         MultiMap<UUID, Checkpoint> map = hzInstance.getMultiMap(getMapName(checkpoint.getTimeoutType()));
-        Collection<Checkpoint> checkpoints = map.get(checkpoint.getEntityGuid());
-        if (checkpoints.remove(checkpoint)) {
+        if (map.remove(checkpoint.getEntityGuid(), checkpoint)) {
             log.debug("removed checkpoint [{}]", checkpoint);
         } else {
             log.warn("Checkpoint [{}] not found", checkpoint);
