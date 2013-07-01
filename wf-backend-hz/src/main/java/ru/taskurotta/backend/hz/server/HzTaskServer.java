@@ -12,6 +12,7 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
@@ -34,10 +35,11 @@ import java.util.UUID;
  * Behaves exactly like GeneralTaskServer except for overridden release() method
  * User: dimadin
  * Date: 10.06.13 17:53
+ *
+ * @see HazelcastTaskServer
  */
+@Deprecated
 public class HzTaskServer extends GeneralTaskServer implements MembershipListener {
-
-    private static final String QUEUE_PREFIX = "#queue#";
 
     private final static Logger logger = LoggerFactory.getLogger(HzTaskServer.class);
 
@@ -109,7 +111,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         Map<String, Set<String>> result = new HashMap<>();
         if(names!=null && !names.isEmpty()) {
             for(String name: names) {
-                String memberId = name.split(QUEUE_PREFIX)[0];
+                String memberId = name.split(Constants.DECISION_QUEUE_PREFIX)[0];
                 if(!result.containsKey(memberId)) {
                     result.put(memberId, new HashSet<String>());
                 }
@@ -124,7 +126,7 @@ public class HzTaskServer extends GeneralTaskServer implements MembershipListene
         hzInstance.getCluster().addMembershipListener(this);
         String memberId = hzInstance.getCluster().getLocalMember().getUuid();
         for(int i = 0; i<queuesPerNode; i++) {
-            String queueName = memberId + QUEUE_PREFIX + i;
+            String queueName = memberId + Constants.DECISION_QUEUE_PREFIX + i;
             hzInstance.getSet(decisionQueueNamesList).add(queueName);
             Thread thread = new Thread(new ProcessDecisionJob(queueName));
             thread.setDaemon(true);
