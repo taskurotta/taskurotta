@@ -64,7 +64,7 @@ public class BaseTaskProxy implements TaskServer {
             WebResource.Builder rb = pullResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            result =  rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
+            result = rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if(status>=400 && status<500) {

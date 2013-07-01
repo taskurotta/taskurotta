@@ -9,6 +9,8 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,22 +72,12 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
-        List<TaskContainer> tmpResult = new ArrayList<>();
-        int startIndex = (pageNumber - 1) * pageSize + 1;
-        int endIndex = startIndex + pageSize - 1;
-        long totalCount = 0;
-        int index = 0;
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if(index > endIndex) {
-                totalCount = id2TaskMap.values().size();
-                break;
-            } else if(index>=startIndex && index<=endIndex) {
-                tmpResult.add(tc);
-            }
-            index++;
-        }
+        Collection<TaskContainer> tasks = id2TaskMap.values();
+        int pageEnd = pageSize * pageNumber >= tasks.size() ? tasks.size() : pageSize * pageNumber;
+        int pageStart = (pageNumber - 1) * pageSize;
+        List<TaskContainer> resultList = Arrays.asList(tasks.toArray(new TaskContainer[tasks.size()])).subList(pageStart, pageEnd);
 
-        return new GenericPage<>(tmpResult, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(resultList, pageNumber, pageSize, resultList.size());
     }
 
     @Override

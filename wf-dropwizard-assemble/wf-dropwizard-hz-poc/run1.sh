@@ -1,1 +1,2 @@
-java -Ddw.http.port=8811 -Ddw.http.adminPort=8812 -Ddw.logging.file.currentLogFilename="./target/logs/service1.log" -jar target/wf-dropwizard-hz-poc-0.1.0-SNAPSHOT.jar server src/main/resources/conf.yml
+java -Xmx64m -javaagent:./target/dependency/aspectjweaver-1.7.2.jar -Ddw.http.port=8811 -Ddw.http.adminPort=8812 -Ddw.logging.file.currentLogFilename="./target/logs/service1.log" -jar target/wf-dropwizard-hz-poc-0.1.0-SNAPSHOT.jar server src/main/resources/conf.yml
+#-javaagent:./target/dependency/aspectjweaver-1.7.2.jar

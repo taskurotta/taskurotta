@@ -15,6 +15,7 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -91,11 +92,11 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
         processes = processesStorage.values().toArray(processes);
         if (!processesStorage.isEmpty()) {
-            for (int i = (pageNumber - 1) * pageSize; i <= ((pageSize * pageNumber >= (processes.length)) ? (processes.length) - 1 : pageSize * pageNumber - 1); i++) {
-                result.add(processes[i]);
-            }
+            int pageEnd = pageSize * pageNumber >= processes.length ? processes.length : pageSize * pageNumber;
+            int pageStart = (pageNumber - 1) * pageSize;
+            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
         }
-        return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
+        return new GenericPage<>(result, pageNumber, pageSize, processes.length);
 
     }
 
