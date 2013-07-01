@@ -215,7 +215,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, null, -1, -1));
+        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId.toString(), -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();
     }
 
