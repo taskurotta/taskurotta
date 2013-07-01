@@ -2,9 +2,9 @@ package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
-import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.internal.RuntimeContext;
+import ru.taskurotta.transport.model.ArgType;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -19,7 +19,7 @@ import java.util.Map;
 abstract public class CachedProxyFactory implements ProxyFactory {
 
 
-    private Map<Class, Object> clientToProxy = new HashMap<Class, Object>();
+    private Map<Class, Object> clientToProxy = new HashMap<>();
 
     abstract public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext);
 

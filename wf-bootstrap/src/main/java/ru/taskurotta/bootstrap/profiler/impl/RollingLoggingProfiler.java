@@ -19,7 +19,7 @@ public class RollingLoggingProfiler implements Profiler {
 	public static final String START = "start_";
 	public static final String END = "end_";
 	
-	private Map<String, Date> taskMeterMap = new ConcurrentHashMap<String, Date>();
+	private Map<String, Date> taskMeterMap = new ConcurrentHashMap<>();
 	
 	private static final Logger logger = LoggerFactory.getLogger(RollingLoggingProfiler.class);
 	
@@ -39,7 +39,7 @@ public class RollingLoggingProfiler implements Profiler {
 		
 		if(taskMeterMap!=null && !taskMeterMap.isEmpty()) {
 			StringBuilder sb = new StringBuilder("\n");
-			Set<String> taskIdSet = new HashSet<String>();
+			Set<String> taskIdSet = new HashSet<>();
 			for(String key: taskMeterMap.keySet()) {
 				taskIdSet.add(extractId(key));
 			}
@@ -61,7 +61,7 @@ public class RollingLoggingProfiler implements Profiler {
 					maxEnd = end>maxEnd? end: maxEnd;
 				}
 				if(logger.isDebugEnabled()) {
-					sb.append(name + ": " + i + ". Task ["+key+"]: start["+start+"]ms, end["+end+"]ms, delta["+delta+"]ms \n");	
+					sb.append(name + ": " + i + ". Task ["+key+"]: start["+start+"]ms, end["+end+"]ms, delta["+delta+"]ms \n");
 				}
 				
 			}

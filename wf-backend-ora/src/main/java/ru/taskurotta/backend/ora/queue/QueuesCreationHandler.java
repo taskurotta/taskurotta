@@ -1,5 +1,10 @@
 package ru.taskurotta.backend.ora.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,13 +15,8 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.sql.DataSource;
 
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.exception.BackendCriticalException;
 
 /**
  * Handler containing logic for queues auto creation.

@@ -1,10 +1,10 @@
 package ru.taskurotta.backend.checkpoint;
 
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Service interface for managing checkpoints referred by timeouts.

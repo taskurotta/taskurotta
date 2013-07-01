@@ -1,11 +1,10 @@
 package ru.taskurotta.dropwizard.client.serialization.wrapper;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import ru.taskurotta.dropwizard.client.serialization.ActorDefinitionDeserializer;
 import ru.taskurotta.dropwizard.client.serialization.ActorDefinitionSerializer;
 import ru.taskurotta.util.ActorDefinition;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class ActorDefinitionWrapper {
 

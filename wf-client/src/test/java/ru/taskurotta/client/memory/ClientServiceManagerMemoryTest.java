@@ -1,7 +1,5 @@
 package ru.taskurotta.client.memory;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.taskurotta.backend.BackendBundle;
@@ -9,6 +7,8 @@ import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * User: stukushin

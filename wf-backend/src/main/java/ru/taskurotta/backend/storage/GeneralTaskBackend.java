@@ -1,8 +1,5 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -15,6 +12,9 @@ import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario

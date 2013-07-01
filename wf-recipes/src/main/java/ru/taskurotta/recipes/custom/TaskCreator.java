@@ -3,7 +3,6 @@ package ru.taskurotta.recipes.custom;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.custom.deciders.CustomDeciderClient;
-import ru.taskurotta.recipes.retrypolicy.decider.SumDeciderClient;
 
 /**
  * User: stukushin

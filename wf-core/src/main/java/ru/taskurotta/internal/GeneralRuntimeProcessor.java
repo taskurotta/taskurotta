@@ -53,6 +53,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
         } catch(Throwable e) {
             log.error("Unexpected error processing task ["+task+"]", e);
 
+            assert targetReference != null;
             RetryPolicy retryPolicy = targetReference.getRetryPolicy();
 
             long restartTime = TaskDecision.NO_RESTART;

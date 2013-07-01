@@ -8,13 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.exception.server.InvalidServerRequestException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.util.ActorDefinition;
 
 import javax.ws.rs.core.MediaType;

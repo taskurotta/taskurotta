@@ -2,7 +2,6 @@ package ru.taskurotta.example.calculate.worker.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.example.calculate.RandomException;
 import ru.taskurotta.example.calculate.worker.Multiplier;
 

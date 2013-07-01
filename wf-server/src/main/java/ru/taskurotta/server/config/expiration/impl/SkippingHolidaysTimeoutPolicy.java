@@ -1,5 +1,9 @@
 package ru.taskurotta.server.config.expiration.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.config.model.ExpirationPolicy;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -7,17 +11,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ru.taskurotta.backend.config.model.ExpirationPolicy;
 
 /**
  * ExpirationPolicy having knowledge of holidays, i.e. days which are excluded at expiration time evaluation.
@@ -73,7 +71,7 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
 
     private void initHolidaysList(String fileLocation) throws IOException, ParseException {
         if(fileLocation!=null) {
-            holidays = new ArrayList<Date>();
+            holidays = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             sdf.setLenient(false);
             BufferedReader br = new BufferedReader(new FileReader(fileLocation));
@@ -93,7 +91,7 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     private String listHolidays() {
         String result = null;
         if(holidays != null) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             for(Date date: holidays ){
                 if(sb.length() > 0) {
@@ -126,7 +124,7 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     private List<Date> getActualHolidays(long forDate) {
         List<Date> result = null;
         if(holidays!=null && !holidays.isEmpty()) {
-            result = new ArrayList<Date>();
+            result = new ArrayList<>();
             Date target = new Date(forDate);
             for(Date date: holidays) {
                 if(date.after(target) && !isSameDay(date, target)) {

@@ -1,9 +1,5 @@
 package ru.taskurotta.client.internal;
 
-import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import ru.taskurotta.ProxyFactory;
 import ru.taskurotta.annotation.Decider;
@@ -15,6 +11,10 @@ import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
+
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * User: stukushin

@@ -68,7 +68,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
 
         String actorVersion = annotationExplorer.getActorVersion(actorAnnotation);
 
-        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<>();
 
         Method[] targetMethods = clientInterface.getMethods();
         for (Method method : targetMethods) {

@@ -1,11 +1,11 @@
 package ru.taskurotta.backend.ora;
 
+import ru.taskurotta.backend.ora.dao.DbConnect;
+import ru.taskurotta.backend.ora.runnable.CreationTask;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
-import ru.taskurotta.backend.ora.dao.DbConnect;
-import ru.taskurotta.backend.ora.runnable.CreationTask;
 
 /**
  * User: greg

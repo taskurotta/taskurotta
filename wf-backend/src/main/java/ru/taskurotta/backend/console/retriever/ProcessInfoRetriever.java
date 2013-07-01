@@ -1,10 +1,10 @@
 package ru.taskurotta.backend.console.retriever;
 
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Process information retriever. Provides info about processes, such as number of active processes, their id's, start times and such.
