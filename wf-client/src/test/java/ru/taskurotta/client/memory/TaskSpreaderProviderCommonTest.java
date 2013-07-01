@@ -79,7 +79,6 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         // create taskA
 
         UUID taskIdA = UUID.randomUUID();
-        System.err.println("taskIdA = " + taskIdA);
         Task taskA = deciderTask(taskIdA, TaskType.DECIDER_START, "taskA", null);
 
         // Add taskA to queue

@@ -116,7 +116,7 @@ public class WEStartWFTest {
         Task[] taskList = taskDecision.getTasks();
 
         for (Task taskInList : taskList) {
-            System.err.println("Task: " + taskInList);
+            System.out.println("Task: " + taskInList);
         }
 
 //        Task patternTask = new TaskImpl(

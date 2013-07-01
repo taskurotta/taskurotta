@@ -342,8 +342,6 @@ public class Graph implements Serializable {
     public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
         Set<UUID> waitForTasks = links.get(taskId);
 
-        System.err.println("waitForTasks = " + waitForTasks);
-
         if (waitForTasks == null) {
             return false;
         }
