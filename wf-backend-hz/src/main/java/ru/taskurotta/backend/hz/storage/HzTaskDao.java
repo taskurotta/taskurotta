@@ -1,10 +1,8 @@
 package ru.taskurotta.backend.hz.storage;
 
+import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sun.istack.internal.Nullable;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -21,8 +19,6 @@ import java.util.UUID;
  * Date: 11.06.13 18:13
  */
 public class HzTaskDao implements TaskDao {
-
-    private final static Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
 
     private Map<UUID, TaskContainer> id2TaskMap;
     private Map<UUID, DecisionContainer> id2TaskDecisionMap;
@@ -89,19 +85,17 @@ public class HzTaskDao implements TaskDao {
             index++;
         }
 
-        return new GenericPage(tmpResult, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(tmpResult, pageNumber, pageSize, totalCount);
     }
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        List<TaskContainer> result = new ArrayList(CollectionUtils.filter(id2TaskMap.values(), new Predicate() {
+        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new com.google.common.base.Predicate<TaskContainer>() {
             @Override
-            public boolean evaluate(Object o) {
-                TaskContainer task = (TaskContainer) o;
-                return task.getNumberOfAttempts() >= iterationCount;
+            public boolean apply(@Nullable TaskContainer taskContainer) {
+                return taskContainer.getNumberOfAttempts() >= iterationCount;
             }
-        }));
-        return result;
+        });
     }
 
     @Override
