@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.hz.storage;
 
+import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
+import com.sun.istack.internal.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -103,25 +103,33 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     @Override
     public List<ProcessVO> findProcesses(String type, final String id) {
         List<ProcessVO> result = new ArrayList<>();
+
         if ((id != null) && (!id.isEmpty())) {
-            if (SEARCH_BY_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
-                        return process.getProcessUuid().toString().startsWith(id);
-                    }
-                }));
-            } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
-                        return process.getCustomId().startsWith(id);
-                    }
-                }));
+
+            switch (type) {
+                case SEARCH_BY_ID:
+                    result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
+                        @Override
+                        public boolean apply(@Nullable ProcessVO processVO) {
+                            return processVO.getProcessUuid().toString().startsWith(id);
+                        }
+                    }));
+                    break;
+
+                case SEARCH_BY_CUSTOM_ID:
+                    result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
+                        @Override
+                        public boolean apply(@Nullable ProcessVO processVO) {
+                            return processVO.getCustomId().startsWith(id);
+                        }
+                    }));
+                    break;
+
+                default:
+                    break;
             }
         }
+
         return result;
     }
 
