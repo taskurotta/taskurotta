@@ -35,8 +35,10 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta.server: INFO
+        ru.taskurotta.server.GeneralTaskServer: DEBUG
+        ru.taskurotta.test.monkey.AbstractMonkeyAspect: TRACE
         ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.hz.server.HazelcastTaskServer: DEBUG
         ru.taskurotta.backend.hz.storage: DEBUG
         ru.taskurotta.backend.checkpoint: DEBUG
         ru.taskurotta.backend.hz.checkpoint: DEBUG
