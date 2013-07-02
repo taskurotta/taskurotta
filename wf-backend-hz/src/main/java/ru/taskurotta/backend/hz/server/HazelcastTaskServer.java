@@ -116,12 +116,39 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             try {
                 lock.lock();
                 DecisionContainer taskDecision = taskServer.taskBackend.getDecision(taskId, processId);
-                taskServer.processDecision(taskDecision);
+                if(taskServer.processDecision(taskDecision)) {
+                    //TODO: snapshot processsing here?
+                }
+//                logMemberAction(taskHzInstance);
             } finally {
+//                validate(taskHzInstance);
                 lock.unlock();
             }
             return null;
         }
+
+//        private void logMemberAction(HazelcastInstance hzInstance) {
+//            String memberName = hzInstance.getCluster().getLocalMember().toString();
+//            hzInstance.getSet(memberName+":pocTestSet").add(processId);
+//        }
+
+//        private void validate(HazelcastInstance hzInstance) {
+//            Set<UUID> result = new HashSet();
+//            int validated = 0;
+//            for(Member member: hzInstance.getCluster().getMembers()) {
+//                Set<UUID> memberSet = hzInstance.getSet(member.toString()+":pocTestSet");
+//                for(UUID uuid: memberSet) {
+//                    boolean newVal = result.add(uuid);
+//                    if(!newVal) {
+//                        logger.error("Same process[{}] on different nodes detected!", uuid);
+//                        return;
+//                    } else {
+//                        validated++;
+//                    }
+//                }
+//            }
+//            logger.info("Validated [{}] processes, all OK", validated);
+//        }
 
         @Override
         public Object getPartitionKey() {
