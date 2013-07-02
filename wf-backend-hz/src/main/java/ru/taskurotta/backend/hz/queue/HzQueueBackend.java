@@ -19,7 +19,6 @@ import ru.taskurotta.backend.queue.QueueBackend;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,9 +51,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
-        Set<String> storedQueueNames = hazelcastInstance.<String>getSet(queueListName);
-        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(storedQueueNames));
-        Set <String> queueNamesSet = filterActorQueues(storedQueueNames);
+        Set<String> queueNamesSet = hazelcastInstance.<String>getSet(queueListName);
+        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(queueNamesSet));
         List<String> result = new ArrayList<>(pageSize);
         String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
         if (queueNames.length > 0) {
@@ -63,18 +61,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             result.addAll(Arrays.asList(queueNames).subList(pageStart, pageEnd));
         }
         return new GenericPage<>(result, pageNum, pageSize, queueNames.length);
-    }
-
-    private Set<String> filterActorQueues(Set<String> queueNames) {
-        Set<String> result = new HashSet<>();
-        if(queueNames!=null && !queueNames.isEmpty()) {
-            for(String queueName: queueNames) {
-                if(!queueName.contains(Constants.DECISION_QUEUE_PREFIX)) {
-                    result.add(queueName);
-                }
-            }
-        }
-        return result;
     }
 
     @Override

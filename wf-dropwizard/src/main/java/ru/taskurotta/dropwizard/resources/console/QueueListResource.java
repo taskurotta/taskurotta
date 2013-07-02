@@ -1,7 +1,6 @@
 package ru.taskurotta.dropwizard.resources.console;
 
 import com.google.common.base.Optional;
-import ru.taskurotta.backend.console.manager.ConsoleManager.QueueType;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueueVO;
 
@@ -22,12 +21,10 @@ public class QueueListResource extends BaseResource {
     private static int DEFAULT_START_PAGE = 1;
     private static int DEFAULT_PAGE_SIZE = 10;
 
-    private static final QueueType DEFAULT_QUEUE_TYPE = QueueType.ACTOR;
-
     @GET
-    public Response getQueuesInfo(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize, @QueryParam("queueType") Optional<QueueType> queueType) {
+    public Response getQueuesInfo(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
         try {
-            GenericPage<QueueVO> queuesState = consoleManager.getQueuesState(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), queueType.or(DEFAULT_QUEUE_TYPE));
+            GenericPage<QueueVO> queuesState = consoleManager.getQueuesState(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
             logger.debug("QueueState getted is [{}]", queuesState);
             return Response.ok(queuesState, MediaType.APPLICATION_JSON).build();
         } catch (Throwable e) {

@@ -28,6 +28,9 @@ properties:
   hz.queue.name: "hzTestQueue"
   hz.decision.queue.list: "decisionQueueNamesList"
   hz.queues.per.node: 3
+  hz.decisions.service.name: "decisionProcessingExecutorService"
+  hz.decisions.core.pool.size: 10
+  hz.decisions.max.pool.size: 20
 
 #Http server configuration:
 logging:

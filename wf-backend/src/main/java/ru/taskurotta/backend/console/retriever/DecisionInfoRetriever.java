@@ -4,16 +4,15 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.transport.model.DecisionContainer;
 
 /**
- * Created with IntelliJ IDEA.
+ * Retrieves information on task server's actor decisions processing
  * User: dimadin
  * Date: 14.06.13 11:20
  */
 public interface DecisionInfoRetriever {
 
-    public GenericPage<String> getQueueList(int pageNum, int pageSize);
-
-    public int getQueueItemCount(String queueName);
-
-    public GenericPage<DecisionContainer> getQueueContent(String queueName, int pageNum, int pageSize);
+    /**
+     * @return paginated list of decisions awaiting processing
+     */
+    public GenericPage<DecisionContainer> getActiveDecisions(int pageNum, int pageSize);
 
 }

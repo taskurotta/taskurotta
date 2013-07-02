@@ -43,6 +43,10 @@ public interface TaskBackend extends CheckpointServiceProvider {
      */
     public void addDecision(DecisionContainer taskDecision);
 
+    /**
+     * Idempotent getter for task decisions
+     */
+    public DecisionContainer getDecision(UUID taskId, UUID processId);
 
     /**
      * Delete RELEASE_TIMEOUT checkpoint

@@ -13,7 +13,6 @@
 
     <context:property-placeholder/>
     <context:annotation-config/>
-    <!--<aop:aspectj-autoproxy/>-->
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
@@ -27,12 +26,9 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
+            <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
         </hz:config>
     </hz:hazelcast>
-
-    <!--<bean id="decisionInfo" class="ru.taskurotta.backend.hz.dependency.HzDecisionInfoRetriever" >-->
-        <!--<constructor-arg name="hzInstance" ref="hzInstance" />-->
-    <!--</bean>-->
 
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>

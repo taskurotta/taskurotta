@@ -37,17 +37,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
 
     @Override
-    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize, QueueType queueType) {
-        if(QueueType.ACTOR.equals(queueType)) {
-            return getActorQueueState(pageNumber, pageSize);
-        } else if(QueueType.DECISION.equals(queueType)) {
-            return getDecisionQueueState(pageNumber, pageSize);
-        } else {
-            return null;
-        }
-    }
-
-    protected GenericPage<QueueVO> getActorQueueState(int pageNumber, int pageSize) {
+    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
         if (queueInfo == null) {
             return null;
         }
@@ -62,26 +52,6 @@ public class ConsoleManagerImpl implements ConsoleManager {
                 tmpResult.add(queueVO);
             }
         }
-        return new GenericPage<QueueVO>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
-    }
-
-    protected GenericPage<QueueVO> getDecisionQueueState(int pageNumber, int pageSize) {
-        if(decisionInfo == null) {
-            return null;
-        }
-
-        List<QueueVO> tmpResult = null;
-        GenericPage<String> queuesPage = decisionInfo.getQueueList(pageNumber, pageSize);
-        if (queuesPage != null) {
-            tmpResult = new ArrayList<>();
-            for (String queueName : queuesPage.getItems()) {
-                QueueVO queueVO = new QueueVO();
-                queueVO.setName(queueName);
-                queueVO.setCount(decisionInfo.getQueueItemCount(queueName));
-                tmpResult.add(queueVO);
-            }
-        }
-
         return new GenericPage<QueueVO>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
     }
 

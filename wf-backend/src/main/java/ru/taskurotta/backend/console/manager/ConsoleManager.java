@@ -18,18 +18,34 @@ import java.util.UUID;
  */
 public interface ConsoleManager {
 
-    public enum QueueType {ACTOR, DECISION};
+    /**
+     * @return paginated view for current state of task queues
+     */
+    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSise);
 
-    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSise, QueueType queueType);
-
+    /**
+     * @return list of all existing TaskContainers for a given process
+     */
     public List<TaskContainer> getProcessTasks(UUID processUuid);
 
+    /**
+     * @return paginated view of a given queue content
+     */
     public GenericPage<QueuedTaskVO> getEnqueueTasks(String queueName, int pageNum, int pageSize);
 
+    /**
+     * @return TaskContainer for a given guid or null if task not found
+     */
     public TaskContainer getTask(UUID taskId);
 
+    /**
+     * @return process representation object for a given guid or null if process not found
+     */
     public ProcessVO getProcess(UUID processUuid);
 
+    /**
+     * @return list of method profiles marked by Profiled annotation
+     */
     public List<ProfileVO> getProfilesInfo();
 
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
