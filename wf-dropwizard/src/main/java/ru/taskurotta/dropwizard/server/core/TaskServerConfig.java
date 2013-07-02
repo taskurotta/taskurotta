@@ -28,6 +28,12 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
     @JsonProperty
     private AssetsConfiguration assets;
 
+    @JsonProperty
+    private String[] resourceBeans;
+
+    @JsonProperty
+    private String[] healthCheckBeans;
+
     public Properties getProperties() {
         return properties;
     }
@@ -58,6 +64,14 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
 
     public void setActorConfig(MemoryConfigBackend actorConfig) {
         this.actorConfig = actorConfig;
+    }
+
+    public String[] getResourceBeans() {
+        return resourceBeans;
+    }
+
+    public String[] getHealthCheckBeans() {
+        return healthCheckBeans;
     }
 
     @Override

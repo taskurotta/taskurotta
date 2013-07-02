@@ -16,7 +16,7 @@
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
-            <hz:network port="${hz.port}" port-auto-increment="true" >
+            <hz:network port="${hz.port}" port-auto-increment="false" >
                 <hz:join>
                     <hz:multicast enabled="false"
                                   multicast-group="224.2.2.3"

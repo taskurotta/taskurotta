@@ -18,25 +18,17 @@ actorConfig:
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
-  retryTimes: 10
-  recovery.schedule: "*/35 * * * * ?"
-  recovery.period: 2
-  recovery.period.unit: "DAYS"
-  recovery.timeStep: 1
-  recovery.timeStep.unit: "DAYS"
-  hz.port: 7777
-  hz.queue.name: "hzTestQueue"
-  hz.decision.queue.list: "decisionQueueNamesList"
-  hz.queues.per.node: 3
-  hz.decisions.service.name: "decisionProcessingExecutorService"
-  hz.decisions.core.pool.size: 10
-  hz.decisions.max.pool.size: 20
+
+#resourceBeans:
+#  - taskStarterResource
+#  - taskReleaserResource
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
+        ru.taskurotta.dropwizard.server.core: DEBUG
         ru.taskurotta.server: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
         ru.taskurotta.backend.hz.server: INFO
