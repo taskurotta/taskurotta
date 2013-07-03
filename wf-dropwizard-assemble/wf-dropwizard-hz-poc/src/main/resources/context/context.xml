@@ -24,8 +24,68 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
+            <hz:map name="id2TaskMap" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="tasks_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+            <hz:map name="id2TaskDecisionMap" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="decision_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+            <hz:map name="processesStorage" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="processes_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+            <hz:map name="tsQueuesList" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="queues_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+            <hz:map name="graphsMapName" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="graph_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+            <hz:map name="decisionsMapName" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="graphdecision_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+            <hz:map name="processGraphMap" max-size="10" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="processGraph_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
         </hz:config>
     </hz:hazelcast>
+
+    <bean id="mongo" class="com.mongodb.Mongo">
+        <constructor-arg name="host" value="127.0.0.1"/>
+    </bean>
+
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="1"/>
+        <constructor-arg name="wtimeout" value="0"/>
+        <constructor-arg name="fsync" value="true"/>
+        <constructor-arg name="j" value="true"/>
+    </bean>
+
+    <bean id="mongoTemplate"
+          class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="taskurotta_hz"/>
+        <!--<property name="writeConcern" ref="writeConcern"/>-->
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="processGraph_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphdecision_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graph_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="queues_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="processes_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="tasks_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="decision_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
 
 
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
