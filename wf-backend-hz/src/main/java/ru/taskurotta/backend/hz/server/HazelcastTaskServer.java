@@ -1,11 +1,12 @@
 package ru.taskurotta.backend.hz.server;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.PartitionAware;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
@@ -23,9 +24,9 @@ import java.util.concurrent.Callable;
  */
 public class HazelcastTaskServer extends GeneralTaskServer {
 
-    public static final String DECISIONS_MAP_NAME = "decisions";
-
     private HazelcastInstance hzInstance;
+
+    private String executorServiceName = Constants.DEFAULT_EXECUTOR_SERVICE_NAME;
 
     private static HazelcastTaskServer instance;
     private static final Object instanceMonitor = 0;
@@ -58,6 +59,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         return instance;
     }
 
+    //For obtaining reference to current TaskServer instance when processing async decision
     public static HazelcastTaskServer getInstance() throws InterruptedException {
         synchronized (instanceMonitor) {
             if (null == instance) {
@@ -85,13 +87,9 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         // save it in task backend
         taskBackend.addDecision(taskDecision);
 
-        // save it in cluster memory
-        IMap<UUID, DecisionContainer> decisions = hzInstance.getMap(DECISIONS_MAP_NAME);
-        decisions.put(taskDecision.getTaskId(), taskDecision);
-
         // send process call
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision.getProcessId(), taskDecision.getTaskId());
-        hzInstance.getExecutorService().submit(call);
+        hzInstance.getExecutorService(executorServiceName).submit(call);
     }
 
     /**
@@ -112,20 +110,53 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         @Override
         public Object call() throws Exception {
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
-            IMap<UUID, DecisionContainer> decisions = taskServer.getHzInstance().getMap(DECISIONS_MAP_NAME);
-            decisions.lock(processId);
+            HazelcastInstance taskHzInstance = taskServer.getHzInstance();
+
+            ILock lock = taskHzInstance.getLock(processId);
             try {
-                DecisionContainer taskDecision = decisions.get(taskId);
-                taskServer.processDecision(taskDecision);
+                lock.lock();
+                DecisionContainer taskDecision = taskServer.taskBackend.getDecision(taskId, processId);
+                if(taskServer.processDecision(taskDecision)) {
+                    //TODO: snapshot processsing here?
+                }
+//                logMemberAction(taskHzInstance);
             } finally {
-                decisions.unlock(processId);
+//                validate(taskHzInstance);
+                lock.unlock();
             }
             return null;
         }
+
+//        private void logMemberAction(HazelcastInstance hzInstance) {
+//            String memberName = hzInstance.getCluster().getLocalMember().toString();
+//            hzInstance.getSet(memberName+":pocTestSet").add(processId);
+//        }
+
+//        private void validate(HazelcastInstance hzInstance) {
+//            Set<UUID> result = new HashSet();
+//            int validated = 0;
+//            for(Member member: hzInstance.getCluster().getMembers()) {
+//                Set<UUID> memberSet = hzInstance.getSet(member.toString()+":pocTestSet");
+//                for(UUID uuid: memberSet) {
+//                    boolean newVal = result.add(uuid);
+//                    if(!newVal) {
+//                        logger.error("Same process[{}] on different nodes detected!", uuid);
+//                        return;
+//                    } else {
+//                        validated++;
+//                    }
+//                }
+//            }
+//            logger.info("Validated [{}] processes, all OK", validated);
+//        }
 
         @Override
         public Object getPartitionKey() {
             return processId;
         }
+    }
+
+    public void setExecutorServiceName(String executorServiceName) {
+        this.executorServiceName = executorServiceName;
     }
 }

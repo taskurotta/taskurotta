@@ -198,6 +198,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
+    public DecisionContainer getDecision(UUID taskId, UUID processId) {
+        return taskDao.getDecision(taskId);
+    }
+
+    @Override
     public void addDecisionCommit(DecisionContainer taskDecision) {
         //Removing checkpoints
         checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_START_TO_CLOSE);

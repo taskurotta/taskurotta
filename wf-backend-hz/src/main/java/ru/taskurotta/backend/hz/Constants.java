@@ -7,7 +7,11 @@ package ru.taskurotta.backend.hz;
  */
 public interface Constants {
 
-    public static final String DECISION_QUEUE_PREFIX = "#decisions#";
+    //default hazelcast name for storing list of task queue names
     public static final String DEFAULT_QUEUE_LIST_NAME = "tsQueuesList";
+
+    public static final String DEFAULT_EXECUTOR_SERVICE_NAME = "decisionProcessingExecutorService";
+
+
 
 }
