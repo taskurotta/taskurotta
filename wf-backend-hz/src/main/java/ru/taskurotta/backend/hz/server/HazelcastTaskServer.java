@@ -116,7 +116,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             try {
                 lock.lock();
                 DecisionContainer taskDecision = taskServer.taskBackend.getDecision(taskId, processId);
-                if(taskServer.processDecision(taskDecision)) {
+                if (taskServer.processDecision(taskDecision)) {
                     //TODO: snapshot processsing here?
                 }
 //                logMemberAction(taskHzInstance);

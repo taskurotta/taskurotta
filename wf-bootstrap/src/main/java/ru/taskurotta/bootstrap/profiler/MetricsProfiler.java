@@ -1,5 +1,9 @@
 package ru.taskurotta.bootstrap.profiler;
 
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.Timer;
@@ -10,10 +14,6 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: romario
@@ -124,7 +124,7 @@ public class MetricsProfiler implements Profiler {
             }
 
             @Override
-            public Task[] execute(UUID processId,  Runnable runnable) {
+            public Task[] execute(UUID processId, Runnable runnable) {
                 throw new IllegalAccessError("Method not supported yet");
             }
         };

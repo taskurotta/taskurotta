@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.checkpoint.model;
 
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-
 import java.util.UUID;
+
+import ru.taskurotta.backend.checkpoint.TimeoutType;
 
 /**
  * Query command for listing Checkpoints from CheckpointService,

@@ -1,18 +1,5 @@
 package ru.taskurotta.backend.queue;
 
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.util.ActorDefinition;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -26,6 +13,19 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import net.sf.cglib.core.CollectionUtils;
+import net.sf.cglib.core.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario

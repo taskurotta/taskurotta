@@ -23,7 +23,7 @@ public class CheckTaskServer extends HealthCheck {
             //TODO: add some real check server logic here
             taskServer.poll(ActorDefinition.valueOf("testme", "testme"));
             return Result.healthy();
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error("CheckTaskServer failed!", e);
             return Result.unhealthy(e);
         }

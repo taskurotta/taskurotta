@@ -1,9 +1,9 @@
 package ru.taskurotta.backend.checkpoint.model;
 
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-
 import java.io.Serializable;
 import java.util.UUID;
+
+import ru.taskurotta.backend.checkpoint.TimeoutType;
 
 /**
  * Description for common entity having specified time (checkpoint time).
@@ -44,6 +44,7 @@ public class Checkpoint implements Serializable {
     public UUID getEntityGuid() {
         return entityGuid;
     }
+
     public void setEntityGuid(UUID entityGuid) {
         if (null == entityGuid) {
             throw new IllegalArgumentException("Entity guid cannot be null");
@@ -54,6 +55,7 @@ public class Checkpoint implements Serializable {
     public long getTime() {
         return time;
     }
+
     public void setTime(long time) {
         this.time = time;
     }

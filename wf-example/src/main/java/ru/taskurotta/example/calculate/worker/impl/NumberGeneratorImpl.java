@@ -19,12 +19,12 @@ public class NumberGeneratorImpl implements NumberGenerator {
     public Integer getNumber() {
         logger.trace("getNumber() called");
 
-        if(RandomException.isEventHappened(errPossibility)) {
+        if (RandomException.isEventHappened(errPossibility)) {
             logger.error("NumberGenerator: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 
-        if(sleep > 0) {
+        if (sleep > 0) {
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {
@@ -32,8 +32,8 @@ public class NumberGeneratorImpl implements NumberGenerator {
             }
         }
 
-        Integer result =  Double.valueOf(Math.floor(Math.random() * (maxNumber+1))).intValue();
-        if(result == 0) {
+        Integer result = Double.valueOf(Math.floor(Math.random() * (maxNumber + 1))).intValue();
+        if (result == 0) {
             result = getNumber();
         }
 

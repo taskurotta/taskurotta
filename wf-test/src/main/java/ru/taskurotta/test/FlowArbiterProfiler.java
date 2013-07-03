@@ -1,5 +1,8 @@
 package ru.taskurotta.test;
 
+import java.util.Properties;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
@@ -8,36 +11,33 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
-import java.util.Properties;
-import java.util.UUID;
-
 /**
  * User: stukushin
  * Date: 26.03.13
  * Time: 13:12
  */
 public class FlowArbiterProfiler implements Profiler {
-	protected static final Logger log = LoggerFactory.getLogger(FlowArbiterProfiler.class);
+    protected static final Logger log = LoggerFactory.getLogger(FlowArbiterProfiler.class);
 
-	private FlowArbiter arbiter;
+    private FlowArbiter arbiter;
 
-	public FlowArbiterProfiler(Class actorClass, Properties prop) {
-		this(actorClass);
-	}
+    public FlowArbiterProfiler(Class actorClass, Properties prop) {
+        this(actorClass);
+    }
 
     public FlowArbiterProfiler(Class actorClass) {
-		arbiter = new FlowArbiterFactory().getInstance();
-	}
+        arbiter = new FlowArbiterFactory().getInstance();
+    }
 
     @Override
     public RuntimeProcessor decorate(final RuntimeProcessor runtimeProcessor) {
         return new RuntimeProcessor() {
             @Override
             public TaskDecision execute(Task task) {
-				log.debug("before execute [{}]", task.getTarget());
-				TaskDecision decision = runtimeProcessor.execute(task);
-				arbiter.notify(task.getTarget().getMethod());
-				return decision;
+                log.debug("before execute [{}]", task.getTarget());
+                TaskDecision decision = runtimeProcessor.execute(task);
+                arbiter.notify(task.getTarget().getMethod());
+                return decision;
             }
 
             @Override
@@ -52,7 +52,7 @@ public class FlowArbiterProfiler implements Profiler {
         return new TaskSpreader() {
             @Override
             public Task poll() {
-				return taskSpreader.poll();
+                return taskSpreader.poll();
             }
 
             @Override
@@ -63,8 +63,10 @@ public class FlowArbiterProfiler implements Profiler {
     }
 
     @Override
-    public void cycleStart() {}
+    public void cycleStart() {
+    }
 
     @Override
-    public void cycleFinish() {}
+    public void cycleFinish() {
+    }
 }

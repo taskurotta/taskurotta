@@ -12,21 +12,21 @@ public class MethodDescriptor {
     private int positionActorSchedulingOptions = -1;
     private int positionPromisesWaitFor = -1;
 
-	private TaskTarget taskTarget;
-	private ArgType[] argTypes;
+    private TaskTarget taskTarget;
+    private ArgType[] argTypes;
 
-	public MethodDescriptor(TaskType type, String name, String version, String method) {
-		this(new TaskTargetImpl(type, name, version, method));
-	}
+    public MethodDescriptor(TaskType type, String name, String version, String method) {
+        this(new TaskTargetImpl(type, name, version, method));
+    }
 
-	public MethodDescriptor(TaskTarget target) {
-		this(target, null);
-	}
+    public MethodDescriptor(TaskTarget target) {
+        this(target, null);
+    }
 
-	public MethodDescriptor(TaskTarget taskTarget, ArgType[] argTypes) {
-		this.taskTarget = taskTarget;
-		this.argTypes = argTypes;
-	}
+    public MethodDescriptor(TaskTarget taskTarget, ArgType[] argTypes) {
+        this.taskTarget = taskTarget;
+        this.argTypes = argTypes;
+    }
 
     public MethodDescriptor(TaskTarget taskTarget, ArgType[] argTypes, int positionActorSchedulingOptions, int positionPromisesWaitFor) {
         this.taskTarget = taskTarget;
@@ -35,13 +35,13 @@ public class MethodDescriptor {
         this.positionPromisesWaitFor = positionPromisesWaitFor;
     }
 
-	public TaskTarget getTaskTarget() {
-		return taskTarget;
-	}
+    public TaskTarget getTaskTarget() {
+        return taskTarget;
+    }
 
-	public ArgType[] getArgTypes() {
-		return argTypes;
-	}
+    public ArgType[] getArgTypes() {
+        return argTypes;
+    }
 
     public int getPositionActorSchedulingOptions() {
         return positionActorSchedulingOptions;

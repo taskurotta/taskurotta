@@ -1,14 +1,14 @@
 package ru.taskurotta.server.recovery.base;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ExpirationPolicy;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -32,7 +32,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             timeFrom = timeTill;
         }
 
-        logger.debug("Recovered [{}] tasks in [{}]ms", counter, (System.currentTimeMillis()-start));
+        logger.debug("Recovered [{}] tasks in [{}]ms", counter, (System.currentTimeMillis() - start));
 
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
             query.setMaxTime(timeTill);
             query.setMinTime(timeFrom);
 
-            for (CheckpointService checkpointService : getCheckpointServices()){
+            for (CheckpointService checkpointService : getCheckpointServices()) {
                 List<Checkpoint> stepCheckpoints = checkpointService.listCheckpoints(query);
 
                 if (stepCheckpoints != null) {
@@ -63,7 +63,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
                                     counter++;
                                 }
                             } catch (Exception e) {
-                                logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType["+ timeoutType +"]", e);
+                                logger.error("Cannot recover with checkpoint[" + checkpoint + "] and TimeoutType[" + timeoutType + "]", e);
                             }
                         }
                     }
@@ -78,9 +78,9 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
 
     protected boolean isReadyToRecover(Checkpoint checkpoint) {
         boolean result = false;
-        if(checkpoint != null && checkpoint.getEntityType() != null) {
+        if (checkpoint != null && checkpoint.getEntityType() != null) {
             ExpirationPolicy expPolicy = getExpirationPolicy(checkpoint.getEntityType(), checkpoint.getTimeoutType());
-            if(expPolicy != null) {
+            if (expPolicy != null) {
                 result = expPolicy.readyToRecover(checkpoint.getEntityGuid())
                         && (System.currentTimeMillis() > expPolicy.getExpirationTime(checkpoint.getEntityGuid(), checkpoint.getTime()));
             }
@@ -95,6 +95,7 @@ public abstract class AbstractIterableRecovery extends AbstractRecovery {
     public void setTimeIterationStep(int timeIterationStep) {
         this.timeIterationStep = timeIterationStep;
     }
+
     public void setTimeIterationStepUnit(TimeUnit timeIterationStepUnit) {
         this.timeIterationStepUnit = timeIterationStepUnit;
     }

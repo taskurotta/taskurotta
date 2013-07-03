@@ -1,5 +1,11 @@
 package ru.taskurotta.internal.proxy;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.UUID;
+
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -10,12 +16,6 @@ import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.transport.model.ArgType;
-
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * User: romario
@@ -52,13 +52,13 @@ public class ProxyInvocationHandler implements InvocationHandler {
 
             Promise<?>[] promisesWaitFor = null;
             if (positionPromisesWaitFor > -1) {
-                promisesWaitFor = (Promise[])args[positionPromisesWaitFor];
+                promisesWaitFor = (Promise[]) args[positionPromisesWaitFor];
                 args = Arrays.copyOf(args, positionPromisesWaitFor);
             }
 
             ActorSchedulingOptions actorSchedulingOptions = null;
             if (positionActorSchedulingOptions > -1) {
-                actorSchedulingOptions = (ActorSchedulingOptions)args[positionActorSchedulingOptions];
+                actorSchedulingOptions = (ActorSchedulingOptions) args[positionActorSchedulingOptions];
                 startTime = actorSchedulingOptions.getStartTime();
                 args = Arrays.copyOf(args, positionActorSchedulingOptions);
             }

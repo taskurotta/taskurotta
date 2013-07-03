@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.test.checkpoint;
 
+import java.util.List;
+import java.util.UUID;
+
 import junit.framework.Assert;
 import org.junit.Test;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -7,9 +10,6 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
-
-import java.util.List;
-import java.util.UUID;
 
 public class TestCheckpointServiceMemory {
 

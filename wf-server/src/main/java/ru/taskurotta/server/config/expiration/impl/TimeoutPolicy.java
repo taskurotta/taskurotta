@@ -1,15 +1,15 @@
 package ru.taskurotta.server.config.expiration.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.config.model.ExpirationPolicy;
-
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.config.model.ExpirationPolicy;
+
 /**
- *  Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
+ * Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
  */
 public class TimeoutPolicy implements ExpirationPolicy {
 
@@ -22,11 +22,11 @@ public class TimeoutPolicy implements ExpirationPolicy {
     protected TimeUnit timeUnit = TimeUnit.SECONDS;
 
     public TimeoutPolicy(Properties props) {
-        if(props!=null && !props.isEmpty()) {
-            if(props.containsKey(TIMEOUT)) {
+        if (props != null && !props.isEmpty()) {
+            if (props.containsKey(TIMEOUT)) {
                 this.timeout = Integer.valueOf(props.get(TIMEOUT).toString());
             }
-            if(props.containsKey(TIME_UNIT)) {
+            if (props.containsKey(TIME_UNIT)) {
                 this.timeUnit = TimeUnit.valueOf(props.get(TIME_UNIT).toString().toUpperCase());
             }
         }

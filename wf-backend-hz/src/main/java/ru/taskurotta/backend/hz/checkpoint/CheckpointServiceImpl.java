@@ -1,5 +1,10 @@
 package ru.taskurotta.backend.hz.checkpoint;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import org.slf4j.Logger;
@@ -8,11 +13,6 @@ import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by void 20.06.13 11:49

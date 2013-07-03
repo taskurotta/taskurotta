@@ -1,5 +1,12 @@
 package ru.taskurotta.dropwizard.resources;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.yammer.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,13 +15,6 @@ import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrap
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskContainerWrapper;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Path(TaskurottaResource.POLL)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -32,7 +32,7 @@ public class TaskPollerResource {
 
         try {
             result = taskServer.poll(actorDefinitionWrapper.getActorDefinition());
-            logger.debug("Task polled for[{}] is[{}]",actorDefinitionWrapper.getActorDefinition().getName(), result);
+            logger.debug("Task polled for[{}] is[{}]", actorDefinitionWrapper.getActorDefinition().getName(), result);
         } catch (Throwable e) {
             logger.error("Poll task for[" + actorDefinitionWrapper + "] failed!", e);
             return Response.serverError().build();

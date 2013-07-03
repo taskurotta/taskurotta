@@ -1,10 +1,10 @@
 package ru.taskurotta.internal;
 
-import ru.taskurotta.core.Task;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import ru.taskurotta.core.Task;
 
 /**
  * User: romario

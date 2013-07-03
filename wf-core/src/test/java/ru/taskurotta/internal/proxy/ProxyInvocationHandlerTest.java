@@ -1,13 +1,5 @@
 package ru.taskurotta.internal.proxy;
 
-import org.junit.Before;
-import org.junit.Test;
-import ru.taskurotta.core.Promise;
-import ru.taskurotta.exception.IllegalReturnTypeException;
-import ru.taskurotta.internal.RuntimeContext;
-import ru.taskurotta.internal.core.MethodDescriptor;
-import ru.taskurotta.transport.model.TaskType;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +7,14 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+
+import org.junit.Before;
+import org.junit.Test;
+import ru.taskurotta.core.Promise;
+import ru.taskurotta.exception.IllegalReturnTypeException;
+import ru.taskurotta.internal.RuntimeContext;
+import ru.taskurotta.internal.core.MethodDescriptor;
+import ru.taskurotta.transport.model.TaskType;
 
 /**
  * User: stukushin

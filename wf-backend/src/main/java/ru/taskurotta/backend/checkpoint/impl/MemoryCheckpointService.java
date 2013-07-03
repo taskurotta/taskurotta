@@ -1,12 +1,5 @@
 package ru.taskurotta.backend.checkpoint.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -15,6 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 
 
 /**
@@ -104,7 +104,7 @@ public class MemoryCheckpointService implements CheckpointService {
                 result = result && checkpoint.getTime() < command.getMaxTime();
             }
 
-            if(command.getEntityType() != null) {
+            if (command.getEntityType() != null) {
                 result = result && command.getEntityType().equals(checkpoint.getEntityType());
             }
 

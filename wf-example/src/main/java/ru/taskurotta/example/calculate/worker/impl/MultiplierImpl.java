@@ -16,12 +16,12 @@ public class MultiplierImpl implements Multiplier {
     @Override
     public Integer multiply(Integer a, Integer b) {
         logger.trace("multiply() called");
-        if(RandomException.isEventHappened(errPossibility)) {
+        if (RandomException.isEventHappened(errPossibility)) {
             logger.error("Multiplier: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 
-        if(sleep > 0) {
+        if (sleep > 0) {
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {
@@ -29,7 +29,7 @@ public class MultiplierImpl implements Multiplier {
             }
         }
 
-        Integer result =  a * b;
+        Integer result = a * b;
 
         logger.debug("Multiplication result is[{}]", result);
         return result;

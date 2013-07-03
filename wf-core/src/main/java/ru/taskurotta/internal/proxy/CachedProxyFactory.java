@@ -1,15 +1,15 @@
 package ru.taskurotta.internal.proxy;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.transport.model.ArgType;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * User: romario
@@ -74,7 +74,7 @@ abstract public class CachedProxyFactory implements ProxyFactory {
     }
 
     protected int positionOfWaitList(Class<?>[] parameterTypes, int startAfter) {
-        for (int i = startAfter+1; i < parameterTypes.length; i++) {
+        for (int i = startAfter + 1; i < parameterTypes.length; i++) {
             if (parameterTypes[i].equals(Promise[].class)) {
                 return i;
             }

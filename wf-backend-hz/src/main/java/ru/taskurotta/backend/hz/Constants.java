@@ -13,5 +13,4 @@ public interface Constants {
     public static final String DEFAULT_EXECUTOR_SERVICE_NAME = "decisionProcessingExecutorService";
 
 
-
 }

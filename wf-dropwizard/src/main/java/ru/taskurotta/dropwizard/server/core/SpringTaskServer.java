@@ -1,5 +1,10 @@
 package ru.taskurotta.dropwizard.server.core;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
+import javax.ws.rs.Path;
+
 import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.assets.AssetsBundle;
@@ -19,11 +24,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import ru.taskurotta.dropwizard.server.YamlConfigBackend;
 
-import javax.ws.rs.Path;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Properties;
-
 public class SpringTaskServer extends Service<TaskServerConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(SpringTaskServer.class);
@@ -34,7 +34,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
 
-        if(System.getProperties().get(ASSETS_MODE_PROPERTY_NAME)!=null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
+        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
             bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
         } else {
             bootstrap.addBundle(new AssetsBundle("/assets", "/"));
@@ -54,7 +54,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
         appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", props));
 
         //Initializes YamlConfigBackend bean with actor preferences parsed from DW server YAML configuration
-        if(configuration.getActorConfig() != null) {
+        if (configuration.getActorConfig() != null) {
             appContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
                 @Override
                 public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -62,13 +62,14 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
                         @Override
                         public Object postProcessBeforeInitialization(Object bean, String beanName)
                                 throws BeansException {
-                            if(bean instanceof YamlConfigBackend) {
-                                YamlConfigBackend yamlBean = (YamlConfigBackend)bean;
+                            if (bean instanceof YamlConfigBackend) {
+                                YamlConfigBackend yamlBean = (YamlConfigBackend) bean;
                                 yamlBean.setActorPreferences(configuration.getActorConfig().getAllActorPreferences());
                                 yamlBean.setExpirationPolicies(configuration.getActorConfig().getAllExpirationPolicies());
                             }
                             return bean;
                         }
+
                         @Override
                         public Object postProcessAfterInitialization(Object bean, String beanName)
                                 throws BeansException {
@@ -82,11 +83,11 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
 
         //-----Register resources-----------------
         int resourcesCount = 0;
-        if(configuration.getResourceBeans()==null
-                || (configuration.getResourceBeans().length==1 && "auto".equalsIgnoreCase(configuration.getResourceBeans()[0]))) {//find automatically
+        if (configuration.getResourceBeans() == null
+                || (configuration.getResourceBeans().length == 1 && "auto".equalsIgnoreCase(configuration.getResourceBeans()[0]))) {//find automatically
             Map<String, Object> resources = appContext.getBeansWithAnnotation(Path.class);
-            if(resources!=null && !resources.isEmpty()) {
-                for(String resourceBeanName: resources.keySet()) {
+            if (resources != null && !resources.isEmpty()) {
+                for (String resourceBeanName : resources.keySet()) {
                     Object resourceSingleton = appContext.getBean(resourceBeanName);
                     environment.addResource(resourceSingleton);
                     resourcesCount++;
@@ -95,7 +96,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
             }
 
         } else {//configured in external file
-            for(String beanName: configuration.getResourceBeans()) {
+            for (String beanName : configuration.getResourceBeans()) {
                 Object resourceSingleton = appContext.getBean(beanName);
                 environment.addResource(resourceSingleton);
                 resourcesCount++;
@@ -106,18 +107,18 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
 
         //----- Register healthchecks ------------------
         int healthChecksCount = 0;
-        if(configuration.getHealthCheckBeans()==null
-                || (configuration.getHealthCheckBeans().length==1 && "auto".equalsIgnoreCase(configuration.getHealthCheckBeans()[0]))) {
+        if (configuration.getHealthCheckBeans() == null
+                || (configuration.getHealthCheckBeans().length == 1 && "auto".equalsIgnoreCase(configuration.getHealthCheckBeans()[0]))) {
             Map<String, HealthCheck> healthChecks = appContext.getBeansOfType(HealthCheck.class);
-            if(healthChecks!=null && !healthChecks.isEmpty()) {
-                for(String hcBeanName: healthChecks.keySet()) {
+            if (healthChecks != null && !healthChecks.isEmpty()) {
+                for (String hcBeanName : healthChecks.keySet()) {
                     HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
                     environment.addHealthCheck(healthCheck);
                     healthChecksCount++;
                 }
             }
         } else {
-            for(String hcBeanName:  configuration.getHealthCheckBeans()) {
+            for (String hcBeanName : configuration.getHealthCheckBeans()) {
                 HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
                 environment.addHealthCheck(healthCheck);
                 healthChecksCount++;
@@ -136,7 +137,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
 
         //1. defaults from classpath file
         Resource res = new ClassPathResource("default.properties");
-        if(res.exists()) {
+        if (res.exists()) {
             result.load(res.getInputStream());
         }
 
@@ -147,7 +148,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
         result = extendProps(result, System.getProperties(), SYSTEM_PROP_PREFIX);
 
         //4. Internal pool feature props (if present)
-        if(configuration.getInternalPoolConfig()!=null) {
+        if (configuration.getInternalPoolConfig() != null) {
             result = extendProps(result, configuration.getInternalPoolConfig().asProperties(), null);
         }
 
@@ -155,14 +156,14 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     }
 
     private Properties extendProps(Properties mergeTo, Properties mergeFrom, String prefix) {
-        if(mergeTo == null) {
+        if (mergeTo == null) {
             return mergeFrom;
         }
-        if(mergeFrom!=null) {
-            for(Object key: mergeFrom.keySet()) {
-                if(prefix!=null) {//filter only prefixed properties
+        if (mergeFrom != null) {
+            for (Object key : mergeFrom.keySet()) {
+                if (prefix != null) {//filter only prefixed properties
                     String stringKey = key.toString();
-                    if(stringKey.startsWith(prefix)) {
+                    if (stringKey.startsWith(prefix)) {
                         mergeTo.put(stringKey.substring(prefix.length()), mergeFrom.get(key));
                     }
                 } else {

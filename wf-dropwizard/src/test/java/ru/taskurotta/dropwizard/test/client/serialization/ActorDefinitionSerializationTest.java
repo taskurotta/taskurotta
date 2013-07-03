@@ -1,5 +1,7 @@
 package ru.taskurotta.dropwizard.test.client.serialization;
 
+import java.io.File;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -9,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.io.File;
 
 public class ActorDefinitionSerializationTest {
 
@@ -36,10 +36,10 @@ public class ActorDefinitionSerializationTest {
         }
 
         Assert.assertNotNull(resultWrapper);
-        if(resultWrapper != null) {
+        if (resultWrapper != null) {
             ActorDefinition validating = resultWrapper.getActorDefinition();
             Assert.assertNotNull(validating);
-            if(validating!=null) {
+            if (validating != null) {
                 Assert.assertEquals("ActorDefinition names must be equal", original.getName(), validating.getName());
                 Assert.assertEquals("ActorDefinition versions must be equal", original.getVersion(), validating.getVersion());
             }

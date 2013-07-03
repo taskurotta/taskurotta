@@ -1,5 +1,10 @@
 package ru.taskurotta.client.memory;
 
+import java.util.UUID;
+
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Assert;
 import org.junit.Test;
 import ru.taskurotta.client.TaskSpreader;
@@ -9,11 +14,6 @@ import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.UUID;
-
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 /**
  * User: stukushin
@@ -98,7 +98,6 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
         UUID workerTaskIdA = UUID.randomUUID();
         Task workerTaskA = workerTask(workerTaskIdA, TaskType.WORKER, "workerTaskA", new Object[]{promise(taskB)});
-
 
 
         // release taskA with return (promiseB) and task list (taskB, workerTaskA(promiseB)

@@ -1,15 +1,15 @@
 package ru.taskurotta.dropwizard.resources.console;
 
-import com.google.common.base.Optional;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.google.common.base.Optional;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueuedTaskVO;
 
 /**
  * Resource for obtaining info for task in queue

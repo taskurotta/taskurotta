@@ -1,9 +1,9 @@
 package ru.taskurotta.backend.console.retriever;
 
+import java.util.Map;
+
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
-
-import java.util.Map;
 
 /**
  * Task queues information retriever. Provides information such as number

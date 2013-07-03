@@ -17,19 +17,19 @@ public class ActorDefinitionWrapper {
         this.actorDefinition = actorDefinition;
     }
 
-    @JsonSerialize(using=ActorDefinitionSerializer.class)
+    @JsonSerialize(using = ActorDefinitionSerializer.class)
     public ActorDefinition getActorDefinition() {
         return actorDefinition;
     }
 
-    @JsonDeserialize(using=ActorDefinitionDeserializer.class)
+    @JsonDeserialize(using = ActorDefinitionDeserializer.class)
     public void setActorDefinition(ActorDefinition actorDefinition) {
         this.actorDefinition = actorDefinition;
     }
 
     @Override
     public String toString() {
-        return "ActorDefinitionWrapper [name=" + (actorDefinition!=null? actorDefinition.getName(): null) + ", version = " + (actorDefinition!=null? actorDefinition.getVersion(): null)  + "]";
+        return "ActorDefinitionWrapper [name=" + (actorDefinition != null ? actorDefinition.getName() : null) + ", version = " + (actorDefinition != null ? actorDefinition.getVersion() : null) + "]";
     }
 
 }

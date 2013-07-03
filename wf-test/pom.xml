@@ -93,9 +93,9 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-<!--
-                    <argLine>-javaagent:${project.build.directory}/dependency/aspectjweaver-1.6.7.jar</argLine>
--->
+                    <!--
+                                        <argLine>-javaagent:${project.build.directory}/dependency/aspectjweaver-1.6.7.jar</argLine>
+                    -->
                 </configuration>
             </plugin>
         </plugins>

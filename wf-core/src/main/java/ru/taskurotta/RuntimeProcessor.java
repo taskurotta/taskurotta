@@ -1,9 +1,9 @@
 package ru.taskurotta;
 
+import java.util.UUID;
+
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-
-import java.util.UUID;
 
 /**
  * User: romario

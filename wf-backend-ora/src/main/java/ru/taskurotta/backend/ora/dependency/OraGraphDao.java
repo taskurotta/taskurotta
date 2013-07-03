@@ -1,5 +1,12 @@
 package ru.taskurotta.backend.ora.dependency;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -7,13 +14,6 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.UUID;
 
 /**
  * User: moroz

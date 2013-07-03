@@ -1,14 +1,14 @@
 package ru.taskurotta.dropwizard.resources.console;
 
-import com.google.common.base.Optional;
-import ru.taskurotta.transport.model.TaskContainer;
-
+import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+
+import com.google.common.base.Optional;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * User: moroz

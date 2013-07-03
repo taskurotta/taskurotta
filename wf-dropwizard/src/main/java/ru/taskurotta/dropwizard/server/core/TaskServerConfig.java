@@ -1,5 +1,7 @@
 package ru.taskurotta.dropwizard.server.core;
 
+import java.util.Properties;
+
 import com.bazaarvoice.dropwizard.assets.AssetsBundleConfiguration;
 import com.bazaarvoice.dropwizard.assets.AssetsConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,8 +9,6 @@ import com.yammer.dropwizard.config.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
 import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.dropwizard.server.pooling.InternalPoolConfig;
-
-import java.util.Properties;
 
 public class TaskServerConfig extends Configuration implements AssetsBundleConfiguration {
 

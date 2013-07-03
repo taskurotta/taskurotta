@@ -1,16 +1,16 @@
 package ru.taskurotta.bootstrap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Actor execution thread pool abstraction.
  * Contains thread pooling/shrinking/expanding logic for a given actor
- *
+ * <p/>
  * User: dimadin, stukushin
  * Date: 24.04.13
  * Time: 16:14
@@ -48,7 +48,7 @@ public class ActorThreadPool {
     /**
      * Shuts current thread of ActorExecutor if there are active others in pool.
      * Should always leave at least one active thread for polling taskServer.
-     *
+     * <p/>
      * Return false if already muted
      *
      * @return boolean
@@ -104,14 +104,14 @@ public class ActorThreadPool {
 
         actorExecutor.stopInstance();
 
-        ThreadLocal<Boolean> hasAlive = new ThreadLocal<Boolean>(){
+        ThreadLocal<Boolean> hasAlive = new ThreadLocal<Boolean>() {
             @Override
             protected Boolean initialValue() {
                 return Boolean.TRUE;
             }
         };
 
-        ThreadLocal<Long> startTime = new ThreadLocal<Long>(){
+        ThreadLocal<Long> startTime = new ThreadLocal<Long>() {
             @Override
             protected Long initialValue() {
                 return System.currentTimeMillis();

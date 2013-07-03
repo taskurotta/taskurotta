@@ -1,5 +1,10 @@
 package ru.taskurotta.internal.proxy;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.NoWait;
@@ -7,11 +12,6 @@ import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.exception.ProxyFactoryException;
 import ru.taskurotta.util.AnnotationUtils;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * User: romario
@@ -122,19 +122,19 @@ public final class ClientCheckerUtil {
 
 
             if (actorParameterTypes[i].isAssignableFrom(Promise.class)) {
-				Annotation[][] parameterAnnotations = actorMethod.getParameterAnnotations();
-				boolean isNowait = false;
-				for (int j=0; j< parameterAnnotations[i].length; j++) {
-					if (parameterAnnotations[i][j] instanceof NoWait) {
-						isNowait = true;
-						break;
-					}
-				}
-				if (!isNowait) {
-					throw new ProxyFactoryException("Actor method parameters type shouldn't be Promise: "
-							+ "client (" + clientInterface.getName() + "), Actor (" + actorInterface.getName() + "), method ("
-							+ clientMethod.getName() + ").");
-				}
+                Annotation[][] parameterAnnotations = actorMethod.getParameterAnnotations();
+                boolean isNowait = false;
+                for (int j = 0; j < parameterAnnotations[i].length; j++) {
+                    if (parameterAnnotations[i][j] instanceof NoWait) {
+                        isNowait = true;
+                        break;
+                    }
+                }
+                if (!isNowait) {
+                    throw new ProxyFactoryException("Actor method parameters type shouldn't be Promise: "
+                            + "client (" + clientInterface.getName() + "), Actor (" + actorInterface.getName() + "), method ("
+                            + clientMethod.getName() + ").");
+                }
             }
 
         }

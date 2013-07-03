@@ -14,12 +14,12 @@ public class SummarizerImpl implements Summarizer {
     @Override
     public Integer summarize(Integer a, Integer b) {
         logger.trace("summarize() called");
-        if(RandomException.isEventHappened(errPossibility)) {
+        if (RandomException.isEventHappened(errPossibility)) {
             logger.error("Summarizer: RANDOMLY FAILED!");
             throw new RandomException("Its exception time");
         }
 
-        if(sleep > 0) {
+        if (sleep > 0) {
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {
@@ -27,7 +27,7 @@ public class SummarizerImpl implements Summarizer {
             }
         }
 
-        Integer result = a+b;
+        Integer result = a + b;
 
         logger.debug("Summ result is[{}]", result);
         return result;

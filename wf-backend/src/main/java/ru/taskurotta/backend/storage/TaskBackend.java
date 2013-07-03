@@ -1,11 +1,11 @@
 package ru.taskurotta.backend.storage;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * User: romario
@@ -54,7 +54,6 @@ public interface TaskBackend extends CheckpointServiceProvider {
      * @param taskDecision
      */
     public void addDecisionCommit(DecisionContainer taskDecision);
-
 
 
     public List<TaskContainer> getAllRunProcesses();

@@ -1,17 +1,17 @@
 package ru.taskurotta.internal.proxy;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
+
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.util.StringUtils;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * created by void 23.01.13 12:11

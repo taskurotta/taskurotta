@@ -1,24 +1,24 @@
 package ru.taskurotta.internal.core;
 
+import java.util.Arrays;
+
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.transport.model.ArgType;
-
-import java.util.Arrays;
 
 /**
  * Created by void 26.03.13 10:03
  */
 public class TaskOptionsImpl implements TaskOptions {
 
-	private ArgType[] argTypes;
+    private ArgType[] argTypes;
     private ActorSchedulingOptions actorSchedulingOptions;
     private Promise<?>[] promisesWaitFor;
 
-	public TaskOptionsImpl(ArgType[] argTypes) {
-		this.argTypes = argTypes;
-	}
+    public TaskOptionsImpl(ArgType[] argTypes) {
+        this.argTypes = argTypes;
+    }
 
     public TaskOptionsImpl(ArgType[] argTypes, ActorSchedulingOptions actorSchedulingOptions, Promise<?>[] promisesWaitFor) {
         this.argTypes = argTypes;
@@ -28,8 +28,8 @@ public class TaskOptionsImpl implements TaskOptions {
 
     @Override
     public ArgType[] getArgTypes() {
-		return argTypes;
-	}
+        return argTypes;
+    }
 
     @Override
     public ActorSchedulingOptions getActorSchedulingOptions() {

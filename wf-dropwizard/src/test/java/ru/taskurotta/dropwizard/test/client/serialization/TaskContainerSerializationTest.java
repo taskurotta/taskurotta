@@ -1,5 +1,7 @@
 package ru.taskurotta.dropwizard.test.client.serialization;
 
+import java.io.File;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -9,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskContainerWrapper;
-
-import java.io.File;
 
 public class TaskContainerSerializationTest {
 

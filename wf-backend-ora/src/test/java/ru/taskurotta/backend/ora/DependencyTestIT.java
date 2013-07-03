@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.ora;
 
+import java.util.UUID;
+
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,8 +9,6 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.dependency.OraGraphDao;
-
-import java.util.UUID;
 
 /**
  * User: moroz

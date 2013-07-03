@@ -1,5 +1,7 @@
 package ru.taskurotta.dropwizard.client.jersey;
 
+import javax.ws.rs.core.MediaType;
+
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
@@ -16,8 +18,6 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.util.ActorDefinition;
-
-import javax.ws.rs.core.MediaType;
 
 public class BaseTaskProxy implements TaskServer {
 
@@ -41,17 +41,17 @@ public class BaseTaskProxy implements TaskServer {
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
             rb.post(new TaskContainerWrapper(task));
-        } catch(UniformInterfaceException ex) {//server responded with error
-            int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
-                throw new InvalidServerRequestException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
+        } catch (UniformInterfaceException ex) {//server responded with error
+            int status = ex.getResponse() != null ? ex.getResponse().getStatus() : -1;
+            if (status >= 400 && status < 500) {
+                throw new InvalidServerRequestException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
             } else {
-                throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
+                throw new ServerException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
             }
-        } catch(ClientHandlerException ex) {//client processing error
-            throw new ServerConnectionException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
-        } catch(Throwable ex) {//unexpected error
-            throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
+        } catch (ClientHandlerException ex) {//client processing error
+            throw new ServerConnectionException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
+        } catch (Throwable ex) {//unexpected error
+            throw new ServerException("Start process[" + task.getProcessId() + "] with task[" + task.getTaskId() + "] error: " + ex.getMessage(), ex);
         }
 
     }
@@ -65,17 +65,17 @@ public class BaseTaskProxy implements TaskServer {
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
             result = rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
-        } catch(UniformInterfaceException ex) {//server responded with error
-            int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
-                throw new InvalidServerRequestException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
+        } catch (UniformInterfaceException ex) {//server responded with error
+            int status = ex.getResponse() != null ? ex.getResponse().getStatus() : -1;
+            if (status >= 400 && status < 500) {
+                throw new InvalidServerRequestException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
             } else {
-                throw new ServerException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
+                throw new ServerException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
             }
-        } catch(ClientHandlerException ex) {//client processing error
-            throw new ServerConnectionException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
-        } catch(Throwable ex) {//unexpected error
-            throw new ServerException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
+        } catch (ClientHandlerException ex) {//client processing error
+            throw new ServerConnectionException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
+        } catch (Throwable ex) {//unexpected error
+            throw new ServerException("Poll error for actor[" + actorDefinition + "]: " + ex.getMessage(), ex);
         }
         return result;
     }
@@ -88,17 +88,17 @@ public class BaseTaskProxy implements TaskServer {
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
             rb.post(new DecisionContainerWrapper(taskResult));
-        } catch(UniformInterfaceException ex) {//server responded with error
-            int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
-                throw new InvalidServerRequestException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
-            } else{
-                throw new ServerException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
+        } catch (UniformInterfaceException ex) {//server responded with error
+            int status = ex.getResponse() != null ? ex.getResponse().getStatus() : -1;
+            if (status >= 400 && status < 500) {
+                throw new InvalidServerRequestException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
+            } else {
+                throw new ServerException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
             }
-        } catch(ClientHandlerException ex) {//client processing error
-            throw new ServerConnectionException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
-        } catch(Throwable ex) {//unexpected error
-            throw new ServerException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
+        } catch (ClientHandlerException ex) {//client processing error
+            throw new ServerConnectionException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
+        } catch (Throwable ex) {//unexpected error
+            throw new ServerException("Task release [" + taskResult.getTaskId() + "] error: " + ex.getMessage(), ex);
         }
     }
 

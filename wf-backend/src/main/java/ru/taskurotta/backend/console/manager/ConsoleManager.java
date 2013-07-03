@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.console.manager;
 
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
@@ -7,9 +10,6 @@ import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Manager interface, providing aggregated info gathered from concrete retrievers implementations

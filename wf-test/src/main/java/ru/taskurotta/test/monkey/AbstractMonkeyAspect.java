@@ -25,7 +25,7 @@ public abstract class AbstractMonkeyAspect {
         log.trace("pointCut [{}]", pjp);
 
         if (Math.random() < threshold) {
-            throw new CrazyException("Insane detected in ["+ pjp.getSignature()+"]");
+            throw new CrazyException("Insane detected in [" + pjp.getSignature() + "]");
         }
     }
 

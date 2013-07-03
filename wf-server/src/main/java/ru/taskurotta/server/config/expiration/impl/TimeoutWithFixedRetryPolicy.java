@@ -1,12 +1,12 @@
 package ru.taskurotta.server.config.expiration.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class TimeoutWithFixedRetryPolicy extends TimeoutPolicy {
@@ -20,8 +20,8 @@ public class TimeoutWithFixedRetryPolicy extends TimeoutPolicy {
 
     public TimeoutWithFixedRetryPolicy(Properties props) {
         super(props);
-        if(props!=null && !props.isEmpty()) {
-            if(props.containsKey(RETRY)) {
+        if (props != null && !props.isEmpty()) {
+            if (props.containsKey(RETRY)) {
                 this.retry = Integer.valueOf(props.get(RETRY).toString());
             }
         }
@@ -31,10 +31,10 @@ public class TimeoutWithFixedRetryPolicy extends TimeoutPolicy {
     @Override
     public boolean readyToRecover(UUID uuid) {
         boolean result = true;
-        if(retry > 0) {
+        if (retry > 0) {
             Integer taskRetry = expirations.get(uuid);
 
-            if(taskRetry == null || taskRetry < retry) {
+            if (taskRetry == null || taskRetry < retry) {
                 expirations.put(uuid, taskRetry == null ? 1 : taskRetry + 1);
             } else {
                 result = false;

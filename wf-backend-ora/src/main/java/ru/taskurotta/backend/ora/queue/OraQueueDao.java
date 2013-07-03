@@ -1,13 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.ora.domain.SimpleTask;
-import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
-import ru.taskurotta.exception.BackendCriticalException;
-
-import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
@@ -19,8 +11,16 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.sql.DataSource;
 
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.ora.domain.SimpleTask;
+import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
+import ru.taskurotta.exception.BackendCriticalException;
 
 /**
  * User: greg

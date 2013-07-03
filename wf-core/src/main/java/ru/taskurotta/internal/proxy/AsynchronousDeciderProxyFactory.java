@@ -1,5 +1,10 @@
 package ru.taskurotta.internal.proxy;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.CallbackFilter;
 import net.sf.cglib.proxy.Enhancer;
@@ -17,11 +22,6 @@ import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.AnnotationUtils;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * created by void 23.01.13 12:51
