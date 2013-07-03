@@ -5,7 +5,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: WF-seda parent module</name>
@@ -25,7 +25,6 @@
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.2</aspectj.version>
-        <hazelcast.version>2.6</hazelcast.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
@@ -43,8 +42,6 @@
         <module>wf-dropwizard-assemble</module>
         <module>wf-backend</module>
         <module>wf-backend-ora</module>
-        <module>wf-backend-hz</module>
-        <module>wf-util</module>
         <module>wf-transport</module>
         <module>wf-test</module>
     </modules>
@@ -94,12 +91,6 @@
                 <version>${spring.version}</version>
             </dependency>
             <!-- /spring -->
-
-            <dependency>
-                <groupId>com.hazelcast</groupId>
-                <artifactId>hazelcast-all</artifactId>
-                <version>${hazelcast.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>cglib</groupId>

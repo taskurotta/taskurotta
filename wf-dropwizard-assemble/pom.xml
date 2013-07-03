@@ -7,7 +7,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>wf-dropwizard-assemble</artifactId>
@@ -19,7 +19,6 @@
         <module>wf-dropwizard-memory</module>
         <module>wf-dropwizard-oracle</module>
         <module>wf-dropwizard-oracle-monkey</module>
-        <module>wf-dropwizard-hz-poc</module>
     </modules>
 
 </project>
