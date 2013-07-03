@@ -2,7 +2,6 @@ package ru.taskurotta.recipes.custom.deciders;
 
 import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.client.DeciderClientProvider;
 
 /**
  * User: stukushin

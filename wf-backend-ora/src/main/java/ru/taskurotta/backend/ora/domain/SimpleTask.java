@@ -1,9 +1,9 @@
 package ru.taskurotta.backend.ora.domain;
 
+import org.springframework.util.StringUtils;
+
 import java.util.Date;
 import java.util.UUID;
-
-import org.springframework.util.StringUtils;
 
 /**
  * User: greg

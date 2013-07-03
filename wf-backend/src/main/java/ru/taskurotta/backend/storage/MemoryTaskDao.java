@@ -1,11 +1,5 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import net.sf.cglib.core.CollectionUtils;
 import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
@@ -13,6 +7,12 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: moroz

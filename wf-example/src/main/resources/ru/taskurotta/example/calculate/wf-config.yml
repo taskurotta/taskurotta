@@ -13,7 +13,7 @@ spreader:
       instance:
         context: ru/taskurotta/example/calculate/SpreaderBeans.xml
         properties:
-          count: 150
+          count: 15
           loggingPeriod: 10000
           taskPollDelay: 1
 

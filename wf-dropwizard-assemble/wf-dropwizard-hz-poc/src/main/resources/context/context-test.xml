@@ -2,12 +2,11 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:task="http://www.springframework.org/schema/task"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+
             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
 
@@ -109,7 +108,9 @@
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
-    <bean id="checkpointService" class="ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService"/>
+    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl">
+        <property name="hzInstance" ref="hzInstance" />
+    </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />

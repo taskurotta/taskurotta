@@ -3,8 +3,6 @@ package ru.fccland.wf.ws.request;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import ru.fccland.wf.ws.usersession.DummyHealthCheck;
-import ru.fccland.wf.ws.usersession.UserSessionResource;
 
 /**
  * Created by void 15.03.13 18:49

@@ -1,19 +1,19 @@
 package ru.taskurotta.backend.hz.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * TaskDao storing tasks in HZ shared maps
@@ -22,10 +22,8 @@ import ru.taskurotta.transport.model.TaskContainer;
  */
 public class HzTaskDao implements TaskDao {
 
-    private final static Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
-
-    private Map<String, TaskContainer> id2TaskMap;
-    private Map<String, DecisionContainer> id2TaskDecisionMap;
+    private Map<UUID, TaskContainer> id2TaskMap;
+    private Map<UUID, DecisionContainer> id2TaskDecisionMap;
 
 
     public HzTaskDao(HazelcastInstance hzInstance) {
@@ -35,38 +33,37 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId().toString(), taskDecision);
+        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
     }
 
     @Override
     public TaskContainer getTask(UUID taskId) {
-        return id2TaskMap.get(taskId.toString());
+        return id2TaskMap.get(taskId);
     }
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        logger.warn("!!!!  Put task " + taskContainer.getTaskId().toString());
-        id2TaskMap.put(taskContainer.getTaskId().toString(), taskContainer);
+        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
     }
 
     @Override
     public DecisionContainer getDecision(UUID taskId) {
-        return id2TaskDecisionMap.get(taskId.toString());
+        return id2TaskDecisionMap.get(taskId);
     }
 
     @Override
     public boolean isTaskReleased(UUID taskId) {
-        return id2TaskDecisionMap.containsKey(taskId.toString());
+        return id2TaskDecisionMap.containsKey(taskId);
     }
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if (processUuid == null) {
+        if(processUuid == null) {
             return null;
         }
         List<TaskContainer> result = new ArrayList<>();
-        for (TaskContainer tc : id2TaskMap.values()) {
-            if (processUuid.equals(tc.getProcessId())) {
+        for(TaskContainer tc: id2TaskMap.values()) {
+            if(processUuid.equals(tc.getProcessId())) {
                 result.add(tc);
             }
         }
@@ -75,34 +72,22 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
-        List<TaskContainer> tmpResult = new ArrayList<>();
-        int startIndex = (pageNumber - 1) * pageSize + 1;
-        int endIndex = startIndex + pageSize - 1;
-        long totalCount = 0;
-        int index = 0;
-        for (TaskContainer tc : id2TaskMap.values()) {
-            if (index > endIndex) {
-                totalCount = id2TaskMap.values().size();
-                break;
-            } else if (index >= startIndex && index <= endIndex) {
-                tmpResult.add(tc);
-            }
-            index++;
-        }
+        Collection<TaskContainer> tasks = id2TaskMap.values();
+        int pageEnd = pageSize * pageNumber >= tasks.size() ? tasks.size() : pageSize * pageNumber;
+        int pageStart = (pageNumber - 1) * pageSize;
+        List<TaskContainer> resultList = Arrays.asList(tasks.toArray(new TaskContainer[tasks.size()])).subList(pageStart, pageEnd);
 
-        return new GenericPage(tmpResult, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(resultList, pageNumber, pageSize, resultList.size());
     }
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        List<TaskContainer> result = new ArrayList(CollectionUtils.filter(id2TaskMap.values(), new Predicate() {
+        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
             @Override
-            public boolean evaluate(Object o) {
-                TaskContainer task = (TaskContainer) o;
-                return task.getNumberOfAttempts() >= iterationCount;
+            public boolean apply(TaskContainer taskContainer) {
+                return taskContainer.getNumberOfAttempts() >= iterationCount;
             }
-        }));
-        return result;
+        });
     }
 
     @Override

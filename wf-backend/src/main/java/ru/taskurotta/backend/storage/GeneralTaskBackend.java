@@ -1,8 +1,5 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -15,6 +12,9 @@ import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -201,6 +201,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
+    public DecisionContainer getDecision(UUID taskId, UUID processId) {
+        return taskDao.getDecision(taskId);
+    }
+
+    @Override
     public void addDecisionCommit(DecisionContainer taskDecision) {
         //Removing checkpoints
         checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_START_TO_CLOSE);
@@ -218,7 +223,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     public boolean isTaskInProgress(UUID taskId) {
-        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, null, -1, -1));
+        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, null, -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();
     }
 

@@ -3,7 +3,6 @@ package ru.taskurotta.backend.storage;
 import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.transport.model.TaskContainer;
 
-
 import java.util.UUID;
 
 /**

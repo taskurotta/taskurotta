@@ -1,7 +1,5 @@
 package ru.taskurotta.client.internal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.server.TaskServer;
@@ -13,8 +11,6 @@ import ru.taskurotta.util.ActorDefinition;
  * Time: 13:30
  */
 public class TaskSpreaderProviderCommon implements TaskSpreaderProvider {
-
-    private final static Logger log = LoggerFactory.getLogger(TaskSpreaderProviderCommon.class);
 
     private TaskServer taskServer;
 

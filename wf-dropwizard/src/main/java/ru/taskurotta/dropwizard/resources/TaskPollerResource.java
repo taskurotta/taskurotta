@@ -5,9 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.dropwizard.TaskurottaResource;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainerWrapper;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

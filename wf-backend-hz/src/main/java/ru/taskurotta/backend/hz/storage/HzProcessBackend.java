@@ -1,16 +1,12 @@
 package ru.taskurotta.backend.hz.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
@@ -18,14 +14,21 @@ import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * Created with IntelliJ IDEA.
  * User: dimadin
  * Date: 13.06.13 16:00
  */
 public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
+    private final static Logger logger = LoggerFactory.getLogger(HzProcessBackend.class);
 
-    private CheckpointService checkpointService = new MemoryCheckpointService();
+    private CheckpointService checkpointService;
     private Map<UUID, ProcessVO> processesStorage;
     private HazelcastInstance hzInstance;
 
@@ -74,6 +77,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     public void setCheckpointService(CheckpointService checkpointService) {
+        logger.debug("set checkpoint service [{}]", checkpointService);
         this.checkpointService = checkpointService;
     }
 
@@ -88,36 +92,44 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
         processes = processesStorage.values().toArray(processes);
         if (!processesStorage.isEmpty()) {
-            for (int i = (pageNumber - 1) * pageSize; i <= ((pageSize * pageNumber >= (processes.length)) ? (processes.length) - 1 : pageSize * pageNumber - 1); i++) {
-                result.add(processes[i]);
-            }
+            int pageEnd = pageSize * pageNumber >= processes.length ? processes.length : pageSize * pageNumber;
+            int pageStart = (pageNumber - 1) * pageSize;
+            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
         }
-        return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
+        return new GenericPage<>(result, pageNumber, pageSize, processes.length);
 
     }
 
     @Override
     public List<ProcessVO> findProcesses(String type, final String id) {
         List<ProcessVO> result = new ArrayList<>();
+
         if ((id != null) && (!id.isEmpty())) {
-            if (SEARCH_BY_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
-                        return process.getProcessUuid().toString().startsWith(id);
-                    }
-                }));
-            } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
-                        return process.getCustomId().startsWith(id);
-                    }
-                }));
+
+            switch (type) {
+                case SEARCH_BY_ID:
+                    result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+                        @Override
+                        public boolean apply(ProcessVO processVO) {
+                            return processVO.getProcessUuid().toString().startsWith(id);
+                        }
+                    }));
+                    break;
+
+                case SEARCH_BY_CUSTOM_ID:
+                    result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+                        @Override
+                        public boolean apply(ProcessVO processVO) {
+                            return processVO.getCustomId().startsWith(id);
+                        }
+                    }));
+                    break;
+
+                default:
+                    break;
             }
         }
+
         return result;
     }
 

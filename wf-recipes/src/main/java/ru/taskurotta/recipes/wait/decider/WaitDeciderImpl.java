@@ -4,9 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Wait;
-import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 import ru.taskurotta.recipes.wait.worker.WaitWorkerClient;
 import ru.taskurotta.test.FlowArbiter;
 

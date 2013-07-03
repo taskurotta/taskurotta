@@ -3,7 +3,6 @@ package ru.taskurotta;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
-import java.util.List;
 import java.util.UUID;
 
 /**

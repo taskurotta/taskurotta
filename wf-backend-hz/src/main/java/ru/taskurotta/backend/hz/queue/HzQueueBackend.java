@@ -22,36 +22,38 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 
 /**
  * Created by void, dudin 07.06.13 11:00
  */
-public class HztQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
+public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
 
-    private final static Logger logger = LoggerFactory.getLogger(HztQueueBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(HzQueueBackend.class);
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private CheckpointService checkpointService = new MemoryCheckpointService();
+    private CheckpointService checkpointService = new MemoryCheckpointService();//default, can be overridden with setter
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
-    private String queueListName = "tsQueuesList";
+    private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
 
-    public HztQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
+    public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
         this.hazelcastInstance.addInstanceListener(this);
-        logger.debug("HztQueueBackend created and registered as Hazelcast instance listener");
+        logger.debug("HzQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
+        Set<String> queueNamesSet = hazelcastInstance.<String>getSet(queueListName);
+        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(queueNamesSet));
         List<String> result = new ArrayList<>(pageSize);
-        Set<String> queueNamesSet = hazelcastInstance.getSet(queueListName);
         String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
         if (queueNames.length > 0) {
             int pageStart = (pageNum - 1) * pageSize;

@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-recipes</artifactId>
+            <artifactId>wf-test</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

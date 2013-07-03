@@ -1,11 +1,11 @@
 package ru.taskurotta.test;
 
-import java.util.UUID;
-
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.core.TaskImpl;
+
+import java.util.UUID;
 
 /**
  * User: romario

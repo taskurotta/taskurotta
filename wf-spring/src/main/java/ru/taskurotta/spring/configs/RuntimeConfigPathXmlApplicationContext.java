@@ -1,7 +1,5 @@
 package ru.taskurotta.spring.configs;
 
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -13,6 +11,8 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
 import ru.taskurotta.RuntimeProviderManager;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
+
+import java.util.Properties;
 
 /**
  * User: stukushin

@@ -34,7 +34,6 @@ public class HzGraphDao implements GraphDao {
     private ILock graphLock;
 
     private static ObjectMapper mapper = new ObjectMapper();
-
     static {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }

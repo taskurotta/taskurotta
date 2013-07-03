@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.checkpoint.model;
 
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.TimeoutType;
+
+import java.util.UUID;
 
 /**
  * Query command for listing Checkpoints from CheckpointService,
@@ -22,18 +22,19 @@ public class CheckpointQuery {
     //filter by timeout type
     private TimeoutType timeoutType;
 
-    //Filter by enity uuid
-    private UUID uuid;
+    //Filter by entity entityGuid
+    private UUID entityGuid;
 
-    public CheckpointQuery(TimeoutType timeoutType, String entityType, long maxTime, long minTime) {
+    public CheckpointQuery(TimeoutType timeoutType, UUID entityGuid, String entityType, long maxTime, long minTime) {
         this.timeoutType = timeoutType;
+        this.entityGuid = entityGuid;
         this.entityType = entityType;
         this.maxTime = maxTime;
         this.minTime = minTime;
     }
 
     public CheckpointQuery(TimeoutType timeoutType) {
-        this(timeoutType, null, -1, -1);
+        this(timeoutType, null, null, -1, -1);
     }
 
     public long getMinTime() {
@@ -68,19 +69,19 @@ public class CheckpointQuery {
         this.timeoutType = timeoutType;
     }
 
-    public UUID getUuid() {
-        return uuid;
+    public UUID getEntityGuid() {
+        return entityGuid;
     }
 
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
+    public void setEntityGuid(UUID entityGuid) {
+        this.entityGuid = entityGuid;
     }
 
     @Override
     public String toString() {
         return "CheckpointQuery [minTime=" + minTime + ", maxTime=" + maxTime
                 + ", entityType=" + entityType + ", timeoutType=" + timeoutType
-                + ", uuid=" + uuid + "]";
+                + ", entityGuid=" + entityGuid + "]";
     }
 
     @Override

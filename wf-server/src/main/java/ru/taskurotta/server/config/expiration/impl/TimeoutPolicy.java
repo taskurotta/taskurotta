@@ -1,13 +1,12 @@
 package ru.taskurotta.server.config.expiration.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.config.model.ExpirationPolicy;
+
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import ru.taskurotta.backend.config.model.ExpirationPolicy;
 
 /**
  *  Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.

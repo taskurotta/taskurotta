@@ -1,10 +1,5 @@
 package ru.taskurotta.backend.console.manager.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
@@ -13,12 +8,18 @@ import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
+import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -32,6 +33,8 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private TaskInfoRetriever taskInfo;
     private CheckpointInfoRetriever checkpointInfo;
     private ProfileInfoRetriever profileInfo;
+    private DecisionInfoRetriever decisionInfo;
+
 
     @Override
     public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
@@ -194,5 +197,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         this.profileInfo = profileInfo;
     }
 
-
+    public void setDecisionInfo(DecisionInfoRetriever decisionInfo) {
+        this.decisionInfo = decisionInfo;
+    }
 }

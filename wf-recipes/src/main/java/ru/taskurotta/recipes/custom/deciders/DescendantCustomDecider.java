@@ -2,7 +2,6 @@ package ru.taskurotta.recipes.custom.deciders;
 
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 
 /**

@@ -1,15 +1,15 @@
 package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskImpl;
+import ru.taskurotta.internal.core.TaskOptionsImpl;
+import ru.taskurotta.transport.model.ArgType;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
