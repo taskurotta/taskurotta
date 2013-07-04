@@ -206,6 +206,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     public void addDecisionCommit(DecisionContainer taskDecision) {
         //Removing checkpoints
         checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_START_TO_CLOSE);
+        checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_SCHEDULE_TO_CLOSE);
         checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_RELEASE_TO_COMMIT);
     }
 
