@@ -1,8 +1,5 @@
 package ru.taskurotta.backend.hz.dependency;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import org.slf4j.Logger;
@@ -11,7 +8,6 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
@@ -33,11 +29,6 @@ public class HzGraphDao implements GraphDao {
     private Map<UUID, DecisionRow> decisions;
     private ILock graphLock;
 
-    private static ObjectMapper mapper = new ObjectMapper();
-    static {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    }
-
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
         this.hzInstance = hzInstance;
         this.graphs = hzInstance.getMap(graphsMapName);
@@ -54,11 +45,11 @@ public class HzGraphDao implements GraphDao {
      */
     public static class GraphRow implements Serializable{
         private int version;
-        private String jsonGraph;
+        private Graph graph;
 
         protected GraphRow(Graph graph) {
-            version = graph.getVersion();
-            dump(graph);
+            this.version = graph.getVersion();
+            this.graph = graph;
         }
 
 
@@ -73,33 +64,12 @@ public class HzGraphDao implements GraphDao {
             if (version != newVersion - 1) {
                 return false;
             }
-            version = newVersion;
-            dump(modifiedGraph);
+
+            this.version = newVersion;
+            this.graph = modifiedGraph;
 
             return true;
         }
-
-
-        protected void dump(Graph graph) {
-            try {
-                jsonGraph = mapper.writeValueAsString(graph);
-            } catch (JsonProcessingException e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not create json String from Object: " + graph, e);
-            }
-        }
-
-
-        protected Graph parse() {
-
-            try {
-                return mapper.readValue(jsonGraph, Graph.class);
-            } catch (IOException e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not instantiate Object from json. JSON value: " + jsonGraph, e);
-            }
-        }
-
 
     }
 
@@ -168,7 +138,7 @@ public class HzGraphDao implements GraphDao {
             return null;
         }
 
-        return graphRow.parse();
+        return graphRow.graph;
     }
 
     @Override
