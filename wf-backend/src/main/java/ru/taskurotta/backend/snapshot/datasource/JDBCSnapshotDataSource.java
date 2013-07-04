@@ -85,10 +85,7 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
         Snapshot snapshot = new Snapshot();
         try {
             snapshot.setGraph(mapper.readValue(rs.getString("graph"), Graph.class));
-
             snapshot.setSnapshotId((UUID) rs.getObject("snapshotId"));
-            snapshot.setTask(mapper.readValue(rs.getString("task"), Task.class));
-            snapshot.setDependencyDecision(mapper.readValue(rs.getString("task_decision"), DependencyDecision.class));
             snapshot.setCreatedDate(rs.getDate("created_date"));
         } catch (IOException e) {
             log.error("deserialization error", e);
@@ -125,16 +122,14 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
 
     @Override
     public void save(Snapshot snapshot) {
-        final String sql = "insert into snapshot(snapshotId, task, graph, task_decision, created_date) values(?, ?, ?, ?, ?)";
+        final String sql = "insert into snapshot(snapshotId, graph, created_date) values(?, ?, ?)";
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)
         ) {
             statement.setObject(1, snapshot.getSnapshotId());
-            statement.setString(2, mapper.writeValueAsString(snapshot.getTask()));
-            statement.setString(3, mapper.writeValueAsString(snapshot.getGraph()));
-            statement.setString(4, mapper.writeValueAsString(snapshot.getDependencyDecision()));
-            statement.setDate(5, new java.sql.Date(snapshot.getCreatedDate().getTime()));
+            statement.setString(2, mapper.writeValueAsString(snapshot.getGraph()));
+            statement.setDate(3, new java.sql.Date(snapshot.getCreatedDate().getTime()));
             statement.executeUpdate();
         } catch (SQLException e) {
             log.error("sql error", e);

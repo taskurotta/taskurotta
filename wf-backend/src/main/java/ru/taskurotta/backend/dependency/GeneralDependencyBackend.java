@@ -7,11 +7,7 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.*;
 
 import java.util.UUID;
 
@@ -54,6 +50,7 @@ public class GeneralDependencyBackend implements DependencyBackend {
             }
 
             graph.apply(modification);
+            logger.debug("Graph  copy: " + graph.copy());
             if (graphDao.updateGraph(graph)) {
                 resultDecision.setProcessFinished(graph.isFinished());
                 return resultDecision.withReadyTasks(graph.getReadyItems());

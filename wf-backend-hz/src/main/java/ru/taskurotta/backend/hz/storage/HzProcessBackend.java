@@ -11,9 +11,7 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
-import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.storage.ProcessBackend;
-import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
@@ -60,16 +58,16 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public void finishProcess(DependencyDecision dependencyDecision, String returnValue) {
+    public void finishProcess(UUID processId, String returnValue) {
 
-        ProcessVO process = processesStorage.get(dependencyDecision.getFinishedProcessId());
+        ProcessVO process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
-        processesStorage.put(dependencyDecision.getFinishedProcessId(), process);
+        processesStorage.put(processId, process);
 
         //should be at the end of the method
-        checkpointService.removeEntityCheckpoints(dependencyDecision.getFinishedProcessId(), TimeoutType.PROCESS_START_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(dependencyDecision.getFinishedProcessId(), TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
+        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 
     @Override

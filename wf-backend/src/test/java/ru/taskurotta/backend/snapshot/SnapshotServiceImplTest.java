@@ -35,17 +35,7 @@ public class SnapshotServiceImplTest {
     @BeforeTest
     public void init() {
         MockitoAnnotations.initMocks(this);
-        snapshot = new Snapshot(
-                new TaskImpl(
-                        UUID.randomUUID(),
-                        UUID.randomUUID(),
-                        new TaskTargetImpl(TaskType.DECIDER_START, "", "", ""),
-                        0,
-                        1,
-                        new Object[]{},
-                        new TaskOptionsImpl(null)),
-                new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new DependencyDecision());
+        snapshot = new Snapshot(new Graph(UUID.randomUUID(), UUID.randomUUID()));
         when(snapshotDataSource.loadSnapshotById(snapshot.getSnapshotId())).thenReturn(snapshot);
         snapshotService = new SnapshotServiceImpl(snapshotDataSource);
 

@@ -217,7 +217,7 @@ public class HzTaskServerV2 extends GeneralTaskServer implements MembershipListe
                     }
 
                     if (dependencyDecision.isProcessFinished()) {
-                        processBackend.finishProcess(dependencyDecision, dependencyDecision.getFinishedProcessValue());
+                        processBackend.finishProcess(dependencyDecision.getFinishedProcessId(), dependencyDecision.getFinishedProcessValue());
                     }
 
                     taskBackend.addDecisionCommit(taskDecision);

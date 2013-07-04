@@ -1,19 +1,13 @@
 package ru.taskurotta.backend.dependency.links;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.*;
+import com.google.common.base.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * This is not thread safe object. It should be synchronized with backend by version value.
@@ -46,6 +40,8 @@ public class Graph implements Serializable {
      * For example, A(B, C) - A is a key and {B, C} is a set value of map.
      */
     private Map<UUID, Set<UUID>> links = new HashMap<>();
+
+    private Set<UUID> finishedItems = new HashSet<>();
 
 
     // modification stuff.
@@ -148,6 +144,14 @@ public class Graph implements Serializable {
         return notFinishedItems.isEmpty();
     }
 
+    public Set<UUID> getFinishedItems() {
+        return finishedItems;
+    }
+
+    public void setFinishedItems(Set<UUID> finishedItems) {
+        this.finishedItems = finishedItems;
+    }
+
     /**
      * Method calculates or returns previous calculated released items.
      *
@@ -166,6 +170,7 @@ public class Graph implements Serializable {
 
         // remove finished item from set
         notFinishedItems.remove(finishedItem);
+        finishedItems.add(finishedItem);
 
         UUID waitForAfterRelease = modification.getWaitForAfterRelease();
 
@@ -342,7 +347,7 @@ public class Graph implements Serializable {
     public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
         Set<UUID> waitForTasks = links.get(taskId);
 
-        System.err.println("waitForTasks = " + waitForTasks);
+        logger.debug("waitForTasks = " + waitForTasks);
 
         if (waitForTasks == null) {
             return false;
@@ -355,18 +360,55 @@ public class Graph implements Serializable {
         return waitForTasks.size() == taskQuantity;
     }
 
-    @Override
-    public String toString() {
-        return "Graph{" +
-                "version=" + version +
-                ", graphId=" + graphId +
-                ", notFinishedItems=" + notFinishedItems +
-                ", frozenReadyItems=" + frozenReadyItems +
-                ", links=" + links +
-                ", modification=" + modification +
-                ", readyItems=" + (readyItems == null ? null : Arrays.asList(readyItems)) +
-                '}';
+    public void clearFinishedItems() {
+        finishedItems.clear();
     }
 
+    /**
+     * Method for creating copy of the graph
+     *
+     * @return copy of the current graph
+     */
+    public Graph copy() {
+        final Graph copy = new Graph();
+        copy.setGraphId(UUID.fromString(graphId.toString()));
+        copy.setLinks(copyMapUuidWithSetOfUuid(links));
+        copy.setNotFinishedItems(copyUuidSet(notFinishedItems));
+        copy.setFrozenReadyItems(copyMapUuidWithSetOfUuid(frozenReadyItems));
+        copy.setFinishedItems(copyUuidSet(finishedItems));
+        copy.setVersion(version);
+        return copy;
+    }
+
+    private static Map<UUID, Set<UUID>> copyMapUuidWithSetOfUuid(Map<UUID, Set<UUID>> original) {
+        final Map<UUID, Set<UUID>> copy = new HashMap<>();
+        for (Map.Entry<UUID, Set<UUID>> entry : original.entrySet()) {
+            Set<UUID> copyOfSet = copyUuidSet(entry.getValue());
+            copy.put(UUID.fromString(entry.getKey().toString()), copyOfSet);
+        }
+        return copy;
+    }
+
+    private static Set<UUID> copyUuidSet(Set<UUID> original) {
+        final Set<UUID> copyOfSet = new HashSet<>();
+        for (UUID id : original) {
+            copyOfSet.add(UUID.fromString(id.toString()));
+        }
+        return copyOfSet;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("version", version)
+                .add("graphId", graphId)
+                .add("notFinishedItems", notFinishedItems)
+                .add("frozenReadyItems", frozenReadyItems)
+                .add("links", links)
+                .add("finishedItems", finishedItems)
+                .add("modification", modification)
+                .add("readyItems", readyItems)
+                .toString();
+    }
 }
 

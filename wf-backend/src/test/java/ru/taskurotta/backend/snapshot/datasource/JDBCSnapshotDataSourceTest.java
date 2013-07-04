@@ -38,37 +38,21 @@ public class JDBCSnapshotDataSourceTest {
         ds.setPassword("sa");
         ds.setInitialSize(1);
         ds.setMaxActive(1);
-        ds.setConnectionInitSqls(new ArrayList<String>() {{add("runscript from 'classpath:import.sql'");}});
+        ds.setConnectionInitSqls(new ArrayList<String>() {{
+            add("runscript from 'classpath:import.sql'");
+        }});
         ds.setMaxIdle(1);
         ds.setTestOnBorrow(false);
         ds.setTestWhileIdle(true);
         snapshotService = new SnapshotServiceImpl(new JDBCSnapshotDataSource(ds));
-        snapshot = new Snapshot(
-                new TaskImpl(
-                        UUID.randomUUID(),
-                        UUID.randomUUID(),
-                        new TaskTargetImpl(TaskType.DECIDER_START, "", "", ""),
-                        0,
-                        1,
-                        new Object[]{},
-                        new TaskOptionsImpl(null)),
-                new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new DependencyDecision());
     }
 
     @Test
     public void testSave() throws Exception {
-        snapshot = new Snapshot(
-                new TaskImpl(
-                        UUID.randomUUID(),
-                        UUID.randomUUID(),
-                        new TaskTargetImpl(TaskType.DECIDER_START, "", "", ""),
-                        0,
-                        1,
-                        new Object[]{},
-                        new TaskOptionsImpl(null)),
-                new Graph(UUID.randomUUID(), UUID.randomUUID()),
-                new DependencyDecision());
+        snapshot = new Snapshot();
+        Graph graph = new Graph();
+        graph.setGraphId(UUID.randomUUID());
+        snapshot.setGraph(graph);
         snapshot.setCreatedDate(new Date());
         snapshotService.createSnapshot(snapshot);
 
@@ -77,6 +61,6 @@ public class JDBCSnapshotDataSourceTest {
     @Test(dependsOnMethods = {"testSave"})
     public void testLoadSnapshotById() throws Exception {
         Snapshot founded = snapshotService.getSnapshot(snapshot.getSnapshotId());
-        Assert.assertEquals(founded.getTask().getId(), snapshot.getTask().getId());
+       Assert.assertEquals(snapshot.getGraph().getGraphId(), founded.getGraph().getGraphId());
     }
 }
