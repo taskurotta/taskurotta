@@ -52,7 +52,7 @@ public class OraQueueDao {
             return result;
         } catch (SQLException ex) {
             log.error("Count task database error for queue[" + queueName + "]", ex);
-            throw new BackendCriticalException("Count task database error for queue[\"+queueName+\"]", ex);
+            throw new BackendCriticalException("Count task database error for queue["+queueName+"]", ex);
         } finally {
             closeResources(ps, connection);
         }

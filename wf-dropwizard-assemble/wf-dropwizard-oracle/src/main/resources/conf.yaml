@@ -1,12 +1,10 @@
 #Location of Spring application context:
-contextLocation: "classpath*:context/appContext.xml, classpath*:context/console-context.xml"
+contextLocation: "classpath*:context/applicationContext.xml"
 
 #Used for static resource serving in development mode
 assets:
   overrides:
     /: ../../wf-dropwizard/src/main/resources/assets/
-
-
 
 #Configuration of actors served by this server:
 actorConfig:
@@ -16,8 +14,7 @@ actorConfig:
     - id: "default"
       queueName: "default"
       timeoutPolicies:
-        TASK_START_TO_CLOSE: "TIMEOUT: 30 SECONDS" #TIMEOUT: prefix can be used to specify simple timeouts (template: "TIMEOUT: <int> <TimeUnit>")
-        TASK_POLL_TO_COMMIT: "custom policy" #<-- MATCH
+        TASK_START_TO_CLOSE: "TIMEOUT: 10 SECONDS" #TIMEOUT: prefix can be used to specify simple timeouts (template: "TIMEOUT: <int> <TimeUnit>")
 
     #wf-example/calculate actors
     - id: "ru.taskurotta.example.calculate.worker.Multiplier#1.0"
@@ -29,42 +26,21 @@ actorConfig:
     - id: "ru.taskurotta.example.calculate.decider.MathActionDecider#1.0"
       queueName: "qb$math_action_decider"
 
-#List of expiration policies available for actors by name (new instance per actor):
-  expirationPolicies:
-    - name: "custom policy" #<-- MATCH
-      className: "ru.taskurotta.server.config.expiration.impl.TimeoutWithFixedRetryPolicy"
-      properties:
-        timeout: 5
-        timeUnit: "SECONDS"
-        retry: 50
-
 #Task server common properties (will be available as placeholders in spring context):
 properties:
   db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
   db.user: "taskurotta"
   db.password: "taskurotta"
   db.validating: true  #validate queues existence in DB
-  db.autocreating: false #auto create new queues in DB if there are no explicitly configured
-  retryTimes: 50 #retry for dependency graph modification
-  recovery.schedule: "*/20 * * * * ?" #run recovery every 20 seconds
-  recovery.period: 2 #recoveru scans for checkpoints created {this.value} days ago
-  recovery.period.unit: "DAYS"
-  recovery.timeStep: 18 #recovery time step | for monkey test with 10% failChance, recovery period should be covered in less then ~10 steps or it would fail forever
-  recovery.timeStep.unit: "HOURS"
-
+  db.autocreating: true #auto create new queues in DB if there are no explicitly configured
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
-        ru.taskurotta: INFO
-        ru.taskurotta.console: DEBUG
-#        ru.taskurotta.backend.queue: DEBUG
-#        ru.taskurotta.backend.task: DEBUG
-#        ru.taskurotta.backend: INFO
-#        ru.taskurotta.server.recovery: INFO
-#        ru.taskurotta.dropwizard.resources: INFO
-#        ru.taskurotta.backend.ora.queue: INFO
+        ru.taskurotta: DEBUG
+        ru.taskurotta.console: INFO
+        ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO
     file:
         enabled: true
