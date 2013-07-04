@@ -33,6 +33,16 @@
         </hz:config>
     </hz:hazelcast>
 
+    <!-- Console HZ debug resources -->
+    <bean id = "hzAllInstancesInfo" class="ru.taskurotta.backend.hz.console.HzAllInstancesInfoResource">
+        <property name="hzInstance" ref="hzInstance" />
+    </bean>
+    <bean id = "hzInstanceInfo" class="ru.taskurotta.backend.hz.console.HzInstanceInfoResource">
+        <property name="hzInstance" ref="hzInstance" />
+    </bean>
+    <!-- C/onsole HZ debug resources -->
+
+
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
@@ -45,7 +55,7 @@
     </bean>
 
     <!-- REST resources -->
-    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
+    <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
     </bean>
     <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
@@ -101,8 +111,8 @@
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />
         <constructor-arg name="checkpointService" ref="checkpointService"/>
-        <property name="checkpointService" ref="checkpointService" />
     </bean>
+
     <bean id="dependencyBackend"
           class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
         <constructor-arg name="graphDao" ref="graphDao" />
@@ -120,9 +130,11 @@
 
     <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
 
+    <!-- Health checks -->
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
         <constructor-arg name="name" value="check task server" />
         <property name="taskServer" ref="taskServer" />
     </bean>
+    <!-- /Health checks -->
 
 </beans>
