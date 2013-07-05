@@ -38,7 +38,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
 
         // task should be in queue
-        assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, taskId));
+        assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, taskId, deciderTask.getProcessId()));
 
         Task taskFromQueue = workerTaskSpreader.poll();
 
@@ -46,13 +46,13 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         assertEquals(taskId, taskFromQueue.getId());
 
         // task should be in "process" state
-        assertTrue(isTaskInProgress(taskId));
+        assertTrue(isTaskInProgress(taskId, deciderTask.getProcessId()));
 
         TaskDecision taskDecision = new TaskDecisionImpl(taskId, processId, null, null);
         workerTaskSpreader.release(taskDecision);
 
         // task should be in "done" state
-        Assert.assertFalse(isTaskInProgress(taskId));
+        Assert.assertFalse(isTaskInProgress(taskId, deciderTask.getProcessId()));
         Assert.assertTrue(isTaskReleased(taskId));
 
     }
@@ -150,11 +150,11 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         Assert.assertTrue(isTaskReleased(taskIdC));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getValue());
         // workTaskA should be in "wait" state
-        Assert.assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskIdA));
+        Assert.assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskIdA, workerTaskA.getProcessId()));
 
         Task workerQueueTaskA = workerTaskSpreader.poll();
 
-        Assert.assertTrue(isTaskInProgress(workerTaskIdA));
+        Assert.assertTrue(isTaskInProgress(workerTaskIdA, workerTaskA.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getValue());
     }
 

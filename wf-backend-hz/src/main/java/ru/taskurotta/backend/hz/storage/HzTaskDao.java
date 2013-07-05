@@ -3,11 +3,13 @@ package ru.taskurotta.backend.hz.storage;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.PartitionAware;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,8 +24,8 @@ import java.util.UUID;
  */
 public class HzTaskDao implements TaskDao {
 
-    private Map<UUID, TaskContainer> id2TaskMap;
-    private Map<UUID, DecisionContainer> id2TaskDecisionMap;
+    private Map<TaskKey, TaskContainer> id2TaskMap;
+    private Map<TaskKey, DecisionContainer> id2TaskDecisionMap;
 
 
     public HzTaskDao(HazelcastInstance hzInstance) {
@@ -33,17 +35,17 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+        id2TaskDecisionMap.put(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
     }
 
     @Override
-    public TaskContainer getTask(UUID taskId) {
-        return id2TaskMap.get(taskId);
+    public TaskContainer getTask(UUID taskId, UUID processId) {
+        return id2TaskMap.get(new TaskKey(processId, taskId));
     }
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
+        id2TaskMap.put(new TaskKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer);
     }
 
     @Override
@@ -93,6 +95,41 @@ public class HzTaskDao implements TaskDao {
     @Override
     public void updateTask(TaskContainer taskContainer) {
 
+    }
+
+    class TaskKey implements PartitionAware, Serializable {
+        UUID processId;
+        UUID taskId;
+
+        public TaskKey(UUID processId, UUID taskId) {
+            this.taskId = taskId;
+            this.processId = processId;
+        }
+
+        @Override
+        public Object getPartitionKey() {
+            return processId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TaskKey)) return false;
+
+            TaskKey taskKey = (TaskKey) o;
+
+            if (!processId.equals(taskKey.processId)) return false;
+            if (!taskId.equals(taskKey.taskId)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = processId.hashCode();
+            result = 31 * result + taskId.hashCode();
+            return result;
+        }
     }
 
 }

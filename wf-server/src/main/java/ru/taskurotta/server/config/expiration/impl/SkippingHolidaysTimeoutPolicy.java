@@ -146,7 +146,7 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     }
 
     @Override
-    public long getExpirationTime(UUID taskUuid, long forTime) {
+    public long getExpirationTime(UUID taskId, UUID processId, long forTime) {
         long result = forTime;
         List<Date> actualHolidays = getActualHolidays(forTime);
         do {
@@ -159,7 +159,7 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     }
 
     @Override
-    public boolean readyToRecover(UUID uuid) {
+    public boolean readyToRecover(UUID taskId, UUID processId) {
         return true;
     }
 

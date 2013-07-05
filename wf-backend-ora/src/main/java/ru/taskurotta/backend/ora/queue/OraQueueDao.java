@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.exception.BackendCriticalException;
 
 import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -58,7 +58,7 @@ public class OraQueueDao {
         }
     }
 
-    public void deleteTask(UUID taskId, String queueName) {
+    public void deleteTask(UUID taskId, UUID processId, String queueName) {
         Connection connection = null;
         PreparedStatement ps = null;
         try {
@@ -79,19 +79,24 @@ public class OraQueueDao {
         PreparedStatement ps = null;
         try {
             connection = dataSource.getConnection();
-            ps = connection.prepareStatement("insert into " + queueName + " (task_id, status_id, task_list, date_start, INSERT_DATE) values (?,?,?,?,?)");
+            ps = connection.prepareStatement("insert into " + queueName + " (task_id, process_id, status_id, task_list, date_start, insert_date) values (?,?,?,?,?,?)");
             ps.setString(1, task.getTaskId().toString());
-            ps.setInt(2, task.getStatusId());
-            ps.setString(3, task.getTaskList());
-            Date startTime = new java.sql.Date(task.getDate().getTime());
-            ps.setTimestamp(4, new Timestamp(startTime.getTime()));
-            ps.setTimestamp(5, new Timestamp(task.getDate().getTime()));
+            ps.setString(2, task.getProcessId().toString());
+            ps.setInt(3, task.getStatusId());
+            ps.setString(4, task.getTaskList());
+            ps.setLong(5, task.getStartTime());
+            ps.setLong(6, System.currentTimeMillis());
             ps.executeUpdate();
 
+
+            //TODO: it isnt right to modify task backend table in queue backend class. They should be independent backends by design
+            /////////////////////// //TODO: start time should be simple number, not date or timestamp
             ps = connection.prepareStatement("UPDATE TASK  SET START_TIME = ? WHERE UUID = ? AND START_TIME IS NULL");
-            ps.setTimestamp(1, new Timestamp(startTime.getTime()));
+            ps.setTimestamp(1, new Timestamp(task.getStartTime()));
             ps.setString(2, task.getTaskId().toString());
             ps.executeUpdate();
+            ///////////////////////
+
         } catch (SQLException ex) {
             if (ex.getMessage().contains(ORACLE_CONSTRAINT_VIOLATION)) {
                 log.error(String.format("Constraint violation!!! Task with ID:%s Queue name:%s", task.getTaskId(), queueName));
@@ -123,7 +128,7 @@ public class OraQueueDao {
 
     }
 
-    public UUID pollTask(String queueName) {
+    public TaskQueueItem pollTask(String queueName) {
         Connection connection = null;
         CallableStatement cs = null;
         try {
@@ -135,14 +140,15 @@ public class OraQueueDao {
                     "                      from (select TT.TASK_ID\n" +
                     "                              from %qt TT\n" +
                     "                             where TT.STATUS_ID = 0\n" +
-                    "                               and tt.DATE_START <= current_timestamp\n" +
+                    "                               and tt.DATE_START <= %ds \n" +
                     "                               and ROWNUM = 1\n" +
                     "                             order by TT.INSERT_DATE asc))" +
                     "RETURNING TASK_ID INTO ?;END;";
-            cs = connection.prepareCall(query.replace("%qt", queueName));
+            cs = connection.prepareCall(query.replace("%qt", queueName).replace("%ds", String.valueOf(System.currentTimeMillis())));
             cs.registerOutParameter(1, Types.VARCHAR);
             cs.execute();
-            return (cs.getString(1) != null) ? UUID.fromString(cs.getString(1)) : null;
+            UUID taskId =  (cs.getString(1) != null) ? UUID.fromString(cs.getString(1)) : null;
+            return taskId!=null? getTaskQueueItem(queueName, taskId): null;
         } catch (SQLException ex) {
             log.error("Database error", ex);
             throw new BackendCriticalException("Database error", ex);
@@ -151,12 +157,33 @@ public class OraQueueDao {
         }
     }
 
+    private TaskQueueItem getTaskQueueItem(String queueName, UUID taskId) {
+        TaskQueueItem result = null;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+queueName+" WHERE TASK_ID = ? ")
+        ) {
+            ps.setString(1, taskId.toString());
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                result = new TaskQueueItem();
+                result.setTaskId(UUID.fromString(rs.getString("task_id")));
+                result.setProcessId(UUID.fromString(rs.getString("process_id")));
+                result.setTaskList(rs.getString("task_list"));
+                result.setEnqueueTime(rs.getLong("insert_date"));
+                result.setStartTime(rs.getLong("date_start"));
+            }
+        } catch (SQLException ex) {
+            log.error("Database error", ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+        return result;
+    }
 
-    public GenericPage<QueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
+    public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
         Connection connection = null;
         PreparedStatement ps = null;
         try {
-            List<QueueItem> tmpresult = new ArrayList<QueueItem>();
+            List<TaskQueueItem> tmpresult = new ArrayList<TaskQueueItem>();
             connection = dataSource.getConnection();
             ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("select * from " + queueName));
             int startIndex = (pageNum - 1) * pageSize + 1;
@@ -166,14 +193,19 @@ public class OraQueueDao {
             long totalCount = 0;
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                QueueItem qi = new QueueItem();
+                TaskQueueItem qi = new TaskQueueItem();
 
                 String taskIdStr = rs.getString("task_id");
-                qi.setId(taskIdStr != null ? UUID.fromString(taskIdStr) : null);
+                qi.setTaskId(taskIdStr != null ? UUID.fromString(taskIdStr) : null);
+                String processIdStr = rs.getString("process_id");
+                qi.setProcessId(processIdStr != null ? UUID.fromString(processIdStr) : null);
                 qi.setTaskList(rs.getString("task_list"));
-                qi.setStatus(rs.getInt("status_id"));
-                qi.setStartDate(rs.getTimestamp("date_start"));
-                qi.setInsertDate(rs.getTimestamp("insert_date"));
+
+                Timestamp startTime = rs.getTimestamp("date_start");
+                qi.setStartTime(startTime != null ? startTime.getTime() : -1);
+
+                Timestamp enqueueTime = rs.getTimestamp("insert_date");
+                qi.setEnqueueTime(enqueueTime != null ? enqueueTime.getTime() : -1);
                 totalCount = rs.getLong("cnt");
                 tmpresult.add(qi);
 

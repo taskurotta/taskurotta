@@ -84,7 +84,7 @@ public class OraTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer getTask(UUID taskId) {
+    public TaskContainer getTask(UUID taskId, UUID processId) {
         TaskContainer result = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("SELECT JSON_VALUE FROM TASK WHERE UUID = ?")

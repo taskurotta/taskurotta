@@ -28,9 +28,9 @@ public class TestCheckpointServiceMemory {
         long time2 = System.currentTimeMillis() + 100l;
         long time3 = System.currentTimeMillis() + 1000l;
 
-        Checkpoint c1 = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, uuid1, type1, time1);
-        Checkpoint c2 = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, uuid2, type1, time2);
-        Checkpoint c3 = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, uuid3, type2, time3);
+        Checkpoint c1 = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, uuid1, uuid1, type1, time1);
+        Checkpoint c2 = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, uuid2, uuid2, type1, time2);
+        Checkpoint c3 = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, uuid3, uuid3, type2, time3);
 
         checkpointService.addCheckpoint(c1);
         checkpointService.addCheckpoint(c2);
@@ -38,12 +38,12 @@ public class TestCheckpointServiceMemory {
 
         CheckpointQuery query1 = new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE);
         query1.setMaxTime(time3 + 100l);
-        query1.setEntityType(type1);
+        query1.setActorId(type1);
         query1.setMinTime(time1 - 100);
 
         CheckpointQuery query2 = new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE);
         query2.setMaxTime(time3 + 100l);
-        query2.setEntityType(type2);
+        query2.setActorId(type2);
         query2.setMinTime(time1 - 100);
 
 
@@ -55,7 +55,7 @@ public class TestCheckpointServiceMemory {
         Assert.assertNotNull(result2);
         Assert.assertEquals("Must find 1 checkpoints", 1, result2.size());
 
-        checkpointService.removeCheckpoint(new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, c1.getEntityGuid(), c1.getEntityType(), c1.getTime()));
+        checkpointService.removeCheckpoint(new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, c1.getTaskId(), c1.getProcessId(), type1, c1.getTime()));
         List<Checkpoint> result3 = checkpointService.listCheckpoints(query1);
         Assert.assertNotNull(result3);
         Assert.assertEquals("Must find 1 checkpoints", 1, result3.size());

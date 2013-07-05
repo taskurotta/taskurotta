@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public interface TaskInfoRetriever {
 
-    public TaskContainer getTask(UUID taskId);
+    public TaskContainer getTask(UUID taskId, UUID processId);
 
     public List<TaskContainer> getProcessTasks(UUID processId);
 

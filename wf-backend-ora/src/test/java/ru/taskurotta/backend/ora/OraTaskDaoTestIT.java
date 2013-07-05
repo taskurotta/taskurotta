@@ -21,7 +21,7 @@ public class OraTaskDaoTestIT {
         TaskContainer task = SerializationTest.createTaskContainer();
         dao.addTask(task);
 
-        TaskContainer task1 = dao.getTask(task.getTaskId());
+        TaskContainer task1 = dao.getTask(task.getTaskId(), task.getProcessId());
         Assert.assertEquals(task.getStartTime(), task1.getStartTime());
         Assert.assertEquals(task.getArgs().length, task1.getArgs().length);
 

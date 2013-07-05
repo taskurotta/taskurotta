@@ -32,7 +32,7 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer getTask(UUID taskId) {
+    public TaskContainer getTask(UUID taskId, UUID processId) {
         return id2TaskMap.get(taskId);
     }
 

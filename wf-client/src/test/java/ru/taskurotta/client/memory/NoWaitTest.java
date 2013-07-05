@@ -46,7 +46,7 @@ public class NoWaitTest extends AbstractTestStub {
         assertEquals(taskAId, taskAFromQueue.getId());
 
         // task should be in "process" state
-        assertTrue(isTaskInProgress(taskAId));
+        assertTrue(isTaskInProgress(taskAId, deciderTaskA.getProcessId()));
 
         // create B, C, D tasks
         UUID taskBId = UUID.randomUUID();

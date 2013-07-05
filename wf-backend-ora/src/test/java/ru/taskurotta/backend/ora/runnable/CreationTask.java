@@ -4,7 +4,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.ora.queue.OraQueueDao;
 
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -25,7 +24,7 @@ public class CreationTask implements Runnable {
         System.out.println("Starting adding data");
         while (count < 100000) {
             count++;
-            dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), new Date(), 0, "DEF"), "QUEUE_TEST");
+            dbDAO.enqueueTask(new SimpleTask(UUID.randomUUID(), UUID.randomUUID(), System.currentTimeMillis(), 0, "DEF"), "QUEUE_TEST");
         }
         System.out.println("Stopped adding data");
     }

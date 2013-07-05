@@ -12,7 +12,7 @@ import java.util.UUID;
  * Date: 09.04.13
  */
 public interface TaskDao {
-    TaskContainer getTask(UUID taskId);
+    TaskContainer getTask(UUID taskId, UUID processId);
 
     void addDecision(DecisionContainer taskDecision);
 

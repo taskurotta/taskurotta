@@ -52,7 +52,7 @@ consoleApp.config(function ($routeProvider, $locationProvider) {
         controller: "taskSearchController"
     });
 
-    $routeProvider.when('/tasks/task/:id', {
+    $routeProvider.when('/tasks/task/:processId/:taskId', {
         templateUrl: '/partials/view/task.html',
         controller: "taskCardController"
     });

@@ -2,7 +2,7 @@ package ru.taskurotta.dropwizard.resources.console;
 
 import com.google.common.base.Optional;
 import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -25,7 +25,7 @@ public class QueueContentResource extends BaseResource {
     @GET
     public Response getQueueInfo(@PathParam("name") String name, @QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
         try {
-            GenericPage<QueuedTaskVO> queuesTasks = consoleManager.getEnqueueTasks(name, pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
+            GenericPage<TaskQueueItem> queuesTasks = consoleManager.getEnqueueTasks(name, pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
             logger.debug("Queue[{}] content getted is [{}]", name, queuesTasks);
             return Response.ok(queuesTasks, MediaType.APPLICATION_JSON).build();
         } catch (Throwable e) {

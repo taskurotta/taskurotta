@@ -43,7 +43,7 @@ public class HzGraphDao implements GraphDao {
     /**
      * Table of row contains current graph (process) state
      */
-    public static class GraphRow implements Serializable{
+    public static class GraphRow implements Serializable {
         private int version;
         private Graph graph;
 

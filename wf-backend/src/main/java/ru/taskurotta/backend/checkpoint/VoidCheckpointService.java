@@ -42,7 +42,7 @@ public class VoidCheckpointService implements CheckpointService {
     }
 
     @Override
-    public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType) {
+    public int removeTaskCheckpoints(UUID uuid, UUID processId, TimeoutType timeoutType) {
         return 0;
     }
 }

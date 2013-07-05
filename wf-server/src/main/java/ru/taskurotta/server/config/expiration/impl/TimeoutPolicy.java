@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- *  Политика переотправки задания в очередь фиксированного(либо бесконечного) числа раз.
+ *  Expiration policy which considers task to be expired after a given timeout
  */
 public class TimeoutPolicy implements ExpirationPolicy {
 
@@ -34,12 +34,12 @@ public class TimeoutPolicy implements ExpirationPolicy {
     }
 
     @Override
-    public boolean readyToRecover(UUID uuid) {
+    public boolean readyToRecover(UUID taskId, UUID processId) {
         return true;
     }
 
     @Override
-    public long getExpirationTime(UUID taskUuid, long forTime) {
+    public long getExpirationTime(UUID taskId, UUID processId, long forTime) {
         //forTime + fixed timeout
         return forTime + timeUnit.toMillis(timeout);
     }

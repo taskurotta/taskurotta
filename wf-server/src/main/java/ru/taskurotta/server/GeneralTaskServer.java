@@ -2,12 +2,12 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
@@ -93,16 +93,16 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // atomic statement
-        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
 
-        if (taskId == null) {
+        if (tqi == null) {
             return null;
         }
 
         // idempotent statement
-        final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
+        final TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
 
-        queueBackend.pollCommit(actorDefinition.getFullName(), taskId);
+        queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
 
         return taskContainer;
     }
@@ -116,10 +116,14 @@ public class GeneralTaskServer implements TaskServer {
         processDecision(taskDecision);
     }
 
+    /**
+     * @return true if snapshot processing required, false otherwise
+     */
     protected boolean processDecision(DecisionContainer taskDecision) {
         boolean requireSnaphot = false;
 
         UUID taskId = taskDecision.getTaskId();
+        UUID processId = taskDecision.getProcessId();
 
         logger.debug("Start processing task decision[{}]", taskId);
 
@@ -130,7 +134,7 @@ public class GeneralTaskServer implements TaskServer {
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId);
+                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
                 enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
             }
@@ -161,7 +165,7 @@ public class GeneralTaskServer implements TaskServer {
             for (UUID taskId2Queue : readyTasks) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
+                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue, processId);
                 enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
             }
 

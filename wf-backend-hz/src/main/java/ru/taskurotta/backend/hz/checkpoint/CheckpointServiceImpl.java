@@ -34,7 +34,7 @@ public class CheckpointServiceImpl implements CheckpointService {
     @Override
     public void addCheckpoint(Checkpoint checkpoint) {
         MultiMap<UUID, Checkpoint> map = hzInstance.getMultiMap(getMapName(checkpoint.getTimeoutType()));
-        map.put(checkpoint.getEntityGuid(), checkpoint);
+        map.put(checkpoint.getTaskId(), checkpoint);
         log.debug("created checkpoint :: [{}]", checkpoint);
     }
 
@@ -45,14 +45,14 @@ public class CheckpointServiceImpl implements CheckpointService {
         }
         MultiMap<UUID, Checkpoint> map = hzInstance.getMultiMap(getMapName(timeoutType));
         for (Checkpoint checkpoint : checkpoints) {
-            map.put(checkpoint.getEntityGuid(), checkpoint);
+            map.put(checkpoint.getTaskId(), checkpoint);
         }
     }
 
     @Override
     public void removeCheckpoint(Checkpoint checkpoint) {
         MultiMap<UUID, Checkpoint> map = hzInstance.getMultiMap(getMapName(checkpoint.getTimeoutType()));
-        if (map.remove(checkpoint.getEntityGuid(), checkpoint)) {
+        if (map.remove(checkpoint.getTaskId(), checkpoint)) {
             log.debug("removed checkpoint [{}]", checkpoint);
         } else {
             log.warn("Checkpoint [{}] not found", checkpoint);
@@ -63,7 +63,7 @@ public class CheckpointServiceImpl implements CheckpointService {
     public void removeCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoints) {
         MultiMap<UUID, Checkpoint> map = hzInstance.getMultiMap(getMapName(timeoutType));
         for (Checkpoint checkpoint : checkpoints) {
-            map.remove(checkpoint.getEntityGuid(), checkpoint);
+            map.remove(checkpoint.getTaskId(), checkpoint);
         }
     }
 
@@ -93,7 +93,7 @@ public class CheckpointServiceImpl implements CheckpointService {
     }
 
     @Override
-    public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType) {
+    public int removeTaskCheckpoints(UUID uuid, UUID processId, TimeoutType timeoutType) {
         log.debug("before remove all {} checkpoints for {}", timeoutType, uuid);
 
         MultiMap<UUID, Checkpoint> map = hzInstance.getMultiMap(getMapName(timeoutType));

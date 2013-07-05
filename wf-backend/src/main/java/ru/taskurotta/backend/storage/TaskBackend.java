@@ -24,7 +24,7 @@ public interface TaskBackend extends CheckpointServiceProvider {
      * @param taskId
      * @return
      */
-    public TaskContainer getTaskToExecute(UUID taskId);
+    public TaskContainer getTaskToExecute(UUID taskId, UUID processId);
 
 
     /**
@@ -33,7 +33,7 @@ public interface TaskBackend extends CheckpointServiceProvider {
      * @param taskId
      * @return
      */
-    public TaskContainer getTask(UUID taskId);
+    public TaskContainer getTask(UUID taskId, UUID processId);
 
 
     /**

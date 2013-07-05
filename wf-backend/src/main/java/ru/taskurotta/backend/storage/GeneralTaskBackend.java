@@ -40,11 +40,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
-    public TaskContainer getTaskToExecute(UUID taskId) {
+    public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
 
         logger.debug("getTaskToExecute() taskId = [{}]", taskId);
 
-        TaskContainer task = getTask(taskId);
+        TaskContainer task = getTask(taskId, processId);
 
         // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
         // due guarantees for its immutability.
@@ -101,7 +101,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             }
 
             //Setting TASK_START checkpoint
-            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());
+            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, processId, task.getActorId(), System.currentTimeMillis());
             checkpointService.addCheckpoint(startCheckpoint);
 
         }
@@ -145,9 +145,9 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
 
     @Override
-    public TaskContainer getTask(UUID taskId) {
-        TaskContainer task = taskDao.getTask(taskId);
-        logger.debug("Task getted by uuid[{}] is[{}]", taskId, task);
+    public TaskContainer getTask(UUID taskId, UUID processId) {
+        TaskContainer task = taskDao.getTask(taskId, processId);
+        logger.debug("Task getted by uuid[{}], process uuid[{}] is[{}]", taskId, processId, task);
         return task;
     }
 
@@ -175,8 +175,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     public void addDecision(DecisionContainer taskDecision) {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
-        TaskContainer task = taskDao.getTask(taskDecision.getTaskId());
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getActorId(), System.currentTimeMillis()));
+        TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
 
         taskDao.addDecision(taskDecision);
 
@@ -205,9 +205,9 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     @Override
     public void addDecisionCommit(DecisionContainer taskDecision) {
         //Removing checkpoints
-        checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_START_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_SCHEDULE_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(taskDecision.getTaskId(), TimeoutType.TASK_RELEASE_TO_COMMIT);
+        checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_START_TO_CLOSE);
+        checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_SCHEDULE_TO_CLOSE);
+        checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_RELEASE_TO_COMMIT);
     }
 
     @Override
@@ -220,8 +220,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         return null;
     }
 
-    public boolean isTaskInProgress(UUID taskId) {
-        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, null, -1, -1));
+    public boolean isTaskInProgress(UUID taskId, UUID processId) {
+        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, processId, null, -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();
     }
 
