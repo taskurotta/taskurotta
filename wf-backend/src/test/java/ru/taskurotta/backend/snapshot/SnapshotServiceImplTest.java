@@ -1,55 +1,48 @@
 package ru.taskurotta.backend.snapshot;
 
 
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
-import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
-import ru.taskurotta.internal.core.TaskDecisionImpl;
-import ru.taskurotta.internal.core.TaskImpl;
-import ru.taskurotta.internal.core.TaskOptionsImpl;
-import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.backend.snapshot.datasource.JDBCSnapshotDataSource;
 
+import java.util.ArrayList;
 import java.util.UUID;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertEquals;
 
 /**
  * User: greg
  */
 public class SnapshotServiceImplTest {
 
-    @Mock
-    SnapshotDataSource snapshotDataSource;
 
-    Snapshot snapshot;
     private SnapshotService snapshotService;
 
     @BeforeTest
     public void init() {
-        MockitoAnnotations.initMocks(this);
-        snapshot = new Snapshot(new Graph(UUID.randomUUID(), UUID.randomUUID()));
-        when(snapshotDataSource.loadSnapshotById(snapshot.getSnapshotId())).thenReturn(snapshot);
-        snapshotService = new SnapshotServiceImpl(snapshotDataSource);
-
+        BasicDataSource ds = new BasicDataSource();
+        ds.setDriverClassName("org.h2.Driver");
+        ds.setUrl("jdbc:h2:mem:test_mem;");
+        ds.setUsername("sa");
+        ds.setPassword("sa");
+        ds.setInitialSize(1);
+        ds.setMaxActive(1);
+        ds.setConnectionInitSqls(new ArrayList<String>() {{
+            add("runscript from 'classpath:import.sql'");
+        }});
+        ds.setMaxIdle(1);
+        ds.setTestOnBorrow(false);
+        ds.setTestWhileIdle(true);
+        snapshotService = new SnapshotServiceImpl(new JDBCSnapshotDataSource(ds));
     }
 
     @Test
     public void testCreateSnapshot() throws Exception {
-        snapshotService.createSnapshot(snapshot);
-        verify(snapshotDataSource).save(snapshot);
+        for (int i = 0; i < 100; i++) {
+            Snapshot snap = new Snapshot(new Graph(UUID.randomUUID(), UUID.randomUUID()));
+            snapshotService.createSnapshot(snap);
+        }
+        Thread.sleep(1000);
     }
 
-    @Test
-    public void testGetSnapshot() throws Exception {
-        UUID snapshotId = snapshot.getSnapshotId();
-        assertEquals(snapshot, snapshotService.getSnapshot(snapshotId));
-    }
 }
