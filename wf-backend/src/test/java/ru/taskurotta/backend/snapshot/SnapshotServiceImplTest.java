@@ -22,7 +22,7 @@ public class SnapshotServiceImplTest {
     public void init() {
         BasicDataSource ds = new BasicDataSource();
         ds.setDriverClassName("org.h2.Driver");
-        ds.setUrl("jdbc:h2:mem:test_mem;");
+        ds.setUrl("jdbc:h2:mem:test_mem1;");
         ds.setUsername("sa");
         ds.setPassword("sa");
         ds.setInitialSize(1);

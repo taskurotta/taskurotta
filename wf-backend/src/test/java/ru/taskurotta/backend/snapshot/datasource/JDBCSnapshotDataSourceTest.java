@@ -5,16 +5,9 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
-import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.snapshot.Snapshot;
 import ru.taskurotta.backend.snapshot.SnapshotService;
 import ru.taskurotta.backend.snapshot.SnapshotServiceImpl;
-import ru.taskurotta.internal.core.TaskDecisionImpl;
-import ru.taskurotta.internal.core.TaskImpl;
-import ru.taskurotta.internal.core.TaskOptionsImpl;
-import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.TaskType;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,6 +54,6 @@ public class JDBCSnapshotDataSourceTest {
     @Test(dependsOnMethods = {"testSave"})
     public void testLoadSnapshotById() throws Exception {
         Snapshot founded = snapshotService.getSnapshot(snapshot.getSnapshotId());
-       Assert.assertEquals(snapshot.getGraph().getGraphId(), founded.getGraph().getGraphId());
+        Assert.assertEquals(snapshot.getGraph().getGraphId(), founded.getGraph().getGraphId());
     }
 }
