@@ -1,5 +1,12 @@
 package ru.taskurotta.backend.hz.storage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
@@ -7,13 +14,6 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * TaskDao storing tasks in HZ shared maps
@@ -58,12 +58,12 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if(processUuid == null) {
+        if (processUuid == null) {
             return null;
         }
         List<TaskContainer> result = new ArrayList<>();
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if(processUuid.equals(tc.getProcessId())) {
+        for (TaskContainer tc : id2TaskMap.values()) {
+            if (processUuid.equals(tc.getProcessId())) {
                 result.add(tc);
             }
         }
@@ -82,12 +82,13 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
+        List<TaskContainer> result = new ArrayList<TaskContainer>(Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
             @Override
             public boolean apply(TaskContainer taskContainer) {
                 return taskContainer.getNumberOfAttempts() >= iterationCount;
             }
-        });
+        }));
+        return result;
     }
 
     @Override

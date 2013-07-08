@@ -8,7 +8,7 @@ import java.util.List;
  * User: dimadin
  * Date: 04.07.13 15:52
  */
-public class HzInfoVO {
+public class HzInfoVo {
 
     private List<String> mapNames = new ArrayList<>();
     private List<String> setNames = new ArrayList<>();

@@ -1,5 +1,11 @@
 package ru.taskurotta.backend.hz.console;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
@@ -10,12 +16,6 @@ import com.hazelcast.core.Instance.InstanceType;
 import com.hazelcast.core.MultiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,25 +31,25 @@ public class HzAllInstancesInfoResource {
     private HazelcastInstance hzInstance;
 
     @GET
-    public HzInfoVO getHazelcastInfo() {
-        HzInfoVO result = new HzInfoVO();
+    public HzInfoVo getHazelcastInfo() {
+        HzInfoVo result = new HzInfoVo();
 
-        for(Instance inst: hzInstance.getInstances()) {
+        for (Instance inst : hzInstance.getInstances()) {
             InstanceType type = inst.getInstanceType();
-            if(type.isQueue()) {
-                String name = ((IQueue)inst).getName();
+            if (type.isQueue()) {
+                String name = ((IQueue) inst).getName();
                 result.getQueueNames().add(name);
-            } else if(type.isMap()) {
-                String name = ((IMap)inst).getName();
+            } else if (type.isMap()) {
+                String name = ((IMap) inst).getName();
                 result.getMapNames().add(name);
-            } else if(type.isMultiMap()) {
-                String name = ((MultiMap)inst).getName();
+            } else if (type.isMultiMap()) {
+                String name = ((MultiMap) inst).getName();
                 result.getMultimapNames().add(name);
-            } else if(type.isSet()) {
-                String name = ((ISet)inst).getName();
+            } else if (type.isSet()) {
+                String name = ((ISet) inst).getName();
                 result.getSetNames().add(name);
-            } else if(type.isList()) {
-                String name = ((IList)inst).getName();
+            } else if (type.isList()) {
+                String name = ((IList) inst).getName();
                 result.getListNames().add(name);
             }
         }
