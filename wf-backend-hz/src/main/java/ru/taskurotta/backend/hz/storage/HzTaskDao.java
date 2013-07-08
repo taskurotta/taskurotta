@@ -77,7 +77,7 @@ public class HzTaskDao implements TaskDao {
         int pageStart = (pageNumber - 1) * pageSize;
         List<TaskContainer> resultList = Arrays.asList(tasks.toArray(new TaskContainer[tasks.size()])).subList(pageStart, pageEnd);
 
-        return new GenericPage<>(resultList, pageNumber, pageSize, resultList.size());
+        return new GenericPage<>(resultList, pageNumber, pageSize, id2TaskMap.size());
     }
 
     @Override
@@ -96,4 +96,8 @@ public class HzTaskDao implements TaskDao {
 
     }
 
+    @Override
+    public TaskContainer removeTask(UUID taskId) {
+        return id2TaskMap.remove(taskId);
+    }
 }

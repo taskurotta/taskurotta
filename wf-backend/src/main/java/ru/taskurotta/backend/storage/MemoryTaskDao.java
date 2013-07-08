@@ -1,7 +1,7 @@
 package ru.taskurotta.backend.storage;
 
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
@@ -22,8 +22,8 @@ public class MemoryTaskDao implements TaskDao {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryTaskDao.class);
 
-    private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<UUID, TaskContainer>();
-    private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<UUID, DecisionContainer>();
+    private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<>();
+    private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<>();
 
 
     @Override
@@ -67,6 +67,7 @@ public class MemoryTaskDao implements TaskDao {
 
     @Override
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
+        logger.trace("listTasks called");
         List<TaskContainer> tmpResult = new ArrayList<>();
         int startIndex = (pageNumber - 1) * pageSize + 1;
         int endIndex = startIndex + pageSize - 1;
@@ -82,23 +83,26 @@ public class MemoryTaskDao implements TaskDao {
             index++;
         }
 
-        return new GenericPage(tmpResult, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(tmpResult, pageNumber, pageSize, totalCount);
     }
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        List<TaskContainer> result = new ArrayList(CollectionUtils.filter(id2TaskMap.values(), new Predicate() {
+        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
             @Override
-            public boolean evaluate(Object o) {
-                TaskContainer task = (TaskContainer) o;
-                return task.getNumberOfAttempts() >= iterationCount;
+            public boolean apply(TaskContainer taskContainer) {
+                return taskContainer.getNumberOfAttempts() >= iterationCount;
             }
-        }));
-        return result;  //To change body of implemented methods use File | Settings | File Templates.
+        });
     }
 
     @Override
     public void updateTask(TaskContainer taskContainer) {
         //No need to implement it for in-memory storage case
+    }
+
+    @Override
+    public TaskContainer removeTask(UUID taskId) {
+        return id2TaskMap.remove(taskId);
     }
 }

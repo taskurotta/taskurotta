@@ -12,21 +12,24 @@ import java.util.UUID;
  * Date: 09.04.13
  */
 public interface TaskDao {
-    TaskContainer getTask(UUID taskId);
+    public TaskContainer getTask(UUID taskId);
 
-    void addDecision(DecisionContainer taskDecision);
+    public void addDecision(DecisionContainer taskDecision);
 
-    void addTask(TaskContainer taskContainer);
+    public void addTask(TaskContainer taskContainer);
 
-    void updateTask(TaskContainer taskContainer);
+    public void updateTask(TaskContainer taskContainer);
 
-    DecisionContainer getDecision(UUID taskId);
+    public DecisionContainer getDecision(UUID taskId);
 
-    boolean isTaskReleased(UUID taskId);
+    public boolean isTaskReleased(UUID taskId);
 
-    List<TaskContainer> getProcessTasks(UUID processUuid);
+    public List<TaskContainer> getProcessTasks(UUID processUuid);
 
-    GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
+    public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
     public List<TaskContainer> getRepeatedTasks(int iterationCount);
+
+    public TaskContainer removeTask(UUID taskId);
+
 }
