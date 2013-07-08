@@ -31,8 +31,8 @@ public class HzAllInstancesInfoResource {
     private HazelcastInstance hzInstance;
 
     @GET
-    public HzInfoVo getHazelcastInfo() {
-        HzInfoVo result = new HzInfoVo();
+    public HzInfoVO getHazelcastInfo() {
+        HzInfoVO result = new HzInfoVO();
 
         for (Instance inst : hzInstance.getInstances()) {
             InstanceType type = inst.getInstanceType();
