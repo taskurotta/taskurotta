@@ -220,6 +220,14 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         return null;
     }
 
+    @Override
+    public void finishProcess(UUID processId) {
+        taskDao.getProcessTasks(processId);
+        for (TaskContainer taskContainer : taskDao.getProcessTasks(processId)) {
+            taskDao.removeTask(taskContainer.getTaskId());
+        }
+    }
+
     public boolean isTaskInProgress(UUID taskId) {
         List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, null, -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();

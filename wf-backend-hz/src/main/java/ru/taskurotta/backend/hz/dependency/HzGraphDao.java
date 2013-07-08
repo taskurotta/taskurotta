@@ -24,13 +24,11 @@ public class HzGraphDao implements GraphDao {
 
     // TODO: garbage collection policy for real database
 
-    private HazelcastInstance hzInstance;
     private Map<UUID, GraphRow> graphs;
     private Map<UUID, DecisionRow> decisions;
     private ILock graphLock;
 
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
-        this.hzInstance = hzInstance;
         this.graphs = hzInstance.getMap(graphsMapName);
         this.decisions = hzInstance.getMap(decisionsMapName);
         graphLock = hzInstance.getLock(graphs);
@@ -43,30 +41,29 @@ public class HzGraphDao implements GraphDao {
     /**
      * Table of row contains current graph (process) state
      */
-    public static class GraphRow implements Serializable{
+    public static class GraphRow implements Serializable {
         private int version;
         private Graph graph;
 
         protected GraphRow(Graph graph) {
-            this.version = graph.getVersion();
+            version = graph.getVersion();
             this.graph = graph;
         }
 
 
         /**
-         * @param modifiedGraph
+         * @param modifiedGraph - new version of the graph
          * @return true if modification was successful
          */
-        protected synchronized boolean updateGraph(Graph modifiedGraph) {
+        protected boolean updateGraph(Graph modifiedGraph) {
 
             int newVersion = modifiedGraph.getVersion();
 
             if (version != newVersion - 1) {
                 return false;
             }
-
-            this.version = newVersion;
-            this.graph = modifiedGraph;
+            version = newVersion;
+            graph = modifiedGraph;
 
             return true;
         }
@@ -81,6 +78,7 @@ public class HzGraphDao implements GraphDao {
         private Modification modification;
         private UUID[] readyItems;
 
+        @SuppressWarnings("RedundantIfStatement")
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;

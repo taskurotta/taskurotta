@@ -126,7 +126,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             logger.error("Thread was interrupted at poll, releasing it", e);
         }
 
-        logger.debug("poll() returns taskId [{}]. Queue.size: {}", taskId, queue.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("poll() returns taskId [{}]. Queue.size: {}", taskId, queue.size());
+        }
 
         return taskId;
 

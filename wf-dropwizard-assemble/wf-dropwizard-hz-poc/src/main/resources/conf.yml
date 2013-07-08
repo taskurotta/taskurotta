@@ -36,8 +36,9 @@ logging:
         ru.taskurotta.dropwizard.hz: DEBUG
         ru.taskurotta.backend.hz.server.HazelcastTaskServer: DEBUG
         ru.taskurotta.backend.hz.storage: DEBUG
-        ru.taskurotta.backend.checkpoint: DEBUG
-        ru.taskurotta.backend.hz.checkpoint: DEBUG
+        ru.taskurotta.backend.checkpoint: INFO
+        ru.taskurotta.backend.hz.checkpoint: INFO
+        ru.taskurotta.backend.hz.queue: DEBUG
         com.yammer: WARN
     file:
         enabled: true
