@@ -22,6 +22,7 @@ import java.util.UUID;
  * Date: 4/5/13
  * Time: 11:35 AM
  */
+@SuppressWarnings("UnusedDeclaration")
 public class Graph implements Serializable {
 
     private final static Logger logger = LoggerFactory.getLogger(Graph.class);
@@ -29,7 +30,7 @@ public class Graph implements Serializable {
     public static UUID[] EMPTY_ARRAY = new UUID[0];
 
     private int version = 0;
-    private UUID graphId;
+    private UUID graphId;       //should be equal to process ID
 
     /**
      * Set of all not finished items in this process
@@ -54,9 +55,17 @@ public class Graph implements Serializable {
     private UUID[] readyItems;
 
 
-    public Graph() {
+    /**
+     * generic constructor for deserializer
+     */
+    Graph() {
     }
 
+    /**
+     * Create new graph
+     * @param graphId - should be equal to process ID
+     * @param startItem - ID of the first task in process
+     */
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
         notFinishedItems.add(startItem);
@@ -149,10 +158,9 @@ public class Graph implements Serializable {
     }
 
     /**
-     * Method calculates or returns previous calculated released items.
+     * Apply changes to the graph
      *
-     * @param modification
-     * @return
+     * @param modification - diff object to apply
      */
     public void apply(Modification modification) {
 
@@ -346,6 +354,7 @@ public class Graph implements Serializable {
             return false;
         }
 
+        //noinspection SimplifiableIfStatement
         if (taskQuantity == -1 && !waitForTasks.isEmpty()) {
             return true;
         }

@@ -101,7 +101,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             }
 
             //Setting TASK_START checkpoint
-            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, processId, task.getActorId(), System.currentTimeMillis());
+            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getActorId(), System.currentTimeMillis());
             checkpointService.addCheckpoint(startCheckpoint);
 
         }
@@ -145,9 +145,9 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
 
     @Override
-    public TaskContainer getTask(UUID taskId, UUID processId) {
-        TaskContainer task = taskDao.getTask(taskId, processId);
-        logger.debug("Task getted by uuid[{}], process uuid[{}] is[{}]", taskId, processId, task);
+    public TaskContainer getTask(UUID taskId) {
+        TaskContainer task = taskDao.getTask(taskId);
+        logger.debug("Task getted by uuid[{}] is[{}]", taskId, task);
         return task;
     }
 
@@ -175,8 +175,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     public void addDecision(DecisionContainer taskDecision) {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
-        TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
+        TaskContainer task = taskDao.getTask(taskDecision.getTaskId());
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getActorId(), System.currentTimeMillis()));
 
         taskDao.addDecision(taskDecision);
 
@@ -220,6 +220,15 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         return null;
     }
 
+    @Override
+    public void finishProcess(UUID processId) {
+        taskDao.getProcessTasks(processId);
+        for (TaskContainer taskContainer : taskDao.getProcessTasks(processId)) {
+            taskDao.removeTask(taskContainer.getTaskId());
+        }
+    }
+
+    
     public boolean isTaskInProgress(UUID taskId, UUID processId) {
         List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, processId, null, -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();

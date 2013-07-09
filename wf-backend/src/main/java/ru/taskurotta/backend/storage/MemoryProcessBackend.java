@@ -12,6 +12,7 @@ import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,14 +79,14 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     @Override
     public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
         List<ProcessVO> result = new ArrayList<>();
-        ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
-        processes = processesStorage.values().toArray(processes);
         if (!processesStorage.isEmpty()) {
-            for (int i = (pageNumber - 1) * pageSize; i <= ((pageSize * pageNumber >= (processes.length)) ? (processes.length) - 1 : pageSize * pageNumber - 1); i++) {
-                result.add(processes[i]);
-            }
+            ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
+            processes = processesStorage.values().toArray(processes);
+            int pageStart = (pageNumber - 1) * pageSize;
+            int pageEnd = (pageSize * pageNumber >= processes.length) ? processes.length : pageSize * pageNumber;
+            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
         }
-        return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
+        return new GenericPage<>(result, pageNumber, pageSize, processesStorage.values().size());
 
     }
 
