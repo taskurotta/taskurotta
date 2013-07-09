@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
+
+    <context:property-placeholder/>
+
+    <hz:hazelcast id="hazelcastInstance">
+        <hz:config>
+            <hz:instance-name>task-server</hz:instance-name>
+
+            <hz:properties>
+                <hz:property name="hazelcast.logging.type">slf4j</hz:property>
+                <hz:property name="hazelcast.jmx">true</hz:property>
+                <hz:property name="hazelcast.jmx.detailed">true</hz:property>
+            </hz:properties>
+        </hz:config>
+    </hz:hazelcast>
+
+    <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
+        <constructor-arg name="hazelcastInstance" ref="hazelcastInstance"/>
+        <constructor-arg name="defaultTimeout" value="60"/>
+        <constructor-arg name="defaultTimeUnit" value="SECONDS"/>
+    </bean>
+
+    <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao">
+        <constructor-arg ref="hazelcastInstance"/>
+    </bean>
+
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="graphDao" />
+        <constructor-arg name="retryTimes" value="10" />
+    </bean>
+
+    <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend">
+        <constructor-arg ref="hazelcastInstance"/>
+    </bean>
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+        <constructor-arg name="hazelcastInstance" ref="hazelcastInstance"/>
+        <constructor-arg name="pollDelay" value="60" />
+        <constructor-arg name="pollDelayUnit" value="SECONDS" />
+    </bean>
+
+    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl" />
+
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
+        <constructor-arg ref="hazelcastInstance"/>
+    </bean>
+
+    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+        <constructor-arg name="checkpointService" ref="checkpointService" />
+        <constructor-arg name="taskDao" ref="taskDao" />
+    </bean>
+
+    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+
+        <property name="hzInstance" ref="hazelcastInstance" />
+    </bean>
+
+    <bean id="ts" factory-bean="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+    </bean>
+
+</beans>
