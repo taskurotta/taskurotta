@@ -19,6 +19,7 @@
     <logger name="ru.taskurotta" level="INFO"/>
     <logger name="ru.taskurotta.backend.hz.server" level="DEBUG"/>
     <logger name="ru.taskurotta.client.hazelcast" level="DEBUG"/>
+    <logger name="ru.taskurotta.client.hazelcast.task" level="DEBUG"/>
     <logger name="ru.taskurotta.server" level="DEBUG"/>
 
     <logger name="com.hazelcast" level="OFF"/>

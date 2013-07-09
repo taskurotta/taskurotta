@@ -32,7 +32,7 @@ public class HzTaskSpreader implements TaskSpreader {
     private ActorDefinition actorDefinition;
     private ObjectFactory objectFactory;
 
-    private ConcurrentLinkedQueue<TaskContainer> queue = new ConcurrentLinkedQueue<>();
+    private volatile ConcurrentLinkedQueue<TaskContainer> queue = new ConcurrentLinkedQueue<>();
 
     public HzTaskSpreader(HazelcastInstance hazelcastInstance, ActorDefinition actorDefinition) {
         this.hazelcastInstance = hazelcastInstance;

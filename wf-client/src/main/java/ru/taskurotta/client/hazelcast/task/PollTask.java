@@ -30,7 +30,7 @@ public class PollTask implements Callable<TaskContainer>, Serializable {
 
         TaskContainer taskContainer = HazelcastTaskServer.getInstance().poll(actorDefinition);
 
-        logger.debug("Poll task container [{}] for actor definition [{}]", taskContainer, actorDefinition);
+        logger.debug("Successfully poll task container [{}] for actor definition [{}]", taskContainer, actorDefinition);
 
         return taskContainer;
     }

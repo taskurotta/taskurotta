@@ -29,7 +29,7 @@ public class ReleaseTask implements Callable<Void>, Serializable {
 
         HazelcastTaskServer.getInstance().release(decisionContainer);
 
-        logger.debug("Release decision container [{}]", decisionContainer);
+        logger.debug("Successfully release decision container [{}]", decisionContainer);
 
         return null;
     }

@@ -10,7 +10,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/parallel/SpreaderBeans-hazelcast2.xml
         properties:
-          cycles: 1000
+          cycles: 10
           accuracy: 10000
 
 profiler:
@@ -55,7 +55,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: LinearRertyPolicyConfig
-      count: 100
+      count: 5
 
 logback:
     appender:
@@ -78,7 +78,7 @@ logback:
         - ru.taskurotta.client.hazelcast:
              key: name
              \@level: DEBUG
-        - ru.taskurotta.backend.hz.queue:
+        - ru.taskurotta.client.hazelcast.task:
              key: name
              \@level: DEBUG
         - com.hazelcast:
