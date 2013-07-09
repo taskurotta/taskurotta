@@ -30,6 +30,22 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     private static HazelcastTaskServer instance;
     private static final Object instanceMonitor = 0;
 
+    /**
+     * For tests ONLY
+     */
+    public HazelcastTaskServer(){
+
+
+    }
+
+    /**
+     * For tests ONLY
+     * @param instance
+     */
+    public static void setInstance(HazelcastTaskServer instance) {
+        HazelcastTaskServer.instance = instance;
+    }
+
     private HazelcastTaskServer(BackendBundle backendBundle) {
         super(backendBundle);
     }

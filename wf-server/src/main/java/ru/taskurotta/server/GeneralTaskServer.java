@@ -35,6 +35,13 @@ public class GeneralTaskServer implements TaskServer {
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
 
+    /*
+    For tests ONLY
+     */
+    public GeneralTaskServer(){
+
+    }
+
 
     public GeneralTaskServer(BackendBundle backendBundle) {
         this.processBackend = backendBundle.getProcessBackend();

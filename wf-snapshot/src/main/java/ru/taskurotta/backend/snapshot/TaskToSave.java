@@ -32,8 +32,7 @@ public class TaskToSave implements Callable, PartitionAware, Serializable {
 
     @Override
     public Object call() throws Exception {
-//        HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
-        System.out.println(processId);
+        final HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
         return null;
     }
 

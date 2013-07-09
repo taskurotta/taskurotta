@@ -14,10 +14,15 @@
     <properties>
         <spring.version>3.2.1.RELEASE</spring.version>
         <hazelcast.version>2.6</hazelcast.version>
-        <org.powermock.version>1.5.1</org.powermock.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-server</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
@@ -30,13 +35,14 @@
             <groupId>ru.taskurotta</groupId>
             <artifactId>wf-backend-hz</artifactId>
             <version>0.1.0-SNAPSHOT</version>
-            <!--<scope>compile</scope>-->
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
             <version>${hazelcast.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -81,19 +87,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${org.powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-testng</artifactId>
-            <version>${org.powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
