@@ -41,6 +41,7 @@ public class Graph implements Serializable {
      */
     private Map<UUID, Set<UUID>> links = new HashMap<>();
 
+    //todo convention name
     private Set<UUID> finishedItems = new HashSet<>();
 
 

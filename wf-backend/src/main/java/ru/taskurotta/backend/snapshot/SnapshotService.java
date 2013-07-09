@@ -7,7 +7,8 @@ import java.util.UUID;
  */
 public interface SnapshotService {
 
-    void createSnapshot(Snapshot snapshot);
+
+    void createSnapshot(UUID processID);
 
     Snapshot getSnapshot(UUID snapshotId);
 }

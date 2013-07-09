@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.snapshot.datasource;
+package ru.taskurotta.backend.snapshot;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.testng.Assert;
@@ -8,6 +8,7 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.snapshot.Snapshot;
 import ru.taskurotta.backend.snapshot.SnapshotService;
 import ru.taskurotta.backend.snapshot.SnapshotServiceImpl;
+import ru.taskurotta.backend.snapshot.datasource.JDBCSnapshotDataSource;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,7 +48,7 @@ public class JDBCSnapshotDataSourceTest {
         graph.setGraphId(UUID.randomUUID());
         snapshot.setGraph(graph);
         snapshot.setCreatedDate(new Date());
-        snapshotService.createSnapshot(snapshot);
+//        snapshotService.createSnapshot(snapshot);
 
     }
 
