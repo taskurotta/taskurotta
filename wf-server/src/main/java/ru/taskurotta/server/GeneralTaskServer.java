@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 public class GeneralTaskServer implements TaskServer {
 
-    protected final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
     protected ProcessBackend processBackend;
     protected TaskBackend taskBackend;
@@ -55,7 +55,6 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
-
         // some consistence check
         if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
@@ -94,13 +93,12 @@ public class GeneralTaskServer implements TaskServer {
 
         // atomic statement
         TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
-
         if (tqi == null) {
             return null;
         }
 
         // idempotent statement
-        final TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
+        TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
 
         queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
 
@@ -110,7 +108,6 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
-
         // save it firstly
         taskBackend.addDecision(taskDecision);
         processDecision(taskDecision);
@@ -122,14 +119,14 @@ public class GeneralTaskServer implements TaskServer {
     protected boolean processDecision(DecisionContainer taskDecision) {
         boolean requireSnaphot = false;
 
+        logger.debug("Start processing task decision[{}]", taskDecision);
+
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
 
-        logger.debug("Start processing task decision[{}]", taskId);
 
         // if Error
         if (taskDecision.containsError()) {
-
             // enqueue task immediately if needed
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
@@ -142,7 +139,6 @@ public class GeneralTaskServer implements TaskServer {
             taskBackend.addDecisionCommit(taskDecision);
             return requireSnaphot;
         }
-
 
         // idempotent statement
         DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);

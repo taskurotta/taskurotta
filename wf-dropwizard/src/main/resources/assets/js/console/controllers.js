@@ -143,18 +143,20 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
         $$data.getProcess($routeParams.processId).then(function (value) {
             $scope.process = angular.fromJson(value.data || {});
             $log.info("processCardController: successfully updated process[" + $routeParams.processId + "] content");
+
+            $$data.getProcessTree($routeParams.processId, $scope.process.startTaskUuid).then(function (value) {
+                $scope.taskTree = angular.fromJson(value.data || {});
+                $log.info("processCardController: successfully updated process[" + $routeParams.processId + "]/["+$scope.process.startTaskUuid+"] tree");
+            }, function (errReason) {
+                $scope.feedback = errReason;
+                $log.error("processCardController: process[" + $routeParams.processId + "] tree update failed: " + errReason);
+            });
+
         }, function (errReason) {
             $scope.feedback = errReason;
             $log.error("processCardController: process[" + $routeParams.id + "] update failed: " + errReason);
         });
 
-        $$data.getProcessTree($routeParams.processId).then(function (value) {
-            $scope.taskTree = angular.fromJson(value.data || {});
-            $log.info("processCardController: successfully updated process[" + $routeParams.processId + "] tree");
-        }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("processCardController: process[" + $routeParams.id + "] tree update failed: " + errReason);
-        });
 
     };
 

@@ -118,7 +118,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         if (task != null) {
             result.setDesc(task.getActorId() + " - " + task.getMethod());
         }
-        DecisionContainer decision = taskInfo.getTaskDecision(taskId);
+        DecisionContainer decision = taskInfo.getDecision(taskId, processId);
         if (decision != null && decision.getTasks() != null && decision.getTasks().length != 0) {
             TaskTreeVO[] childs = new TaskTreeVO[decision.getTasks().length];
             for (int i = 0; i < decision.getTasks().length; i++) {

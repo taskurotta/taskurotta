@@ -95,8 +95,8 @@ public class AbstractTestStub {
         return memoryStorageBackend.isTaskInProgress(taskId, processId);
     }
 
-    public boolean isTaskReleased(UUID taskId) {
-        return memoryStorageBackend.isTaskReleased(taskId);
+    public boolean isTaskReleased(UUID taskId, UUID processId) {
+        return memoryStorageBackend.isTaskReleased(taskId, processId);
     }
 
     /**

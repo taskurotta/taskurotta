@@ -24,8 +24,8 @@ consoleServices.factory("$$data", function ($resource, $http) {
         findProcess: function (searchType, id) {
             return $http.get('/rest/console/process/search?type=' + encodeURIComponent(searchType) + "&id=" + encodeURIComponent(id));
         },
-        getProcessTree: function (processId) {
-            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId));
+        getProcessTree: function (processId, startTaskId) {
+            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
         },
         getProcessesList: function (pageNumber, pageSize) {
             return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize);

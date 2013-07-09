@@ -3,6 +3,8 @@ package ru.taskurotta.backend.hz.server;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.PartitionAware;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
@@ -23,6 +25,8 @@ import java.util.concurrent.Callable;
  * Created by void 18.06.13 18:39
  */
 public class HazelcastTaskServer extends GeneralTaskServer {
+
+    private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
 
     private HazelcastInstance hzInstance;
 
@@ -82,8 +86,6 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
-        logger.debug("releasing DecisionContainer[{}]", taskDecision);
-
         // save it in task backend
         taskBackend.addDecision(taskDecision);
 
@@ -116,39 +118,19 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             try {
                 lock.lock();
                 DecisionContainer taskDecision = taskServer.taskBackend.getDecision(taskId, processId);
+                if(taskDecision == null) {
+                    logger.error("Cannot get task decision from store by taskId["+taskId+"], processId["+processId+"]");
+                    //TODO: this exception disappears for some reason
+                    throw new IllegalStateException("Cannot get task decision from store by taskId["+taskId+"], processId["+processId+"]");
+                }
                 if(taskServer.processDecision(taskDecision)) {
                     //TODO: snapshot processsing here?
                 }
-//                logMemberAction(taskHzInstance);
             } finally {
-//                validate(taskHzInstance);
                 lock.unlock();
             }
             return null;
         }
-
-//        private void logMemberAction(HazelcastInstance hzInstance) {
-//            String memberName = hzInstance.getCluster().getLocalMember().toString();
-//            hzInstance.getSet(memberName+":pocTestSet").add(processId);
-//        }
-
-//        private void validate(HazelcastInstance hzInstance) {
-//            Set<UUID> result = new HashSet();
-//            int validated = 0;
-//            for(Member member: hzInstance.getCluster().getMembers()) {
-//                Set<UUID> memberSet = hzInstance.getSet(member.toString()+":pocTestSet");
-//                for(UUID uuid: memberSet) {
-//                    boolean newVal = result.add(uuid);
-//                    if(!newVal) {
-//                        logger.error("Same process[{}] on different nodes detected!", uuid);
-//                        return;
-//                    } else {
-//                        validated++;
-//                    }
-//                }
-//            }
-//            logger.info("Validated [{}] processes, all OK", validated);
-//        }
 
         @Override
         public Object getPartitionKey() {

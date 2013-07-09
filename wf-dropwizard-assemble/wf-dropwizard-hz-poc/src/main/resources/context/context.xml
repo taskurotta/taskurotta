@@ -9,8 +9,6 @@
             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
 
-    <import resource="console-context.xml" />
-
     <context:property-placeholder/>
     <context:annotation-config/>
 
@@ -67,6 +65,7 @@
     <!-- /REST resources -->
 
     <!-- Recoveries -->
+
     <bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
         <property name="configBackend" ref="configBackend"/>
         <property name="taskBackend" ref="taskBackend"/>
@@ -87,7 +86,7 @@
         <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
     </task:scheduled-tasks>
 
-    <!-- /Recoveries -->
+     <!--/Recoveries-->
 
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
@@ -104,7 +103,7 @@
         <constructor-arg name="hzInstance" ref="hzInstance" />
     </bean>
 
-    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl">
+    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.HzCheckpointService">
         <property name="hzInstance" ref="hzInstance" />
     </bean>
 

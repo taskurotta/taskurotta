@@ -25,7 +25,6 @@ public class MemoryTaskDao implements TaskDao {
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<>();
 
-
     @Override
     public void addDecision(DecisionContainer taskDecision) {
         id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
@@ -42,12 +41,12 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public DecisionContainer getDecision(UUID taskId) {
+    public DecisionContainer getDecision(UUID taskId, UUID processId) {
         return id2TaskDecisionMap.get(taskId);
     }
 
     @Override
-    public boolean isTaskReleased(UUID taskId) {
+    public boolean isTaskReleased(UUID taskId, UUID processId) {
         return id2TaskDecisionMap.containsKey(taskId);
     }
 
@@ -102,7 +101,7 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer removeTask(UUID taskId) {
+    public TaskContainer removeTask(UUID taskId, UUID processId) {
         return id2TaskMap.remove(taskId);
     }
 }

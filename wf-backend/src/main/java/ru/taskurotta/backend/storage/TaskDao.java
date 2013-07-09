@@ -20,9 +20,9 @@ public interface TaskDao {
 
     void updateTask(TaskContainer taskContainer);
 
-    DecisionContainer getDecision(UUID taskId);
+    DecisionContainer getDecision(UUID taskId, UUID processId);
 
-    boolean isTaskReleased(UUID taskId);
+    boolean isTaskReleased(UUID taskId, UUID processId);
 
     List<TaskContainer> getProcessTasks(UUID processUuid);
 
@@ -30,6 +30,6 @@ public interface TaskDao {
 
     public List<TaskContainer> getRepeatedTasks(int iterationCount);
 
-    public TaskContainer removeTask(UUID taskId);
+    public TaskContainer removeTask(UUID taskId, UUID processId);
 
 }

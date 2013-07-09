@@ -35,11 +35,11 @@ public class OraTaskDaoTestIT {
 
         dao.addDecision(taskDecision);
 
-        DecisionContainer task1 = dao.getDecision(taskDecision.getTaskId());
+        DecisionContainer task1 = dao.getDecision(taskDecision.getTaskId(), task.getProcessId());
         Assert.assertEquals(taskDecision.getTaskId(), task1.getTaskId());
         Assert.assertEquals(taskDecision.containsError(), task1.containsError());
 
-        Assert.assertTrue(dao.isTaskReleased(taskDecision.getTaskId()));
+        Assert.assertTrue(dao.isTaskReleased(taskDecision.getTaskId(), taskDecision.getProcessId()));
 
     }
 }

@@ -20,7 +20,7 @@ public interface TaskInfoRetriever {
 
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public DecisionContainer getTaskDecision(UUID taskId);
+    public DecisionContainer getDecision(UUID taskId, UUID processId);
 
     public List<TaskContainer> getRepeatedTasks(int iterationCount);
 

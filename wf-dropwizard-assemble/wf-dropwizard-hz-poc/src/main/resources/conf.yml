@@ -1,5 +1,5 @@
 #Location of Spring application context:
-contextLocation: "classpath*:context/context.xml"
+contextLocation: "classpath*:context/context.xml, classpath*:context/console-context.xml"
 #contextLocation: "classpath*:context/context-test.xml, classpath*:context/console-context.xml"
 
 #Used for static resource serving in development mode
@@ -28,18 +28,17 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.dropwizard.server.core: DEBUG
+        ru.taskurotta.dropwizard.server.core: INFO
         ru.taskurotta.server: INFO
-        ru.taskurotta.server.GeneralTaskServer: DEBUG
         ru.taskurotta.server.recovery.RetryEnqueueRecovery: DEBUG
-        ru.taskurotta.test.monkey.AbstractMonkeyAspect: TRACE
-        ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server.HazelcastTaskServer: DEBUG
-        ru.taskurotta.backend.hz.storage: DEBUG
+        ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
+        ru.taskurotta.dropwizard.hz: INFO
+        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.hz.storage: INFO
+        ru.taskurotta.backend.hz.queue: INFO
         ru.taskurotta.backend.checkpoint: INFO
         ru.taskurotta.backend.hz.checkpoint: INFO
-        ru.taskurotta.backend.hz.queue: DEBUG
-        com.yammer: WARN
+        com.yammer: DEBUG
     file:
         enabled: true
         archive: true

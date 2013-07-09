@@ -53,7 +53,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
         // task should be in "done" state
         Assert.assertFalse(isTaskInProgress(taskId, deciderTask.getProcessId()));
-        Assert.assertTrue(isTaskReleased(taskId));
+        Assert.assertTrue(isTaskReleased(taskId, deciderTask.getProcessId()));
 
     }
 
@@ -141,13 +141,13 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
         // check all in done state
         // task A should be in "done" state
-        Assert.assertTrue(isTaskReleased(taskIdA));
+        Assert.assertTrue(isTaskReleased(taskIdA, taskA.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdA).getState().getValue());
         // task B should be in "done" state
-        Assert.assertTrue(isTaskReleased(taskIdB));
+        Assert.assertTrue(isTaskReleased(taskIdB, taskB.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdB).getState().getValue());
         // task C should be in "done" state
-        Assert.assertTrue(isTaskReleased(taskIdC));
+        Assert.assertTrue(isTaskReleased(taskIdC, taskC.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getValue());
         // workTaskA should be in "wait" state
         Assert.assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskIdA, workerTaskA.getProcessId()));

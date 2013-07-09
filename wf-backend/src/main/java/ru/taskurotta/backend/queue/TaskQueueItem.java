@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.queue;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -7,7 +8,7 @@ import java.util.UUID;
  * User: dimadin
  * Date: 05.07.13 10:44
  */
-public class TaskQueueItem {
+public class TaskQueueItem implements Serializable {
     protected UUID taskId;
     protected UUID processId;
     protected long startTime;
