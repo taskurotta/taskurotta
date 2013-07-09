@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.storage;
 
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
+import com.google.common.collect.Collections2;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
@@ -67,6 +66,7 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         return checkpointService;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public void setCheckpointService(CheckpointService checkpointService) {
         this.checkpointService = checkpointService;
     }
@@ -91,26 +91,20 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     }
 
     @Override
-    public List<ProcessVO> findProcesses(String type, final String id) {
+    public List<ProcessVO> findProcesses(final String type, final String id) {
         List<ProcessVO> result = new ArrayList<>();
         if ((id != null) && (!id.isEmpty())) {
-            if (SEARCH_BY_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
+            result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
+                @Override
+                public boolean apply(ProcessVO process) {
+                    if (SEARCH_BY_ID.equals(type)) {
                         return process.getProcessUuid().toString().startsWith(id);
-                    }
-                }));
-            } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
+                    } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
                         return process.getCustomId().startsWith(id);
                     }
-                }));
-            }
+                    return false;
+                }
+            }));
         }
         return result;
     }
