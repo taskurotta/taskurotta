@@ -17,9 +17,11 @@
     </appender>
 
     <logger name="ru.taskurotta" level="INFO"/>
-    <logger name="ru.taskurotta.backend.hz.server" level="INFO"/>
+    <logger name="ru.taskurotta.backend.hz.server" level="DEBUG"/>
+    <logger name="ru.taskurotta.client.hazelcast" level="DEBUG"/>
+    <logger name="ru.taskurotta.server" level="DEBUG"/>
 
-    <logger name="com.hazelcast" level="INFO"/>
+    <logger name="com.hazelcast" level="OFF"/>
     <logger name="org.springframework" level="OFF"/>
 
     <root>

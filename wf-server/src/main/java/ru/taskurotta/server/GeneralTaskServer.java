@@ -56,6 +56,8 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public void startProcess(TaskContainer task) {
 
+        logger.debug("Start process: start");
+
         // some consistence check
         if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
@@ -64,21 +66,25 @@ public class GeneralTaskServer implements TaskServer {
 
         // registration of new process
         // atomic statement
+        logger.debug("Start process: before processBackend");
         processBackend.startProcess(task);
 
         // inform taskBackend about new process
         // idempotent statement
+        logger.debug("Start process: before taskBackend");
         taskBackend.startProcess(task);
 
         // inform dependencyBackend about new process
         // idempotent statement
+        logger.debug("Start process: before dependencyBackend");
         dependencyBackend.startProcess(task);
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
+        logger.debug("Start process: before enqueueTask");
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
 
-
+        logger.debug("Start process: before processBackend");
         processBackend.startProcessCommit(task);
     }
 

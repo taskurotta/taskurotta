@@ -8,7 +8,7 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/parallel/SpreaderBeans-hazelcast.xml
+        context: ru/taskurotta/recipes/parallel/SpreaderBeans-hazelcast2.xml
         properties:
           cycles: 1000
           accuracy: 10000
@@ -63,19 +63,28 @@ logback:
              key: name
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
-                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d \%-5p [\%t] \%c - \%m\%n
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel-stress-hazelcast.log
+             file: ./logs/recipes-parallel-stress-hazelcast2.log
              append: true
              encoder:
-                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d \%-5p [\%t] \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
              \@level: INFO
+        - ru.taskurotta.client.hazelcast:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.backend.hz.queue:
+             key: name
+             \@level: DEBUG
         - com.hazelcast:
+             key: name
+             \@level: INFO
+        - com.hazelcast.nio:
              key: name
              \@level: INFO
         - org.springframework:

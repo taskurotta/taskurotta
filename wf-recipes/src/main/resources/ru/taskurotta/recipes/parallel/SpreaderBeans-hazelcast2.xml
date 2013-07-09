@@ -10,19 +10,22 @@
 
     <context:property-placeholder/>
 
-    <hz:hazelcast id="hazelcastInstance">
-        <hz:config>            
-            <hz:properties>
-                <hz:property name="hazelcast.logging.type">slf4j</hz:property>
-                <hz:property name="hazelcast.jmx">true</hz:property>
-                <hz:property name="hazelcast.jmx.detailed">true</hz:property>
-            </hz:properties>
-        </hz:config>
-    </hz:hazelcast>
+    <hz:client id="hazelcastInstance" />
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.hazelcast.HzClientServiceManager">
+    <!--<hz:hazelcast id="hazelcastInstance">-->
+        <!--<hz:config>-->
+            <!--<hz:instance-name>client</hz:instance-name>-->
+
+            <!--<hz:properties>-->
+                <!--<hz:property name="hazelcast.logging.type">slf4j</hz:property>-->
+                <!--<hz:property name="hazelcast.jmx">true</hz:property>-->
+                <!--<hz:property name="hazelcast.jmx.detailed">true</hz:property>-->
+            <!--</hz:properties>-->
+        <!--</hz:config>-->
+    <!--</hz:hazelcast>-->
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.hazelcast.HzClientServiceManagerV2">
         <constructor-arg name="hazelcastInstance" ref="hazelcastInstance" />
-        <constructor-arg name="pollDelay" value="60" />
     </bean>
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.parallel.TaskCreator" init-method="createStartTask">

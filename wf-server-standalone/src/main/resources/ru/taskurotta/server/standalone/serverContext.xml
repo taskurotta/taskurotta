@@ -37,8 +37,14 @@
         <constructor-arg name="retryTimes" value="10" />
     </bean>
 
+    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl">
+        <property name="hzInstance" ref="hazelcastInstance" />
+    </bean>
+
     <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend">
         <constructor-arg ref="hazelcastInstance"/>
+
+        <property name="checkpointService" ref="checkpointService" />
     </bean>
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
@@ -46,8 +52,6 @@
         <constructor-arg name="pollDelay" value="60" />
         <constructor-arg name="pollDelayUnit" value="SECONDS" />
     </bean>
-
-    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl" />
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
         <constructor-arg ref="hazelcastInstance"/>
@@ -66,14 +70,6 @@
         <constructor-arg name="taskBackend" ref="taskBackend"/>
 
         <property name="hzInstance" ref="hazelcastInstance" />
-    </bean>
-
-    <bean id="ts" factory-bean="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
-        <constructor-arg name="configBackend" ref="configBackend"/>
-        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
-        <constructor-arg name="processBackend" ref="processBackend"/>
-        <constructor-arg name="queueBackend" ref="queueBackend"/>
-        <constructor-arg name="taskBackend" ref="taskBackend"/>
     </bean>
 
 </beans>
