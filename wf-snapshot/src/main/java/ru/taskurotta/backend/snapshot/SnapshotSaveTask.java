@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 /**
  * User: greg
  */
-public class SnapshotSaveTask implements Callable<UUID>, PartitionAware, Serializable {
+public class SnapshotSaveTask implements Callable<Void>, PartitionAware, Serializable {
 
     private UUID processId;
 
@@ -33,7 +33,7 @@ public class SnapshotSaveTask implements Callable<UUID>, PartitionAware, Seriali
     }
 
     @Override
-    public UUID call() throws Exception {
+    public Void call() throws Exception {
         final HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
         final Graph graph = taskServer.getDependencyBackend().getGraph(processId);
         ILock lock = taskServer.getHzInstance().getLock(graph);
@@ -45,7 +45,7 @@ public class SnapshotSaveTask implements Callable<UUID>, PartitionAware, Seriali
         snapshot.setSnapshotId(UUID.randomUUID());
         snapshot.setProcessId(processId);
         taskServer.getSnapshotService().saveSnapshot(snapshot);
-        return snapshot.getSnapshotId();
+        return null;
     }
 
     @Override

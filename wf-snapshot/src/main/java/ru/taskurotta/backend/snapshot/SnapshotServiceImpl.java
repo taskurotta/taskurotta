@@ -38,15 +38,11 @@ public class SnapshotServiceImpl implements SnapshotService {
                             final UUID processId = queue.poll();
                             final SnapshotSaveTask snapshotSaveTask = new SnapshotSaveTask(processId);
                             final ExecutorService executorService = getHazelcastInstance().getExecutorService();
-                            final DistributedTask<UUID> task = new DistributedTask<>(snapshotSaveTask);
-                            task.setExecutionCallback(new ExecutionCallback<UUID>() {
+                            final DistributedTask<Void> task = new DistributedTask<>(snapshotSaveTask);
+                            task.setExecutionCallback(new ExecutionCallback<Void>() {
                                 @Override
-                                public void done(Future<UUID> future) {
-                                    try {
-                                        logger.trace("Snapshot saved to repository: " + future.get());
-                                    } catch (InterruptedException | ExecutionException ex) {
-                                        logger.error("Error on Future.get()", ex);
-                                    }
+                                public void done(Future<Void> future) {
+                                        logger.trace("Snapshot saved to repository" );
                                 }
                             });
                             executorService.submit(task);
