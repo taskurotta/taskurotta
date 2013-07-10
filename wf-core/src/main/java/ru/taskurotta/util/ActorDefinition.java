@@ -4,13 +4,15 @@ import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.exception.ActorRuntimeException;
 
+import java.io.Serializable;
+
 /**
  *
  * User: romario
  * Date: 2/12/13
  * Time: 9:06 PM
  */
-public class ActorDefinition {
+public class ActorDefinition implements Serializable {
 
     private String name;
 
