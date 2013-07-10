@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * User: greg
@@ -36,7 +37,9 @@ public class SnapshotServiceImpl implements SnapshotService {
                         if (queue.size() > 0) {
                             final UUID processId = queue.poll();
                             final ExecutorService executorService = getHazelcastInstance().getExecutorService();
-                            executorService.submit(new TaskToSave(processId));
+                            final SnapshotSaveTask snapshotSaveTask = new SnapshotSaveTask(processId);
+                            final Future<Snapshot> snapshotFuture = executorService.submit(snapshotSaveTask);
+                            getDataSource().save(snapshotFuture.get());
                             logger.trace("Snapshot saved to repository: " + processId);
                         }
                     } catch (Exception ex) {
@@ -47,12 +50,20 @@ public class SnapshotServiceImpl implements SnapshotService {
         });
     }
 
+    public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
+        this.hazelcastInstance = hazelcastInstance;
+    }
+
+    private SnapshotDataSource getDataSource() {
+        return dataSource;
+    }
+
     @Override
     public void createSnapshot(UUID processID) {
         queue.add(processID);
     }
 
-    private HazelcastInstance getHazelcastInstance() {
+    public HazelcastInstance getHazelcastInstance() {
         return hazelcastInstance;
     }
 

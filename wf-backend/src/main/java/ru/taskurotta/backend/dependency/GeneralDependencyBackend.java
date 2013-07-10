@@ -70,6 +70,11 @@ public class GeneralDependencyBackend implements DependencyBackend {
         graphDao.createGraph(task.getProcessId(), task.getTaskId());
     }
 
+    @Override
+    public Graph getGraph(UUID processId) {
+        return graphDao.getGraph(processId);
+    }
+
 
     /**
      * Convert taskDecision to modification view
