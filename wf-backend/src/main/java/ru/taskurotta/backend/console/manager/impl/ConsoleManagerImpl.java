@@ -80,6 +80,14 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
+    public DecisionContainer getDecision(UUID taskId, UUID processId) {
+        if(taskInfo == null) {
+            return null;
+        }
+        return taskInfo.getDecision(taskId, processId);
+    }
+
+    @Override
     public ProcessVO getProcess(UUID processUuid) {
         if (processInfo == null) {
             return null;

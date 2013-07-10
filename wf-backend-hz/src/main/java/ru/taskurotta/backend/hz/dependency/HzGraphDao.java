@@ -35,7 +35,7 @@ public class HzGraphDao implements GraphDao {
     }
 
     public HzGraphDao(HazelcastInstance hzInstance) {
-        this(hzInstance, "graphsMapName", "decisionsMapName");
+        this(hzInstance, "graphsMapName", "graphDecisionsMapName");
     }
 
     /**

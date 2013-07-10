@@ -50,6 +50,32 @@
             </tr>
         </table>
 
+        <div style="padding:2px;">
+            <h3>Task decision:</h3>
+            <table width="100%" class="table">
+                <tr>
+                    <td class="form-header">Is released:</td>
+                    <td>{{taskDecision.value.ready || "false"}}</td>
+                </tr>
+                <tr>
+                    <td class="form-header">Has exception:</td>
+                    <td>{{taskDecision.errorContainer || "false"}}</td>
+                </tr>
+                <tr>
+                    <td class="form-header">Restart time:</td>
+                    <td>{{taskDecision.restartTime}}</td>
+                </tr>
+                <tr>
+                    <td class="form-header">Created tasks:</td>
+                    <td>{{taskDecision.tasks.length || "none"}}</td>
+                </tr>
+                <tr>
+                    <td class="form-header">Value:</td>
+                    <td>{{taskDecision.value || "none"}}</td>
+                </tr>
+            </table>
+        </div>
+
         <div style="background-color: #f5f5f5;padding:2px;">
             <h3>Task tree:</h3>
             <b>&#8595<a ng-href="#/tasks/task/{{task.processId}}/{{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>

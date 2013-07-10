@@ -41,6 +41,9 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getRepeatedTasks: function (iterationCount) {
             return $http.get('/rest/console/repeatedTasks/?iterationCount=' + iterationCount);
+        },
+        getTaskDecision: function(taskId, processId){
+            return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         }
     };
 

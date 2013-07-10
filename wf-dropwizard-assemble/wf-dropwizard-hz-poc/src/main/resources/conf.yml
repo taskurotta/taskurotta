@@ -18,6 +18,8 @@ actorConfig:
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
+  hz.mancenter.enabled: false
+#  hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
 
 #resourceBeans:
 #  - taskStarterResource
@@ -32,13 +34,8 @@ logging:
         ru.taskurotta.server: INFO
         ru.taskurotta.server.recovery.RetryEnqueueRecovery: DEBUG
         ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
-        ru.taskurotta.dropwizard.hz: INFO
-        ru.taskurotta.backend.hz.server: INFO
-        ru.taskurotta.backend.hz.storage: INFO
-        ru.taskurotta.backend.hz.queue: INFO
-        ru.taskurotta.backend.checkpoint: INFO
-        ru.taskurotta.backend.hz.checkpoint: INFO
-        com.yammer: DEBUG
+        ru.taskurotta.dropwizard.hz: DEBUG
+        com.yammer: INFO
     file:
         enabled: true
         archive: true
