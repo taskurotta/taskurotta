@@ -225,6 +225,7 @@ consoleControllers.controller("taskListController", function ($scope, $$data, $l
 consoleControllers.controller("taskCardController", function ($scope, $$data, $routeParams, $log) {
     $scope.task = {};
     $scope.taskTree = {};
+    $scope.taskDecision = {};
     $scope.id = $routeParams.taskId;
 
     $scope.feedback = "";
@@ -232,16 +233,27 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
         $$data.getTask($routeParams.taskId, $routeParams.processId).then(function (value) {
             $scope.task = angular.fromJson(value.data || {});
             $log.info("taskController: successfully updated task[" + $routeParams.id + "] content");
+
+            $$data.getTaskTree($routeParams.taskId, $routeParams.processId).then(function (value) {
+                $scope.taskTree = angular.fromJson(value.data || {});
+                $log.info("taskController: successfully updated task tree[" + $routeParams.taskId + "] content");
+
+                $$data.getTaskDecision($routeParams.taskId, $routeParams.processId).then(function (value) {
+                    $scope.taskDecision = angular.fromJson(value.data || {});
+                    $log.info("taskController: successfully updated task decision[" + $routeParams.taskId + "] content");
+                }, function (errReason) {
+                    $scope.feedback = errReason;
+                    $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + errReason);
+                });
+
+            }, function (errReason) {
+                $scope.feedback = errReason;
+                $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + errReason);
+            });
+
         }, function (errReason) {
             $scope.feedback = errReason;
             $log.error("taskController: task[" + $routeParams.id + "] update failed: " + errReason);
-        });
-        $$data.getTaskTree($routeParams.taskId, $routeParams.processId).then(function (value) {
-            $scope.taskTree = angular.fromJson(value.data || {});
-            $log.info("taskController: successfully updated task tree[" + $routeParams.id + "] content");
-        }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("taskController: task[" + $routeParams.id + "] tree update failed: " + errReason);
         });
     };
 

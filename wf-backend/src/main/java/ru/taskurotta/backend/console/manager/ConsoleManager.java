@@ -6,6 +6,7 @@ import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.queue.TaskQueueItem;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.List;
@@ -37,6 +38,11 @@ public interface ConsoleManager {
      * @return TaskContainer for a given guid or null if task not found
      */
     public TaskContainer getTask(UUID taskId, UUID processId);
+
+    /**
+     * @return DecisionContainer for a given guid or null if decision not found
+     */
+    public DecisionContainer getDecision(UUID taskId, UUID processId);
 
     /**
      * @return process representation object for a given guid or null if process not found

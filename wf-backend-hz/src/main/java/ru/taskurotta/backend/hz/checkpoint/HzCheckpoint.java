@@ -6,7 +6,7 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import java.io.Serializable;
 
 /**
- * Created with IntelliJ IDEA.
+ * Hazelcast version of a Checkpoint entity: providing processId partition possibility
  * User: dimadin
  * Date: 08.07.13 11:05
  */
