@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -75,6 +76,11 @@ public class SnapshotServiceImpl implements SnapshotService {
     @Override
     public Snapshot getSnapshot(UUID snapshotId) {
         return dataSource.loadSnapshotById(snapshotId);
+    }
+
+    @Override
+    public List<Snapshot> getSnapshotByProcessId(UUID processId) {
+        return dataSource.loadSnapshotsByProccessId(processId);
     }
 
     @Override

@@ -19,4 +19,6 @@ public interface SnapshotDataSource {
 
     List<Snapshot> getSnapshotsForPeriod(Date startDate, Date endDate);
 
+    public List<Snapshot> loadSnapshotsByProccessId(UUID id);
+
 }

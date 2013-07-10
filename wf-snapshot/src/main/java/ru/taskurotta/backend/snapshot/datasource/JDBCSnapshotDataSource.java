@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
-import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.snapshot.Snapshot;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -66,7 +65,6 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
             while (rs.next()) {
                 list.add(buildSnapshot(rs));
             }
-
         } catch (SQLException ex) {
             log.error("sql error", ex);
         } finally {
@@ -87,6 +85,7 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
             snapshot.setGraph(mapper.readValue(rs.getString("graph"), Graph.class));
             snapshot.setSnapshotId((UUID) rs.getObject("snapshotId"));
             snapshot.setCreatedDate(rs.getDate("created_date"));
+            snapshot.setProcessId((UUID) rs.getObject("processId"));
         } catch (IOException e) {
             log.error("deserialization error", e);
         }
@@ -120,9 +119,37 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
         return null;
     }
 
+    public List<Snapshot> loadSnapshotsByProccessId(UUID id) {
+        final String sql = "select * from snapshot where processId=?";
+        ResultSet rs = null;
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            statement.setObject(1, id);
+            rs = statement.executeQuery();
+            final List<Snapshot> snapshotList = new ArrayList<>();
+            while (rs.next()) {
+                snapshotList.add(buildSnapshot(rs));
+            }
+            return snapshotList;
+        } catch (SQLException ex) {
+            log.error("sql error", ex);
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    log.error("result set closing problem", e);
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public void save(Snapshot snapshot) {
-        final String sql = "insert into snapshot(snapshotId, graph, created_date) values(?, ?, ?)";
+        final String sql = "insert into snapshot(snapshotId, graph, created_date, processId) values(?, ?, ?, ?)";
         try (
                 Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)
@@ -130,6 +157,7 @@ public class JDBCSnapshotDataSource implements SnapshotDataSource {
             statement.setObject(1, snapshot.getSnapshotId());
             statement.setString(2, mapper.writeValueAsString(snapshot.getGraph()));
             statement.setDate(3, new java.sql.Date(snapshot.getCreatedDate().getTime()));
+            statement.setObject(4, snapshot.getProcessId());
             statement.executeUpdate();
         } catch (SQLException e) {
             log.error("sql error", e);

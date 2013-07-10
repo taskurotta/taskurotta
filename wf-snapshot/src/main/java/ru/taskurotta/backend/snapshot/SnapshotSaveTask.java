@@ -43,6 +43,7 @@ public class SnapshotSaveTask implements Callable<UUID>, PartitionAware, Seriali
         final Snapshot snapshot = new Snapshot();
         snapshot.setGraph(copyGraph);
         snapshot.setSnapshotId(UUID.randomUUID());
+        snapshot.setProcessId(processId);
         taskServer.getSnapshotService().saveSnapshot(snapshot);
         return snapshot.getSnapshotId();
     }

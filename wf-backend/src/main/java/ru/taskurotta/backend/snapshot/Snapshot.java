@@ -17,6 +17,7 @@ public class Snapshot implements Serializable {
     private UUID snapshotId = UUID.randomUUID();
     private Graph graph;
     private Date createdDate = new Date();
+    private UUID processId;
 
     public Snapshot() {
 
@@ -83,5 +84,13 @@ public class Snapshot implements Serializable {
         sb.append(", createdDate=").append(createdDate);
         sb.append('}');
         return sb.toString();
+    }
+
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
+    }
+
+    public UUID getProcessId() {
+        return processId;
     }
 }
