@@ -33,10 +33,12 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
     @Mock
     private DependencyBackend dependencyBackend;
 
+    private Graph graph;
+
     public void init() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
         HazelcastTaskServer.setInstance(hazelcastTaskServer);
-        Graph graph = new Graph();
+        graph = new Graph();
         graph.setGraphId(UUID.randomUUID());
         graph.setVersion(1);
         Mockito.when(hazelcastTaskServer.getHzInstance()).thenReturn(((SnapshotServiceImpl) snapshotService).getHazelcastInstance());
@@ -52,7 +54,8 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
         snapshotService.createSnapshot(processId);
         Thread.sleep(6000);
         List<Snapshot> snapshotList = snapshotService.getSnapshotByProcessId(processId);
-        Assert.assertTrue(snapshotList.size() > 0);
+        Assert.assertTrue(snapshotList.get(0).getGraph().getGraphId().equals(graph.getGraphId()));
+        Assert.assertEquals(graph.getVersion(), 1);
     }
 
 }
