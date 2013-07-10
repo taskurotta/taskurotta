@@ -11,7 +11,10 @@ import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * User: greg
@@ -23,10 +26,9 @@ public class SnapshotServiceImpl implements SnapshotService {
     private final BlockingQueue<UUID> queue;
     private HazelcastInstance hazelcastInstance;
 
-    public SnapshotServiceImpl(SnapshotDataSource dataSource) {
+    public SnapshotServiceImpl(SnapshotDataSource dataSource, HazelcastInstance hazelcastInstance) {
         this.dataSource = dataSource;
-        Config cfg = new Config();
-        hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
+        this.hazelcastInstance = hazelcastInstance;
         queue = hazelcastInstance.getQueue("snapshotQueue");
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(new Runnable() {
@@ -42,7 +44,7 @@ public class SnapshotServiceImpl implements SnapshotService {
                             task.setExecutionCallback(new ExecutionCallback<Void>() {
                                 @Override
                                 public void done(Future<Void> future) {
-                                        logger.trace("Snapshot saved to repository" );
+                                    logger.trace("Snapshot saved to repository");
                                 }
                             });
                             executorService.submit(task);

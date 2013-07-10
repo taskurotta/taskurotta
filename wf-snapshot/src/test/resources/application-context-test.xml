@@ -21,6 +21,16 @@
         </property>
     </bean>
 
+    <bean id="hzInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+        <constructor-arg>
+            <bean class="com.hazelcast.config.Config">
+                <property name="groupConfig">
+                    <bean class="com.hazelcast.config.GroupConfig"/>
+                </property>
+            </bean>
+        </constructor-arg>
+    </bean>
+
     <bean id="snapshotDatasource" class="ru.taskurotta.backend.snapshot.datasource.JDBCSnapshotDataSource">
         <constructor-arg>
             <ref bean="originalDataSource"/>
@@ -29,7 +39,10 @@
 
     <bean id="snapshotService" class="ru.taskurotta.backend.snapshot.SnapshotServiceImpl">
         <constructor-arg>
-            <ref bean="snapshotDatasource"/>
+            <ref bean="snapshotDatasource" />
+        </constructor-arg>
+        <constructor-arg>
+            <ref bean="hzInstance"/>
         </constructor-arg>
     </bean>
 
