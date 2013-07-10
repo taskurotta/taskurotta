@@ -97,7 +97,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                         }
                     }
                 }
-
             }
 
             //Setting TASK_START checkpoint
@@ -105,6 +104,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             checkpointService.addCheckpoint(startCheckpoint);
 
         }
+
         return task;
     }
 
