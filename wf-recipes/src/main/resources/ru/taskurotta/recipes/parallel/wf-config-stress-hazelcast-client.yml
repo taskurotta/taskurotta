@@ -8,9 +8,9 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/parallel/SpreaderBeans-hazelcast2.xml
+        context: ru/taskurotta/recipes/parallel/SpreaderBeans-hazelcast-client.xml
         properties:
-          cycles: 10
+          cycles: 1000
           accuracy: 10000
 
 profiler:
@@ -55,7 +55,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: LinearRertyPolicyConfig
-      count: 10
+      count: 100
 
 logback:
     appender:
@@ -67,7 +67,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel-stress-hazelcast2.log
+             file: ./logs/recipes-parallel-stress-hazelcast-client.log
              append: true
              encoder:
                  pattern: \%d \%-5p [\%t] \%c - \%m\%n
