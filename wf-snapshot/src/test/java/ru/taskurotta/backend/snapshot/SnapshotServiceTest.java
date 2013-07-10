@@ -8,8 +8,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -28,10 +26,10 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
     private SnapshotService snapshotService;
 
     @Mock
-    HazelcastTaskServer hazelcastTaskServer;
+    private HazelcastTaskServer hazelcastTaskServer;
 
     @Mock
-    DependencyBackend dependencyBackend;
+    private DependencyBackend dependencyBackend;
 
     public void init() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
@@ -41,6 +39,7 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
         graph.setVersion(1);
         Mockito.when(hazelcastTaskServer.getHzInstance()).thenReturn(((SnapshotServiceImpl) snapshotService).getHazelcastInstance());
         Mockito.when(hazelcastTaskServer.getDependencyBackend()).thenReturn(dependencyBackend);
+        Mockito.when(hazelcastTaskServer.getSnapshotService()).thenReturn(snapshotService);
         Mockito.when(dependencyBackend.getGraph((UUID) Matchers.anyObject())).thenReturn(graph);
     }
 
@@ -48,7 +47,7 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
     public void testCreateSnapshot() throws Exception {
         init();
         snapshotService.createSnapshot(UUID.randomUUID());
-        Thread.sleep(3000);
+        Thread.sleep(6000);
     }
 
 }

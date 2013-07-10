@@ -1,6 +1,8 @@
 package ru.taskurotta.backend.snapshot;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.core.DistributedTask;
+import com.hazelcast.core.ExecutionCallback;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
@@ -8,10 +10,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
 
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * User: greg
@@ -36,11 +35,20 @@ public class SnapshotServiceImpl implements SnapshotService {
                     try {
                         if (queue.size() > 0) {
                             final UUID processId = queue.poll();
-                            final ExecutorService executorService = getHazelcastInstance().getExecutorService();
                             final SnapshotSaveTask snapshotSaveTask = new SnapshotSaveTask(processId);
-                            final Future<Snapshot> snapshotFuture = executorService.submit(snapshotSaveTask);
-                            getDataSource().save(snapshotFuture.get());
-                            logger.trace("Snapshot saved to repository: " + processId);
+                            final ExecutorService executorService = getHazelcastInstance().getExecutorService();
+                            DistributedTask<UUID> task = new DistributedTask<>(snapshotSaveTask);
+                            task.setExecutionCallback(new ExecutionCallback<UUID>() {
+                                @Override
+                                public void done(Future<UUID> future) {
+                                    try {
+                                        logger.trace("Snapshot saved to repository: " + future.get());
+                                    } catch (InterruptedException | ExecutionException ex) {
+                                        logger.error("Error on Future.get()", ex);
+                                    }
+                                }
+                            });
+                            executorService.submit(task);
                         }
                     } catch (Exception ex) {
                         logger.error("error", ex);
@@ -50,19 +58,16 @@ public class SnapshotServiceImpl implements SnapshotService {
         });
     }
 
-    public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
-        this.hazelcastInstance = hazelcastInstance;
-    }
-
-    private SnapshotDataSource getDataSource() {
-        return dataSource;
-    }
-
     @Override
     public void createSnapshot(UUID processID) {
         queue.add(processID);
     }
 
+    /**
+     * For tests ONLY
+     *
+     * @return
+     */
     public HazelcastInstance getHazelcastInstance() {
         return hazelcastInstance;
     }
@@ -70,6 +75,11 @@ public class SnapshotServiceImpl implements SnapshotService {
     @Override
     public Snapshot getSnapshot(UUID snapshotId) {
         return dataSource.loadSnapshotById(snapshotId);
+    }
+
+    @Override
+    public void saveSnapshot(Snapshot snapshot) {
+        dataSource.save(snapshot);
     }
 
 }

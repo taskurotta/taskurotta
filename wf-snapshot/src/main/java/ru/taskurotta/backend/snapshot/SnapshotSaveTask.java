@@ -4,18 +4,15 @@ import com.hazelcast.core.ILock;
 import com.hazelcast.core.PartitionAware;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.hz.server.HazelcastTaskServer;
-import ru.taskurotta.backend.snapshot.datasource.JDBCSnapshotDataSource;
-import ru.taskurotta.backend.snapshot.datasource.SnapshotDataSource;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
 /**
  * User: greg
  */
-public class SnapshotSaveTask implements Callable<Snapshot>, PartitionAware, Serializable {
+public class SnapshotSaveTask implements Callable<UUID>, PartitionAware, Serializable {
 
     private UUID processId;
 
@@ -36,16 +33,18 @@ public class SnapshotSaveTask implements Callable<Snapshot>, PartitionAware, Ser
     }
 
     @Override
-    public Snapshot call() throws Exception {
+    public UUID call() throws Exception {
         final HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
-        Graph graph = taskServer.getDependencyBackend().getGraph(processId);
+        final Graph graph = taskServer.getDependencyBackend().getGraph(processId);
         ILock lock = taskServer.getHzInstance().getLock(graph);
-        Graph copyGraph = graph.copy();
+        lock.lock();
+        final Graph copyGraph = graph.copy();
         lock.unlock();
-        Snapshot snapshot = new Snapshot();
+        final Snapshot snapshot = new Snapshot();
         snapshot.setGraph(copyGraph);
         snapshot.setSnapshotId(UUID.randomUUID());
-        return snapshot;
+        taskServer.getSnapshotService().saveSnapshot(snapshot);
+        return snapshot.getSnapshotId();
     }
 
     @Override

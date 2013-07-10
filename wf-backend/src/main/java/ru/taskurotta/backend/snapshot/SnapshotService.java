@@ -11,4 +11,6 @@ public interface SnapshotService {
     void createSnapshot(UUID processID);
 
     Snapshot getSnapshot(UUID snapshotId);
+
+    void saveSnapshot(Snapshot snapshot);
 }

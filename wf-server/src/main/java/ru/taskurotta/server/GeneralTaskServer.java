@@ -7,6 +7,7 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.snapshot.SnapshotService;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
@@ -34,6 +35,7 @@ public class GeneralTaskServer implements TaskServer {
     protected QueueBackend queueBackend;
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
+    protected SnapshotService snapshotService;
 
     /*
     For tests ONLY
@@ -42,6 +44,13 @@ public class GeneralTaskServer implements TaskServer {
 
     }
 
+    public SnapshotService getSnapshotService() {
+        return snapshotService;
+    }
+
+    public void setSnapshotService(SnapshotService snapshotService) {
+        this.snapshotService = snapshotService;
+    }
 
     public GeneralTaskServer(BackendBundle backendBundle) {
         this.processBackend = backendBundle.getProcessBackend();
