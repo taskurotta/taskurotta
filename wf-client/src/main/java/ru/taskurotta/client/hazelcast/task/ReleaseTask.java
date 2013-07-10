@@ -25,7 +25,7 @@ public class ReleaseTask implements Callable<Void>, Serializable {
 
     @Override
     public Void call() throws Exception {
-        logger.debug("Try to release decision container [{}]", decisionContainer);
+        logger.trace("Try to release decision container [{}]", decisionContainer);
 
         HazelcastTaskServer.getInstance().release(decisionContainer);
 

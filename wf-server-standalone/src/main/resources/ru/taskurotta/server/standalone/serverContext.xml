@@ -19,6 +19,8 @@
                 <hz:property name="hazelcast.jmx">true</hz:property>
                 <hz:property name="hazelcast.jmx.detailed">true</hz:property>
             </hz:properties>
+
+            <hz:executor-service name="pollReleaseExecutorService" core-pool-size="64" max-pool-size="256" keep-alive-seconds="120" />
         </hz:config>
     </hz:hazelcast>
 

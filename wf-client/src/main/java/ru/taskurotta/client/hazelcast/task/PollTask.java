@@ -26,7 +26,7 @@ public class PollTask implements Callable<TaskContainer>, Serializable {
 
     @Override
     public TaskContainer call() throws Exception {
-        logger.debug("Try to poll task container for actor definition [{}]", actorDefinition);
+        logger.trace("Try to poll task container for actor definition [{}]", actorDefinition);
 
         TaskContainer taskContainer = HazelcastTaskServer.getInstance().poll(actorDefinition);
 

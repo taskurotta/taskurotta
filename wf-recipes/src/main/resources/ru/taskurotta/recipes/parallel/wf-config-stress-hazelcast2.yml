@@ -37,8 +37,8 @@ policy:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
           initialRetryIntervalSeconds: 3
-          maximumRetryIntervalSeconds: 30
-          maximumAttempts: 3
+          maximumRetryIntervalSeconds: 120
+          maximumAttempts: 10
 
 actor:
   - PiDecider:
@@ -55,7 +55,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: LinearRertyPolicyConfig
-      count: 5
+      count: 10
 
 logback:
     appender:

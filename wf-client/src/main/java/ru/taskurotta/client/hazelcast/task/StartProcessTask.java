@@ -25,12 +25,11 @@ public class StartProcessTask implements Callable<Void>, Serializable {
 
     @Override
     public Void call() throws Exception {
-
-        logger.debug("Try to start process from task [{}]", taskContainer);
+        logger.trace("Try to start process from task [{}]", taskContainer);
 
         HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
 
-        logger.debug("Get HazelcastTaskServer instance [{}]", taskServer);
+        logger.trace("Get HazelcastTaskServer instance [{}]", taskServer);
 
         taskServer.startProcess(taskContainer);
 

@@ -12,6 +12,7 @@ import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 /**
  * User: stukushin
@@ -22,12 +23,14 @@ public class HzDeciderClientProvider implements DeciderClientProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(HzDeciderClientProvider.class);
 
-    private HazelcastInstance hazelcastInstance;
     private ObjectFactory objectFactory;
 
+    private ExecutorService executorService;
+
     public HzDeciderClientProvider(HazelcastInstance hazelcastInstance) {
-        this.hazelcastInstance = hazelcastInstance;
         this.objectFactory = new ObjectFactory();
+
+        this.executorService = hazelcastInstance.getExecutorService("pollReleaseExecutorService");
     }
 
     @Override
@@ -42,7 +45,7 @@ public class HzDeciderClientProvider implements DeciderClientProvider {
              * Always creates new process uuid for new tasks because each DeciderClientType invocation are start of new
              * process.
              *
-             * @return
+             * @return process UUID
              */
             public UUID getProcessId() {
                 return UUID.randomUUID();
@@ -52,9 +55,11 @@ public class HzDeciderClientProvider implements DeciderClientProvider {
 
     @Override
     public void startProcess(Task task) {
-        TaskContainer taskContainer = objectFactory.dumpTask(task);
+        logger.trace("Try to start process from task [{}]", task);
 
-        hazelcastInstance.getExecutorService().submit(new StartProcessTask(taskContainer));
+        TaskContainer taskContainer = objectFactory.dumpTask(task);
+        executorService.submit(new StartProcessTask(taskContainer));
+
         logger.debug("Create and send distributed task for start process from task [{}]", task);
     }
 }
