@@ -58,7 +58,7 @@ public class ObjectFactory {
                 value = argContainer.isArray()? getArrayValue(json, className): getSimpleValue(json, className);
             } catch (Exception e) {
                 // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not instantiate Object from json. JSON value: " + argContainer.getJSONValue(), e);
+                throw new RuntimeException("Can not instantiate Object from json type["+argContainer.getType()+"]. JSON value: " + argContainer.getJSONValue(), e);
             }
         } else {
             ArgContainer[] compositeValue = argContainer.getCompositeValue();

@@ -37,12 +37,13 @@ public class OracleCheckpointService implements CheckpointService {
     @Override
     public void addCheckpoint(Checkpoint checkpoint) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("insert into TR_CHECKPOINTS(ENTITY_ID, ENTITY_TYPE, TYPE_TIMEOUT,CHECKPOINT_TIME) values (?,?,?,?)")
+             PreparedStatement ps = connection.prepareStatement("insert into TR_CHECKPOINTS(TASK_ID, PROCESS_ID, ACTOR_ID, TYPE_TIMEOUT, CHECKPOINT_TIME) values (?,?,?,?,?)")
         ) {
-            ps.setString(1, checkpoint.getEntityGuid().toString());
-            ps.setString(2, checkpoint.getEntityType());
-            ps.setString(3, checkpoint.getTimeoutType().toString());
-            ps.setLong(4, checkpoint.getTime());
+            ps.setString(1, String.valueOf(checkpoint.getTaskId()));
+            ps.setString(2, String.valueOf(checkpoint.getProcessId()));
+            ps.setString(3, String.valueOf(checkpoint.getActorId()));
+            ps.setString(4, checkpoint.getTimeoutType().toString());
+            ps.setLong(5, checkpoint.getTime());
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
@@ -62,10 +63,11 @@ public class OracleCheckpointService implements CheckpointService {
     @Override
     public void removeCheckpoint(Checkpoint checkpoint) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("delete from TR_CHECKPOINTS where ENTITY_ID = ? and TYPE_TIMEOUT = ?")
+             PreparedStatement ps = connection.prepareStatement("delete from TR_CHECKPOINTS where TASK_ID = ? and PROCESS_ID = ? and TYPE_TIMEOUT = ?")
         ) {
-            ps.setString(1, checkpoint.getEntityGuid().toString());
-            ps.setString(2, checkpoint.getTimeoutType().toString());
+            ps.setString(1, String.valueOf(checkpoint.getTaskId()));
+            ps.setString(2, String.valueOf(checkpoint.getProcessId()));
+            ps.setString(3, String.valueOf(checkpoint.getTimeoutType()));
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);
@@ -99,18 +101,24 @@ public class OracleCheckpointService implements CheckpointService {
                 stringBuilder.append(" and CHECKPOINT_TIME < ?");
                 idx++;
             }
-            if (command.getEntityType() != null) {
-                sqlParams.add(new SqlParam(idx, command.getEntityType()));
-                stringBuilder.append(" and ENTITY_TYPE = ?");
+            if (command.getTaskId() != null) {
+                sqlParams.add(new SqlParam(idx, command.getTaskId().toString()));
+                stringBuilder.append(" and TASK_ID = ?");
             }
+            if (command.getProcessId() != null) {
+                sqlParams.add(new SqlParam(idx, command.getProcessId().toString()));
+                stringBuilder.append(" and PROCESS_ID = ?");
+            }
+
             try(Connection connection = dataSource.getConnection();
                 PreparedStatement ps = createPreparedStatementWithSqlParams(connection, sqlParams, stringBuilder.toString())
             ) {
                 final ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     final Checkpoint checkpoint = new Checkpoint();
-                    checkpoint.setEntityGuid(UUID.fromString(rs.getString("ENTITY_ID")));
-                    checkpoint.setEntityType(rs.getString("ENTITY_TYPE"));
+                    checkpoint.setTaskId(UUID.fromString(rs.getString("TASK_ID")));
+                    checkpoint.setProcessId(UUID.fromString(rs.getString("PROCESS_ID")));
+                    checkpoint.setActorId(rs.getString("ACTOR_ID"));
                     checkpoint.setTimeoutType(TimeoutType.forValue(rs.getString("TYPE_TIMEOUT")));
                     checkpoint.setTime(rs.getLong("CHECKPOINT_TIME"));
                     checkpoints.add(checkpoint);
@@ -125,11 +133,12 @@ public class OracleCheckpointService implements CheckpointService {
     }
 
     @Override
-    public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType) {
+    public int removeTaskCheckpoints(UUID taskId, UUID processId, TimeoutType timeoutType) {
         try(Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement("delete from TR_CHECKPOINTS where ENTITY_ID = ? and TYPE_TIMEOUT=?")) {
-            ps.setString(1, uuid.toString());
-            ps.setString(2, timeoutType.toString());
+            PreparedStatement ps = connection.prepareStatement("delete from TR_CHECKPOINTS where TASK_ID = ? and PROCESS_ID=? and TYPE_TIMEOUT=?")) {
+            ps.setString(1, taskId.toString());
+            ps.setString(2, processId.toString());
+            ps.setString(3, timeoutType.toString());
             return ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Database error", ex);

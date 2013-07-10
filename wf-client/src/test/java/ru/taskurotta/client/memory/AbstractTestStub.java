@@ -91,12 +91,12 @@ public class AbstractTestStub {
         objectFactory = new ObjectFactory();
     }
 
-    public boolean isTaskInProgress(UUID taskId) {
-        return memoryStorageBackend.isTaskInProgress(taskId);
+    public boolean isTaskInProgress(UUID taskId, UUID processId) {
+        return memoryStorageBackend.isTaskInProgress(taskId, processId);
     }
 
-    public boolean isTaskReleased(UUID taskId) {
-        return memoryStorageBackend.isTaskReleased(taskId);
+    public boolean isTaskReleased(UUID taskId, UUID processId) {
+        return memoryStorageBackend.isTaskReleased(taskId, processId);
     }
 
     /**
@@ -120,8 +120,8 @@ public class AbstractTestStub {
 
     }
 
-    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
-        return memoryQueueBackend.isTaskInQueue(actorDefinition, taskId);
+    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
+        return memoryQueueBackend.isTaskInQueue(actorDefinition, taskId, processId);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {

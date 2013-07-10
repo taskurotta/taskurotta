@@ -1,5 +1,5 @@
 #Location of Spring application context:
-contextLocation: "classpath*:context/context.xml"
+contextLocation: "classpath*:context/context.xml, classpath*:context/console-context.xml"
 #contextLocation: "classpath*:context/context-test.xml, classpath*:context/console-context.xml"
 
 #Used for static resource serving in development mode
@@ -18,6 +18,8 @@ actorConfig:
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
+  hz.mancenter.enabled: false
+#  hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
 
 #resourceBeans:
 #  - taskStarterResource
@@ -28,17 +30,12 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.dropwizard.server.core: DEBUG
+        ru.taskurotta.dropwizard.server.core: INFO
         ru.taskurotta.server: INFO
-        ru.taskurotta.server.GeneralTaskServer: DEBUG
         ru.taskurotta.server.recovery.RetryEnqueueRecovery: DEBUG
-        ru.taskurotta.test.monkey.AbstractMonkeyAspect: TRACE
+        ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server.HazelcastTaskServer: DEBUG
-        ru.taskurotta.backend.hz.storage: DEBUG
-        ru.taskurotta.backend.checkpoint: DEBUG
-        ru.taskurotta.backend.hz.checkpoint: DEBUG
-        com.yammer: WARN
+        com.yammer: INFO
     file:
         enabled: true
         archive: true

@@ -1,6 +1,19 @@
 var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives']);
 
-consoleApp.config(function ($routeProvider, $locationProvider) {
+consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
+
+    //show loader on every ajax call
+    $httpProvider.defaults.transformRequest.push(function (data, headersGetter) {
+        $('#loading').show();
+        return data;
+    });
+
+    //hide loader on every ajax response
+    $httpProvider.defaults.transformResponse.push(function (data, headersGetter) {
+        $('#loading').hide();
+        return data;
+    });
+
 
     $routeProvider.when('/home', {
         templateUrl: '/partials/view/home.html',
@@ -52,7 +65,7 @@ consoleApp.config(function ($routeProvider, $locationProvider) {
         controller: "taskSearchController"
     });
 
-    $routeProvider.when('/tasks/task/:id', {
+    $routeProvider.when('/tasks/task/:processId/:taskId', {
         templateUrl: '/partials/view/task.html',
         controller: "taskCardController"
     });

@@ -46,16 +46,18 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setStartTaskUuid(task.getTaskId());
         processesStorage.put(task.getProcessId(), process);
 
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
     }
 
     @Override
     public void startProcessCommit(TaskContainer task) {
 
         //should be at the end of the method
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.removeEntityCheckpoints(task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
+        Checkpoint checkpoint = new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(),task.getProcessId(), task.getActorId(), task.getStartTime());
+        checkpointService.addCheckpoint(checkpoint);
+        logger.debug("PROCESS_CHECKPOINT: added checkpoint [{}]", checkpoint);
+        checkpointService.removeTaskCheckpoints(task.getTaskId(), task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
     }
 
     @Override
@@ -67,8 +69,9 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         processesStorage.put(processId, process);
 
         //should be at the end of the method
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+        int removed = checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
+        logger.debug("PROCESS_CHECKPOINT: removed checkpoint for processId[{}], taskId[{}], type[{}], result [{}]", processId, process.getStartTaskUuid(), TimeoutType.PROCESS_START_TO_CLOSE, removed);
+        checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 
     @Override

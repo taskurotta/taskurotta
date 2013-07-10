@@ -34,9 +34,9 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
         //TODO: make it in some better way
         if(timeoutType.toString().toUpperCase().startsWith("TASK")) {//try to enqueue task again
             logger.debug("Recover checkpoint {}", checkpoint);
-            result = retryTaskEnqueue(checkpoint.getEntityGuid());
+            result = retryTaskEnqueue(checkpoint.getTaskId(), checkpoint.getProcessId());
         } else if(timeoutType.toString().toUpperCase().startsWith("PROCESS")) {//Try to recover process by enqueue first task
-            retryProcessStartTaskEnqueue(checkpoint.getEntityGuid());
+            retryProcessStartTaskEnqueue(checkpoint.getProcessId());
         } else {
             logger.error("Unknown timeout type [{}] - cannot recover!", timeoutType);
         }
@@ -44,9 +44,9 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
     }
 
 
-    private boolean retryTaskEnqueue(UUID taskGuid) {
+    private boolean retryTaskEnqueue(UUID taskGuid, UUID processId) {
         boolean result = false;
-        TaskContainer task = taskBackend.getTask(taskGuid);
+        TaskContainer task = taskBackend.getTask(taskGuid, processId);
         if(task!=null) {
             logger.debug("Recover task {}", task);
             queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getProcessId(), task.getStartTime(), extractTaskList(task));

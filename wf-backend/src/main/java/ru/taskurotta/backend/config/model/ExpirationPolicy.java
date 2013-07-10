@@ -8,8 +8,14 @@ import java.util.UUID;
  */
 public interface ExpirationPolicy {
 
-    public long getExpirationTime(UUID taskUuid, long forTime);
+    /**
+     * @return long representation of server time when task consider to be expired
+     */
+    public long getExpirationTime(UUID taskId, UUID processId, long forTime);
 
-    public boolean readyToRecover(UUID uuid);
+    /**
+     * @return is task ready to be recovered at it current state. For example, number of recovery attempts can be already exceeded
+     */
+    public boolean readyToRecover(UUID taskId, UUID processId);
 
 }

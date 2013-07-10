@@ -2,12 +2,12 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 public class GeneralTaskServer implements TaskServer {
 
-    protected final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
     protected ProcessBackend processBackend;
     protected TaskBackend taskBackend;
@@ -55,9 +55,6 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
-
-        logger.debug("Start process: start");
-
         // some consistence check
         if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
@@ -66,25 +63,21 @@ public class GeneralTaskServer implements TaskServer {
 
         // registration of new process
         // atomic statement
-        logger.debug("Start process: before processBackend");
         processBackend.startProcess(task);
 
         // inform taskBackend about new process
         // idempotent statement
-        logger.debug("Start process: before taskBackend");
         taskBackend.startProcess(task);
 
         // inform dependencyBackend about new process
         // idempotent statement
-        logger.debug("Start process: before dependencyBackend");
         dependencyBackend.startProcess(task);
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
-        logger.debug("Start process: before enqueueTask");
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
 
-        logger.debug("Start process: before processBackend");
+
         processBackend.startProcessCommit(task);
     }
 
@@ -99,16 +92,15 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // atomic statement
-        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
-
-        if (taskId == null) {
+        TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        if (tqi == null) {
             return null;
         }
 
         // idempotent statement
-        final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
+        TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
 
-        queueBackend.pollCommit(actorDefinition.getFullName(), taskId);
+        queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
 
         return taskContainer;
     }
@@ -116,27 +108,30 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
-
         // save it firstly
         taskBackend.addDecision(taskDecision);
         processDecision(taskDecision);
     }
 
+    /**
+     * @return true if snapshot processing required, false otherwise
+     */
     protected boolean processDecision(DecisionContainer taskDecision) {
         boolean requireSnaphot = false;
 
-        UUID taskId = taskDecision.getTaskId();
+        logger.debug("Start processing task decision[{}]", taskDecision);
 
-        logger.debug("Start processing task decision[{}]", taskId);
+        UUID taskId = taskDecision.getTaskId();
+        UUID processId = taskDecision.getProcessId();
+
 
         // if Error
         if (taskDecision.containsError()) {
-
             // enqueue task immediately if needed
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId);
+                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
                 enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
             }
@@ -144,7 +139,6 @@ public class GeneralTaskServer implements TaskServer {
             taskBackend.addDecisionCommit(taskDecision);
             return requireSnaphot;
         }
-
 
         // idempotent statement
         DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
@@ -167,7 +161,7 @@ public class GeneralTaskServer implements TaskServer {
             for (UUID taskId2Queue : readyTasks) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
+                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue, processId);
                 enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
             }
 

@@ -17,7 +17,7 @@ public interface QueueBackend extends CheckpointServiceProvider {
      * @param actorId
      * @return
      */
-    public UUID poll(String actorId, String taskList);
+    public TaskQueueItem poll(String actorId, String taskList);
 
 
     /**
@@ -26,7 +26,7 @@ public interface QueueBackend extends CheckpointServiceProvider {
      *
      * @param taskId
      */
-    public void pollCommit(String actorId, UUID taskId);
+    public void pollCommit(String actorId, UUID taskId, UUID processId);
 
 
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);

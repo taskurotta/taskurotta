@@ -3,6 +3,7 @@
 
     <div style="float: left;">
         <a class="btn btn-link" ng-click="update()">Refresh</a>
+        <img id="loading" src="/img/ajax-loader.gif" style="display: none;" />
     </div>
     <div style="float:right">
         <div tsk-autorefresh update-action="update()"></div>
@@ -25,7 +26,7 @@
             <td>{{getStartIndex(tasksPage.pageNumber, tasksPage.pageSize) + $index}}</td>
             <td>
                 <a clas="btn btn-link" style="cursor: pointer;"
-                   ng-href="#/tasks/task/{{encodeURI(task.taskId)}}">{{task.taskId}}</a>
+                   ng-href="#/tasks/task/{{encodeURI(task.processId)}}/{{encodeURI(task.taskId)}}">{{task.taskId}}</a>
             </td>
             <td>
                 <a clas="btn btn-link" style="cursor: pointer;"
@@ -46,6 +47,6 @@
 
     </table>
 
-    <div>Total: <b>{{tasksPage.items.length}}</b> tasks</div>
+    <div>Total: <b>{{tasksPage.totalCount}}</b> tasks</div>
 
 </div>

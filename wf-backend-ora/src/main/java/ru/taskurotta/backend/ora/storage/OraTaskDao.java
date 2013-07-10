@@ -65,7 +65,7 @@ public class OraTaskDao implements TaskDao {
     }
 
     @Override
-    public DecisionContainer getDecision(UUID taskId) {
+    public DecisionContainer getDecision(UUID taskId, UUID processId) {
         DecisionContainer result = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("SELECT DECISION_JSON FROM DECISION WHERE TASK_ID = ?")
@@ -84,7 +84,7 @@ public class OraTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer getTask(UUID taskId) {
+    public TaskContainer getTask(UUID taskId, UUID processId) {
         TaskContainer result = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("SELECT JSON_VALUE FROM TASK WHERE UUID = ?")
@@ -123,7 +123,7 @@ public class OraTaskDao implements TaskDao {
 
 
     @Override
-    public boolean isTaskReleased(UUID taskId) {
+    public boolean isTaskReleased(UUID taskId, UUID processId) {
         boolean result = false;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) FROM DECISION WHERE TASK_ID = ?")
@@ -229,5 +229,10 @@ public class OraTaskDao implements TaskDao {
             throw new BackendCriticalException("Database error", ex);
         }
         return result;
+    }
+
+    @Override
+    public TaskContainer removeTask(UUID taskId, UUID processId) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

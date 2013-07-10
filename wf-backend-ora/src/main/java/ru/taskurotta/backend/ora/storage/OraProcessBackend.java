@@ -50,19 +50,31 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             ps.setString(3, returnValue);
             ps.setString(4, processId.toString());
             ps.executeUpdate();
-            checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
-            checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
         }
 
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT START_TASK_ID FROM PROCESS WHERE process_id = ?")
+        ) {
+            ps.setString(1, processId.toString());
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                String startTaskId = rs.getString("START_TASK_ID");
+                checkpointService.removeTaskCheckpoints(UUID.fromString(startTaskId), processId, TimeoutType.PROCESS_START_TO_CLOSE);
+                checkpointService.removeTaskCheckpoints(UUID.fromString(startTaskId), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+            }
+        } catch (SQLException ex) {
+            log.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
 
     }
 
     @Override
     public void startProcess(TaskContainer task) {
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state) VALUES (?, ?, ?, ?, ?)")
         ) {
@@ -81,7 +93,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
     @Override
     public void startProcessCommit(TaskContainer task) {
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
     }
 
     @Override
