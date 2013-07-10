@@ -18,6 +18,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * Task server with async decision processing.
@@ -118,12 +119,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             try {
                 lock.lock();
                 DecisionContainer taskDecision = taskServer.taskBackend.getDecision(taskId, processId);
-                if(taskDecision == null) {
-                    logger.error("Cannot get task decision from store by taskId["+taskId+"], processId["+processId+"]");
+                if (taskDecision == null) {
+                    String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
+                    logger.error(error);
                     //TODO: this exception disappears for some reason
-                    throw new IllegalStateException("Cannot get task decision from store by taskId["+taskId+"], processId["+processId+"]");
+                    throw new IllegalStateException(error);
                 }
-                if(taskServer.processDecision(taskDecision)) {
+                if (taskServer.processDecision(taskDecision)) {
                     //TODO: snapshot processsing here?
                 }
             } finally {

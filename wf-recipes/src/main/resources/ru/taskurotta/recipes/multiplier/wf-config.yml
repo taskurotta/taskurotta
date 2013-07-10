@@ -1,0 +1,67 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/multiplier/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/multiplier/SpreaderBeans.xml
+        properties:
+          count: 10000
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: true
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
+
+actor:
+  - FibonacciDecider:
+      actorInterface: ru.taskurotta.recipes.multiplier.MultiplierDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 2
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-multiply.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: !!!str OFF
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+
