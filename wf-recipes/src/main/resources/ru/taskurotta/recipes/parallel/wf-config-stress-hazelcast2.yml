@@ -1,0 +1,99 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/parallel/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/parallel/SpreaderBeans-hazelcast2.xml
+        properties:
+          cycles: 10
+          accuracy: 10000
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: false
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
+
+policy:
+  - LinearRertyPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 3
+          maximumRetryIntervalSeconds: 120
+          maximumAttempts: 10
+
+actor:
+  - PiDecider:
+      actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
+      count: 1
+
+  - PiWorker:
+      actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
+      count: 10
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d \%-5p [\%t] \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/recipes-parallel-stress-hazelcast2.log
+             append: true
+             encoder:
+                 pattern: \%d \%-5p [\%t] \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.client.hazelcast:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.client.hazelcast.task:
+             key: name
+             \@level: DEBUG
+        - com.hazelcast:
+             key: name
+             \@level: INFO
+        - com.hazelcast.nio:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

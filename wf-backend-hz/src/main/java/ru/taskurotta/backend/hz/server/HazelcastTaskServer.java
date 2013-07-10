@@ -2,6 +2,7 @@ package ru.taskurotta.backend.hz.server;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
+import com.hazelcast.core.IQueue;
 import com.hazelcast.core.PartitionAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,8 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.util.ActorDefinition;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -86,6 +89,20 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     }
 
     @Override
+    public TaskContainer poll(ActorDefinition actorDefinition) {
+        logger.trace("Try to poll for actor definition [{}]", actorDefinition);
+
+        TaskContainer taskContainer = super.poll(actorDefinition);
+
+        IQueue<TaskContainer> queue = hzInstance.getQueue("client-tasks#" + createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
+        queue.add(taskContainer);
+
+        logger.debug("Add task container [{}] to queue [{}]", taskContainer, queue);
+
+        return taskContainer;
+    }
+
+    @Override
     public void release(DecisionContainer taskDecision) {
         // save it in task backend
         taskBackend.addDecision(taskDecision);
@@ -138,6 +155,10 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public Object getPartitionKey() {
             return processId;
         }
+    }
+
+    private String createQueueName(String actorId, String taskList) {
+        return (taskList == null) ? actorId : actorId + "#" + taskList;
     }
 
     public void setExecutorServiceName(String executorServiceName) {
