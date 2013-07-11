@@ -30,20 +30,22 @@ public class HzTaskSpreader implements TaskSpreader {
     private ActorDefinition actorDefinition;
     private ObjectFactory objectFactory;
 
-    private ExecutorService executorService;
+    private ExecutorService pollExecutorService;
+    private ExecutorService releaseExecutorService;
 
     public HzTaskSpreader(HazelcastInstance hazelcastInstance, ActorDefinition actorDefinition) {
         this.actorDefinition = actorDefinition;
         this.objectFactory = new ObjectFactory();
 
-        this.executorService = hazelcastInstance.getExecutorService("pollReleaseExecutorService");
+        this.pollExecutorService = hazelcastInstance.getExecutorService("pollExecutorService");
+        this.releaseExecutorService = hazelcastInstance.getExecutorService("releaseExecutorService");
     }
 
     @Override
     public Task poll() {
         logger.trace("Try poll for actor definition [{}]", actorDefinition);
 
-        Future<?> future = executorService.submit(new DistributedTask<>(new PollTask(actorDefinition)));
+        Future<?> future = pollExecutorService.submit(new DistributedTask<>(new PollTask(actorDefinition)));
         TaskContainer taskContainer;
         try {
             taskContainer = (TaskContainer) future.get();
@@ -63,9 +65,14 @@ public class HzTaskSpreader implements TaskSpreader {
 
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision);
 
-        executorService.submit(new DistributedTask<>(new ReleaseTask(decisionContainer), taskDecision.getProcessId()));
+        Future<?> future = releaseExecutorService.submit(new DistributedTask<>(new ReleaseTask(decisionContainer), taskDecision.getProcessId()));
+        try {
+            future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Catch exception while release decision container [" + taskDecision + "]", e);
+        }
 
-        logger.debug("Create and send distributed task for release decision container [{}]", decisionContainer);
+        logger.debug("Release decision container [{}]", decisionContainer);
     }
 
 }

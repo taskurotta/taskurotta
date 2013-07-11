@@ -28,9 +28,10 @@ public class HzDeciderClientProvider implements DeciderClientProvider {
     private ExecutorService executorService;
 
     public HzDeciderClientProvider(HazelcastInstance hazelcastInstance) {
+
         this.objectFactory = new ObjectFactory();
 
-        this.executorService = hazelcastInstance.getExecutorService("pollReleaseExecutorService");
+        this.executorService = hazelcastInstance.getExecutorService("startProcessExecutorService");
     }
 
     @Override
