@@ -14,13 +14,18 @@
         <hz:config>
             <hz:instance-name>task-server</hz:instance-name>
 
+            <hz:management-center enabled="true" url="http://localhost:8080/mancenter-2.6" />
+
             <hz:properties>
                 <hz:property name="hazelcast.logging.type">slf4j</hz:property>
                 <hz:property name="hazelcast.jmx">true</hz:property>
                 <hz:property name="hazelcast.jmx.detailed">true</hz:property>
             </hz:properties>
 
-            <hz:executor-service name="pollReleaseExecutorService" core-pool-size="128" max-pool-size="256" keep-alive-seconds="120" />
+            <hz:executor-service name="startProcessExecutorService" core-pool-size="32" max-pool-size="64" keep-alive-seconds="120" />
+            <hz:executor-service name="pollExecutorService" core-pool-size="32" max-pool-size="64" keep-alive-seconds="120" />
+            <hz:executor-service name="releaseExecutorService" core-pool-size="32" max-pool-size="64" keep-alive-seconds="120" />
+            <hz:executor-service name="decisionProcessingExecutorService" core-pool-size="32" max-pool-size="64" keep-alive-seconds="120" />
         </hz:config>
     </hz:hazelcast>
 
