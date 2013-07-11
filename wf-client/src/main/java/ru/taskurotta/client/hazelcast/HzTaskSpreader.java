@@ -2,7 +2,6 @@ package ru.taskurotta.client.hazelcast;
 
 import com.hazelcast.core.DistributedTask;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.TaskSpreader;
@@ -15,7 +14,9 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * User: stukushin
@@ -29,16 +30,12 @@ public class HzTaskSpreader implements TaskSpreader {
     private ActorDefinition actorDefinition;
     private ObjectFactory objectFactory;
 
-    private IQueue<TaskContainer> queue;
     private ExecutorService executorService;
-
-    public static final String CLIENT_TASKS_QUEUE_PREFIX = "client-tasks";
 
     public HzTaskSpreader(HazelcastInstance hazelcastInstance, ActorDefinition actorDefinition) {
         this.actorDefinition = actorDefinition;
         this.objectFactory = new ObjectFactory();
 
-        this.queue = hazelcastInstance.getQueue(CLIENT_TASKS_QUEUE_PREFIX + "#" + createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
         this.executorService = hazelcastInstance.getExecutorService("pollReleaseExecutorService");
     }
 
@@ -46,9 +43,14 @@ public class HzTaskSpreader implements TaskSpreader {
     public Task poll() {
         logger.trace("Try poll for actor definition [{}]", actorDefinition);
 
-        executorService.submit(new DistributedTask<>(new PollTask(actorDefinition)));
-
-        TaskContainer taskContainer = queue.poll();
+        Future<?> future = executorService.submit(new DistributedTask<>(new PollTask(actorDefinition)));
+        TaskContainer taskContainer;
+        try {
+            taskContainer = (TaskContainer) future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("Catch exception while poll task for actor definition [" + actorDefinition + "]", e);
+            return null;
+        }
 
         logger.debug("Before poll return task container [{}] for actor definition [{}]", taskContainer, actorDefinition);
 
@@ -61,12 +63,9 @@ public class HzTaskSpreader implements TaskSpreader {
 
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision);
 
-        executorService.submit(new DistributedTask<>(new ReleaseTask(decisionContainer)));
+        executorService.submit(new DistributedTask<>(new ReleaseTask(decisionContainer), taskDecision.getProcessId()));
 
         logger.debug("Create and send distributed task for release decision container [{}]", decisionContainer);
     }
 
-    private String createQueueName(String actorId, String taskList) {
-        return (taskList == null) ? actorId : actorId + "#" + taskList;
-    }
 }
