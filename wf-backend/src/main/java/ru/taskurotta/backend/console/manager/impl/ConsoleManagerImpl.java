@@ -81,7 +81,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        if(taskInfo == null) {
+        if (taskInfo == null) {
             return null;
         }
         return taskInfo.getDecision(taskId, processId);

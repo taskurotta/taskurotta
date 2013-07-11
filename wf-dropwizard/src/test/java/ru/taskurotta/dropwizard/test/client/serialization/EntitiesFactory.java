@@ -50,7 +50,7 @@ public class EntitiesFactory {
         TaskContainer[] tasks = new TaskContainer[2];
         tasks[0] = createTaskContainer();
         tasks[1] = createTaskContainer();
-        if(isError) {
+        if (isError) {
             return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis()+9000l, tasks);
         } else {
             return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, TaskDecision.NO_RESTART, tasks);

@@ -82,10 +82,10 @@ public class Inspector {
     private void applyRetryPolicy(PolicyCounters policyCounters) {
         long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(policyCounters.firstAttempt, System.currentTimeMillis(), policyCounters.numberOfTries);
 
-        if(nextRetryDelaySeconds < 0) {//maximum attempts exceeded
+        if (nextRetryDelaySeconds < 0) {//maximum attempts exceeded
             logger.trace("Amount to maximum tries (now [{}]) for thread [{}]", policyCounters.numberOfTries, Thread.currentThread().getName());
 
-            if(actorThreadPool.mute()) {//if thread should stop just exit method without unnecessary sleep
+            if (actorThreadPool.mute()) {//if thread should stop just exit method without unnecessary sleep
                 return;
             }
 
@@ -102,13 +102,13 @@ public class Inspector {
     }
 
     public void setFailover(String timeExpression) {
-        if(timeExpression != null) {
+        if (timeExpression != null) {
             String time = timeExpression.replaceAll("\\D", "").trim();
-            if(time.length() > 0) {
+            if (time.length() > 0) {
                 this.failoverCheckTime = Integer.valueOf(time);
             }
             String timeUnit = timeExpression.replaceAll("\\d", "").trim().toUpperCase();
-            if(timeUnit.length() > 0) {
+            if (timeUnit.length() > 0) {
                 this.failoverCheckTimeUnit = TimeUnit.valueOf(timeUnit);
             }
         }

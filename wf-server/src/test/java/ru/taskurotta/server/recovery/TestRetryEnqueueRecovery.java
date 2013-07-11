@@ -73,7 +73,7 @@ public class TestRetryEnqueueRecovery {
 
         for(int i=0; i<times; i++) {
             TaskContainer polledTask = taskServer.poll(ActorUtils.getActorDefinition(actorId));
-            if(polledTask!=null) {
+            if (polledTask!=null) {
                 result.add(polledTask);
             }
         }

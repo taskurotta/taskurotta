@@ -42,7 +42,7 @@ public class GraphDependencyBackend implements DependencyBackend {
 
         //Append new created nodes if any
         TaskContainer[] createdTasks = taskDecision.getTasks();
-        if(createdTasks!=null && createdTasks.length>0) {//have new tasks in dependencies -> creating new TaskNodes && updating dependencies
+        if (createdTasks!=null && createdTasks.length>0) {//have new tasks in dependencies -> creating new TaskNodes && updating dependencies
             for(TaskContainer task: createdTasks) {
                 TaskNode newNode = createTaskNode(task);
                 taskNodeDao.addNode(newNode);
@@ -52,13 +52,13 @@ public class GraphDependencyBackend implements DependencyBackend {
         boolean released = taskNodeDao.releaseNode(taskDecision.getTaskId(), taskDecision.getProcessId());
         DependencyDecision result = new DependencyDecision(taskDecision.getProcessId());
 
-        if(released) {
+        if (released) {
             UUID[] readyTasks = getReadyTasks(taskDecision.getProcessId());
 
             //There are new tasks, process is still running
-            if(readyTasks!=null && readyTasks.length>0) {
+            if (readyTasks!=null && readyTasks.length>0) {
                 for(UUID readyTask: readyTasks) {
-                    if(taskNodeDao.scheduleNode(readyTask, taskDecision.getProcessId())) {
+                    if (taskNodeDao.scheduleNode(readyTask, taskDecision.getProcessId())) {
                         result.addReadyTask(readyTask);
                     }
                 }
@@ -67,7 +67,7 @@ public class GraphDependencyBackend implements DependencyBackend {
 
             boolean hasReadyTask = result.getReadyTasks()!=null && !result.getReadyTasks().isEmpty();
 
-            if(!hasReadyTask && isProcessReady(taskDecision.getProcessId())) {
+            if (!hasReadyTask && isProcessReady(taskDecision.getProcessId())) {
                 result.setFinishedProcessId(taskDecision.getProcessId());
                 result.setProcessFinished(true);
                 int deleted = taskNodeDao.deleteProcessNodes(taskDecision.getProcessId());
@@ -97,18 +97,18 @@ public class GraphDependencyBackend implements DependencyBackend {
         ArgType[] argTypes = tc.getOptions()!=null? tc.getOptions().getArgTypes(): null;
         List<UUID> depends = new ArrayList<>();
 
-        if(args!=null && args.length>0) {
+        if (args!=null && args.length>0) {
             for(int i = 0; i<args.length; i++) {
                 ArgContainer arg = args[i];
-                if(arg!=null && arg.isPromise()) {
-                    if(!hasNowait(argTypes, i)) {
+                if (arg!=null && arg.isPromise()) {
+                    if (!hasNowait(argTypes, i)) {
                         depends.add(arg.getTaskId());
                     }
                 }
             }
         }
 
-        if(waits!=null && waits.length>0) {
+        if (waits!=null && waits.length>0) {
             for(ArgContainer wait: waits) {
                 depends.add(wait.getTaskId());
             }
@@ -128,7 +128,7 @@ public class GraphDependencyBackend implements DependencyBackend {
             boolean released = node.isReleased();
             boolean scheduled = node.isScheduled();
             boolean isAllDepReady = isAllDependenciesReady(nodes, node.getDepends());
-            if(!(released||scheduled) && isAllDepReady) {
+            if (!(released||scheduled) && isAllDepReady) {
                 logger.debug("Node[{}] released[{}], scheduled[{}], allDepReady[{}]", node.getId(), released, scheduled, isAllDepReady);
                 result.add(node.getId());
             }
@@ -147,10 +147,10 @@ public class GraphDependencyBackend implements DependencyBackend {
 
     private boolean isAllDependenciesReady(List<TaskNode> nodes, List<UUID> dependencyIds) {
 
-        if(nodes!=null && !nodes.isEmpty() && dependencyIds!=null && !dependencyIds.isEmpty()) {
+        if (nodes!=null && !nodes.isEmpty() && dependencyIds!=null && !dependencyIds.isEmpty()) {
             for(TaskNode node: nodes) {
-                if(dependencyIds.contains(node.getId())) {//is dependency node
-                    if(!node.isReleased()) {
+                if (dependencyIds.contains(node.getId())) {//is dependency node
+                    if (!node.isReleased()) {
                         return false;
                     }
                 }

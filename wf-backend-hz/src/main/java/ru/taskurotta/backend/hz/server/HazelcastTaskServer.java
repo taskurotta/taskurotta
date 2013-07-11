@@ -18,6 +18,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Task server with async decision processing.
@@ -34,6 +35,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     private static HazelcastTaskServer instance;
     private static final Object instanceMonitor = 0;
+
+    private String nodeCustomName = "undefined";
 
     private HazelcastTaskServer(BackendBundle backendBundle) {
         super(backendBundle);
@@ -86,6 +89,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
+        logger.debug("HZ server release for decision [{}]", taskDecision);
         // save it in task backend
         taskBackend.addDecision(taskDecision);
 
@@ -94,12 +98,20 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         hzInstance.getExecutorService(executorServiceName).submit(call);
     }
 
+    protected DecisionContainer getDecision(UUID taskId, UUID processId) {
+       return taskBackend.getDecision(taskId, processId);
+    }
+
     /**
      * Callable task for processing taskDecisions
      */
     public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
+        private static AtomicInteger counter = new AtomicInteger(0);
+
+        private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
         UUID processId;
         UUID taskId;
+        String jobId = "undefined";
 
         public ProcessDecisionUnitOfWork() {
         }
@@ -107,29 +119,32 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public ProcessDecisionUnitOfWork(UUID processId, UUID taskId) {
             this.processId = processId;
             this.taskId = taskId;
+
         }
 
         @Override
         public Object call() throws Exception {
+
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
             HazelcastInstance taskHzInstance = taskServer.getHzInstance();
 
             ILock lock = taskHzInstance.getLock(processId);
             try {
                 lock.lock();
-                DecisionContainer taskDecision = taskServer.taskBackend.getDecision(taskId, processId);
+                DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
                 if (taskDecision == null) {
                     String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
                     logger.error(error);
                     //TODO: this exception disappears for some reason
                     throw new IllegalStateException(error);
                 }
-                if (taskServer.processDecision(taskDecision)) {
-                    //TODO: snapshot processsing here?
-                }
+
+                taskServer.processDecision(taskDecision);
+
             } finally {
                 lock.unlock();
             }
+
             return null;
         }
 
@@ -141,5 +156,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     public void setExecutorServiceName(String executorServiceName) {
         this.executorServiceName = executorServiceName;
+    }
+
+    public String getNodeCustomName() {
+        return nodeCustomName;
+    }
+
+    public void setNodeCustomName(String nodeCustomName) {
+        this.nodeCustomName = nodeCustomName;
     }
 }

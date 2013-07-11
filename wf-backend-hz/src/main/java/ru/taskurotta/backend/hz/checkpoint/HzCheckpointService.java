@@ -28,7 +28,7 @@ public class HzCheckpointService implements CheckpointService {
 
     @Override
     public void addCheckpoint(Checkpoint checkpoint) {
-        if(hasTimeoutType(checkpoint)) {
+        if (hasTimeoutType(checkpoint)) {
             IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(checkpoint.getTimeoutType()));
             checkpointsOfAType.put(new HzCheckpoint(checkpoint), checkpoint.getTaskId());
         } else {
@@ -46,7 +46,7 @@ public class HzCheckpointService implements CheckpointService {
 
     @Override
     public void removeCheckpoint(Checkpoint checkpoint) {
-        if(hasTimeoutType(checkpoint)) {
+        if (hasTimeoutType(checkpoint)) {
             IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(checkpoint.getTimeoutType()));
             int initialSize = checkpointsOfAType.size();
             checkpointsOfAType.remove(new HzCheckpoint(checkpoint));
@@ -75,7 +75,7 @@ public class HzCheckpointService implements CheckpointService {
         if (command!=null && command.getTimeoutType()!=null) {
             IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(command.getTimeoutType()));
             for (HzCheckpoint checkpoint: checkpointsOfAType.keySet()) {
-                if(isValidAgainstCommand(checkpoint, command)) {
+                if (isValidAgainstCommand(checkpoint, command)) {
                     result.add(checkpoint);
                 }
             }
@@ -93,7 +93,7 @@ public class HzCheckpointService implements CheckpointService {
                 result = result && checkpoint.getTime() < command.getMaxTime();
             }
 
-            if(command.getActorId() != null) {
+            if (command.getActorId() != null) {
                 result = result && command.getActorId().equals(checkpoint.getActorId());
             }
 
@@ -114,8 +114,8 @@ public class HzCheckpointService implements CheckpointService {
         int initialSize = checkpointsOfAType.size();
         int result = 0;
         for (HzCheckpoint checkpoint: checkpointsOfAType.keySet()) {
-            if(taskId.equals(checkpoint.getTaskId()) && processId.equals(checkpoint.getProcessId())) {
-                if(checkpointsOfAType.remove(checkpoint) != null) {
+            if (taskId.equals(checkpoint.getTaskId()) && processId.equals(checkpoint.getProcessId())) {
+                if (checkpointsOfAType.remove(checkpoint) != null) {
                     result++;
                 };
             }

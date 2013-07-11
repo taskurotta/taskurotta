@@ -43,7 +43,7 @@ public class BaseTaskProxy implements TaskServer {
             rb.post(new TaskContainerWrapper(task));
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
+            if (status>=400 && status<500) {
                 throw new InvalidServerRequestException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
             } else {
                 throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
@@ -67,7 +67,7 @@ public class BaseTaskProxy implements TaskServer {
             result = rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
+            if (status>=400 && status<500) {
                 throw new InvalidServerRequestException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
             } else {
                 throw new ServerException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
@@ -90,7 +90,7 @@ public class BaseTaskProxy implements TaskServer {
             rb.post(new DecisionContainerWrapper(taskResult));
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
+            if (status>=400 && status<500) {
                 throw new InvalidServerRequestException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
             } else{
                 throw new ServerException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);

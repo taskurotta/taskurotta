@@ -34,7 +34,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
 
-        if(System.getProperties().get(ASSETS_MODE_PROPERTY_NAME)!=null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
+        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME)!=null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
             bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
         } else {
             bootstrap.addBundle(new AssetsBundle("/assets", "/"));
@@ -54,7 +54,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
         appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", props));
 
         //Initializes YamlConfigBackend bean with actor preferences parsed from DW server YAML configuration
-        if(configuration.getActorConfig() != null) {
+        if (configuration.getActorConfig() != null) {
             appContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
                 @Override
                 public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
@@ -62,7 +62,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
                         @Override
                         public Object postProcessBeforeInitialization(Object bean, String beanName)
                                 throws BeansException {
-                            if(bean instanceof YamlConfigBackend) {
+                            if (bean instanceof YamlConfigBackend) {
                                 YamlConfigBackend yamlBean = (YamlConfigBackend)bean;
                                 yamlBean.setActorPreferences(configuration.getActorConfig().getAllActorPreferences());
                                 yamlBean.setExpirationPolicies(configuration.getActorConfig().getAllExpirationPolicies());
@@ -82,10 +82,10 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
 
         //-----Register resources-----------------
         int resourcesCount = 0;
-        if(configuration.getResourceBeans()==null
+        if (configuration.getResourceBeans()==null
                 || (configuration.getResourceBeans().length==1 && "auto".equalsIgnoreCase(configuration.getResourceBeans()[0]))) {//find automatically
             Map<String, Object> resources = appContext.getBeansWithAnnotation(Path.class);
-            if(resources!=null && !resources.isEmpty()) {
+            if (resources!=null && !resources.isEmpty()) {
                 for(String resourceBeanName: resources.keySet()) {
                     Object resourceSingleton = appContext.getBean(resourceBeanName);
                     environment.addResource(resourceSingleton);
@@ -106,10 +106,10 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
 
         //----- Register healthchecks ------------------
         int healthChecksCount = 0;
-        if(configuration.getHealthCheckBeans()==null
+        if (configuration.getHealthCheckBeans()==null
                 || (configuration.getHealthCheckBeans().length==1 && "auto".equalsIgnoreCase(configuration.getHealthCheckBeans()[0]))) {
             Map<String, HealthCheck> healthChecks = appContext.getBeansOfType(HealthCheck.class);
-            if(healthChecks!=null && !healthChecks.isEmpty()) {
+            if (healthChecks!=null && !healthChecks.isEmpty()) {
                 for(String hcBeanName: healthChecks.keySet()) {
                     HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
                     environment.addHealthCheck(healthCheck);
@@ -136,7 +136,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
 
         //1. defaults from classpath file
         Resource res = new ClassPathResource("default.properties");
-        if(res.exists()) {
+        if (res.exists()) {
             result.load(res.getInputStream());
         }
 
@@ -147,7 +147,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
         result = extendProps(result, System.getProperties(), SYSTEM_PROP_PREFIX);
 
         //4. Internal pool feature props (if present)
-        if(configuration.getInternalPoolConfig()!=null) {
+        if (configuration.getInternalPoolConfig()!=null) {
             result = extendProps(result, configuration.getInternalPoolConfig().asProperties(), null);
         }
 
@@ -155,14 +155,14 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     }
 
     private Properties extendProps(Properties mergeTo, Properties mergeFrom, String prefix) {
-        if(mergeTo == null) {
+        if (mergeTo == null) {
             return mergeFrom;
         }
-        if(mergeFrom!=null) {
+        if (mergeFrom!=null) {
             for(Object key: mergeFrom.keySet()) {
-                if(prefix!=null) {//filter only prefixed properties
+                if (prefix!=null) {//filter only prefixed properties
                     String stringKey = key.toString();
-                    if(stringKey.startsWith(prefix)) {
+                    if (stringKey.startsWith(prefix)) {
                         mergeTo.put(stringKey.substring(prefix.length()), mergeFrom.get(key));
                     }
                 } else {

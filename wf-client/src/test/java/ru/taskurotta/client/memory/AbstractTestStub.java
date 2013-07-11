@@ -106,7 +106,7 @@ public class AbstractTestStub {
      */
     public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
 
-        if(dependencyBackend instanceof GraphDependencyBackend) {
+        if (dependencyBackend instanceof GraphDependencyBackend) {
             TaskNodeDao tnd = ((GraphDependencyBackend) dependencyBackend).getTaskNodeDao();
             TaskNode taskNode = tnd.getNode(taskId, processId);
             return !taskNode.isReleased();

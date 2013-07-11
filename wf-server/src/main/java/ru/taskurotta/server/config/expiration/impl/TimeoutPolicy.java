@@ -22,11 +22,11 @@ public class TimeoutPolicy implements ExpirationPolicy {
     protected TimeUnit timeUnit = TimeUnit.SECONDS;
 
     public TimeoutPolicy(Properties props) {
-        if(props!=null && !props.isEmpty()) {
-            if(props.containsKey(TIMEOUT)) {
+        if (props!=null && !props.isEmpty()) {
+            if (props.containsKey(TIMEOUT)) {
                 this.timeout = Integer.valueOf(props.get(TIMEOUT).toString());
             }
-            if(props.containsKey(TIME_UNIT)) {
+            if (props.containsKey(TIME_UNIT)) {
                 this.timeUnit = TimeUnit.valueOf(props.get(TIME_UNIT).toString().toUpperCase());
             }
         }

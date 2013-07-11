@@ -128,7 +128,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         int removedScheduleToStart = checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
         int removedPollToCommit = checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
 
-        if(removedScheduleToStart<1 || removedPollToCommit<1) {
+        if (removedScheduleToStart<1 || removedPollToCommit<1) {
             logger.warn("Checkpoints consistency violated: removed [{}] TASK_SCHEDULE_TO_START and [{}] TASK_POLL_TO_COMMIT checkpoint. Values should not be empty.", removedScheduleToStart, removedPollToCommit);
         }
     }

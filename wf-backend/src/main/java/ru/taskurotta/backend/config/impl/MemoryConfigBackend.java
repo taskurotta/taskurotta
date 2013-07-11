@@ -23,9 +23,9 @@ public class MemoryConfigBackend implements ConfigBackend {
 	public boolean isActorBlocked(String actorId) {
         boolean result = false;
         ActorPreferences[] actorPreferences = getAllActorPreferences();
-        if(actorPreferences!=null && actorPreferences.length>0) {
+        if (actorPreferences!=null && actorPreferences.length>0) {
             for(ActorPreferences aPref: actorPreferences) {
-                if(aPref.getId().equals(actorId)) {
+                if (aPref.getId().equals(actorId)) {
                     result = aPref.isBlocked();
                     break;
                 }
@@ -64,7 +64,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 
 	@Override
 	public ActorPreferences[] getAllActorPreferences() {
-	    if(actorPreferences == null) {
+	    if (actorPreferences == null) {
 	        actorPreferences = getDefaultActorPreferences();
 	    }
 		return actorPreferences;
@@ -76,7 +76,7 @@ public class MemoryConfigBackend implements ConfigBackend {
 
 	@Override
     public ExpirationPolicyConfig[] getAllExpirationPolicies() {
-	    if(expirationPolicies == null) {
+	    if (expirationPolicies == null) {
 	        expirationPolicies = getDefaultPolicies(defaultTimeout, defaultTimeunit);
 	    }
         return expirationPolicies;
@@ -85,9 +85,9 @@ public class MemoryConfigBackend implements ConfigBackend {
     @Override
     public ActorPreferences getActorPreferences(String actorId) {
         ActorPreferences result = null;
-        if(actorPreferences!=null) {
+        if (actorPreferences!=null) {
             for(ActorPreferences ap: actorPreferences) {
-                if(ap.getId()!=null && ap.getId().equals(actorId)) {
+                if (ap.getId()!=null && ap.getId().equals(actorId)) {
                     result = ap;
                     break;
                 }

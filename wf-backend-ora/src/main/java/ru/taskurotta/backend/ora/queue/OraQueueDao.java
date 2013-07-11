@@ -164,7 +164,7 @@ public class OraQueueDao {
         ) {
             ps.setString(1, taskId.toString());
             ResultSet rs = ps.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 result = new TaskQueueItem();
                 result.setTaskId(UUID.fromString(rs.getString("task_id")));
                 result.setProcessId(UUID.fromString(rs.getString("process_id")));

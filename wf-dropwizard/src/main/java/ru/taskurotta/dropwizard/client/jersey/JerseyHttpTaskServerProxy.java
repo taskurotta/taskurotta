@@ -19,16 +19,16 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
     public void init() {
         MultiThreadedHttpConnectionManager connectionManager = new MultiThreadedHttpConnectionManager();
 
-        if(connectTimeout>0) {
+        if (connectTimeout>0) {
             connectionManager.getParams().setConnectionTimeout(connectTimeout);
         }
-        if(readTimeout>0) {
+        if (readTimeout>0) {
             connectionManager.getParams().setSoTimeout(readTimeout);
         }
-        if(threadPoolSize>0) {
+        if (threadPoolSize>0) {
             connectionManager.getParams().setMaxTotalConnections(threadPoolSize);
         }
-        if(maxConnectionsPerHost>0) {
+        if (maxConnectionsPerHost>0) {
             connectionManager.getParams().setDefaultMaxConnectionsPerHost(maxConnectionsPerHost);
         }
 

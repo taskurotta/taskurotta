@@ -20,9 +20,9 @@ public class RollingLoggingProfilerConfig implements ProfilerConfig {
 	@Override
 	public Profiler getProfiler(Class actorInterface) {
 		RollingLoggingProfiler result = null;
-		if(isSingleton) {
+		if (isSingleton) {
 		    synchronized (this) {
-	            if(singleton == null) {
+	            if (singleton == null) {
 	                singleton = new RollingLoggingProfiler(getLogPeriod());
 	            }
 	            result = singleton;

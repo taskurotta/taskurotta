@@ -56,7 +56,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         //should be at the end of the method
         Checkpoint checkpoint = new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(),task.getProcessId(), task.getActorId(), task.getStartTime());
         checkpointService.addCheckpoint(checkpoint);
-        logger.debug("PROCESS_CHECKPOINT: added checkpoint [{}]", checkpoint);
+        //logger.debug("PROCESS_CHECKPOINT: added checkpoint [{}]", checkpoint);
         checkpointService.removeTaskCheckpoints(task.getTaskId(), task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
     }
 
@@ -70,7 +70,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
         //should be at the end of the method
         int removed = checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        logger.debug("PROCESS_CHECKPOINT: removed checkpoint for processId[{}], taskId[{}], type[{}], result [{}]", processId, process.getStartTaskUuid(), TimeoutType.PROCESS_START_TO_CLOSE, removed);
+        //logger.debug("PROCESS_CHECKPOINT: removed checkpoint for processId[{}], taskId[{}], type[{}], result [{}]", processId, process.getStartTaskUuid(), TimeoutType.PROCESS_START_TO_CLOSE, removed);
         checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 

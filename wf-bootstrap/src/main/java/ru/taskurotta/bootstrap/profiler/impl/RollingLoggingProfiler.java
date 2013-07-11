@@ -30,14 +30,14 @@ public class RollingLoggingProfiler implements Profiler {
 	}
 
 	public RollingLoggingProfiler(long sleep) {
-		if(sleep>0) {
+		if (sleep>0) {
 			runMonitor(sleep);
 		}
 	}
 	
 	public void logResult() {
 		
-		if(taskMeterMap!=null && !taskMeterMap.isEmpty()) {
+		if (taskMeterMap!=null && !taskMeterMap.isEmpty()) {
 			StringBuilder sb = new StringBuilder("\n");
 			Set<String> taskIdSet = new HashSet<>();
 			for(String key: taskMeterMap.keySet()) {
@@ -53,14 +53,14 @@ public class RollingLoggingProfiler implements Profiler {
 				long end = taskMeterMap.get(END+key)!=null? taskMeterMap.get(END+key).getTime(): -1l;
 				long delta = (start>0&&end>0)? (end-start): -1l;
 
-				if(i++ == 0) {
+				if (i++ == 0) {
 					minStart = start;
 					maxEnd = end;
 				} else {
 					minStart = start<minStart? start: minStart;
 					maxEnd = end>maxEnd? end: maxEnd;
 				}
-				if(logger.isDebugEnabled()) {
+				if (logger.isDebugEnabled()) {
 					sb.append(name + ": " + i + ". Task ["+key+"]: start["+start+"]ms, end["+end+"]ms, delta["+delta+"]ms \n");
 				}
 				
@@ -116,7 +116,7 @@ public class RollingLoggingProfiler implements Profiler {
 			public Task poll() {
 				Date date = new Date();
 				Task result = taskSpreader.poll();
-				if(result != null) {
+				if (result != null) {
 					taskMeterMap.put(START+result.getId().toString(), date);
 				}
 				return result;

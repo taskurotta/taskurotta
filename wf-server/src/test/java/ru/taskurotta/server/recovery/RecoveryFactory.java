@@ -35,7 +35,7 @@ public class RecoveryFactory {
         this.timeoutUnit = timeoutUnit;
         backends = new MemoryBackendBundle(1, new MemoryTaskDao());
         ConfigBackend config = backends.getConfigBackend();
-        if(config instanceof MemoryConfigBackend) {
+        if (config instanceof MemoryConfigBackend) {
             ((MemoryConfigBackend) config).setDefaultTimeout(timeout);
             ((MemoryConfigBackend) config).setDefaultTimeunit(timeoutUnit);
         }
@@ -51,11 +51,11 @@ public class RecoveryFactory {
     }
 
     public CheckpointService getCheckpointService(Class<?> backendClazz) {
-        if(QueueBackend.class.isAssignableFrom(backendClazz)) {
+        if (QueueBackend.class.isAssignableFrom(backendClazz)) {
             return getQueueBackend().getCheckpointService();
-        } else if(TaskBackend.class.isAssignableFrom(backendClazz)) {
+        } else if (TaskBackend.class.isAssignableFrom(backendClazz)) {
             return getTaskBackend().getCheckpointService();
-        } else if(ProcessBackend.class.isAssignableFrom(backendClazz)) {
+        } else if (ProcessBackend.class.isAssignableFrom(backendClazz)) {
             return getProcessBackend().getCheckpointService();
         }
         return null;

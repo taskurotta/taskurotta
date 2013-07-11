@@ -38,19 +38,19 @@ public class TaskSubmitter {
 
     public static void main(String[] args) throws Exception {
 
-        if(args.length == 1) {
+        if (args.length == 1) {
             args = new String[]{"-r", args[0]};//Resource by default
         }
 
         SubmitterConfig config = parseStarterConfig(args);
-        if(config!=null && config.getTask()!=null) {
-            if(config.getEndpoint() == null || config.getEndpoint().trim().length() == 0) {
+        if (config!=null && config.getTask()!=null) {
+            if (config.getEndpoint() == null || config.getEndpoint().trim().length() == 0) {
                 throw new Exception("Field \"endpoint\" should be specified!");
             }
-            if(config.getTask().getActorId() == null || config.getTask().getActorId().trim().length() == 0) {
+            if (config.getTask().getActorId() == null || config.getTask().getActorId().trim().length() == 0) {
                 throw new Exception("Field \"task\"-> \"actorId\" should be specified!");
             }
-            if(config.getTask().getMethod() == null || config.getTask().getMethod().trim().length() == 0) {
+            if (config.getTask().getMethod() == null || config.getTask().getMethod().trim().length() == 0) {
                 throw new Exception("Field \"task\"-> \"method\" should be specified!");
             }
             int submitted = 0;
@@ -60,7 +60,7 @@ public class TaskSubmitter {
                 try {
                     submitNewTask(extendTask(config.getTask()), startResource);
                     submitted++;
-                    if(submitted % 100 == 0) {
+                    if (submitted % 100 == 0) {
                         System.out.println("Submitted "+submitted+" tasks out of " + config.getCount());
                     }
                 } catch(Throwable ex) {
@@ -149,7 +149,7 @@ public class TaskSubmitter {
             rb.post(new TaskContainerWrapper(task));
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
-            if(status>=400 && status<500) {
+            if (status>=400 && status<500) {
                 throw new InvalidServerRequestException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);
             } else {
                 throw new ServerException("Start process["+task.getProcessId()+"] with task["+task.getTaskId()+"] error: " + ex.getMessage(), ex);

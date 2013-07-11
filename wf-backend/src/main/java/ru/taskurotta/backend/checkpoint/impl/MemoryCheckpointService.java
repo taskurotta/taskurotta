@@ -104,7 +104,7 @@ public class MemoryCheckpointService implements CheckpointService {
                 result = result && checkpoint.getTime() < command.getMaxTime();
             }
 
-            if(command.getActorId() != null) {
+            if (command.getActorId() != null) {
                 result = result && command.getActorId().equals(checkpoint.getActorId());
             }
 

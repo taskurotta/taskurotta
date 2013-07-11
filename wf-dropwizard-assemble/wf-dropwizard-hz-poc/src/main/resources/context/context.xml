@@ -50,6 +50,7 @@
         <constructor-arg name="taskBackend" ref="taskBackend"/>
 
         <property name="hzInstance" ref="hzInstance" />
+        <property name="nodeCustomName" value="${node.custom.name}" />
 
     </bean>
 
@@ -67,25 +68,25 @@
 
     <!-- Recoveries -->
 
-    <bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">
-        <property name="configBackend" ref="configBackend"/>
-        <property name="taskBackend" ref="taskBackend"/>
-        <property name="queueBackend" ref="queueBackend"/>
-        <property name="recoveryPeriod" value="${recovery.period}"/>
-        <property name="recoveryPeriodUnit" value="${recovery.period.unit}"/>
-        <property name="timeIterationStep" value="${recovery.timeStep}"/>
-        <property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>
-        <property name="checkpointServices">
-            <list value-type="ru.taskurotta.backend.checkpoint.CheckpointService">
-                <ref bean="checkpointService"/>
-            </list>
-        </property>
-    </bean>
+    <!--<bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">-->
+        <!--<property name="configBackend" ref="configBackend"/>-->
+        <!--<property name="taskBackend" ref="taskBackend"/>-->
+        <!--<property name="queueBackend" ref="queueBackend"/>-->
+        <!--<property name="recoveryPeriod" value="${recovery.period}"/>-->
+        <!--<property name="recoveryPeriodUnit" value="${recovery.period.unit}"/>-->
+        <!--<property name="timeIterationStep" value="${recovery.timeStep}"/>-->
+        <!--<property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>-->
+        <!--<property name="checkpointServices">-->
+            <!--<list value-type="ru.taskurotta.backend.checkpoint.CheckpointService">-->
+                <!--<ref bean="checkpointService"/>-->
+            <!--</list>-->
+        <!--</property>-->
+    <!--</bean>-->
 
-    <task:scheduler id="taskExpirationRecovery" pool-size="1" />
-    <task:scheduled-tasks scheduler="taskExpirationRecovery">
-        <task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>
-    </task:scheduled-tasks>
+    <!--<task:scheduler id="taskExpirationRecovery" pool-size="1" />-->
+    <!--<task:scheduled-tasks scheduler="taskExpirationRecovery">-->
+        <!--<task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>-->
+    <!--</task:scheduled-tasks>-->
 
      <!--/Recoveries-->
 

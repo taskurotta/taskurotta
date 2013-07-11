@@ -116,8 +116,7 @@ public class GeneralTaskServer implements TaskServer {
     /**
      * @return true if snapshot processing required, false otherwise
      */
-    protected boolean processDecision(DecisionContainer taskDecision) {
-        boolean requireSnaphot = false;
+    protected void processDecision(DecisionContainer taskDecision) {
 
         logger.debug("Start processing task decision[{}]", taskDecision);
 
@@ -137,7 +136,7 @@ public class GeneralTaskServer implements TaskServer {
             }
 
             taskBackend.addDecisionCommit(taskDecision);
-            return requireSnaphot;
+            return;
         }
 
         // idempotent statement
@@ -151,7 +150,7 @@ public class GeneralTaskServer implements TaskServer {
 
             // leave release() method.
             // RELEASE_TIMEOUT should be automatically fired
-            return requireSnaphot;
+            return;
         }
 
         List<UUID> readyTasks = dependencyDecision.getReadyTasks();
@@ -170,14 +169,18 @@ public class GeneralTaskServer implements TaskServer {
         if (dependencyDecision.isProcessFinished()) {
             processBackend.finishProcess(dependencyDecision.getFinishedProcessId(),
                     dependencyDecision.getFinishedProcessValue());
-            requireSnaphot = true;
         }
 
         taskBackend.addDecisionCommit(taskDecision);
 
+        processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);
 
-        return requireSnaphot;
+    }
+
+    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision){
+        logger.debug("Snapshot processing initialized with taskDecision[{}], dependencyDecision[{}]", taskDecision, dependencyDecision);
+        //TODO: implement it
     }
 
     /**

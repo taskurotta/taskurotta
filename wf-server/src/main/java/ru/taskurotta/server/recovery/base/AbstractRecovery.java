@@ -36,7 +36,7 @@ public abstract class AbstractRecovery implements Runnable {
     @Override
     public void run() {
         List<CheckpointService> cs = getCheckpointServices();
-        if(cs!=null && !cs.isEmpty()) {
+        if (cs!=null && !cs.isEmpty()) {
             logger.debug("Recovery process started, checkpointServices count[{}], recovery period[{}], [{}]", cs.size(), recoveryPeriod, recoveryPeriodUnit);
             try {
                 processRecoveryIteration();
@@ -55,7 +55,7 @@ public abstract class AbstractRecovery implements Runnable {
                 expirationPolicyMap = new HashMap<>();
                 for(ActorPreferences actorConfig: actorPrefs) {
                     Properties actorTimeoutPolicies = actorConfig.getTimeoutPolicies();
-                    if(actorTimeoutPolicies!=null && !actorTimeoutPolicies.isEmpty()) { //actor has expiration timeouts defined, try to initialize their policies
+                    if (actorTimeoutPolicies!=null && !actorTimeoutPolicies.isEmpty()) { //actor has expiration timeouts defined, try to initialize their policies
                         Map<TimeoutType, ExpirationPolicy> actorPolicyInstancesMap = new HashMap<>();
 
                         for(Object timeoutType: actorTimeoutPolicies.keySet()) {//iterating over actor's timeoutType-policy map
@@ -90,27 +90,27 @@ public abstract class AbstractRecovery implements Runnable {
     }
 
     private ExpirationPolicyConfig getPolicyByName(String name, ExpirationPolicyConfig[] expPolicies) {
-        if(name.trim().toUpperCase().startsWith(SIMPLE_TIMEOUT_POLICY)) {//shortcut can be for simple timeout
+        if (name.trim().toUpperCase().startsWith(SIMPLE_TIMEOUT_POLICY)) {//shortcut can be for simple timeout
             ExpirationPolicyConfig result = new ExpirationPolicyConfig();
             result.setName(name);
             result.setClassName(TimeoutPolicy.class.getName());
 
             Properties props = new Properties();
             String timeout = name.replaceAll("\\D", "").trim();
-            if(timeout.length() > 0) {
+            if (timeout.length() > 0) {
                 props.put("timeout", Integer.valueOf(timeout));
             }
 
             String timeunit = name.replace(SIMPLE_TIMEOUT_POLICY, "").replaceAll("\\d", "").trim();
-            if(timeunit.length() > 0) {
+            if (timeunit.length() > 0) {
                 props.put("timeUnit", TimeUnit.valueOf(timeunit.toUpperCase()));
             }
             result.setProperties(props);
             return result;
 
-        } else if(expPolicies != null) {
+        } else if (expPolicies != null) {
             for(ExpirationPolicyConfig item: expPolicies) {
-                if(name.equals(item.getName())) {
+                if (name.equals(item.getName())) {
                     return item;
                 }
             }
@@ -120,14 +120,14 @@ public abstract class AbstractRecovery implements Runnable {
 
     protected ExpirationPolicy getExpirationPolicy(String entityType, TimeoutType timeoutType) {
         ExpirationPolicy result = null;
-        if(entityType!=null && expirationPolicyMap!=null) {
+        if (entityType!=null && expirationPolicyMap!=null) {
             Map<TimeoutType, ExpirationPolicy> valueMap = expirationPolicyMap.get(entityType);
-            if(valueMap == null) {
+            if (valueMap == null) {
                 logger.trace("Not found expiration policy config for entityType[{}], timeoutType[{}]. Applying defaults[{}]", entityType, timeoutType, valueMap);
                 valueMap = expirationPolicyMap.get("default");
             }
 
-            if(valueMap != null) {
+            if (valueMap != null) {
                 result = valueMap.get(timeoutType);
             }
         }

@@ -38,7 +38,7 @@ public class ThreadPooledTaskServer implements TaskServer {
     public void startProcess(TaskContainer task) {
         try {
             Future<Boolean> futureResult = executorService.submit(asyncTaskServer.callStartTask(task));
-            if(timeout>0) {
+            if (timeout>0) {
                 futureResult.get(timeout, TimeUnit.MILLISECONDS);
             } else{
                 futureResult.get();
@@ -55,7 +55,7 @@ public class ThreadPooledTaskServer implements TaskServer {
         TaskContainer result = null;
         try {
             Future<TaskContainer> futureResult = executorService.submit(asyncTaskServer.callPull(actorDefinition));
-            if(timeout>0) {
+            if (timeout>0) {
                 result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
             } else {
                 result = futureResult.get();
@@ -73,7 +73,7 @@ public class ThreadPooledTaskServer implements TaskServer {
 
         try {
             Future<Boolean> futureResult = executorService.submit(asyncTaskServer.callRelease(decisionContainer));
-            if(timeout > 0) {
+            if (timeout > 0) {
                 futureResult.get(timeout, TimeUnit.MILLISECONDS);
             } else {
                 futureResult.get();

@@ -38,7 +38,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
     public void callExecutor(Promise<Integer> a, long startTime) {
         logger.trace("callExecutor started");
 
-        if(RandomException.isEventHappened(errPossibility)) {
+        if (RandomException.isEventHappened(errPossibility)) {
             throw new RandomException("Its exception time");
         }
 
@@ -65,7 +65,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
     public void logResult(Promise<Integer> result, String action, long startTime) {
         logger.trace("logResult started");
 
-        if(RandomException.isEventHappened(errPossibility)) {
+        if (RandomException.isEventHappened(errPossibility)) {
             throw new RandomException("Its exception time");
         }
 

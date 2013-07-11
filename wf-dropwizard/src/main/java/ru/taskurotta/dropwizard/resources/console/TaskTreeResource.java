@@ -25,9 +25,9 @@ public class TaskTreeResource extends BaseResource {
 
         try {
             TaskTreeVO result = null;
-            if(TYPE_TASK.equalsIgnoreCase(type)) {
+            if (TYPE_TASK.equalsIgnoreCase(type)) {
                 result = consoleManager.getTreeForTask(UUID.fromString(taskId), UUID.fromString(processId));
-            } else if(TYPE_PROCESS.equalsIgnoreCase(type)) {
+            } else if (TYPE_PROCESS.equalsIgnoreCase(type)) {
                 result = consoleManager.getTreeForProcess(UUID.fromString(processId));
             }
             logger.debug("TaskTree getted by type[{}], id[{}], processId[{}] is [{}]", type, taskId, processId, result);

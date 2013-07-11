@@ -63,13 +63,13 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if(processUuid == null) {
+        if (processUuid == null) {
             return null;
         }
         IMap<TaskKey, TaskContainer> id2TaskMap = hzInstance.getMap(id2TaskMapName);
         List<TaskContainer> result = new ArrayList<>();
         for(TaskContainer tc: id2TaskMap.values()) {
-            if(processUuid.equals(tc.getProcessId())) {
+            if (processUuid.equals(tc.getProcessId())) {
                 result.add(tc);
             }
         }

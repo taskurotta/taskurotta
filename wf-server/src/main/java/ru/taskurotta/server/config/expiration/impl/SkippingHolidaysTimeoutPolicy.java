@@ -45,18 +45,18 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
 
     public SkippingHolidaysTimeoutPolicy(Properties properties) throws IOException, ParseException {
         String timeout = properties.getProperty(PROP_TIMEOUT);
-        if(timeout != null) {
+        if (timeout != null) {
             String intStr = timeout.replaceAll("\\D", "").trim();
             String timeUnitStr = timeout.replaceAll("\\d", "").trim();
-            if(intStr.length() > 0) {
+            if (intStr.length() > 0) {
                 this.timeout = Integer.valueOf(intStr);
             }
-            if(timeUnitStr.length() > 0) {
+            if (timeUnitStr.length() > 0) {
                 this.timeoutUnit = TimeUnit.valueOf(timeUnitStr.toUpperCase());
             }
         }
         String format =properties.getProperty(PROP_FORMAT);
-        if(format!=null) {
+        if (format!=null) {
             this.format = format;
         }
 
@@ -70,14 +70,14 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     }
 
     private void initHolidaysList(String fileLocation) throws IOException, ParseException {
-        if(fileLocation!=null) {
+        if (fileLocation!=null) {
             holidays = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             sdf.setLenient(false);
             BufferedReader br = new BufferedReader(new FileReader(fileLocation));
             String line;
             while((line=br.readLine()) != null) {
-                if(!line.startsWith("#") && line.trim().length()>0) {
+                if (!line.startsWith("#") && line.trim().length()>0) {
                     holidays.add(sdf.parse(line.trim()));
                 }
 
@@ -90,11 +90,11 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
 
     private String listHolidays() {
         String result = null;
-        if(holidays != null) {
+        if (holidays != null) {
             StringBuilder sb = new StringBuilder();
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             for(Date date: holidays ){
-                if(sb.length() > 0) {
+                if (sb.length() > 0) {
                     sb.append(", ");
                 }
                 sb.append(sdf.format(date));
@@ -108,10 +108,10 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     //TODO: upgrade algorithm?
     private boolean isHoliday(long date, List<Date> holidays) {
         boolean result = false;
-        if(holidays!=null && !holidays.isEmpty()) {
+        if (holidays!=null && !holidays.isEmpty()) {
             Date targetDate = new Date(date);
             for(Date holiday: holidays) {
-                if(isSameDay(holiday, targetDate)) {
+                if (isSameDay(holiday, targetDate)) {
                     result = true;
                     break;
                 }
@@ -123,11 +123,11 @@ public class SkippingHolidaysTimeoutPolicy implements ExpirationPolicy {
     //keep only future holidays in list
     private List<Date> getActualHolidays(long forDate) {
         List<Date> result = null;
-        if(holidays!=null && !holidays.isEmpty()) {
+        if (holidays!=null && !holidays.isEmpty()) {
             result = new ArrayList<>();
             Date target = new Date(forDate);
             for(Date date: holidays) {
-                if(date.after(target) && !isSameDay(date, target)) {
+                if (date.after(target) && !isSameDay(date, target)) {
                     result.add(date);
                 }
             }

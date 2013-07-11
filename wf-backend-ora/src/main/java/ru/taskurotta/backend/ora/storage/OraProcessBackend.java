@@ -60,7 +60,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         ) {
             ps.setString(1, processId.toString());
             ResultSet rs = ps.executeQuery();
-            if(rs.next()) {
+            if (rs.next()) {
                 String startTaskId = rs.getString("START_TASK_ID");
                 checkpointService.removeTaskCheckpoints(UUID.fromString(startTaskId), processId, TimeoutType.PROCESS_START_TO_CLOSE);
                 checkpointService.removeTaskCheckpoints(UUID.fromString(startTaskId), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);

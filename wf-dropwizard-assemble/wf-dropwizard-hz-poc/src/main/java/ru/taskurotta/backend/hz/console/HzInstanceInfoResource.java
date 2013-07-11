@@ -35,7 +35,7 @@ public class HzInstanceInfoResource {
     public HzInstanceInfoVO getInstanceInfo(@PathParam("instanceName")String instanceName, @PathParam("instanceType")String instanceType) {
         HzInstanceInfoVO result = null;
         for(Instance inst: hzInstance.getInstances()) {
-            if(isInstanceOfInterest(instanceName, instanceType, inst)) {
+            if (isInstanceOfInterest(instanceName, instanceType, inst)) {
                 result = createResponse(inst);
                 break;
             }
@@ -53,19 +53,19 @@ public class HzInstanceInfoResource {
         String name = null;
         int size = 0;
 
-        if(type.isQueue()) {
+        if (type.isQueue()) {
             name = ((IQueue)inst).getName();
             size = ((IQueue)inst).size();
-        } else if(type.isMap()) {
+        } else if (type.isMap()) {
             name = ((IMap)inst).getName();
             size = ((IMap)inst).size();
-        } else if(type.isMultiMap()) {
+        } else if (type.isMultiMap()) {
             name = ((MultiMap)inst).getName();
             size = ((MultiMap)inst).size();
-        } else if(type.isSet()) {
+        } else if (type.isSet()) {
             name = ((ISet)inst).getName();
             size = ((ISet)inst).size();
-        } else if(type.isList()) {
+        } else if (type.isList()) {
             name = ((IList)inst).getName();
             size = ((IList)inst).size();
         }
@@ -80,15 +80,15 @@ public class HzInstanceInfoResource {
         boolean result = false;
         String name = null;
         InstanceType type = targetInstance.getInstanceType();
-        if(type.isQueue() && "queue".equalsIgnoreCase(typeOfInterest)) {
+        if (type.isQueue() && "queue".equalsIgnoreCase(typeOfInterest)) {
             name = ((IQueue)targetInstance).getName();
-        } else if(type.isMap() && "map".equalsIgnoreCase(typeOfInterest)) {
+        } else if (type.isMap() && "map".equalsIgnoreCase(typeOfInterest)) {
             name = ((IMap)targetInstance).getName();
-        } else if(type.isMultiMap() && "multimap".equalsIgnoreCase(typeOfInterest)) {
+        } else if (type.isMultiMap() && "multimap".equalsIgnoreCase(typeOfInterest)) {
             name = ((MultiMap)targetInstance).getName();
-        } else if(type.isSet() && "set".equalsIgnoreCase(typeOfInterest)) {
+        } else if (type.isSet() && "set".equalsIgnoreCase(typeOfInterest)) {
             name = ((ISet)targetInstance).getName();
-        } else if(type.isList() && "list".equalsIgnoreCase(typeOfInterest)) {
+        } else if (type.isList() && "list".equalsIgnoreCase(typeOfInterest)) {
             name = ((IList)targetInstance).getName();
         }
         result = nameOfInterest.equalsIgnoreCase(name);

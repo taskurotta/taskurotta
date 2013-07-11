@@ -30,7 +30,7 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
     @Override
     public synchronized void addNode(TaskNode taskNode) {
         TaskNode node = simpleStorage.get(taskNode.getId());
-        if(node!=null) { //Node already exists
+        if (node!=null) { //Node already exists
             return;
         } else{
             simpleStorage.put(taskNode.getId(), taskNode);
@@ -41,8 +41,8 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
     @Override
     public boolean releaseNode(UUID id, UUID processId) {
         TaskNode taskNode = getNode(id, processId);
-        if(taskNode!=null) {
-            if(taskNode.isReleased()) {//was previously released
+        if (taskNode!=null) {
+            if (taskNode.isReleased()) {//was previously released
                 return false;
             }
             taskNode.setReleased(true);
@@ -58,8 +58,8 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
     @Override
     public boolean scheduleNode(UUID id, UUID processId) {
         TaskNode taskNode = getNode(id, processId);
-        if(taskNode!=null) {
-            if(taskNode.isScheduled()) {//was previously scheduled
+        if (taskNode!=null) {
+            if (taskNode.isScheduled()) {//was previously scheduled
                 return false;
             }
             taskNode.setScheduled(true);
@@ -76,7 +76,7 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
     public List<TaskNode> getActiveProcessNodes(UUID processId) {
         List<TaskNode> result = new ArrayList<>();
         for(TaskNode node: simpleStorage.values()) {
-            if(processId.equals(node.getProcessId()) && !node.isReleased()) {
+            if (processId.equals(node.getProcessId()) && !node.isReleased()) {
                  result.add(node);
             }
         }
@@ -89,7 +89,7 @@ public class MemoryTaskNodeDao implements TaskNodeDao {
         int result = 0;
         for(UUID nodeId: simpleStorage.keySet()) {
             TaskNode node = simpleStorage.get(nodeId);
-            if(processId.equals(node.getProcessId())) {
+            if (processId.equals(node.getProcessId())) {
                 simpleStorage.remove(nodeId);
                 result++;
             }
