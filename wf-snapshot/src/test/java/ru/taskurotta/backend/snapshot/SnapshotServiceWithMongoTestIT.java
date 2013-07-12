@@ -22,7 +22,7 @@ import java.util.UUID;
  * User: greg
  */
 @ContextConfiguration(locations = {"classpath:application-context-mongo-test.xml"})
-public class SnapshotServiceWithMongoITTest extends AbstractTestNGSpringContextTests {
+public class SnapshotServiceWithMongoTestIT extends AbstractTestNGSpringContextTests {
 
     @Autowired
     private SnapshotService snapshotService;
