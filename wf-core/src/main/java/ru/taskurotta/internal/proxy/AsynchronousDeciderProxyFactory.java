@@ -10,12 +10,12 @@ import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.exception.IncorrectAsynchronousMethodDefinition;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.reflect.Method;
@@ -88,7 +88,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
     }
 
     private Map<Method, MethodDescriptor> createMethodCache(Class target) {
-        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<>();
 
         Class<?> deciderInterface = AnnotationUtils.findAnnotatedClass(target, Decider.class);
 

@@ -1,9 +1,8 @@
 package ru.taskurotta.backend.ora.domain;
 
-import java.util.Date;
-import java.util.UUID;
-
 import org.springframework.util.StringUtils;
+
+import java.util.UUID;
 
 /**
  * User: greg
@@ -13,23 +12,25 @@ public class SimpleTask {
     public static final String DEFAULT_TASK_LIST = "$D";
 
     private UUID taskId;
-    private Date date;
+    private UUID processId;
+    private long startTime;
     private String taskList;
     private int statusId;
 
-    public SimpleTask(UUID taskId, Date date, int statusId, String taskList) {
-        this.date = date;
+    public SimpleTask(UUID taskId, UUID processId, long startTime, int statusId, String taskList) {
+        this.startTime = startTime;
         this.statusId = statusId;
         this.taskId = taskId;
+        this.processId = processId;
         this.taskList = (StringUtils.hasText(taskList)) ? taskList : DEFAULT_TASK_LIST;
     }
 
-    public Date getDate() {
-        return date;
+    public long getStartTime() {
+        return startTime;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
 
     public int getStatusId() {
@@ -54,5 +55,13 @@ public class SimpleTask {
 
     public void setTaskList(String taskList) {
         this.taskList = taskList;
+    }
+
+    public UUID getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
     }
 }

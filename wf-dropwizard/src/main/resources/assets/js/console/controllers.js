@@ -143,18 +143,20 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
         $$data.getProcess($routeParams.processId).then(function (value) {
             $scope.process = angular.fromJson(value.data || {});
             $log.info("processCardController: successfully updated process[" + $routeParams.processId + "] content");
+
+            $$data.getProcessTree($routeParams.processId, $scope.process.startTaskUuid).then(function (value) {
+                $scope.taskTree = angular.fromJson(value.data || {});
+                $log.info("processCardController: successfully updated process[" + $routeParams.processId + "]/["+$scope.process.startTaskUuid+"] tree");
+            }, function (errReason) {
+                $scope.feedback = errReason;
+                $log.error("processCardController: process[" + $routeParams.processId + "] tree update failed: " + errReason);
+            });
+
         }, function (errReason) {
             $scope.feedback = errReason;
             $log.error("processCardController: process[" + $routeParams.id + "] update failed: " + errReason);
         });
 
-        $$data.getProcessTree($routeParams.processId).then(function (value) {
-            $scope.taskTree = angular.fromJson(value.data || {});
-            $log.info("processCardController: successfully updated process[" + $routeParams.processId + "] tree");
-        }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("processCardController: process[" + $routeParams.id + "] tree update failed: " + errReason);
-        });
 
     };
 
@@ -223,22 +225,35 @@ consoleControllers.controller("taskListController", function ($scope, $$data, $l
 consoleControllers.controller("taskCardController", function ($scope, $$data, $routeParams, $log) {
     $scope.task = {};
     $scope.taskTree = {};
-    $scope.id = $routeParams.id;
+    $scope.taskDecision = {};
+    $scope.id = $routeParams.taskId;
+
     $scope.feedback = "";
     $scope.update = function () {
-        $$data.getTask($routeParams.id).then(function (value) {
+        $$data.getTask($routeParams.taskId, $routeParams.processId).then(function (value) {
             $scope.task = angular.fromJson(value.data || {});
             $log.info("taskController: successfully updated task[" + $routeParams.id + "] content");
+
+            $$data.getTaskTree($routeParams.taskId, $routeParams.processId).then(function (value) {
+                $scope.taskTree = angular.fromJson(value.data || {});
+                $log.info("taskController: successfully updated task tree[" + $routeParams.taskId + "] content");
+
+                $$data.getTaskDecision($routeParams.taskId, $routeParams.processId).then(function (value) {
+                    $scope.taskDecision = angular.fromJson(value.data || {});
+                    $log.info("taskController: successfully updated task decision[" + $routeParams.taskId + "] content");
+                }, function (errReason) {
+                    $scope.feedback = errReason;
+                    $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + errReason);
+                });
+
+            }, function (errReason) {
+                $scope.feedback = errReason;
+                $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + errReason);
+            });
+
         }, function (errReason) {
             $scope.feedback = errReason;
             $log.error("taskController: task[" + $routeParams.id + "] update failed: " + errReason);
-        });
-        $$data.getTaskTree($routeParams.id).then(function (value) {
-            $scope.taskTree = angular.fromJson(value.data || {});
-            $log.info("taskController: successfully updated task tree[" + $routeParams.id + "] content");
-        }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("taskController: task[" + $routeParams.id + "] tree update failed: " + errReason);
         });
     };
 
@@ -254,7 +269,7 @@ consoleControllers.controller("taskSearchController", function ($scope, $routePa
 
     $scope.update = function () {
         if ($scope.type == 'task_id') { //searching task by ID
-            $$data.getTask($scope.taskId).then(function (value) {
+            $$data.getTask($scope.taskId, $scope.processId).then(function (value) {
                 $scope.tasks = [angular.fromJson(value.data || {})];
                 $log.info("taskSearchController: successfully updated task[" + $routeParams.taskId + "] content");
             }, function (errReason) {

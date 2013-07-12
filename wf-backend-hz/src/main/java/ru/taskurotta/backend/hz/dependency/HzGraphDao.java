@@ -1,8 +1,5 @@
 package ru.taskurotta.backend.hz.dependency;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import org.slf4j.Logger;
@@ -11,7 +8,6 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
@@ -28,46 +24,38 @@ public class HzGraphDao implements GraphDao {
 
     // TODO: garbage collection policy for real database
 
-    private HazelcastInstance hzInstance;
     private Map<UUID, GraphRow> graphs;
     private Map<UUID, DecisionRow> decisions;
     private ILock graphLock;
 
-    private static ObjectMapper mapper = new ObjectMapper();
-
-    static {
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    }
-
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
-        this.hzInstance = hzInstance;
         this.graphs = hzInstance.getMap(graphsMapName);
         this.decisions = hzInstance.getMap(decisionsMapName);
         graphLock = hzInstance.getLock(graphs);
     }
 
     public HzGraphDao(HazelcastInstance hzInstance) {
-        this(hzInstance, "graphsMapName", "decisionsMapName");
+        this(hzInstance, "graphsMapName", "graphDecisionsMapName");
     }
 
     /**
      * Table of row contains current graph (process) state
      */
-    public static class GraphRow implements Serializable{
+    public static class GraphRow implements Serializable {
         private int version;
-        private String jsonGraph;
+        private Graph graph;
 
         protected GraphRow(Graph graph) {
             version = graph.getVersion();
-            dump(graph);
+            this.graph = graph;
         }
 
 
         /**
-         * @param modifiedGraph
+         * @param modifiedGraph - new version of the graph
          * @return true if modification was successful
          */
-        protected synchronized boolean updateGraph(Graph modifiedGraph) {
+        protected boolean updateGraph(Graph modifiedGraph) {
 
             int newVersion = modifiedGraph.getVersion();
 
@@ -75,32 +63,10 @@ public class HzGraphDao implements GraphDao {
                 return false;
             }
             version = newVersion;
-            dump(modifiedGraph);
+            graph = modifiedGraph;
 
             return true;
         }
-
-
-        protected void dump(Graph graph) {
-            try {
-                jsonGraph = mapper.writeValueAsString(graph);
-            } catch (JsonProcessingException e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not create json String from Object: " + graph, e);
-            }
-        }
-
-
-        protected Graph parse() {
-
-            try {
-                return mapper.readValue(jsonGraph, Graph.class);
-            } catch (IOException e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not instantiate Object from json. JSON value: " + jsonGraph, e);
-            }
-        }
-
 
     }
 
@@ -112,6 +78,7 @@ public class HzGraphDao implements GraphDao {
         private Modification modification;
         private UUID[] readyItems;
 
+        @SuppressWarnings("RedundantIfStatement")
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -169,7 +136,7 @@ public class HzGraphDao implements GraphDao {
             return null;
         }
 
-        return graphRow.parse();
+        return graphRow.graph;
     }
 
     @Override

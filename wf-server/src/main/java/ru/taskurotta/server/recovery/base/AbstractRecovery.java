@@ -9,6 +9,7 @@ import ru.taskurotta.backend.config.model.ExpirationPolicy;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 import ru.taskurotta.server.config.expiration.impl.TimeoutPolicy;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +52,11 @@ public abstract class AbstractRecovery implements Runnable {
         logger.debug("Initializing recovery config with actorPrefs[{}], expPolicies[{}]", actorPrefs, expPolicies);
         if (actorPrefs != null) {
             try {
-                expirationPolicyMap = new HashMap<String, Map<TimeoutType, ExpirationPolicy>>();
+                expirationPolicyMap = new HashMap<>();
                 for(ActorPreferences actorConfig: actorPrefs) {
                     Properties actorTimeoutPolicies = actorConfig.getTimeoutPolicies();
                     if(actorTimeoutPolicies!=null && !actorTimeoutPolicies.isEmpty()) { //actor has expiration timeouts defined, try to initialize their policies
-                        Map<TimeoutType, ExpirationPolicy> actorPolicyInstancesMap = new HashMap<TimeoutType, ExpirationPolicy>();
+                        Map<TimeoutType, ExpirationPolicy> actorPolicyInstancesMap = new HashMap<>();
 
                         for(Object timeoutType: actorTimeoutPolicies.keySet()) {//iterating over actor's timeoutType-policy map
                             ExpirationPolicyConfig expPolicyConf = getPolicyByName(actorTimeoutPolicies.getProperty(timeoutType.toString()), expPolicies);
@@ -64,7 +65,7 @@ public abstract class AbstractRecovery implements Runnable {
                                 Class<?> expPolicyClass = Class.forName(expPolicyConf.getClassName());
                                 Properties expPolicyProps = expPolicyConf.getProperties();
 
-                                ExpirationPolicy instance = null;
+                                ExpirationPolicy instance;
                                 if (expPolicyProps != null) {
                                     instance = (ExpirationPolicy) expPolicyClass.getConstructor(Properties.class).newInstance(expPolicyProps);
                                 } else {
@@ -82,7 +83,7 @@ public abstract class AbstractRecovery implements Runnable {
                 }
 
             } catch (Exception e) {
-                logger.error("AbstractSimpleScheduledRecovery#initConfigs invocation failed! actorPrefs[" + actorPrefs + "]", e);
+                logger.error("AbstractSimpleScheduledRecovery#initConfigs invocation failed! actorPrefs[" + Arrays.toString(actorPrefs) + "]", e);
                 throw new RuntimeException(e);
             }
         }

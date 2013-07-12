@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.checkpoint.model;
 
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.TimeoutType;
+
+import java.util.UUID;
 
 /**
  * Query command for listing Checkpoints from CheckpointService,
@@ -16,24 +16,29 @@ public class CheckpointQuery {
     //filter by max checkpoint time
     private long maxTime;
 
-    //filter by entity type
-    private String entityType;
+    //filter by actorId
+    private String actorId;
 
     //filter by timeout type
     private TimeoutType timeoutType;
 
-    //Filter by entity uuid
-    private UUID uuid;
+    //Filter by taskId
+    private UUID taskId;
 
-    public CheckpointQuery(TimeoutType timeoutType, String entityType, long maxTime, long minTime) {
+    //Filter by processId
+    private UUID processId;
+
+    public CheckpointQuery(TimeoutType timeoutType, UUID taskId, UUID processId, String actorId, long maxTime, long minTime) {
         this.timeoutType = timeoutType;
-        this.entityType = entityType;
+        this.taskId = taskId;
+        this.processId = processId;
+        this.actorId = actorId;
         this.maxTime = maxTime;
         this.minTime = minTime;
     }
 
     public CheckpointQuery(TimeoutType timeoutType) {
-        this(timeoutType, null, -1, -1);
+        this(timeoutType, null, null, null, -1, -1);
     }
 
     public long getMinTime() {
@@ -52,13 +57,6 @@ public class CheckpointQuery {
         this.maxTime = maxTime;
     }
 
-    public String getEntityType() {
-        return entityType;
-    }
-
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
 
     public TimeoutType getTimeoutType() {
         return timeoutType;
@@ -68,55 +66,67 @@ public class CheckpointQuery {
         this.timeoutType = timeoutType;
     }
 
-    public UUID getUuid() {
-        return uuid;
+    public String getActorId() {
+        return actorId;
     }
 
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
+    }
+
+    public UUID getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
+    }
+
+    public UUID getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
     }
 
     @Override
     public String toString() {
-        return "CheckpointQuery [minTime=" + minTime + ", maxTime=" + maxTime
-                + ", entityType=" + entityType + ", timeoutType=" + timeoutType
-                + ", uuid=" + uuid + "]";
+        return "CheckpointQuery{" +
+                "minTime=" + minTime +
+                ", maxTime=" + maxTime +
+                ", actorId='" + actorId + '\'' +
+                ", timeoutType=" + timeoutType +
+                ", taskId=" + taskId +
+                ", processId=" + processId +
+                "} " + super.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CheckpointQuery)) return false;
+
+        CheckpointQuery that = (CheckpointQuery) o;
+
+        if (maxTime != that.maxTime) return false;
+        if (minTime != that.minTime) return false;
+        if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
+        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (timeoutType != that.timeoutType) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((entityType == null) ? 0 : entityType.hashCode());
-        result = prime * result + (int) (maxTime ^ (maxTime >>> 32));
-        result = prime * result + (int) (minTime ^ (minTime >>> 32));
-        result = prime * result
-                + ((timeoutType == null) ? 0 : timeoutType.hashCode());
+        int result = (int) (minTime ^ (minTime >>> 32));
+        result = 31 * result + (int) (maxTime ^ (maxTime >>> 32));
+        result = 31 * result + (actorId != null ? actorId.hashCode() : 0);
+        result = 31 * result + (timeoutType != null ? timeoutType.hashCode() : 0);
+        result = 31 * result + (taskId != null ? taskId.hashCode() : 0);
+        result = 31 * result + (processId != null ? processId.hashCode() : 0);
         return result;
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CheckpointQuery other = (CheckpointQuery) obj;
-        if (entityType == null) {
-            if (other.entityType != null)
-                return false;
-        } else if (!entityType.equals(other.entityType))
-            return false;
-        if (maxTime != other.maxTime)
-            return false;
-        if (minTime != other.minTime)
-            return false;
-        if (timeoutType != other.timeoutType)
-            return false;
-        return true;
-    }
-
 }

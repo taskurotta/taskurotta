@@ -14,11 +14,11 @@ spreader:
       instance:
         context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 1
+          count: 10
           startTasks: true
           startTasksInBackground: false
           endpoint: "http://localhost:8080"
-          threadPoolSize: 15
+          threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
 
@@ -37,7 +37,7 @@ profiler:
       class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
       instance:
         singleton: true
-        logPeriod: 30000
+        logPeriod: 20000
 
 actor:
   - MathActionDecider:
@@ -48,7 +48,7 @@ actor:
       policyConfig: MainPolicyConfig
       count: 1
       properties:
-        failover: "10 SECONDS"
+        failover: "25 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.example.calculate.worker.Multiplier
@@ -58,7 +58,7 @@ actor:
       policyConfig: MainPolicyConfig
       count: 1
       properties:
-        failover: "10 SECONDS"
+        failover: "25 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.example.calculate.worker.NumberGenerator
@@ -66,9 +66,9 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 5
+      count: 1
       properties:
-        failover: "10 SECONDS"
+        failover: "25 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.example.calculate.worker.Summarizer
@@ -78,4 +78,4 @@ actor:
       policyConfig: MainPolicyConfig
       count: 1
       properties:
-        failover: "10 SECONDS"
+        failover: "25 SECONDS"

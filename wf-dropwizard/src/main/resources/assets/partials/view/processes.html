@@ -32,7 +32,7 @@
                    ng-href="#/processes/process/{{process.processUuid}}">{{process.processUuid}}</a>
             </td>
             <td>
-                <a ng-href="#/tasks/task/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
+                <a ng-href="#/tasks/task/{{process.processUuid}}/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
             </td>
             <td>
                 {{process.customId}}
@@ -48,6 +48,6 @@
         </tbody>
     </table>
 
-    <div>Total: <b>{{queuesPage.items.length}}</b> processes</div>
+    <div>Total: <b>{{processesPage.totalCount}}</b> processes</div>
 
 </div>

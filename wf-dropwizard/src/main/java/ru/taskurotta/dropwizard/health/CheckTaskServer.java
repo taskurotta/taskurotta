@@ -1,13 +1,11 @@
 package ru.taskurotta.dropwizard.health;
 
+import com.yammer.metrics.core.HealthCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.util.ActorDefinition;
-
-import com.yammer.metrics.core.HealthCheck;
 
 public class CheckTaskServer extends HealthCheck {
 

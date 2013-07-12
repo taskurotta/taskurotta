@@ -1,5 +1,10 @@
 package ru.taskurotta.backend.ora.queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,13 +15,8 @@ import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.sql.DataSource;
 
 import static ru.taskurotta.backend.ora.tools.SqlResourceCloser.closeResources;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.exception.BackendCriticalException;
 
 /**
  * Handler containing logic for queues auto creation.
@@ -64,9 +64,9 @@ public class QueuesCreationHandler {
 
     public void registerAndCreateQueue(String actorId, String queueTableName) {
         synchronized (queueNames) {
-            if (!"default".equals(queueTableName) && !"default".equals(actorId)) {
+            if (!"default".equalsIgnoreCase(queueTableName) && !"default".equalsIgnoreCase(actorId)) {
                 if (!queueNames.containsKey(actorId)) {
-                    log.warn("Create queue for target [{}]", actorId);
+                    log.info("Creating queue for target [{}]", actorId);
                     long queueId = registerQueue(actorId, queueTableName);
                     if (queueTableName == null) {
                         queueTableName = TABLE_PREFIX + queueId;
@@ -82,21 +82,22 @@ public class QueuesCreationHandler {
     }
 
     public void createQueue(String queueTableName) {
-        log.warn("!!!!! Creating queue = " + queueTableName);
+        log.debug("!!!!! Creating queue = " + queueTableName);
         Connection connection = null;
         Statement statement = null;
 
-        if (!"default".equals(queueTableName)) {
+        if (!"default".equalsIgnoreCase(queueTableName)) {
             try {
                 connection = dataSource.getConnection();
                 connection.setAutoCommit(false);
                 String createQuery = "CREATE TABLE :queue_name \n" +
                         "   (\n" +
                         " TASK_ID VARCHAR(36) NOT NULL ENABLE, \n" +
+                        " PROCESS_ID VARCHAR(36) NOT NULL ENABLE, \n" +
                         " STATUS_ID NUMBER NOT NULL ENABLE, \n" +
                         " TASK_LIST VARCHAR(54) NOT NULL ENABLE, \n" +
-                        " DATE_START TIMESTAMP, \n" +
-                        " INSERT_DATE TIMESTAMP, \n" +
+                        " DATE_START NUMBER, \n" +
+                        " INSERT_DATE NUMBER, \n" +
                         " PRIMARY KEY (TASK_ID))";
                 String indexQuery = "CREATE INDEX :queue_name_IND ON :queue_name (STATUS_ID, DATE_START)";
                 statement = connection.createStatement();

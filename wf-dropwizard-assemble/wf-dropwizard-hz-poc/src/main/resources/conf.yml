@@ -18,29 +18,24 @@ actorConfig:
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
-  retryTimes: 10
-  recovery.schedule: "*/35 * * * * ?"
-  recovery.period: 2
-  recovery.period.unit: "DAYS"
-  recovery.timeStep: 1
-  recovery.timeStep.unit: "DAYS"
-  hz.port: 7777
-  hz.queue.name: "hzTestQueue"
-  hz.decision.queue.list: "decisionQueueNamesList"
-  hz.queues.per.node: 3
+  hz.mancenter.enabled: false
+#  hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
+
+#resourceBeans:
+#  - taskStarterResource
+#  - taskReleaserResource
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
+        ru.taskurotta.dropwizard.server.core: INFO
         ru.taskurotta.server: INFO
+        ru.taskurotta.server.recovery.RetryEnqueueRecovery: DEBUG
+        ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server: INFO
-        ru.taskurotta.backend.hz.storage: DEBUG
-        ru.taskurotta.backend.checkpoint: DEBUG
-        ru.taskurotta.backend.hz.checkpoint: DEBUG
-        com.yammer: WARN
+        com.yammer: INFO
     file:
         enabled: true
         archive: true

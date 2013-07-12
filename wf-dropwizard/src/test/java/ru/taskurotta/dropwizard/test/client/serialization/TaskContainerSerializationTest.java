@@ -7,8 +7,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskContainerWrapper;
 
 import java.io.File;
 

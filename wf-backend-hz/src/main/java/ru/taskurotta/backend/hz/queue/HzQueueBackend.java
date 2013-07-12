@@ -6,14 +6,15 @@ import com.hazelcast.core.InstanceEvent;
 import com.hazelcast.core.InstanceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,11 +33,11 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private CheckpointService checkpointService;
+    private CheckpointService checkpointService = new MemoryCheckpointService();//default, can be overridden with setter
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
-    private String queueListName = "tsQueuesList";
+    private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
 
     public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
@@ -49,8 +50,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
+        Set<String> queueNamesSet = hazelcastInstance.<String>getSet(queueListName);
+        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(queueNamesSet));
         List<String> result = new ArrayList<>(pageSize);
-        Set<String> queueNamesSet = hazelcastInstance.getSet(queueListName);
         String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
         if (queueNames.length > 0) {
             int pageStart = (pageNum - 1) * pageSize;
@@ -66,19 +68,14 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     }
 
     @Override
-    public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
-        List<QueuedTaskVO> result = new ArrayList<>();
-        IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(queueName);
-        QueuedTaskVO[] queueItems = queue.toArray(new QueuedTaskVO[queue.size()]);
+    public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
+        List<TaskQueueItem> result = new ArrayList<>();
+        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
+        TaskQueueItem[] queueItems = queue.toArray(new TaskQueueItem[queue.size()]);
 
         if (queueItems.length > 0) {
             for (int i = (pageNum - 1) * pageSize; i < ((pageSize * pageNum >= queueItems.length) ? queueItems.length : pageSize * pageNum); i++) {
-                QueuedTaskVO item = queueItems[i];
-                QueuedTaskVO qt = new QueuedTaskVO();
-                qt.setId(item.getId());
-                qt.setInsertTime(item.getInsertTime());
-                qt.setStartTime(item.getStartTime());
-                result.add(qt);
+                result.add(queueItems[i]);
             }
         }
         return new GenericPage<>(result, pageNum, pageSize, queueItems.length);
@@ -105,34 +102,35 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     }
 
     @Override
-    @Profiled(notNull = true)
-    public UUID poll(String actorId, String taskList) {
-        IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+    public TaskQueueItem poll(String actorId, String taskList) {
+        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
 
-        UUID taskId = null;
+        TaskQueueItem result = null;
         try {
+            result = queue.poll(pollDelay, pollDelayUnit);
 
-            QueuedTaskVO queueItem = queue.poll(pollDelay, pollDelayUnit);
-
-            if (queueItem != null) {
-                taskId = queueItem.getId();
-                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
+            if (result != null) {
+                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, result.getTaskId(), result.getProcessId(), actorId, System.currentTimeMillis()));
             }
 
         } catch (InterruptedException e) {
             logger.error("Thread was interrupted at poll, releasing it", e);
         }
 
-        logger.debug("poll() returns taskId [{}]. Queue.size: {}", taskId, queue.size());
+        logger.debug("poll() returns taskId [{}]. Queue.size: {}", result, queue.size());
 
-        return taskId;
+        return result;
 
     }
 
     @Override
-    public void pollCommit(String actorId, UUID taskId) {
-        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
-        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
+    public void pollCommit(String actorId, UUID taskId, UUID processId) {
+        int removedScheduleToStart = checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
+        int removedPollToCommit = checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
+
+        if(removedScheduleToStart<1 || removedPollToCommit<1) {
+            logger.warn("Checkpoints consistency violated: removed [{}] TASK_SCHEDULE_TO_START and [{}] TASK_POLL_TO_COMMIT checkpoint. Values should not be empty.", removedScheduleToStart, removedPollToCommit);
+        }
     }
 
     @Override
@@ -143,17 +141,18 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             startTime = System.currentTimeMillis();
         }
 
-        IQueue<QueuedTaskVO> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
-        QueuedTaskVO item = new QueuedTaskVO();
-        item.setId(taskId);
+        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+        TaskQueueItem item = new TaskQueueItem();
+        item.setTaskId(taskId);
+        item.setProcessId(processId);
         item.setStartTime(startTime);
-        item.setInsertTime(System.currentTimeMillis());
+        item.setEnqueueTime(System.currentTimeMillis());
         item.setTaskList(taskList);
         queue.add(item);
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 

@@ -1,18 +1,16 @@
 package ru.taskurotta.dropwizard.test.client.serialization;
 
-import java.io.File;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.util.ActorDefinition;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
 
 public class ActorDefinitionSerializationTest {
 

@@ -15,7 +15,7 @@
 		<encoder>
 			<pattern>%d [%-15.15t] %-5p %-30.30c{1} - %m%n</pattern>
 		</encoder>
-		<file>target/test.log</file>
+		<file>target/ru.taskurotta.test.log</file>
 	</appender>
 
 	<logger name="org.apache.activemq" level="WARN" />

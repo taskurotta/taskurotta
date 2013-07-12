@@ -1,10 +1,10 @@
 package ru.taskurotta.backend.checkpoint;
 
-import java.util.List;
-import java.util.UUID;
-
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Service interface for managing checkpoints referred by timeouts.
@@ -39,9 +39,9 @@ public interface CheckpointService {
     public List<Checkpoint> listCheckpoints(CheckpointQuery command);
 
     /**
-     * Removes all checkpoints of given entity and timeout type
+     * Removes all checkpoints of the timeout type for given task
      * @return number of removed checkpoints
      */
-    public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType);
+    public int removeTaskCheckpoints(UUID taskId, UUID processId, TimeoutType timeoutType);
 
 }

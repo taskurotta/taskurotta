@@ -1,15 +1,5 @@
 package ru.taskurotta.backend.ora.queue;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
@@ -20,11 +10,19 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.ora.domain.SimpleTask;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.exception.BackendCriticalException;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * User: moroz, dudin
@@ -117,28 +115,27 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
         if (startTime == 0L) {
             startTime = System.currentTimeMillis();
         }
-        dbDAO.enqueueTask(new SimpleTask(taskId, new Date(startTime), 0, null), tableName);
+        dbDAO.enqueueTask(new SimpleTask(taskId, processId, startTime, 0, null), tableName);
 
     }
 
     @Override
-    @Profiled
-    public UUID poll(String actorId, String taskList) {
+    public TaskQueueItem poll(String actorId, String taskList) {
         String queueName = getTableName(actorId, taskList);
 
-        final UUID taskId = dbDAO.pollTask(queueName);
-        if (taskId != null) {//there can be no tasks in the queue
-            Checkpoint pollCheckpoint = new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis());
+        final TaskQueueItem result = dbDAO.pollTask(queueName);
+        if (result != null) {//there can be no tasks in the queue
+            Checkpoint pollCheckpoint = new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, result.getTaskId(), result.getProcessId(), actorId, System.currentTimeMillis());
             checkpointService.addCheckpoint(pollCheckpoint);
-            dbDAO.deleteTask(taskId, queueName);
+            dbDAO.deleteTask(result.getTaskId(), result.getProcessId(), queueName);
         }
-        return taskId;
+        return result;
     }
 
     @Override
     @Profiled
-    public void pollCommit(String actorId, UUID taskId) {
-        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
+    public void pollCommit(String actorId, UUID taskId, UUID processId) {
+        checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
 
@@ -181,24 +178,9 @@ public class OraQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    @Profiled
-    public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
-        List<QueuedTaskVO> result = null;
-        GenericPage<QueueItem> tmpPage = dbDAO.getQueueContent(queueName, pageNum, pageSize);
-
-        if (tmpPage != null && !tmpPage.getItems().isEmpty()) {
-            result = new ArrayList<QueuedTaskVO>();
-            for (QueueItem qi : tmpPage.getItems()) {
-                QueuedTaskVO qt = new QueuedTaskVO();
-                qt.setId(qi.getId());
-                qt.setTaskList(qi.getTaskList());
-                qt.setInsertTime(qi.getInsertDate() != null ? qi.getInsertDate().getTime() : 0);
-                qt.setStartTime(qi.getStartDate() != null ? qi.getStartDate().getTime() : 0);
-                result.add(qt);
-            }
-        }
-
-        return new GenericPage<QueuedTaskVO>(result, tmpPage.getPageNumber(), tmpPage.getPageSize(), tmpPage.getTotalCount());
+    public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
+        List<TaskQueueItem> result = null;
+        return dbDAO.getQueueContent(queueName, pageNum, pageSize);
     }
 
     @Override

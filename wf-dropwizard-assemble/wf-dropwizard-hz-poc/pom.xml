@@ -8,7 +8,7 @@
     <parent>
         <groupId>ru.taskurotta</groupId>
         <artifactId>wf-dropwizard-assemble</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>wf-dropwizard-hz-poc</artifactId>
@@ -25,6 +25,11 @@
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>wf-backend-hz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-test</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -85,6 +90,29 @@
                     </archive>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.aspectj</groupId>
+                                    <artifactId>aspectjweaver</artifactId>
+                                    <version>1.7.2</version>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 

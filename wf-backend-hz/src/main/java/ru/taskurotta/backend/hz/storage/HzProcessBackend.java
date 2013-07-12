@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.hz.storage;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -15,6 +15,7 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,16 +46,18 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setStartTaskUuid(task.getTaskId());
         processesStorage.put(task.getProcessId(), process);
 
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
     }
 
     @Override
     public void startProcessCommit(TaskContainer task) {
 
         //should be at the end of the method
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.removeEntityCheckpoints(task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
+        Checkpoint checkpoint = new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(),task.getProcessId(), task.getActorId(), task.getStartTime());
+        checkpointService.addCheckpoint(checkpoint);
+        logger.debug("PROCESS_CHECKPOINT: added checkpoint [{}]", checkpoint);
+        checkpointService.removeTaskCheckpoints(task.getTaskId(), task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
     }
 
     @Override
@@ -66,8 +69,9 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         processesStorage.put(processId, process);
 
         //should be at the end of the method
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+        int removed = checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
+        logger.debug("PROCESS_CHECKPOINT: removed checkpoint for processId[{}], taskId[{}], type[{}], result [{}]", processId, process.getStartTaskUuid(), TimeoutType.PROCESS_START_TO_CLOSE, removed);
+        checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 
     @Override
@@ -91,36 +95,44 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
         processes = processesStorage.values().toArray(processes);
         if (!processesStorage.isEmpty()) {
-            for (int i = (pageNumber - 1) * pageSize; i <= ((pageSize * pageNumber >= (processes.length)) ? (processes.length) - 1 : pageSize * pageNumber - 1); i++) {
-                result.add(processes[i]);
-            }
+            int pageEnd = pageSize * pageNumber >= processes.length ? processes.length : pageSize * pageNumber;
+            int pageStart = (pageNumber - 1) * pageSize;
+            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
         }
-        return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
+        return new GenericPage<>(result, pageNumber, pageSize, processes.length);
 
     }
 
     @Override
     public List<ProcessVO> findProcesses(String type, final String id) {
         List<ProcessVO> result = new ArrayList<>();
+
         if ((id != null) && (!id.isEmpty())) {
-            if (SEARCH_BY_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
-                        return process.getProcessUuid().toString().startsWith(id);
-                    }
-                }));
-            } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
-                        return process.getCustomId().startsWith(id);
-                    }
-                }));
+
+            switch (type) {
+                case SEARCH_BY_ID:
+                    result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+                        @Override
+                        public boolean apply(ProcessVO processVO) {
+                            return processVO.getProcessUuid().toString().startsWith(id);
+                        }
+                    }));
+                    break;
+
+                case SEARCH_BY_CUSTOM_ID:
+                    result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+                        @Override
+                        public boolean apply(ProcessVO processVO) {
+                            return processVO.getCustomId().startsWith(id);
+                        }
+                    }));
+                    break;
+
+                default:
+                    break;
             }
         }
+
         return result;
     }
 

@@ -1,14 +1,9 @@
 package ru.fccland.wf.hazelcast;
 
-import com.hazelcast.config.Config;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
 import ru.fccland.wf.ws.request.RequestService;
 import ru.fccland.wf.ws.usersession.UserSessionService;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Queue;
 
 /**
  * Created by void 14.03.13 12:37

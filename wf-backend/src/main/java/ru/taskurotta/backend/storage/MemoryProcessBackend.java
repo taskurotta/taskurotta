@@ -1,13 +1,6 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
+import com.google.common.collect.Collections2;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
@@ -16,6 +9,13 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -36,16 +36,16 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         process.setStartTaskUuid(task.getTaskId());
         processesStorage.put(task.getProcessId(), process);
 
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
     }
 
     @Override
     public void startProcessCommit(TaskContainer task) {
 
         //should be at the end of the method
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.removeEntityCheckpoints(task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
+        checkpointService.removeTaskCheckpoints(task.getTaskId(), task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
     }
 
     @Override
@@ -57,8 +57,8 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         processesStorage.put(processId, process);
 
         //should be at the end of the method
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        checkpointService.removeEntityCheckpoints(processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
+        checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
+        checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 
     @Override
@@ -66,6 +66,7 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         return checkpointService;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public void setCheckpointService(CheckpointService checkpointService) {
         this.checkpointService = checkpointService;
     }
@@ -78,38 +79,32 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     @Override
     public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
         List<ProcessVO> result = new ArrayList<>();
-        ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
-        processes = processesStorage.values().toArray(processes);
         if (!processesStorage.isEmpty()) {
-            for (int i = (pageNumber - 1) * pageSize; i <= ((pageSize * pageNumber >= (processes.length)) ? (processes.length) - 1 : pageSize * pageNumber - 1); i++) {
-                result.add(processes[i]);
-            }
+            ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
+            processes = processesStorage.values().toArray(processes);
+            int pageStart = (pageNumber - 1) * pageSize;
+            int pageEnd = (pageSize * pageNumber >= processes.length) ? processes.length : pageSize * pageNumber;
+            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
         }
-        return new GenericPage<ProcessVO>(result, pageNumber, pageSize, processes.length);
+        return new GenericPage<>(result, pageNumber, pageSize, processesStorage.values().size());
 
     }
 
     @Override
-    public List<ProcessVO> findProcesses(String type, final String id) {
+    public List<ProcessVO> findProcesses(final String type, final String id) {
         List<ProcessVO> result = new ArrayList<>();
         if ((id != null) && (!id.isEmpty())) {
-            if (SEARCH_BY_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
+            result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
+                @Override
+                public boolean apply(ProcessVO process) {
+                    if (SEARCH_BY_ID.equals(type)) {
                         return process.getProcessUuid().toString().startsWith(id);
-                    }
-                }));
-            } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
-                result.addAll(CollectionUtils.filter(processesStorage.values(), new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        ProcessVO process = (ProcessVO) o;
+                    } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
                         return process.getCustomId().startsWith(id);
                     }
-                }));
-            }
+                    return false;
+                }
+            }));
         }
         return result;
     }

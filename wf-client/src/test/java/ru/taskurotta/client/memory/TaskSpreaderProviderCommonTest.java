@@ -38,7 +38,7 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
 
         // task should be in queue
-        assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, taskId));
+        assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, taskId, deciderTask.getProcessId()));
 
         Task taskFromQueue = workerTaskSpreader.poll();
 
@@ -46,14 +46,14 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         assertEquals(taskId, taskFromQueue.getId());
 
         // task should be in "process" state
-        assertTrue(isTaskInProgress(taskId));
+        assertTrue(isTaskInProgress(taskId, deciderTask.getProcessId()));
 
         TaskDecision taskDecision = new TaskDecisionImpl(taskId, processId, null, null);
         workerTaskSpreader.release(taskDecision);
 
         // task should be in "done" state
-        Assert.assertFalse(isTaskInProgress(taskId));
-        Assert.assertTrue(isTaskReleased(taskId));
+        Assert.assertFalse(isTaskInProgress(taskId, deciderTask.getProcessId()));
+        Assert.assertTrue(isTaskReleased(taskId, deciderTask.getProcessId()));
 
     }
 
@@ -79,7 +79,6 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         // create taskA
 
         UUID taskIdA = UUID.randomUUID();
-        System.err.println("taskIdA = " + taskIdA);
         Task taskA = deciderTask(taskIdA, TaskType.DECIDER_START, "taskA", null);
 
         // Add taskA to queue
@@ -142,20 +141,20 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
 
         // check all in done state
         // task A should be in "done" state
-        Assert.assertTrue(isTaskReleased(taskIdA));
+        Assert.assertTrue(isTaskReleased(taskIdA, taskA.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdA).getState().getValue());
         // task B should be in "done" state
-        Assert.assertTrue(isTaskReleased(taskIdB));
+        Assert.assertTrue(isTaskReleased(taskIdB, taskB.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdB).getState().getValue());
         // task C should be in "done" state
-        Assert.assertTrue(isTaskReleased(taskIdC));
+        Assert.assertTrue(isTaskReleased(taskIdC, taskC.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.done, taskDao.findById(taskIdC).getState().getValue());
         // workTaskA should be in "wait" state
-        Assert.assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskIdA));
+        Assert.assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskIdA, workerTaskA.getProcessId()));
 
         Task workerQueueTaskA = workerTaskSpreader.poll();
 
-        Assert.assertTrue(isTaskInProgress(workerTaskIdA));
+        Assert.assertTrue(isTaskInProgress(workerTaskIdA, workerTaskA.getProcessId()));
 //        assertEquals(TaskStateObject.STATE.process, taskDao.findById(workerTaskIdA).getState().getValue());
     }
 

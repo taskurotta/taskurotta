@@ -1,8 +1,8 @@
 <aspectj>
 
     <aspects>
-        <concrete-aspect name="ru.taskurotta.test.monkey.MonkeyAspect"
-                         extends="ru.taskurotta.test.monkey.AbstractMonkeyAspect">
+        <concrete-aspect name="ru.taskurotta.ru.taskurotta.test.monkey.MonkeyAspect"
+                         extends="ru.taskurotta.ru.taskurotta.test.monkey.AbstractMonkeyAspect">
             <pointcut name="pointCut"
                       expression="execution(* ru.taskurotta.backend.queue.MemoryQueueBackend.pollCommit(..))"/>
 

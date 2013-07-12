@@ -1,5 +1,18 @@
 package ru.taskurotta.backend.queue;
 
+import net.sf.cglib.core.CollectionUtils;
+import net.sf.cglib.core.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.TimeoutType;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.checkpoint.model.Checkpoint;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.util.ActorDefinition;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -13,19 +26,6 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.util.ActorDefinition;
 
 /**
  * User: romario
@@ -94,41 +94,31 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public GenericPage<QueuedTaskVO> getQueueContent(String queueName, int pageNum, int pageSize) {
-        List<QueuedTaskVO> result = new ArrayList<QueuedTaskVO>();
+    public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
+        List<TaskQueueItem> result = new ArrayList<TaskQueueItem>();
         DelayedTaskElement[] tasks = new DelayedTaskElement[getQueue(queueName).size()];
         tasks = getQueue(queueName).toArray(tasks);
 
         if (tasks.length > 0) {
             for (int i = (pageNum - 1) * pageSize; i <= ((pageSize * pageNum >= (tasks.length)) ? (tasks.length) - 1 : pageSize * pageNum - 1); i++) {
                 DelayedTaskElement dte = tasks[i];
-                QueuedTaskVO qt = new QueuedTaskVO();
-                qt.setId(dte.taskId);
-                qt.setInsertTime(dte.enqueueTime);
-                qt.setStartTime(dte.startTime);
-                result.add(qt);
+                result.add(dte);
             }
         }
-        return new GenericPage<QueuedTaskVO>(result, pageNum, pageSize, tasks.length);
+        return new GenericPage<TaskQueueItem>(result, pageNum, pageSize, tasks.length);
     }
 
 
     /**
      * Helper class for Delayed queue
      */
-    private static class DelayedTaskElement implements Delayed {
+    private static class DelayedTaskElement extends TaskQueueItem implements Delayed {
 
-        protected UUID taskId;
-
-        protected long startTime;
-
-        protected long enqueueTime;
-
-        public DelayedTaskElement(UUID taskId, long startTime, long enqueueTime) {
-
-            this.taskId = taskId;
-            this.startTime = startTime;
-            this.enqueueTime = enqueueTime;
+        public DelayedTaskElement(UUID taskId, UUID processId, long startTime, long enqueueTime) {
+            setTaskId(taskId);
+            setProcessId(processId);
+            setStartTime(startTime);
+            setEnqueueTime(enqueueTime);
         }
 
         @Override
@@ -155,6 +145,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
             DelayedTaskElement that = (DelayedTaskElement) o;
 
             if (!taskId.equals(that.taskId)) return false;
+            if (!processId.equals(that.processId)) return false;
 
             return true;
         }
@@ -169,40 +160,35 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public UUID poll(String actorId, String taskList) {
+    public TaskQueueItem poll(String actorId, String taskList) {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
-        UUID taskId = null;
+        TaskQueueItem result = null;
+
         try {
+            result = queue.poll(pollDelay, pollDelayUnit);
 
-            DelayedTaskElement delayedTaskObject = queue.poll(pollDelay, pollDelayUnit);
-
-            if (delayedTaskObject != null) {
-                taskId = delayedTaskObject.taskId;
-                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, actorId, System.currentTimeMillis()));
+            if (result != null) {
+                UUID taskId = result.getTaskId();
+                UUID processId = result.getProcessId();
+                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, processId, actorId, System.currentTimeMillis()));
             }
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
-
-            // TODO: Where general policy about exceptions ?
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
+            logger.error("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
+            throw new BackendCriticalException("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
         }
 
-        logger.debug("poll() returns taskId [{}]. Queue.size: {}", taskId, queue.size());
+        logger.debug("Task poll for actorId[{}], taskList[{}] returned item [{}]. Remaining queue.size: [{}]", actorId, taskList, result, queue.size());
 
-        return taskId;
+        return result;
 
     }
 
     @Override
-    public void pollCommit(String actorId, UUID taskId) {
-        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_SCHEDULE_TO_START);
-        checkpointService.removeEntityCheckpoints(taskId, TimeoutType.TASK_POLL_TO_COMMIT);
+    public void pollCommit(String actorId, UUID taskId, UUID processId) {
+        checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
+        checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override
@@ -214,11 +200,11 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         }
 
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
-        queue.add(new DelayedTaskElement(taskId, startTime, System.currentTimeMillis()));
+        queue.add(new DelayedTaskElement(taskId, processId, startTime, System.currentTimeMillis()));
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, actorId, startTime));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, actorId, startTime));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
@@ -239,10 +225,10 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         return queue;
     }
 
-    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId) {
+    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
 
-        DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, 0, System.currentTimeMillis());
+        DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, processId, 0, System.currentTimeMillis());
 
         return queue.contains(delayedTaskElement);
     }

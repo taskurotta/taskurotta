@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
+
+    <context:property-placeholder/>
+
+    <hz:client id="hazelcastInstance" />
+
+    <!--<hz:hazelcast id="hazelcastInstance">-->
+        <!--<hz:config>-->
+            <!--<hz:instance-name>client</hz:instance-name>-->
+
+            <!--<hz:properties>-->
+                <!--<hz:property name="hazelcast.logging.type">slf4j</hz:property>-->
+                <!--<hz:property name="hazelcast.jmx">true</hz:property>-->
+                <!--<hz:property name="hazelcast.jmx.detailed">true</hz:property>-->
+            <!--</hz:properties>-->
+        <!--</hz:config>-->
+    <!--</hz:hazelcast>-->
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.hazelcast.HzClientServiceManagerV2">
+        <constructor-arg name="hazelcastInstance" ref="hazelcastInstance" />
+    </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.recipes.parallel.TaskCreator" init-method="createStartTask">
+        <property name="clientServiceManager" ref="clientServiceManager"/>
+        <property name="cycles" value="${cycles}"/>
+        <property name="accuracy" value="${accuracy}"/>
+    </bean>
+
+</beans>

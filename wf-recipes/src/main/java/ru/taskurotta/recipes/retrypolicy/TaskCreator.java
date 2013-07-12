@@ -2,7 +2,6 @@ package ru.taskurotta.recipes.retrypolicy;
 
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
-import ru.taskurotta.recipes.parallel.decider.PiDeciderClient;
 import ru.taskurotta.recipes.retrypolicy.decider.SumDeciderClient;
 
 /**
