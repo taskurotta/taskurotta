@@ -38,13 +38,14 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     /**
      * For tests ONLY
      */
-    public HazelcastTaskServer(){
+    public HazelcastTaskServer() {
 
 
     }
 
     /**
      * For tests ONLY
+     *
      * @param instance
      */
     public static void setInstance(HazelcastTaskServer instance) {
@@ -55,7 +56,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         super(backendBundle);
     }
 
-    public DependencyBackend getDependencyBackend(){
+    public DependencyBackend getDependencyBackend() {
         return dependencyBackend;
     }
 
@@ -117,7 +118,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     /**
      * Callable task for processing taskDecisions
      */
-    public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
+    public class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
         UUID processId;
         UUID taskId;
 
@@ -145,7 +146,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                     throw new IllegalStateException(error);
                 }
                 if (taskServer.processDecision(taskDecision)) {
-                    //TODO: snapshot processsing here?
+                    snapshotService.createSnapshot(processId);
                 }
             } finally {
                 lock.unlock();

@@ -65,7 +65,7 @@ public class SnapshotServiceImpl implements SnapshotService {
     /**
      * For tests ONLY
      *
-     * @return
+     * @return HazelcastInstance
      */
     public HazelcastInstance getHazelcastInstance() {
         return hazelcastInstance;

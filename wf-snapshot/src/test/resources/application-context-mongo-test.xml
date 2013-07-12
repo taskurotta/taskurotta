@@ -7,18 +7,17 @@
 
     <context:annotation-config/>
 
-    <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-        <property name="driverClassName" value="org.h2.Driver"/>
-        <property name="url" value="jdbc:h2:mem:test_mem1;"/>
-        <property name="initialSize" value="1"/>
-        <property name="maxActive" value="1"/>
-        <property name="username" value="sa"/>
-        <property name="password" value="sa"/>
-        <property name="connectionInitSqls">
-            <list value-type="java.lang.String">
-                <value>runscript from 'classpath:import.sql'</value>
-            </list>
-        </property>
+    <bean id="mongo" class="com.mongodb.Mongo">
+        <constructor-arg name="host" value="127.0.0.1"/>
+    </bean>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="taskurotta-mongo"/>
+    </bean>
+
+    <bean id="snapshotDatasource" class="ru.taskurotta.backend.snapshot.datasource.MongoSnapshotDatasource">
+        <constructor-arg ref="mongoTemplate"/>
     </bean>
 
     <bean id="hzInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
@@ -31,15 +30,9 @@
         </constructor-arg>
     </bean>
 
-    <bean id="snapshotDatasource" class="ru.taskurotta.backend.snapshot.datasource.JDBCSnapshotDataSource">
-        <constructor-arg>
-            <ref bean="originalDataSource"/>
-        </constructor-arg>
-    </bean>
-
     <bean id="snapshotService" class="ru.taskurotta.backend.snapshot.SnapshotServiceImpl">
         <constructor-arg>
-            <ref bean="snapshotDatasource" />
+            <ref bean="snapshotDatasource"/>
         </constructor-arg>
         <constructor-arg>
             <ref bean="hzInstance"/>

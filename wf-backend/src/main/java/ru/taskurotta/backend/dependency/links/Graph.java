@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.dependency.links;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,7 @@ public class Graph implements Serializable {
     /**
      * generic constructor for deserializer
      */
-    Graph() {
+    public Graph() {
     }
 
     /**

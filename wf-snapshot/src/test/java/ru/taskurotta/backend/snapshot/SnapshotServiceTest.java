@@ -52,7 +52,7 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
         init();
         UUID processId = UUID.randomUUID();
         snapshotService.createSnapshot(processId);
-        Thread.sleep(6000);
+        Thread.sleep(3000);
         List<Snapshot> snapshotList = snapshotService.getSnapshotByProcessId(processId);
         Assert.assertTrue(snapshotList.get(0).getGraph().getGraphId().equals(graph.getGraphId()));
         Assert.assertEquals(graph.getVersion(), 1);
