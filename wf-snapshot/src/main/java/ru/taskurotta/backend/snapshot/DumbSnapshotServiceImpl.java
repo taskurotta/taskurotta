@@ -20,7 +20,7 @@ public class DumbSnapshotServiceImpl implements SnapshotService {
 
     @Override
     public Snapshot getSnapshot(UUID snapshotId) {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -30,6 +30,6 @@ public class DumbSnapshotServiceImpl implements SnapshotService {
 
     @Override
     public void saveSnapshot(Snapshot snapshot) {
-
+        throw new NotImplementedException();
     }
 }
