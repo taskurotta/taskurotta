@@ -1,5 +1,9 @@
 package ru.taskurotta.server.recovery;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
@@ -8,15 +12,10 @@ import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.server.recovery.base.AbstractIterableRecovery;
 import ru.taskurotta.transport.model.TaskContainer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 /**
  * Recovery process that tries to enqueue expired task again.
  * Requires CheckpointService as Checkpoint source.
  * Tries to recover all types of checkpoints if other is not explicitly set
- *
  */
 public class RetryEnqueueRecovery extends AbstractIterableRecovery {
 
@@ -32,10 +31,10 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
         TimeoutType timeoutType = checkpoint.getTimeoutType();
 
         //TODO: make it in some better way
-        if(timeoutType.toString().toUpperCase().startsWith("TASK")) {//try to enqueue task again
+        if (timeoutType.toString().toUpperCase().startsWith("TASK")) {//try to enqueue task again
             logger.debug("Recover checkpoint {}", checkpoint);
             result = retryTaskEnqueue(checkpoint.getEntityGuid());
-        } else if(timeoutType.toString().toUpperCase().startsWith("PROCESS")) {//Try to recover process by enqueue first task
+        } else if (timeoutType.toString().toUpperCase().startsWith("PROCESS")) {//Try to recover process by enqueue first task
             retryProcessStartTaskEnqueue(checkpoint.getEntityGuid());
         } else {
             logger.error("Unknown timeout type [{}] - cannot recover!", timeoutType);
@@ -47,19 +46,19 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
     private boolean retryTaskEnqueue(UUID taskGuid) {
         boolean result = false;
         TaskContainer task = taskBackend.getTask(taskGuid);
-        if(task!=null) {
+        if (task != null) {
             logger.debug("Recover task {}", task);
             queueBackend.enqueueItem(task.getActorId(), task.getTaskId(), task.getProcessId(), task.getStartTime(), extractTaskList(task));
             result = true;
         } else {
-            logger.error("Task not found by GUID["+taskGuid+"]");
+            logger.error("Task not found by GUID[" + taskGuid + "]");
         }
         return result;
     }
 
     private String extractTaskList(TaskContainer task) {
         String result = null;
-        if(task.getOptions()!= null && task.getOptions().getActorSchedulingOptions() != null) {
+        if (task.getOptions() != null && task.getOptions().getActorSchedulingOptions() != null) {
             result = task.getOptions().getActorSchedulingOptions().getTaskList();
         }
         return result;
@@ -95,7 +94,7 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
 
     @Override
     public List<CheckpointService> getCheckpointServices() {
-        if(checkpointServices!=null) {
+        if (checkpointServices != null) {
             return checkpointServices;
         } else {
             return defaultCheckpointServices();
@@ -103,11 +102,11 @@ public class RetryEnqueueRecovery extends AbstractIterableRecovery {
     }
 
     private List<CheckpointService> defaultCheckpointServices() {
-       if(defaultCheckpointServices == null) {
-           defaultCheckpointServices = new ArrayList<CheckpointService>();
-           defaultCheckpointServices.add(taskBackend.getCheckpointService());
-           defaultCheckpointServices.add(queueBackend.getCheckpointService());
-       }
-       return defaultCheckpointServices;
+        if (defaultCheckpointServices == null) {
+            defaultCheckpointServices = new ArrayList<CheckpointService>();
+            defaultCheckpointServices.add(taskBackend.getCheckpointService());
+            defaultCheckpointServices.add(queueBackend.getCheckpointService());
+        }
+        return defaultCheckpointServices;
     }
 }

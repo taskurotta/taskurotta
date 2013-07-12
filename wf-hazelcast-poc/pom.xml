@@ -4,52 +4,52 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>ru.fccland.wf</groupId>
-		<artifactId>wf-seda</artifactId>
-		<version>0.2.0-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>ru.fccland.wf</groupId>
+        <artifactId>wf-seda</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
 
-	<groupId>ru.fccland.wf</groupId>
+    <groupId>ru.fccland.wf</groupId>
     <artifactId>wf-hazelcast-poc</artifactId>
-	<version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
 
-	<packaging>jar</packaging>
-	<name>FCC Land :: WF :: Hazelcast test module</name>
-	<properties>
-		<spring.version>3.2.1.RELEASE</spring.version>
-		<slf4j.version>1.7.2</slf4j.version>
-		<hazelcast.version>2.5</hazelcast.version>
-	</properties>
+    <packaging>jar</packaging>
+    <name>FCC Land :: WF :: Hazelcast test module</name>
+    <properties>
+        <spring.version>3.2.1.RELEASE</spring.version>
+        <slf4j.version>1.7.2</slf4j.version>
+        <hazelcast.version>2.5</hazelcast.version>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>ru.fccland.wf</groupId>
-			<artifactId>wf-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>ru.fccland.wf</groupId>
+            <artifactId>wf-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast</artifactId>
-			<version>${hazelcast.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${hazelcast.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
@@ -58,27 +58,27 @@
         </dependency>
     </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.4.3</version>
-				<configuration>
-					<encoding>UTF-8</encoding>
-					<escapeWindowsPaths>false</escapeWindowsPaths>
-				</configuration>
-			</plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.4.3</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <escapeWindowsPaths>false</escapeWindowsPaths>
+                </configuration>
+            </plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -115,11 +115,11 @@
                 </executions>
             </plugin>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.2.1</version>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>
