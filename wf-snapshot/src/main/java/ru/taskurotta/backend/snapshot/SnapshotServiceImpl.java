@@ -29,6 +29,7 @@ public class SnapshotServiceImpl implements SnapshotService {
     public SnapshotServiceImpl(SnapshotDataSource dataSource, HazelcastInstance hazelcastInstance) {
         this.dataSource = dataSource;
         this.hazelcastInstance = hazelcastInstance;
+        validateDependencies();
         queue = hazelcastInstance.getQueue("snapshotQueue");
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(new Runnable() {
@@ -55,6 +56,15 @@ public class SnapshotServiceImpl implements SnapshotService {
                 }
             }
         });
+    }
+
+    private void validateDependencies(){
+        if (dataSource == null){
+            throw new IllegalStateException("Snapshot dataSource is null :( ");
+        }
+        if (hazelcastInstance == null){
+            throw new IllegalStateException("HazelcastInstance is null :( ");
+        }
     }
 
     @Override
