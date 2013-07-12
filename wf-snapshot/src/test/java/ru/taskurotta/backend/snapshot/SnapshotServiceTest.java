@@ -41,7 +41,7 @@ public class SnapshotServiceTest extends AbstractTestNGSpringContextTests {
         graph = new Graph();
         graph.setGraphId(UUID.randomUUID());
         graph.setVersion(1);
-        Mockito.when(hazelcastTaskServer.getHzInstance()).thenReturn(((SnapshotServiceImpl) snapshotService).getHazelcastInstance());
+        Mockito.when(hazelcastTaskServer.getHzInstance()).thenReturn(((SnapshotServiceAsyncImpl) snapshotService).getHazelcastInstance());
         Mockito.when(hazelcastTaskServer.getDependencyBackend()).thenReturn(dependencyBackend);
         Mockito.when(hazelcastTaskServer.getSnapshotService()).thenReturn(snapshotService);
         Mockito.when(dependencyBackend.getGraph((UUID) Matchers.anyObject())).thenReturn(graph);

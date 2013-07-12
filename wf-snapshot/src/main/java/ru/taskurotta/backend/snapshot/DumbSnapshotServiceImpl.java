@@ -9,6 +9,7 @@ import java.util.UUID;
 
 /**
  * User: greg
+ * Dumb snapshot service for solution without snapshot service
  */
 public class DumbSnapshotServiceImpl implements SnapshotService {
     private final static Logger logger = LoggerFactory.getLogger(DumbSnapshotServiceImpl.class);

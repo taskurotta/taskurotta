@@ -37,7 +37,7 @@
         </constructor-arg>
     </bean>
 
-    <bean id="snapshotService" class="ru.taskurotta.backend.snapshot.SnapshotServiceImpl">
+    <bean id="snapshotService" class="ru.taskurotta.backend.snapshot.SnapshotServiceAsyncImpl">
         <constructor-arg>
             <ref bean="snapshotDatasource" />
         </constructor-arg>

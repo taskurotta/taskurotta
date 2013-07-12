@@ -1,9 +1,7 @@
 package ru.taskurotta.backend.snapshot;
 
-import com.hazelcast.config.Config;
 import com.hazelcast.core.DistributedTask;
 import com.hazelcast.core.ExecutionCallback;
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +16,16 @@ import java.util.concurrent.Future;
 
 /**
  * User: greg
+ * Async and distributed snapshot service based on Hazelcast
  */
-public class SnapshotServiceImpl implements SnapshotService {
+public class SnapshotServiceAsyncImpl implements SnapshotService {
 
-    private final static Logger logger = LoggerFactory.getLogger(SnapshotServiceImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(SnapshotServiceAsyncImpl.class);
     private final SnapshotDataSource dataSource;
     private final BlockingQueue<UUID> queue;
     private HazelcastInstance hazelcastInstance;
 
-    public SnapshotServiceImpl(SnapshotDataSource dataSource, HazelcastInstance hazelcastInstance) {
+    public SnapshotServiceAsyncImpl(SnapshotDataSource dataSource, HazelcastInstance hazelcastInstance) {
         this.dataSource = dataSource;
         this.hazelcastInstance = hazelcastInstance;
         validateDependencies();

@@ -122,6 +122,10 @@ public class GeneralTaskServer implements TaskServer {
     }
 
 
+    public DependencyBackend getDependencyBackend() {
+        return dependencyBackend;
+    }
+
     @Override
     public void release(DecisionContainer taskDecision) {
         // save it firstly

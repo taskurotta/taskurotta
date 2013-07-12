@@ -56,10 +56,6 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         super(backendBundle);
     }
 
-    public DependencyBackend getDependencyBackend() {
-        return dependencyBackend;
-    }
-
     private HazelcastTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
         super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
     }
