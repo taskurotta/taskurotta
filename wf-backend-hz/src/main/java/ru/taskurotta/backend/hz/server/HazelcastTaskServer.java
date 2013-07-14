@@ -142,7 +142,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                     throw new IllegalStateException(error);
                 }
                 if (taskServer.processDecision(taskDecision)) {
-                    snapshotService.createSnapshot(processId);
+                    getSnapshotService().createSnapshot(processId);
                 }
             } finally {
                 lock.unlock();

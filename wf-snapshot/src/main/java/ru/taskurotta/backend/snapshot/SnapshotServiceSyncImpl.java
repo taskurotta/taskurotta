@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.snapshot;
 
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -17,10 +19,12 @@ public class SnapshotServiceSyncImpl implements SnapshotService {
     private final static Logger logger = LoggerFactory.getLogger(SnapshotServiceAsyncImpl.class);
     private final SnapshotDataSource dataSource;
     private final GeneralTaskServer generalTaskServer;
+    private HazelcastInstance hazelcastInstance;
 
-    public SnapshotServiceSyncImpl(SnapshotDataSource dataSource, GeneralTaskServer generalTaskServer) {
+    public SnapshotServiceSyncImpl(SnapshotDataSource dataSource, GeneralTaskServer generalTaskServer, HazelcastInstance hazelcastInstance) {
         this.dataSource = dataSource;
         this.generalTaskServer = generalTaskServer;
+        this.hazelcastInstance = hazelcastInstance;
         validateDependencies();
     }
 
@@ -31,13 +35,19 @@ public class SnapshotServiceSyncImpl implements SnapshotService {
         if (generalTaskServer == null) {
             throw new IllegalStateException("General task server is null :( ");
         }
+        if (hazelcastInstance == null){
+            throw new IllegalStateException("Hazelcust instance is null :( ");
+        }
     }
 
     @Override
     public void createSnapshot(UUID processID) {
         logger.trace("Snapshot creating");
         final Graph graph = generalTaskServer.getDependencyBackend().getGraph(processID);
+        final ILock lock = hazelcastInstance.getLock(graph);
+        lock.lock();
         final Graph copy = graph.copy();
+        lock.unlock();
         final Snapshot snapshot = new Snapshot();
         snapshot.setGraph(copy);
         snapshot.setSnapshotId(UUID.randomUUID());
