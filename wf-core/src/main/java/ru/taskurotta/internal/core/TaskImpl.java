@@ -14,13 +14,17 @@ import java.util.UUID;
  */
 public class TaskImpl implements Task {
 
-    private UUID uuid;
+    private UUID id;
     private UUID processId;
-    private TaskTarget taskTarget;
+    private TaskTarget target;
     private long startTime;
     private int numberOfAttempts = 0;
     private Object[] args;
 	private TaskOptions taskOptions;
+
+    public TaskImpl(){
+
+    }
 
 
     public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
@@ -29,16 +33,16 @@ public class TaskImpl implements Task {
         this.processId = processId;
 
         if (uuid == null) {
-            throw new IllegalArgumentException("uuid can not be null!");
+            throw new IllegalArgumentException("id can not be null!");
         }
 
-        this.uuid = uuid;
+        this.id = uuid;
 
         if (taskTarget == null) {
-            throw new IllegalArgumentException("taskTarget can not be null!");
+            throw new IllegalArgumentException("target can not be null!");
         }
 
-        this.taskTarget = taskTarget;
+        this.target = taskTarget;
         this.startTime = startTime;
         this.numberOfAttempts = numberOfAttempts;
 
@@ -54,7 +58,7 @@ public class TaskImpl implements Task {
 
     @Override
     public UUID getId() {
-        return uuid;
+        return id;
     }
 
     public UUID getProcessId() {
@@ -64,7 +68,7 @@ public class TaskImpl implements Task {
 
     @Override
     public TaskTarget getTarget() {
-        return taskTarget;
+        return target;
     }
 
 
@@ -100,17 +104,17 @@ public class TaskImpl implements Task {
         if (!Arrays.equals(args, task.args)) return false;
         if (!processId.equals(task.processId)) return false;
         if (taskOptions != null ? !taskOptions.equals(task.taskOptions) : task.taskOptions != null) return false;
-        if (!taskTarget.equals(task.taskTarget)) return false;
-        if (!uuid.equals(task.uuid)) return false;
+        if (!target.equals(task.target)) return false;
+        if (!id.equals(task.id)) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = uuid.hashCode();
+        int result = id.hashCode();
         result = 31 * result + processId.hashCode();
-        result = 31 * result + taskTarget.hashCode();
+        result = 31 * result + target.hashCode();
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
         result = 31 * result + numberOfAttempts;
         result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
@@ -121,9 +125,9 @@ public class TaskImpl implements Task {
     @Override
     public String toString() {
         return "TaskImpl{" +
-                "uuid=" + uuid +
+                "id=" + id +
                 ", processId=" + processId +
-                ", taskTarget=" + taskTarget +
+                ", target=" + target +
                 ", startTime=" + startTime +
                 ", numberOfAttempts=" + numberOfAttempts +
                 ", args=" + (args == null ? null : Arrays.asList(args)) +
