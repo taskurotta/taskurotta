@@ -1,37 +1,29 @@
 package ru.taskurotta.bugtest.darg.decider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.bugtest.darg.worker.DArgWorkerClient;
 import ru.taskurotta.core.Promise;
 
-/**
- * Created with IntelliJ IDEA.
- * User: dimadin
- * Date: 15.07.13 17:14
- */
 public class DArgDeciderImpl implements DArgDecider {
 
+    private static Logger logger = LoggerFactory.getLogger(DArgDeciderImpl.class);
     private DArgWorkerClient workerClient;
     private DArgDeciderImpl selfAsync;
 
     @Override
-    public void start(String arg) {
-
+    public void start() {
+        logger.info("Start");
         Promise<String> param = selfAsync.getParam();
 
-        Promise <Integer> result = workerClient.getNumber(param);
+        workerClient.getNumber(param);
 
-        selfAsync.useParam(param);
-
-    }
-
-    @Asynchronous
-    public void useParam(Promise<String> param) {
-        System.out.println("Using param: " + param.get());
     }
 
     @Asynchronous
     public Promise<String> getParam() {
+        logger.info("getParam");
         return Promise.asPromise("Hello, bug!");
     }
 

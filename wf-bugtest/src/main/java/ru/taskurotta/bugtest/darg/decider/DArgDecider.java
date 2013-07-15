@@ -7,6 +7,6 @@ import ru.taskurotta.annotation.Execute;
 public interface DArgDecider {
 
     @Execute
-    public void start(String param);
+    public void start();
 
 }
