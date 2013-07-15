@@ -46,6 +46,7 @@
         <module>wf-backend-hz</module>
         <module>wf-util</module>
         <module>wf-transport</module>
+        <module>wf-snapshot</module>
         <module>wf-test</module>
     </modules>
 
