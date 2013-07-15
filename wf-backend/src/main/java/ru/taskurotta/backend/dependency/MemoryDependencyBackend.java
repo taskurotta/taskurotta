@@ -2,6 +2,7 @@ package ru.taskurotta.backend.dependency;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.dependency.model.TaskDependency;
 import ru.taskurotta.transport.model.ArgContainer;
@@ -188,6 +189,11 @@ public class MemoryDependencyBackend implements DependencyBackend {
         logger.debug("startProcess taskId = [{}]", task.getTaskId());
 
         addDependency(task, null, null, null, false);
+    }
+
+    @Override
+    public Graph getGraph(UUID processId) {
+        return null;
     }
 
 

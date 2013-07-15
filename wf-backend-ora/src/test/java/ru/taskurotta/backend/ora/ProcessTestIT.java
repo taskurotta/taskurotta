@@ -23,7 +23,7 @@ public class ProcessTestIT {
         TaskContainer task1 = SerializationTest.createTaskContainer();
         dao.startProcess(task1);
 
-        dao.finishProcess(task.getProcessId(), "Process result");
+//        dao.finishProcess(task.getProcessId(), "Process result");
     }
 
 }

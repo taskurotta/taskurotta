@@ -56,6 +56,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         return instance;
     }
 
+    /*
+    FOR TESTS ONLY
+    * */
+    public static void setInstance(HazelcastTaskServer instance) {
+        HazelcastTaskServer.instance = instance;
+    }
+
     public static HazelcastTaskServer createInstance(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
         synchronized (instanceMonitor) {
             if (null == instance) {

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+
+    <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.h2.Driver"/>
+        <property name="url" value="jdbc:h2:mem:test_mem1;"/>
+        <property name="initialSize" value="1"/>
+        <property name="maxActive" value="1"/>
+        <property name="username" value="sa"/>
+        <property name="password" value="sa"/>
+        <property name="connectionInitSqls">
+            <list value-type="java.lang.String">
+                <value>runscript from 'classpath:import.sql'</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="hzInstance" class="com.hazelcast.core.Hazelcast" factory-method="newHazelcastInstance">
+        <constructor-arg>
+            <bean class="com.hazelcast.config.Config">
+                <property name="groupConfig">
+                    <bean class="com.hazelcast.config.GroupConfig"/>
+                </property>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="snapshotDatasource" class="ru.taskurotta.backend.snapshot.datasource.JDBCSnapshotDataSource">
+        <constructor-arg>
+            <ref bean="originalDataSource"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="snapshotService" class="ru.taskurotta.backend.snapshot.SnapshotServiceAsyncImpl">
+        <constructor-arg>
+            <ref bean="snapshotDatasource" />
+        </constructor-arg>
+        <constructor-arg>
+            <ref bean="hzInstance"/>
+        </constructor-arg>
+    </bean>
+
+</beans>

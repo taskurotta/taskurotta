@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ArgType;
@@ -87,6 +88,11 @@ public class GraphDependencyBackend implements DependencyBackend {
         TaskNode taskNode = createTaskNode(task);
         taskNodeDao.addNode(taskNode);
         logger.debug("Process start node added [{}]", taskNode);
+    }
+
+    @Override
+    public Graph getGraph(UUID processId) {
+        return null;
     }
 
     //Creates nodes for argument dependencies
