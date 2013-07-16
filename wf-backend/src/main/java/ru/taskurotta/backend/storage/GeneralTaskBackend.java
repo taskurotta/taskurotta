@@ -78,7 +78,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                             args[i] = arg.updateValue(taskValue);
                         } else {
                             // swap promise with real value for Actor tasks
-                            args[i] = taskValue;
+                            // make sure that the arg type is PLAIN. Promises may come from decider.async tasks
+                            args[i] = taskValue.updateType(ArgContainer.ValueType.PLAIN);
                         }
                     } else if (arg.isObjectArray()) {
 
