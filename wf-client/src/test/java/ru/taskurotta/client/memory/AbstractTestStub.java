@@ -99,6 +99,10 @@ public class AbstractTestStub {
         return memoryStorageBackend.isTaskReleased(taskId, processId);
     }
 
+    public boolean isTaskPresent(UUID taskId, UUID processId) {
+        return null != memoryStorageBackend.getTask(taskId, processId);
+    }
+
     /**
      * @param taskId
      * @param taskQuantity -1 is any quantity

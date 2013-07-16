@@ -51,9 +51,8 @@ public class TaskSpreaderProviderCommonTest extends AbstractTestStub {
         TaskDecision taskDecision = new TaskDecisionImpl(taskId, processId, null, null);
         workerTaskSpreader.release(taskDecision);
 
-        // task should be in "done" state
-        Assert.assertFalse(isTaskInProgress(taskId, deciderTask.getProcessId()));
-        Assert.assertTrue(isTaskReleased(taskId, deciderTask.getProcessId()));
+        // task should be removed from backend
+        Assert.assertFalse(isTaskPresent(taskId, deciderTask.getProcessId()));
 
     }
 
