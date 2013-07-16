@@ -3,6 +3,7 @@ package ru.taskurotta.backend.hz.storage;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -17,7 +18,6 @@ import ru.taskurotta.transport.model.TaskContainer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -29,13 +29,12 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     private final static Logger logger = LoggerFactory.getLogger(HzProcessBackend.class);
 
     private CheckpointService checkpointService;
-    private Map<UUID, ProcessVO> processesStorage;
+    private String processesStorageMapName = "processesStorage";//default
     private HazelcastInstance hzInstance;
 
 
     public HzProcessBackend(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;
-        this.processesStorage = hzInstance.getMap("processesStorage");
     }
 
     @Override
@@ -44,7 +43,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setStartTime(System.currentTimeMillis());
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
-        processesStorage.put(task.getProcessId(), process);
+        hzInstance.getMap(processesStorageMapName).put(task.getProcessId(), process);
 
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
@@ -63,10 +62,11 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     @Override
     public void finishProcess(UUID processId, String returnValue) {
 
-        ProcessVO process = processesStorage.get(processId);
+        IMap<UUID, ProcessVO> processMap = hzInstance.getMap(processesStorageMapName);
+        ProcessVO process = processMap.get(processId);
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
-        processesStorage.put(processId, process);
+        processMap.put(processId, process);
 
         //should be at the end of the method
         int removed = checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
@@ -86,11 +86,13 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
     @Override
     public ProcessVO getProcess(UUID processUUID) {
+        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
         return processesStorage.get(processUUID);
     }
 
     @Override
     public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
+        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
         List<ProcessVO> result = new ArrayList<>();
         ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
         processes = processesStorage.values().toArray(processes);
@@ -105,6 +107,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
     @Override
     public List<ProcessVO> findProcesses(String type, final String id) {
+        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
         List<ProcessVO> result = new ArrayList<>();
 
         if ((id != null) && (!id.isEmpty())) {
@@ -136,4 +139,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         return result;
     }
 
+    public void setProcessesStorageMapName(String processesStorageMapName) {
+        this.processesStorageMapName = processesStorageMapName;
+    }
 }

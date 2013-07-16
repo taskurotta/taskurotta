@@ -1,8 +1,12 @@
 package ru.taskurotta.backend.hz;
 
 import com.hazelcast.core.PartitionAware;
+import com.hazelcast.nio.DataSerializable;
+import com.mongodb.BasicDBObject;
 
-import java.io.Serializable;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -10,9 +14,12 @@ import java.util.UUID;
  * User: dimadin
  * Date: 08.07.13 10:08
  */
-public class TaskKey implements PartitionAware, Serializable {
+public class TaskKey extends BasicDBObject implements DataSerializable, PartitionAware  {
     protected UUID processId;
     protected UUID taskId;
+
+    public TaskKey(){
+    }
 
     public TaskKey(UUID processId, UUID taskId) {
         this.taskId = taskId;
@@ -25,22 +32,30 @@ public class TaskKey implements PartitionAware, Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TaskKey)) return false;
-
-        TaskKey taskKey = (TaskKey) o;
-
-        if (!processId.equals(taskKey.processId)) return false;
-        if (!taskId.equals(taskKey.taskId)) return false;
-
-        return true;
+    public void writeData(DataOutput dataOutput) throws IOException {
+        dataOutput.writeUTF(taskId!=null? taskId.toString(): null);
+        dataOutput.writeUTF(processId!=null? processId.toString(): null);
     }
 
     @Override
-    public int hashCode() {
-        int result = processId.hashCode();
-        result = 31 * result + taskId.hashCode();
-        return result;
+    public void readData(DataInput dataInput) throws IOException {
+        this.taskId = UUID.fromString(dataInput.readUTF());
+        this.processId = UUID.fromString(dataInput.readUTF());
+    }
+
+    public UUID getProcessId() {
+        return processId;
+    }
+
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
+    }
+
+    public UUID getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
     }
 }

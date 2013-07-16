@@ -1,6 +1,14 @@
 #Location of Spring application context:
-contextLocation: "classpath*:context/context.xml, classpath*:context/console-context.xml"
-#contextLocation: "classpath*:context/context-test.xml, classpath*:context/console-context.xml"
+#Hazelcast without mongo mapstore
+contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-simple.xml, classpath*:context/console-context.xml"
+
+#hazelcast with mongo mapstores
+#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv1.xml, classpath*:context/console-context.xml"
+
+#TODO:// implement task servers for this configs
+#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv2.xml, classpath*:context/console-context.xml"
+#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv3.xml, classpath*:context/console-context.xml"
+
 
 #Used for static resource serving in development mode
 assets:
@@ -16,12 +24,11 @@ actorConfig:
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
-  pollDelay: 1
+  pollDelay: 10
   pollDelayUnit: "SECONDS"
   hz.mancenter.enabled: true
   hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
-  hz.decisions.core.pool.size: 64
-  hz.decisions.max.pool.size: 128
+  decision.sleep: 100000
 
 #resourceBeans:
 #  - taskStarterResource
@@ -34,9 +41,11 @@ logging:
         com.hazelcast: INFO
         ru.taskurotta.dropwizard.server.core: INFO
         ru.taskurotta.server: INFO
-        ru.taskurotta.server.recovery.RetryEnqueueRecovery: DEBUG
+        ru.taskurotta.server.recovery.RetryEnqueueRecovery: INFO
         ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
-        ru.taskurotta.dropwizard.hz: DEBUG
+        ru.taskurotta.dropwizard.hz: INFO
+        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: DEBUG
         com.yammer: INFO
     file:
         enabled: true
@@ -50,10 +59,6 @@ http:
     gzip:
         enabled: false
     requestLog:
-        # Settings for logging to stdout.
-        console:
-            # If true, log requests to stdout.
-            enabled: false
         file:
             enabled: false
             archive: true

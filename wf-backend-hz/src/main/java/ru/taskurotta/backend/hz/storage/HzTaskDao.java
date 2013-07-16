@@ -109,6 +109,14 @@ public class HzTaskDao implements TaskDao {
         return id2TaskMap.remove(new TaskKey(processId, taskId));
     }
 
+    public void setId2TaskMapName(String id2TaskMapName) {
+        this.id2TaskMapName = id2TaskMapName;
+    }
+
+    public void setId2TaskDecisionMapName(String id2TaskDecisionMapName) {
+        this.id2TaskDecisionMapName = id2TaskDecisionMapName;
+    }
+
     @Override
     public void removeProcessData(UUID processId) {
         IMap<TaskKey, TaskContainer> id2TaskMap = hzInstance.getMap(id2TaskMapName);

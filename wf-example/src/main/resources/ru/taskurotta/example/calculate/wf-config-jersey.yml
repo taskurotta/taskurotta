@@ -14,10 +14,10 @@ spreader:
       instance:
         context: ru/taskurotta/example/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 100
+          count: 10
           startTasks: true
           startTasksInBackground: true
-          endpoint: "http://localhost:8821"
+          endpoint: "http://localhost:8811"
           threadPoolSize: 30
           readTimeout: 0
           connectTimeout: 3000
@@ -46,7 +46,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 2
+      count: 4
       properties:
         failover: "25 SECONDS"
 
@@ -56,7 +56,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 1
+      count: 2
       properties:
         failover: "25 SECONDS"
 
@@ -66,7 +66,7 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 1
+      count: 4
       properties:
         failover: "25 SECONDS"
 
@@ -76,6 +76,6 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
-      count: 1
+      count: 2
       properties:
         failover: "25 SECONDS"

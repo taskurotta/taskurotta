@@ -136,7 +136,7 @@ public class GeneralTaskServer implements TaskServer {
     /**
      * @return true if snapshot processing required, false otherwise
      */
-    protected void processDecision(DecisionContainer taskDecision) {
+    public void processDecision(DecisionContainer taskDecision) {
 
         logger.debug("Start processing task decision[{}]", taskDecision);
 

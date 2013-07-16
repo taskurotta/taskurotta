@@ -29,20 +29,20 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
 
-    private HazelcastInstance hzInstance;
+    protected HazelcastInstance hzInstance;
 
-    private String executorServiceName = Constants.DEFAULT_EXECUTOR_SERVICE_NAME;
+    protected String executorServiceName = Constants.DEFAULT_EXECUTOR_SERVICE_NAME;
 
-    private static HazelcastTaskServer instance;
-    private static final Object instanceMonitor = 0;
+    protected static HazelcastTaskServer instance;
+    protected static final Object instanceMonitor = 0;
 
     private String nodeCustomName = "undefined";
 
-    private HazelcastTaskServer(BackendBundle backendBundle) {
+    protected HazelcastTaskServer(BackendBundle backendBundle) {
         super(backendBundle);
     }
 
-    private HazelcastTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+    protected HazelcastTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
         super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
     }
 
