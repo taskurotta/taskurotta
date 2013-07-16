@@ -135,7 +135,7 @@
                                 <artifactItem>
                                     <groupId>org.aspectj</groupId>
                                     <artifactId>aspectjweaver</artifactId>
-                                    <version>1.6.7</version>
+                                    <version>${aspectj.version}</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
