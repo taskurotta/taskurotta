@@ -28,7 +28,9 @@
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>
-            <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
+            <hz:executor-service name="${hz.decisions.service.name}"
+                                 core-pool-size="${hz.decisions.core.pool.size}"
+                                 max-pool-size="${hz.decisions.max.pool.size}"/>
         </hz:config>
     </hz:hazelcast>
 

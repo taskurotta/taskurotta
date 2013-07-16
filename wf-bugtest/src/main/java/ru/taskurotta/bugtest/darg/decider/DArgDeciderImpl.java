@@ -7,6 +7,7 @@ import ru.taskurotta.bugtest.darg.worker.DArgWorkerClient;
 import ru.taskurotta.core.Promise;
 
 public class DArgDeciderImpl implements DArgDecider {
+    protected final static Logger log = LoggerFactory.getLogger(DArgDeciderImpl.class);
 
     private static Logger logger = LoggerFactory.getLogger(DArgDeciderImpl.class);
     private DArgWorkerClient workerClient;
@@ -14,16 +15,25 @@ public class DArgDeciderImpl implements DArgDecider {
 
     @Override
     public void start() {
-        logger.info("Start");
-        Promise<String> param = selfAsync.getParam();
 
-        workerClient.getNumber(param);
+        Promise<String> p1 = selfAsync.getParam();
+        Promise<String> p2 = workerClient.getParam();
+
+        workerClient.getNumber(p1);
+        workerClient.getNumber(p2);
+
+        selfAsync.useParam(p1);
 
     }
 
     @Asynchronous
+    public void useParam(Promise<String> param) {
+        log.info("Using param: {}", param.get());
+    }
+
+    @Asynchronous
     public Promise<String> getParam() {
-        logger.info("getParam");
+        log.info("Hello, bug!");
         return Promise.asPromise("Hello, bug!");
     }
 

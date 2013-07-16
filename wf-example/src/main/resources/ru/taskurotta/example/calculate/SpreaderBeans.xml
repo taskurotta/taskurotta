@@ -10,15 +10,6 @@
     <context:annotation-config />
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory">
-    	<constructor-arg name="taskServer" ref = "taskServerGeneral" />
-    </bean>
-    
-    <bean id = "taskServerGeneral" class="ru.taskurotta.server.GeneralTaskServer" >
-    	<constructor-arg name="backendBundle" ref="memoryBackendBundle" />
-    </bean>
-    
-    <bean id = "memoryBackendBundle" class="ru.taskurotta.backend.MemoryBackendBundle" >
-    	<constructor-arg name = "pollDelay" value = "${taskPollDelay}" />
     </bean>
     
     <bean id="taskCreator" class="ru.taskurotta.example.calculate.WorkflowStarter" init-method="startWork">

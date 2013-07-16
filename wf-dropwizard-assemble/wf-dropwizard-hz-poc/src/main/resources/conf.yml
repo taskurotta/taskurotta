@@ -16,10 +16,12 @@ actorConfig:
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
-  pollDelay: 10
+  pollDelay: 1
   pollDelayUnit: "SECONDS"
-  hz.mancenter.enabled: false
-#  hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
+  hz.mancenter.enabled: true
+  hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
+  hz.decisions.core.pool.size: 64
+  hz.decisions.max.pool.size: 128
 
 #resourceBeans:
 #  - taskStarterResource
@@ -48,6 +50,10 @@ http:
     gzip:
         enabled: false
     requestLog:
+        # Settings for logging to stdout.
+        console:
+            # If true, log requests to stdout.
+            enabled: false
         file:
             enabled: false
             archive: true

@@ -25,6 +25,7 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 		arbiter.notify("start");
 		Promise<Integer> pB = worker.taskB();
 		Promise<Integer> pC = worker.taskC();
+		Promise<Integer> pD = worker.taskD(pB);
 		Promise<Integer> pProcess = async.process(pB, pC);
 		async.finish(pProcess);
 	}

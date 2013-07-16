@@ -2,26 +2,39 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: spring/context.xml
+        context: ru/taskurotta/recipes/multiplier/RuntimeBeans.xml
 
 spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: spring/context.xml
+        context: ru/taskurotta/recipes/multiplier/SpreaderBeans-jersey.xml
+        properties:
+          count: 2000
+          startTasks: true
+          startTasksInBackground: false
+#          endpoint: "http://localhost:8811"
+          endpoint: "http://tsqs.fccland.ru:8080"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.recipes.multiplier.LifetimeProfiler
+        properties:
+          exitAfterAll: true
 
 actor:
-  - decider:
-      actorInterface: ru.taskurotta.bugtest.darg.decider.DArgDecider
+  - FibonacciDecider:
+      actorInterface: ru.taskurotta.recipes.multiplier.MultiplierDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
       count: 1
 
-  - worker:
-      actorInterface: ru.taskurotta.bugtest.darg.worker.DArgWorker
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      count: 1
 logback:
     appender:
         - STDOUT:
@@ -39,8 +52,14 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
+             \@level: !!!str OFF
+        - ru.taskurotta.recipes.multiplier:
+             key: name
              \@level: DEBUG
-        - org.springframework:
+        - org:
+             key: name
+             \@level: !!!str OFF
+        - httpclient:
              key: name
              \@level: !!!str OFF
     root:

@@ -16,6 +16,13 @@ spreader:
           count: 15
           loggingPeriod: 10000
           taskPollDelay: 1
+          count: 100
+          startTasks: true
+          startTasksInBackground: true
+          endpoint: "http://localhost:8821"
+          threadPoolSize: 30
+          readTimeout: 0
+          connectTimeout: 3000
 
 profiler:
   - MainProfilerConfig:

@@ -26,6 +26,12 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-dropwizard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
         </dependency>

@@ -104,4 +104,12 @@ public class MemoryTaskDao implements TaskDao {
     public TaskContainer removeTask(UUID taskId, UUID processId) {
         return id2TaskMap.remove(taskId);
     }
+
+    @Override
+    public void removeProcessData(UUID processId) {
+        for (TaskContainer taskContainer : getProcessTasks(processId)) {
+            id2TaskMap.remove(taskContainer.getTaskId());
+            id2TaskDecisionMap.remove(taskContainer.getTaskId());
+        }
+    }
 }
