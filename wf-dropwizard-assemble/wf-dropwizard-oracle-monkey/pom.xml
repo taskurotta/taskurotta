@@ -8,7 +8,7 @@
     <parent>
         <groupId>ru.taskurotta</groupId>
         <artifactId>wf-dropwizard-assemble</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
     </parent>
 
     <artifactId>wf-dropwizard-oracle-monkey</artifactId>
