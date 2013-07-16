@@ -56,16 +56,6 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
         public Object invoke(Object... args) throws InvocationTargetException, IllegalAccessException {
             log.debug("before invoke {} args({})", method, args);
-
-            Class[] parameterTypes = method.getParameterTypes();
-            int length = parameterTypes.length;
-
-            for (int i = 0; i < length; i++) {
-                if (Promise.class.equals(args[i].getClass()) && !parameterTypes[i].equals(args[i].getClass())) {
-                    args[i] = ((Promise) args[i]).get();
-                }
-            }
-
             return method.invoke(actorObject, args);
         }
 
