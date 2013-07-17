@@ -94,13 +94,12 @@ public class ObjectFactory {
 
     private Object getArrayValue(String json, String arrayItemClassName) throws Exception {
         JsonNode node = mapper.readTree(json);
-        ObjectCodec objectCodec = mapper.treeAsTokens(node).getCodec();
 
         Object array = ArrayFactory.newInstance(arrayItemClassName, node.size());
         Class<?> componentType = array.getClass().getComponentType();
 
         for (int i = 0; i < node.size(); i++) {
-            Array.set(array, i, objectCodec.treeToValue(node.get(i), componentType));
+            Array.set(array, i, mapper.readValue(node.get(i).asText(), componentType));
         }
         return array;
     }
