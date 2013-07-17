@@ -5,6 +5,6 @@ import ru.taskurotta.annotation.DeciderClient;
 @DeciderClient(decider = DArgDecider.class)
 public interface DArgDeciderClient {
 
-    public void start();
+    public void start(String inputParam);
 
 }

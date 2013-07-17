@@ -18,7 +18,7 @@ public class Launcher {
     public void launch() {
         final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
         final DArgDeciderClient decider = deciderClientProvider.getDeciderClient(DArgDeciderClient.class);
-        decider.start();
+        decider.start("testme!");
         logger.info("Execution started");
     }
 

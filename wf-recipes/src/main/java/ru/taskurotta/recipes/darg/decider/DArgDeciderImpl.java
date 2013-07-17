@@ -15,19 +15,36 @@ public class DArgDeciderImpl implements DArgDecider {
 
     private DArgWorkerClient workerClient;
     private DArgDeciderImpl selfAsync;
+    private DArgSubprocessDeciderClient subDeciderClient;
+
     private DArgArbiter arbiter;
 
     @Override
-    public void start() {
+    public void start(String inputParam) {
         arbiter.notify("start");
         Promise<String> p1 = selfAsync.getParam();
-        Promise<String> p2 = workerClient.getParam();
-
         workerClient.getNumber(p1);
-        workerClient.getNumber(p2);
-
         selfAsync.useParam(p1);
 
+
+        Promise<String> p2 = workerClient.getParam();
+
+        Promise<String> p3 = workerClient.getParam();
+        Promise<String> subValue = subDeciderClient.getSubprocessValue(p3);
+
+        Promise<String> resultValue = workerClient.processParams(inputParam, p3, subValue, p1);
+
+        workerClient.getNumber(p2);
+
+
+        selfAsync.waitResultAndLogIt(resultValue);
+
+    }
+
+    @Asynchronous
+    public void waitResultAndLogIt(Promise<String> resultValue) {
+        arbiter.notify("waitResultAndLogIt");
+        logger.info("Result getted is [{}]", resultValue);
     }
 
     @Asynchronous
@@ -43,10 +60,12 @@ public class DArgDeciderImpl implements DArgDecider {
         return Promise.asPromise("Hello, bug!");
     }
 
+    @Required
     public void setWorkerClient(DArgWorkerClient workerClient) {
         this.workerClient = workerClient;
     }
 
+    @Required
     public void setSelfAsync(DArgDeciderImpl selfAsync) {
         this.selfAsync = selfAsync;
     }
@@ -54,5 +73,10 @@ public class DArgDeciderImpl implements DArgDecider {
     @Required
     public void setArbiter(DArgArbiter arbiter) {
         this.arbiter = arbiter;
+    }
+
+    @Required
+    public void setSubDeciderClient(DArgSubprocessDeciderClient subDeciderClient) {
+        this.subDeciderClient = subDeciderClient;
     }
 }

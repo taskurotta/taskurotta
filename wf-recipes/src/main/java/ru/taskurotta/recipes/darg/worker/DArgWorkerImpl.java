@@ -27,6 +27,13 @@ public class DArgWorkerImpl implements DArgWorker {
         return "Hello param from worker";
     }
 
+    @Override
+    public String processParams(String p1, String p2, String p3, String p4) {
+        log.info("Params getted are: {}, {}, {}, {}", p1, p2, p3, p4);
+        arbiter.notify("processParams");
+        return p1+p2+p3+p4;
+    }
+
     @Required
     public void setArbiter(DArgArbiter arbiter) {
         this.arbiter = arbiter;
