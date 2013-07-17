@@ -151,6 +151,25 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void argContainerArrayObject() {
+        TestObject[] arg = new TestObject[10];
+        for (int i = 0; i < arg.length; i++) {
+            TestObject testObject = new TestObject("Test object " + i, i);
+            arg[i] = testObject;
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        TestObject[] newArg = (TestObject[])objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.length, newArg.length);
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+    }
+
+    @Test
     public void argContainerArrayPromise() {
         Promise<?>[] arg = new Promise<?>[10];
         for (int i = 0; i < arg.length; i++) {
@@ -170,7 +189,7 @@ public class ObjectFactoryTest {
 
     @Test
     public void argContainerListInt() {
-        List<Integer> arg = new ArrayList<Integer>(10);
+        List<Integer> arg = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
             arg.add(i);
         }
@@ -178,9 +197,24 @@ public class ObjectFactoryTest {
         testInternal(arg);
     }
 
+
+    //FixMe:  unsupported yet
+    @org.junit.Ignore
+    @Test
+    public void argContainerListObject() {
+        List<TestObject> arg = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
+            TestObject testObject = new TestObject("Test object " + i, i);
+            arg.add(testObject);
+        }
+
+        testInternal(arg);
+    }
+
+
     @Test
     public void argContainerLinkedListInt() {
-        List<Integer> arg = new LinkedList<Integer>();
+        List<Integer> arg = new LinkedList<>();
         for (int i = 0; i < 10; i++) {
             arg.add(i);
         }
@@ -191,8 +225,8 @@ public class ObjectFactoryTest {
     //FixMe: it fails
     @org.junit.Ignore
     @Test
-    public void argContainerMapInt() {
-        Map<Integer, Object> arg = new HashMap<Integer, Object>();
+    public void argContainerMapPromise() {
+        Map<Integer, Object> arg = new HashMap<>();
         Promise payload = Promise.asPromise(true);
         for (int i = 0; i < 10; i++) {
             arg.put(i, payload);
