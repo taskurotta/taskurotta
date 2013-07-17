@@ -20,7 +20,7 @@
         </constructor-arg>
     </bean>
 
-    <bean class="ru.taskurotta.test.FlowArbiterFactory">
+    <bean class="ru.taskurotta.test.flow.FlowArbiterFactory">
         <property name="instance" ref="arbiter" />
     </bean>
 
