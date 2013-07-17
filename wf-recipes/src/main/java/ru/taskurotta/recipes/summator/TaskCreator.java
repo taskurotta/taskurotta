@@ -3,7 +3,7 @@ package ru.taskurotta.recipes.summator;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.summator.decider.SummatorDeciderClient;
-import ru.taskurotta.test.FlowArbiterFactory;
+import ru.taskurotta.test.flow.FlowArbiterFactory;
 
 import java.util.ArrayList;
 import java.util.List;

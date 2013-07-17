@@ -1,4 +1,4 @@
-package ru.taskurotta.test;
+package ru.taskurotta.test.flow;
 
 /**
  * Created by void 04.04.13 13:49

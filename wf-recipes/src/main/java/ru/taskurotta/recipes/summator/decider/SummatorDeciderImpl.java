@@ -6,8 +6,8 @@ import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.recipes.summator.ArbiterProfilerImpl;
 import ru.taskurotta.recipes.summator.worker.AddWorkerClient;
-import ru.taskurotta.test.FlowArbiterFactory;
-import ru.taskurotta.test.IncorrectFlowException;
+import ru.taskurotta.test.flow.FlowArbiterFactory;
+import ru.taskurotta.test.flow.IncorrectFlowException;
 
 import java.util.List;
 

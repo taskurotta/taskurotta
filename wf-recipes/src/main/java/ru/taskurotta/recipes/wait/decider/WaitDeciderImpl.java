@@ -6,7 +6,7 @@ import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Wait;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.recipes.wait.worker.WaitWorkerClient;
-import ru.taskurotta.test.FlowArbiter;
+import ru.taskurotta.test.flow.FlowArbiter;
 
 /**
  * Created by void 13.05.13 19:33

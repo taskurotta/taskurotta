@@ -2,7 +2,7 @@ package ru.taskurotta.recipes.nowait.workers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.test.FlowArbiter;
+import ru.taskurotta.test.flow.FlowArbiter;
 
 /**
  * Created by void 27.03.13 19:40

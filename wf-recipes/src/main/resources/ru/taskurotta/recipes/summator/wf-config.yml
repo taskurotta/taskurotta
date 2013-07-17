@@ -16,7 +16,7 @@ profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
       instance:
-        class: ru.taskurotta.test.FlowArbiterProfiler
+        class: ru.taskurotta.test.flow.FlowArbiterProfiler
 
 actor:
   - Decider:

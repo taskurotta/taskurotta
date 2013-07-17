@@ -2,7 +2,7 @@ package ru.taskurotta.recipes.darg;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.test.BasicFlowArbiter;
+import ru.taskurotta.test.flow.BasicFlowArbiter;
 
 import java.util.List;
 import java.util.UUID;

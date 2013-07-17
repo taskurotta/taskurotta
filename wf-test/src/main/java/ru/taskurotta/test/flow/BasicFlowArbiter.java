@@ -1,4 +1,4 @@
-package ru.taskurotta.test;
+package ru.taskurotta.test.flow;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

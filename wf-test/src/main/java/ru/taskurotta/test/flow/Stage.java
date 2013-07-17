@@ -1,4 +1,4 @@
-package ru.taskurotta.test;
+package ru.taskurotta.test.flow;
 
 import java.util.ArrayList;
 import java.util.List;
