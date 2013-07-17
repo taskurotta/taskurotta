@@ -27,6 +27,12 @@
                 <constructor-arg value="ru.taskurotta.recipes.darg.decider.DArgDeciderImpl"/>
             </bean>
         </property>
+        <property name="subDeciderClient">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getDeciderClient">
+                <constructor-arg value="ru.taskurotta.recipes.darg.decider.DArgSubprocessDeciderClient"/>
+            </bean>
+        </property>
+
         <property name="arbiter" ref="arbiter" />
     </bean>
 
@@ -40,11 +46,16 @@
         <constructor-arg name="stages">
             <list>
                 <value>start</value>
-                <value>getParamDecider, getParamWorker</value>
-                <value>getNumberWorker, getNumberWorker, useParam</value>
+                <value>getParamDecider, getParamWorker, getParamWorker</value>
+                <value>getNumberWorker, getNumberWorker, useParam, getSubprocessValue, processParams</value>
+                <value>waitResultAndLogIt</value>
             </list>
         </constructor-arg>
         <property name="strictFlowCheck" value="true" />
+    </bean>
+
+    <bean id = "subDecider" class="ru.taskurotta.recipes.darg.decider.DArgSubprocessDeciderImpl">
+        <property name="arbiter" ref="arbiter" />
     </bean>
 
 </beans>

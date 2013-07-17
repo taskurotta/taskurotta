@@ -23,6 +23,12 @@ actor:
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
 
+  - subdecider:
+      actorInterface: ru.taskurotta.recipes.darg.decider.DArgSubprocessDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+
 
 logback:
     appender:
