@@ -20,7 +20,7 @@ public class DArgDeciderImpl implements DArgDecider {
     private DArgArbiter arbiter;
 
     @Override
-    public void start() {
+    public void start(String inputParam) {
         arbiter.notify("start");
         Promise<String> p1 = selfAsync.getParam();
         workerClient.getNumber(p1);
@@ -32,7 +32,7 @@ public class DArgDeciderImpl implements DArgDecider {
         Promise<String> p3 = workerClient.getParam();
         Promise<String> subValue = subDeciderClient.getSubprocessValue(p3);
 
-        Promise<String> resultValue = workerClient.processParams("plain param", p2, subValue, p1);
+        Promise<String> resultValue = workerClient.processParams(inputParam, p3, subValue, p1);
 
         workerClient.getNumber(p2);
 
