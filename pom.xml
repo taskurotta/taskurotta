@@ -25,7 +25,7 @@
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.2</aspectj.version>
-        <hazelcast.version>2.6</hazelcast.version>
+        <hazelcast.version>2.6-fcc-01</hazelcast.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>

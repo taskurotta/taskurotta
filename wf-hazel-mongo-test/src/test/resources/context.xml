@@ -17,7 +17,7 @@
     </hz:hazelcast>
 
     <bean id="mongo" class="com.mongodb.Mongo">
-        <constructor-arg name="host" value="127.0.0.1"/>
+        <constructor-arg name="host" value="tsqs.fccland.ru"/>
     </bean>
 
     <bean id="writeConcern" class="com.mongodb.WriteConcern">

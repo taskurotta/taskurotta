@@ -22,7 +22,7 @@ public class HazelcastSyntheticTest extends AbstractTestNGSpringContextTests {
     @Qualifier("hzInstance")
     HazelcastInstance hazelcastInstance;
 
-    @Test
+    //@Test
     public void syntheticTest() {
         IMap<String, UUID> map = hazelcastInstance.getMap("id2TaskMap");
         StopWatch stopWatch = new StopWatch();
