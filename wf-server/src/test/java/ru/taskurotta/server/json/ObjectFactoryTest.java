@@ -153,7 +153,8 @@ public class ObjectFactoryTest {
     @Test
     public void argContainerArrayObject() {
         TestObject[] arg = new TestObject[10];
-        for (int i = 0; i < arg.length; i++) {
+        // first element would be null
+        for (int i = 1; i < arg.length; i++) {
             TestObject testObject = new TestObject("Test object " + i, i);
             arg[i] = testObject;
         }
@@ -236,9 +237,42 @@ public class ObjectFactoryTest {
     }
 
     @Test
-    public void argContainerReadyPromise() {
+    public void argContainerReadyPromiseBoolean() {
         Promise arg = Promise.asPromise(Boolean.TRUE);
         testInternal(arg);
+    }
+
+    @Test
+    public void argContainerReadyPromiseLong() {
+        Promise arg = Promise.asPromise(10L);
+        testInternal(arg);
+    }
+
+    @Test
+    public void argContainerReadyPromiseObject() {
+        Promise arg = Promise.asPromise(new TestObject("test", 10));
+        testInternal(arg);
+    }
+
+    @Test
+    public void argContainerReadyPromiseArrayInt() {
+        int[] value = new int[2];
+        value[0] = 1;
+        value[1] = 10;
+
+        Promise arg = Promise.asPromise(value);
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        Promise<?> newArg = (Promise<?>)objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg, newArg);
+/*
+        for (int i = 0; i < newArg.length; i++) {
+            assertEquals(arg[i], newArg[i]);
+        }
+*/
     }
 
     @Test
