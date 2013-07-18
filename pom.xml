@@ -48,6 +48,7 @@
         <module>wf-transport</module>
         <module>wf-snapshot</module>
         <module>wf-test</module>
+        <module>wf-hazel-mongo-test</module>
     </modules>
 
     <profiles>

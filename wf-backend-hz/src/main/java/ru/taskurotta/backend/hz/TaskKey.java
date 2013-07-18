@@ -1,6 +1,8 @@
 package ru.taskurotta.backend.hz;
 
 import com.hazelcast.core.PartitionAware;
+import com.mongodb.BasicDBObject;
+
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -10,12 +12,17 @@ import java.util.UUID;
  * User: dimadin
  * Date: 08.07.13 10:08
  */
-public class TaskKey implements PartitionAware, Serializable {
+public class TaskKey extends BasicDBObject implements PartitionAware, Serializable {
     protected UUID processId;
-    protected UUID taskId;
+
+    protected UUID id;
+
+    public TaskKey(){
+
+    }
 
     public TaskKey(UUID processId, UUID taskId) {
-        this.taskId = taskId;
+        this.id = taskId;
         this.processId = processId;
     }
 
@@ -32,7 +39,7 @@ public class TaskKey implements PartitionAware, Serializable {
         TaskKey taskKey = (TaskKey) o;
 
         if (!processId.equals(taskKey.processId)) return false;
-        if (!taskId.equals(taskKey.taskId)) return false;
+        if (!id.equals(taskKey.id)) return false;
 
         return true;
     }
@@ -40,7 +47,7 @@ public class TaskKey implements PartitionAware, Serializable {
     @Override
     public int hashCode() {
         int result = processId.hashCode();
-        result = 31 * result + taskId.hashCode();
+        result = 31 * result + id.hashCode();
         return result;
     }
 }

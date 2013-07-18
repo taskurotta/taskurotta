@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+
+
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd">
+
+
+    <hz:hazelcast id="hzInstance">
+        <hz:config>
+            <hz:map name="id2TaskMap" max-size="1000" eviction-percentage="50" eviction-policy="LRU">
+                <hz:map-store enabled="true" implementation="tasks_mongomapstore" write-delay-seconds="1"/>
+            </hz:map>
+        </hz:config>
+    </hz:hazelcast>
+
+    <bean id="mongo" class="com.mongodb.Mongo">
+        <constructor-arg name="host" value="127.0.0.1"/>
+    </bean>
+
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="-1"/>
+        <constructor-arg name="wtimeout" value="0"/>
+        <constructor-arg name="fsync" value="false"/>
+        <constructor-arg name="j" value="false"/>
+    </bean>
+
+    <bean id="mongoTemplate"
+          class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="taskurotta_hz"/>
+        <property name="writeConcern" ref="writeConcern"/>
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="tasks_mongomapstore">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+</beans>

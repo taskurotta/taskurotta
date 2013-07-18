@@ -75,8 +75,8 @@ public class EntitiesComparator {
     public static void compare(DecisionContainer expected, DecisionContainer actual) {
         if (expected != null) {
             Assert.assertNotNull(actual);
-            Assert.assertEquals("DecisionContainer taskId must be equal", expected.getTaskId(), actual.getTaskId());
-            Assert.assertEquals("DecisionContainer taskId must be equal", expected.getProcessId(), actual.getProcessId());
+            Assert.assertEquals("DecisionContainer id must be equal", expected.getTaskId(), actual.getTaskId());
+            Assert.assertEquals("DecisionContainer id must be equal", expected.getProcessId(), actual.getProcessId());
             Assert.assertEquals("DecisionContainer restart times must be the same", expected.getRestartTime(), actual.getRestartTime());
             Assert.assertEquals("ErrorContainer must be the same", expected.getErrorContainer(), actual.getErrorContainer());
             compare(expected.getValue(), actual.getValue());

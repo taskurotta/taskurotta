@@ -117,7 +117,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             logger.error("Thread was interrupted at poll, releasing it", e);
         }
 
-        logger.debug("poll() returns taskId [{}]. Queue.size: {}", result, queue.size());
+        logger.debug("poll() returns id [{}]. Queue.size: {}", result, queue.size());
 
         return result;
 
@@ -153,7 +153,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
-        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
+        logger.debug("enqueueItem() actorId [{}], id [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
     @Override

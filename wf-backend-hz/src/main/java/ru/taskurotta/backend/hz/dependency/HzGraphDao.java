@@ -45,6 +45,10 @@ public class HzGraphDao implements GraphDao {
         private int version;
         private Graph graph;
 
+        public GraphRow(){
+
+        }
+
         protected GraphRow(Graph graph) {
             version = graph.getVersion();
             this.graph = graph;

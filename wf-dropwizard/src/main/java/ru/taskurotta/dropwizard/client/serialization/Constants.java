@@ -6,7 +6,7 @@ public interface Constants {
     public static final String ACTOR_DEFINITION_VERSION = "version";
     public static final String ACTOR_DEFINITION_TASK_LIST = "taskList";
 
-    public static final String TASK_ID = "taskId";
+    public static final String TASK_ID = "id";
     public static final String TASK_PROCESS_ID = "processId";
     public static final String TASK_TARGET = "target";
     public static final String TASK_ARGS = "args";
@@ -26,11 +26,11 @@ public interface Constants {
     public static final String ARG_CLASSNAME = "className";
     public static final String ARG_IS_PROMISE = "promise";
     public static final String ARG_IS_ARRAY = "array";
-    public static final String ARG_TASK_ID = "taskId";
+    public static final String ARG_TASK_ID = "id";
     public static final String ARG_IS_READY = "ready";
     public static final String ARG_JSON_VALUE = "jsonvalue";
 
-    public static final String RESULT_TASK_ID = "taskId";
+    public static final String RESULT_TASK_ID = "id";
     public static final String RESULT_PROCESS_ID = "processId";
     public static final String RESULT_VALUE = "value";
     public static final String RESULT_IS_ERROR = "error";

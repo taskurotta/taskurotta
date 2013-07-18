@@ -22,10 +22,10 @@ public class TaskDecisionResource extends BaseResource {
 
         try {
             DecisionContainer result = consoleManager.getDecision(UUID.fromString(taskId), UUID.fromString(processId));
-            logger.debug("DecisionContainer getted by taskId[{}], processId[{}] is [{}]", taskId, processId, result);
+            logger.debug("DecisionContainer getted by id[{}], processId[{}] is [{}]", taskId, processId, result);
             return Response.ok(result, MediaType.APPLICATION_JSON).build();
         } catch(Throwable e) {
-            logger.error("Error at getting task decision by taskId["+taskId+"], processId["+processId+"]", e);
+            logger.error("Error at getting task decision by id["+taskId+"], processId["+processId+"]", e);
             return Response.serverError().build();
         }
 

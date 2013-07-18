@@ -33,7 +33,7 @@ public class TaskTreeResource extends BaseResource {
             logger.debug("TaskTree getted by type[{}], id[{}], processId[{}] is [{}]", type, taskId, processId, result);
             return Response.ok(result, MediaType.APPLICATION_JSON).build();
         } catch(Throwable e) {
-            logger.error("Error at getting task tree by taskId["+taskId+"], processId["+processId+"] type["+type+"]", e);
+            logger.error("Error at getting task tree by id["+taskId+"], processId["+processId+"] type["+type+"]", e);
             return Response.serverError().build();
         }
 

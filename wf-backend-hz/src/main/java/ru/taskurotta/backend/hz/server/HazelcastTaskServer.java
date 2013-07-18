@@ -140,7 +140,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                 lock.lock();
                 DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
                 if (taskDecision == null) {
-                    String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
+                    String error = "Cannot get task decision from store by id[" + taskId + "], processId[" + processId + "]";
                     logger.error(error);
                     //TODO: this exception disappears for some reason
                     throw new IllegalStateException(error);
