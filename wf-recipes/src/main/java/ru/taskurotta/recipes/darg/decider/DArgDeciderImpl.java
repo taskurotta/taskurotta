@@ -37,12 +37,12 @@ public class DArgDeciderImpl implements DArgDecider {
         workerClient.getNumber(p2);
 
 
-        selfAsync.waitResultAndLogIt(resultValue);
+        selfAsync.waitResultAndLogIt(resultValue, p1, p2, p3);
 
     }
 
     @Asynchronous
-    public void waitResultAndLogIt(Promise<String> resultValue) {
+    public void waitResultAndLogIt(Promise<String> resultValue, Promise<String> p1, Promise<String> p2, Promise<String> p3) {
         arbiter.notify("waitResultAndLogIt");
         logger.info("Result getted is [{}]", resultValue);
     }
