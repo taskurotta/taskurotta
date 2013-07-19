@@ -58,9 +58,9 @@ public class SerializationTest {
         tasks[0] = createTaskContainer();
         tasks[1] = createTaskContainer();
         if (isError) {
-            return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis() + 9000l, tasks);
+            return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis() + 9000l, tasks, null);
         } else {
-            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, TaskDecision.NO_RESTART, tasks);
+            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, TaskDecision.NO_RESTART, tasks, null);
         }
 
     }

@@ -12,6 +12,7 @@ import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.exception.BlockedActorException;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -100,11 +101,12 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
-
-        if (configBackend.isActorBlocked(ActorUtils.getActorId(actorDefinition))) {
+        String actorId = ActorUtils.getActorId(actorDefinition);
+        if (configBackend.isActorBlocked(actorId)) {
+            logger.warn("Actor [{}] is blocked", actorId);
             // TODO: ? We should inform client about block. It should catch exception and try to sleep some time ?
             // TODO: ? Or we should sleep 60 seconds as usual ?
-            return null;
+            throw new BlockedActorException(actorId);
         }
 
         // atomic statement
@@ -128,6 +130,11 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
+        if (configBackend.isActorBlocked(taskDecision.getActorId())) {
+            logger.warn("Actor [{}] is blocked", taskDecision.getActorId());
+            throw new BlockedActorException(taskDecision.getActorId());
+        }
+
         // save it firstly
         taskBackend.addDecision(taskDecision);
         processDecision(taskDecision);

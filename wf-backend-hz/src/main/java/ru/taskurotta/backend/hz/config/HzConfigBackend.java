@@ -57,61 +57,50 @@ public class HzConfigBackend implements ConfigBackend {
 
     private void init() {
         IMap<String, ActorPreferences> iMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-        actorPreferencesMap.putAll(iMap);
+        actorPreferencesMap = iMap;
 
         iMap.addEntryListener(new EntryListener<String, ActorPreferences>() {
             @Override
             public void entryAdded(EntryEvent<String, ActorPreferences> stringActorPreferencesEntryEvent) {
-                logger.trace("Add to [{}] item [{}]", ACTOR_PREFERENCES_MAP_NAME, stringActorPreferencesEntryEvent);
-                actorPreferencesMap.put(stringActorPreferencesEntryEvent.getKey(), stringActorPreferencesEntryEvent.getValue());
+                updateActorPreferencesMap();
             }
 
             @Override
             public void entryRemoved(EntryEvent<String, ActorPreferences> stringActorPreferencesEntryEvent) {
-                logger.trace("Remove from [{}] item [{}]", ACTOR_PREFERENCES_MAP_NAME, stringActorPreferencesEntryEvent);
-                actorPreferencesMap.remove(stringActorPreferencesEntryEvent.getKey());
+                updateActorPreferencesMap();
             }
 
             @Override
             public void entryUpdated(EntryEvent<String, ActorPreferences> stringActorPreferencesEntryEvent) {
-                logger.trace("Update [{}] by item [{}]", ACTOR_PREFERENCES_MAP_NAME, stringActorPreferencesEntryEvent);
-                actorPreferencesMap.put(stringActorPreferencesEntryEvent.getKey(), stringActorPreferencesEntryEvent.getValue());
+                updateActorPreferencesMap();
             }
 
             @Override
             public void entryEvicted(EntryEvent<String, ActorPreferences> stringActorPreferencesEntryEvent) {
-                logger.trace("Evict from [{}] item [{}]", ACTOR_PREFERENCES_MAP_NAME, stringActorPreferencesEntryEvent);
-                actorPreferencesMap.remove(stringActorPreferencesEntryEvent.getKey());
+                updateActorPreferencesMap();
             }
-        }, true);
-
+        }, false);
 
         ISet<ExpirationPolicyConfig> iSet = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
-        expirationPolicyConfigSet.addAll(iSet);
+        expirationPolicyConfigSet = iSet;
 
         iSet.addItemListener(new ItemListener<ExpirationPolicyConfig>() {
             @Override
             public void itemAdded(ItemEvent<ExpirationPolicyConfig> expirationPolicyConfigItemEvent) {
-                logger.trace("Add to [{}] item [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, expirationPolicyConfigItemEvent);
-                expirationPolicyConfigSet.add(expirationPolicyConfigItemEvent.getItem());
+                updateExpirationPolicyConfigSet();
             }
 
             @Override
             public void itemRemoved(ItemEvent<ExpirationPolicyConfig> expirationPolicyConfigItemEvent) {
-                logger.trace("Remove from [{}] item [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, expirationPolicyConfigItemEvent);
-                expirationPolicyConfigSet.remove(expirationPolicyConfigItemEvent.getItem());
+                updateExpirationPolicyConfigSet();
             }
         }, false);
     }
 
     @Override
     public boolean isActorBlocked(String actorId) {
-        if (!actorPreferencesMap.containsKey(actorId)) {
-            return false;
-        }
-
         ActorPreferences actorPreferences = actorPreferencesMap.get(actorId);
-        return actorPreferences.isBlocked();
+        return actorPreferences != null && actorPreferences.isBlocked();
     }
 
     @Override
@@ -166,6 +155,18 @@ public class HzConfigBackend implements ConfigBackend {
         timeoutPolicy.setProperties(policyProps);
 
         return new ExpirationPolicyConfig[] {timeoutPolicy};
+    }
+
+    private void updateActorPreferencesMap() {
+        IMap<String, ActorPreferences> iMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
+        logger.trace("Update [{}] = [{}]", ACTOR_PREFERENCES_MAP_NAME, iMap);
+        actorPreferencesMap = iMap;
+    }
+
+    private void updateExpirationPolicyConfigSet() {
+        ISet<ExpirationPolicyConfig> iSet = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
+        logger.trace("Update [{}] = [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, iSet);
+        expirationPolicyConfigSet = iSet;
     }
 
     public int getDefaultTimeout() {

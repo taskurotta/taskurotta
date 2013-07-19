@@ -226,7 +226,8 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers);
+        // ToDo stukushin: where this method used? Add actorId to method arguments
+        return new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, null);
     }
 
     public ErrorContainer dumpError(Throwable e) {
