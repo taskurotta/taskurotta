@@ -1,7 +1,6 @@
 package ru.taskurotta.server.json;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +171,6 @@ public class ObjectFactoryTest {
     }
 
     @Test
-    @Ignore //Array of promises is not supported
     public void argContainerArrayPromise() {
         Promise<?>[] arg = new Promise<?>[10];
         for (int i = 0; i < arg.length; i++) {

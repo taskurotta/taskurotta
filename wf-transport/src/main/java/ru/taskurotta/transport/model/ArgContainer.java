@@ -14,7 +14,7 @@ import java.util.UUID;
 @SuppressWarnings("UnusedDeclaration")
 public class ArgContainer implements Cloneable, Serializable {
     public enum ValueType {
-        PLAIN, ARRAY, COLLECTION
+        PLAIN, ARRAY, COLLECTION, PROMISE_ARRAY
     }
 
     private String className;
@@ -81,6 +81,11 @@ public class ArgContainer implements Cloneable, Serializable {
     @JsonIgnore
     public boolean isPlain() {
         return ValueType.PLAIN.equals(type);
+    }
+
+    @JsonIgnore
+    public boolean isPromiseArray() {
+        return ValueType.PROMISE_ARRAY.equals(type);
     }
 
     public ValueType getType() {

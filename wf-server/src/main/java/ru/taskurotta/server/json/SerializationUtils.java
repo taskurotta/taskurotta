@@ -2,6 +2,7 @@ package ru.taskurotta.server.json;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.Promise;
 import ru.taskurotta.transport.model.ArgContainer.ValueType;
 
 import java.lang.reflect.Method;
@@ -32,7 +33,11 @@ public class SerializationUtils {
     public static ValueType extractValueType(Class argClass) {
         ValueType result = null;
         if(argClass.isArray()) {
-            result = ValueType.ARRAY;
+            if(Promise.class.isAssignableFrom(argClass.getComponentType())) {
+                result = ValueType.PROMISE_ARRAY;
+            } else{
+                result = ValueType.ARRAY;
+            }
         } else if(Collection.class.isAssignableFrom(argClass)) {
             result = ValueType.COLLECTION;
         } else {
