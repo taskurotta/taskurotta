@@ -1,7 +1,6 @@
 package ru.taskurotta.server.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -212,7 +211,7 @@ public class ObjectFactory {
     }
 
 
-    public DecisionContainer dumpResult(TaskDecision taskDecision) {
+    public DecisionContainer dumpResult(TaskDecision taskDecision, String actorId) {
         UUID taskId = taskDecision.getId();
         UUID processId = taskDecision.getProcessId();
 
@@ -231,7 +230,7 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers);
+        return new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, actorId);
     }
 
     public ErrorContainer dumpError(Throwable e) {
