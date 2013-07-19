@@ -189,6 +189,45 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void argContainerCollectionPromise() {
+        List<Promise<?>> arg = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            arg.add(Promise.asPromise(Math.random()));
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        List<Promise<?>> newArg = (List<Promise<?>>) objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.size(), newArg.size());
+        for (int i = 0; i < newArg.size(); i++) {
+            assertEquals(arg.get(i), newArg.get(i));
+        }
+    }
+
+    @Test
+    public void argContainerPromiseOfArray() {
+        String[] stringArray = new String[10];
+        for(int i = 0; i < stringArray.length; i++) {
+            stringArray[i] = String.valueOf(Math.random());
+        }
+        Promise<String[]> target = Promise.asPromise(stringArray);
+
+        ArgContainer argContainer = objectFactory.dumpArg(target);
+        log.debug("argContainer = {}", argContainer);
+
+        Promise<String[]> newArg = (Promise<String[]>) objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(target.get().length, newArg.get().length);
+        for (int i = 0; i < newArg.get().length; i++) {
+            assertEquals(target.get()[i], newArg.get()[i]);
+        }
+    }
+
+
+    @Test
     public void argContainerListInt() {
         List<Integer> arg = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
@@ -199,8 +238,6 @@ public class ObjectFactoryTest {
     }
 
 
-    //FixMe:  unsupported yet
-    @org.junit.Ignore
     @Test
     public void argContainerListObject() {
         List<TestObject> arg = new ArrayList<>(10);
