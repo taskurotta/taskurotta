@@ -95,14 +95,25 @@ public class ArgContainer implements Cloneable, Serializable {
         this.promise = promise;
     }
 
+//    /**
+//     * Create new ArgContainer as a copy of this and change its value type
+//     * @param type - new value type
+//     * @return created object
+//     */
+//    public ArgContainer updateType(ValueType type) {
+//        ArgContainer result = new ArgContainer(this);
+//        result.type = type;
+//        return result;
+//    }
+
     /**
      * Create new ArgContainer as a copy of this and change its value type
-     * @param type - new value type
+     * @param promise - new container type
      * @return created object
      */
-    public ArgContainer updateType(ValueType type) {
+    public ArgContainer updateType(boolean promise) {
         ArgContainer result = new ArgContainer(this);
-        result.type = type;
+        result.promise = promise;
         return result;
     }
 

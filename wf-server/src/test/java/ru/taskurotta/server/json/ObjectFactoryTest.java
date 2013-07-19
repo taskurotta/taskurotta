@@ -208,6 +208,26 @@ public class ObjectFactoryTest {
         }
     }
 
+    @Test
+    public void argContainerPromiseOfArray() {
+        String[] stringArray = new String[10];
+        for(int i = 0; i < stringArray.length; i++) {
+            stringArray[i] = String.valueOf(Math.random());
+        }
+        Promise<String[]> target = Promise.asPromise(stringArray);
+
+        ArgContainer argContainer = objectFactory.dumpArg(target);
+        log.debug("argContainer = {}", argContainer);
+
+        Promise<String[]> newArg = (Promise<String[]>) objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(target.get().length, newArg.get().length);
+        for (int i = 0; i < newArg.get().length; i++) {
+            assertEquals(target.get()[i], newArg.get()[i]);
+        }
+    }
+
 
     @Test
     public void argContainerListInt() {

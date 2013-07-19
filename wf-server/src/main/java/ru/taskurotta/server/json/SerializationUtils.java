@@ -1,5 +1,7 @@
 package ru.taskurotta.server.json;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.transport.model.ArgContainer.ValueType;
 
 import java.lang.reflect.Method;
@@ -12,6 +14,7 @@ import java.util.Collection;
  */
 public class SerializationUtils {
 
+    private static final Logger logger = LoggerFactory.getLogger(SerializationUtils.class);
     /**
      * @return method with name "add" and single argument
      */
@@ -27,13 +30,16 @@ public class SerializationUtils {
     }
 
     public static ValueType extractValueType(Class argClass) {
+        ValueType result = null;
         if(argClass.isArray()) {
-            return ValueType.ARRAY;
+            result = ValueType.ARRAY;
         } else if(Collection.class.isAssignableFrom(argClass)) {
-            return ValueType.COLLECTION;
+            result = ValueType.COLLECTION;
         } else {
-            return ValueType.PLAIN;
+            result = ValueType.PLAIN;
         }
+        logger.debug("ValueType determined for class [{}] is [{}]", argClass, result);
+        return result;
     }
 
 
