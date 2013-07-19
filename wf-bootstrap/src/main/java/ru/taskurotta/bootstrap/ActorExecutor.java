@@ -46,7 +46,6 @@ public class ActorExecutor implements Runnable {
                 Task task = taskSpreader.poll();
 
                 if (task == null) {
-                    profiler.cycleFinish();
                     continue;
                 }
 
@@ -55,9 +54,9 @@ public class ActorExecutor implements Runnable {
 
                 log.trace("Thread [{}]: Release decision [{}] of task [{}]", Thread.currentThread().getName(), taskDecision, task);
                 taskSpreader.release(taskDecision);
-            } catch(ServerConnectionException ex) {
+            } catch (ServerConnectionException ex) {
                 log.error("Connection to task server error. {}: {}", ex.getCause().getClass(), ex.getMessage());
-            } catch(ServerException ex) {
+            } catch (ServerException ex) {
                 log.error("Error at client-server communication", ex);
             } catch (Throwable t) {
                 log.error("Unexpected actor execution error", t);

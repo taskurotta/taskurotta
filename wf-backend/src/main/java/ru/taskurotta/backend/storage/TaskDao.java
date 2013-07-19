@@ -28,8 +28,9 @@ public interface TaskDao {
 
     GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public List<TaskContainer> getRepeatedTasks(int iterationCount);
+    List<TaskContainer> getRepeatedTasks(int iterationCount);
 
-    public TaskContainer removeTask(UUID taskId, UUID processId);
+    TaskContainer removeTask(UUID taskId, UUID processId);
 
+    void removeProcessData(UUID processId);
 }

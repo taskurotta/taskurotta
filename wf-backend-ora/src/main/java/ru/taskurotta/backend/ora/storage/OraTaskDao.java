@@ -235,4 +235,9 @@ public class OraTaskDao implements TaskDao {
     public TaskContainer removeTask(UUID taskId, UUID processId) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public void removeProcessData(UUID processId) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

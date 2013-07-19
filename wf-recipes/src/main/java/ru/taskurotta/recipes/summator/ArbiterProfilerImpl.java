@@ -1,6 +1,6 @@
 package ru.taskurotta.recipes.summator;
 
-import ru.taskurotta.test.BasicFlowArbiter;
+import ru.taskurotta.test.flow.BasicFlowArbiter;
 
 import java.util.List;
 

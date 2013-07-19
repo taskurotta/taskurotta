@@ -13,6 +13,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,12 +43,15 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     @Override
     public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
 
-        logger.debug("getTaskToExecute() taskId = [{}]", taskId);
+        logger.debug("getTaskToExecute(taskId[{}], processId[{}]) started", taskId, processId);
 
         TaskContainer task = getTask(taskId, processId);
 
         // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
         // due guarantees for its immutability.
+
+
+        logger.debug("Task getted is [{}]", task);
 
         if (task != null) {
             ArgContainer[] args = task.getArgs();
@@ -78,7 +82,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                             args[i] = arg.updateValue(taskValue);
                         } else {
                             // swap promise with real value for Actor tasks
-                            args[i] = taskValue;
+                            // make sure that the arg type is PLAIN. Promises may come from decider.async tasks
+                            args[i] = taskValue.updateType(ArgContainer.ValueType.PLAIN);
                         }
                     } else if (arg.isObjectArray()) {
 
@@ -86,6 +91,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                         for (int j = 0; j < compositeValue.length; j++) {
                             ArgContainer innerArg = compositeValue[j];
                             ArgContainer taskValue = getTaskValue(innerArg.getTaskId(), processId);
+
+                            logger.debug("Task value getted for composite value [{}] is [{}]", Arrays.asList(compositeValue), taskValue);
 
                             if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
                                 // set real value into promise for Decider tasks
@@ -215,10 +222,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     @Override
     public void finishProcess(UUID processId) {
-        taskDao.getProcessTasks(processId);
-        for (TaskContainer taskContainer : taskDao.getProcessTasks(processId)) {
-            taskDao.removeTask(taskContainer.getTaskId(), processId);
-        }
+        taskDao.removeProcessData(processId);
     }
 
     

@@ -18,7 +18,7 @@
         </property>
     </bean>
 
-    <bean id="arbiter" class="ru.taskurotta.test.BasicFlowArbiter">
+    <bean id="arbiter" class="ru.taskurotta.test.flow.BasicFlowArbiter">
         <constructor-arg name="stages">
             <list>
                 <value>show</value>
@@ -27,7 +27,7 @@
         <property name="strictFlowCheck" value="false" />
     </bean>
 
-    <bean class="ru.taskurotta.test.FlowArbiterFactory">
+    <bean class="ru.taskurotta.test.flow.FlowArbiterFactory">
         <property name="instance" ref="arbiter" />
     </bean>
 </beans>

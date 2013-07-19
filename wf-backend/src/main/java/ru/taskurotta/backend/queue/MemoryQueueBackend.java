@@ -171,7 +171,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (result != null) {
                 UUID taskId = result.getTaskId();
                 UUID processId = result.getProcessId();
-                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, processId, actorId, System.currentTimeMillis()));
+                //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, processId, actorId, System.currentTimeMillis()));
             }
 
         } catch (InterruptedException e) {
@@ -187,8 +187,8 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public void pollCommit(String actorId, UUID taskId, UUID processId) {
-        checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
-        checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
+        //checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
+        //checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override
@@ -203,8 +203,8 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         queue.add(new DelayedTaskElement(taskId, processId, startTime, System.currentTimeMillis()));
 
         //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
+        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
+        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 

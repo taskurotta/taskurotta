@@ -1,6 +1,6 @@
 package ru.taskurotta.recipes.wait.worker;
 
-import ru.taskurotta.test.FlowArbiter;
+import ru.taskurotta.test.flow.FlowArbiter;
 
 /**
  * Created by void 13.05.13 19:56

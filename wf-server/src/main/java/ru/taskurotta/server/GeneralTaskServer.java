@@ -136,7 +136,7 @@ public class GeneralTaskServer implements TaskServer {
     /**
      * @return true if snapshot processing required, false otherwise
      */
-    protected void processDecision(DecisionContainer taskDecision) {
+    public void processDecision(DecisionContainer taskDecision) {
 
         logger.debug("Start processing task decision[{}]", taskDecision);
 
@@ -189,6 +189,7 @@ public class GeneralTaskServer implements TaskServer {
         if (dependencyDecision.isProcessFinished()) {
             processBackend.finishProcess(dependencyDecision.getFinishedProcessId(),
                     dependencyDecision.getFinishedProcessValue());
+            taskBackend.finishProcess(dependencyDecision.getFinishedProcessId());
         }
 
         taskBackend.addDecisionCommit(taskDecision);
