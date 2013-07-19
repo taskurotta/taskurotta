@@ -131,7 +131,7 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
                 modification.linkItem(childTaskId, arg.getTaskId());
 
-            } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) { //shoulb wait for all promises in collection to be ready
+            } else if ((arg.isPromiseArray() || arg.isCollection()) && argTypes != null && ArgType.WAIT.equals(argTypes[j])) { //should wait for all promises in collection to be ready
 
                 processWaitCollection(modification, childTaskId, arg);
 
