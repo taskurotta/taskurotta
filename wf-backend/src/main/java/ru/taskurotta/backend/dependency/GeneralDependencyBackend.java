@@ -131,10 +131,12 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
                 modification.linkItem(childTaskId, arg.getTaskId());
 
-            } else if (arg.isObjectArray() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
+            } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) { //shoulb wait for all promises in collection to be ready
 
-                processWaitArray(modification, childTaskId, arg);
+                processWaitCollection(modification, childTaskId, arg);
+
             }
+
         }
 
         if (taskOptionsContainer != null && taskOptionsContainer.getPromisesWaitFor() != null) {
@@ -148,13 +150,13 @@ public class GeneralDependencyBackend implements DependencyBackend {
         }
     }
 
-    private void processWaitArray(Modification modification, UUID childTaskId, ArgContainer parentArg) {
-        ArgContainer[] innerValues = parentArg.getCompositeValue();
-        for (ArgContainer arg : innerValues) {
-            if (arg.isObjectArray()) {
-                processWaitArray(modification, childTaskId, arg);
-            } else if (arg.isPromise() && !arg.isReady()) {
-                modification.linkItem(childTaskId, arg.getTaskId());
+    private void processWaitCollection(Modification modification, UUID childTaskId, ArgContainer collectionArg) {
+        ArgContainer[] items = collectionArg.getCompositeValue();
+        for (ArgContainer item : items) {
+            if (item.isCollection()) {
+                processWaitCollection(modification, childTaskId, item);
+            } else if (item.isPromise() && !item.isReady()) {
+                modification.linkItem(childTaskId, item.getTaskId());
             }
         }
     }

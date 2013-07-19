@@ -1,6 +1,7 @@
 package ru.taskurotta.server.json;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,6 +172,7 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    @Ignore //Array of promises is not supported
     public void argContainerArrayPromise() {
         Promise<?>[] arg = new Promise<?>[10];
         for (int i = 0; i < arg.length; i++) {
@@ -189,6 +191,25 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void argContainerCollectionPromise() {
+        List<Promise<?>> arg = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            arg.add(Promise.asPromise(Math.random()));
+        }
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("argContainer = {}", argContainer);
+
+        List<Promise<?>> newArg = (List<Promise<?>>) objectFactory.parseArg(argContainer);
+        log.debug("newArg = {}", newArg);
+
+        assertEquals(arg.size(), newArg.size());
+        for (int i = 0; i < newArg.size(); i++) {
+            assertEquals(arg.get(i), newArg.get(i));
+        }
+    }
+
+
+    @Test
     public void argContainerListInt() {
         List<Integer> arg = new ArrayList<>(10);
         for (int i = 0; i < 10; i++) {
@@ -199,8 +220,6 @@ public class ObjectFactoryTest {
     }
 
 
-    //FixMe:  unsupported yet
-    @org.junit.Ignore
     @Test
     public void argContainerListObject() {
         List<TestObject> arg = new ArrayList<>(10);

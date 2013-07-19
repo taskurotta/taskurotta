@@ -56,7 +56,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         if (task != null) {
             ArgContainer[] args = task.getArgs();
 
-            if (args != null) {
+            if (args != null) {//updating ready Promises args into real values
 
                 for (int i = 0; i < args.length; i++) {
                     ArgContainer arg = args[i];
@@ -85,14 +85,20 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                             // make sure that the arg type is PLAIN. Promises may come from decider.async tasks
                             args[i] = taskValue.updateType(ArgContainer.ValueType.PLAIN);
                         }
-                    } else if (arg.isObjectArray()) {
 
+                    } else if (arg.isCollection()) {//can be collection of promises, case should be checked
                         ArgContainer[] compositeValue = arg.getCompositeValue();
                         for (int j = 0; j < compositeValue.length; j++) {
                             ArgContainer innerArg = compositeValue[j];
                             ArgContainer taskValue = getTaskValue(innerArg.getTaskId(), processId);
 
                             logger.debug("Task value getted for composite value [{}] is [{}]", Arrays.asList(compositeValue), taskValue);
+
+                            if (taskValue == null) {
+                                // value may be null for NoWait promises
+                                // leave it in peace...
+                                continue;
+                            }
 
                             if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
                                 // set real value into promise for Decider tasks
