@@ -7,6 +7,7 @@ import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
+import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
@@ -34,7 +35,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private CheckpointInfoRetriever checkpointInfo;
     private ProfileInfoRetriever profileInfo;
     private DecisionInfoRetriever decisionInfo;
-
+    private ConfigInfoRetriever configInfo;
 
     @Override
     public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
@@ -52,7 +53,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
                 tmpResult.add(queueVO);
             }
         }
-        return new GenericPage<QueueVO>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
+        return new GenericPage<>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
     }
 
     @Override
@@ -185,6 +186,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return taskInfo.getRepeatedTasks(iterationCount);
     }
 
+    @Override
+    public void blockActor(String actorId) {
+        configInfo.blockActor(actorId);
+    }
+
     public void setQueueInfo(QueueInfoRetriever queueInfo) {
         this.queueInfo = queueInfo;
     }
@@ -207,5 +213,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     public void setDecisionInfo(DecisionInfoRetriever decisionInfo) {
         this.decisionInfo = decisionInfo;
+    }
+
+    public void setConfigInfo(ConfigInfoRetriever configInfo) {
+        this.configInfo = configInfo;
     }
 }

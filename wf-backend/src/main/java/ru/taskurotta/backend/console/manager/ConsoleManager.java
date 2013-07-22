@@ -68,4 +68,5 @@ public interface ConsoleManager {
 
     public List<TaskContainer> getRepeatedTasks(int iterationCount);
 
+    public void blockActor(String actorId);
 }
