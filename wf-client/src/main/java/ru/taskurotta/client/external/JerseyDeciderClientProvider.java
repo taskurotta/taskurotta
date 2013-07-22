@@ -73,7 +73,7 @@ public class JerseyDeciderClientProvider implements DeciderClientProvider {
             requestBuilder.type(MediaType.APPLICATION_JSON);
             requestBuilder.accept(MediaType.APPLICATION_JSON);
 
-            String jsonValue = objectFactory.writeAsString(new TaskContainerWrapper(taskContainer));
+            String jsonValue = objectFactory.getPlainJson(new TaskContainerWrapper(taskContainer));
             requestBuilder.post(jsonValue);
             logger.debug("Send JSON [{}] to task server to resource [{}]", jsonValue, resource);
         } catch (UniformInterfaceException e) {

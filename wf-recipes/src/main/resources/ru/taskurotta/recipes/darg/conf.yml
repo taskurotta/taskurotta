@@ -50,10 +50,20 @@ logback:
              \@level: INFO
         - org.springframework:
              key: name
-             \@level: !!!str OFF
+             \@level: ERROR
         - ru.taskurotta.recipes.darg:
              key: name
              \@level: DEBUG
+        - ru.taskurotta.server.json:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.backend.storage:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.bootstrap.config:
+             key: name
+             \@level: INFO
+
 
     root:
         appender-ref:

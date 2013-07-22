@@ -63,7 +63,7 @@ public class HzTaskSpreader implements TaskSpreader {
     public void release(TaskDecision taskDecision) {
         logger.trace("Try to release task decision [{}]", taskDecision);
 
-        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision);
+        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, actorDefinition.getFullName());
 
         Future<?> future = releaseExecutorService.submit(new DistributedTask<>(new ReleaseTask(decisionContainer), taskDecision.getProcessId()));
         try {

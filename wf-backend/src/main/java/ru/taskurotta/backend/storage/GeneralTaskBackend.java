@@ -50,60 +50,40 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
         // due guarantees for its immutability.
 
-
-        logger.debug("Task getted is [{}]", task);
-
         if (task != null) {
             ArgContainer[] args = task.getArgs();
 
-            if (args != null) {
+            if (args != null) {//updating ready Promises args into real values
+                logger.debug("Task id[{}], type[{}], method[{}] args before swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
 
                 for (int i = 0; i < args.length; i++) {
                     ArgContainer arg = args[i];
+                    //logger.info("BEFORE: [{}]", args[i]);
 
-                    if (arg.isPromise()) {
+                    if (args[i].isPromise()) {
 
-                        if (arg.isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+                        if (args[i].isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
 
                             // set real value to Actor tasks
-                            args[i] = arg.updateType(ArgContainer.ValueType.PLAIN);
+                            args[i] = args[i].updateType(false);
                             continue;
                         }
 
-                        ArgContainer taskValue = getTaskValue(arg.getTaskId(), processId);
-                        if (taskValue == null) {
-                            // value may be null for NoWait promises
-                            // leave it in peace...
-                            continue;
-                        }
+                        args[i] = processPromiseArgValue(args[i], processId, task.getType());
 
-                        if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-                            // set real value into promise for Decider tasks
-                            args[i] = arg.updateValue(taskValue);
-                        } else {
-                            // swap promise with real value for Actor tasks
-                            // make sure that the arg type is PLAIN. Promises may come from decider.async tasks
-                            args[i] = taskValue.updateType(ArgContainer.ValueType.PLAIN);
-                        }
-                    } else if (arg.isObjectArray()) {
-
+                    } else if (arg.isCollection() || arg.isPromiseArray()) {//can be collection of promises, case should be checked
                         ArgContainer[] compositeValue = arg.getCompositeValue();
                         for (int j = 0; j < compositeValue.length; j++) {
                             ArgContainer innerArg = compositeValue[j];
-                            ArgContainer taskValue = getTaskValue(innerArg.getTaskId(), processId);
-
-                            logger.debug("Task value getted for composite value [{}] is [{}]", Arrays.asList(compositeValue), taskValue);
-
-                            if (task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-                                // set real value into promise for Decider tasks
-                                compositeValue[j] = innerArg.updateValue(taskValue);
-                            } else {
-                                // swap promise with real value for Actor tasks
-                                compositeValue[j] = taskValue;
+                            if(innerArg.isPromise()) {
+                                compositeValue[j] = processPromiseArgValue(innerArg, processId, task.getType());
                             }
                         }
                     }
+                    //logger.info("AFTER: [{}]", args[i]);
                 }
+
+                logger.debug("Task id[{}], type[{}], method[{}] args after swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
             }
 
             //Setting TASK_START checkpoint
@@ -113,6 +93,26 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         }
 
         return task;
+    }
+
+
+    private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskType taskType) {
+        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);
+
+        if (taskValue == null) {
+            // value may be null for NoWait promises
+            // leave it in peace...
+            return pArg;
+        }
+
+        if (taskType.equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+            // set real value into promise for Decider tasks
+            pArg = pArg.updateValue(taskValue).updateType(true);
+        } else {
+            // swap promise with real value for Actor tasks
+            pArg = taskValue.updateType(false);
+        }
+        return pArg;
     }
 
     private ArgContainer getTaskValue(UUID taskId, UUID processId) {
@@ -225,7 +225,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         taskDao.removeProcessData(processId);
     }
 
-    
+
     public boolean isTaskInProgress(UUID taskId, UUID processId) {
         List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, processId, null, -1, -1));
         return checkpoints != null && !checkpoints.isEmpty();
