@@ -12,9 +12,11 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgContainer.ValueType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -24,6 +26,11 @@ import ru.taskurotta.util.ActorUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,42 +55,48 @@ public class ObjectFactory {
             return null;
         }
 
-        Object value = null;
-        String json = argContainer.getJSONValue();
-        if (json != null) {
-
-            String className = argContainer.getClassName();
-            try {
-                value = argContainer.isArray()? getArrayValue(json, className): getSimpleValue(json, className);
-            } catch (Exception e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not instantiate Object from json type["+argContainer.getType()+"]. JSON value: " + argContainer.getJSONValue(), e);
+        try {
+            if(argContainer.getType() == null && argContainer.getClassName()!=null) { //try to determine type. This info can be lost after swapping with Promise on server side
+                argContainer.setType(SerializationUtils.extractValueType(Class.forName(argContainer.getClassName())));
             }
-        } else {
-            ArgContainer[] compositeValue = argContainer.getCompositeValue();
-            if (null != compositeValue) {
-                try {
-                    value = Array.newInstance(Class.forName(argContainer.getClassName()), compositeValue.length);
-                    for (int i = 0; i < compositeValue.length; i++) {
-                        Array.set(value, i, parseArg(compositeValue[i]));
-                    }
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Can not instantiate ObjectArray", e);
+
+            if (argContainer.isPromise()) {
+                Promise promise = Promise.createInstance(argContainer.getTaskId());
+                if (argContainer.isReady()) {
+                    promise.set(extractValue(argContainer));
                 }
+                logger.debug("ArgContainer[{}] parsed into promise[{}]", argContainer, promise);
+                return promise;
+
+            } else {//not a Promise, just some POJO or a primitive
+                Object result = extractValue(argContainer);
+                logger.debug("ArgContainer[{}] parsed into object[{}]", argContainer, result);
+                return result;
             }
+
+        } catch(Exception e) {
+            throw new SerializationException("Cannot deserialize arg["+argContainer+"]", e);
         }
 
+    }
 
-        if (argContainer.isPromise()) {
-            Promise promise = Promise.createInstance(argContainer.getTaskId());
-            if (argContainer.isReady()) {
-                //noinspection unchecked
-                promise.set(value);
-            }
-            return promise;
+
+    private Object extractValue(ArgContainer arg) throws Exception {
+        Object result = null;
+        if(arg.isPlain()) { //simple object or primitive value
+            result = getSimpleValue(arg.getJSONValue(), arg.getClassName());
+
+        } else if(arg.isArray()) {//array of custom POJO objects or primitives
+            result = getArrayValue(arg.getJSONValue(), arg.getClassName());
+
+        } else if(arg.isCollection()) {//collection
+            result = getCollectionValue(arg.getCompositeValue(), arg.getClassName());
+        } else if(arg.isPromiseArray()) {//promise array
+            result = getPromiseArrayValue(arg.getCompositeValue(), arg.getClassName());
+        } else {
+            throw new SerializationException("Unsupported arg value type for ["+arg+"]!");
         }
-
-        return value;
+        return result;
     }
 
     private Object getSimpleValue(String json, String valueClass) throws ClassNotFoundException, IOException {
@@ -103,53 +116,88 @@ public class ObjectFactory {
         return array;
     }
 
-    public ArgContainer dumpArg(Object arg) {
-
-        ArgContainer.ValueType type = ArgContainer.ValueType.PLAIN;
-        UUID taskId = null;
-        boolean isReady = true;
-
-        if (arg instanceof Promise) {
-            type = ArgContainer.ValueType.PROMISE;
-            taskId = ((Promise) arg).getId();
-            isReady = ((Promise) arg).isReady();
-            arg = isReady? ((Promise) arg).get() : null;
+    private Object getCollectionValue(ArgContainer[] items, String collectionClassName) throws Exception {
+        Class collectionClass = Thread.currentThread().getContextClassLoader().loadClass(collectionClassName);
+        Object result = collectionClass.newInstance();
+        Method addMethod = SerializationUtils.getAddMethod(collectionClass);
+        if(addMethod == null) {
+            throw new SerializationException("cannot find method \"add\" for collection typed class " + collectionClass.getName());
         }
-
-        ArgContainer result;
-        String className = null;
-        String jsonValue = null;
-        if (arg != null) {
-            try {
-                if (arg.getClass().isArray()) {
-                    className = arg.getClass().getComponentType().getName();
-                    if (arg.getClass().getComponentType().isAssignableFrom(Promise.class)) {
-                        type = ArgContainer.ValueType.OBJECT_ARRAY;
-                        ArgContainer[] compositeValue = writeAsObjectArray(arg) ;
-                        result = new ArgContainer(className, type, taskId, isReady, compositeValue);
-                    } else {
-                        type = ArgContainer.ValueType.ARRAY;
-                        jsonValue = writeAsArray(arg) ;
-                        result = new ArgContainer(className, type, taskId, isReady, jsonValue);
-                    }
-                } else {
-                    className = arg.getClass().getName();
-                    jsonValue = mapper.writeValueAsString(arg);
-                    result = new ArgContainer(className, type, taskId, isReady, jsonValue);
-                }
-
-            } catch (JsonProcessingException e) {
-                // TODO: create new RuntimeException type
-                throw new RuntimeException("Can not create json String from Object: " + arg, e);
-            }
-        } else {
-            result = new ArgContainer(className, type, taskId, isReady, jsonValue);
+        for (ArgContainer item: items) {
+            addMethod.invoke(result, parseArg(item));
         }
-
-        logger.debug("Created new ArgContainer[{}]", result);
         return result;
     }
 
+    private Object getPromiseArrayValue(ArgContainer[] items, String itemClassName) throws Exception {
+        if(items == null) {
+            return null;
+        }
+        Object array = ArrayFactory.newInstance(itemClassName, items.length);
+        for (int i = 0; i < items.length; i++) {
+            Array.set(array, i, parseArg(items[i]));
+        }
+        return array;
+    }
+
+    public ArgContainer dumpArg(Object arg) {
+        if(arg == null) {
+            return null;
+        }
+
+        ArgContainer result = new ArgContainer();
+
+        try {
+            if (arg instanceof Promise) {
+                Promise pArg = (Promise)arg;
+                result.setPromise(true);
+                result.setReady(pArg.isReady());
+                result.setTaskId(pArg.getId());
+                if (pArg.isReady()) {
+                    setArgContainerValue(result, pArg.get());
+                }
+                //TODO: information about Promise generic lost?
+            } else {
+                result.setPromise(false);
+                result.setReady(true);//just in case
+                result.setTaskId(null); //TODO: taskId for plain values?
+
+                setArgContainerValue(result, arg);
+            }
+
+        } catch(Exception e) {
+            throw new SerializationException("Cannot dump arg [" + arg+ "]", e);
+        }
+
+        logger.debug("Object [{}] dumped into an ArgContainer[{}]", arg, result);
+        return result;
+    }
+
+    private void setArgContainerValue(ArgContainer target, Object value) throws Exception {
+        ValueType type = SerializationUtils.extractValueType(value.getClass());
+        target.setType(type);
+
+        if (ValueType.PLAIN.equals(type)) {
+            target.setJSONValue(getPlainJson(value));
+            target.setClassName(value.getClass().getName());
+        } else if (ValueType.ARRAY.equals(type)) {
+            target.setJSONValue(getArrayJson(value));
+            target.setClassName(value.getClass().getComponentType().getName());
+        } else if (ValueType.COLLECTION.equals(type)) {
+            target.setCompositeValue(parseCollectionValues(value));
+            target.setClassName(value.getClass().getName());
+
+        } else if (ValueType.PROMISE_ARRAY.equals(type)) {
+            target.setClassName(value.getClass().getComponentType().getName());
+            target.setCompositeValue(parsePromiseArrayValues(value));
+//            if(Promise.class.isAssignableFrom(value.getClass().getComponentType())) {
+//                throw new SerializationException("Array of Promise object is not supported, please use collection instead");
+//            }
+
+        } else {
+            throw new SerializationException("Cannot determine value type to set for object " + value);
+        }
+    }
 
     public Task parseTask(TaskContainer taskContainer) {
 
@@ -241,11 +289,11 @@ public class ObjectFactory {
         return new ErrorContainer(e);
     }
 
-    public String writeAsString(Object object) throws JsonProcessingException {
+    public String getPlainJson(Object object) throws JsonProcessingException {
         return mapper.writeValueAsString(object);
     }
 
-    private String writeAsArray(Object array) throws JsonProcessingException {
+    private String getArrayJson(Object array) throws JsonProcessingException {
         ArrayNode arrayNode = mapper.createArrayNode();
         if (array != null) {
 
@@ -259,17 +307,27 @@ public class ObjectFactory {
         return arrayNode.toString();
     }
 
-    private ArgContainer[] writeAsObjectArray(Object array) throws JsonProcessingException {
+    private ArgContainer[] parseCollectionValues(Object collection) {
+        List<ArgContainer> result = new ArrayList();
+        Iterator iterator = ((Collection)collection).iterator();
+        while(iterator.hasNext()) {
+            result.add(dumpArg(iterator.next()));
+        }
+        return result.toArray(new ArgContainer[result.size()]);
+    }
+
+    private ArgContainer[] parsePromiseArrayValues(Object pArray) {
         ArgContainer[] result = null;
 
-        if (array != null) {
-            int size = Array.getLength(array);
+        if (pArray != null) {
+            int size = Array.getLength(pArray);
             result = new ArgContainer[size];
             for (int i = 0; i<size; i++) {
-                result[i] = dumpArg(Array.get(array, i));
+                result[i] = dumpArg(Array.get(pArray, i));
             }
         }
 
         return result;
     }
+
 }
