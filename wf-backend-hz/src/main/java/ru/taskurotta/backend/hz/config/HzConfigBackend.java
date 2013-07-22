@@ -202,4 +202,20 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
 
         logger.debug("Block actorId [{}]", actorId);
     }
+
+    @Override
+    public void unblockActor(String actorId) {
+        IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
+
+        ActorPreferences actorPreferences = actorPreferencesMap.get(actorId);
+
+        if (actorPreferences == null) {
+            return;
+        }
+
+        actorPreferences.setBlocked(false);
+        actorPreferencesMap.put(actorId, actorPreferences);
+
+        logger.debug("Unblock actorId [{}]", actorId);
+    }
 }

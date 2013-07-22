@@ -6,5 +6,8 @@ package ru.taskurotta.backend.console.retriever;
  * Time: 13:59
  */
 public interface ConfigInfoRetriever {
+
     public void blockActor(String actorId);
+
+    public void unblockActor(String actorId);
 }
