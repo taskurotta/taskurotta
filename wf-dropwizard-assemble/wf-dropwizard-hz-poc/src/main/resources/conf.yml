@@ -29,6 +29,8 @@ properties:
   hz.mancenter.enabled: true
   hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
   decision.sleep: 100000
+  hazelcast.jmx: true
+  hazelcast.jmx.detailed: true
 
 #resourceBeans:
 #  - taskStarterResource

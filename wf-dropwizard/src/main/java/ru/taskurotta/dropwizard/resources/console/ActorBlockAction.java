@@ -2,7 +2,6 @@ package ru.taskurotta.dropwizard.resources.console;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -11,11 +10,11 @@ import javax.ws.rs.core.Response;
  * Time: 13:31
  */
 
-@Path("/console/actor/block/{actorId}")
-public class ActorBlockResource extends BaseResource {
+@Path("/console/actor/block")
+public class ActorBlockAction extends BaseResource {
 
     @POST
-    public Response blockActor(@PathParam("actorId") String actorId) {
+    public Response blockActor(String actorId) {
         try {
             consoleManager.blockActor(actorId);
             return Response.ok().build();

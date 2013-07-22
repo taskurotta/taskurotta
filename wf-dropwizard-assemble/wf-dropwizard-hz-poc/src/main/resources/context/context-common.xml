@@ -103,7 +103,10 @@
         <property name="processesStorageMapName" value="${hz.processes.map.name}" />
     </bean>
 
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
+    <!--<bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />-->
+    <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend" >
+        <constructor-arg ref="hzInstance"/>
+    </bean>
 
     <!-- Health checks -->
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">

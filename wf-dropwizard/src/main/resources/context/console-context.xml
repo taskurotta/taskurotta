@@ -24,6 +24,7 @@
     <bean id="hoveringQueuesResource" class="ru.taskurotta.dropwizard.resources.console.HoveringQueuesResource" parent="baseConsoleResource"/>
     <bean id="repeatedTasks" class="ru.taskurotta.dropwizard.resources.console.RepeatedTasksResource" parent="baseConsoleResource"/>
     <bean id="consoleTaskDecisionResource" class="ru.taskurotta.dropwizard.resources.console.TaskDecisionResource" parent="baseConsoleResource" />
+    <bean id="consoleActorBlockAction" class="ru.taskurotta.dropwizard.resources.console.ActorBlockAction" parent="baseConsoleResource" />
 
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend"/>
