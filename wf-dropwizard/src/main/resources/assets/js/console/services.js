@@ -46,7 +46,10 @@ consoleServices.factory("$$data", function ($resource, $http) {
             return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         },
         blockActor: function(actorId){
-            return $http.post('/rest/console/actor/block/' + encodeURIComponent(actorId));
+            return $http.post('/rest/console/actor/block/', actorId);
+        },
+        unblockActor: function(actorId){
+            return $http.post('/rest/console/actor/unblock/', actorId);
         }
     };
 

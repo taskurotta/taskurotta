@@ -191,6 +191,10 @@ public class ConsoleManagerImpl implements ConsoleManager {
         configInfo.blockActor(actorId);
     }
 
+    public void unblockActor(String actorId) {
+        configInfo.unblockActor(actorId);
+    }
+
     public void setQueueInfo(QueueInfoRetriever queueInfo) {
         this.queueInfo = queueInfo;
     }
