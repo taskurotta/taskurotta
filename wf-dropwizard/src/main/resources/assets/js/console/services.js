@@ -44,6 +44,9 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getTaskDecision: function(taskId, processId){
             return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
+        },
+        blockActor: function(actorId){
+            return $http.post('/rest/console/actor/block/' + encodeURIComponent(actorId));
         }
     };
 

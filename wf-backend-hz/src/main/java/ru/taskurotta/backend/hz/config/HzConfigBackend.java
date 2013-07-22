@@ -13,6 +13,7 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 17.06.13
  * Time: 15:35
  */
-public class HzConfigBackend implements ConfigBackend {
+public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(HzConfigBackend.class);
 
@@ -183,5 +184,22 @@ public class HzConfigBackend implements ConfigBackend {
 
     public void setDefaultTimeUnit(TimeUnit defaultTimeUnit) {
         this.defaultTimeUnit = defaultTimeUnit;
+    }
+
+    @Override
+    public void blockActor(String actorId) {
+        IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
+
+        ActorPreferences actorPreferences = actorPreferencesMap.get(actorId);
+        if (actorPreferences == null) {
+            actorPreferences = new ActorPreferences();
+            actorPreferences.setId(actorId);
+        }
+
+        actorPreferences.setBlocked(true);
+
+        actorPreferencesMap.put(actorId, actorPreferences);
+
+        logger.debug("Block actorId [{}]", actorId);
     }
 }
