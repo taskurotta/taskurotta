@@ -74,7 +74,7 @@ public class DecisionContainer implements Serializable {
                 ", restartTime=" + restartTime +
                 ", tasks=" + Arrays.toString(tasks) +
                 ", actorId='" + actorId + '\'' +
-                "} " + super.toString();
+                "} ";
     }
 
     @Override

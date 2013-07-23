@@ -226,6 +226,46 @@ public class ObjectFactoryTest {
         }
     }
 
+    @Test
+    public void argContainerPromiseCollection() {
+        List<Promise> target = new ArrayList<Promise>();
+        TestObject[] array = getTestObjectArray(10);
+        List<TestObject> list = getTestObjectList(10);
+        target.add(Promise.asPromise(array));
+        target.add(Promise.asPromise(list));
+
+        ArgContainer arg = objectFactory.dumpArg(target);
+        List<Promise> newTarget = (List<Promise>) objectFactory.parseArg(arg);
+
+        assertEquals("Deserialized collection arrays must be the same", target.size(), newTarget.size());
+        TestObject[] newArray = (TestObject[])newTarget.get(0).get();
+        List<TestObject> newList = (List<TestObject>)newTarget.get(1).get();
+        assertEquals(newArray.length, array.length) ;
+        for(int i = 0; i<10; i++) {
+         assertEquals(array[i], newArray[i]);
+        }
+
+        assertEquals(list.size(), newList.size());
+        for(int i = 0; i<10; i++) {
+            assertEquals(list.get(i), newList.get(i));
+        }
+    }
+
+    private TestObject[] getTestObjectArray(int size) {
+        TestObject[] result = new TestObject[size];
+        for(int i = 0; i<size; i++){
+            result[i] = new TestObject("obj-"+1, Long.valueOf(i));
+        }
+        return result;
+    }
+
+    private List<TestObject> getTestObjectList(int size) {
+        List<TestObject> result = new ArrayList<TestObject>();
+        for(int i = 0; i<size; i++) {
+          result.add(new TestObject("OBJ-"+i, Long.valueOf(i)));
+        }
+        return result;
+    }
 
     @Test
     public void argContainerListInt() {

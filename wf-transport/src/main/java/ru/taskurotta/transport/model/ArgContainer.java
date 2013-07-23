@@ -190,6 +190,6 @@ public class ArgContainer implements Cloneable, Serializable {
                 ", type=" + type +
                 ", compositeValue=" + Arrays.toString(compositeValue) +
                 ", promise=" + promise +
-                "} " + super.toString();
+                "} ";
     }
 }

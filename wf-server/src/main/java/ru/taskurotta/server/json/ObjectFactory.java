@@ -83,18 +83,20 @@ public class ObjectFactory {
 
     private Object extractValue(ArgContainer arg) throws Exception {
         Object result = null;
-        if(arg.isPlain()) { //simple object or primitive value
+        if (arg.isPlain()) { //simple object or primitive value
             result = getSimpleValue(arg.getJSONValue(), arg.getClassName());
 
-        } else if(arg.isArray()) {//array of custom POJO objects or primitives
+        } else if (arg.isArray()) {//array of custom POJO objects or primitives
             result = getArrayValue(arg.getJSONValue(), arg.getClassName());
 
-        } else if(arg.isCollection()) {//collection
+        } else if (arg.isCollection()) {//collection
             result = getCollectionValue(arg.getCompositeValue(), arg.getClassName());
-        } else if(arg.isPromiseArray()) {//promise array
+
+        } else if (arg.isPromiseArray()) {//promise array
             result = getPromiseArrayValue(arg.getCompositeValue(), arg.getClassName());
+
         } else {
-            throw new SerializationException("Unsupported arg value type for ["+arg+"]!");
+            throw new SerializationException("Unsupported or null value type for arg["+arg+"]!");
         }
         return result;
     }
@@ -278,7 +280,9 @@ public class ObjectFactory {
             }
         }
 
-        return new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, actorId);
+        DecisionContainer result = new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, actorId);
+        logger.debug("DECISION: dumpResult for taskDecision[{}] is [{}]", taskDecision, result);
+        return result;
     }
 
     public ErrorContainer dumpError(Throwable e) {

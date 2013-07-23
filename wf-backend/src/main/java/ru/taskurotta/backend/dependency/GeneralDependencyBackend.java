@@ -153,7 +153,7 @@ public class GeneralDependencyBackend implements DependencyBackend {
     private void processWaitCollection(Modification modification, UUID childTaskId, ArgContainer collectionArg) {
         ArgContainer[] items = collectionArg.getCompositeValue();
         for (ArgContainer item : items) {
-            if (item.isCollection()) {
+            if (item.isCollection() || item.isPromiseArray()) {
                 processWaitCollection(modification, childTaskId, item);
             } else if (item.isPromise() && !item.isReady()) {
                 modification.linkItem(childTaskId, item.getTaskId());

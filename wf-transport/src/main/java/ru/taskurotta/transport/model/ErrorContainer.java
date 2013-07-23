@@ -86,7 +86,7 @@ public class ErrorContainer {
                 "className='" + className + '\'' +
                 ", message='" + message + '\'' +
                 ", stackTrace='" + stackTrace + '\'' +
-                "} " + super.toString();
+                "} ";
     }
 
 }

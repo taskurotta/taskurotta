@@ -58,7 +58,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
                 for (int i = 0; i < args.length; i++) {
                     ArgContainer arg = args[i];
-                    //logger.info("BEFORE: [{}]", args[i]);
 
                     if (args[i].isPromise()) {
 
@@ -80,7 +79,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                             }
                         }
                     }
-                    //logger.info("AFTER: [{}]", args[i]);
                 }
 
                 logger.debug("Task id[{}], type[{}], method[{}] args after swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
@@ -121,7 +119,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         if (taskId == null) {
             throw new IllegalStateException("Cannot find value for NULL taskId");
         }
-
         DecisionContainer taskDecision = taskDao.getDecision(taskId, processId);
 
         if (taskDecision == null) {
@@ -129,25 +126,14 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             return null;
         }
 
-        ArgContainer argContainer = taskDecision.getValue();
-
-        if (argContainer == null) {
-            logger.debug("getTaskValue() argContainer == null");
-            return null;
-        }
-
-        if (!argContainer.isPromise()) {
-            logger.debug("getTaskValue() !argContainer.isPromise()");
-            return argContainer;
-        }
-
-        if (argContainer.isPromise() && !argContainer.isReady()) {
+        ArgContainer result = taskDecision.getValue();
+        if (result!=null && result.isPromise() && !result.isReady()) {
             logger.debug("getTaskValue() argContainer.isPromise() && !argContainer.isReady()");
-            return getTaskValue(argContainer.getTaskId(), processId);
+            result = getTaskValue(result.getTaskId(), processId);
         }
 
-        logger.debug("getTaskValue() returns argContainer = [{}]", argContainer);
-        return argContainer;
+        logger.debug("getTaskValue() returns argContainer = [{}]", result);
+        return result;
     }
 
 

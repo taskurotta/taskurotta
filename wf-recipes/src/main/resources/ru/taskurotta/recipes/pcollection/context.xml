@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config />
+    <context:property-placeholder />
+
+    <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
+
+    <bean id="producer" class="ru.taskurotta.recipes.pcollection.worker.CollectionProducerImpl" >
+        <property name="arbiter" ref="arbiter" />
+    </bean>
+
+    <bean id="consumer" class="ru.taskurotta.recipes.pcollection.worker.CollectionConsumerImpl" >
+        <property name="arbiter" ref="arbiter" />
+    </bean>
+
+    <bean id="decider" class="ru.taskurotta.recipes.pcollection.decider.CollectionOfPromiseDeciderImpl">
+        <property name="consumer">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.recipes.pcollection.worker.CollectionConsumerClient"/>
+            </bean>
+        </property>
+        <property name="producer">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.recipes.pcollection.worker.CollectionProducerClient"/>
+            </bean>
+        </property>
+        <property name="selfAsync">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
+                <constructor-arg value="ru.taskurotta.recipes.pcollection.decider.CollectionOfPromiseDeciderImpl" />
+            </bean>
+        </property>
+
+        <property name="arbiter" ref="arbiter" />
+
+    </bean>
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory"/>
+
+    <bean id="taskCreator" class="ru.taskurotta.recipes.pcollection.Launcher" init-method="launch">
+        <property name="clientServiceManager" ref="clientServiceManager" />
+    </bean>
+
+    <bean id="arbiter" class="ru.taskurotta.recipes.pcollection.PromiseCollectionArbiter" factory-method="createArbiter" init-method="init">
+        <constructor-arg name="stages">
+            <list>
+                <value>execute</value>
+                <value>produceArray, produceList</value>
+                <value>waitFor, logResult, isContainSameElements</value>
+                <value>consumeArray, consumeCollection</value>
+            </list>
+        </constructor-arg>
+        <property name="strictFlowCheck" value="true" />
+    </bean>
+
+</beans>
