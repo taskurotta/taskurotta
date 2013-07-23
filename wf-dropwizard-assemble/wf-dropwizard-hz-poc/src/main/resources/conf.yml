@@ -1,4 +1,4 @@
-#Location of Spring application context:
+#Location of Spring application context (or comma-separated list of contexts):
 #Hazelcast without mongo mapstore
 contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-simple.xml, classpath*:context/console-context.xml"
 
