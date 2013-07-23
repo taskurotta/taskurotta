@@ -43,7 +43,7 @@ public class SummatorDeciderImpl implements SummatorDecider {
         selfAsync.waitForResult(add(preResult));
 	}
 
-	private Promise<Integer> add(Promise<Integer> data[]) {
+	private Promise<Integer> add(Promise<Integer>[] data) {
 		if (data.length == 1) {
 			return data[0];
 		}

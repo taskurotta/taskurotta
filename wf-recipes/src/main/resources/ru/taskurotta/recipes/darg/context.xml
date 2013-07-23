@@ -46,8 +46,7 @@
         <constructor-arg name="stages">
             <list>
                 <value>start</value>
-                <value>getParamDecider, getParamWorker, getParamWorker</value>
-                <value>getNumberWorker, getNumberWorker, useParam, getSubprocessValue, processParams</value>
+                <value>getParamDecider, getParamWorker, getParamWorker, getNumberWorker, getNumberWorker, useParam, getSubprocessValue, processParams</value>
                 <value>waitResultAndLogIt</value>
             </list>
         </constructor-arg>

@@ -1,7 +1,6 @@
 package ru.taskurotta.recipes;
 
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ public class PromiseCollectionTest {
     private static final Logger logger = LoggerFactory.getLogger(PromiseCollectionTest.class);
 
     @Test
-    @Ignore //TODO: Should work, but it doesn't. Fix it.
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
         new Bootstrap("ru/taskurotta/recipes/pcollection/conf.yaml").start();
 

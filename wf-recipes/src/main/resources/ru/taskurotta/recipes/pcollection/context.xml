@@ -51,8 +51,7 @@
             <list>
                 <value>execute</value>
                 <value>produceArray, produceList</value>
-                <value>waitFor, logResult, isContainSameElements</value>
-                <value>consumeArray, consumeCollection</value>
+                <value>waitFor, logResult, isContainSameElements, consumeArray, consumeCollection</value>
             </list>
         </constructor-arg>
         <property name="strictFlowCheck" value="true" />

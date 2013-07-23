@@ -100,17 +100,6 @@ public class ArgContainer implements Cloneable, Serializable {
         this.promise = promise;
     }
 
-//    /**
-//     * Create new ArgContainer as a copy of this and change its value type
-//     * @param type - new value type
-//     * @return created object
-//     */
-//    public ArgContainer updateType(ValueType type) {
-//        ArgContainer result = new ArgContainer(this);
-//        result.type = type;
-//        return result;
-//    }
-
     /**
      * Create new ArgContainer as a copy of this and change its value type
      * @param promise - new container type
@@ -153,6 +142,7 @@ public class ArgContainer implements Cloneable, Serializable {
         result.compositeValue = source.compositeValue;
         result.isReady = source.isReady;
         result.promise = source.promise;
+        result.type = source.type;
         return result;
     }
 

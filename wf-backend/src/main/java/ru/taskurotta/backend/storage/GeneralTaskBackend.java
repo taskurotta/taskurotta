@@ -61,13 +61,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
                     if (args[i].isPromise()) {
 
-                        if (args[i].isReady() && !task.getType().equals(TaskType.DECIDER_ASYNCHRONOUS)) {
-
-                            // set real value to Actor tasks
-                            args[i] = args[i].updateType(false);
-                            continue;
-                        }
-
                         args[i] = processPromiseArgValue(args[i], processId, task.getType());
 
                     } else if (arg.isCollection() || arg.isPromiseArray()) {//can be collection of promises, case should be checked
@@ -95,7 +88,12 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
 
     private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskType taskType) {
-        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);
+
+        if(pArg.isReady() && !taskType.equals(TaskType.DECIDER_ASYNCHRONOUS)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper
+            return pArg.updateType(false);//simply strip of promise wrapper
+        }
+
+        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
 
         if (taskValue == null) {
             // value may be null for NoWait promises
@@ -103,12 +101,17 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             return pArg;
         }
 
+        //TODO: //type lost????
+        pArg = pArg.updateValue(taskValue);
+
         if (taskType.equals(TaskType.DECIDER_ASYNCHRONOUS)) {
             // set real value into promise for Decider tasks
-            pArg = pArg.updateValue(taskValue).updateType(true);
+            pArg = pArg.updateType(true);
+
         } else {
             // swap promise with real value for Actor tasks
-            pArg = taskValue.updateType(false);
+            pArg = pArg.updateType(false);
+
         }
         return pArg;
     }

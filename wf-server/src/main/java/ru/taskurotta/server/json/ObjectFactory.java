@@ -56,9 +56,9 @@ public class ObjectFactory {
         }
 
         try {
-            if(argContainer.getType() == null && argContainer.getClassName()!=null) { //try to determine type. This info can be lost after swapping with Promise on server side
-                argContainer.setType(SerializationUtils.extractValueType(Class.forName(argContainer.getClassName())));
-            }
+//            if(argContainer.getType() == null && argContainer.getClassName()!=null) { //try to determine type. This info can be lost after swapping with Promise on server side
+//                argContainer.setType(SerializationUtils.extractValueType(Class.forName(argContainer.getClassName())));
+//            }
 
             if (argContainer.isPromise()) {
                 Promise promise = Promise.createInstance(argContainer.getTaskId());
