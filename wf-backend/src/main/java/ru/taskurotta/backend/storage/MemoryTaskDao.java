@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * TODO: remove dirty synchronization!
  * User: moroz
  * Date: 09.04.13
  */

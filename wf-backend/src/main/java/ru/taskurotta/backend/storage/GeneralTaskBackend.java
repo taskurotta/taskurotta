@@ -49,38 +49,45 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         // WARNING: "task" object is the same instance as In memory data storage. So we should use  it deep clone
         // due guarantees for its immutability.
 
-        if (task != null) {
-            ArgContainer[] args = task.getArgs();
+        if (task == null) {
+            return null;
+        }
 
-            if (args != null) {//updating ready Promises args into real values
+        ArgContainer[] args = task.getArgs();
+
+        if (args != null) {//updating ready Promises args into real values
+
+            if (logger.isDebugEnabled()) {
                 logger.debug("Task id[{}], type[{}], method[{}] args before swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
+            }
 
-                for (int i = 0; i < args.length; i++) {
-                    ArgContainer arg = args[i];
+            for (int i = 0; i < args.length; i++) {
+                ArgContainer arg = args[i];
 
-                    if (args[i].isPromise()) {
+                if (args[i].isPromise()) {
 
-                        args[i] = processPromiseArgValue(args[i], processId, task.getType());
+                    args[i] = processPromiseArgValue(args[i], processId, task.getType());
 
-                    } else if (arg.isCollection() || arg.isPromiseArray()) {//can be collection of promises, case should be checked
-                        ArgContainer[] compositeValue = arg.getCompositeValue();
-                        for (int j = 0; j < compositeValue.length; j++) {
-                            ArgContainer innerArg = compositeValue[j];
-                            if(innerArg.isPromise()) {
-                                compositeValue[j] = processPromiseArgValue(innerArg, processId, task.getType());
-                            }
+                } else if (arg.isCollection()) {//can be collection of promises, case should be checked
+                    ArgContainer[] compositeValue = arg.getCompositeValue();
+                    for (int j = 0; j < compositeValue.length; j++) {
+                        ArgContainer innerArg = compositeValue[j];
+                        if (innerArg.isPromise()) {
+                            compositeValue[j] = processPromiseArgValue(innerArg, processId, task.getType());
                         }
                     }
                 }
-
-                logger.debug("Task id[{}], type[{}], method[{}] args after swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
             }
 
-            //Setting TASK_START checkpoint
-            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getProcessId(), task.getActorId(), System.currentTimeMillis());
-            checkpointService.addCheckpoint(startCheckpoint);
-
+            if (logger.isDebugEnabled()) {
+                logger.debug("Task id[{}], type[{}], method[{}] args after swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
+            }
         }
+
+        //Setting TASK_START checkpoint
+        Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getProcessId(), task.getActorId(), System.currentTimeMillis());
+        checkpointService.addCheckpoint(startCheckpoint);
+
 
         return task;
     }
@@ -89,7 +96,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskType taskType) {
         ArgContainer result = null;
 
-        if(pArg.isReady() && !TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
+        if (pArg.isReady() && !TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
             logger.debug("Got initialized promise, switch it to value");
             return pArg.updateType(false);//simply strip of promise wrapper
         }
@@ -102,19 +109,36 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             return pArg;
         }
 
-        pArg = pArg.updateValue(taskValue);
-
+        ArgContainer newArg = new ArgContainer(taskValue);
         if (TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {
+
             // set real value into promise for Decider tasks
-            pArg = pArg.updateType(true);
-
+            newArg.setPromise(true);
+            newArg.setTaskId(pArg.getTaskId());
         } else {
-            // swap promise with real value for Actor tasks
-            pArg = pArg.updateType(false);
 
+            // swap promise with real value for Actor tasks
+            newArg.setPromise(false);
         }
-        logger.debug("Promise argument with initialized value is [{}], taskType is[{}]", pArg, taskType);
-        return pArg;
+
+        return newArg;
+
+
+        // @TODO: optimize this double ArgContainer instantiation
+//        pArg = pArg.updateValue(taskValue);
+//
+//
+//        if (TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {
+//            // set real value into promise for Decider tasks
+//            pArg = pArg.updateType(true);
+//
+//        } else {
+//            // swap promise with real value for Actor tasks
+//            pArg = pArg.updateType(false);
+//
+//        }
+//        logger.debug("Promise argument with initialized value is [{}], taskType is[{}]", pArg, taskType);
+//        return pArg;
     }
 
     private static boolean isDeciderTaskType(TaskType taskType) {
@@ -152,7 +176,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         }
 
         ArgContainer result = taskDecision.getValue();
-        if (result!=null && result.isPromise() && !result.isReady()) {
+        if (result != null && result.isPromise() && !result.isReady()) {
             logger.debug("getTaskValue([{}]) argContainer.isPromise() && !argContainer.isReady(). arg[{}]", taskId, result);
             result = getTaskValue(result.getTaskId(), processId);
         }
@@ -189,7 +213,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
         TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(),task.getActorId(), System.currentTimeMillis()));
+        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
 
         taskDao.addDecision(taskDecision);
 

@@ -92,9 +92,6 @@ public class ObjectFactory {
         } else if (arg.isCollection()) {//collection
             result = getCollectionValue(arg.getCompositeValue(), arg.getClassName());
 
-        } else if (arg.isPromiseArray()) {//promise array
-            result = getPromiseArrayValue(arg.getCompositeValue(), arg.getClassName());
-
         } else {
             throw new SerializationException("Unsupported or null value type for arg["+arg+"]!");
         }
@@ -120,26 +117,13 @@ public class ObjectFactory {
 
     private Object getCollectionValue(ArgContainer[] items, String collectionClassName) throws Exception {
         Class collectionClass = Thread.currentThread().getContextClassLoader().loadClass(collectionClassName);
-        Object result = collectionClass.newInstance();
-        Method addMethod = SerializationUtils.getAddMethod(collectionClass);
-        if(addMethod == null) {
-            throw new SerializationException("cannot find method \"add\" for collection typed class " + collectionClass.getName());
-        }
-        for (ArgContainer item: items) {
-            addMethod.invoke(result, parseArg(item));
-        }
-        return result;
-    }
+        Collection result = (Collection) collectionClass.newInstance();
 
-    private Object getPromiseArrayValue(ArgContainer[] items, String itemClassName) throws Exception {
-        if(items == null) {
-            return null;
+        for (ArgContainer item: items) {
+            result.add(parseArg(item));
         }
-        Object array = ArrayFactory.newInstance(itemClassName, items.length);
-        for (int i = 0; i < items.length; i++) {
-            Array.set(array, i, parseArg(items[i]));
-        }
-        return array;
+
+        return result;
     }
 
     public ArgContainer dumpArg(Object arg) {
@@ -158,11 +142,10 @@ public class ObjectFactory {
                 if (pArg.isReady()) {
                     setArgContainerValue(result, pArg.get());
                 }
-                //TODO: information about Promise generic lost?
             } else {
                 result.setPromise(false);
                 result.setReady(true);//just in case
-                result.setTaskId(null); //TODO: taskId for plain values?
+                result.setTaskId(null);
 
                 setArgContainerValue(result, arg);
             }
@@ -188,13 +171,6 @@ public class ObjectFactory {
         } else if (ValueType.COLLECTION.equals(type)) {
             target.setCompositeValue(parseCollectionValues(value));
             target.setClassName(value.getClass().getName());
-
-        } else if (ValueType.PROMISE_ARRAY.equals(type)) {
-            target.setClassName(value.getClass().getComponentType().getName());
-            target.setCompositeValue(parsePromiseArrayValues(value));
-//            if(Promise.class.isAssignableFrom(value.getClass().getComponentType())) {
-//                throw new SerializationException("Array of Promise object is not supported, please use collection instead");
-//            }
 
         } else {
             throw new SerializationException("Cannot determine value type to set for object " + value);
@@ -318,20 +294,6 @@ public class ObjectFactory {
             result.add(dumpArg(iterator.next()));
         }
         return result.toArray(new ArgContainer[result.size()]);
-    }
-
-    private ArgContainer[] parsePromiseArrayValues(Object pArray) {
-        ArgContainer[] result = null;
-
-        if (pArray != null) {
-            int size = Array.getLength(pArray);
-            result = new ArgContainer[size];
-            for (int i = 0; i<size; i++) {
-                result[i] = dumpArg(Array.get(pArray, i));
-            }
-        }
-
-        return result;
     }
 
 }

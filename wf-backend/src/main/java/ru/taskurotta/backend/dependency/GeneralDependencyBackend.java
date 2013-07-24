@@ -7,7 +7,11 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.UUID;
 
@@ -50,7 +54,11 @@ public class GeneralDependencyBackend implements DependencyBackend {
             }
 
             graph.apply(modification);
-            logger.debug("Graph  copy: " + graph.copy());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Graph  copy: " + graph.copy());
+            }
+
             if (graphDao.updateGraph(graph)) {
                 resultDecision.setProcessFinished(graph.isFinished());
                 return resultDecision.withReadyTasks(graph.getReadyItems());
@@ -131,7 +139,8 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
                 modification.linkItem(childTaskId, arg.getTaskId());
 
-            } else if ((arg.isPromiseArray() || arg.isCollection()) && argTypes != null && ArgType.WAIT.equals(argTypes[j])) { //should wait for all promises in collection to be ready
+            } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals
+                    (argTypes[j])) { //should wait for all promises in collection to be ready
 
                 processWaitCollection(modification, childTaskId, arg);
 
@@ -139,23 +148,28 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
         }
 
-        if (taskOptionsContainer != null && taskOptionsContainer.getPromisesWaitFor() != null) {
-            ArgContainer[] promisesWaitForArgContainers = taskOptionsContainer.getPromisesWaitFor();
+        if (taskOptionsContainer == null) {
+            return;
+        }
 
-            for (ArgContainer argContainer : promisesWaitForArgContainers) {
-                if (argContainer.isReady()) {
-                    modification.linkItem(childTaskId, argContainer.getTaskId());
-                }
+        ArgContainer[] promisesWaitForArgContainers = taskOptionsContainer.getPromisesWaitFor();
+
+        if (promisesWaitForArgContainers == null) {
+            return;
+        }
+
+        for (ArgContainer argContainer : promisesWaitForArgContainers) {
+            if (argContainer.isReady()) {
+                modification.linkItem(childTaskId, argContainer.getTaskId());
             }
         }
     }
 
+
     private void processWaitCollection(Modification modification, UUID childTaskId, ArgContainer collectionArg) {
         ArgContainer[] items = collectionArg.getCompositeValue();
         for (ArgContainer item : items) {
-            if (item.isCollection() || item.isPromiseArray()) {
-                processWaitCollection(modification, childTaskId, item);
-            } else if (item.isPromise() && !item.isReady()) {
+            if (item.isPromise() && !item.isReady()) {
                 modification.linkItem(childTaskId, item.getTaskId());
             }
         }

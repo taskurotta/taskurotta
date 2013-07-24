@@ -2,7 +2,6 @@ package ru.taskurotta.server.json;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.Promise;
 import ru.taskurotta.transport.model.ArgContainer.ValueType;
 
 import java.lang.reflect.Method;
@@ -16,13 +15,14 @@ import java.util.Collection;
 public class SerializationUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializationUtils.class);
+
     /**
      * @return method with name "add" and single argument
      */
     public static Method getAddMethod(Class collectionClass) {
         Method result = null;
-        for(Method method: collectionClass.getDeclaredMethods()) {
-            if("add".equalsIgnoreCase(method.getName()) && method.getParameterTypes().length==1) {
+        for (Method method : collectionClass.getDeclaredMethods()) {
+            if ("add".equalsIgnoreCase(method.getName()) && method.getParameterTypes().length == 1) {
                 result = method;
                 break;
             }
@@ -32,13 +32,9 @@ public class SerializationUtils {
 
     public static ValueType extractValueType(Class argClass) {
         ValueType result = null;
-        if(argClass.isArray()) {
-            if(Promise.class.isAssignableFrom(argClass.getComponentType())) {
-                result = ValueType.PROMISE_ARRAY;
-            } else{
-                result = ValueType.ARRAY;
-            }
-        } else if(Collection.class.isAssignableFrom(argClass)) {
+        if (argClass.isArray()) {
+            result = ValueType.ARRAY;
+        } else if (Collection.class.isAssignableFrom(argClass)) {
             result = ValueType.COLLECTION;
         } else {
             result = ValueType.PLAIN;

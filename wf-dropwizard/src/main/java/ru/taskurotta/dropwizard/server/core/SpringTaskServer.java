@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+//@TODO remove name collision with TaskServer interface. Is it SpringTaskSERVICE?
 public class SpringTaskServer extends Service<TaskServerConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(SpringTaskServer.class);

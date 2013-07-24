@@ -34,20 +34,15 @@ public class CollectionOfPromiseDeciderImpl implements CollectionOfPromiseDecide
         Promise<ModelObjectVO[]> array = producer.produceArray(Promise.asPromise(size));
         Promise<List<ModelObjectVO>> list = producer.produceList(Promise.asPromise(size));
 
-        Promise[] waitArray = new Promise[2];
-        waitArray[0] = array;
-        waitArray[1] = list;
-
         List<Promise> waitList = new ArrayList<Promise>();
         waitList.add(array);
         waitList.add(list);
 
         //Any method in the commented list below should work:
         //Promise <Boolean> waitComplete = selfAsync.waitForSeparate(array, list);
-        Promise <Boolean> waitComplete = selfAsync.waitForArray(waitArray);
-        //Promise <Boolean> waitComplete = selfAsync.waitForList(waitList);
+        Promise<Boolean> waitComplete = selfAsync.waitForList(waitList);
 
-        Promise <Boolean> compareResult = selfAsync.isContainSameElements(array, list);
+        Promise<Boolean> compareResult = selfAsync.isContainSameElements(array, list);
         selfAsync.logResult(compareResult, array, list);
 
 
@@ -74,23 +69,11 @@ public class CollectionOfPromiseDeciderImpl implements CollectionOfPromiseDecide
     }
 
     @Asynchronous
-    public Promise<Boolean> waitForArray(@Wait Promise[] waitFor) { //require all promises in array to be initialized
-        arbiter.notify("waitFor");
-        StringBuilder sb = new StringBuilder();
-
-        for(Promise item: waitFor) {
-            sb.append(item.get());
-        }
-        logger.debug("Wait array complete with result [{}]", sb);
-        return Promise.asPromise(Boolean.TRUE);
-    }
-
-    @Asynchronous
     public Promise<Boolean> waitForList(@Wait List<Promise> waitFor) { //require all promises in list to be initialized
         arbiter.notify("waitFor");
         StringBuilder sb = new StringBuilder();
 
-        for(Promise item: waitFor) {
+        for (Promise item : waitFor) {
             sb.append(item.get());
         }
         logger.debug("Wait list complete with result [{}]", sb);
