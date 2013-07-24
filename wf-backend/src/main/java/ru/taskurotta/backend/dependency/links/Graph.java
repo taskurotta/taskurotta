@@ -332,7 +332,18 @@ public class Graph implements Serializable {
 
                 logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
 
-                frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
+                Set<UUID> newFrozenItemsSet = frozenReadyItems.get(waitForAfterRelease);
+
+                if (newFrozenItemsSet == null) {
+                    newFrozenItemsSet = new HashSet<>();
+                    frozenReadyItems.put(waitForAfterRelease, newFrozenItemsSet);
+                }
+
+                newFrozenItemsSet.addAll(frozenItemsSet);
+
+//                logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
+//
+//                frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
             } else {
 
 
