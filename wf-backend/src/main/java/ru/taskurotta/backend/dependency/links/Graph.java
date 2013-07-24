@@ -67,7 +67,8 @@ public class Graph implements Serializable {
 
     /**
      * Create new graph
-     * @param graphId - should be equal to process ID
+     *
+     * @param graphId   - should be equal to process ID
      * @param startItem - ID of the first task in process
      */
     public Graph(UUID graphId, UUID startItem) {
@@ -326,13 +327,23 @@ public class Graph implements Serializable {
         Set<UUID> frozenItemsSet = frozenReadyItems.remove(finishedItem);
         if (frozenItemsSet != null) {
 
-            if (readyItemsList == null) {
-                readyItemsList = new LinkedList<>();
+            // hide again this items to stash with new frozen dependency
+            if (waitForAfterRelease != null) {
+
+                logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
+
+                frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
+            } else {
+
+
+                if (readyItemsList == null) {
+                    readyItemsList = new LinkedList<>();
+                }
+
+                logger.debug("apply() new frozen items [{}]", frozenItemsSet);
+
+                readyItemsList.addAll(frozenItemsSet);
             }
-
-            logger.debug("apply() new frozen items [{}]", frozenItemsSet);
-
-            readyItemsList.addAll(frozenItemsSet);
         }
 
 
@@ -424,7 +435,7 @@ public class Graph implements Serializable {
                 .add("links", links)
                 .add("finishedItems", finishedItems)
                 .add("modification", modification)
-                .add("readyItems", readyItems)
+                .add("readyItems", Arrays.toString(readyItems))
                 .toString();
     }
 }
