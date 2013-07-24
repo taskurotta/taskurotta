@@ -42,7 +42,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     @Override
     public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
-
         logger.debug("getTaskToExecute(taskId[{}], processId[{}]) started", taskId, processId);
 
         TaskContainer task = getTask(taskId, processId);
@@ -88,8 +87,10 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
 
     private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskType taskType) {
+        ArgContainer result = null;
 
-        if(pArg.isReady() && !taskType.equals(TaskType.DECIDER_ASYNCHRONOUS)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper
+        if(pArg.isReady() && !TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
+            logger.debug("Got initialized promise, switch it to value");
             return pArg.updateType(false);//simply strip of promise wrapper
         }
 
@@ -101,10 +102,9 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             return pArg;
         }
 
-        //TODO: //type lost????
         pArg = pArg.updateValue(taskValue);
 
-        if (taskType.equals(TaskType.DECIDER_ASYNCHRONOUS)) {
+        if (TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {
             // set real value into promise for Decider tasks
             pArg = pArg.updateType(true);
 
@@ -113,29 +113,51 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             pArg = pArg.updateType(false);
 
         }
+        logger.debug("Promise argument with initialized value is [{}], taskType is[{}]", pArg, taskType);
         return pArg;
+    }
+
+    private static boolean isDeciderTaskType(TaskType taskType) {
+        return TaskType.DECIDER_ASYNCHRONOUS.equals(taskType) || TaskType.DECIDER_START.equals(taskType);
     }
 
     private ArgContainer getTaskValue(UUID taskId, UUID processId) {
 
-        logger.debug("getTaskValue() taskId = [{}]", taskId);
+        logger.debug("getTaskValue([{}])", taskId);
         if (taskId == null) {
             throw new IllegalStateException("Cannot find value for NULL taskId");
         }
         DecisionContainer taskDecision = taskDao.getDecision(taskId, processId);
 
+        logger.debug("taskDecision getted for[{}] is [{}]", taskId, taskDecision);
+
+
         if (taskDecision == null) {
             logger.debug("getTaskValue() taskDecision == null");
             return null;
+
+            //HACK FOR DEBUG
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            taskDecision = taskDao.getDecision(taskId, processId);
+//            if(taskDecision == null) {
+//                logger.debug("STILL NULL (bug in dependency?)!");
+//                return null;
+//            } else {
+//                logger.debug("RERUN(bug in non-locking DAO operations?): taskDecision getted for[{}] is [{}]", taskId, taskDecision); //<-- this message in log! bug detected
+//            }
         }
 
         ArgContainer result = taskDecision.getValue();
         if (result!=null && result.isPromise() && !result.isReady()) {
-            logger.debug("getTaskValue() argContainer.isPromise() && !argContainer.isReady()");
+            logger.debug("getTaskValue([{}]) argContainer.isPromise() && !argContainer.isReady(). arg[{}]", taskId, result);
             result = getTaskValue(result.getTaskId(), processId);
         }
 
-        logger.debug("getTaskValue() returns argContainer = [{}]", result);
+        logger.debug("getTaskValue({}) returns argContainer = [{}]", taskId, result);
         return result;
     }
 

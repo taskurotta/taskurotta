@@ -27,27 +27,43 @@ public class MemoryTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+        synchronized (id2TaskDecisionMap) {
+            id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+        }
     }
 
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
-        return id2TaskMap.get(taskId);
+        TaskContainer result = null;
+        synchronized (id2TaskMap) {
+            result = id2TaskMap.get(taskId);
+        }
+        return result;
     }
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
+        synchronized (id2TaskMap) {
+            id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
+        }
     }
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.get(taskId);
+        DecisionContainer result = null;
+        synchronized (id2TaskDecisionMap) {
+            result = id2TaskDecisionMap.get(taskId);
+        }
+        return result;
     }
 
     @Override
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.containsKey(taskId);
+        boolean result = false;
+        synchronized (id2TaskDecisionMap) {
+            result = id2TaskDecisionMap.containsKey(taskId);
+        }
+        return result;
     }
 
     @Override
@@ -102,11 +118,15 @@ public class MemoryTaskDao implements TaskDao {
 
     @Override
     public TaskContainer removeTask(UUID taskId, UUID processId) {
-        return id2TaskMap.remove(taskId);
+        TaskContainer result = null;
+        synchronized (id2TaskMap) {
+            result = id2TaskMap.remove(taskId);
+        }
+        return result;
     }
 
     @Override
-    public void removeProcessData(UUID processId) {
+    public synchronized void removeProcessData(UUID processId) {
         for (TaskContainer taskContainer : getProcessTasks(processId)) {
             id2TaskMap.remove(taskContainer.getTaskId());
             id2TaskDecisionMap.remove(taskContainer.getTaskId());
