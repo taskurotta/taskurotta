@@ -14,11 +14,14 @@ import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
+import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
@@ -28,6 +31,8 @@ import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * User: romario
@@ -160,4 +165,26 @@ public class AbstractTestStub {
         return Promise.createInstance(task.getId());
     }
 
+    public void startProcess(Task task) {
+        taskServer.startProcess(objectFactory.dumpTask(task));
+    }
+
+    public Task pollDeciderTask(UUID expectedTaskId) {
+        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
+
+        Task polledTask = deciderTaskSpreader.poll();
+
+        UUID polledTaskId = polledTask == null? null: polledTask.getId();
+
+        assertEquals(expectedTaskId, polledTaskId);
+
+        return polledTask;
+    }
+
+    public void release(UUID taskAId, Object value, Task[] newTasks) {
+        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks);
+
+        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
+        deciderTaskSpreader.release(taskADecision);
+    }
 }
