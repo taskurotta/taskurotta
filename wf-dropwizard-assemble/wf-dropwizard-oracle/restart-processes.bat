@@ -1,0 +1,1 @@
+java -cp target/wf-dropwizard-oracle-0.2.0-SNAPSHOT.jar ru.taskurotta.restartprocesses.Main ./conf.yaml
