@@ -1,0 +1,91 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/parallel/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/parallel/SpreaderBeans-jersey.xml
+        properties:
+          cycles: 10
+          accuracy: 1000
+          endpoint: "http://tsqs.fccland.ru:8080"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: false
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
+
+policy:
+  - LinearRertyPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 3
+          maximumRetryIntervalSeconds: 30
+          maximumAttempts: 3
+
+actor:
+  - PiDecider:
+      actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
+      count: 1
+
+  - PiWorker:
+      actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
+      count: 10
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/recipes-parallel.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+
