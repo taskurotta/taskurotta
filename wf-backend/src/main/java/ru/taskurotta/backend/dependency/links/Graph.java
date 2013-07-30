@@ -410,11 +410,11 @@ public class Graph implements Serializable {
      */
     public Graph copy() {
         final Graph copy = new Graph();
-        copy.setGraphId(UUID.fromString(graphId.toString()));
+        copy.setGraphId(graphId);
         copy.setLinks(copyMapUuidWithSetOfUuid(links));
-        copy.setNotFinishedItems(copyUuidSet(notFinishedItems));
+        copy.setNotFinishedItems(new HashSet<>(notFinishedItems));
         copy.setFrozenReadyItems(copyMapUuidWithSetOfUuid(frozenReadyItems));
-        copy.setFinishedItems(copyUuidSet(finishedItems));
+        copy.setFinishedItems(new HashSet<>(finishedItems));
         copy.setVersion(version);
         return copy;
     }
@@ -422,19 +422,12 @@ public class Graph implements Serializable {
     private static Map<UUID, Set<UUID>> copyMapUuidWithSetOfUuid(Map<UUID, Set<UUID>> original) {
         final Map<UUID, Set<UUID>> copy = new HashMap<>();
         for (Map.Entry<UUID, Set<UUID>> entry : original.entrySet()) {
-            Set<UUID> copyOfSet = copyUuidSet(entry.getValue());
-            copy.put(UUID.fromString(entry.getKey().toString()), copyOfSet);
+            Set<UUID> copyOfSet = new HashSet<>(entry.getValue());
+            copy.put(entry.getKey(), copyOfSet);
         }
         return copy;
     }
 
-    private static Set<UUID> copyUuidSet(Set<UUID> original) {
-        final Set<UUID> copyOfSet = new HashSet<>();
-        for (UUID id : original) {
-            copyOfSet.add(UUID.fromString(id.toString()));
-        }
-        return copyOfSet;
-    }
 
     @Override
     public String toString() {

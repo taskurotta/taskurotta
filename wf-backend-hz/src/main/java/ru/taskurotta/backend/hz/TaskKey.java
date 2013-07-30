@@ -33,14 +33,17 @@ public class TaskKey extends BasicDBObject implements DataSerializable, Partitio
 
     @Override
     public void writeData(DataOutput dataOutput) throws IOException {
-        dataOutput.writeUTF(taskId!=null? taskId.toString(): null);
-        dataOutput.writeUTF(processId!=null? processId.toString(): null);
+        dataOutput.writeLong(processId.getMostSignificantBits());
+        dataOutput.writeLong(processId.getLeastSignificantBits());
+
+        dataOutput.writeLong(taskId.getMostSignificantBits());
+        dataOutput.writeLong(taskId.getLeastSignificantBits());
     }
 
     @Override
     public void readData(DataInput dataInput) throws IOException {
-        this.taskId = UUID.fromString(dataInput.readUTF());
-        this.processId = UUID.fromString(dataInput.readUTF());
+        this.processId = new UUID(dataInput.readLong(), dataInput.readLong());
+        this.taskId = new UUID(dataInput.readLong(), dataInput.readLong());
     }
 
     public UUID getProcessId() {

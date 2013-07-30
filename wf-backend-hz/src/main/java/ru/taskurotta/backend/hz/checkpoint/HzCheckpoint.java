@@ -35,8 +35,12 @@ public class HzCheckpoint extends Checkpoint implements DataSerializable, Partit
 
     @Override
     public void writeData(DataOutput dataOutput) throws IOException {
-        dataOutput.writeUTF(taskId!=null? taskId.toString(): null);
-        dataOutput.writeUTF(processId!=null? processId.toString(): null);
+        dataOutput.writeLong(processId.getMostSignificantBits());
+        dataOutput.writeLong(processId.getLeastSignificantBits());
+
+        dataOutput.writeLong(taskId.getMostSignificantBits());
+        dataOutput.writeLong(taskId.getLeastSignificantBits());
+
         dataOutput.writeUTF(actorId);
         dataOutput.writeUTF(timeoutType.toString());
         dataOutput.writeLong(time);
@@ -44,8 +48,9 @@ public class HzCheckpoint extends Checkpoint implements DataSerializable, Partit
 
     @Override
     public void readData(DataInput dataInput) throws IOException {
-        this.taskId = UUID.fromString(dataInput.readUTF());
-        this.processId = UUID.fromString(dataInput.readUTF());
+        this.processId = new UUID(dataInput.readLong(), dataInput.readLong());
+        this.taskId = new UUID(dataInput.readLong(), dataInput.readLong());
+
         this.actorId = dataInput.readUTF();
         this.timeoutType = TimeoutType.valueOf(dataInput.readUTF());
         this.time = dataInput.readLong();
