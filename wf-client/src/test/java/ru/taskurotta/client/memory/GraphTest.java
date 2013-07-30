@@ -17,6 +17,7 @@ public class GraphTest extends AbstractTestStub {
     public void duplicateDecisionRelease() {
         UUID taskIdA = UUID.randomUUID();
         UUID taskIdB = UUID.randomUUID();
+        UUID taskIdBDuplicate = UUID.randomUUID();
 
         // start process
         startProcess(deciderTask(taskIdA, TaskType.DECIDER_START, "A"));
@@ -26,7 +27,7 @@ public class GraphTest extends AbstractTestStub {
 
         // release task A
         Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
-        Task taskBDuplicate = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
+        Task taskBDuplicate = deciderTask(taskIdBDuplicate, TaskType.DECIDER_ASYNCHRONOUS, "B");
 
         // release decision with taskB
         release(taskIdA, null, new Task[]{taskB});
