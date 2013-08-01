@@ -44,7 +44,7 @@ public class ChartRender {
     }
 
     public static void main(String... args) {
-        TreeMap<Double, Double> data = new TreeMap<>();
+        TreeMap<Double, Double> data = new TreeMap<Double, Double>();
         data.put(100.0, 20.5);
         data.put(200.0, 25.0);
         data.put(300.0, 27.5);
