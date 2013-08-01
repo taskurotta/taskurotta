@@ -13,11 +13,11 @@
 
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@//172.16.21.142:1521/WPSDB"/>
+        <property name="url" value="${db.url}"/>
         <property name="initialSize" value="20"/>
         <property name="maxActive" value="40"/>
-        <property name="username" value="taskurotta"/>
-        <property name="password" value="taskurotta"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.password}"/>
     </bean>
 
 
