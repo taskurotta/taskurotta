@@ -6,6 +6,8 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -16,6 +18,8 @@ import java.util.TreeMap;
  * Tool class for creating html test result page. Based on velocity template engine.
  */
 public class ChartRender {
+
+    private final static Logger log = LoggerFactory.getLogger(ChartRender.class);
 
     public static final String TEMPLATE = "page.vm";
 
@@ -35,7 +39,7 @@ public class ChartRender {
             template.merge(context, writer);
             FileUtils.writeStringToFile(new File(currentDir + "/result.html"), writer.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Chart test result page creation failed", e);
         }
     }
 
