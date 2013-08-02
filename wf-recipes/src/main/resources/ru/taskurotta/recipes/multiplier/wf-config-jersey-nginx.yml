@@ -13,8 +13,7 @@ spreader:
           count: 40000
           startTasks: true
           startTasksInBackground: false
-          endpoint: "http://localhost:8811"
-#          endpoint: "http://tsqs.fccland.ru:8080"
+          endpoint: "http://tsqs.fccland.ru:80"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
