@@ -442,5 +442,18 @@ public class Graph implements Serializable {
                 .add("readyItems", Arrays.toString(readyItems))
                 .toString();
     }
+
+
+    public Collection<UUID> getProcessTasks() {
+        Collection<UUID> allProcessTasks = new HashSet<>();
+
+        allProcessTasks.addAll(notFinishedItems);
+        allProcessTasks.addAll(finishedItems);
+        for (Set<UUID> frozenTasks : frozenReadyItems.values()) {
+            allProcessTasks.addAll(frozenTasks);
+        }
+
+        return allProcessTasks;
+    }
 }
 

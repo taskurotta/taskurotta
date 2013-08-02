@@ -3,6 +3,7 @@ package ru.taskurotta.backend.dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
+import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
@@ -13,6 +14,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -20,7 +22,7 @@ import java.util.UUID;
  * Date: 4/5/13
  * Time: 11:17 AM
  */
-public class GeneralDependencyBackend implements DependencyBackend {
+public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(GeneralDependencyBackend.class);
 
@@ -175,4 +177,9 @@ public class GeneralDependencyBackend implements DependencyBackend {
         }
     }
 
+    @Override
+    public Collection<UUID> getProcessTasks(UUID processId) {
+        Graph graph = graphDao.getGraph(processId);
+        return graph.getProcessTasks();
+    }
 }
