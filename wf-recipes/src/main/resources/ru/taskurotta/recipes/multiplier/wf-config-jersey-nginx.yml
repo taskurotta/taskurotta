@@ -13,7 +13,7 @@ spreader:
           count: 40000
           startTasks: true
           startTasksInBackground: false
-          endpoint: "http://tsqs.fccland.ru:80"
+          endpoint: "http://tsks-ora.fccland.ru.ru:80"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
