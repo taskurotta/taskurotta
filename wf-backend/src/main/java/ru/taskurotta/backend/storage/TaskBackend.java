@@ -4,6 +4,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,9 +70,12 @@ public interface TaskBackend extends CheckpointServiceProvider {
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
 
     /**
-     * Clean up resources after process
+     * Clean up resources after process.
+     * Backend should avoid synchronous removing artifacts due to performance issues.
+     *
      * @param processId - ID of the process
+     * @param finishedTaskIds - all task UUIDs of finished process
      */
-    public void finishProcess(UUID processId);
+    public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
 
 }

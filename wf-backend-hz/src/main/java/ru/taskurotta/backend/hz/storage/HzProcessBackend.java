@@ -7,8 +7,6 @@ import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
@@ -28,7 +26,6 @@ import java.util.UUID;
 public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     private final static Logger logger = LoggerFactory.getLogger(HzProcessBackend.class);
 
-    private CheckpointService checkpointService;
     private String processesStorageMapName = "processesStorage";//default
     private HazelcastInstance hzInstance;
 
@@ -44,45 +41,29 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
         hzInstance.getMap(processesStorageMapName).put(task.getProcessId(), process);
-
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
     }
 
     @Override
     public void startProcessCommit(TaskContainer task) {
 
-        //should be at the end of the method
-        Checkpoint checkpoint = new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(),task.getProcessId(), task.getActorId(), task.getStartTime());
-        checkpointService.addCheckpoint(checkpoint);
-        //logger.debug("PROCESS_CHECKPOINT: added checkpoint [{}]", checkpoint);
-        checkpointService.removeTaskCheckpoints(task.getTaskId(), task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
     }
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
 
+        // TODO: get map reference only one time
         IMap<UUID, ProcessVO> processMap = hzInstance.getMap(processesStorageMapName);
         ProcessVO process = processMap.get(processId);
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
         processMap.put(processId, process);
-
-        //should be at the end of the method
-        int removed = checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        //logger.debug("PROCESS_CHECKPOINT: removed checkpoint for processId[{}], taskId[{}], type[{}], result [{}]", processId, process.getStartTaskUuid(), TimeoutType.PROCESS_START_TO_CLOSE, removed);
-        checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
     }
 
     @Override
     public CheckpointService getCheckpointService() {
-        return checkpointService;
+        return null;
     }
 
-    public void setCheckpointService(CheckpointService checkpointService) {
-        logger.debug("set checkpoint service [{}]", checkpointService);
-        this.checkpointService = checkpointService;
-    }
 
     @Override
     public ProcessVO getProcess(UUID processUUID) {

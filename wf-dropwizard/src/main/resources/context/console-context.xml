@@ -32,6 +32,7 @@
         <property name="profileInfo" ref="profilingAspect"/>
         <property name="taskInfo" ref="taskBackend"/>
         <property name="processInfo" ref="processBackend"/>
+        <property name="graphInfo" ref="dependencyBackend"/>
     </bean>
 
 </beans>

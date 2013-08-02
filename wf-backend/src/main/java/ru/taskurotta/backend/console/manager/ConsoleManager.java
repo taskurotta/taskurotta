@@ -9,6 +9,7 @@ import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public interface ConsoleManager {
     /**
      * @return list of all existing TaskContainers for a given process
      */
-    public List<TaskContainer> getProcessTasks(UUID processUuid);
+    public Collection<TaskContainer> getProcessTasks(UUID processUuid);
 
     /**
      * @return paginated view of a given queue content
@@ -66,7 +67,7 @@ public interface ConsoleManager {
 
     public List<QueueVO> getQueuesHovering(float periodSize);
 
-    public List<TaskContainer> getRepeatedTasks(int iterationCount);
+    public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
 
     public void blockActor(String actorId);
 

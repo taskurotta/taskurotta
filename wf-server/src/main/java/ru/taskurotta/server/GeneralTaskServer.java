@@ -194,9 +194,9 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         if (dependencyDecision.isProcessFinished()) {
-            processBackend.finishProcess(dependencyDecision.getFinishedProcessId(),
+            processBackend.finishProcess(processId,
                     dependencyDecision.getFinishedProcessValue());
-            taskBackend.finishProcess(dependencyDecision.getFinishedProcessId());
+            taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
         }
 
         taskBackend.addDecisionCommit(taskDecision);

@@ -62,21 +62,6 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if (processUuid == null) {
-            return null;
-        }
-        IMap<TaskKey, TaskContainer> id2TaskMap = hzInstance.getMap(id2TaskMapName);
-        List<TaskContainer> result = new ArrayList<>();
-        for(TaskContainer tc: id2TaskMap.values()) {
-            if (processUuid.equals(tc.getProcessId())) {
-                result.add(tc);
-            }
-        }
-        return result;
-    }
-
-    @Override
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
         IMap<TaskKey, TaskContainer> id2TaskMap = hzInstance.getMap(id2TaskMapName);
         Collection<TaskContainer> tasks = id2TaskMap.values();
@@ -109,6 +94,11 @@ public class HzTaskDao implements TaskDao {
         return id2TaskMap.remove(new TaskKey(processId, taskId));
     }
 
+    @Override
+    public void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds) {
+        // do nothing
+    }
+
     public void setId2TaskMapName(String id2TaskMapName) {
         this.id2TaskMapName = id2TaskMapName;
     }
@@ -117,13 +107,4 @@ public class HzTaskDao implements TaskDao {
         this.id2TaskDecisionMapName = id2TaskDecisionMapName;
     }
 
-    @Override
-    public void removeProcessData(UUID processId) {
-        IMap<TaskKey, TaskContainer> id2TaskMap = hzInstance.getMap(id2TaskMapName);
-        IMap<TaskKey, DecisionContainer> id2TaskDecisionMap = hzInstance.getMap(id2TaskDecisionMapName);
-        for (TaskContainer taskContainer : getProcessTasks(processId)) {
-            id2TaskMap.remove(new TaskKey(processId, taskContainer.getTaskId()));
-            id2TaskDecisionMap.remove(new TaskKey(processId, taskContainer.getTaskId()));
-        }
-    }
 }

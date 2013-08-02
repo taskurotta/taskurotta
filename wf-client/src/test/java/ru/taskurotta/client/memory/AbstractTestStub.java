@@ -97,7 +97,7 @@ public class AbstractTestStub {
     }
 
     public boolean isTaskInProgress(UUID taskId, UUID processId) {
-        return memoryStorageBackend.isTaskInProgress(taskId, processId);
+        return dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId);
     }
 
     public boolean isTaskReleased(UUID taskId, UUID processId) {
