@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.transport.model.ArgContainer;
@@ -232,9 +231,12 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         if (checkpointService != null) {
             task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
 
-            // TODO: task can be null on unstable taskDao
+            if(task != null) {
+                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
+            } else {
+                logger.debug("Task with null value getted for decision[{}]", taskDecision);
+            }
 
-            checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
         }
 
         taskDao.addDecision(taskDecision);
