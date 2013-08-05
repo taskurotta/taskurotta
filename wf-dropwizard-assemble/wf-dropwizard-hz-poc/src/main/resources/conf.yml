@@ -1,6 +1,6 @@
 #Location of Spring application context (or comma-separated list of contexts):
 #Hazelcast without mongo mapstore
-contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-simple.xml, classpath*:context/console-context.xml"
+contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-simple.xml"
 
 #hazelcast with mongo mapstores
 #contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv1.xml, classpath*:context/console-context.xml"
@@ -28,6 +28,8 @@ properties:
   pollDelayUnit: "SECONDS"
   hz.mancenter.enabled: true
   hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
+  hz.nodes: localhost:7777,localhost:7778,localhost:7779
+#  hz.nodes: 10.129.0.51:5701,10.129.0.52:5701
   decision.sleep: 100000
   hazelcast.jmx: true
   hazelcast.jmx.detailed: true
@@ -52,7 +54,7 @@ logging:
     file:
         enabled: true
         archive: true
-#        currentLogFilename: ./target/logs/service.log
+        currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
         logFormat: "%-4r [%t] %-5p %c - %m%n"
 
@@ -61,8 +63,10 @@ http:
     gzip:
         enabled: false
     requestLog:
-        file:
+        console:
             enabled: false
+        file:
+            enabled: true
             archive: true
             currentLogFilename: ./target/logs/requests.log
             archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
