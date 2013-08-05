@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class AnalyzerImpl implements Analyzer {
     public List<TaskContainer> findNotFinishedProcesses(long fromTime) {
         List<TaskContainer> taskContainers = new ArrayList<>();
 
-        String query = "SELECT * FROM (SELECT process_id, start_time FROM process p WHERE state = ? AND start_time >= ? ORDER BY start_time) WHERE ROWNUM <= ?";
+        String query = "SELECT * FROM (SELECT process_id, start_time, start_task_id FROM process p WHERE state = ? AND start_time >= ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -49,10 +50,11 @@ public class AnalyzerImpl implements Analyzer {
             while (resultSet.next()) {
                 String processId = resultSet.getString("process_id");
                 Date startTime = new Date(resultSet.getLong("start_time"));
+                String startTaskId = resultSet.getString("start_task_id");
 
                 logger.info("Found incomplete process [{}] started at [{}]", processId, startTime);
 
-                List<TaskContainer> list = findProcessIncompleteTasks(UUID.fromString(processId));
+                List<TaskContainer> list = findProcessIncompleteTasks(UUID.fromString(processId), UUID.fromString(startTaskId));
 
                 if (list != null && !list.isEmpty()) {
                     taskContainers.addAll(list);
@@ -66,13 +68,13 @@ public class AnalyzerImpl implements Analyzer {
         return taskContainers;
     }
 
-    private List<TaskContainer> findProcessIncompleteTasks(UUID processId) {
+    private List<TaskContainer> findProcessIncompleteTasks(UUID processId, UUID startTaskId) {
 
         Graph graph = dependencyBackend.getGraph(processId);
         if (graph == null) {
             logger.warn("For processId [{}] not found graph", processId);
 
-            List<TaskContainer> list = taskDao.getProcessTasks(processId);
+            List<TaskContainer> list = Arrays.asList(taskDao.getTask(startTaskId, processId));
             logger.info("For processId [{}] get start task [{}]", processId, list);
 
             return list;
@@ -85,7 +87,7 @@ public class AnalyzerImpl implements Analyzer {
         for (UUID taskId : notFinishedTaskIds) {
 
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
-            logger.debug(" found not finished task container [{}]", processId, taskContainer);
+            logger.debug("Found not finished task container [{}]", processId, taskContainer);
             if (taskContainer != null) {
                 taskContainers.add(taskContainer);
             }
