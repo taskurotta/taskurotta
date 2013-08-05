@@ -26,6 +26,7 @@
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.2</aspectj.version>
         <hazelcast.version>2.6</hazelcast.version>
+        <commons-dbcp.version>1.4</commons-dbcp.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
@@ -48,6 +49,7 @@
         <module>wf-transport</module>
         <module>wf-snapshot</module>
         <module>wf-test</module>
+        <module>wf-restarter</module>
     </modules>
 
     <profiles>
