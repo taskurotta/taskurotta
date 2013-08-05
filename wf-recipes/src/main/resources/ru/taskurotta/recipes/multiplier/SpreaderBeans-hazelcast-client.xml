@@ -16,7 +16,7 @@
         <constructor-arg name="hazelcastInstance" ref="hazelcastInstance" />
     </bean>
 
-    <bean id="taskCreator" class="ru.taskurotta.recipes.multiplier.TaskCreator" init-method="createStartTask">
+    <bean id="taskCreator" class="ru.taskurotta.recipes.multiplier.TaskCreator">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>
     </bean>

@@ -10,7 +10,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/multiplier/SpreaderBeans-jersey.xml
         properties:
-          count: 2000
+          count: 5000
           startTasks: true
           startTasksInBackground: false
           endpoint: "http://localhost:8811"
@@ -25,7 +25,8 @@ profiler:
       instance:
         class: ru.taskurotta.recipes.multiplier.LifetimeProfiler
         properties:
-          exitAfterAll: true
+          exitAfterAll: false
+          tasksForStat: 500
 
 actor:
   - FibonacciDecider:
