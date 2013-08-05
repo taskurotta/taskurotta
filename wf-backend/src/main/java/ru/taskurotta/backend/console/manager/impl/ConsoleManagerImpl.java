@@ -9,6 +9,7 @@ import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
+import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
@@ -18,6 +19,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +38,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private ProfileInfoRetriever profileInfo;
     private DecisionInfoRetriever decisionInfo;
     private ConfigInfoRetriever configInfo;
+    private GraphInfoRetriever graphInfo;
 
     @Override
     public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
@@ -57,11 +60,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public List<TaskContainer> getProcessTasks(UUID processUuid) {
+    public Collection<TaskContainer> getProcessTasks(UUID processId) {
         if (taskInfo == null) {
             return null;
         }
-        return taskInfo.getProcessTasks(processUuid);
+        return taskInfo.getProcessTasks(graphInfo.getProcessTasks(processId), processId);
     }
 
     @Override
@@ -182,7 +185,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
 
     @Override
-    public List<TaskContainer> getRepeatedTasks(int iterationCount) {
+    public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {
         return taskInfo.getRepeatedTasks(iterationCount);
     }
 
@@ -221,5 +224,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     public void setConfigInfo(ConfigInfoRetriever configInfo) {
         this.configInfo = configInfo;
+    }
+
+    public void setGraphInfo(GraphInfoRetriever graphInfo) {
+        this.graphInfo = graphInfo;
     }
 }

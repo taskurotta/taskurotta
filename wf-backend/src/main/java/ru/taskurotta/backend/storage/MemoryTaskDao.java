@@ -9,6 +9,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,57 +29,33 @@ public class MemoryTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        synchronized (id2TaskDecisionMap) {
-            id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
-        }
+        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
     }
 
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
-        TaskContainer result = null;
-        synchronized (id2TaskMap) {
-            result = id2TaskMap.get(taskId);
-        }
-        return result;
+        return id2TaskMap.get(taskId);
     }
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        synchronized (id2TaskMap) {
-            id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
-        }
+        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
     }
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        DecisionContainer result = null;
-        synchronized (id2TaskDecisionMap) {
-            result = id2TaskDecisionMap.get(taskId);
-        }
-        return result;
+        return id2TaskDecisionMap.get(taskId);
     }
 
+    /**
+     * @param taskId
+     * @param processId
+     * @return
+     * @todo Graph should be used for this purpose.
+     */
     @Override
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        boolean result = false;
-        synchronized (id2TaskDecisionMap) {
-            result = id2TaskDecisionMap.containsKey(taskId);
-        }
-        return result;
-    }
-
-    @Override
-    public List<TaskContainer> getProcessTasks(UUID processUuid) {
-        if (processUuid == null) {
-            return null;
-        }
-        List<TaskContainer> result = new ArrayList<>();
-        for (TaskContainer tc : id2TaskMap.values()) {
-            if (processUuid.equals(tc.getProcessId())) {
-                result.add(tc);
-            }
-        }
-        return result;
+        return id2TaskDecisionMap.containsKey(taskId);
     }
 
     @Override
@@ -119,18 +96,13 @@ public class MemoryTaskDao implements TaskDao {
 
     @Override
     public TaskContainer removeTask(UUID taskId, UUID processId) {
-        TaskContainer result = null;
-        synchronized (id2TaskMap) {
-            result = id2TaskMap.remove(taskId);
-        }
-        return result;
+        return id2TaskMap.remove(taskId);
     }
 
     @Override
-    public synchronized void removeProcessData(UUID processId) {
-        for (TaskContainer taskContainer : getProcessTasks(processId)) {
-            id2TaskMap.remove(taskContainer.getTaskId());
-            id2TaskDecisionMap.remove(taskContainer.getTaskId());
+    public void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds) {
+        for (UUID finishedTaskId : finishedTaskIds) {
+            id2TaskMap.remove(finishedTaskId);
         }
     }
 }

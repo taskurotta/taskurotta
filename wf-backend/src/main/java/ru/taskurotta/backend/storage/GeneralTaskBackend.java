@@ -14,6 +14,8 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,8 +32,12 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     private CheckpointService checkpointService;
 
-    public GeneralTaskBackend(TaskDao taskDao, CheckpointService checkpointService) {
+    public GeneralTaskBackend(TaskDao taskDao) {
         this.taskDao = taskDao;
+    }
+
+    public GeneralTaskBackend(TaskDao taskDao, CheckpointService checkpointService) {
+        this(taskDao);
         this.checkpointService = checkpointService;
     }
 
@@ -85,8 +91,10 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         }
 
         //Setting TASK_START checkpoint
-        Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getProcessId(), task.getActorId(), System.currentTimeMillis());
-        checkpointService.addCheckpoint(startCheckpoint);
+        if (checkpointService != null) {
+            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getProcessId(), task.getActorId(), System.currentTimeMillis());
+            checkpointService.addCheckpoint(startCheckpoint);
+        }
 
 
         return task;
@@ -189,13 +197,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
         TaskContainer task = taskDao.getTask(taskId, processId);
-        logger.debug("Task getted by uuid[{}], process uuid[{}] is[{}]", taskId, processId, task);
+        logger.debug("Task received by uuid[{}], is[{}]", taskId, task);
         return task;
-    }
-
-    @Override
-    public List<TaskContainer> getProcessTasks(UUID processId) {
-        return taskDao.getProcessTasks(processId);
     }
 
     @Override
@@ -204,22 +207,46 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
-    public List<TaskContainer> getRepeatedTasks(int iterationCount) {
+    public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {
         return taskDao.getRepeatedTasks(iterationCount);
+    }
+
+    @Override
+    public Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId) {
+        Collection<TaskContainer> tasks = new LinkedList<>();
+
+        for (UUID taskId : processTaskIds) {
+            tasks.add(taskDao.getTask(taskId, processId));
+        }
+
+        return tasks;
     }
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
-        TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
+
+        TaskContainer task = null;
+
+        if (checkpointService != null) {
+            task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
+
+            // TODO: task can be null on unstable taskDao
+
+            checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
+        }
 
         taskDao.addDecision(taskDecision);
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
 
+            if (task == null) {
+                task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
+            }
+
+            // TODO: should be optimized
             task.incrementNumberOfAttempts();
             taskDao.updateTask(task);
         }
@@ -256,15 +283,10 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
     @Override
-    public void finishProcess(UUID processId) {
-        taskDao.removeProcessData(processId);
+    public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds) {
+        taskDao.archiveProcessData(processId, finishedTaskIds);
     }
 
-
-    public boolean isTaskInProgress(UUID taskId, UUID processId) {
-        List<Checkpoint> checkpoints = getCheckpointService().listCheckpoints(new CheckpointQuery(TimeoutType.TASK_START_TO_CLOSE, taskId, processId, null, -1, -1));
-        return checkpoints != null && !checkpoints.isEmpty();
-    }
 
     public boolean isTaskReleased(UUID taskId, UUID processId) {
         return taskDao.isTaskReleased(taskId, processId);

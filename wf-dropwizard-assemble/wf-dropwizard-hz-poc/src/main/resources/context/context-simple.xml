@@ -24,7 +24,7 @@
                 <hz:join>
                     <hz:multicast enabled="false" />
                     <hz:tcp-ip enabled="true" >
-                        <hz:members>localhost:7773,localhost:7774,localhost:7775,localhost:7776,localhost:7777,localhost:7778,localhost:7779</hz:members>
+                        <hz:members>${hz.nodes}</hz:members>
                     </hz:tcp-ip>
                 </hz:join>
             </hz:network>

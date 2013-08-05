@@ -68,7 +68,6 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
         <property name="queueListName" value = "queueListName" />
-        <property name="checkpointService" ref="checkpointService" />
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
@@ -78,13 +77,8 @@
         <property name="id2TaskDecisionMapName" value = "${hz.decision.map.name}" />
     </bean>
 
-    <bean id="checkpointService" class="ru.taskurotta.backend.hz.checkpoint.HzCheckpointService">
-        <property name="hzInstance" ref="hzInstance" />
-    </bean>
-
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
         <constructor-arg name="taskDao" ref="taskDao" />
-        <constructor-arg name="checkpointService" ref="checkpointService"/>
     </bean>
 
     <bean id="dependencyBackend"
@@ -99,7 +93,6 @@
 
     <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend" >
         <constructor-arg name="hzInstance" ref="hzInstance" />
-        <property name="checkpointService" ref="checkpointService" />
         <property name="processesStorageMapName" value="${hz.processes.map.name}" />
     </bean>
 

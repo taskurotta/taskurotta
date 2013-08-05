@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: romario
@@ -40,7 +38,6 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
     private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
     private CheckpointService checkpointService = new MemoryCheckpointService();
-    private Lock lock = new ReentrantLock();
 
     public MemoryQueueBackend(int pollDelay) {
 

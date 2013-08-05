@@ -7,9 +7,6 @@ import com.hazelcast.core.InstanceListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.hz.Constants;
@@ -33,7 +30,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private CheckpointService checkpointService = new MemoryCheckpointService();//default, can be overridden with setter
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
@@ -109,10 +105,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         try {
             result = queue.poll(pollDelay, pollDelayUnit);
 
-            if (result != null) {
-                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, result.getTaskId(), result.getProcessId(), actorId, System.currentTimeMillis()));
-            }
-
         } catch (InterruptedException e) {
             logger.error("Thread was interrupted at poll, releasing it", e);
         }
@@ -125,12 +117,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     @Override
     public void pollCommit(String actorId, UUID taskId, UUID processId) {
-        int removedScheduleToStart = checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
-        int removedPollToCommit = checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
-
-        if (removedScheduleToStart<1 || removedPollToCommit<1) {
-            logger.warn("Checkpoints consistency violated: removed [{}] TASK_SCHEDULE_TO_START and [{}] TASK_POLL_TO_COMMIT checkpoint. Values should not be empty.", removedScheduleToStart, removedPollToCommit);
-        }
     }
 
     @Override
@@ -150,25 +136,17 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         item.setTaskList(taskList);
         queue.add(item);
 
-        //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
     @Override
     public CheckpointService getCheckpointService() {
-        return checkpointService;
+        return null;
     }
 
     @Override
     public Map<String, Integer> getHoveringCount(float periodSize) {
         return null;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void setCheckpointService(CheckpointService checkpointService) {
-        this.checkpointService = checkpointService;
     }
 
     private String createQueueName(String actorId, String taskList) {
