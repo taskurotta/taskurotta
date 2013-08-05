@@ -1,1 +1,1 @@
-java -Ddw.http.port=8821 -Ddw.http.adminPort=8822 -Dts.hz.port=7777 -Ddw.logging.file.currentLogFilename="./target/logs/service2.log" -jar target/wf-dropwizard-hz-poc-0.2.0-SNAPSHOT.jar server src/main/resources/conf.yml
+java -server -XX:-UseConcMarkSweepGC -XX:+AggressiveOpts -XX:+DoEscapeAnalysis -Xmx512m -Xms512m -Ddw.http.port=8821 -Ddw.http.adminPort=8822 -Dts.hz.port=7777 -Ddw.logging.file.currentLogFilename="./target/logs/service2.log" -jar target/wf-dropwizard-hz-poc-0.2.0-SNAPSHOT.jar server src/main/resources/conf.yml
