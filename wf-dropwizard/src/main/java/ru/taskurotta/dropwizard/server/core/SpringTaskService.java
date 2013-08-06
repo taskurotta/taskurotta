@@ -24,10 +24,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-//@TODO remove name collision with TaskServer interface. Is it SpringTaskSERVICE?
-public class SpringTaskServer extends Service<TaskServerConfig> {
+public class SpringTaskService extends Service<TaskServerConfig> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringTaskServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpringTaskService.class);
     public static final String SYSTEM_PROP_PREFIX = "ts.";
     public static final String ASSETS_MODE_PROPERTY_NAME = "assetsMode";
 
@@ -175,7 +174,7 @@ public class SpringTaskServer extends Service<TaskServerConfig> {
     }
 
     public static void main(String[] args) throws Exception {
-        new SpringTaskServer().run(args);
+        new SpringTaskService().run(args);
     }
 
 }
