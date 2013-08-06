@@ -16,24 +16,6 @@
     <packaging>jar</packaging>
     <name>Taskurotta :: Dropwizard with hazelcast</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-dropwizard</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-backend-hz</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>wf-test</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -145,5 +127,23 @@
 
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-dropwizard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-backend-hz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-test</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>
