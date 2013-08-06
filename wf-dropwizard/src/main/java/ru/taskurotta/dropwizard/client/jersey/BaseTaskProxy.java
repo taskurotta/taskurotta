@@ -7,14 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
-import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.exception.server.InvalidServerRequestException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.util.ActorDefinition;
 
 import javax.ws.rs.core.MediaType;
@@ -40,7 +38,7 @@ public class BaseTaskProxy implements TaskServer {
             WebResource.Builder rb = startResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            rb.post(new TaskContainerWrapper(task));
+            rb.post(task);
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {
@@ -64,7 +62,7 @@ public class BaseTaskProxy implements TaskServer {
             WebResource.Builder rb = pullResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            result = rb.post(TaskContainerWrapper.class, new ActorDefinitionWrapper(actorDefinition)).getTaskContainer();
+            result = rb.post(TaskContainer.class, new ActorDefinitionWrapper(actorDefinition));
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {
@@ -87,7 +85,7 @@ public class BaseTaskProxy implements TaskServer {
             WebResource.Builder rb = releaseResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            rb.post(new DecisionContainerWrapper(taskResult));
+            rb.post(taskResult);
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {

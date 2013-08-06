@@ -201,11 +201,10 @@ public class OraQueueDao {
                 qi.setProcessId(processIdStr != null ? UUID.fromString(processIdStr) : null);
                 qi.setTaskList(rs.getString("task_list"));
 
-                Timestamp startTime = rs.getTimestamp("date_start");
-                qi.setStartTime(startTime != null ? startTime.getTime() : -1);
+                long startTime = rs.getLong("date_start");
+                qi.setStartTime(rs.getLong("date_start"));
 
-                Timestamp enqueueTime = rs.getTimestamp("insert_date");
-                qi.setEnqueueTime(enqueueTime != null ? enqueueTime.getTime() : -1);
+                qi.setEnqueueTime(rs.getLong("insert_date"));
                 totalCount = rs.getLong("cnt");
                 tmpresult.add(qi);
 

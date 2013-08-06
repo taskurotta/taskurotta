@@ -13,13 +13,14 @@
     <artifactId>wf-dropwizard-assemble</artifactId>
 
     <packaging>pom</packaging>
-    <name>Taskurotta :: Dropwizard transport modules</name>
+    <name>Taskurotta :: Dropwizard transport modules assembler</name>
 
     <modules>
         <module>wf-dropwizard-memory</module>
         <module>wf-dropwizard-oracle</module>
         <module>wf-dropwizard-oracle-monkey</module>
         <module>wf-dropwizard-hz-poc</module>
+        <module>wf-dropwizard-hz-oracle</module>
     </modules>
 
 </project>

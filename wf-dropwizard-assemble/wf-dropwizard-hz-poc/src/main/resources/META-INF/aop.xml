@@ -1,6 +1,16 @@
 <aspectj>
 
     <aspects>
+        <concrete-aspect name="ru.taskurotta.test.profiler.ProfilerAspect"
+                         extends="ru.taskurotta.test.profiler.AbstractProfilerAspect">
+            <pointcut name="pointCut"
+                      expression="execution(* ru.taskurotta.backend.queue.QueueBackend.poll(..)) || execution(* ru.taskurotta.server.GeneralTaskServer.poll(..)) || execution(* ru.taskurotta.backend.storage.TaskBackend.getTaskToExecute(..))"/>
+
+        </concrete-aspect>
+    </aspects>
+
+<!--
+    <aspects>
         <concrete-aspect name="ru.taskurotta.test.monkey.MonkeyAspect"
                          extends="ru.taskurotta.test.monkey.AbstractMonkeyAspect">
             <pointcut name="pointCut"
@@ -10,6 +20,7 @@
 
         <include within="ru.taskurotta..*"/>
     </aspects>
+-->
 
     <weaver options="-Xset:weaveJavaxPackages=true -Xset:weaveJavaPackages=true -showWeaveInfo">
     </weaver>

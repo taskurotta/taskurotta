@@ -25,6 +25,21 @@ actorConfig:
       queueName: "qb$summarizer"
     - id: "ru.taskurotta.example.calculate.decider.MathActionDecider#1.0"
       queueName: "qb$math_action_decider"
+#fir workers
+#    - id: "ru.fccland.fir.FirDecider#1.0"
+#      queueName: "qb$fir_decider"
+#    - id: "ru.fccland.fir.gkn.GknFirRequestDecider#1.0"
+#      queueName: "qb$gkn_fir_request_decider"
+#    - id: "ru.fccland.fir.worker.RequestXmlParser#1.0"
+#      queueName: "qb$request_xml_parser"
+#    - id: "ru.fccland.fir.worker.RequestWorker#1.0"
+#      queueName: "qb$request_worker"
+#    - id: "ru.fccland.fir.worker.RequestPreprocessingWorker#1.0"
+#      queueName: "qb$req_preproc_wkr"
+#    - id: "ru.fccland.fir.worker.ResponsePreprocessingWorker#1.0"
+#      queueName: "qb$resp_preproc_wkr"
+#    - id: "ru.fccland.fir.worker.CadNumbersWorker#1.0"
+#      queueName: "qb$cad_numbers_wkr"
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
