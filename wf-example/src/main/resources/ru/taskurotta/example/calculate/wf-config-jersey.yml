@@ -16,7 +16,7 @@ spreader:
         properties:
           count: 10
           startTasks: true
-          startTasksInBackground: true
+          startTasksInBackground: false
           endpoint: "http://localhost:8811"
           threadPoolSize: 30
           readTimeout: 0

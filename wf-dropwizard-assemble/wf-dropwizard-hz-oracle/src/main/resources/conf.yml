@@ -2,14 +2,6 @@
 #Hazelcast without mongo mapstore
 contextLocation: "classpath*:context/appContext.xml"
 
-#hazelcast with mongo mapstores
-#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv1.xml, classpath*:context/console-context.xml"
-
-#TODO:// implement task servers for this configs
-#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv2.xml, classpath*:context/console-context.xml"
-#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv3.xml, classpath*:context/console-context.xml"
-
-
 #Used for static resource serving in development mode
 assets:
   overrides:
@@ -28,30 +20,22 @@ properties:
   pollDelayUnit: "SECONDS"
   hz.mancenter.enabled: true
   hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
-  hz.nodes: localhost:5701
-  decision.sleep: 100000
+  hz.nodes: localhost:7777,localhost:7778
   mongo.host: localhost
-  db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
-  db.user: "taskurotta"
-  db.password: "taskurotta"
-  db.validating: true  #validate queues existence in DB
-  db.autocreating: true #auto create new queues in DB if there are no explicitly configured
-
-#resourceBeans:
-#  - taskStarterResource
-#  - taskReleaserResource
+  mongo.port: 27017
+  oradb.url: "jdbc:oracle:thin:@172.16.4.240:1521:pgudb"
+  oradb.user: "rip_rr"
+  oradb.password: "rip_rr"
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.dropwizard.server.core: INFO
-        ru.taskurotta.server: INFO
-        ru.taskurotta.server.recovery.RetryEnqueueRecovery: INFO
-        ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
-        ru.taskurotta.dropwizard.hz: INFO
-        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.dropwizard.server.core: DEBUG
+        ru.taskurotta.server: DEBUG
+        ru.taskurotta.dropwizard.hz: DEBUG
+        ru.taskurotta.backend.hz.server: DEBUG
         ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: DEBUG
         com.yammer: INFO
     file:
@@ -71,5 +55,7 @@ http:
             archive: true
             currentLogFilename: ./target/logs/requests.log
             archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+
+
 #config can be extended here
 #http://dropwizard.codahale.com/manual/core/#configuration-defaults

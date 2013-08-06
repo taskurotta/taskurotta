@@ -74,6 +74,9 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
     @Override
     public void startProcess(TaskContainer task) {
+
+        log.debug("Starting process with TaskContainer [{}]", task);
+
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state) VALUES (?, ?, ?, ?, ?)")
