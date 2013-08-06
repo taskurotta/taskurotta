@@ -11,6 +11,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -44,32 +45,42 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                TaskCreator.Monitor.lock();
-                try {
-                    if (taskCount.get() == 0) {
-                        lastTime = startTime = System.currentTimeMillis();
+                if (!TaskCreator.canWork.get()) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(100);
+                    } catch (InterruptedException e) { //
                     }
+                    return null;
+                }
 
-                    Task task = taskSpreader.poll();
+                if (taskCount.get() == 0) {
+                    lastTime = startTime = System.currentTimeMillis();
+                }
 
-                    long curTime = System.currentTimeMillis();
-                    if (null != task) {
-                        long count = taskCount.incrementAndGet();
-                        if (count % tasksForStat == 0) {
-                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, 0.001 * (curTime - lastTime), 1000.0D * tasksForStat / (curTime - lastTime));
-                            lastTime = curTime;
-                        }
-                    } else {
+                Task task = taskSpreader.poll();
+
+                long curTime = System.currentTimeMillis();
+                if (null != task) {
+                    long count = taskCount.incrementAndGet();
+                    if (count % tasksForStat == 0) {
+                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, 0.001 * (curTime - lastTime), 1000.0D * tasksForStat / (curTime - lastTime));
+                        lastTime = curTime;
+                    }
+                } else {
+                    TaskCreator.Monitor.lock();
+
+                    if (TaskCreator.canWork.get()) {
+                        TaskCreator.canWork.set(false);
                         System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double)(lastTime - startTime) );
                         taskCount.set(0);
                         if (exitAfterAll) {
                             System.exit(0);
                         }
                     }
-                    return task;
-                } finally {
+
                     TaskCreator.Monitor.unlock();
                 }
+                return task;
             }
 
             @Override

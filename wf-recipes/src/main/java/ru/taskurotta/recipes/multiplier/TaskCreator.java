@@ -8,6 +8,7 @@ import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 
 import java.io.Console;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -23,18 +24,21 @@ public class TaskCreator implements Runnable, ApplicationListener<ContextRefresh
     private int count;
 
     public static final Lock Monitor = new ReentrantLock(true);
+    public static final AtomicBoolean canWork = new AtomicBoolean(false);
 
     public void createStartTask(MultiplierDeciderClient deciderClient) {
         log.info("warming up task launcher...");
         Monitor.lock();
-        log.info("launcher is ready. send missile...");
         try {
+            log.info("launcher is ready. send missile...");
+            canWork.set(false);
             for (int i = 0; i < count; i++) {
                 int a = (int)(Math.random() * 100);
                 int b = (int)(Math.random() * 100);
                 deciderClient.multiply(a, b);
             }
         } finally {
+            canWork.set(true);
             Monitor.unlock();
         }
     }
