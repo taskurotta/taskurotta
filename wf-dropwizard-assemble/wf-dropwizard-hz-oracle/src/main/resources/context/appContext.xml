@@ -4,10 +4,14 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
     <context:property-placeholder/>
     <context:annotation-config/>
@@ -134,14 +138,14 @@
 
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
         <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
-        <constructor-arg name="dataSource" ref="originalDataSource"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
     <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService" />
 
-    <!--<bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">-->
-        <!--<constructor-arg name="targetDataSource" ref="originalDataSource"/>-->
-    <!--</bean>-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <constructor-arg name="targetDataSource" ref="originalDataSource"/>
+    </bean>
 
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
@@ -151,5 +155,22 @@
         <property name="username" value="${oradb.user}"/>
         <property name="password" value="${oradb.password}"/>
     </bean>
+
+
+    <!-- Transactions -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <tx:advice id="processTransactions" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="startProcess" propagation="REQUIRES_NEW"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="serviceOperation" expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))" />
+        <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
+    </aop:config>
 
 </beans>

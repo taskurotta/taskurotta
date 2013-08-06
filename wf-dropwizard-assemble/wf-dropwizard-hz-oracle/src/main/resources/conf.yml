@@ -32,11 +32,11 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.dropwizard.server.core: DEBUG
-        ru.taskurotta.server: DEBUG
-        ru.taskurotta.dropwizard.hz: DEBUG
-        ru.taskurotta.backend.hz.server: DEBUG
-        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: DEBUG
+        ru.taskurotta.dropwizard.server.core: INFO
+        ru.taskurotta.server: INFO
+        ru.taskurotta.dropwizard.hz: INFO
+        ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
         com.yammer: INFO
     file:
         enabled: true
