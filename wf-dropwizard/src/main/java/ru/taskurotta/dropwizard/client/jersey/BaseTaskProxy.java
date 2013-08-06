@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
-import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.exception.server.InvalidServerRequestException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
@@ -86,7 +85,7 @@ public class BaseTaskProxy implements TaskServer {
             WebResource.Builder rb = releaseResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            rb.post(new DecisionContainerWrapper(taskResult));
+            rb.post(taskResult);
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {

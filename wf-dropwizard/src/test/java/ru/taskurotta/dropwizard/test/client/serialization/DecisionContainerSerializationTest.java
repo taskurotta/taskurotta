@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.transport.model.DecisionContainer;
 
 import java.io.File;
@@ -25,18 +24,18 @@ public class DecisionContainerSerializationTest {
 
         DecisionContainer original = EntitiesFactory.createDecisionContainer(false);
 
-        DecisionContainerWrapper resultWrapper = null;
+        DecisionContainer result = null;
         try {
             File tmpJsonFile = tmpFolder.newFile();
-            jacksonMapper.writeValue(tmpJsonFile, new DecisionContainerWrapper(original));
-            resultWrapper = jacksonMapper.readValue(tmpJsonFile, DecisionContainerWrapper.class);
+            jacksonMapper.writeValue(tmpJsonFile, original);
+            result = jacksonMapper.readValue(tmpJsonFile, DecisionContainer.class);
         } catch (Exception e) {
             logger.error("Exception at (de)serialization of DecisionContainerWrapper to tmp File", e);
             Assert.fail("Exception at (de)serialization of DecisionContainerWrapper to tmp File");
         }
 
-        Assert.assertNotNull(resultWrapper);
-        EntitiesComparator.compare(original, resultWrapper.getResultContainer());
+        Assert.assertNotNull(result);
+        EntitiesComparator.compare(original, result);
 
     }
 
@@ -46,18 +45,18 @@ public class DecisionContainerSerializationTest {
 
         DecisionContainer original = EntitiesFactory.createDecisionContainer(true);
 
-        DecisionContainerWrapper resultWrapper = null;
+        DecisionContainer result = null;
         try {
             File tmpJsonFile = tmpFolder.newFile();
-            jacksonMapper.writeValue(tmpJsonFile, new DecisionContainerWrapper(original));
-            resultWrapper = jacksonMapper.readValue(tmpJsonFile, DecisionContainerWrapper.class);
+            jacksonMapper.writeValue(tmpJsonFile, original);
+            result = jacksonMapper.readValue(tmpJsonFile, DecisionContainer.class);
         } catch (Exception e) {
             logger.error("Exception at (de)serialization of DecisionContainerWrapper to tmp File", e);
             Assert.fail("Exception at (de)serialization of DecisionContainerWrapper to tmp File");
         }
 
-        Assert.assertNotNull(resultWrapper);
-        EntitiesComparator.compare(original, resultWrapper.getResultContainer());
+        Assert.assertNotNull(result);
+        EntitiesComparator.compare(original, result);
     }
 
 }
