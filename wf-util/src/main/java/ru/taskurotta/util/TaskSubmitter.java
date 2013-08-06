@@ -14,7 +14,6 @@ import ru.taskurotta.exception.server.InvalidServerRequestException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 import ru.taskurotta.transport.model.TaskType;
 
 import javax.ws.rs.core.MediaType;
@@ -146,7 +145,7 @@ public class TaskSubmitter {
             WebResource.Builder rb = startResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            rb.post(new TaskContainerWrapper(task));
+            rb.post(task);
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {

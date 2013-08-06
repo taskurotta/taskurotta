@@ -7,7 +7,6 @@ import ru.taskurotta.dropwizard.TaskurottaResource;
 import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -38,7 +37,7 @@ public class TaskPollerResource {
             return Response.serverError().build();
         }
 
-        return Response.ok(new TaskContainerWrapper(result), MediaType.APPLICATION_JSON).build();
+        return Response.ok(result, MediaType.APPLICATION_JSON).build();
 
     }
 

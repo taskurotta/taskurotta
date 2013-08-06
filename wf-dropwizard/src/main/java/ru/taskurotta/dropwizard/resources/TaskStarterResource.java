@@ -4,7 +4,7 @@ import com.yammer.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
+import ru.taskurotta.transport.model.TaskContainer;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -23,14 +23,14 @@ public class TaskStarterResource {
 
     @POST
     @Timed
-    public Response startProcess(TaskContainerWrapper taskContainerWrapper) {
-        logger.debug("startProcess resource called with entity[{}]", taskContainerWrapper);
+    public Response startProcess(TaskContainer taskContainer) {
+        logger.debug("startProcess resource called with entity[{}]", taskContainer);
 
         try {
-            taskServer.startProcess(taskContainerWrapper.getTaskContainer());
-            logger.debug("Successfully started process task[{}]", taskContainerWrapper.getTaskContainer());
+            taskServer.startProcess(taskContainer);
+            logger.debug("Successfully started process task[{}]", taskContainer);
         } catch(Throwable e) {
-            logger.error("Starting of process by task["+taskContainerWrapper+"] failed!", e);
+            logger.error("Starting of process by task["+taskContainer+"] failed!", e);
             return Response.serverError().build();
         }
 
