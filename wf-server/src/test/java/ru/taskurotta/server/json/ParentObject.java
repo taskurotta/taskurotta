@@ -7,6 +7,9 @@ public class ParentObject {
     String name;
     TestObject child;
 
+    public ParentObject() {
+    }
+
     public ParentObject(String name, TestObject child) {
         this.name = name;
         this.child = child;
