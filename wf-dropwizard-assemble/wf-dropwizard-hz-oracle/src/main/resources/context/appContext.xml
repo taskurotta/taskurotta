@@ -35,7 +35,7 @@
 
             <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:queue name="${task.queue.prefix}*" max-size-per-jvm="500" backing-map-ref="queuesBackingMap" />
+            <hz:queue name="${hz.task.queue.prefix}*" max-size-per-jvm="500" backing-map-ref="queuesBackingMap" />
 
             <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskStoreMap"/>
@@ -97,6 +97,8 @@
     </bean>
     <!-- /Mongo -->
 
+
+
     <!-- REST resources -->
     <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
@@ -110,6 +112,7 @@
     <!-- /REST resources -->
 
 
+
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
@@ -117,7 +120,7 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
         <property name="queueListName" value = "${hz.queues.set.name}" />
-        <property name="queueNamePrefix" value = "${task.queue.prefix}" />
+        <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
@@ -202,5 +205,6 @@
         <aop:pointcut id="serviceOperation" expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))" />
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
     </aop:config>
+    <!-- /Transactions -->
 
 </beans>

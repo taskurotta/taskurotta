@@ -12,6 +12,7 @@
     <context:property-placeholder/>
     <context:annotation-config/>
 
+    <!-- Mongo -->
     <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}" />
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
@@ -35,17 +36,26 @@
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
 
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="processStoreMap">
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphStoreMap">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="taskQueueBackingMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphDecisionStoreMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+    <!-- /Mongo -->
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
             <hz:management-center enabled="${hz.mancenter.enabled}" url="${hz.mancenter.url}" />
             <hz:properties>
-                <hz:property name="hazelcast.logging.type">${hazelcast.logging.type}</hz:property>
-                <hz:property name="hazelcast.jmx">${hazelcast.jmx}</hz:property>
-                <hz:property name="hazelcast.jmx.detailed">${hazelcast.jmx.detailed}</hz:property>
+                <hz:property name="hazelcast.logging.type">${hz.logging.type}</hz:property>
+                <hz:property name="hazelcast.jmx">${hz.jmx}</hz:property>
+                <hz:property name="hazelcast.jmx.detailed">${hz.jmx.detailed}</hz:property>
             </hz:properties>
             <hz:network port="${hz.port}" port-auto-increment="true">
                 <hz:join>
@@ -58,6 +68,8 @@
 
             <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
 
+            <hz:queue name="${hz.task.queue.prefix}*" max-size-per-jvm="500" backing-map-ref="queuesBackingMap" />
+
             <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskStoreMap"/>
             </hz:map>
@@ -66,8 +78,16 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="decisionStoreMap" />
             </hz:map>
 
-            <hz:map name="${hz.processes.map.name}" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="processStoreMap" />
+            <hz:map name="${hz.graph.map.name}" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphStoreMap" />
+            </hz:map>
+
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphDecisionStoreMap" />
+            </hz:map>
+
+            <hz:map name="queuesBackingMap" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskQueueBackingMap" />
             </hz:map>
 
         </hz:config>
