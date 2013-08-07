@@ -35,6 +35,8 @@
 
             <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
 
+            <hz:queue name="${task.queue.prefix}*" max-size-per-jvm="500" backing-map-ref="queuesBackingMap" />
+
             <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskStoreMap"/>
             </hz:map>
@@ -43,65 +45,22 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="decisionStoreMap" />
             </hz:map>
 
+            <hz:map name="${hz.graph.map.name}" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphStoreMap" />
+            </hz:map>
+
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphDecisionStoreMap" />
+            </hz:map>
+
+            <hz:map name="queuesBackingMap" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskQueueBackingMap" />
+            </hz:map>
+
         </hz:config>
     </hz:hazelcast>
 
-
-    <!-- REST resources -->
-    <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
-        <property name="taskServer" ref="taskServer"/>
-    </bean>
-    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
-        <property name="taskServer" ref="taskServer"/>
-    </bean>
-    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
-        <property name="taskServer" ref="taskServer"/>
-    </bean>
-    <!-- /REST resources -->
-
-
-    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}" />
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
-
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
-
-        <property name="queueListName" value = "${hz.queues.set.name}" />
-    </bean>
-
-    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-
-        <property name="id2TaskMapName" value="${hz.task.map.name}" />
-        <property name="id2TaskDecisionMapName" value = "${hz.decision.map.name}" />
-    </bean>
-
-    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
-        <constructor-arg name="taskDao" ref="taskDao" />
-    </bean>
-
-    <bean id="dependencyBackend"
-          class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
-        <constructor-arg name="graphDao" ref="graphDao" />
-        <constructor-arg name="retryTimes" value="${retryTimes}" />
-    </bean>
-
-    <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-    </bean>
-
-    <!--<bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />-->
-    <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend" >
-        <constructor-arg ref="hzInstance"/>
-    </bean>
-
-    <!-- Health checks -->
-    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server" />
-        <property name="taskServer" ref="taskServer" />
-    </bean>
-    <!-- /Health checks -->
-
+    <!-- Mongo -->
     <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}" />
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
@@ -124,6 +83,77 @@
     <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="decisionStoreMap">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphStoreMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="taskQueueBackingMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphDecisionStoreMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+    <!-- /Mongo -->
+
+    <!-- REST resources -->
+    <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <!-- /REST resources -->
+
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+        <constructor-arg name="pollDelay" value="${pollDelay}" />
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+
+        <property name="queueListName" value = "${hz.queues.set.name}" />
+        <property name="queueNamePrefix" value = "${task.queue.prefix}" />
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+
+        <property name="id2TaskMapName" value="${hz.task.map.name}" />
+        <property name="id2TaskDecisionMapName" value = "${hz.decision.map.name}" />
+    </bean>
+
+    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+        <constructor-arg name="taskDao" ref="taskDao" />
+    </bean>
+
+    <bean id="dependencyBackend"
+          class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="graphDao" />
+        <constructor-arg name="retryTimes" value="${retryTimes}" />
+    </bean>
+
+    <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+        <constructor-arg name="graphsMapName" value = "${hz.graph.map.name}" />
+        <constructor-arg name="decisionsMapName" value = "${hz.graph.decision.map.name}" />
+    </bean>
+
+    <!--<bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />-->
+    <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend" >
+        <constructor-arg ref="hzInstance"/>
+    </bean>
+
+    <!-- Health checks -->
+    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+        <constructor-arg name="name" value="check task server" />
+        <property name="taskServer" ref="taskServer" />
+    </bean>
+    <!-- /Health checks -->
 
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
