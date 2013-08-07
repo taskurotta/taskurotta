@@ -30,6 +30,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
+    private String queueNamePrefix;
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
@@ -150,6 +151,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     }
 
     private String createQueueName(String actorId, String taskList) {
+        if(queueNamePrefix!=null) {
+            actorId = queueNamePrefix+actorId;
+        }
         return (taskList == null) ? actorId : actorId + "#" + taskList;
     }
 
@@ -157,4 +161,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         this.queueListName = queueListName;
     }
 
+    public void setQueueNamePrefix(String queueNamePrefix) {
+        this.queueNamePrefix = queueNamePrefix;
+    }
 }
