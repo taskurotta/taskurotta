@@ -40,10 +40,6 @@
         <property name="password" value="${db.password}"/>
     </bean>
 
-    <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
-        <constructor-arg name="targetDataSource" ref="originalDataSource"/>
-    </bean>
-
     <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao">
         <constructor-arg name="hzInstance" ref="hazelcastInstance"/>
     </bean>
@@ -64,7 +60,7 @@
     </bean>
 
     <bean id="analyzer" class="ru.taskurotta.restarter.workers.AnalyzerImpl">
-        <property name="dataSource" ref="dataSource"/>
+        <property name="dataSource" ref="originalDataSource"/>
         <property name="processBatchSize" value="${processBatchSize}"/>
         <property name="dependencyBackend" ref="dependencyBackend"/>
         <property name="taskDao" ref="taskDao"/>

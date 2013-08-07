@@ -7,7 +7,7 @@ runtime:
           processBatchSize: 100
           taskBatchSize: 10
           dependencyBackend.retryTimes: 10
-          db.url: "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=ora1-vip.fccland.ru)(PORT=1531))(ADDRESS=(PROTOCOL=TCP)(HOST=ora2-vip.fccland.ru)(PORT=1531)))(CONNECT_DATA=(SERVICE_NAME=testext)))"
+          db.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
           db.user: "taskurotta"
           db.password: "taskurotta"
           db.validating: true  #validate queues existence in DB
@@ -94,6 +94,9 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
+        - ru.taskurotta.restarter:
+             key: name
+             \@level: DEBUG
         - org.springframework:
              key: name
              \@level: !!!str OFF

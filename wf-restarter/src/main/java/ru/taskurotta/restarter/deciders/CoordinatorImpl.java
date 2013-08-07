@@ -31,8 +31,6 @@ public class CoordinatorImpl implements Coordinator {
         logger.info("Start restart process coordinator at [{}]", new Date());
 
         asynchronous.findNotFinishedProcesses(analyzer.findNotFinishedProcesses(System.currentTimeMillis()));
-
-        logger.info("Finish restart processes at [{}]", new Date());
     }
 
     @Asynchronous
@@ -44,6 +42,8 @@ public class CoordinatorImpl implements Coordinator {
 
             asynchronous.findNotFinishedProcesses(analyzer.findNotFinishedProcesses(fromTimePromise.get()));
         }
+
+        logger.info("Finish restart processes at [{}]", new Date());
 
         System.exit(0);
     }

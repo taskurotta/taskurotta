@@ -36,9 +36,11 @@ public class AnalyzerImpl implements Analyzer {
 
     @Override
     public List<TaskContainer> findNotFinishedProcesses(long fromTime) {
+        logger.info("Find incomplete processes, was started before [{}] ({})", fromTime, new Date(fromTime));
+
         List<TaskContainer> taskContainers = new ArrayList<>();
 
-        String query = "SELECT * FROM (SELECT process_id, start_time, start_task_id FROM process p WHERE state = ? AND start_time >= ? ORDER BY start_time) WHERE ROWNUM <= ?";
+        String query = "SELECT * FROM (SELECT process_id, start_time, start_task_id FROM process p WHERE state = ? AND start_time <= ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -52,7 +54,7 @@ public class AnalyzerImpl implements Analyzer {
                 Date startTime = new Date(resultSet.getLong("start_time"));
                 String startTaskId = resultSet.getString("start_task_id");
 
-                logger.info("Found incomplete process [{}] started at [{}]", processId, startTime);
+                logger.debug("Found incomplete process [{}] started at [{}]", processId, startTime);
 
                 List<TaskContainer> list = findProcessIncompleteTasks(UUID.fromString(processId), UUID.fromString(startTaskId));
 
@@ -64,6 +66,8 @@ public class AnalyzerImpl implements Analyzer {
         } catch (SQLException ex) {
             throw new IllegalStateException("Database error", ex);
         }
+
+        logger.info("Found [{}] incomplete processes");
 
         return taskContainers;
     }
@@ -87,8 +91,8 @@ public class AnalyzerImpl implements Analyzer {
         for (UUID taskId : notFinishedTaskIds) {
 
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
-            logger.debug("Found not finished task container [{}]", processId, taskContainer);
             if (taskContainer != null) {
+                logger.debug("Found not finished task container [{}]", processId, taskContainer);
                 taskContainers.add(taskContainer);
             }
         }
