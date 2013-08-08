@@ -91,6 +91,11 @@ public class MapStoreTest {
 
         for(int i = 0; i<(size+1); i++) {
             hzMap.put("key-" + i, "val-" + i);
+            try {
+                Thread.sleep(1);//just in case to ensure LRU policy applied correctly
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
@@ -98,16 +103,23 @@ public class MapStoreTest {
 
         int afterEvictionSize = size/2 + 1;
         Assert.assertTrue("Hazelcast should have "+afterEvictionSize+" values, but has: " + hzMap.size(), hzMap.size()== afterEvictionSize);//on last iteration 50% should be evicted and then current +1 added
-        Assert.assertTrue("Mapstore should still contain all values", mongoMap.count() == (size+1));
+        Assert.assertTrue("Mapstore should still contain all "+(size+1)+" values", mongoMap.count() == (size+1));
 
-
-        hzMap.remove("key-" + 10);
-        hzMap.remove("val-" + 11);
+        //81 and 82 keys exist in mongo and HZ memory
+        hzMap.remove("key-" + 81);
+        hzMap.remove("key-" + 82);
 
         int newSize = size-1;
         Assert.assertTrue("Hazelcast should have "+(afterEvictionSize-2)+" values, but has: " + hzMap.size(), hzMap.size()== afterEvictionSize-2);
-        Assert.assertTrue("Mapstore should still contain all values", mongoMap.count() == newSize);
+        Assert.assertTrue("Mapstore should still contain all "+newSize+" values", mongoMap.count() == newSize);
 
+        //10 and 11 keys were evicted to mongo, so they exist only there
+        hzMap.remove("key-" + 10);
+        hzMap.remove("key-" + 11);
+
+        int newSize2 = size-3;
+        Assert.assertTrue("Hazelcast should have " + (afterEvictionSize - 2) + " values, but has: " + hzMap.size(), hzMap.size() == afterEvictionSize - 2);
+        Assert.assertTrue("Mapstore should still contain all " + newSize2 + " values", mongoMap.count() == newSize2);
     }
 
 }
