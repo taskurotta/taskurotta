@@ -26,35 +26,54 @@ public class MapStoreTest {
     protected HazelcastInstance hzInstance;
     protected MongoTemplate mongoTemplate;
 
+    protected static final String PURE_MAPSTORE_MAP = "pureMapStoreTest";
+    protected static final String PURE_EVICTION_MAP = "pureEvictionTest";
+    protected static final String MAPSTORE_EVICTION_MAP = "mapStoreWithEvictionTest";
+
     @Before
     public void init() {
         ApplicationContext appContext = new ClassPathXmlApplicationContext("appContext.xml");
         hzInstance = appContext.getBean("hzInstance", HazelcastInstance.class);
         mongoTemplate = appContext.getBean("mongoTemplate", MongoTemplate.class);
+
+        mongoTemplate.dropCollection(PURE_MAPSTORE_MAP);
+        mongoTemplate.createCollection(PURE_MAPSTORE_MAP);
+
+        mongoTemplate.dropCollection(MAPSTORE_EVICTION_MAP);
+        mongoTemplate.createCollection(MAPSTORE_EVICTION_MAP);
     }
 
     @Test
     public void testMapStore() {
-        String testMapName = "pureMapStoreTest";
+        String testMapName = PURE_MAPSTORE_MAP;
         IMap<String, String> hzMap = hzInstance.getMap(testMapName);
+        int size = 100;
 
-        for(int i = 0; i<100; i++) {
-            hzMap.put("storeKey-" + i, "storeValue-" + i);
+        for(int i = 0; i<size; i++) {
+            hzMap.put("key-" + i, "val-" + i);
         }
 
         DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
         logger.info("MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
-        Assert.assertEquals(hzMap.size(), mongoMap.count());
+
+        Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
+        Assert.assertTrue("Mongo collection should be " + size + " length", mongoMap.count() == size);
+
+        hzMap.remove("key-" + 10);
+        hzMap.remove("key-" + 11);
+
+        Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
+        Assert.assertTrue("Mongo collection should be " + (size-2) + " length", mongoMap.count() == (size-2));
 
     }
 
     @Test
     public void testEviction() {
-        String testMapName = "pureEvictionTest";
+        String testMapName = PURE_EVICTION_MAP;
         IMap<String, String> hzMap = hzInstance.getMap(testMapName);
 
         for(int i = 0; i<101; i++) {
-            hzMap.put("storeKey-" + i, "storeValue-" + i);
+            hzMap.put("key-" + i, "val-" + i);
         }
 
         logger.info("EVICTION: hzMapSize[{}]", hzMap.size());
@@ -63,18 +82,31 @@ public class MapStoreTest {
 
     @Test
     public void testEvictionWithMapStore() {
-        String testMapName = "mapStoreWithEvictionTest";
+        String testMapName = MAPSTORE_EVICTION_MAP;
         IMap<String, String> hzMap = hzInstance.getMap(testMapName);
 
-        for(int i = 0; i<101; i++) {
-            hzMap.put("evictKey-" + i, "evictValue-" + i);
+        logger.info("EVICTION WITH MAPSTORE: initial hzMap size is [{}]", hzMap.size());
+
+        int size = 100;
+
+        for(int i = 0; i<(size+1); i++) {
+            hzMap.put("key-" + i, "val-" + i);
         }
 
         DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
         logger.info("EVICTION WITH MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
 
-        Assert.assertTrue("Eviction doesnt works", hzMap.size()== 51);//on 101 iteration 50% should be evicted and then current +1 added
-        Assert.assertTrue("Mapstore doesnt works", mongoMap.count() == 101);
+        int afterEvictionSize = size/2 + 1;
+        Assert.assertTrue("Hazelcast should have "+afterEvictionSize+" values, but has: " + hzMap.size(), hzMap.size()== afterEvictionSize);//on last iteration 50% should be evicted and then current +1 added
+        Assert.assertTrue("Mapstore should still contain all values", mongoMap.count() == (size+1));
+
+
+        hzMap.remove("key-" + 10);
+        hzMap.remove("val-" + 11);
+
+        int newSize = size-1;
+        Assert.assertTrue("Hazelcast should have "+(afterEvictionSize-2)+" values, but has: " + hzMap.size(), hzMap.size()== afterEvictionSize-2);
+        Assert.assertTrue("Mapstore should still contain all values", mongoMap.count() == newSize);
 
     }
 
