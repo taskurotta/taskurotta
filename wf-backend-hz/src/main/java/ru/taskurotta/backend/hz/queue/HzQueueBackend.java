@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.hz.queue;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.InstanceEvent;
 import com.hazelcast.core.InstanceListener;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -47,25 +47,45 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
-        Set<String> queueNamesSet = hazelcastInstance.<String>getSet(queueListName);
-        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(queueNamesSet));
+        IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
+        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(queueNamesMap.keySet()));
         List<String> result = new ArrayList<>(pageSize);
-        String[] queueNames = queueNamesSet.toArray(new String[queueNamesSet.size()]);
+        String[] queueNames = queueNamesMap.keySet().toArray(new String[queueNamesMap.size()]);
         if (queueNames.length > 0) {
             int pageStart = (pageNum - 1) * pageSize;
             int pageEnd = pageSize * pageNum >= queueNames.length ? queueNames.length : pageSize * pageNum;
             result.addAll(Arrays.asList(queueNames).subList(pageStart, pageEnd));
         }
-        return new GenericPage<>(result, pageNum, pageSize, queueNames.length);
+        return new GenericPage<>(prefixStrip(result), pageNum, pageSize, queueNames.length);
+    }
+
+    private List<String> prefixStrip(List<String> target) {
+        if(queueNamePrefix==null) {
+            return target;
+        }
+        List<String> result = null;
+        if(target!=null && !target.isEmpty()) {
+            result = new ArrayList<>();
+            for(String item: target) {
+                result.add(item.substring(queueNamePrefix.length()));
+            }
+        }
+        return result;
     }
 
     @Override
     public int getQueueTaskCount(String queueName) {
+        if(queueNamePrefix!=null && !queueName.startsWith(queueNamePrefix)) {
+            queueName = queueNamePrefix + queueName;
+        }
         return hazelcastInstance.getQueue(queueName).size();
     }
 
     @Override
     public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
+        if(queueNamePrefix!=null && !queueName.startsWith(queueNamePrefix)) {
+            queueName = queueNamePrefix + queueName;
+        }
         List<TaskQueueItem> result = new ArrayList<>();
         IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
         TaskQueueItem[] queueItems = queue.toArray(new TaskQueueItem[queue.size()]);
@@ -81,9 +101,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     @Override
     public void instanceCreated(InstanceEvent event) {
         if (event.getInstanceType().isQueue()) {//storing all new queues name
-            Set<String> queueNames = hazelcastInstance.getSet(queueListName);
+            IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
             String queueName = ((IQueue) event.getInstance()).getName();
-            queueNames.add(queueName);
+            queueNamesMap.put(queueName, Boolean.TRUE);
             logger.debug("Queue [{}] added to cluster", queueName);
         }
     }
@@ -91,9 +111,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     @Override
     public void instanceDestroyed(InstanceEvent event) {
         if (event.getInstanceType().isQueue()) {//removing queues names
-            Set<String> queueNames = hazelcastInstance.getSet(queueListName);
+            IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
             String queueName = ((IQueue) event.getInstance()).getName();
-            queueNames.remove(queueName);
+            queueNamesMap.remove(queueName);
             logger.debug("Queue [{}] removed from cluster", queueName);
         }
     }

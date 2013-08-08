@@ -57,6 +57,10 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskQueueBackingMap" />
             </hz:map>
 
+            <hz:map name="${hz.queues.set.name}" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="queueListBackingMap" />
+            </hz:map>
+
         </hz:config>
     </hz:hazelcast>
 
@@ -95,9 +99,11 @@
     <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphDecisionStoreMap">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="queueListBackingMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
     <!-- /Mongo -->
-
-
 
     <!-- REST resources -->
     <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
@@ -110,8 +116,6 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
     <!-- /REST resources -->
-
-
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
