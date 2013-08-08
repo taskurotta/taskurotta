@@ -16,12 +16,6 @@ runtime:
           db.maxActive: 40
           queueBackend.pollDaley: 60
           queueBackend.pollDelayUnit: SECONDS
-          hz.logging.type: slf4j
-          hz.jmx: true
-          hz.jmx.detailed: true
-          hz.port: 7777
-          hz.multicast: false
-          hz.tcp-ip: true
           hz.members: localhost:7777
           hz.decision.map.name: DecisionMapStorage
           hz.graph.map.name: GraphMapStorage
