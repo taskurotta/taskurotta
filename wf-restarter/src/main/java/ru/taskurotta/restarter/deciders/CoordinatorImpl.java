@@ -4,10 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
+import ru.taskurotta.restarter.ProcessVO;
 import ru.taskurotta.restarter.workers.AnalyzerClient;
 import ru.taskurotta.restarter.workers.RestarterClient;
-import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,43 +31,48 @@ public class CoordinatorImpl implements Coordinator {
     public void start() {
         logger.info("Start restart process coordinator at [{}]", new Date());
 
-        asynchronous.findNotFinishedProcesses(analyzer.findNotFinishedProcesses(System.currentTimeMillis()));
+        asynchronous.findNotFinishedProcesses(Promise.asPromise(System.currentTimeMillis()));
     }
 
     @Asynchronous
-    public void findNotFinishedProcesses(Promise<List<TaskContainer>> taskContainersPromise) {
-        List<TaskContainer> taskContainers = taskContainersPromise.get();
+    public void findNotFinishedProcesses(Promise<Long> fromTimePromise) {
+        Promise<List<ProcessVO>> processesPromise = asynchronous.find(fromTimePromise);
+        fromTimePromise = asynchronous.prepareForRestart(processesPromise);
+        asynchronous.findNotFinishedProcesses(fromTimePromise);
+    }
 
-        while (taskContainers != null && !taskContainers.isEmpty()) {
-            Promise<Long> fromTimePromise = asynchronous.prepareForRestart(taskContainersPromise);
+    @Asynchronous
+    public Promise<List<ProcessVO>> find(Promise<Long> fromTimePromise) {
+        return analyzer.findNotFinishedProcesses(fromTimePromise.get());
+    }
 
-            asynchronous.findNotFinishedProcesses(analyzer.findNotFinishedProcesses(fromTimePromise.get()));
+    @Asynchronous
+    public Promise<Long> prepareForRestart(Promise<List<ProcessVO>> processesPromise) {
+        List<ProcessVO> processes = processesPromise.get();
+
+        if (processes == null || processes.isEmpty()) {
+            logger.info("Finish restart processes at [{}]", new Date());
+
+            System.exit(0);
+
+            return Promise.asPromise(-1l);
         }
 
-        logger.info("Finish restart processes at [{}]", new Date());
+        logger.info("Start restarting [{}] processes", processes.size());
 
-        System.exit(0);
-    }
+        long lastProcessStartTime = -1l;
+        int processesSize = processes.size();
+        int batchesCount = taskBatchSize < processesSize ? processesSize / taskBatchSize : 1;
 
-    @Asynchronous
-    public Promise<Long> prepareForRestart(Promise<List<TaskContainer>> promiseTaskContainers) {
-        List<TaskContainer> taskContainers = promiseTaskContainers.get();
+        for (int fromIndex = 0; fromIndex < batchesCount; fromIndex++) {
+            int toIndex = (fromIndex + 1) * taskBatchSize < processesSize ? (fromIndex + 1) * taskBatchSize : processesSize - fromIndex * taskBatchSize;
 
-        logger.info("Start restarting tasks [{}]", taskContainers);
-
-        long lastProcessStartTime = -1;
-        while (taskContainers != null && !taskContainers.isEmpty()) {
-            int size = taskBatchSize > taskContainers.size() ? taskBatchSize : taskContainers.size();
-
-            List<TaskContainer> list = taskContainers.subList(0, size);
-            logger.debug("Prepare [{}] task containers for restarting", list);
+            List<ProcessVO> list = new ArrayList<>(processes.subList(fromIndex, toIndex));
+            logger.debug("Prepare [{}] processes for restarting", list.size());
 
             restarter.restart(list);
-            lastProcessStartTime = list.get(list.size() - 1).getStartTime();
-            logger.debug("Send [{}] task containers to restarting", list.size());
-
-            taskContainers.removeAll(list);
-            logger.debug("Remove [{}] from task containers. Now [{}]", list.size(), taskContainers.size());
+            lastProcessStartTime = processes.get(list.size() - 1).getStartTime();
+            logger.debug("Send [{}] processes to restarting", list.size());
         }
 
         return Promise.asPromise(lastProcessStartTime);

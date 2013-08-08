@@ -12,8 +12,22 @@ runtime:
           db.password: "taskurotta"
           db.validating: true  #validate queues existence in DB
           db.autocreating: true #auto create new queues in DB if there are no explicitly configured
+          db.initialSize: 20
+          db.maxActive: 40
           queueBackend.pollDaley: 60
           queueBackend.pollDelayUnit: SECONDS
+          hz.logging.type: slf4j
+          hz.jmx: true
+          hz.jmx.detailed: true
+          hz.port: 7777
+          hz.multicast: false
+          hz.tcp-ip: true
+          hz.members: localhost:7777
+          hz.decision.map.name: DecisionMapStorage
+          hz.graph.map.name: GraphMapStorage
+          hz.task.map.name: TaskMapStorage
+          hz.queues.set.name: defaultQueuesSetName
+          task.queue.prefix: "tsk:"
 
 spreader:
   - MainTaskSpreaderConfig:
@@ -92,14 +106,20 @@ logback:
                  pattern: \%-4r \%d [\%t] \%-5p \%c - %m%n
     logger:
         - ru.taskurotta:
-             key: name
-             \@level: INFO
+              key: name
+              \@level: INFO
         - ru.taskurotta.restarter:
-             key: name
-             \@level: DEBUG
+              key: name
+              \@level: DEBUG
+        - ru.taskurotta.backend.hz.queue:
+              key: name
+              \@level: DEBUG
+        - com.hazelcast:
+              key: name
+              \@level: INFO
         - org.springframework:
-             key: name
-             \@level: !!!str OFF
+              key: name
+              \@level: !!!str OFF
     root:
         appender-ref:
             - STDOUT:

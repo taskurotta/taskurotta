@@ -116,15 +116,15 @@
 
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
-        <property name="queueListName" value = "${hz.queues.set.name}" />
-        <property name="queueNamePrefix" value = "${task.queue.prefix}" />
+        <property name="queueListName" value="${hz.queues.set.name}" />
+        <property name="queueNamePrefix" value="${task.queue.prefix}" />
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" >
         <constructor-arg name="hzInstance" ref="hzInstance" />
 
         <property name="id2TaskMapName" value="${hz.task.map.name}" />
-        <property name="id2TaskDecisionMapName" value = "${hz.decision.map.name}" />
+        <property name="id2TaskDecisionMapName" value="${hz.decision.map.name}" />
     </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
@@ -139,8 +139,8 @@
 
     <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
         <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="graphsMapName" value = "${hz.graph.map.name}" />
-        <constructor-arg name="decisionsMapName" value = "${hz.graph.decision.map.name}" />
+        <constructor-arg name="graphsMapName" value="${hz.graph.map.name}" />
+        <constructor-arg name="decisionsMapName" value="${hz.graph.decision.map.name}" />
     </bean>
 
     <!--<bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />-->
