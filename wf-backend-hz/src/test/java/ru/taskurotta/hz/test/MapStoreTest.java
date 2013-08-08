@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.backend.hz.TaskKey;
+
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,6 +32,8 @@ public class MapStoreTest {
     protected static final String PURE_MAPSTORE_MAP = "pureMapStoreTest";
     protected static final String PURE_EVICTION_MAP = "pureEvictionTest";
     protected static final String MAPSTORE_EVICTION_MAP = "mapStoreWithEvictionTest";
+    protected static final String PURE_POJO_MAPSTORE_MAP = "purePojoMapStoreTest";
+
 
     @Before
     public void init() {
@@ -41,6 +46,10 @@ public class MapStoreTest {
 
         mongoTemplate.dropCollection(MAPSTORE_EVICTION_MAP);
         mongoTemplate.createCollection(MAPSTORE_EVICTION_MAP);
+
+        mongoTemplate.dropCollection(PURE_POJO_MAPSTORE_MAP);
+        mongoTemplate.createCollection(PURE_POJO_MAPSTORE_MAP);
+
     }
 
     @Test
@@ -134,6 +143,27 @@ public class MapStoreTest {
 
         //value key-15 should return to HZ memory
         Assert.assertTrue("Hazelcast should have " + (afterEvictionSize - 1) + " values, but has: " + hzMap.size(), hzMap.size() == afterEvictionSize - 1);
+    }
+
+    @Test
+    public void testPojoKeyMapStore() {
+        String testMapName = PURE_POJO_MAPSTORE_MAP;
+        IMap<TaskKey, UUID> hzMap = hzInstance.getMap(testMapName);
+
+        logger.info("POJO MAPSTORE: initial hzMap size is [{}]", hzMap.size());
+
+        int size = 10;
+        UUID processId = UUID.randomUUID();
+
+        for(int i = 0; i<size; i++) {
+            UUID taskId = UUID.randomUUID();
+            hzMap.put(new TaskKey(processId, taskId), taskId);
+        }
+
+        DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
+        logger.info("EVICTION WITH POJO MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
+
+        Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
     }
 
 }

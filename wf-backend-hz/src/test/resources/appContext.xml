@@ -31,6 +31,11 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="pureMapStoreImpl" />
             </hz:map>
 
+            <!-- Map should not evict values, it should only persist them -->
+            <hz:map name="purePojoMapStoreTest" backup-count="0" eviction-policy="NONE" time-to-live-seconds="0" eviction-percentage="0" >
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="purePojoMapStoreTestImpl" />
+            </hz:map>
+
             <!-- Map should not persist values, it should only evict them -->
             <hz:map name="pureEvictionTest" backup-count="0" eviction-policy="LRU" eviction-percentage="50" max-size="100" />
 
@@ -47,6 +52,10 @@
     </bean>
 
     <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mapStoreWithEvictionTestImpl">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="purePojoMapStoreTestImpl">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
 
