@@ -60,7 +60,6 @@ public class CoordinatorImpl implements Coordinator {
 
         logger.info("Start restarting [{}] processes", processes.size());
 
-        long lastProcessStartTime = -1l;
         int processesSize = processes.size();
         int batchesCount = taskBatchSize < processesSize ? processesSize / taskBatchSize : 1;
 
@@ -71,11 +70,13 @@ public class CoordinatorImpl implements Coordinator {
             logger.debug("Prepare [{}] processes for restarting", list.size());
 
             restarter.restart(list);
-            lastProcessStartTime = processes.get(list.size() - 1).getStartTime();
             logger.debug("Send [{}] processes to restarting", list.size());
         }
 
-        return Promise.asPromise(lastProcessStartTime);
+        long earlyProcessStartTime = processes.get(0).getStartTime();
+        logger.debug("Early restart process start time is [{}]({})", earlyProcessStartTime, new Date(earlyProcessStartTime));
+
+        return Promise.asPromise(earlyProcessStartTime);
     }
 
     public void setAnalyzer(AnalyzerClient analyzer) {

@@ -40,6 +40,10 @@ public class RestarterImpl implements Restarter {
 
             for (TaskContainer taskContainer : taskContainers) {
 
+                if (taskContainer == null) {
+                    continue;
+                }
+
                 String taskList = null;
                 TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
                 if (taskOptionsContainer != null) {
