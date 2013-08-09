@@ -46,7 +46,7 @@ public class CoordinatorImpl implements Coordinator {
     @Asynchronous
     public void waitFromTimePromise(Promise<Long> fromTimePromise) {
         if (fromTimePromise.get() < 0) {
-            logger.info("Finish restart processes at [{}]", new Date());
+            logger.info("Finish restart processes coordinator at [{}]", new Date());
 
             return;
         }
