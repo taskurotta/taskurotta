@@ -91,7 +91,7 @@ public class MapStoreTest {
         }
 
         logger.info("EVICTION: hzMapSize[{}]", hzMap.size());
-        Assert.assertTrue(hzMap.size()== 51);//on 101 iteration 50% should be evicted and then current +1 added
+        Assert.assertTrue("Map size after eviction should be 51, but was " + hzMap.size(), hzMap.size() == 51);//on 101 iteration 50% should be evicted and then current +1 added
         Assert.assertNull("Evicted value should die without mapStore", hzMap.get("key-10"));
 
 

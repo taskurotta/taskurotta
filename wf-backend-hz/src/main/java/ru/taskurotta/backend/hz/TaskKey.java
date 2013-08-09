@@ -20,7 +20,6 @@ public class TaskKey extends HashMap implements DataSerializable, PartitionAware
     }
 
     public TaskKey(UUID processId, UUID taskId) {
-        put("_id", taskId.toString());
         put("taskId", taskId);
         put("processId", processId);
     }
@@ -45,7 +44,6 @@ public class TaskKey extends HashMap implements DataSerializable, PartitionAware
     public void readData(DataInput dataInput) throws IOException {
         UUID processId = new UUID(dataInput.readLong(), dataInput.readLong());
         UUID taskId = new UUID(dataInput.readLong(), dataInput.readLong());
-        put("_id", taskId);
         put("taskId", taskId);
         put("processId", processId);
     }
@@ -63,7 +61,6 @@ public class TaskKey extends HashMap implements DataSerializable, PartitionAware
     }
 
     public void setTaskId(UUID taskId) {
-        put("_id", taskId);
         put("taskId", taskId);
     }
 
