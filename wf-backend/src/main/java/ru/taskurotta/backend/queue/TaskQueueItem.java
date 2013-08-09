@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.queue;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -14,6 +15,7 @@ public class TaskQueueItem implements Serializable {
     protected long startTime;
     protected long enqueueTime;
     protected String taskList;
+    protected Date createdDate;
 
     public UUID getTaskId() {
         return taskId;
@@ -53,6 +55,14 @@ public class TaskQueueItem implements Serializable {
 
     public void setTaskList(String taskList) {
         this.taskList = taskList;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
 
     @Override
