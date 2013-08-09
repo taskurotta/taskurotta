@@ -21,7 +21,7 @@ runtime:
           hz.graph.map.name: GraphMapStorage
           hz.task.map.name: TaskMapStorage
           hz.queues.set.name: defaultQueuesSetName
-          task.queue.prefix: "tsk:"
+          hz.task.queue.prefix: "tsk:"
 
 spreader:
   - MainTaskSpreaderConfig:

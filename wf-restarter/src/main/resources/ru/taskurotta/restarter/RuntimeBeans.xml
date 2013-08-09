@@ -51,7 +51,7 @@
         <constructor-arg name="pollDelayUnit" value="${queueBackend.pollDelayUnit}"/>
 
         <property name="queueListName" value="${hz.queues.set.name}" />
-        <property name="queueNamePrefix" value="${task.queue.prefix}" />
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}" />
     </bean>
 
     <bean id="analyzer" class="ru.taskurotta.restarter.workers.AnalyzerImpl">
