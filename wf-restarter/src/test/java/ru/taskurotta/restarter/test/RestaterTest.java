@@ -18,6 +18,6 @@ public class RestaterTest {
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException, InterruptedException {
         new Bootstrap("ru/taskurotta/restarter/test/wf-config.yml").start();
 
-        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(5);
     }
 }
