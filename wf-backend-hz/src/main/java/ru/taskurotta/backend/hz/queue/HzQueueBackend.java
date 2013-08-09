@@ -5,6 +5,9 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.InstanceEvent;
 import com.hazelcast.core.InstanceListener;
+import com.hazelcast.query.EntryObject;
+import com.hazelcast.query.Predicate;
+import com.hazelcast.query.PredicateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -14,7 +17,14 @@ import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,7 +54,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
         IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
-        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList(queueNamesMap.keySet()));
+        logger.debug("Stored queue names for queue backend are [{}]", new ArrayList<>(queueNamesMap.keySet()));
         List<String> result = new ArrayList<>(pageSize);
         String[] queueNames = queueNamesMap.keySet().toArray(new String[queueNamesMap.size()]);
         if (queueNames.length > 0) {
@@ -87,9 +97,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         TaskQueueItem[] queueItems = queue.toArray(new TaskQueueItem[queue.size()]);
 
         if (queueItems.length > 0) {
-            for (int i = (pageNum - 1) * pageSize; i < ((pageSize * pageNum >= queueItems.length) ? queueItems.length : pageSize * pageNum); i++) {
-                result.add(queueItems[i]);
-            }
+            int startIndex = (pageNum - 1) * pageSize;
+            int endIndex = (pageSize * pageNum >= queueItems.length) ? queueItems.length : pageSize * pageNum;
+            result.addAll(Arrays.asList(queueItems).subList(startIndex, endIndex));
         }
         return new GenericPage<>(result, pageNum, pageSize, queueItems.length);
     }
@@ -121,7 +131,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         TaskQueueItem result = null;
         try {
             result = queue.poll(pollDelay, pollDelayUnit);
-
         } catch (InterruptedException e) {
             logger.error("Thread was interrupted at poll, releasing it", e);
         }
@@ -144,7 +153,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             startTime = System.currentTimeMillis();
         }
 
-        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
         TaskQueueItem item = new TaskQueueItem();
         item.setTaskId(taskId);
         item.setProcessId(processId);
@@ -152,9 +160,24 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         item.setEnqueueTime(System.currentTimeMillis());
         item.setTaskList(taskList);
         item.setCreatedDate(new Date());
-        queue.add(item);
 
-        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
+        if (item.getStartTime() < item.getEnqueueTime()) {
+
+            IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+            queue.add(item);
+            if (logger.isDebugEnabled()) {
+                logger.debug("enqueue item [actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}]", actorId, taskId, startTime, queue.size());
+            }
+
+        } else {
+
+            IMap<UUID, TaskQueueItem> map = hazelcastInstance.getMap(createQueueName(actorId, taskList));
+            map.set(taskId, item, 0, TimeUnit.SECONDS);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Add to waiting set item [actorId [{}], taskId [{}], startTime [{}]; Set.size: {}]", actorId, taskId, startTime, map.size());
+            }
+        }
+
     }
 
     @Override
@@ -180,5 +203,24 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     public void setQueueNamePrefix(String queueNamePrefix) {
         this.queueNamePrefix = queueNamePrefix;
+    }
+
+    public void updateDelayedTasks() {
+        IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
+        logger.debug("Start update delayed tasks for queues: {}", new ArrayList<>(queueNamesMap.keySet()));
+        for (String queueName : queueNamesMap.keySet()) {
+            IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(queueName);
+            IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
+
+            EntryObject entryObject = new PredicateBuilder().getEntryObject();
+            Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
+            Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
+
+            logger.debug("{} ready items for queue [{}]", readyItems.size(), queueName);
+            for (TaskQueueItem next : readyItems) {
+                waitingItems.remove(next.getTaskId());
+                queue.add(next);
+            }
+        }
     }
 }
