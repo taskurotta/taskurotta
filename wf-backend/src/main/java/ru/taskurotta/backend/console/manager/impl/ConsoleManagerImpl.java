@@ -47,7 +47,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         }
         List<QueueVO> tmpResult = null;
         GenericPage<String> queuesPage = queueInfo.getQueueList(pageNumber, pageSize);
-        if (queuesPage != null) {
+        if (queuesPage != null && queuesPage.getItems()!=null) {
             tmpResult = new ArrayList<>();
             for (String queueName : queuesPage.getItems()) {
                 QueueVO queueVO = new QueueVO();

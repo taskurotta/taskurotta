@@ -1,9 +1,7 @@
 package ru.taskurotta.restarter.workers;
 
-import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.annotation.WorkerClient;
-import ru.taskurotta.core.Promise;
-import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.restarter.ProcessVO;
 
 import java.util.List;
 
@@ -14,5 +12,5 @@ import java.util.List;
  */
 @WorkerClient(worker = Restarter.class)
 public interface RestarterClient {
-    public void restart(List<TaskContainer> taskContainers);
+    public void restart(List<ProcessVO> processes);
 }

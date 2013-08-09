@@ -1,7 +1,7 @@
 package ru.taskurotta.restarter.workers;
 
 import ru.taskurotta.annotation.Worker;
-import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.restarter.ProcessVO;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ import java.util.List;
  */
 @Worker
 public interface Analyzer {
-    public List<TaskContainer> findNotFinishedProcesses(long fromTime);
+    public List<ProcessVO> findNotFinishedProcesses(long fromTime);
 }
