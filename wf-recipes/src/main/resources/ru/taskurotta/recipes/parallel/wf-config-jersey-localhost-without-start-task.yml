@@ -8,10 +8,8 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/parallel/SpreaderBeans-jersey.xml
+        context: ru/taskurotta/recipes/parallel/SpreaderBeans-jersey-without-start-task.xml
         properties:
-          cycles: 1000
-          accuracy: 100000
           endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0

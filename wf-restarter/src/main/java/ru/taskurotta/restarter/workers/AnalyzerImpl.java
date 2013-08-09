@@ -32,6 +32,10 @@ public class AnalyzerImpl implements Analyzer {
 
         List<ProcessVO> processes = new ArrayList<>();
 
+        if (fromTime < 0) {
+            return processes;
+        }
+
         String query = "SELECT * FROM (SELECT process_id, start_time, start_task_id FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {

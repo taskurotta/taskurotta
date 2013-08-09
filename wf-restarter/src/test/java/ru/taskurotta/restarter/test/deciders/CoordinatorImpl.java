@@ -1,11 +1,11 @@
-package ru.taskurotta.restarter.deciders;
+package ru.taskurotta.restarter.test.deciders;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.restarter.ProcessVO;
-import ru.taskurotta.restarter.workers.AnalyzerClient;
+import ru.taskurotta.restarter.test.workers.AnalyzerClient;
 import ru.taskurotta.restarter.workers.RestarterClient;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class CoordinatorImpl implements Coordinator {
 
     @Asynchronous
     public void restartProcesses(Promise<Long> fromTimePromise) {
-        Promise<List<ProcessVO>> processesPromise = asynchronous.findNotFinishedProcesses(fromTimePromise);
+        Promise<List<ProcessVO>> processesPromise = asynchronous.findIncompleteProcesses(fromTimePromise);
 
         fromTimePromise = asynchronous.prepareForRestart(processesPromise);
 
@@ -46,7 +46,7 @@ public class CoordinatorImpl implements Coordinator {
     }
 
     @Asynchronous
-    public Promise<List<ProcessVO>> findNotFinishedProcesses(Promise<Long> fromTimePromise) {
+    public Promise<List<ProcessVO>> findIncompleteProcesses(Promise<Long> fromTimePromise) {
         return analyzer.findNotFinishedProcesses(fromTimePromise.get());
     }
 
