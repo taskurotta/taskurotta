@@ -34,6 +34,16 @@ public class HzGraphDao implements GraphDao {
         graphLock = hzInstance.getLock(graphs);
     }
 
+    // Use this constructor with hazelcast client instance, because it isn't support lock
+    public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName, boolean createGraphLock) {
+        this.graphs = hzInstance.getMap(graphsMapName);
+        this.decisions = hzInstance.getMap(decisionsMapName);
+
+        if (createGraphLock) {
+            graphLock = hzInstance.getLock(graphs);
+        }
+    }
+
     public HzGraphDao(HazelcastInstance hzInstance) {
         this(hzInstance, "graphsMapName", "graphDecisionsMapName");
     }

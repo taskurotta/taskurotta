@@ -35,7 +35,7 @@
 
             <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:queue name="${hz.task.queue.prefix}*" max-size-per-jvm="500" backing-map-ref="queuesBackingMap" />
+            <hz:queue name="${hz.task.queue.prefix}*" max-size-per-jvm="0" backing-map-ref="queuesBackingMap" />
 
             <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskStoreMap"/>
@@ -131,7 +131,7 @@
         <constructor-arg name="hzInstance" ref="hzInstance" />
 
         <property name="id2TaskMapName" value="${hz.task.map.name}" />
-        <property name="id2TaskDecisionMapName" value = "${hz.decision.map.name}" />
+        <property name="id2TaskDecisionMapName" value="${hz.decision.map.name}" />
     </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
@@ -146,8 +146,8 @@
 
     <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
         <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="graphsMapName" value = "${hz.graph.map.name}" />
-        <constructor-arg name="decisionsMapName" value = "${hz.graph.decision.map.name}" />
+        <constructor-arg name="graphsMapName" value="${hz.graph.map.name}" />
+        <constructor-arg name="decisionsMapName" value="${hz.graph.decision.map.name}" />
     </bean>
 
     <!--<bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />-->
