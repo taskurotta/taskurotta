@@ -14,11 +14,7 @@ import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -155,6 +151,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         item.setStartTime(startTime);
         item.setEnqueueTime(System.currentTimeMillis());
         item.setTaskList(taskList);
+        item.setCreatedDate(new Date());
         queue.add(item);
 
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
