@@ -38,7 +38,7 @@
         <constructor-arg name="retryTimes" value="${dependencyBackend.retryTimes}"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
         <constructor-arg name="hzInstance" ref="hazelcastInstance"/>
 
         <property name="id2TaskMapName" value="${hz.task.map.name}" />
