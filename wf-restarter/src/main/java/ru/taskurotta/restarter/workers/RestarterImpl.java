@@ -59,7 +59,7 @@ public class RestarterImpl implements Restarter {
             }
         }
 
-        logger.info("Finish restarting [{}] task containers", processes.size());
+        logger.info("Finish restarting [{}] processes", processes.size());
     }
 
     private List<TaskContainer> findIncompleteTaskContainers(ProcessVO process) {

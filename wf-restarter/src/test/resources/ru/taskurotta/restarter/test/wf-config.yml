@@ -2,20 +2,22 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/parallel/RuntimeBeans.xml
+        context: ru/taskurotta/restarter/test/RuntimeBeans.xml
+        properties:
+          processBatchSize: 100
+          taskBatchSize: 10
+          dependencyBackend.retryTimes: 10
+          queueBackend.pollDaley: 60
+          queueBackend.pollDelayUnit: SECONDS
 
 spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/parallel/SpreaderBeans-jersey.xml
+        context: ru/taskurotta/restarter/test/SpreaderBeans.xml
         properties:
-          cycles: 1000
-          accuracy: 100000
-          endpoint: "http://localhost:8811"
-          threadPoolSize: 20
-          readTimeout: 0
-          connectTimeout: 3000
+          cycles: 10
+          accuracy: 1000
 
 profiler:
   - MainProfilerConfig:
@@ -45,16 +47,24 @@ policy:
           maximumAttempts: 3
 
 actor:
-  - PiDecider:
-      actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
+  - Coordinator:
+      actorInterface: ru.taskurotta.restarter.test.deciders.Coordinator
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
       policyConfig: LinearRertyPolicyConfig
       count: 1
 
-  - PiWorker:
-      actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
+  - Analyzer:
+      actorInterface: ru.taskurotta.restarter.test.workers.Analyzer
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      policyConfig: LinearRertyPolicyConfig
+      count: 1
+
+  - Restarter:
+      actorInterface: ru.taskurotta.restarter.workers.Restarter
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
@@ -67,30 +77,27 @@ logback:
              key: name
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
-                 pattern: \%-4r %d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%-4r \%d [\%t] \%-5p \%c - %m%n
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel.log
+             file: ./logs/restarter-test.log
              append: true
              encoder:
-                 pattern: \%-4r %d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%-4r \%d [\%t] \%-5p \%c - %m%n
     logger:
         - ru.taskurotta:
-             key: name
-             \@level: INFO
+              key: name
+              \@level: INFO
+        - ru.taskurotta.restarter:
+              key: name
+              \@level: DEBUG
         - com.hazelcast:
               key: name
               \@level: INFO
-        - org.apache.commons.httpclient:
-              key: name
-              \@level: INFO
-        - httpclient.wire:
+        - org.springframework:
               key: name
               \@level: !!!str OFF
-        - org.springframework:
-             key: name
-             \@level: !!!str OFF
     root:
         appender-ref:
             - STDOUT:

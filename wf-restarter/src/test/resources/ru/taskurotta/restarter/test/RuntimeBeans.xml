@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+    <context:property-placeholder/>
+
+    <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
+
+    <bean id="graphDao" class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="retryTimes" value="${dependencyBackend.retryTimes}"/>
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao"/>
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
+        <constructor-arg name="pollDelay" value="${queueBackend.pollDaley}"/>
+        <constructor-arg name="pollDelayUnit" value="${queueBackend.pollDelayUnit}"/>
+    </bean>
+
+    <bean id="analyzer" class="ru.taskurotta.restarter.test.workers.AnalyzerImpl" />
+
+    <bean id="restarter" class="ru.taskurotta.restarter.workers.RestarterImpl">
+        <property name="queueBackend" ref="queueBackend"/>
+        <property name="dependencyBackend" ref="dependencyBackend"/>
+        <property name="taskDao" ref="taskDao"/>
+    </bean>
+
+    <bean id="coordinator" class="ru.taskurotta.restarter.test.deciders.CoordinatorImpl">
+        <property name="analyzer">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.restarter.test.workers.AnalyzerClient"/>
+            </bean>
+        </property>
+        <property name="restarter">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
+                <constructor-arg value="ru.taskurotta.restarter.workers.RestarterClient"/>
+            </bean>
+        </property>
+        <property name="asynchronous">
+            <bean class="ru.taskurotta.ProxyFactory" factory-method="getAsynchronousClient">
+                <constructor-arg value="ru.taskurotta.restarter.test.deciders.CoordinatorImpl"/>
+            </bean>
+        </property>
+        <property name="taskBatchSize" value="${taskBatchSize}" />
+    </bean>
+
+</beans>

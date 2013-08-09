@@ -102,12 +102,12 @@ logback:
         - ru.taskurotta:
               key: name
               \@level: INFO
-        - ru.taskurotta.restarter:
-              key: name
-              \@level: DEBUG
-        - ru.taskurotta.backend.hz.queue:
-              key: name
-              \@level: DEBUG
+#        - ru.taskurotta.restarter:
+#              key: name
+#              \@level: DEBUG
+#        - ru.taskurotta.backend.hz.queue:
+#              key: name
+#              \@level: DEBUG
         - com.hazelcast:
               key: name
               \@level: INFO
