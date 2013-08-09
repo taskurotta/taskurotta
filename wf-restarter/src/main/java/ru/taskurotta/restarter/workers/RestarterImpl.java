@@ -86,12 +86,12 @@ public class RestarterImpl implements Restarter {
 
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
             if (taskContainer != null) {
-                logger.debug("Found not finished task container [{}]", processId, taskContainer);
+                logger.debug("Found not finished task container [{}]", taskId, taskContainer);
                 taskContainers.add(taskContainer);
             }
         }
 
-        logger.info("For processId [{}] found [{}] not finished task containers", processId, taskContainers);
+        logger.info("For processId [{}] found [{}] not finished task containers", processId, taskContainers.size());
 
         return taskContainers;
     }
