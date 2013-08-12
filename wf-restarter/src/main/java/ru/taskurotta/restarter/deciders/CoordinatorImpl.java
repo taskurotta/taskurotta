@@ -36,20 +36,14 @@ public class CoordinatorImpl implements Coordinator {
 
     @Asynchronous
     public void restartProcesses(Promise<Long> fromTimePromise) {
+
+        if (fromTimePromise.get() == -1) {
+            return;
+        }
+
         Promise<List<ProcessVO>> processesPromise = asynchronous.findIncompleteProcesses(fromTimePromise);
 
         fromTimePromise = asynchronous.prepareForRestart(processesPromise);
-
-        asynchronous.waitFromTimePromise(fromTimePromise);
-    }
-
-    @Asynchronous
-    public void waitFromTimePromise(Promise<Long> fromTimePromise) {
-        if (fromTimePromise.get() < 0) {
-            logger.info("Finish restart processes coordinator at [{}]", new Date());
-
-            return;
-        }
 
         asynchronous.restartProcesses(fromTimePromise);
     }

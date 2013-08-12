@@ -40,7 +40,7 @@ public class PiDeciderImpl implements PiDecider {
     @Asynchronous
     public void show(Promise<Double> pi, long cycles, long accuracy) {
         logger.info("Calculating Pi: " + pi.get() + " by " + cycles + " cycles with " + accuracy + " accuracy");
-        System.exit(0);
+//        System.exit(0);
     }
 
     public void setPiWorker(PiWorkerClient piWorker) {
