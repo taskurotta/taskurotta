@@ -40,9 +40,9 @@ public class GeneralTaskServer implements TaskServer {
     protected SnapshotService snapshotService;
 
     /*
-    For tests ONLY
+     *  For tests ONLY
      */
-    public GeneralTaskServer(){
+    public GeneralTaskServer() {
 
     }
 
@@ -210,16 +210,13 @@ public class GeneralTaskServer implements TaskServer {
 
     }
 
-    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision){
+    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
         logger.debug("Snapshot processing initialized with taskDecision[{}], dependencyDecision[{}]", taskDecision, dependencyDecision);
         //TODO: implement it
     }
 
     /**
      * Send task to the queue for processing
-     * @param taskId -
-     * @param processId -
-     * @param actorId -
      * @param startTime time to start delayed task. set to 0 to start it immediately
      * @param taskList -
      */

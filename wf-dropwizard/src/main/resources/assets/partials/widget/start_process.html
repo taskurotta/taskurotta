@@ -1,0 +1,31 @@
+<div>
+    <form>
+        <table class="table">
+            <tr>
+                <td>ActorId: </td>
+                <td>
+                    <input type="text" ng-model="process.actorId" required />
+                </td>
+            </tr>
+            <tr>
+                <td>Method name: </td>
+                <td>
+                    <input type="text" ng-model="process.method" required />
+                </td>
+            </tr>
+            <tr>
+                <td>Args JSON: </td>
+                <td>
+                    <textarea ng-model="argsJson"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <input type="button" ng-click="create()" value="Create process" />
+                    <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
