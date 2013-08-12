@@ -38,6 +38,8 @@ public class CoordinatorImpl implements Coordinator {
     public void restartProcesses(Promise<Long> fromTimePromise) {
 
         if (fromTimePromise.get() == -1) {
+            logger.info("Finish restart process coordinator at [{}]", new Date());
+
             return;
         }
 
