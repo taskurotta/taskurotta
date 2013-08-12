@@ -109,7 +109,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         if (event.getInstanceType().isQueue()) {//storing all new queues name
             IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
             String queueName = ((IQueue) event.getInstance()).getName();
-            queueNamesMap.put(queueName, Boolean.TRUE);
+            queueNamesMap.set(queueName, Boolean.TRUE, 0, TimeUnit.NANOSECONDS);
             logger.debug("Queue [{}] added to cluster", queueName);
         }
     }

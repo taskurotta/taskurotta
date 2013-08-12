@@ -198,7 +198,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
 
         actorPreferences.setBlocked(true);
 
-        actorPreferencesMap.put(actorId, actorPreferences);
+        actorPreferencesMap.set(actorId, actorPreferences, 0, TimeUnit.NANOSECONDS);
 
         logger.debug("Block actorId [{}]", actorId);
     }
@@ -214,7 +214,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         }
 
         actorPreferences.setBlocked(false);
-        actorPreferencesMap.put(actorId, actorPreferences);
+        actorPreferencesMap.set(actorId, actorPreferences, 0, TimeUnit.NANOSECONDS );
 
         logger.debug("Unblock actorId [{}]", actorId);
     }
