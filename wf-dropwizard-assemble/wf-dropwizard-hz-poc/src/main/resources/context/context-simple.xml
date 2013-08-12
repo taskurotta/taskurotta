@@ -3,11 +3,13 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xmlns:task="http://www.springframework.org/schema/task"
+
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+       " >
 
     <context:property-placeholder />
     <context:annotation-config />
@@ -45,5 +47,10 @@
         <property name="nodeCustomName" value="${node.custom.name}" />
 
     </bean>
+
+    <task:scheduled-tasks scheduler="resendScheduler">
+        <task:scheduled ref="queueBackend" method="updateDelayedTasks" fixed-rate="${updateDelayedTasksRate}"/>
+    </task:scheduled-tasks>
+    <task:scheduler id="resendScheduler" pool-size="1"/>
 
 </beans>

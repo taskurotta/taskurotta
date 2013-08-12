@@ -33,6 +33,7 @@ properties:
   decision.sleep: 100000
   hazelcast.jmx: true
   hazelcast.jmx.detailed: true
+  updateDelayedTasksRate: 10000
 
 #resourceBeans:
 #  - taskStarterResource
@@ -50,9 +51,10 @@ logging:
         ru.taskurotta.dropwizard.hz: INFO
         ru.taskurotta.backend.hz.server: INFO
         ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: DEBUG
+        ru.taskurotta.backend.hz.queue: DEBUG
         com.yammer: INFO
     file:
-        enabled: true
+        enabled: false
         archive: true
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
