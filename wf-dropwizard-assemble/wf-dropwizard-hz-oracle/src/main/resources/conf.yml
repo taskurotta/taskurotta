@@ -23,20 +23,25 @@ properties:
   hz.nodes: localhost:7777,localhost:7778
   mongo.host: localhost
   mongo.port: 27017
-  oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
-  oradb.user: "taskurotta"
-  oradb.password: "taskurotta"
+#  oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
+#  oradb.user: "taskurotta"
+#  oradb.password: "taskurotta"
+  oradb.url: "jdbc:oracle:thin:@172.16.4.240:1521:pgudb"
+  oradb.user: "rip_rr"
+  oradb.password: "rip_rr"
+
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.dropwizard.server.core: INFO
-        ru.taskurotta.server: INFO
-        ru.taskurotta.dropwizard.hz: INFO
-        ru.taskurotta.backend.hz.server: INFO
-        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
+        ru.taskurotta: DEBUG
+#        ru.taskurotta.dropwizard.server.core: INFO
+#        ru.taskurotta.server: INFO
+#        ru.taskurotta.dropwizard.hz: INFO
+#        ru.taskurotta.backend.hz.server: INFO
+#        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
         com.yammer: INFO
     file:
         enabled: true

@@ -10,6 +10,7 @@
 
     <!--<logger name="ru.taskurotta.dropwizard.client.jersey" level="DEBUG"/>-->
     <logger name="ru.taskurotta.example" level="INFO"/>
+    <!--<logger name="ru.taskurotta.bootstrap.profiler" level="DEBUG"/>-->
     <!--<logger name="ru.taskurotta.bootstrap" level="DEBUG"/>-->
     <!--<logger name="ru.taskurotta.bootstrap.profiler" level="INFO"/>-->
     <logger name="org.springframework" level="OFF"/>
