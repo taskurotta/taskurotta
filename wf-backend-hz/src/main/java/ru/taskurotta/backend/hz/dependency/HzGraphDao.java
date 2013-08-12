@@ -11,7 +11,6 @@ import ru.taskurotta.backend.dependency.links.Modification;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +25,7 @@ public class HzGraphDao implements GraphDao {
 
     // TODO: garbage collection policy for real database
 
-    private IMap<UUID, GraphRow> graphs;
+    protected IMap<UUID, GraphRow> graphs;
     private IMap<UUID, DecisionRow> decisions;
     private ILock graphLock;
 
@@ -57,7 +56,7 @@ public class HzGraphDao implements GraphDao {
         private int version;
         private Graph graph;
 
-        protected GraphRow(Graph graph) {
+        public GraphRow(Graph graph) {
             version = graph.getVersion();
             this.graph = graph;
         }

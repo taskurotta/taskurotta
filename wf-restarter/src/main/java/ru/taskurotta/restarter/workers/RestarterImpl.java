@@ -10,6 +10,7 @@ import ru.taskurotta.restarter.ProcessVO;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.serialization.JsonSerializer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,8 @@ public class RestarterImpl implements Restarter {
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
+
+    private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
     @Override
     public void restart(List<ProcessVO> processes) {
@@ -70,12 +73,15 @@ public class RestarterImpl implements Restarter {
         if (graph == null) {
             logger.warn("For processId [{}] not found graph", processId);
 
-            TaskContainer startTaskContainer = taskDao.getTask(process.getStartTaskId(),processId);
+            TaskContainer startTaskContainer = taskSerializer.deserialize(process.getStartJson());
+            logger.info("For processId [{}] get start task [{}]", processId, startTaskContainer);
 
-            List<TaskContainer> list = Arrays.asList(startTaskContainer);
-            logger.info("For processId [{}] get start task [{}]", processId, list);
+            // emulate TaskServer.startProcess()
+            taskDao.addTask(startTaskContainer);
+            dependencyBackend.startProcess(startTaskContainer);
+            logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
 
-            return list;
+            return Arrays.asList(startTaskContainer);
         }
 
         Set<UUID> notFinishedTaskIds = graph.getNotFinishedItems();
