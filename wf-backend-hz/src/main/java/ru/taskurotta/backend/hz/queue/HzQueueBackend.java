@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -161,7 +160,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
         item.setTaskList(taskList);
         item.setCreatedDate(new Date());
 
-        if (item.getStartTime() < item.getEnqueueTime()) {
+        if (item.getStartTime() <= item.getEnqueueTime()) {
 
             IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
             queue.add(item);

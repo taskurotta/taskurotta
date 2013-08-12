@@ -399,6 +399,16 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void argPromiseOfEmptyCollection() {
+        ArrayList<TestObject> arrayList = new ArrayList();
+        Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>)arrayList);
+
+        ArgContainer arg = objectFactory.dumpArg(pList);
+        Promise<List<TestObject>> pListNew = (Promise<List<TestObject>>) objectFactory.parseArg(arg);
+        assertEquals(pList, pListNew);
+    }
+
+    @Test
     public void argContainerNotReadyPromise() {
         Promise arg = Promise.createInstance(UUID.randomUUID());
         testInternal(arg);

@@ -148,3 +148,31 @@ consoleDirectives.directive('tskTree', ['$compile', function ($compile) {
         }
     };
 }]);
+
+
+consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {},
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$$timeUtil', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $$timeUtil, $window, $log, $http) {
+
+            $scope.process = {
+                actorId: "",
+                method: "",
+                type: "DECIDER_START"
+            };
+
+            $scope.argsJson = "[]";
+
+            $scope.create = function() {
+                $scope.process.args = angular.fromJson($scope.argsJson);
+                $log.log("create process: " + angular.toJson($scope.process));
+                $http.post("/rest/tasks/start?generateId=true", $scope.process);
+            };
+
+        }],
+        templateUrl: "/partials/widget/start_process.html",
+        replace: true
+    };
+}]);

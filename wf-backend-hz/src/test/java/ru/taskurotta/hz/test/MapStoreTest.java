@@ -21,7 +21,7 @@ import java.util.UUID;
  * User: dimadin
  * Date: 08.08.13 11:15
  */
-@Ignore //Requires MongoDB up and running
+@Ignore //Requires MongoDB up and running and single node HZ
 public class MapStoreTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MapStoreTest.class);
