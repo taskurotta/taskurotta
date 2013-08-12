@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TaskDao storing tasks in HZ shared(and processId partitioned) maps
@@ -40,7 +41,7 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
+        id2TaskDecisionMap.put(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
@@ -50,7 +51,7 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        id2TaskMap.put(new TaskKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer);
+        id2TaskMap.set(new TaskKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
