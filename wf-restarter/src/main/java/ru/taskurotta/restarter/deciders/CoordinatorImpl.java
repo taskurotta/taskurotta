@@ -41,16 +41,11 @@ public class CoordinatorImpl implements Coordinator {
             return;
         }
 
-        Promise<List<ProcessVO>> processesPromise = asynchronous.findIncompleteProcesses(fromTimePromise);
+        Promise<List<ProcessVO>> processesPromise = analyzer.findNotFinishedProcesses(fromTimePromise.get());
 
         fromTimePromise = asynchronous.prepareForRestart(processesPromise);
 
         asynchronous.restartProcesses(fromTimePromise);
-    }
-
-    @Asynchronous
-    public Promise<List<ProcessVO>> findIncompleteProcesses(Promise<Long> fromTimePromise) {
-        return analyzer.findNotFinishedProcesses(fromTimePromise.get());
     }
 
     @Asynchronous
