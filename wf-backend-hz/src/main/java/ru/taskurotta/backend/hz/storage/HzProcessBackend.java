@@ -1,5 +1,11 @@
 package ru.taskurotta.backend.hz.storage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
@@ -12,12 +18,6 @@ import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,6 +70,12 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     public ProcessVO getProcess(UUID processUUID) {
         IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
         return processesStorage.get(processUUID);
+    }
+
+    @Override
+    public TaskContainer getStartTask(UUID processId) {
+        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
+        return processesStorage.get(processId).getStartTask();
     }
 
     @Override

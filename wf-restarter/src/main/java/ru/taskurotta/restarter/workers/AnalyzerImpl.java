@@ -28,7 +28,9 @@ public class AnalyzerImpl implements Analyzer {
 
     @Override
     public List<ProcessVO> findNotFinishedProcesses(long fromTime) {
-        logger.info("Try to find incomplete processes, was started before [{}] ({})", fromTime, new Date(fromTime));
+        if (logger.isInfoEnabled()) {
+            logger.info("Try to find incomplete processes, was started before [{}] ({})", fromTime, new Date(fromTime));
+        }
 
         List<ProcessVO> processes = new ArrayList<>();
 
@@ -54,14 +56,18 @@ public class AnalyzerImpl implements Analyzer {
                 ProcessVO process = new ProcessVO(processId, startTime, startTaskId, startJson);
                 processes.add(process);
 
-                logger.debug("Found incomplete processId [{}] started at [{}]({}) with taskId [{}]", processId, startTime, new Date(startTime), startTaskId);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Found incomplete processId [{}] started at [{}]({}) with taskId [{}]", processId, startTime, new Date(startTime), startTaskId);
+                }
             }
 
         } catch (SQLException ex) {
             throw new IllegalStateException("Database error", ex);
         }
 
-        logger.info("Found [{}] incomplete processes", processes.size());
+        if (logger.isInfoEnabled()) {
+            logger.info("Found [{}] incomplete processes", processes.size());
+        }
 
         return processes;
     }

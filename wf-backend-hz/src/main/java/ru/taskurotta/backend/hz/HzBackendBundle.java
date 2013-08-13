@@ -45,7 +45,7 @@ public class HzBackendBundle implements BackendBundle {
         this.queueBackend = hzQueueBackend;
 
         this.graphDao = new HzGraphDao(hazelcastInstance);
-        this.dependencyBackend = new GeneralDependencyBackend(graphDao, 10);
+        this.dependencyBackend = new GeneralDependencyBackend(graphDao);
         this.configBackend = new HzConfigBackend(hazelcastInstance);
     }
 
