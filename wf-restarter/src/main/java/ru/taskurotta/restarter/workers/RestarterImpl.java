@@ -62,7 +62,9 @@ public class RestarterImpl implements Restarter {
             }
         }
 
-        logger.info("Finish restarting [{}] processes", processes.size());
+        if (logger.isInfoEnabled()) {
+            logger.info("Finish restarting [{}] processes", processes.size());
+        }
     }
 
     private List<TaskContainer> findIncompleteTaskContainers(ProcessVO process) {
@@ -85,7 +87,9 @@ public class RestarterImpl implements Restarter {
         }
 
         Set<UUID> notFinishedTaskIds = graph.getNotFinishedItems();
-        logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedTaskIds.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedTaskIds.size());
+        }
 
         List<TaskContainer> taskContainers = new ArrayList<>(notFinishedTaskIds.size());
         for (UUID taskId : notFinishedTaskIds) {
@@ -97,7 +101,9 @@ public class RestarterImpl implements Restarter {
             }
         }
 
-        logger.info("For processId [{}] found [{}] not finished task containers", processId, taskContainers.size());
+        if (logger.isInfoEnabled()) {
+            logger.info("For processId [{}] found [{}] not finished task containers", processId, taskContainers.size());
+        }
 
         return taskContainers;
     }
