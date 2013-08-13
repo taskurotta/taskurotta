@@ -57,9 +57,13 @@
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
+            <artifactId>wf-backend-ora</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
             <artifactId>wf-bootstrap</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

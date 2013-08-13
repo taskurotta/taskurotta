@@ -12,6 +12,7 @@ import ru.taskurotta.backend.checkpoint.model.CheckpointQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Checkpoint service implementation using hazelcast maps as storage
@@ -30,18 +31,18 @@ public class HzCheckpointService implements CheckpointService {
     public void addCheckpoint(Checkpoint checkpoint) {
         if (hasTimeoutType(checkpoint)) {
             IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(checkpoint.getTimeoutType()));
-            checkpointsOfAType.put(new HzCheckpoint(checkpoint), checkpoint.getTaskId());
+            checkpointsOfAType.set(new HzCheckpoint(checkpoint), checkpoint.getTaskId(), 0, TimeUnit.NANOSECONDS);
         } else {
-            logger.error("Cannot add empty checkpoint["+checkpoint+"]!");
+            logger.error("Cannot add empty checkpoint[" + checkpoint + "]!");
         }
     }
 
     @Override
     public void addCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoints) {
         IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(timeoutType));
-         for (Checkpoint checkpoint: checkpoints) {
-             checkpointsOfAType.put(new HzCheckpoint(checkpoint), checkpoint.getTaskId());
-         }
+        for (Checkpoint checkpoint : checkpoints) {
+            checkpointsOfAType.set(new HzCheckpoint(checkpoint), checkpoint.getTaskId(), 0, TimeUnit.NANOSECONDS);
+        }
     }
 
     @Override
@@ -53,18 +54,18 @@ public class HzCheckpointService implements CheckpointService {
             logger.debug("Removed checkpoint [{}], remaining map size [{}], initial map size[{}]", checkpoint, hzInstance.getMap(getName(checkpoint.getTimeoutType())).size(), initialSize);
 
         } else {
-            logger.error("Cannot remove empty checkpoint["+checkpoint+"]!");
+            logger.error("Cannot remove empty checkpoint[" + checkpoint + "]!");
         }
     }
 
     @Override
     public void removeCheckpoints(TimeoutType timeoutType, List<Checkpoint> checkpoints) {
         IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(timeoutType));
-        for (Checkpoint checkpoint: checkpoints) {
+        for (Checkpoint checkpoint : checkpoints) {
             if (hasTimeoutType(checkpoint)) {
                 checkpointsOfAType.remove(new HzCheckpoint(checkpoint));
             } else {
-                logger.error("Cannot remove empty checkpoint["+checkpoint+"]!");
+                logger.error("Cannot remove empty checkpoint[" + checkpoint + "]!");
             }
         }
     }
@@ -72,9 +73,9 @@ public class HzCheckpointService implements CheckpointService {
     @Override
     public List<Checkpoint> listCheckpoints(CheckpointQuery command) {
         List<Checkpoint> result = new ArrayList<>();
-        if (command!=null && command.getTimeoutType()!=null) {
+        if (command != null && command.getTimeoutType() != null) {
             IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(command.getTimeoutType()));
-            for (HzCheckpoint checkpoint: checkpointsOfAType.keySet()) {
+            for (HzCheckpoint checkpoint : checkpointsOfAType.keySet()) {
                 if (isValidAgainstCommand(checkpoint, command)) {
                     result.add(checkpoint);
                 }
@@ -113,11 +114,12 @@ public class HzCheckpointService implements CheckpointService {
         IMap<HzCheckpoint, UUID> checkpointsOfAType = hzInstance.getMap(getName(timeoutType));
         int initialSize = checkpointsOfAType.size();
         int result = 0;
-        for (HzCheckpoint checkpoint: checkpointsOfAType.keySet()) {
+        for (HzCheckpoint checkpoint : checkpointsOfAType.keySet()) {
             if (taskId.equals(checkpoint.getTaskId()) && processId.equals(checkpoint.getProcessId())) {
                 if (checkpointsOfAType.remove(checkpoint) != null) {
                     result++;
-                };
+                }
+                ;
             }
         }
         logger.debug("Removed [{}] checkpoints of a [{}] type, remaining map size [{}], initialSize [{}]", result, timeoutType, hzInstance.getMap(getName(timeoutType)).size(), initialSize);

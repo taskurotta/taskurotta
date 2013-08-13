@@ -42,6 +42,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
         try {
 
             if (null == targetReference) {
+                log.error("Cannot execute task[{}]: actor undefined. Current task targets are[{}]", task, taskTargetsMap.keySet());
                 taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), new UndefinedActorException(key), RuntimeContext.getCurrent().getTasks());
             } else {
 

@@ -3,6 +3,8 @@ package ru.taskurotta.backend.console.model;
 import java.io.Serializable;
 import java.util.UUID;
 
+import ru.taskurotta.transport.model.TaskContainer;
+
 /**
  * POJO representing workflow process
  * User: dimadin
@@ -14,6 +16,8 @@ public class ProcessVO implements Serializable {
     private UUID startTaskUuid;
 
     private String customId;
+
+    private TaskContainer startTask;
 
     long startTime = -1l;
     long endTime = -1l;
@@ -66,5 +70,13 @@ public class ProcessVO implements Serializable {
 
     public void setReturnValueJson(String returnValueJson) {
         this.returnValueJson = returnValueJson;
+    }
+
+    public TaskContainer getStartTask() {
+        return startTask;
+    }
+
+    public void setStartTask(TaskContainer startTask) {
+        this.startTask = startTask;
     }
 }

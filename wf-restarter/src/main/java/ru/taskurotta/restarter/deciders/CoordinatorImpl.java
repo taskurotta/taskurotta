@@ -32,22 +32,22 @@ public class CoordinatorImpl implements Coordinator {
         logger.info("Start restart process coordinator at [{}]", new Date());
 
         asynchronous.restartProcesses(Promise.asPromise(System.currentTimeMillis()));
-
-        logger.info("Finish restart processes at [{}]", new Date());
     }
 
     @Asynchronous
     public void restartProcesses(Promise<Long> fromTimePromise) {
-        Promise<List<ProcessVO>> processesPromise = asynchronous.findNotFinishedProcesses(fromTimePromise);
+
+        if (fromTimePromise.get() == -1) {
+            logger.info("Finish restart process coordinator at [{}]", new Date());
+
+            return;
+        }
+
+        Promise<List<ProcessVO>> processesPromise = analyzer.findNotFinishedProcesses(fromTimePromise.get());
 
         fromTimePromise = asynchronous.prepareForRestart(processesPromise);
 
         asynchronous.restartProcesses(fromTimePromise);
-    }
-
-    @Asynchronous
-    public Promise<List<ProcessVO>> findNotFinishedProcesses(Promise<Long> fromTimePromise) {
-        return analyzer.findNotFinishedProcesses(fromTimePromise.get());
     }
 
     @Asynchronous

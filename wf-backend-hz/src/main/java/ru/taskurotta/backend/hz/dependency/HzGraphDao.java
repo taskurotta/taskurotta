@@ -2,6 +2,7 @@ package ru.taskurotta.backend.hz.dependency;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
+import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -10,8 +11,8 @@ import ru.taskurotta.backend.dependency.links.Modification;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Memory graph dao with Hazelcast
@@ -24,8 +25,8 @@ public class HzGraphDao implements GraphDao {
 
     // TODO: garbage collection policy for real database
 
-    private Map<UUID, GraphRow> graphs;
-    private Map<UUID, DecisionRow> decisions;
+    protected IMap<UUID, GraphRow> graphs;
+    private IMap<UUID, DecisionRow> decisions;
     private ILock graphLock;
 
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
@@ -55,7 +56,7 @@ public class HzGraphDao implements GraphDao {
         private int version;
         private Graph graph;
 
-        protected GraphRow(Graph graph) {
+        public GraphRow(Graph graph) {
             version = graph.getVersion();
             this.graph = graph;
         }
@@ -129,7 +130,7 @@ public class HzGraphDao implements GraphDao {
             Graph graph = new Graph(graphId, taskId);
             GraphRow graphRow = new GraphRow(graph);
 
-            graphs.put(graphId, graphRow);
+            graphs.set(graphId, graphRow, 0, TimeUnit.NANOSECONDS);
 
         } finally {
             graphLock.unlock();
@@ -160,11 +161,11 @@ public class HzGraphDao implements GraphDao {
         decisionRow.modification = modification;
         decisionRow.readyItems = modifiedGraph.getReadyItems();
 
-        decisions.put(decisionRow.itemId, decisionRow);
+        decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
 
         GraphRow graphRow = graphs.get(modifiedGraph.getGraphId());
         boolean result = graphRow.updateGraph(modifiedGraph);
-        graphs.put(modifiedGraph.getGraphId(), graphRow);//hz feature
+        graphs.set(modifiedGraph.getGraphId(), graphRow, 0, TimeUnit.NANOSECONDS);//hz feature
         return result;
 
     }

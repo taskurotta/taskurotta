@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.ora.storage;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -12,16 +22,7 @@ import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import ru.taskurotta.transport.model.serialization.JsonSerializer;
 
 /**
  * User: moroz
@@ -34,6 +35,8 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     private DataSource dataSource;
 
     private final static Logger log = LoggerFactory.getLogger(OraProcessBackend.class);
+
+    private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
     public OraProcessBackend(DataSource dataSource, CheckpointService checkpointService) {
         this.dataSource = dataSource;
@@ -79,7 +82,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
         checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state) VALUES (?, ?, ?, ?, ?)")
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state, start_json) VALUES (?, ?, ?, ?, ?,?)")
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
@@ -87,6 +90,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
                     task.getOptions().getActorSchedulingOptions().getCustomId() : null);
             ps.setLong(4, (new Date()).getTime());
             ps.setInt(5, 0);
+            ps.setString(6, (String) taskSerializer.serialize(task));
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
@@ -108,7 +112,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     public ProcessVO getProcess(UUID processUUID) {
         ProcessVO result = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS WHERE PROCESS_ID = ?")
+             PreparedStatement ps = connection.prepareStatement("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processUUID.toString());
             ResultSet rs = ps.executeQuery();
@@ -120,6 +124,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
                 result.setStartTime(rs.getLong("start_time"));
                 result.setEndTime(rs.getLong("end_time"));
                 result.setReturnValueJson(rs.getString("return_value"));
+                result.setStartTask(taskSerializer.deserialize(rs.getString("start_json")));
             }
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
@@ -133,7 +138,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         List<ProcessVO> result = null;
         long totalCount = 0;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS"));
+             PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS"));
         ) {
             int startIndex = (pageNumber - 1) * pageSize + 1;
             int endIndex = startIndex + pageSize - 1;
@@ -152,6 +157,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
                 process.setStartTime(rs.getLong("start_time"));
                 process.setEndTime(rs.getLong("end_time"));
                 process.setReturnValueJson(rs.getString("return_value"));
+                process.setStartTask(taskSerializer.deserialize(rs.getString("start_json")));
                 result.add(process);
                 totalCount = rs.getLong("cnt");
             }
@@ -166,7 +172,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     @Override
     public List<ProcessVO> findProcesses(String type, String id) {
         List<ProcessVO> result = new ArrayList<>();
-        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS WHERE %ST LIKE ? AND ROWNUM <= 200";
+        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS WHERE %ST LIKE ? AND ROWNUM <= 200";
         query = (!SEARCH_BY_CUSTOM_ID.equals(type)) ? query.replace("%ST", "PROCESS_ID") : query.replace("%ST", "CUSTOM_ID");
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(query);
@@ -182,6 +188,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
                     process.setStartTime(rs.getLong("start_time"));
                     process.setEndTime(rs.getLong("end_time"));
                     process.setReturnValueJson(rs.getString("return_value"));
+                    process.setStartTask(taskSerializer.deserialize(rs.getString("start_json")));
                     result.add(process);
                 }
             }

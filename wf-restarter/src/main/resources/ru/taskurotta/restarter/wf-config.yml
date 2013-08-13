@@ -28,9 +28,6 @@ spreader:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         context: ru/taskurotta/restarter/SpreaderBeans.xml
-        properties:
-          cycles: 10
-          accuracy: 1000
 
 profiler:
   - MainProfilerConfig:

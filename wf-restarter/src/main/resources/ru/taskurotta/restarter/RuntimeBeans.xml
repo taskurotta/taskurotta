@@ -26,7 +26,7 @@
         <property name="password" value="${db.password}"/>
     </bean>
 
-    <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao">
+    <bean id="graphDao" class="ru.taskurotta.restarter.backend.HzGraphDaoForRestarter">
         <constructor-arg name="hzInstance" ref="hazelcastInstance"/>
         <constructor-arg name="decisionsMapName" value="${hz.decision.map.name}" />
         <constructor-arg name="graphsMapName" value="${hz.graph.map.name}" />

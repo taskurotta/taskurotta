@@ -1,7 +1,13 @@
 <div>
     <table width="100%">
         <tr>
-            <td style="text-align: left;"><h3>Processes list</h3></td>
+            <td style="text-align: left;">
+                <h3>Processes list</h3>
+                <div style="float: left;">
+                    <a class="btn btn-link" ng-click="update()">Refresh</a>
+                    <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
+                </div>
+            </td>
             <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
         </tr>
     </table>

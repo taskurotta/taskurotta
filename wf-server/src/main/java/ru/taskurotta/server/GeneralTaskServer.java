@@ -40,9 +40,9 @@ public class GeneralTaskServer implements TaskServer {
     protected SnapshotService snapshotService;
 
     /*
-    For tests ONLY
+     *  For tests ONLY
      */
-    public GeneralTaskServer(){
+    public GeneralTaskServer() {
 
     }
 
@@ -119,6 +119,10 @@ public class GeneralTaskServer implements TaskServer {
         TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
 
         queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
+
+//        if(!taskContainer.getActorId().equals(actorId)) {
+//            logger.error("Polled for actor [{}] but returned for [{}], taskQueuItem is [{}]", actorId, taskContainer.getActorId(), tqi);
+//        }
 
         return taskContainer;
     }
@@ -206,16 +210,13 @@ public class GeneralTaskServer implements TaskServer {
 
     }
 
-    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision){
+    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
         logger.debug("Snapshot processing initialized with taskDecision[{}], dependencyDecision[{}]", taskDecision, dependencyDecision);
         //TODO: implement it
     }
 
     /**
      * Send task to the queue for processing
-     * @param taskId -
-     * @param processId -
-     * @param actorId -
      * @param startTime time to start delayed task. set to 0 to start it immediately
      * @param taskList -
      */

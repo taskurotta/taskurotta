@@ -36,7 +36,7 @@ public class AnalyzerImpl implements Analyzer {
             return processes;
         }
 
-        String query = "SELECT * FROM (SELECT process_id, start_time, start_task_id FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
+        String query = "SELECT * FROM (SELECT process_id, start_time, start_task_id, start_json FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -49,8 +49,9 @@ public class AnalyzerImpl implements Analyzer {
                 UUID processId = UUID.fromString(resultSet.getString("process_id"));
                 long startTime = resultSet.getLong("start_time");
                 UUID startTaskId = UUID.fromString(resultSet.getString("start_task_id"));
+                String startJson = resultSet.getString("start_json");
 
-                ProcessVO process = new ProcessVO(processId, startTime, startTaskId);
+                ProcessVO process = new ProcessVO(processId, startTime, startTaskId, startJson);
                 processes.add(process);
 
                 logger.debug("Found incomplete processId [{}] started at [{}]({}) with taskId [{}]", processId, startTime, new Date(startTime), startTaskId);

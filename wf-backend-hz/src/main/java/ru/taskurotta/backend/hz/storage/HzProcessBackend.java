@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -40,7 +41,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setStartTime(System.currentTimeMillis());
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
-        hzInstance.getMap(processesStorageMapName).put(task.getProcessId(), process);
+        hzInstance.getMap(processesStorageMapName).set(task.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         ProcessVO process = processMap.get(processId);
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
-        processMap.put(processId, process);
+        processMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
