@@ -1,21 +1,19 @@
 package ru.taskurotta.backend.storage;
 
-import com.google.common.collect.Collections2;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.ProcessVO;
-import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
-import ru.taskurotta.transport.model.TaskContainer;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Collections2;
+import ru.taskurotta.backend.checkpoint.CheckpointService;
+import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
+import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.ProcessVO;
+import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * User: romario
@@ -74,6 +72,11 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     @Override
     public ProcessVO getProcess(UUID processUUID) {
         return processesStorage.get(processUUID);
+    }
+
+    @Override
+    public TaskContainer getStartTask(UUID processId) {
+        return processesStorage.get(processId).getStartTask();
     }
 
     @Override

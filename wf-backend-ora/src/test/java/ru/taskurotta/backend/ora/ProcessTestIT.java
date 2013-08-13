@@ -1,12 +1,8 @@
 package ru.taskurotta.backend.ora;
 
-import java.util.List;
-
 import junit.framework.Assert;
 import org.junit.Test;
-import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
-import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService;
 import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.storage.OraProcessBackend;
@@ -26,15 +22,11 @@ public class ProcessTestIT {
         TaskContainer task = SerializationTest.createTaskContainer();
         dao.startProcess(task);
 
-        TaskContainer task1 = SerializationTest.createTaskContainer();
-        dao.startProcess(task1);
+        ProcessVO processVO = dao.getProcess(task.getProcessId());
+        Assert.assertNull(processVO.getStartTask());
+        TaskContainer getedTask = dao.getStartTask(task.getProcessId());
+        Assert.assertEquals(task.getTaskId(), getedTask.getTaskId());
 
-        ProcessVO processVO = dao.getProcess(task1.getProcessId());
-        Assert.assertEquals(processVO.getStartTask().getTaskId(), task1.getTaskId());
-        GenericPage<ProcessVO> page = dao.listProcesses(1, 100);
-        Assert.assertFalse(page.getItems().size() <= 0);
-        List<ProcessVO> processVO1 = dao.findProcesses(ProcessInfoRetriever.SEARCH_BY_ID, processVO.getProcessUuid().toString());
-        Assert.assertFalse(processVO1.size() <= 0);
     }
 
 }
