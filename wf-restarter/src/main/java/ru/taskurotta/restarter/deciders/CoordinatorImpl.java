@@ -38,7 +38,9 @@ public class CoordinatorImpl implements Coordinator {
     public void restartProcesses(Promise<Long> fromTimePromise) {
 
         if (fromTimePromise.get() == -1) {
-            logger.info("Finish restart process coordinator at [{}]", new Date());
+            if (logger.isInfoEnabled()) {
+                logger.info("Finish restart process coordinator at [{}]", new Date());
+            }
 
             return;
         }
@@ -58,7 +60,9 @@ public class CoordinatorImpl implements Coordinator {
             return Promise.asPromise(-1l);
         }
 
-        logger.info("Start restarting [{}] processes", processes.size());
+        if (logger.isInfoEnabled()) {
+            logger.info("Start restarting [{}] processes", processes.size());
+        }
 
         int processesSize = processes.size();
         int batchesCount = taskBatchSize < processesSize ? processesSize / taskBatchSize : 1;
@@ -67,14 +71,20 @@ public class CoordinatorImpl implements Coordinator {
             int toIndex = (fromIndex + 1) * taskBatchSize < processesSize ? (fromIndex + 1) * taskBatchSize : processesSize - fromIndex * taskBatchSize;
 
             List<ProcessVO> list = new ArrayList<>(processes.subList(fromIndex, toIndex));
-            logger.debug("Prepare [{}] processes for restarting", list.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Prepare [{}] processes for restarting", list.size());
+            }
 
             restarter.restart(list);
-            logger.debug("Send [{}] processes to restarting", list.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Send [{}] processes to restarting", list.size());
+            }
         }
 
         long earlyProcessStartTime = processes.get(0).getStartTime();
-        logger.debug("Early restart process start time is [{}]({})", earlyProcessStartTime, new Date(earlyProcessStartTime));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Early restart process start time is [{}]({})", earlyProcessStartTime, new Date(earlyProcessStartTime));
+        }
 
         return Promise.asPromise(earlyProcessStartTime);
     }
