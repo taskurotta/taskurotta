@@ -1,5 +1,5 @@
 #Location of Spring application context:
-contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-simple.xml"
+contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-simple.xml, classpath*:context/console-context.xml"
 #contextLocation: "classpath*:context/context-test.xml, classpath*:context/console-context.xml"
 
 #Used for static resource serving in development mode
@@ -23,6 +23,7 @@ properties:
   hz.nodes: 10.129.0.51:7777,10.129.0.52:7777
   hz.decisions.core.pool.size: 64
   hz.decisions.max.pool.size: 128
+  updateDelayedTasksRate: 100000
 
 #resourceBeans:
 #  - taskStarterResource
@@ -39,6 +40,7 @@ logging:
         ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
         ru.taskurotta.dropwizard.hz: DEBUG
         com.yammer: INFO
+        ru.taskurotta.backend.hz.server: INFO
     file:
         enabled: true
         archive: true

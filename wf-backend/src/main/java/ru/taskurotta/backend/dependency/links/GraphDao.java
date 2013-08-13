@@ -11,7 +11,6 @@ public interface GraphDao {
 
     /**
      * @param graphId
-     *
      * @return last version of graph links.
      */
     public Graph getGraph(UUID graphId);
@@ -42,4 +41,28 @@ public interface GraphDao {
      */
     public UUID[] getReadyTasks(UUID finishedTaskId);
 
+
+    /**
+     * Run graph updater
+     *
+     * @param updater
+     * @return true when update are completed successfully
+     */
+    boolean changeGraph(Updater updater);
+
+
+    /**
+     * This class delegates synchronization solution to the DAO level.
+     */
+    public interface Updater {
+
+        public UUID getProcessId();
+
+        /**
+         * @param graph
+         * @return true if DAO should update graph in storage
+         */
+        public boolean apply(Graph graph);
+
+    }
 }

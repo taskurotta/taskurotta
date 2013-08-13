@@ -27,22 +27,10 @@ public class HzGraphDao implements GraphDao {
 
     protected IMap<UUID, GraphRow> graphs;
     private IMap<UUID, DecisionRow> decisions;
-    private ILock graphLock;
 
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
         this.graphs = hzInstance.getMap(graphsMapName);
         this.decisions = hzInstance.getMap(decisionsMapName);
-        graphLock = hzInstance.getLock(graphs);
-    }
-
-    // Use this constructor with hazelcast client instance, because it isn't support lock
-    public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName, boolean createGraphLock) {
-        this.graphs = hzInstance.getMap(graphsMapName);
-        this.decisions = hzInstance.getMap(decisionsMapName);
-
-        if (createGraphLock) {
-            graphLock = hzInstance.getLock(graphs);
-        }
     }
 
     public HzGraphDao(HazelcastInstance hzInstance) {
@@ -122,7 +110,7 @@ public class HzGraphDao implements GraphDao {
         }
 
         try {
-            graphLock.lock();
+            graphs.lock(graphId);
             if (graphs.get(graphId) != null) {
                 return;
             }
@@ -133,7 +121,7 @@ public class HzGraphDao implements GraphDao {
             graphs.set(graphId, graphRow, 0, TimeUnit.NANOSECONDS);
 
         } finally {
-            graphLock.unlock();
+            graphs.unlock(graphId);
         }
 
     }
@@ -179,6 +167,31 @@ public class HzGraphDao implements GraphDao {
         }
 
         return Graph.EMPTY_ARRAY;
+    }
+
+    @Override
+    public boolean changeGraph(Updater updater) {
+
+        UUID graphId = updater.getProcessId();
+
+        try {
+            graphs.lock(graphId);
+
+            GraphRow graphRow = graphs.get(graphId);
+
+            if (graphRow == null) {
+                return false;
+            }
+
+            if (updater.apply(graphRow.graph)) {
+                return updateGraph(graphRow.graph);
+            }
+
+        } finally {
+            graphs.unlock(graphId);
+        }
+
+        return false;
     }
 
 }

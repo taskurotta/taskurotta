@@ -130,22 +130,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
         return newArg;
 
-
-        // @TODO: optimize this double ArgContainer instantiation
-//        pArg = pArg.updateValue(taskValue);
-//
-//
-//        if (TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {
-//            // set real value into promise for Decider tasks
-//            pArg = pArg.updateType(true);
-//
-//        } else {
-//            // swap promise with real value for Actor tasks
-//            pArg = pArg.updateType(false);
-//
-//        }
-//        logger.debug("Promise argument with initialized value is [{}], taskType is[{}]", pArg, taskType);
-//        return pArg;
     }
 
     private static boolean isDeciderTaskType(TaskType taskType) {
@@ -231,7 +215,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         if (checkpointService != null) {
             task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
 
-            if(task != null) {
+            if (task != null) {
                 checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
             } else {
                 logger.debug("Task with null value getted for decision[{}]", taskDecision);
@@ -269,6 +253,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     @Override
     public void addDecisionCommit(DecisionContainer taskDecision) {
         //Removing checkpoints
+
+        if (checkpointService == null) {
+            return;
+        }
+
         checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_START_TO_CLOSE);
         checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_SCHEDULE_TO_CLOSE);
         checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_RELEASE_TO_COMMIT);

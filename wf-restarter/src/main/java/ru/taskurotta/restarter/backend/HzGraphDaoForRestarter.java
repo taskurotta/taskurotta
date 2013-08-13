@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class HzGraphDaoForRestarter extends HzGraphDao {
 
     public HzGraphDaoForRestarter(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName, boolean createGraphLock) {
-        super(hzInstance, graphsMapName, decisionsMapName, createGraphLock);
+        super(hzInstance, graphsMapName, decisionsMapName);
     }
 
     @Override

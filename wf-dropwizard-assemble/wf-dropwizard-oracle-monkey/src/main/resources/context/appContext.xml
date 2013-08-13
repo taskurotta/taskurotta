@@ -79,7 +79,6 @@
     <bean id="dependencyBackend"
           class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
         <constructor-arg name="graphDao" ref="oraGraphDao"/>
-        <constructor-arg name="retryTimes" value="${retryTimes}"/>
     </bean>
 
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">

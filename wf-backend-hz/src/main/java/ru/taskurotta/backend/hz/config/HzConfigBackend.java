@@ -36,8 +36,8 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     public static final String ACTOR_PREFERENCES_MAP_NAME = "actorPreferencesMap";
     public static final String EXPIRATION_POLICY_CONFIG_SET_NAME = "expirationPolicyConfigSet";
 
-    private Map<String, ActorPreferences> actorPreferencesMap = new HashMap<>();
-    private Set<ExpirationPolicyConfig> expirationPolicyConfigSet = new HashSet<>();
+    private volatile Map<String, ActorPreferences> actorPreferencesMap = new HashMap<>();
+    private volatile Set<ExpirationPolicyConfig> expirationPolicyConfigSet = new HashSet<>();
 
     private int defaultTimeout = 1;
     private TimeUnit defaultTimeUnit = TimeUnit.SECONDS;
