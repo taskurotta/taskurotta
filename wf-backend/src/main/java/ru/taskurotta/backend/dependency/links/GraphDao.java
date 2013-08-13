@@ -17,14 +17,6 @@ public interface GraphDao {
 
 
     /**
-     * Saves new version of graph
-     *
-     * @param modifiedGraph
-     * @return true if graph saved successfully.
-     */
-    public boolean updateGraph(Graph modifiedGraph);
-
-    /**
      * Register new process graph.
      *
      * @param graphId

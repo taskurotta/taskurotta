@@ -25,8 +25,7 @@ public class HzGraphDaoForRestarter extends HzGraphDao {
         }
 
         Graph graph = new Graph(graphId, taskId);
-        GraphRow graphRow = new GraphRow(graph);
 
-        graphs.set(graphId, graphRow, 0, TimeUnit.NANOSECONDS);
+        graphs.set(graphId, graph, 0, TimeUnit.NANOSECONDS);
     }
 }

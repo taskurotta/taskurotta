@@ -134,8 +134,7 @@ public class MemoryGraphDao implements GraphDao {
         return graphRow.parse();
     }
 
-    @Override
-    public boolean updateGraph(Graph modifiedGraph) {
+    private boolean updateGraph(Graph modifiedGraph) {
 
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 

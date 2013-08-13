@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.hz.dependency;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ public class HzGraphDao implements GraphDao {
 
     // TODO: garbage collection policy for real database
 
-    protected IMap<UUID, GraphRow> graphs;
+    protected IMap<UUID, Graph> graphs;
     private IMap<UUID, DecisionRow> decisions;
 
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
@@ -35,38 +34,6 @@ public class HzGraphDao implements GraphDao {
 
     public HzGraphDao(HazelcastInstance hzInstance) {
         this(hzInstance, "graphsMapName", "graphDecisionsMapName");
-    }
-
-    /**
-     * Table of row contains current graph (process) state
-     */
-    public static class GraphRow implements Serializable {
-        private int version;
-        private Graph graph;
-
-        public GraphRow(Graph graph) {
-            version = graph.getVersion();
-            this.graph = graph;
-        }
-
-
-        /**
-         * @param modifiedGraph - new version of the graph
-         * @return true if modification was successful
-         */
-        protected boolean updateGraph(Graph modifiedGraph) {
-
-            int newVersion = modifiedGraph.getVersion();
-
-            if (version != newVersion - 1) {
-                return false;
-            }
-            version = newVersion;
-            graph = modifiedGraph;
-
-            return true;
-        }
-
     }
 
     /**
@@ -116,9 +83,8 @@ public class HzGraphDao implements GraphDao {
             }
 
             Graph graph = new Graph(graphId, taskId);
-            GraphRow graphRow = new GraphRow(graph);
 
-            graphs.set(graphId, graphRow, 0, TimeUnit.NANOSECONDS);
+            graphs.set(graphId, graph, 0, TimeUnit.NANOSECONDS);
 
         } finally {
             graphs.unlock(graphId);
@@ -129,17 +95,10 @@ public class HzGraphDao implements GraphDao {
     @Override
     public Graph getGraph(UUID graphId) {
 
-        GraphRow graphRow = graphs.get(graphId);
-
-        if (graphRow == null) {
-            return null;
-        }
-
-        return graphRow.graph;
+        return graphs.get(graphId);
     }
 
-    @Override
-    public boolean updateGraph(Graph modifiedGraph) {
+    private boolean updateGraph(Graph modifiedGraph) {
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
         DecisionRow decisionRow = new DecisionRow();
@@ -151,10 +110,8 @@ public class HzGraphDao implements GraphDao {
 
         decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
 
-        GraphRow graphRow = graphs.get(modifiedGraph.getGraphId());
-        boolean result = graphRow.updateGraph(modifiedGraph);
-        graphs.set(modifiedGraph.getGraphId(), graphRow, 0, TimeUnit.NANOSECONDS);//hz feature
-        return result;
+        graphs.set(modifiedGraph.getGraphId(), modifiedGraph, 0, TimeUnit.NANOSECONDS);//hz feature
+        return true;
 
     }
 
@@ -177,14 +134,14 @@ public class HzGraphDao implements GraphDao {
         try {
             graphs.lock(graphId);
 
-            GraphRow graphRow = graphs.get(graphId);
+            Graph graph = graphs.get(graphId);
 
-            if (graphRow == null) {
+            if (graph == null) {
                 return false;
             }
 
-            if (updater.apply(graphRow.graph)) {
-                return updateGraph(graphRow.graph);
+            if (updater.apply(graph)) {
+                return updateGraph(graph);
             }
 
         } finally {
