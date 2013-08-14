@@ -17,8 +17,6 @@
 
     <modules>
         <module>wf-dropwizard-memory</module>
-        <module>wf-dropwizard-oracle</module>
-        <module>wf-dropwizard-oracle-monkey</module>
         <module>wf-dropwizard-hz-poc</module>
         <module>wf-dropwizard-hz-oracle</module>
     </modules>

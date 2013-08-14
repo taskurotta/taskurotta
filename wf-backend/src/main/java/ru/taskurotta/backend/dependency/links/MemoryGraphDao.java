@@ -26,6 +26,10 @@ public class MemoryGraphDao implements GraphDao {
 
     private Object newGraphLock = new Object();
 
+    //TODO: find and delete usage
+    //TODO: configuration support
+    private int retryTimes = 100;
+
     private static ObjectMapper mapper = new ObjectMapper();
 
     static {
@@ -130,8 +134,7 @@ public class MemoryGraphDao implements GraphDao {
         return graphRow.parse();
     }
 
-    @Override
-    public boolean updateGraph(Graph modifiedGraph) {
+    private boolean updateGraph(Graph modifiedGraph) {
 
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
@@ -159,6 +162,26 @@ public class MemoryGraphDao implements GraphDao {
         }
 
         return Graph.EMPTY_ARRAY;
+    }
+
+    @Override
+    public boolean changeGraph(Updater updater) {
+
+        UUID processId = updater.getProcessId();
+
+        for (int i = 0; i < retryTimes; i++) {
+
+            Graph graph = getGraph(processId);
+
+            if (updater.apply(graph)) {
+                if (updateGraph(graph)) {
+                    return true;
+                }
+            }
+
+        }
+
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
 

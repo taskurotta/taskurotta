@@ -143,7 +143,6 @@
     <bean id="dependencyBackend"
           class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
         <constructor-arg name="graphDao" ref="graphDao" />
-        <constructor-arg name="retryTimes" value="${retryTimes}" />
     </bean>
 
     <bean id="graphDao" class="ru.taskurotta.backend.hz.dependency.HzGraphDao" >
