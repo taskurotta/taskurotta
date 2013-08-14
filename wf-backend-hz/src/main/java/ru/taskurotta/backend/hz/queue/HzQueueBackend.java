@@ -41,8 +41,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     private HazelcastInstance hazelcastInstance;
     private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
 
-    private Map<String, IQueue> hzQueues = new ConcurrentHashMap<>();
-    private Map<String, IMap> hzDelayedQueues = new ConcurrentHashMap<>();
+    private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
+    private Map<String, IMap<UUID, TaskQueueItem>> hzDelayedQueues = new ConcurrentHashMap<>();
 
     public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
@@ -155,8 +155,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
      * @param queueName
      * @return
      */
-    private IQueue getHzQueue(String queueName) {
-        IQueue queue = hzQueues.get(queueName);
+    private IQueue<TaskQueueItem> getHzQueue(String queueName) {
+        IQueue<TaskQueueItem> queue = hzQueues.get(queueName);
 
         if (queue != null) {
             return queue;
@@ -178,8 +178,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
      * @param queueName
      * @return
      */
-    private IMap getHzDelayedQueue(String queueName) {
-        IMap map = hzDelayedQueues.get(queueName);
+    private IMap<UUID, TaskQueueItem> getHzDelayedQueue(String queueName) {
+        IMap<UUID, TaskQueueItem> map = hzDelayedQueues.get(queueName);
 
         if (map != null) {
             return map;
