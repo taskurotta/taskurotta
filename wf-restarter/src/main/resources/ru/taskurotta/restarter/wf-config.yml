@@ -22,6 +22,9 @@ runtime:
           hz.task.map.name: TaskMapStorage
           hz.queues.set.name: defaultQueuesSetName
           hz.task.queue.prefix: "tsk:"
+          hz.dependency.service.name: dependencyExecutorService
+          hz.dependency.core.pool.size: 10
+          hz.dependency.max.pool.size: 20
 
 spreader:
   - MainTaskSpreaderConfig:

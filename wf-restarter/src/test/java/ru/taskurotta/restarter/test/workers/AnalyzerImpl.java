@@ -27,7 +27,7 @@ public class AnalyzerImpl implements Analyzer {
         List<ProcessVO> processes = new ArrayList<>();
 
         if (counter++ < 1) {
-            processes.add(new ProcessVO(UUID.randomUUID(), System.currentTimeMillis(), UUID.randomUUID(), ""));
+            processes.add(new ProcessVO(UUID.randomUUID(), System.currentTimeMillis(), UUID.randomUUID()));
         }
 
         logger.info("Found [{}] incomplete processes", processes.size());

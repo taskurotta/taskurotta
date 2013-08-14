@@ -36,6 +36,7 @@
             </hz:network>
 
             <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
+            <hz:executor-service name="${hz.dependency.service.name}" core-pool-size="${hz.dependency.core.pool.size}" max-pool-size="${hz.dependency.max.pool.size}"/>
 
             <hz:queue name="${hz.task.queue.prefix}*" max-size-per-jvm="0" backing-map-ref="queuesBackingMap" />
 
@@ -140,8 +141,7 @@
         <constructor-arg name="taskDao" ref="taskDao" />
     </bean>
 
-    <bean id="dependencyBackend"
-          class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.hz.dependency.HzDependencyBackend" factory-method="createInstance">
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 

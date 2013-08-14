@@ -11,15 +11,13 @@ public class ProcessVO {
     private UUID id;
     private long startTime;
     private UUID startTaskId;
-    private String startJson;
 
     public ProcessVO() {}
 
-    public ProcessVO(UUID id, long startTime, UUID startTaskId, String startJson) {
+    public ProcessVO(UUID id, long startTime, UUID startTaskId) {
         this.id = id;
         this.startTime = startTime;
         this.startTaskId = startTaskId;
-        this.startJson = startJson;
     }
 
     public UUID getId() {
@@ -34,10 +32,6 @@ public class ProcessVO {
         return startTaskId;
     }
 
-    public String getStartJson() {
-        return startJson;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -47,7 +41,6 @@ public class ProcessVO {
 
         if (startTime != processVO.startTime) return false;
         if (id != null ? !id.equals(processVO.id) : processVO.id != null) return false;
-        if (startJson != null ? !startJson.equals(processVO.startJson) : processVO.startJson != null) return false;
         if (startTaskId != null ? !startTaskId.equals(processVO.startTaskId) : processVO.startTaskId != null)
             return false;
 
@@ -59,7 +52,6 @@ public class ProcessVO {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
         result = 31 * result + (startTaskId != null ? startTaskId.hashCode() : 0);
-        result = 31 * result + (startJson != null ? startJson.hashCode() : 0);
         return result;
     }
 
@@ -69,7 +61,6 @@ public class ProcessVO {
                 "id=" + id +
                 ", startTime=" + startTime +
                 ", startTaskId=" + startTaskId +
-                ", startJson='" + startJson + '\'' +
                 "} " + super.toString();
     }
 }
