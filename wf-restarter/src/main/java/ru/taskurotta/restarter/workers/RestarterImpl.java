@@ -16,6 +16,7 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -43,7 +44,7 @@ public class RestarterImpl implements Restarter {
 
         for (ProcessVO process : processes) {
 
-            List<TaskContainer> taskContainers = findIncompleteTaskContainers(process);
+            Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(process);
 
             for (TaskContainer taskContainer : taskContainers) {
 
@@ -71,7 +72,7 @@ public class RestarterImpl implements Restarter {
         }
     }
 
-    private List<TaskContainer> findIncompleteTaskContainers(ProcessVO process) {
+    private Collection<TaskContainer> findIncompleteTaskContainers(ProcessVO process) {
 
         UUID processId = process.getId();
 
@@ -79,14 +80,7 @@ public class RestarterImpl implements Restarter {
         if (graph == null) {
             logger.warn("For processId [{}] not found graph", processId);
 
-            TaskContainer startTaskContainer = processBackend.getStartTask(processId);
-            logger.info("For processId [{}] get start task [{}]", processId, startTaskContainer);
-
-            // emulate TaskServer.startProcess()
-            taskDao.addTask(startTaskContainer);
-            hzInstance.getExecutorService(executorServiceName).submit(new StartProcessTask(startTaskContainer));
-
-            logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
+            TaskContainer startTaskContainer = restartProcess(processId);
 
             return Arrays.asList(startTaskContainer);
         }
@@ -96,14 +90,21 @@ public class RestarterImpl implements Restarter {
             logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedTaskIds.size());
         }
 
-        List<TaskContainer> taskContainers = new ArrayList<>(notFinishedTaskIds.size());
+        Collection<TaskContainer> taskContainers = new ArrayList<>(notFinishedTaskIds.size());
         for (UUID taskId : notFinishedTaskIds) {
 
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
-            if (taskContainer != null) {
-                logger.debug("Found not finished task container [{}]", taskId, taskContainer);
-                taskContainers.add(taskContainer);
+
+            if (taskContainer == null) {
+                logger.warn("Not found task container [{}] in task repository", taskId);
+
+                TaskContainer startTaskContainer = restartProcess(processId);
+
+                return Arrays.asList(startTaskContainer);
             }
+
+            logger.debug("Found not finished task container [{}]", taskId, taskContainer);
+            taskContainers.add(taskContainer);
         }
 
         if (logger.isInfoEnabled()) {
@@ -111,6 +112,19 @@ public class RestarterImpl implements Restarter {
         }
 
         return taskContainers;
+    }
+
+    private TaskContainer restartProcess(UUID processId) {
+        TaskContainer startTaskContainer = processBackend.getStartTask(processId);
+        logger.info("For processId [{}] get start task [{}]", processId, startTaskContainer);
+
+        // emulate TaskServer.startProcess()
+        taskDao.addTask(startTaskContainer);
+        hzInstance.getExecutorService(executorServiceName).submit(new StartProcessTask(startTaskContainer));
+
+        logger.info("Restart process [{}] from start task [{}]", startTaskContainer.getProcessId(), startTaskContainer);
+
+        return startTaskContainer;
     }
 
     public void setQueueBackend(QueueBackend queueBackend) {
