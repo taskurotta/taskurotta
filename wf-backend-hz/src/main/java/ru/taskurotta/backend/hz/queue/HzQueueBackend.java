@@ -41,7 +41,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
-    private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
     private Lock delayedTasksLock;
 
     private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
@@ -60,8 +59,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         delayedTasksLock = hazelcastInstance.getLock(DELAYED_TASKS_LOCK);
 
-        this.hazelcastInstance.addInstanceListener(this);
-        logger.debug("HzQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override
@@ -271,10 +268,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         return "delayed." + queueName;
     }
 
-    public void setQueueListName(String queueListName) {
-        this.queueListName = queueListName;
-    }
-
     public void setQueueNamePrefix(String queueNamePrefix) {
         this.queueNamePrefix = queueNamePrefix;
     }
@@ -283,27 +276,15 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         if (!delayedTasksLock.tryLock()) {
             logger.debug("Can't get lock for delayed tasks. Other member will do this");
             return;
-        List<String> queueNamesList = getTaskQueueNamesByPrefix();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Start update delayed tasks for queues: {}", queueNamesList);
         }
 
         try {
-            IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
-        for (String queueName : queueNamesList) {
-            IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(queueName);
-            IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
-
-            EntryObject entryObject = new PredicateBuilder().getEntryObject();
-            Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
-            Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
-
+            List<String> queueNamesList = getTaskQueueNamesByPrefix();
             if (logger.isDebugEnabled()) {
-                logger.debug("Start update delayed tasks for queues: {}", new ArrayList<>(queueNamesMap.keySet()));
+                logger.debug("Start update delayed tasks for queues: {}", queueNamesList);
             }
 
-            for (String queueName : queueNamesMap.keySet()) {
+            for (String queueName : queueNamesList) {
                 String mapName = getDelayedTasksMapName(queueName);
                 IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(mapName);
                 IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);

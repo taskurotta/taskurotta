@@ -73,6 +73,7 @@
         <property name="hzInstance" ref="hzInstance" />
         <property name="queuePrefix" value = "${hz.task.queue.prefix}" />
         <property name="hzQueueSpringConfigSupport" ref="queueConfigSupport" />
+        <property name="restore" value = "${hz.queue.restore}" />
     </bean>
     <!-- /Queues persistence support -->
 
@@ -115,6 +116,7 @@
 
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
+        <property name="hzQueueConfigSupport" ref="queueConfigSupport" />
         <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
     </bean>
 

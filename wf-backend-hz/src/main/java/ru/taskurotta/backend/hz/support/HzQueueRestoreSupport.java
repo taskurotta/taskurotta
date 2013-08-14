@@ -20,28 +20,31 @@ public class HzQueueRestoreSupport {
     private HazelcastInstance hzInstance;
     private String queuePrefix;
     private HzQueueSpringConfigSupport hzQueueSpringConfigSupport;
+    private boolean restore = true;
 
     public void init() {
-        int queueRestored = 0;
-        for(String collectionName: mongoTemplate.getCollectionNames()) {
-            if(collectionName.startsWith("q:" + queuePrefix)) {//is backing queue
-                String queueName = collectionName.substring(2);
-                if(hzQueueSpringConfigSupport != null) {
-                    hzQueueSpringConfigSupport.createQueueConfig(queueName);
-                } else {
-                    logger.warn("Cannot restore queue[{}], mapstore config is not set!", queueName);
-                }
-                int size = hzInstance.getQueue(queueName).size();//initializes queue
+        if(restore) {
+            int queueRestored = 0;
+            for(String collectionName: mongoTemplate.getCollectionNames()) {
+                if(collectionName.startsWith("q:" + queuePrefix)) {//is backing queue
+                    String queueName = collectionName.substring(2);
+                    if(hzQueueSpringConfigSupport != null) {
+                        hzQueueSpringConfigSupport.createQueueConfig(queueName);
+                    } else {
+                        logger.warn("Cannot restore queue[{}], mapstore config is not set!", queueName);
+                    }
+                    int size = hzInstance.getQueue(queueName).size();//initializes queue
 
-                if(logger.isDebugEnabled()) {
-                    DBCollection coll = mongoTemplate.getCollection(collectionName);
-                    logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", queueName, size, coll.getCount());
-                }
+                    if(logger.isDebugEnabled()) {
+                        DBCollection coll = mongoTemplate.getCollection(collectionName);
+                        logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", queueName, size, coll.getCount());
+                    }
 
-                queueRestored++;
+                    queueRestored++;
+                }
             }
+            logger.info("Restored [{}] MongoDB persisted queues", queueRestored);
         }
-        logger.info("Restored [{}] MongoDB persisted queues", queueRestored);
     }
 
 
@@ -60,5 +63,9 @@ public class HzQueueRestoreSupport {
 
     public void setHzQueueSpringConfigSupport(HzQueueSpringConfigSupport hzQueueSpringConfigSupport) {
         this.hzQueueSpringConfigSupport = hzQueueSpringConfigSupport;
+    }
+
+    public void setRestore(boolean restore) {
+        this.restore = restore;
     }
 }
