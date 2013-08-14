@@ -17,7 +17,7 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
-    <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="${db.url}"/>
         <property name="initialSize" value="${db.initialSize}"/>
@@ -53,8 +53,15 @@
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}" />
     </bean>
 
+    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService" />
+
+    <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
+        <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
     <bean id="analyzer" class="ru.taskurotta.restarter.workers.AnalyzerImpl">
-        <property name="dataSource" ref="originalDataSource"/>
+        <property name="dataSource" ref="dataSource"/>
         <property name="processBatchSize" value="${processBatchSize}"/>
     </bean>
 
@@ -62,6 +69,7 @@
         <property name="queueBackend" ref="queueBackend"/>
         <property name="dependencyBackend" ref="dependencyBackend"/>
         <property name="taskDao" ref="taskDao"/>
+        <property name="processBackend" ref="processBackend"/>
     </bean>
 
     <bean id="coordinator" class="ru.taskurotta.restarter.deciders.CoordinatorImpl">

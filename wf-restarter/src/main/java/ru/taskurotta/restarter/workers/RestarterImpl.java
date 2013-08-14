@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.restarter.ProcessVO;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.transport.model.serialization.JsonSerializer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,8 +30,7 @@ public class RestarterImpl implements Restarter {
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
-
-    private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
+    private ProcessBackend processBackend;
 
     @Override
     public void restart(List<ProcessVO> processes) {
@@ -75,7 +74,7 @@ public class RestarterImpl implements Restarter {
         if (graph == null) {
             logger.warn("For processId [{}] not found graph", processId);
 
-            TaskContainer startTaskContainer = taskSerializer.deserialize(process.getStartJson());
+            TaskContainer startTaskContainer = processBackend.getStartTask(processId);
             logger.info("For processId [{}] get start task [{}]", processId, startTaskContainer);
 
             // emulate TaskServer.startProcess()
@@ -118,5 +117,9 @@ public class RestarterImpl implements Restarter {
 
     public void setTaskDao(TaskDao taskDao) {
         this.taskDao = taskDao;
+    }
+
+    public void setProcessBackend(ProcessBackend processBackend) {
+        this.processBackend = processBackend;
     }
 }
