@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -44,10 +46,20 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
     private Map<String, IMap<UUID, TaskQueueItem>> hzDelayedQueues = new ConcurrentHashMap<>();
 
+    private int pollActivityCount = 1000; // poll count between update queue activity
+    private long pollActivityPeriod = 60000; // period between update queue activity in milliseconds
+
+    private IMap<String, Long> queueActivityMap;
+
+    private volatile AtomicInteger updateQueueActivityCounter = new AtomicInteger(0);
+    private volatile AtomicLong lastUpdateQueueActivity = new AtomicLong(System.currentTimeMillis());
+
     public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
+
+        this.queueActivityMap = hazelcastInstance.getMap("queueActivityMap");
 
         this.hazelcastInstance.addInstanceListener(this);
         logger.debug("HzQueueBackend created and registered as Hazelcast instance listener");
@@ -132,7 +144,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
-        IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
+        String queueName = createQueueName(actorId, taskList);
+        IQueue<TaskQueueItem> queue = getHzQueue(queueName);
 
         TaskQueueItem result = null;
         try {
@@ -145,8 +158,14 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             logger.debug("poll() returns taskId [{}]. Queue.size: {}", result, queue.size());
         }
 
-        return result;
+        if (updateQueueActivityCounter.incrementAndGet() > pollActivityCount || (System.currentTimeMillis() - lastUpdateQueueActivity.get()) > pollActivityPeriod) {
+            updateQueueActivityCounter.set(0);
+            lastUpdateQueueActivity.set(System.currentTimeMillis());
 
+            queueActivityMap.put(queueName, result == null ? System.currentTimeMillis() : result.getEnqueueTime());
+        }
+
+        return result;
     }
 
     /**
@@ -295,5 +314,13 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
                 queue.add(next);
             }
         }
+    }
+
+    public void setPollActivityCount(int pollActivityCount) {
+        this.pollActivityCount = pollActivityCount;
+    }
+
+    public void setPollActivityPeriod(long pollActivityPeriod) {
+        this.pollActivityPeriod = pollActivityPeriod;
     }
 }
