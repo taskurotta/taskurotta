@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -32,12 +33,16 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(HzQueueBackend.class);
 
+    private final static String DELAYED_TASKS_LOCK = "DELAYED_TASKS_LOCK";
+
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
     private String queueNamePrefix;
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
+    private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
+    private Lock delayedTasksLock;
 
     private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
     private Map<String, IMap<UUID, TaskQueueItem>> hzDelayedQueues = new ConcurrentHashMap<>();
@@ -53,6 +58,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
+        delayedTasksLock = hazelcastInstance.getLock(DELAYED_TASKS_LOCK);
+
+        this.hazelcastInstance.addInstanceListener(this);
         logger.debug("HzQueueBackend created and registered as Hazelcast instance listener");
     }
 
@@ -126,7 +134,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
-        IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
+        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
 
         TaskQueueItem result = null;
         try {
@@ -217,7 +225,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         if (item.getStartTime() <= item.getEnqueueTime()) {
 
-            IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
+            IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
             queue.add(item);
 
             if(logger.isDebugEnabled()) {
@@ -226,7 +234,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         } else {
 
-            IMap<UUID, TaskQueueItem> map = getHzDelayedQueue(createQueueName(actorId, taskList));
+            String mapName = getDelayedTasksMapName(createQueueName(actorId, taskList));
+            IMap<UUID, TaskQueueItem> map = hazelcastInstance.getMap(mapName);
             map.set(taskId, item, 0, TimeUnit.SECONDS);
 
             if(logger.isDebugEnabled()) {
@@ -248,22 +257,22 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     private String createQueueName(String actorId, String taskList) {
+        StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
 
-        if (queueNamePrefix == null) {
-            if (taskList == null) {
-                return actorId;
-            }
-
-            return actorId + "#" + taskList;
-
-        } else {
-            if (taskList == null) {
-                return queueNamePrefix + actorId;
-            }
-
-            return queueNamePrefix + actorId + "#" + taskList;
+        result.append(actorId);
+        if (taskList != null) {
+            result.append("#").append(taskList);
         }
 
+        return result.toString();
+    }
+
+    private String getDelayedTasksMapName(String queueName) {
+        return "delayed." + queueName;
+    }
+
+    public void setQueueListName(String queueListName) {
+        this.queueListName = queueListName;
     }
 
     public void setQueueNamePrefix(String queueNamePrefix) {
@@ -271,12 +280,17 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     public void updateDelayedTasks() {
+        if (!delayedTasksLock.tryLock()) {
+            logger.debug("Can't get lock for delayed tasks. Other member will do this");
+            return;
         List<String> queueNamesList = getTaskQueueNamesByPrefix();
 
         if (logger.isDebugEnabled()) {
             logger.debug("Start update delayed tasks for queues: {}", queueNamesList);
         }
 
+        try {
+            IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
         for (String queueName : queueNamesList) {
             IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(queueName);
             IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
@@ -286,13 +300,29 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
 
             if (logger.isDebugEnabled()) {
-                logger.debug("{} ready items for queue [{}]", readyItems.size(), queueName);
+                logger.debug("Start update delayed tasks for queues: {}", new ArrayList<>(queueNamesMap.keySet()));
             }
 
-            for (TaskQueueItem next : readyItems) {
-                waitingItems.remove(next.getTaskId());
-                queue.add(next);
+            for (String queueName : queueNamesMap.keySet()) {
+                String mapName = getDelayedTasksMapName(queueName);
+                IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(mapName);
+                IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
+
+                EntryObject entryObject = new PredicateBuilder().getEntryObject();
+                Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
+                Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{} ready items for queue [{}]", readyItems.size(), queueName);
+                }
+
+                for (TaskQueueItem next : readyItems) {
+                    queue.add(next);
+                    waitingItems.remove(next.getTaskId());
+                }
             }
+        } finally {
+            delayedTasksLock.unlock();
         }
     }
 }
