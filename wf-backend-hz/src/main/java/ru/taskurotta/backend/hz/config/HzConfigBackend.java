@@ -165,7 +165,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         logger.trace("Update [{}] = [{}]", ACTOR_PREFERENCES_MAP_NAME, distributedActorPreferences);
 
         // to performance reason
-        localActorPreferences = new HashMap(distributedActorPreferences);
+        localActorPreferences = new HashMap<>(distributedActorPreferences);
     }
 
     private void updateExpirationPolicyConfigSet() {
@@ -173,7 +173,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         logger.trace("Update [{}] = [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, distributedExpPolicies);
 
         // to performance reason
-        localExpPolicies = new HashSet(distributedExpPolicies);
+        localExpPolicies = new HashSet<>(distributedExpPolicies);
     }
 
     public int getDefaultTimeout() {
