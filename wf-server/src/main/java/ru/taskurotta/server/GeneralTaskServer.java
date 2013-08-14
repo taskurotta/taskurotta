@@ -120,10 +120,6 @@ public class GeneralTaskServer implements TaskServer {
 
         queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
 
-//        if(!taskContainer.getActorId().equals(actorId)) {
-//            logger.error("Polled for actor [{}] but returned for [{}], taskQueuItem is [{}]", actorId, taskContainer.getActorId(), tqi);
-//        }
-
         return taskContainer;
     }
 

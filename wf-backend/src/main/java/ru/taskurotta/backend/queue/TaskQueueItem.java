@@ -16,6 +16,15 @@ public class TaskQueueItem implements Serializable {
     protected long enqueueTime;
     protected String taskList;
     protected Date createdDate;
+    protected String queueName;
+
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
 
     public UUID getTaskId() {
         return taskId;
@@ -65,6 +74,8 @@ public class TaskQueueItem implements Serializable {
                 ", startTime=" + startTime +
                 ", enqueueTime=" + enqueueTime +
                 ", taskList='" + taskList + '\'' +
-                "} " + super.toString();
+                ", createdDate=" + createdDate +
+                ", queueName='" + queueName + '\'' +
+                "} ";
     }
 }

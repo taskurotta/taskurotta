@@ -3,8 +3,7 @@ package ru.taskurotta.backend.hz.queue;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
-import com.hazelcast.core.InstanceEvent;
-import com.hazelcast.core.InstanceListener;
+import com.hazelcast.core.Instance;
 import com.hazelcast.query.EntryObject;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.PredicateBuilder;
@@ -13,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.backend.hz.Constants;
+import ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by void, dudin 07.06.13 11:00
  */
-public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, InstanceListener {
+public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(HzQueueBackend.class);
 
@@ -39,36 +38,51 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
-    private String queueListName = Constants.DEFAULT_QUEUE_LIST_NAME;
 
     private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
     private Map<String, IMap<UUID, TaskQueueItem>> hzDelayedQueues = new ConcurrentHashMap<>();
+
+    private HzQueueSpringConfigSupport hzQueueConfigSupport;
+
+    public void setHzQueueConfigSupport(HzQueueSpringConfigSupport hzQueueConfigSupport) {
+        this.hzQueueConfigSupport = hzQueueConfigSupport;
+    }
 
     public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
-        this.hazelcastInstance.addInstanceListener(this);
         logger.debug("HzQueueBackend created and registered as Hazelcast instance listener");
     }
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
-        IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
+        List<String> queueNamesList = getTaskQueueNamesByPrefix();
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Stored queue names for queue backend are [{}]", new ArrayList<>(queueNamesMap.keySet()));
-        }
+        logger.debug("Stored queue names for queue backend are [{}]", queueNamesList);
 
+        String[] queueNames = queueNamesList.toArray(new String[queueNamesList.size()]);
         List<String> result = new ArrayList<>(pageSize);
-        String[] queueNames = queueNamesMap.keySet().toArray(new String[queueNamesMap.size()]);
         if (queueNames.length > 0) {
             int pageStart = (pageNum - 1) * pageSize;
             int pageEnd = pageSize * pageNum >= queueNames.length ? queueNames.length : pageSize * pageNum;
             result.addAll(Arrays.asList(queueNames).subList(pageStart, pageEnd));
         }
         return new GenericPage<>(prefixStrip(result), pageNum, pageSize, queueNames.length);
+    }
+
+    private List<String> getTaskQueueNamesByPrefix() {
+        List<String> result = new ArrayList<>();
+        for(Instance inst: hazelcastInstance.getInstances()) {
+            if(inst.getInstanceType().isQueue()) {
+                String name = ((IQueue)inst).getName();
+                if(name.startsWith(queueNamePrefix)) {
+                    result.add(name);
+                }
+            }
+        }
+        return result;
     }
 
     private List<String> prefixStrip(List<String> target) {
@@ -111,26 +125,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
     }
 
     @Override
-    public void instanceCreated(InstanceEvent event) {
-        if (event.getInstanceType().isQueue()) {//storing all new queues name
-            IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
-            String queueName = ((IQueue) event.getInstance()).getName();
-            queueNamesMap.set(queueName, Boolean.TRUE, 0, TimeUnit.NANOSECONDS);
-            logger.debug("Queue [{}] added to cluster", queueName);
-        }
-    }
-
-    @Override
-    public void instanceDestroyed(InstanceEvent event) {
-        if (event.getInstanceType().isQueue()) {//removing queues names
-            IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
-            String queueName = ((IQueue) event.getInstance()).getName();
-            queueNamesMap.remove(queueName);
-            logger.debug("Queue [{}] removed from cluster", queueName);
-        }
-    }
-
-    @Override
     public TaskQueueItem poll(String actorId, String taskList) {
         IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
 
@@ -162,15 +156,23 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             return queue;
         }
 
-        queue = hazelcastInstance.getQueue(queueName);
+        synchronized (hzQueues) {
+            queue = hzQueues.get(queueName);
+            if(queue!=null) {
+                return queue;
+            }
+            if(hzQueueConfigSupport!=null) {
+                hzQueueConfigSupport.createQueueConfig(queueName);
+            } else {
+                logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzQueueBackend, queues are not persistent!");
+            }
 
-        if (queue != null) {
+            queue = hazelcastInstance.getQueue(queueName);//never null
             hzQueues.put(queueName, queue);
         }
 
         return queue;
     }
-
 
     /**
      * This is a cache proxy of hazelcastInstance.getQueue invocations
@@ -218,7 +220,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
             queue.add(item);
 
-            if (logger.isDebugEnabled()) {
+            if(logger.isDebugEnabled()) {
                 logger.debug("enqueue item [actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}]", actorId, taskId, startTime, queue.size());
             }
 
@@ -227,9 +229,10 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
             IMap<UUID, TaskQueueItem> map = getHzDelayedQueue(createQueueName(actorId, taskList));
             map.set(taskId, item, 0, TimeUnit.SECONDS);
 
-            if (logger.isDebugEnabled()) {
+            if(logger.isDebugEnabled()) {
                 logger.debug("Add to waiting set item [actorId [{}], taskId [{}], startTime [{}]; Set.size: {}]", actorId, taskId, startTime, map.size());
             }
+
         }
 
     }
@@ -263,22 +266,18 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever, Instanc
 
     }
 
-    public void setQueueListName(String queueListName) {
-        this.queueListName = queueListName;
-    }
-
     public void setQueueNamePrefix(String queueNamePrefix) {
         this.queueNamePrefix = queueNamePrefix;
     }
 
     public void updateDelayedTasks() {
-        IMap<String, Boolean> queueNamesMap = hazelcastInstance.getMap(queueListName);
+        List<String> queueNamesList = getTaskQueueNamesByPrefix();
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Start update delayed tasks for queues: {}", new ArrayList<>(queueNamesMap.keySet()));
+            logger.debug("Start update delayed tasks for queues: {}", queueNamesList);
         }
 
-        for (String queueName : queueNamesMap.keySet()) {
+        for (String queueName : queueNamesList) {
             IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(queueName);
             IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
 

@@ -5,10 +5,6 @@ contextLocation: "classpath*:context/context-common.xml, classpath*:context/cont
 #hazelcast with mongo mapstores
 #contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv1.xml, classpath*:context/console-context.xml"
 
-#TODO:// implement task servers for this configs
-#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv2.xml, classpath*:context/console-context.xml"
-#contextLocation: "classpath*:context/context-common.xml, classpath*:context/context-mongo-srv3.xml, classpath*:context/console-context.xml"
-
 
 #Used for static resource serving in development mode
 assets:

@@ -26,14 +26,20 @@
                 </hz:join>
             </hz:network>
 
+            <hz:queue name="tsk*" max-size-per-jvm="0" backing-map-ref="queuesBackingMap" />
+
+            <hz:map name="queuesBackingMap" backup-count="0" eviction-policy="LRU" eviction-percentage="50" max-size="100">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
+            </hz:map>
+
             <!-- Map should not evict values, it should only persist them -->
             <hz:map name="pureMapStoreTest" backup-count="0" eviction-policy="NONE" time-to-live-seconds="0" eviction-percentage="0" >
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="pureMapStoreImpl" />
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
             </hz:map>
 
             <!-- Map should not evict values, it should only persist them -->
             <hz:map name="purePojoMapStoreTest" backup-count="0" eviction-policy="NONE" time-to-live-seconds="0" eviction-percentage="0" >
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="purePojoMapStoreTestImpl" />
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
             </hz:map>
 
             <!-- Map should not persist values, it should only evict them -->
@@ -41,25 +47,18 @@
 
             <!-- Map should persist and evict values -->
             <hz:map name="mapStoreWithEvictionTest" backup-count="0" eviction-policy="LRU" time-to-live-seconds="0" max-size="100" eviction-percentage="50">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStoreWithEvictionTestImpl" />
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
             </hz:map>
 
         </hz:config>
     </hz:hazelcast>
 
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="pureMapStoreImpl">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mapStoreWithEvictionTestImpl">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="purePojoMapStoreTestImpl">
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongoMapStore" scope="prototype">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
 
     <mongo:mongo id="mongo" host="localhost" port="27017" />
+
     <mongo:db-factory dbname="test" mongo-ref="mongo" id="mongoDbFactory"/>
 
     <!-- TODO: Converters doesn't work for some reason -->
