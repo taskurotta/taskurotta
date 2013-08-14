@@ -31,7 +31,7 @@ public class CoordinatorImpl implements Coordinator {
     public void start() {
         logger.info("Start restart process coordinator at [{}]", new Date());
 
-        asynchronous.restartProcesses(Promise.asPromise(System.currentTimeMillis()));
+        restartProcessesInternal(Promise.asPromise(System.currentTimeMillis()));
     }
 
     @Asynchronous
@@ -45,6 +45,10 @@ public class CoordinatorImpl implements Coordinator {
             return;
         }
 
+        restartProcessesInternal(fromTimePromise);
+    }
+
+    private void restartProcessesInternal(Promise<Long> fromTimePromise) {
         Promise<List<ProcessVO>> processesPromise = analyzer.findNotFinishedProcesses(fromTimePromise.get());
 
         fromTimePromise = asynchronous.prepareForRestart(processesPromise);
