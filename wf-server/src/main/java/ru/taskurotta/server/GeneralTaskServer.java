@@ -7,12 +7,13 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.snapshot.SnapshotService;
 import ru.taskurotta.backend.queue.TaskQueueItem;
+import ru.taskurotta.backend.snapshot.SnapshotService;
+import ru.taskurotta.backend.statistics.Metrics;
+import ru.taskurotta.backend.statistics.StaticMetrics;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.exception.BlockedActorException;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -31,6 +32,17 @@ import java.util.UUID;
 public class GeneralTaskServer implements TaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+
+    private static final Metrics.CheckPoint chpStartProcess = StaticMetrics.create("GeneralTaskServer.startProcess");
+    private static final Metrics.CheckPoint chpPoll = StaticMetrics.create("GeneralTaskServer.poll");
+    private static final Metrics.CheckPoint chpPoll_empty = StaticMetrics.create("GeneralTaskServer.poll_empty");
+    private static final Metrics.CheckPoint chpRelease = StaticMetrics.create("GeneralTaskServer.release");
+    private static final Metrics.CheckPoint chpProcessDecision_error = StaticMetrics.create("GeneralTaskServer" +
+            ".processDecision_error");
+    private static final Metrics.CheckPoint chpProcessDecision_fail = StaticMetrics.create("GeneralTaskServer" +
+            ".processDecision_fail");
+    private static final Metrics.CheckPoint chpProcessDecision_ok = StaticMetrics.create("GeneralTaskServer" +
+            ".processDecision_ok");
 
     protected ProcessBackend processBackend;
     protected TaskBackend taskBackend;
@@ -72,6 +84,9 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
+
+        long smt = System.currentTimeMillis();
+
         // some consistence check
         if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
@@ -96,22 +111,27 @@ public class GeneralTaskServer implements TaskServer {
 
 
         processBackend.startProcessCommit(task);
+
+        chpStartProcess.mark(smt);
     }
 
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
+
+        long smt = System.currentTimeMillis();
+
         String actorId = ActorUtils.getActorId(actorDefinition);
+
         if (configBackend.isActorBlocked(actorId)) {
-            logger.warn("Actor [{}] is blocked", actorId);
-            // TODO: ? We should inform client about block. It should catch exception and try to sleep some time ?
-            // TODO: ? Or we should sleep 60 seconds as usual ?
-            throw new BlockedActorException(actorId);
+            throw null;
         }
 
         // atomic statement
         TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
         if (tqi == null) {
+
+            chpPoll_empty.mark(smt);
             return null;
         }
 
@@ -120,9 +140,7 @@ public class GeneralTaskServer implements TaskServer {
 
         queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
 
-//        if(!taskContainer.getActorId().equals(actorId)) {
-//            logger.error("Polled for actor [{}] but returned for [{}], taskQueuItem is [{}]", actorId, taskContainer.getActorId(), tqi);
-//        }
+        chpPoll.mark(smt);
 
         return taskContainer;
     }
@@ -134,14 +152,18 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
+
+        long smt = System.currentTimeMillis();
+
         if (configBackend.isActorBlocked(taskDecision.getActorId())) {
-            logger.warn("Actor [{}] is blocked", taskDecision.getActorId());
-            throw new BlockedActorException(taskDecision.getActorId());
+            return;
         }
 
         // save it firstly
         taskBackend.addDecision(taskDecision);
         processDecision(taskDecision);
+
+        chpRelease.mark(smt);
     }
 
     /**
@@ -150,6 +172,8 @@ public class GeneralTaskServer implements TaskServer {
     public void processDecision(DecisionContainer taskDecision) {
 
         logger.debug("Start processing task decision[{}]", taskDecision);
+
+        long smt = System.currentTimeMillis();
 
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
@@ -167,6 +191,8 @@ public class GeneralTaskServer implements TaskServer {
             }
 
             taskBackend.addDecisionCommit(taskDecision);
+
+            chpProcessDecision_error.mark(smt);
             return;
         }
 
@@ -181,6 +207,8 @@ public class GeneralTaskServer implements TaskServer {
 
             // leave release() method.
             // RELEASE_TIMEOUT should be automatically fired
+
+            chpProcessDecision_fail.mark(smt);
             return;
         }
 
@@ -208,6 +236,7 @@ public class GeneralTaskServer implements TaskServer {
         processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);
 
+        chpProcessDecision_ok.mark(smt);
     }
 
     protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
@@ -217,8 +246,9 @@ public class GeneralTaskServer implements TaskServer {
 
     /**
      * Send task to the queue for processing
+     *
      * @param startTime time to start delayed task. set to 0 to start it immediately
-     * @param taskList -
+     * @param taskList  -
      */
     protected void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
 
@@ -236,6 +266,6 @@ public class GeneralTaskServer implements TaskServer {
             }
         }
 
-        return  taskList;
+        return taskList;
     }
 }
