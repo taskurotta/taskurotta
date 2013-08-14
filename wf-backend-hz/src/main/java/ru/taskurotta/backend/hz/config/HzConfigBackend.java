@@ -36,8 +36,8 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     public static final String ACTOR_PREFERENCES_MAP_NAME = "actorPreferencesMap";
     public static final String EXPIRATION_POLICY_CONFIG_SET_NAME = "expirationPolicyConfigSet";
 
-    private volatile Map<String, ActorPreferences> actorPreferencesMap = new HashMap<>();
-    private volatile Set<ExpirationPolicyConfig> expirationPolicyConfigSet = new HashSet<>();
+    private volatile Map<String, ActorPreferences> localActorPreferences = new HashMap<>();
+    private volatile Set<ExpirationPolicyConfig> localExpPolicies = new HashSet<>();
 
     private int defaultTimeout = 1;
     private TimeUnit defaultTimeUnit = TimeUnit.SECONDS;
@@ -57,10 +57,9 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     }
 
     private void init() {
-        IMap<String, ActorPreferences> iMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-        actorPreferencesMap = iMap;
+        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
 
-        iMap.addEntryListener(new EntryListener<String, ActorPreferences>() {
+        distributedActorPreferences.addEntryListener(new EntryListener<String, ActorPreferences>() {
             @Override
             public void entryAdded(EntryEvent<String, ActorPreferences> stringActorPreferencesEntryEvent) {
                 updateActorPreferencesMap();
@@ -82,10 +81,9 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
             }
         }, false);
 
-        ISet<ExpirationPolicyConfig> iSet = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
-        expirationPolicyConfigSet = iSet;
+        ISet<ExpirationPolicyConfig> distributedExpPolicies = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
 
-        iSet.addItemListener(new ItemListener<ExpirationPolicyConfig>() {
+        distributedExpPolicies.addItemListener(new ItemListener<ExpirationPolicyConfig>() {
             @Override
             public void itemAdded(ItemEvent<ExpirationPolicyConfig> expirationPolicyConfigItemEvent) {
                 updateExpirationPolicyConfigSet();
@@ -96,39 +94,43 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
                 updateExpirationPolicyConfigSet();
             }
         }, false);
+
+
+        updateActorPreferencesMap();
+        updateExpirationPolicyConfigSet();
     }
 
     @Override
     public boolean isActorBlocked(String actorId) {
-        ActorPreferences actorPreferences = actorPreferencesMap.get(actorId);
+        ActorPreferences actorPreferences = localActorPreferences.get(actorId);
         return actorPreferences != null && actorPreferences.isBlocked();
     }
 
     @Override
     public ActorPreferences[] getAllActorPreferences() {
-        if (actorPreferencesMap.isEmpty()) {
+        if (localActorPreferences.isEmpty()) {
             return getDefaultActorPreferences();
         }
 
-        return (ActorPreferences[]) actorPreferencesMap.values().toArray();
+        return (ActorPreferences[]) localActorPreferences.values().toArray();
     }
 
     @Override
     public ExpirationPolicyConfig[] getAllExpirationPolicies() {
-        if (expirationPolicyConfigSet.isEmpty()) {
+        if (localExpPolicies.isEmpty()) {
             return getDefaultPolicies(defaultTimeout, defaultTimeUnit);
         }
 
-        return (ExpirationPolicyConfig[]) expirationPolicyConfigSet.toArray();
+        return (ExpirationPolicyConfig[]) localExpPolicies.toArray();
     }
 
     @Override
     public ActorPreferences getActorPreferences(String actorId) {
-        if (!actorPreferencesMap.containsKey(actorId)) {
+        if (!localActorPreferences.containsKey(actorId)) {
             return null;
         }
 
-        return actorPreferencesMap.get(actorId);
+        return localActorPreferences.get(actorId);
     }
 
     private ActorPreferences[] getDefaultActorPreferences() {
@@ -137,12 +139,12 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         actorPreferences.setId("default");
 
         Properties expirationPolicies = new Properties();
-        for(TimeoutType timeoutType: TimeoutType.values()) {
+        for (TimeoutType timeoutType : TimeoutType.values()) {
             expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
         }
         actorPreferences.setTimeoutPolicies(expirationPolicies);
 
-        return new ActorPreferences[] {actorPreferences};
+        return new ActorPreferences[]{actorPreferences};
     }
 
     private ExpirationPolicyConfig[] getDefaultPolicies(Integer timeout, TimeUnit unit) {
@@ -155,19 +157,23 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         policyProps.put("timeUnit", unit.toString());
         timeoutPolicy.setProperties(policyProps);
 
-        return new ExpirationPolicyConfig[] {timeoutPolicy};
+        return new ExpirationPolicyConfig[]{timeoutPolicy};
     }
 
     private void updateActorPreferencesMap() {
-        IMap<String, ActorPreferences> iMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-        logger.trace("Update [{}] = [{}]", ACTOR_PREFERENCES_MAP_NAME, iMap);
-        actorPreferencesMap = iMap;
+        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
+        logger.trace("Update [{}] = [{}]", ACTOR_PREFERENCES_MAP_NAME, distributedActorPreferences);
+
+        // to performance reason
+        localActorPreferences = new HashMap(distributedActorPreferences);
     }
 
     private void updateExpirationPolicyConfigSet() {
-        ISet<ExpirationPolicyConfig> iSet = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
-        logger.trace("Update [{}] = [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, iSet);
-        expirationPolicyConfigSet = iSet;
+        ISet<ExpirationPolicyConfig> distributedExpPolicies = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
+        logger.trace("Update [{}] = [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, distributedExpPolicies);
+
+        // to performance reason
+        localExpPolicies = new HashSet(distributedExpPolicies);
     }
 
     public int getDefaultTimeout() {
@@ -214,7 +220,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         }
 
         actorPreferences.setBlocked(false);
-        actorPreferencesMap.set(actorId, actorPreferences, 0, TimeUnit.NANOSECONDS );
+        actorPreferencesMap.set(actorId, actorPreferences, 0, TimeUnit.NANOSECONDS);
 
         logger.debug("Unblock actorId [{}]", actorId);
     }
