@@ -1,9 +1,11 @@
 package ru.taskurotta.restarter.workers;
 
+import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.hz.dependency.StartProcessTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -31,6 +33,9 @@ public class RestarterImpl implements Restarter {
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
+
+    private HazelcastInstance hzInstance;
+    private String executorServiceName;
 
     @Override
     public void restart(List<ProcessVO> processes) {
@@ -79,7 +84,8 @@ public class RestarterImpl implements Restarter {
 
             // emulate TaskServer.startProcess()
             taskDao.addTask(startTaskContainer);
-            dependencyBackend.startProcess(startTaskContainer);
+            hzInstance.getExecutorService(executorServiceName).submit(new StartProcessTask(startTaskContainer));
+
             logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
 
             return Arrays.asList(startTaskContainer);
@@ -121,5 +127,13 @@ public class RestarterImpl implements Restarter {
 
     public void setProcessBackend(ProcessBackend processBackend) {
         this.processBackend = processBackend;
+    }
+
+    public void setHzInstance(HazelcastInstance hzInstance) {
+        this.hzInstance = hzInstance;
+    }
+
+    public void setExecutorServiceName(String executorServiceName) {
+        this.executorServiceName = executorServiceName;
     }
 }
