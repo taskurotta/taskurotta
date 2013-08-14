@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.ora;
 
 import junit.framework.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService;
@@ -17,6 +18,7 @@ public class ProcessTestIT {
     private DbConnect connection = new DbConnect();
     private OraProcessBackend dao = new OraProcessBackend(connection.getDataSource(), new OracleCheckpointService(connection.getDataSource()));
 
+    @Ignore
     @Test
     public void test() {
         TaskContainer task = SerializationTest.createTaskContainer();

@@ -14,7 +14,6 @@
 
     <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
         <constructor-arg name="graphDao" ref="graphDao"/>
-        <constructor-arg name="retryTimes" value="${dependencyBackend.retryTimes}"/>
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao"/>

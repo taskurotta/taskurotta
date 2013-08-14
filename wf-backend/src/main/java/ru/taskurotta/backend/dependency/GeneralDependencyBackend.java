@@ -27,12 +27,10 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
     private final static Logger logger = LoggerFactory.getLogger(GeneralDependencyBackend.class);
 
     private GraphDao graphDao;
-    private int retryTimes;
 
-    public GeneralDependencyBackend(GraphDao graphDao, int retryTimes) {
+    public GeneralDependencyBackend(GraphDao graphDao) {
 
         this.graphDao = graphDao;
-        this.retryTimes = retryTimes;
     }
 
     @Override
@@ -40,31 +38,60 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
 
         logger.debug("applyDecision() taskDecision = [{}]", taskDecision);
 
-        UUID finishedTaskId = taskDecision.getTaskId();
-        UUID processId = taskDecision.getProcessId();
-        DependencyDecision resultDecision = new DependencyDecision(processId);
+        final UUID finishedTaskId = taskDecision.getTaskId();
+        final UUID processId = taskDecision.getProcessId();
+        final DependencyDecision resultDecision = new DependencyDecision(processId);
 
-        Modification modification = createLinksModification(taskDecision);
+        final Modification modification = createLinksModification(taskDecision);
 
-        for (int i = 0; i < retryTimes; i++) {
+//        for (int i = 0; i < retryTimes; i++) {
+//
+//            Graph graph = graphDao.getGraph(processId);
+//
+//            if (!graph.hasNotFinishedItem(finishedTaskId)) {
+//                logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+//                return resultDecision; // ignore task decision and its tasks
+//            }
+//
+//            graph.apply(modification);
+//
+//            if (logger.isDebugEnabled()) {
+//                logger.debug("Graph  copy: " + graph.copy());
+//            }
+//
+//            if (graphDao.updateGraph(graph)) {
+//                resultDecision.setProcessFinished(graph.isFinished());
+//                return resultDecision.withReadyTasks(graph.getReadyItems());
+//            }
+//        }
 
-            Graph graph = graphDao.getGraph(processId);
+        boolean isSuccess = graphDao.changeGraph(new GraphDao.Updater() {
 
-            if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
-                return resultDecision; // ignore task decision and its tasks
+            public UUID getProcessId() {
+                return processId;
             }
 
-            graph.apply(modification);
+            public boolean apply(Graph graph) {
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Graph  copy: " + graph.copy());
-            }
+                if (!graph.hasNotFinishedItem(finishedTaskId)) {
+                    logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+                    return false; // ignore task decision and its tasks
+                }
 
-            if (graphDao.updateGraph(graph)) {
+                graph.apply(modification);
                 resultDecision.setProcessFinished(graph.isFinished());
-                return resultDecision.withReadyTasks(graph.getReadyItems());
+                resultDecision.withReadyTasks(graph.getReadyItems());
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Graph  copy: " + graph.copy());
+                }
+
+                return true;
             }
+        });
+
+        if (isSuccess) {
+            return resultDecision;
         }
 
         logger.warn("Can't apply graph modification");
@@ -180,6 +207,11 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
     @Override
     public Collection<UUID> getProcessTasks(UUID processId) {
         Graph graph = graphDao.getGraph(processId);
+
+        if (graph == null) {
+            return null;
+        }
+
         return graph.getProcessTasks();
     }
 }
