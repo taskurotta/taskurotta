@@ -1,1 +1,0 @@
-c:\progra~1\Java\jdk1.7.0_21\bin\java -jar target/wf-restarter-0.2.0-SNAPSHOT.jar -r ru/taskurotta/restarter/wf-config.yml
