@@ -77,13 +77,6 @@
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
-    <!--<bean id="dependencyBackend"-->
-        <!--class="ru.taskurotta.backend.dependency.graph.GraphDependencyBackend">-->
-        <!--<property name="taskNodeDao">-->
-            <!--<bean class="ru.taskurotta.backend.dependency.graph.MemoryTaskNodeDao" />-->
-        <!--</property>-->
-    <!--</bean>-->
-
     <bean id="graphDao"
         class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
 

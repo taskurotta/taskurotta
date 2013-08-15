@@ -6,11 +6,6 @@ import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.DependencyBackend;
-import ru.taskurotta.backend.dependency.graph.GraphDependencyBackend;
-import ru.taskurotta.backend.dependency.graph.TaskNode;
-import ru.taskurotta.backend.dependency.graph.TaskNodeDao;
-import ru.taskurotta.backend.dependency.links.Graph;
-import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
@@ -108,26 +103,6 @@ public class AbstractTestStub {
         return null != memoryStorageBackend.getTask(taskId, processId);
     }
 
-    /**
-     * @param taskId
-     * @param taskQuantity -1 is any quantity
-     * @return
-     */
-    public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
-
-        if (dependencyBackend instanceof GraphDependencyBackend) {
-            TaskNodeDao tnd = ((GraphDependencyBackend) dependencyBackend).getTaskNodeDao();
-            TaskNode taskNode = tnd.getNode(taskId, processId);
-            return !taskNode.isReleased();
-        } else{
-            MemoryGraphDao memoryGraphDao = ((MemoryBackendBundle) backendBundle).getMemoryGraphDao();
-            Graph graph = memoryGraphDao.getGraph(processId);
-
-            return graph != null && graph.isTaskWaitOtherTasks(taskId, taskQuantity);
-
-        }
-
-    }
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
         return memoryQueueBackend.isTaskInQueue(actorDefinition, taskId, processId);
