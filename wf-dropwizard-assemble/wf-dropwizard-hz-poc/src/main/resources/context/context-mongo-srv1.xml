@@ -4,10 +4,13 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:hz="http://www.hazelcast.com/schema/spring"
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+       " >
 
     <context:property-placeholder/>
     <context:annotation-config/>
@@ -45,6 +48,10 @@
     </bean>
 
     <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphDecisionStoreMap">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="delayedTaskMap">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
     <!-- /Mongo -->
@@ -90,6 +97,10 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskQueueBackingMap" />
             </hz:map>
 
+            <hz:map name="delayed.${hz.task.queue.prefix}*" backup-count="0" eviction-policy="LRU">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="delayedTaskMap" />
+            </hz:map>
+
         </hz:config>
     </hz:hazelcast>
 
@@ -105,5 +116,10 @@
         <property name="nodeCustomName" value="${node.custom.name}" />
 
     </bean>
+
+    <task:scheduled-tasks scheduler="resendScheduler">
+        <task:scheduled ref="queueBackend" method="updateDelayedTasks" fixed-rate="${updateDelayedTasksRate}"/>
+    </task:scheduled-tasks>
+    <task:scheduler id="resendScheduler" pool-size="1"/>
 
 </beans>

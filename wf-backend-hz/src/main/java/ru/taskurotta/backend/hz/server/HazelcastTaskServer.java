@@ -10,6 +10,8 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.statistics.Metrics;
+import ru.taskurotta.backend.statistics.StaticMetrics;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.server.GeneralTaskServer;
@@ -28,6 +30,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HazelcastTaskServer extends GeneralTaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
+
+    private static final Metrics.CheckPoint chpRelease = StaticMetrics.create("HazelcastTaskServer.release");
+    private static final Metrics.CheckPoint chpProcessDecision_async = StaticMetrics.create("HazelcastTaskServer" +
+            ".processDecision_async");
 
     protected HazelcastInstance hzInstance;
 
@@ -96,17 +102,23 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     @Override
     public void release(DecisionContainer taskDecision) {
+
         logger.debug("HZ server release for decision [{}]", taskDecision);
+
+        long smt = System.currentTimeMillis();
+
         // save it in task backend
         taskBackend.addDecision(taskDecision);
 
         // send process call
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision.getProcessId(), taskDecision.getTaskId());
         hzInstance.getExecutorService(executorServiceName).submit(call);
+
+        chpRelease.mark(smt);
     }
 
     protected DecisionContainer getDecision(UUID taskId, UUID processId) {
-       return taskBackend.getDecision(taskId, processId);
+        return taskBackend.getDecision(taskId, processId);
     }
 
     /**
@@ -132,6 +144,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         @Override
         public Object call() throws Exception {
 
+            long mst = System.currentTimeMillis();
+
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
             HazelcastInstance taskHzInstance = taskServer.getHzInstance();
 
@@ -150,6 +164,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
             } finally {
                 lock.unlock();
+
+                chpProcessDecision_async.mark(mst);
             }
 
             return null;

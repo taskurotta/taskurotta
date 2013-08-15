@@ -2,6 +2,7 @@ package ru.taskurotta.hz.test;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.IQueue;
 import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.backend.hz.TaskKey;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 
 import java.util.UUID;
 
@@ -33,7 +35,7 @@ public class MapStoreTest {
     protected static final String PURE_EVICTION_MAP = "pureEvictionTest";
     protected static final String MAPSTORE_EVICTION_MAP = "mapStoreWithEvictionTest";
     protected static final String PURE_POJO_MAPSTORE_MAP = "purePojoMapStoreTest";
-
+    protected static final String QUEUE_MAP_NAME = "tskQueueStoreTest";
 
     @Before
     public void init() {
@@ -50,6 +52,8 @@ public class MapStoreTest {
         mongoTemplate.dropCollection(PURE_POJO_MAPSTORE_MAP);
         mongoTemplate.createCollection(PURE_POJO_MAPSTORE_MAP);
 
+        mongoTemplate.dropCollection(QUEUE_MAP_NAME);
+        mongoTemplate.createCollection(QUEUE_MAP_NAME);
     }
 
     @Test
@@ -164,6 +168,59 @@ public class MapStoreTest {
         logger.info("EVICTION WITH POJO MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
 
         Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
+    }
+
+    @Test
+    public void testQueueMapStore() {
+        String testQueueName = QUEUE_MAP_NAME;
+        String testMapName = "q:" + testQueueName;
+        IQueue<TaskQueueItem> hzQueue = hzInstance.getQueue(testQueueName);
+        IMap hzMap = hzInstance.getMap(testMapName);//direct link to map backing this queue
+        DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
+
+        logger.info("QUEUE MAPSTORE: initial queueMap size is [{}]", hzMap.size());
+        logger.info("QUEUE MAPSTORE: initial queue size is [{}]", hzQueue.size());
+        logger.info("QUEUE MAPSTORE: initial mongoDB size is [{}]", mongoMap.getCount());
+
+        int size = 100;
+        UUID processId = UUID.randomUUID();
+
+        for(int i = 0; i < size; i++) {
+            hzQueue.add(getRandomTaskQueueItem(processId));
+        }
+        logger.info("QUEUE MAPSTORE: max queueMap size is [{}]", hzMap.size());
+        logger.info("QUEUE MAPSTORE: max queue size is [{}]", hzQueue.size());
+        logger.info("QUEUE MAPSTORE: mongoDB size is [{}]", mongoMap.getCount());
+
+        hzQueue.add(getRandomTaskQueueItem(processId));//should trigger eviction
+
+        logger.info("QUEUE MAPSTORE: queueMap size after eviction is [{}]", hzMap.size());
+        logger.info("QUEUE MAPSTORE: queue size after eviction is [{}]", hzQueue.size());
+        logger.info("QUEUE MAPSTORE: queueMap size after eviction(after call to hzQueue.size() ) is [{}]", hzMap.size());
+        logger.info("QUEUE MAPSTORE: mongoDB size after eviction is [{}]", mongoMap.getCount());
+
+        for(int i = 0; i < size+1; i++) {
+            TaskQueueItem tqi = hzQueue.poll();
+        }
+
+        logger.info("QUEUE MAPSTORE: queueMap size after polling the queue is [{}]", hzMap.size());
+        logger.info("QUEUE MAPSTORE: queue size after polling the queue is [{}]", hzQueue.size());
+        logger.info("QUEUE MAPSTORE: mongoDB size after polling the queue is [{}]", mongoMap.getCount());
+    }
+
+    @Test
+    public void testQueueMapStorePoll() {
+
+    }
+
+    private TaskQueueItem getRandomTaskQueueItem(UUID processId) {
+        TaskQueueItem tqi = new TaskQueueItem();
+        tqi.setStartTime(0l);
+        tqi.setEnqueueTime(System.currentTimeMillis());
+        tqi.setTaskList(null);
+        tqi.setProcessId(processId);
+        tqi.setTaskId(UUID.randomUUID());
+        return tqi;
     }
 
 }
