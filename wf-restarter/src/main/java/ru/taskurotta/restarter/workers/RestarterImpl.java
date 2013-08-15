@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -85,13 +85,21 @@ public class RestarterImpl implements Restarter {
             return Arrays.asList(startTaskContainer);
         }
 
-        Set<UUID> notFinishedTaskIds = graph.getNotFinishedItems();
+        Map<UUID, Long> notFinishedTaskIds = graph.getNotFinishedItems();
         if (logger.isDebugEnabled()) {
             logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedTaskIds.size());
         }
 
         Collection<TaskContainer> taskContainers = new ArrayList<>(notFinishedTaskIds.size());
-        for (UUID taskId : notFinishedTaskIds) {
+        for (Map.Entry<UUID, Long> entry : notFinishedTaskIds.entrySet()) {
+
+            long enqueueTime = entry.getValue();
+            if (enqueueTime == 0) { // is it not ready task?
+                continue;
+
+            }
+
+            UUID taskId = entry.getKey();
 
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
 
