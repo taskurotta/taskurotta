@@ -112,6 +112,7 @@
     </bean>
     <!-- /REST resources -->
 
+    <!-- Backends -->
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
@@ -143,10 +144,23 @@
         <constructor-arg name="decisionsMapName" value="${hz.graph.decision.map.name}" />
     </bean>
 
-    <!--<bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />-->
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend" >
         <constructor-arg ref="hzInstance"/>
     </bean>
+
+    <bean id="recoveryBackend" class="ru.taskurotta.backend.hz.recovery.HzRecoveryBackend" init-method="init">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="analyzeProcessQueueName" value="${hz.recovery.analyze.process.queue.name}"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+
+        <property name="sleepTimeOut" value="${hz.recovery.sleep.timeout}"/>
+        <property name="sleepTimeUnit" value="${hz.recovery.sleep.timeunit}"/>
+        <property name="threadCount" value="${hz.recovery.thread.count}"/>
+    </bean>
+    <!-- /Backends -->
 
     <!-- Health checks -->
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
