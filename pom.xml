@@ -34,7 +34,6 @@
 
     <modules>
         <module>wf-core</module>
-        <module>wf-mongotest</module>
         <module>wf-bootstrap</module>
         <module>wf-client</module>
         <module>wf-example</module>

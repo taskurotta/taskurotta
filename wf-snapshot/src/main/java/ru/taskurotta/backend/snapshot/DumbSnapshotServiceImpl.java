@@ -2,7 +2,6 @@ package ru.taskurotta.backend.snapshot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,16 +20,16 @@ public class DumbSnapshotServiceImpl implements SnapshotService {
 
     @Override
     public Snapshot getSnapshot(UUID snapshotId) {
-        throw new NotImplementedException();
+        throw new java.lang.UnsupportedOperationException();
     }
 
     @Override
     public List<Snapshot> getSnapshotByProcessId(UUID snapshotId) {
-        throw new NotImplementedException();
+        throw new java.lang.UnsupportedOperationException();
     }
 
     @Override
     public void saveSnapshot(Snapshot snapshot) {
-        throw new NotImplementedException();
+        throw new java.lang.UnsupportedOperationException();
     }
 }
