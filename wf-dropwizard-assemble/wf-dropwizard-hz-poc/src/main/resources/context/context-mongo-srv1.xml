@@ -31,27 +31,7 @@
         <constructor-arg name="j" value="true"/>
     </bean>
 
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="taskStoreMap">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="decisionStoreMap">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphStoreMap">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="taskQueueBackingMap">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="graphDecisionStoreMap">
-        <property name="mongoTemplate" ref="mongoTemplate" />
-    </bean>
-
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="delayedTaskMap">
+    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongoMapStore" scope="prototype">
         <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
     <!-- /Mongo -->
@@ -75,30 +55,20 @@
 
             <hz:executor-service name="${hz.decisions.service.name}" core-pool-size="${hz.decisions.core.pool.size}" max-pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:queue name="${hz.task.queue.prefix}*" max-size-per-jvm="500" backing-map-ref="queuesBackingMap" />
-
             <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskStoreMap"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.decision.map.name}" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="decisionStoreMap" />
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
             </hz:map>
 
             <hz:map name="${hz.graph.map.name}" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphStoreMap" />
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
             </hz:map>
 
             <hz:map name="${hz.graph.decision.map.name}" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphDecisionStoreMap" />
-            </hz:map>
-
-            <hz:map name="queuesBackingMap" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskQueueBackingMap" />
-            </hz:map>
-
-            <hz:map name="delayed.${hz.task.queue.prefix}*" backup-count="0" eviction-policy="LRU">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="delayedTaskMap" />
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore" />
             </hz:map>
 
         </hz:config>

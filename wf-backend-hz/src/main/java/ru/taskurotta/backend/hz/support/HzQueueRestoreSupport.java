@@ -44,6 +44,8 @@ public class HzQueueRestoreSupport {
                 }
             }
             logger.info("Restored [{}] MongoDB persisted queues", queueRestored);
+        } else {
+            logger.info("Queue restoration from map store on startup is disabled");
         }
     }
 
