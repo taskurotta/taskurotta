@@ -109,7 +109,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         if (queueNamePrefix != null && !queueName.startsWith(queueNamePrefix)) {
             queueName = queueNamePrefix + queueName;
         }
-        return hazelcastInstance.getQueue(queueName).size();
+        return getHzQueue(queueName).size();
     }
 
     @Override
@@ -118,7 +118,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             queueName = queueNamePrefix + queueName;
         }
         List<TaskQueueItem> result = new ArrayList<>();
-        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
+        IQueue<TaskQueueItem> queue = getHzQueue(queueName);
         TaskQueueItem[] queueItems = queue.toArray(new TaskQueueItem[queue.size()]);
 
         if (queueItems.length > 0) {
@@ -131,7 +131,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
-        IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+        IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
 
         TaskQueueItem result = null;
         try {
@@ -222,7 +222,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         if (item.getStartTime() <= item.getEnqueueTime()) {
 
-            IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(createQueueName(actorId, taskList));
+            IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
             queue.add(item);
 
             if(logger.isDebugEnabled()) {
@@ -287,7 +287,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             for (String queueName : queueNamesList) {
                 String mapName = getDelayedTasksMapName(queueName);
                 IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(mapName);
-                IQueue<TaskQueueItem> queue = hazelcastInstance.getQueue(queueName);
+                IQueue<TaskQueueItem> queue = getHzQueue(queueName);
 
                 EntryObject entryObject = new PredicateBuilder().getEntryObject();
                 Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
