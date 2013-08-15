@@ -49,7 +49,6 @@
         <module>wf-transport</module>
         <module>wf-snapshot</module>
         <module>wf-test</module>
-        <module>wf-restarter</module>
     </modules>
 
     <profiles>

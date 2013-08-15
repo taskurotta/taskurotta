@@ -50,11 +50,13 @@ logging:
         ru.taskurotta.backend.hz.queue: DEBUG
         com.yammer: INFO
     file:
-        enabled: false
-        archive: true
+        enabled: true
+        archive: false
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
         logFormat: "%-4r [%t] %-5p %c - %m%n"
+    console:
+        enabled: false
 
 http:
     rootPath: "/rest/*"

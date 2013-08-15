@@ -2,6 +2,7 @@ package ru.taskurotta.backend.hz.support;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
+import com.hazelcast.config.MaxSizeConfig;
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -33,6 +34,7 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private HazelcastInstance hzInstance;
     private String mapStoreBeanName;
 
+    private int maxSize = 100;
     private int maxSizePerJvm = 0;
     private int evictionPercentage = 25;
     private int backupCount = 0;
@@ -97,6 +99,11 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
             mc.setEvictionPolicy(evictionPolicy);
             mc.setMapStoreConfig(msc);
 
+            MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
+            maxSizeConfig.setSize(maxSize);
+            maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.POLICY_USED_HEAP_SIZE);
+            mc.setMaxSizeConfig(maxSizeConfig);
+
             hzInstance.getConfig().addMapConfig(mc);
             logger.debug("Config for map name[{}] with mapstore bean [{}] added...", mapName, mapStoreBeanName);
 
@@ -138,6 +145,10 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
 
     public void setMapStoreBeanName(String mapStoreBeanName) {
         this.mapStoreBeanName = mapStoreBeanName;
+    }
+
+    public void setMaxSize(int maxSize) {
+        this.maxSize = maxSize;
     }
 
     public void setMaxSizePerJvm(int maxSizePerJvm) {
