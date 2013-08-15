@@ -6,12 +6,14 @@
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd
             http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:property-placeholder/>
     <context:annotation-config/>
@@ -148,6 +150,13 @@
         <constructor-arg ref="hzInstance"/>
     </bean>
 
+    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService" />
+
+    <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
+        <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
     <bean id="recoveryBackend" class="ru.taskurotta.backend.hz.recovery.HzRecoveryBackend" init-method="init">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="analyzeProcessQueueName" value="${hz.recovery.analyze.process.queue.name}"/>
@@ -156,8 +165,6 @@
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
 
-        <property name="sleepTimeOut" value="${hz.recovery.sleep.timeout}"/>
-        <property name="sleepTimeUnit" value="${hz.recovery.sleep.timeunit}"/>
         <property name="threadCount" value="${hz.recovery.thread.count}"/>
     </bean>
     <!-- /Backends -->
@@ -168,6 +175,22 @@
         <property name="taskServer" ref="taskServer" />
     </bean>
     <!-- /Health checks -->
+
+    <!-- Recovery -->
+    <task:scheduler id="scheduler" pool-size="1"/>
+    <task:scheduled-tasks scheduler="scheduler">
+        <task:scheduled ref="processAnalyzer" method="init" fixed-delay="${recovery.process.analyzer.delay}"/>
+        <task:scheduled ref="recoveryBackend" method="init" fixed-delay="${recovery.process.delay}"/>
+    </task:scheduled-tasks>
+
+    <bean id="processAnalyzer" class="ru.taskurotta.recovery.ProcessAnalyzer">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="dataSource" ref="dataSource"/>
+        <constructor-arg name="analyzeProcessQueueName" value="${hz.recovery.analyze.process.queue.name}"/>
+
+        <property name="processBatchSize" value="${recovery.process.batch.size}"/>
+    </bean>
+    <!-- /Recovery -->
 
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
@@ -180,13 +203,7 @@
         <property name="nodeCustomName" value="${node.custom.name}" />
     </bean>
 
-    <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
-        <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
-        <constructor-arg name="dataSource" ref="dataSource"/>
-    </bean>
-
-    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService" />
-
+    <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
         <constructor-arg name="targetDataSource" ref="originalDataSource"/>
     </bean>
@@ -199,7 +216,7 @@
         <property name="username" value="${oradb.user}"/>
         <property name="password" value="${oradb.password}"/>
     </bean>
-
+    <!-- /Data source -->
 
     <!-- Transactions -->
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

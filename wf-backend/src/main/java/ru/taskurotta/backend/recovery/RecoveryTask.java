@@ -44,8 +44,34 @@ public class RecoveryTask implements Callable {
 
     @Override
     public Object call() throws Exception {
-        Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(processId);
+        logger.debug("Try to recovery process [{}]", processId);
 
+        Graph graph = dependencyBackend.getGraph(processId);
+        if (graph == null) {
+            logger.warn("For processId [{}] not found graph", processId);
+
+            restartProcess(processId);
+
+            return null;
+        }
+
+        Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
+        if (taskContainers == null) {
+            logger.warn("For processId [{}] not found task containers", processId);
+
+            restartProcess(processId);
+
+            return null;
+        }
+
+        restartTasks(taskContainers);
+
+        logger.info("Complete restart process [{}]", processId);
+
+        return null;
+    }
+
+    private void restartTasks(Collection<TaskContainer> taskContainers) {
         for (TaskContainer taskContainer : taskContainers) {
 
             String taskList = null;
@@ -57,24 +83,13 @@ public class RecoveryTask implements Callable {
                 }
             }
 
-            logger.debug("Add task container [{}] to queue backend", taskContainer);
-
             queueBackend.enqueueItem(taskContainer.getActorId(), taskContainer.getTaskId(), taskContainer.getProcessId(), taskContainer.getStartTime(), taskList);
-        }
 
-        return null;
+            logger.debug("Add task container [{}] to queue backend", taskContainer);
+        }
     }
 
-    private Collection<TaskContainer> findIncompleteTaskContainers(UUID processId) {
-        Graph graph = dependencyBackend.getGraph(processId);
-        if (graph == null) {
-            logger.warn("For processId [{}] not found graph", processId);
-
-            TaskContainer startTaskContainer = restartProcess(processId);
-
-            return Arrays.asList(startTaskContainer);
-        }
-
+    private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
         Set<UUID> notFinishedTaskIds = graph.getNotFinishedItems();
         if (logger.isDebugEnabled()) {
             logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedTaskIds.size());
@@ -88,9 +103,7 @@ public class RecoveryTask implements Callable {
             if (taskContainer == null) {
                 logger.warn("Not found task container [{}] in task repository", taskId);
 
-                TaskContainer startTaskContainer = restartProcess(processId);
-
-                return Arrays.asList(startTaskContainer);
+                return null;
             }
 
             logger.debug("Found not finished task container [{}]", taskId, taskContainer);
@@ -104,7 +117,7 @@ public class RecoveryTask implements Callable {
         return taskContainers;
     }
 
-    private TaskContainer restartProcess(UUID processId) {
+    private void restartProcess(UUID processId) {
         TaskContainer startTaskContainer = processBackend.getStartTask(processId);
         logger.info("For processId [{}] get start task [{}]", processId, startTaskContainer);
 
@@ -112,8 +125,8 @@ public class RecoveryTask implements Callable {
         taskDao.addTask(startTaskContainer);
         dependencyBackend.startProcess(startTaskContainer);
 
-        logger.info("Restart process [{}] from start task [{}]", startTaskContainer.getProcessId(), startTaskContainer);
+        restartTasks(Arrays.asList(startTaskContainer));
 
-        return startTaskContainer;
+        logger.info("Restart process [{}] from start task [{}]", startTaskContainer.getProcessId(), startTaskContainer);
     }
 }

@@ -14,7 +14,6 @@ import ru.taskurotta.backend.storage.TaskDao;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -31,12 +30,9 @@ public class HzRecoveryBackend implements RecoveryBackend {
     private TaskDao taskDao;
     private ProcessBackend processBackend;
 
+    private String analyzeProcessQueueName;
+
     private int threadCount = 8;
-
-    private String analyzeProcessQueueName = "analyzeProcessQueue";
-
-    private TimeUnit sleepTimeUnit = TimeUnit.SECONDS;
-    private long sleepTimeOut = 60;
 
     public HzRecoveryBackend(HazelcastInstance hazelcastInstance, String analyzeProcessQueueName, QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend) {
         this.hazelcastInstance = hazelcastInstance;
@@ -53,32 +49,20 @@ public class HzRecoveryBackend implements RecoveryBackend {
 
         IQueue<UUID> analyzeProcessQueue = hazelcastInstance.getQueue(analyzeProcessQueueName);
 
-        // ToDo (stukushin): may be listener?
-        while (true) {
-            UUID processId = analyzeProcessQueue.poll();
-
-            if (processId == null) {
-                try {
-                    sleepTimeUnit.sleep(sleepTimeOut);
-                    continue;
-                } catch (InterruptedException e) {
-                    logger.error("Catch exception while try to sleep", e);
-                }
-            }
+        UUID processId = analyzeProcessQueue.poll();
+        while (processId != null) {
 
             executorService.submit(new RecoveryTask(queueBackend, dependencyBackend, taskDao, processBackend, processId));
+
+            logger.debug("Submit new Recovery task for process [{}]", processId);
+
+            processId = analyzeProcessQueue.poll();
         }
+
+        logger.debug("Queue of analyzing processes is empty");
     }
 
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
-    }
-
-    public void setSleepTimeUnit(TimeUnit sleepTimeUnit) {
-        this.sleepTimeUnit = sleepTimeUnit;
-    }
-
-    public void setSleepTimeOut(long sleepTimeOut) {
-        this.sleepTimeOut = sleepTimeOut;
     }
 }
