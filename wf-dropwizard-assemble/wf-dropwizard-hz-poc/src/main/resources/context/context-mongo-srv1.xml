@@ -74,6 +74,28 @@
         </hz:config>
     </hz:hazelcast>
 
+    <!-- Queues persistence support -->
+    <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
+
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+
+        <property name="asyncBackupsCount" value = "0" />
+        <property name="backupCount" value = "0" />
+        <property name="evictionPercentage" value = "25" />
+        <property name="evictionPolicy" value = "LRU" />
+        <property name="mapStoreBeanName" value = "mongoMapStore" />
+        <property name="maxSizePerJvm" value = "0" />
+        <property name="maxSize" value = "1000" />
+    </bean>
+
+    <bean id="restoreQueueSupport" class="ru.taskurotta.backend.hz.support.HzQueueRestoreSupport" init-method="init">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+        <property name="hzInstance" ref="hzInstance" />
+        <property name="queuePrefix" value = "${hz.task.queue.prefix}" />
+        <property name="hzQueueSpringConfigSupport" ref="queueConfigSupport" />
+        <property name="restore" value = "${hz.queue.restore}" />
+    </bean>
+    <!-- /Queues persistence support -->
 
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
@@ -88,7 +110,7 @@
     </bean>
 
     <task:scheduled-tasks scheduler="resendScheduler">
-        <task:scheduled ref="queueBackend" method="updateDelayedTasks" fixed-rate="${updateDelayedTasksRate}"/>
+        <task:scheduled ref="queueBackend" method="updateDelayedTasks" fixed-delay="${updateDelayedTasksRate}"/>
     </task:scheduled-tasks>
     <task:scheduler id="resendScheduler" pool-size="1"/>
 

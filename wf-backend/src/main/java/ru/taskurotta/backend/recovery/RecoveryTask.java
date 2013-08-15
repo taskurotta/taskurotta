@@ -14,6 +14,7 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -90,13 +91,14 @@ public class RecoveryTask implements Callable {
     }
 
     private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
-        Set<UUID> notFinishedTaskIds = graph.getNotFinishedItems();
+        Map<UUID, Long> notFinishedItems = graph.getNotFinishedItems();
         if (logger.isDebugEnabled()) {
-            logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedTaskIds.size());
+            logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedItems.size());
         }
 
-        Collection<TaskContainer> taskContainers = new ArrayList<>(notFinishedTaskIds.size());
-        for (UUID taskId : notFinishedTaskIds) {
+        Collection<TaskContainer> taskContainers = new ArrayList<>(notFinishedItems.size());
+        Set<UUID> keys = notFinishedItems.keySet();
+        for (UUID taskId : keys) {
 
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
 
