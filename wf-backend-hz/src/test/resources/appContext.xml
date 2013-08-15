@@ -61,21 +61,9 @@
 
     <mongo:db-factory dbname="test" mongo-ref="mongo" id="mongoDbFactory"/>
 
-    <!-- TODO: Converters doesn't work for some reason -->
-    <!-- Converters -->
-    <mongo:mapping-converter base-package="ru.taskurotta" id="converters">
-        <mongo:custom-converters>
-            <mongo:converter ref="taskKeyWriteConverter" />
-            <mongo:converter ref="taskKeyReadConverter" />
-        </mongo:custom-converters>
-    </mongo:mapping-converter>
-    <bean id= "taskKeyWriteConverter" class="ru.taskurotta.backend.hz.TaskKeyWriteConverter"/>
-    <bean id= "taskKeyReadConverter" class="ru.taskurotta.backend.hz.TaskKeyReadConverter"/>
-    <!-- /Converters -->
-
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
-        <constructor-arg name="mongoConverter" ref="converters" />
+        <constructor-arg name="mongo" ref="mongo" />
+        <constructor-arg name="databaseName" value="test" />
         <property name="writeConcern" ref="writeConcern" />
     </bean>
 
