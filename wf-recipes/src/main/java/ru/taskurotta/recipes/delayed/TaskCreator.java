@@ -22,13 +22,15 @@ public class TaskCreator implements ApplicationListener<ContextRefreshedEvent> {
 
     public void createStartTask(MultiplierDeciderClient deciderClient) {
         log.info("warming up task launcher...");
-        long startTime = System.currentTimeMillis() + 5000;
+        long startTime = System.currentTimeMillis() + 1200000;
         ActorSchedulingOptions actorSchedulingOptions = new ActorSchedulingOptionsImpl();
         for (int i = 0; i < count; i++) {
-            int a = (int)(Math.random() * 100);
-            int b = (int)(Math.random() * 100);
-            actorSchedulingOptions.setStartTime(startTime);
-            deciderClient.multiply(a, b, actorSchedulingOptions);
+            for (int j = 0; j < 1000; j++) {
+                int a = (int)(Math.random() * 100);
+                int b = (int)(Math.random() * 100);
+                actorSchedulingOptions.setStartTime(startTime);
+                deciderClient.multiply(a, b, actorSchedulingOptions);
+            }
             startTime += 1000;
         }
     }

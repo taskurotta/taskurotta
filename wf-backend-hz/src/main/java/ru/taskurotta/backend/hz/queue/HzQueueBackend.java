@@ -304,7 +304,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             logger.debug("Can't get lock for delayed tasks. Other member will do this");
             return;
         }
-
+        long startTime = System.nanoTime();
         try {
             List<String> queueNamesList = getTaskQueueNamesByPrefix();
             if (logger.isDebugEnabled()) {
@@ -321,13 +321,19 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
                 Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("{} ready items for queue [{}]", readyItems.size(), queueName);
+                    long endTime = System.nanoTime();
+                    logger.debug("spent time: {}s; {} ready items for queue [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName);
                 }
 
                 for (TaskQueueItem next : readyItems) {
                     queue.add(next);
                     waitingItems.remove(next.getTaskId());
                 }
+            }
+            long endTime = System.nanoTime();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("spent time: {}s", String.format("%8.3f",(endTime - startTime) / 1e9));
             }
         } finally {
             delayedTasksLock.unlock();

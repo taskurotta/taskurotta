@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.dependency.links;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +33,11 @@ public class Graph implements Serializable {
     private UUID graphId;       //should be equal to process ID
 
     /**
-     * Set of all not finished items in this process
+     * Map of all not finished items in this process and its time of start in milliseconds.
+     * It has 0 value if item is not started yet.
      */
-    private Set<UUID> notFinishedItems = new HashSet<>();
+    private Map<UUID, Long> notFinishedItems = new HashMap<>();
+
 
     /**
      * Key UUID is a waiting items and value is Set of ready but frozen.
@@ -59,10 +60,15 @@ public class Graph implements Serializable {
     private UUID[] readyItems;
 
 
+    private long touchTimeMillis;
+    private long lastApplyTimeMillis;
+
     /**
      * generic constructor for deserializer
      */
     public Graph() {
+        touchTimeMillis = System.currentTimeMillis();
+        lastApplyTimeMillis = 0;
     }
 
     /**
@@ -73,7 +79,7 @@ public class Graph implements Serializable {
      */
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
-        notFinishedItems.add(startItem);
+        notFinishedItems.put(startItem, 0L);
     }
 
 
@@ -113,10 +119,10 @@ public class Graph implements Serializable {
 
 
     public boolean hasNotFinishedItem(UUID itemId) {
-        return notFinishedItems.contains(itemId);
+        return notFinishedItems.containsKey(itemId);
     }
 
-    public Set<UUID> getNotFinishedItems() {
+    public Map<UUID, Long> getNotFinishedItems() {
         return notFinishedItems;
     }
 
@@ -132,7 +138,7 @@ public class Graph implements Serializable {
         this.version = version;
     }
 
-    public void setNotFinishedItems(Set<UUID> notFinishedItems) {
+    public void setNotFinishedItems(Map<UUID, Long> notFinishedItems) {
         this.notFinishedItems = notFinishedItems;
     }
 
@@ -178,6 +184,7 @@ public class Graph implements Serializable {
     public void apply(Modification modification) {
 
         logger.debug("apply() modification = [{}]", modification);
+        long smt = System.currentTimeMillis();
 
         this.modification = modification;
 
@@ -200,7 +207,9 @@ public class Graph implements Serializable {
         if (newItems != null) {
 
             // add all new items to set
-            notFinishedItems.addAll(newItems);
+            for (UUID newItemId : newItems) {
+                notFinishedItems.put(newItemId, 0L);
+            }
         }
 
         // add all new links
@@ -213,7 +222,7 @@ public class Graph implements Serializable {
 
                     // prevent link to already finished item.
                     // it is possible case for @NoWait Promise which are used on deep child task
-                    if (!notFinishedItems.contains(newItemLink)) {
+                    if (!notFinishedItems.containsKey(newItemLink)) {
                         continue;
                     }
 
@@ -363,7 +372,12 @@ public class Graph implements Serializable {
             readyItems = EMPTY_ARRAY;
         } else {
             readyItems = readyItemsList.toArray(new UUID[readyItemsList.size()]);
+            for (UUID readyItemsId : readyItems) {
+                notFinishedItems.put(readyItemsId, smt);
+            }
         }
+
+        touchTimeMillis = lastApplyTimeMillis = smt;
 
     }
 
@@ -412,10 +426,12 @@ public class Graph implements Serializable {
         final Graph copy = new Graph();
         copy.setGraphId(graphId);
         copy.setLinks(copyMapUuidWithSetOfUuid(links));
-        copy.setNotFinishedItems(new HashSet<>(notFinishedItems));
+        copy.setNotFinishedItems(new HashMap<>(notFinishedItems));
         copy.setFrozenReadyItems(copyMapUuidWithSetOfUuid(frozenReadyItems));
         copy.setFinishedItems(new HashSet<>(finishedItems));
         copy.setVersion(version);
+        copy.setTouchTimeMillis(touchTimeMillis);
+        copy.setLastApplyTimeMillis(lastApplyTimeMillis);
         return copy;
     }
 
@@ -431,29 +447,44 @@ public class Graph implements Serializable {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
-                .add("version", version)
-                .add("graphId", graphId)
-                .add("notFinishedItems", notFinishedItems)
-                .add("frozenReadyItems", frozenReadyItems)
-                .add("links", links)
-                .add("finishedItems", finishedItems)
-                .add("modification", modification)
-                .add("readyItems", Arrays.toString(readyItems))
-                .toString();
+        return "Graph{" +
+                "version=" + version +
+                ", graphId=" + graphId +
+                ", notFinishedItems=" + notFinishedItems +
+                ", frozenReadyItems=" + frozenReadyItems +
+                ", links=" + links +
+                ", finishedItems=" + finishedItems +
+                ", modification=" + modification +
+                ", readyItems=" + Arrays.toString(readyItems) +
+                ", touchTimeMillis=" + touchTimeMillis +
+                ", lastApplyTimeMillis=" + lastApplyTimeMillis +
+                '}';
     }
 
 
     public Collection<UUID> getProcessTasks() {
         Collection<UUID> allProcessTasks = new HashSet<>();
 
-        allProcessTasks.addAll(notFinishedItems);
+        allProcessTasks.addAll(notFinishedItems.keySet());
         allProcessTasks.addAll(finishedItems);
-        for (Set<UUID> frozenTasks : frozenReadyItems.values()) {
-            allProcessTasks.addAll(frozenTasks);
-        }
 
         return allProcessTasks;
+    }
+
+    public long getTouchTimeMillis() {
+        return touchTimeMillis;
+    }
+
+    public void setTouchTimeMillis(long touchTimeMillis) {
+        this.touchTimeMillis = touchTimeMillis;
+    }
+
+    public long getLastApplyTimeMillis() {
+        return lastApplyTimeMillis;
+    }
+
+    public void setLastApplyTimeMillis(long lastApplyTimeMillis) {
+        this.lastApplyTimeMillis = lastApplyTimeMillis;
     }
 }
 
