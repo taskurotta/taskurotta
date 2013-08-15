@@ -41,6 +41,7 @@ logging:
         ru.taskurotta.dropwizard.hz: DEBUG
         com.yammer: INFO
         ru.taskurotta.backend.hz.server: INFO
+        ru.taskurotta.backend.statistics.Metrics: DEBUG
     file:
         enabled: true
         archive: true

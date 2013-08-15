@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.ora.dao;
+package ru.taskurotta.backend.ora;
 
 import org.apache.commons.dbcp.BasicDataSource;
 
@@ -6,7 +6,7 @@ import org.apache.commons.dbcp.BasicDataSource;
  * User: greg
  * Used only for test enviroment
  */
-@Deprecated
+
 public class DbConnect {
 
     private BasicDataSource dataSource;

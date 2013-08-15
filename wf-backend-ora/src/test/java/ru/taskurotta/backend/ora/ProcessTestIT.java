@@ -5,7 +5,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService;
-import ru.taskurotta.backend.ora.dao.DbConnect;
 import ru.taskurotta.backend.ora.storage.OraProcessBackend;
 import ru.taskurotta.transport.model.TaskContainer;
 

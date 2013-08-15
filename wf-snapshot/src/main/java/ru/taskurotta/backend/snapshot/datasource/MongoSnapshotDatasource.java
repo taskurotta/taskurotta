@@ -3,7 +3,6 @@ package ru.taskurotta.backend.snapshot.datasource;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.taskurotta.backend.snapshot.Snapshot;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Date;
 import java.util.List;
@@ -34,7 +33,7 @@ public class MongoSnapshotDatasource implements SnapshotDataSource {
 
     @Override
     public List<Snapshot> getSnapshotsForPeriod(Date startDate, Date endDate) {
-        throw new NotImplementedException();
+        throw new java.lang.UnsupportedOperationException();
     }
 
     @Override
