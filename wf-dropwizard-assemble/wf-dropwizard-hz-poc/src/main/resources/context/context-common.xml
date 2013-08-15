@@ -67,7 +67,6 @@
 
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
-        <property name="queueListName" value = "${hz.queues.set.name}" />
         <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
     </bean>
 

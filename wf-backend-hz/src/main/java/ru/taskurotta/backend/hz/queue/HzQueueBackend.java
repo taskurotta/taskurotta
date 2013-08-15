@@ -185,16 +185,24 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
      * @param queueName
      * @return
      */
-    private IMap<UUID, TaskQueueItem> getHzDelayedQueue(String queueName) {
+    private IMap<UUID, TaskQueueItem> getHzDelayedMap(String queueName) {
         IMap<UUID, TaskQueueItem> map = hzDelayedQueues.get(queueName);
 
         if (map != null) {
             return map;
         }
+        synchronized (hzDelayedQueues) {
+            map = hzDelayedQueues.get(queueName);
+            if(map!=null) {
+                return map;
+            }
+            if(hzQueueConfigSupport!=null) {
+                hzQueueConfigSupport.createMapConfig(queueName);
+            } else {
+                logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzQueueBackend, delayed queues are not persistent!");
+            }
 
-        map = hazelcastInstance.getMap(queueName);
-
-        if (map != null) {
+            map = hazelcastInstance.getMap(queueName);
             hzDelayedQueues.put(queueName, map);
         }
 
@@ -232,7 +240,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         } else {
 
             String mapName = getDelayedTasksMapName(createQueueName(actorId, taskList));
-            IMap<UUID, TaskQueueItem> map = hazelcastInstance.getMap(mapName);
+            IMap<UUID, TaskQueueItem> map = getHzDelayedMap(mapName);
             map.set(taskId, item, 0, TimeUnit.SECONDS);
 
             if(logger.isDebugEnabled()) {
@@ -286,7 +294,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
             for (String queueName : queueNamesList) {
                 String mapName = getDelayedTasksMapName(queueName);
-                IMap<UUID, TaskQueueItem> waitingItems = hazelcastInstance.getMap(mapName);
+                IMap<UUID, TaskQueueItem> waitingItems = getHzDelayedMap(mapName);
                 IQueue<TaskQueueItem> queue = getHzQueue(queueName);
 
                 EntryObject entryObject = new PredicateBuilder().getEntryObject();

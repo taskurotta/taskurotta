@@ -59,7 +59,9 @@
 
     <!-- Queues persistence support -->
     <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
-        <property name="hzInstance" ref="hzInstance" />
+
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+
         <property name="asyncBackupsCount" value = "0" />
         <property name="backupCount" value = "0" />
         <property name="evictionPercentage" value = "25" />
