@@ -131,7 +131,7 @@
         <constructor-arg name="taskDao" ref="taskDao" />
     </bean>
 
-    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.hz.dependency.HzDependencyBackend" factory-method="createInstance">
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
