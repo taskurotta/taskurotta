@@ -4,6 +4,10 @@ import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
+import com.hazelcast.core.IMap;
+import com.hazelcast.core.IQueue;
+import com.hazelcast.core.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -18,9 +22,12 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class HzQueueSpringConfigSupport implements ApplicationContextAware {
 
-    public static final Logger logger = LoggerFactory.getLogger(HzQueueSpringConfigSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzQueueSpringConfigSupport.class);
 
-    protected static final String BACKING_MAP_NAME_SUFFIX = "backingMap";
+    private static final String BACKING_MAP_NAME_SUFFIX = "backingMap";
+    private static final String MAP_CONFIG_LOCK = "mapConfigLock";
+    private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
+
 
     private ApplicationContext applicationContext;
     private HazelcastInstance hzInstance;
@@ -33,33 +40,91 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private String evictionPolicy = "LRU";
     private int writeDelaySeconds = 0;
 
+
+    private ILock mapConfigLock;
+    private ILock queueConfigLock;
+
+
+    public HzQueueSpringConfigSupport(HazelcastInstance hzInstance) {
+        this.hzInstance = hzInstance;
+        this.mapConfigLock = hzInstance.getLock(MAP_CONFIG_LOCK);
+        this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
+    }
+
     public void createQueueConfig(String queueName) {
+        try {
+            queueConfigLock.lock();
 
-        String mapName = queueName + BACKING_MAP_NAME_SUFFIX;
+            if(isQueueExists(queueName)) {
+                logger.debug("Skip creating queue[{}] config: it already exists...", queueName);
+                return;
+            }
+            String mapName = queueName + BACKING_MAP_NAME_SUFFIX;
+            createMapConfig(mapName);
 
-        MapStoreConfig msc = new MapStoreConfig();
-        msc.setEnabled(true);
-        msc.setImplementation(applicationContext.getBean(mapStoreBeanName));
-        msc.setWriteDelaySeconds(writeDelaySeconds);
+            QueueConfig qc = new QueueConfig();
+            qc.setName(queueName);
+            qc.setBackingMapRef(mapName);
+            qc.setMaxSizePerJVM(maxSizePerJvm);
 
-        MapConfig mc = new MapConfig();
-        mc.setName(mapName);
-        mc.setEvictionPercentage(evictionPercentage);
-        mc.setBackupCount(backupCount);
-        mc.setAsyncBackupCount(asyncBackupsCount);
-        mc.setEvictionPolicy(evictionPolicy);
-        mc.setMapStoreConfig(msc);
+            hzInstance.getConfig().addQueueConfig(qc);
+            logger.debug("Config for queue name[{}] with mapstore bean [{}] added...", queueName, mapStoreBeanName);
 
-        hzInstance.getConfig().addMapConfig(mc);
-        logger.debug("Config for map name[{}] with mapstore bean [{}] added...", mapName, mapStoreBeanName);
+        } finally {
+            queueConfigLock.unlock();
+        }
+    }
 
-        QueueConfig qc = new QueueConfig();
-        qc.setName(queueName);
-        qc.setBackingMapRef(mapName);
-        qc.setMaxSizePerJVM(maxSizePerJvm);
+    public void createMapConfig(String mapName) {
+        try {
+            mapConfigLock.lock();
 
-        hzInstance.getConfig().addQueueConfig(qc);
-        logger.debug("Config for queue name[{}] with mapstore bean [{}] added...", queueName, mapStoreBeanName);
+            if(isMapExists(mapName)) {
+                logger.debug("Skip creating map[{}] config: it already exists...", mapName);
+                return;
+            }
+
+            MapStoreConfig msc = new MapStoreConfig();
+            msc.setEnabled(true);
+            msc.setImplementation(applicationContext.getBean(mapStoreBeanName));
+            msc.setWriteDelaySeconds(writeDelaySeconds);
+
+            MapConfig mc = new MapConfig();
+            mc.setName(mapName);
+            mc.setEvictionPercentage(evictionPercentage);
+            mc.setBackupCount(backupCount);
+            mc.setAsyncBackupCount(asyncBackupsCount);
+            mc.setEvictionPolicy(evictionPolicy);
+            mc.setMapStoreConfig(msc);
+
+            hzInstance.getConfig().addMapConfig(mc);
+            logger.debug("Config for map name[{}] with mapstore bean [{}] added...", mapName, mapStoreBeanName);
+
+        } finally {
+            mapConfigLock.unlock();
+        }
+    }
+
+    private boolean isMapExists(String name) {
+       boolean result = false;
+       for(Instance inst: hzInstance.getInstances()) {
+           if(inst.getInstanceType().isMap() && name.equals(((IMap) inst).getName())) {
+               result = true;
+               break;
+           }
+       }
+       return result;
+    }
+
+    private boolean isQueueExists(String name) {
+        boolean result = false;
+        for(Instance inst: hzInstance.getInstances()) {
+            if(inst.getInstanceType().isQueue() && name.equals(((IQueue) inst).getName())) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -93,5 +158,9 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
 
     public void setEvictionPolicy(String evictionPolicy) {
         this.evictionPolicy = evictionPolicy;
+    }
+
+    public void setWriteDelaySeconds(int writeDelaySeconds) {
+        this.writeDelaySeconds = writeDelaySeconds;
     }
 }
