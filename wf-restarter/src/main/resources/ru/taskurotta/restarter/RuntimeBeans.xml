@@ -48,7 +48,6 @@
         <constructor-arg name="pollDelay" value="${queueBackend.pollDaley}"/>
         <constructor-arg name="pollDelayUnit" value="${queueBackend.pollDelayUnit}"/>
 
-        <property name="queueListName" value="${hz.queues.set.name}" />
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}" />
     </bean>
 
