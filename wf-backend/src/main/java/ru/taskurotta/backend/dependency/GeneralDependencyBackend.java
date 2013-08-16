@@ -112,6 +112,11 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
         return graphDao.getGraph(processId);
     }
 
+    @Override
+    public boolean changeGraph(GraphDao.Updater updater) {
+        return graphDao.changeGraph(updater);
+    }
+
 
     /**
      * Convert taskDecision to modification view

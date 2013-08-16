@@ -34,6 +34,9 @@ public class HzRecoveryBackend implements RecoveryBackend {
 
     private int threadCount = 8;
 
+    // time out between recovery process in milliseconds
+    private long recoveryProcessTimeOut = 600000;
+
     public HzRecoveryBackend(HazelcastInstance hazelcastInstance, String analyzeProcessQueueName, QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend) {
         this.hazelcastInstance = hazelcastInstance;
         this.analyzeProcessQueueName = analyzeProcessQueueName;
@@ -51,8 +54,7 @@ public class HzRecoveryBackend implements RecoveryBackend {
 
         UUID processId = analyzeProcessQueue.poll();
         while (processId != null) {
-
-            executorService.submit(new RecoveryTask(queueBackend, dependencyBackend, taskDao, processBackend, processId));
+            executorService.submit(new RecoveryTask(queueBackend, dependencyBackend, taskDao, processBackend, recoveryProcessTimeOut, processId));
 
             logger.debug("Submit new Recovery task for process [{}]", processId);
 
@@ -64,5 +66,9 @@ public class HzRecoveryBackend implements RecoveryBackend {
 
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
+    }
+
+    public void setRecoveryProcessTimeOut(long recoveryProcessTimeOut) {
+        this.recoveryProcessTimeOut = recoveryProcessTimeOut;
     }
 }
