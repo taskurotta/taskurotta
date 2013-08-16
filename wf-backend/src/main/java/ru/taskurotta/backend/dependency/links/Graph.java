@@ -80,6 +80,9 @@ public class Graph implements Serializable {
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
         notFinishedItems.put(startItem, 0L);
+
+        touchTimeMillis = System.currentTimeMillis();
+        lastApplyTimeMillis = 0;
     }
 
 
