@@ -6,6 +6,7 @@ import com.hazelcast.core.IQueue;
 import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ import java.util.UUID;
  * User: dimadin
  * Date: 08.08.13 11:15
  */
-//@Ignore //Requires MongoDB up and running and single node HZ
+@Ignore //Requires MongoDB up and running and single node HZ
 public class MapStoreTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MapStoreTest.class);
