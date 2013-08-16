@@ -48,6 +48,15 @@
 
     </bean>
 
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+        <constructor-arg name="pollDelay" value="${pollDelay}" />
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+
+        <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
+    </bean>
+
+
     <task:scheduled-tasks scheduler="resendScheduler">
         <task:scheduled ref="queueBackend" method="updateDelayedTasks" fixed-rate="${updateDelayedTasksRate}"/>
     </task:scheduled-tasks>

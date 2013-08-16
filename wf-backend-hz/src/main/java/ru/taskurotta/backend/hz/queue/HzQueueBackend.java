@@ -91,9 +91,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     private List<String> getTaskQueueNamesByPrefix() {
         List<String> result = new ArrayList<>();
         for(Instance inst: hazelcastInstance.getInstances()) {
-            if(inst.getInstanceType().isQueue()) {
+            if (inst.getInstanceType().isQueue()) {
                 String name = ((IQueue)inst).getName();
-                if(name.startsWith(queueNamePrefix)) {
+                if (name.startsWith(queueNamePrefix)) {
                     result.add(name);
                 }
             }
@@ -320,9 +320,14 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
                 Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
                 Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
 
+                if(readyItems.isEmpty()) {
+                    logger.debug("No ready tasks found");
+                    return;
+                }
+
                 if (logger.isDebugEnabled()) {
                     long endTime = System.nanoTime();
-                    logger.debug("spent time: {}s; {} ready items for queue [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName);
+                    logger.debug("spent time (search): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName, waitingItems.size());
                 }
 
                 for (TaskQueueItem next : readyItems) {
@@ -333,7 +338,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             long endTime = System.nanoTime();
 
             if (logger.isDebugEnabled()) {
-                logger.debug("spent time: {}s", String.format("%8.3f",(endTime - startTime) / 1e9));
+                logger.debug("spent time (total): {}s", String.format("%8.3f",(endTime - startTime) / 1e9));
             }
         } finally {
             delayedTasksLock.unlock();

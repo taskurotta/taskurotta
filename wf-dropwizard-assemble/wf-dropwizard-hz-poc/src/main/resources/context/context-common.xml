@@ -2,14 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:task="http://www.springframework.org/schema/task"
-       xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-2.5.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+            ">
 
     <context:property-placeholder/>
     <context:annotation-config/>
@@ -35,31 +30,6 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
     <!-- /REST resources -->
-
-    <!-- Recoveries -->
-
-    <!--<bean id="expiredTaskRecovery" class="ru.taskurotta.server.recovery.RetryEnqueueRecovery">-->
-    <!--<property name="configBackend" ref="configBackend"/>-->
-    <!--<property name="taskBackend" ref="taskBackend"/>-->
-    <!--<property name="queueBackend" ref="queueBackend"/>-->
-    <!--<property name="recoveryPeriod" value="${recovery.period}"/>-->
-    <!--<property name="recoveryPeriodUnit" value="${recovery.period.unit}"/>-->
-    <!--<property name="timeIterationStep" value="${recovery.timeStep}"/>-->
-    <!--<property name="timeIterationStepUnit" value="${recovery.timeStep.unit}"/>-->
-    <!--<property name="checkpointServices">-->
-    <!--<list value-type="ru.taskurotta.backend.checkpoint.CheckpointService">-->
-    <!--<ref bean="checkpointService"/>-->
-    <!--</list>-->
-    <!--</property>-->
-    <!--</bean>-->
-
-    <!--<task:scheduler id="taskExpirationRecovery" pool-size="1" />-->
-    <!--<task:scheduled-tasks scheduler="taskExpirationRecovery">-->
-    <!--<task:scheduled ref="expiredTaskRecovery" method="run" cron="${recovery.schedule}"/>-->
-    <!--</task:scheduled-tasks>-->
-
-    <!--/Recoveries-->
-
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}" />

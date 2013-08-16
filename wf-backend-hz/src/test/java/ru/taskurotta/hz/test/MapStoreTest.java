@@ -194,7 +194,7 @@ public class MapStoreTest {
 
         hzQueue.add(getRandomTaskQueueItem(processId));//should trigger eviction
 
-        logger.info("QUEUE MAPSTORE: queueMap size after eviction is [{}]", hzMap.size());
+        logger.info("QUEUE MAPSTORE: queueMap size after eviction is [{}], keyset size[{}]", hzMap.size(), hzMap.keySet().size());
         logger.info("QUEUE MAPSTORE: queue size after eviction is [{}]", hzQueue.size());
         logger.info("QUEUE MAPSTORE: queueMap size after eviction(after call to hzQueue.size() ) is [{}]", hzMap.size());
         logger.info("QUEUE MAPSTORE: mongoDB size after eviction is [{}]", mongoMap.getCount());
