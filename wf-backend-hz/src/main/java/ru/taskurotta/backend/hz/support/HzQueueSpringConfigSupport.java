@@ -29,7 +29,6 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private static final String MAP_CONFIG_LOCK = "mapConfigLock";
     private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
 
-
     private ApplicationContext applicationContext;
     private HazelcastInstance hzInstance;
     private String mapStoreBeanName;
@@ -41,6 +40,8 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private int asyncBackupsCount = 0;
     private String evictionPolicy = "LRU";
     private int writeDelaySeconds = 0;
+
+    private String maxSizePolicy = "cluster_wide_map_size";
 
 
     private ILock mapConfigLock;
@@ -97,12 +98,12 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
             mc.setBackupCount(backupCount);
             mc.setAsyncBackupCount(asyncBackupsCount);
             mc.setEvictionPolicy(evictionPolicy);
-            mc.setMapStoreConfig(msc);
 
-            MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
-            maxSizeConfig.setSize(maxSize);
-            maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.POLICY_USED_HEAP_SIZE);
-            mc.setMaxSizeConfig(maxSizeConfig);
+            MaxSizeConfig maxSizeCfg = new MaxSizeConfig();
+            maxSizeCfg.setMaxSizePolicy(maxSizePolicy);
+            maxSizeCfg.setSize(maxSize);
+            mc.setMaxSizeConfig(maxSizeCfg);
+            mc.setMapStoreConfig(msc);
 
             hzInstance.getConfig().addMapConfig(mc);
             logger.debug("Config for map name[{}] with mapstore bean [{}] added...", mapName, mapStoreBeanName);
@@ -139,10 +140,6 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-    public void setHzInstance(HazelcastInstance hzInstance) {
-        this.hzInstance = hzInstance;
-    }
-
     public void setMapStoreBeanName(String mapStoreBeanName) {
         this.mapStoreBeanName = mapStoreBeanName;
     }
@@ -173,5 +170,9 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
 
     public void setWriteDelaySeconds(int writeDelaySeconds) {
         this.writeDelaySeconds = writeDelaySeconds;
+    }
+
+    public void setMaxSizePolicy(String maxSizePolicy) {
+        this.maxSizePolicy = maxSizePolicy;
     }
 }

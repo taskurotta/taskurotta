@@ -30,6 +30,7 @@ properties:
   hazelcast.jmx: true
   hazelcast.jmx.detailed: true
   updateDelayedTasksRate: 10000
+  hz.config.max.map.size: 10
 
 #resourceBeans:
 #  - taskStarterResource
@@ -40,23 +41,15 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.dropwizard.server.core: INFO
-        ru.taskurotta.server: INFO
-        ru.taskurotta.server.recovery.RetryEnqueueRecovery: INFO
-        ru.taskurotta.test.monkey.AbstractMonkeyAspect: INFO
-        ru.taskurotta.dropwizard.hz: INFO
-        ru.taskurotta.backend.hz.server: INFO
-        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: DEBUG
         ru.taskurotta.backend.hz.queue: DEBUG
+        com.hazelcast.impl.CMap: DEBUG #shows eviction status on DEBUG
         com.yammer: INFO
     file:
         enabled: true
-        archive: false
+        archive: true
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
         logFormat: "%-4r [%t] %-5p %c - %m%n"
-    console:
-        enabled: false
 
 http:
     rootPath: "/rest/*"
@@ -70,5 +63,7 @@ http:
             archive: true
             currentLogFilename: ./target/logs/requests.log
             archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+
+
 #config can be extended here
 #http://dropwizard.codahale.com/manual/core/#configuration-defaults
