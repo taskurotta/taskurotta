@@ -166,6 +166,7 @@
         <constructor-arg name="taskDao" ref="taskDao"/>
 
         <property name="threadCount" value="${hz.recovery.thread.count}"/>
+        <property name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
     <!-- /Backends -->
 

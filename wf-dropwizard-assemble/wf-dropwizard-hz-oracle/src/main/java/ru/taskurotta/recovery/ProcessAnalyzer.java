@@ -39,10 +39,7 @@ public class ProcessAnalyzer {
     }
 
     public void init() {
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Try to find incomplete processes at {}", new Date());
-        }
+        logger.debug("Try to find incomplete processes");
 
         IQueue<UUID> analyzeProcessQueue = hazelcastInstance.getQueue(analyzeProcessQueueName);
 
@@ -63,7 +60,7 @@ public class ProcessAnalyzer {
         analyzeProcessQueue.addAll(processIds);
 
         if (logger.isInfoEnabled()) {
-            logger.info("Add [{}] process ids for analyze at {}", processIds.size(), new Date());
+            logger.info("Add [{}] process ids for analyze", processIds.size());
         }
     }
 
@@ -73,7 +70,7 @@ public class ProcessAnalyzer {
         long fromTime = System.currentTimeMillis();
 
         if (logger.isInfoEnabled()) {
-            logger.info("Try to find incomplete processes, was started before [{}] ({})", fromTime, new Date(fromTime));
+            logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
         }
 
         String query = "SELECT * FROM (SELECT process_id FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";

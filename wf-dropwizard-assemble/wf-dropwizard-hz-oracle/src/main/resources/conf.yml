@@ -36,10 +36,12 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta.backend.hz.support: DEBUG
-        ru.taskurotta.backend.recovery: DEBUG
-        ru.taskurotta.recovery: DEBUG
-        ru.taskurotta.backend.hz.recovery: DEBUG
+        ru.taskurotta: INFO
+#        ru.taskurotta.recovery: DEBUG
+#        ru.taskurotta.backend.recovery: DEBUG
+#        ru.taskurotta.backend.hz.support: DEBUG
+#        ru.taskurotta.backend.hz.recovery: DEBUG
+#        ru.taskurotta.backend.hz.dependency: DEBUG
 #        ru.taskurotta.dropwizard.server.core: INFO
 #        ru.taskurotta.server: INFO
 #        ru.taskurotta.dropwizard.hz: INFO

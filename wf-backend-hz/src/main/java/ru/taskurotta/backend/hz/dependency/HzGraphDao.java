@@ -101,18 +101,20 @@ public class HzGraphDao implements GraphDao {
     private boolean updateGraph(Graph modifiedGraph) {
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
-        DecisionRow decisionRow = new DecisionRow();
+        if (modifiedGraph.getModification() != null) {
+            DecisionRow decisionRow = new DecisionRow();
 
-        Modification modification = modifiedGraph.getModification();
-        decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
-        decisionRow.modification = modification;
-        decisionRow.readyItems = modifiedGraph.getReadyItems();
+            Modification modification = modifiedGraph.getModification();
+            decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
+            decisionRow.modification = modification;
+            decisionRow.readyItems = modifiedGraph.getReadyItems();
 
-        decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
+            decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
+        }
 
         graphs.set(modifiedGraph.getGraphId(), modifiedGraph, 0, TimeUnit.NANOSECONDS);//hz feature
-        return true;
 
+        return true;
     }
 
 

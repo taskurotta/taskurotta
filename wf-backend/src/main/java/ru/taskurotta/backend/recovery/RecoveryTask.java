@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -14,6 +15,7 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -32,14 +34,17 @@ public class RecoveryTask implements Callable {
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
+    // time out between recovery process in milliseconds
+    private long recoveryProcessTimeOut;
 
     private UUID processId;
 
-    public RecoveryTask(QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, UUID processId) {
+    public RecoveryTask(QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, long recoveryProcessTimeOut, UUID processId) {
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
         this.processBackend = processBackend;
+        this.recoveryProcessTimeOut = recoveryProcessTimeOut;
         this.processId = processId;
     }
 
@@ -49,16 +54,30 @@ public class RecoveryTask implements Callable {
 
         Graph graph = dependencyBackend.getGraph(processId);
         if (graph == null) {
-            logger.warn("For processId [{}] not found graph", processId);
+            logger.warn("For process [{}] not found graph, restart process", processId);
 
             restartProcess(processId);
 
             return null;
         }
 
+        long lastChange = Math.max(graph.getLastApplyTimeMillis(), graph.getTouchTimeMillis());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Graph for process [{}] last changes at [{} ({})]", processId, lastChange, new Date(lastChange));
+        }
+
+        long changeTimeout = System.currentTimeMillis() - lastChange;
+        logger.debug("For process [{}] change timeout = [{}]", processId, changeTimeout);
+
+        if ((changeTimeout) < recoveryProcessTimeOut) {
+            logger.debug("Graph for process [{}] recently apply or recovery, skip recovery", processId);
+
+            return null;
+        }
+
         Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
         if (taskContainers == null) {
-            logger.warn("For processId [{}] not found task containers", processId);
+            logger.warn("For process [{}] not found task containers, restart process", processId);
 
             restartProcess(processId);
 
@@ -67,7 +86,24 @@ public class RecoveryTask implements Callable {
 
         restartTasks(taskContainers);
 
-        logger.info("Complete restart process [{}]", processId);
+        dependencyBackend.changeGraph(new GraphDao.Updater() {
+            @Override
+            public UUID getProcessId() {
+                return processId;
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+                graph.setTouchTimeMillis(System.currentTimeMillis());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("For process [{}] update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(), new Date(graph.getTouchTimeMillis()));
+                }
+
+                return true;
+            }
+        });
+
+        logger.info("Process [{}] complete restart", processId);
 
         return null;
     }
@@ -86,14 +122,16 @@ public class RecoveryTask implements Callable {
 
             queueBackend.enqueueItem(taskContainer.getActorId(), taskContainer.getTaskId(), taskContainer.getProcessId(), taskContainer.getStartTime(), taskList);
 
-            logger.debug("Add task container [{}] to queue backend", taskContainer);
+            if (logger.isTraceEnabled()) {
+                logger.trace("For process [{}] add task container [{}] to queue backend", taskContainer.getProcessId(), taskContainer);
+            }
         }
     }
 
     private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
         Map<UUID, Long> notFinishedItems = graph.getNotFinishedItems();
         if (logger.isDebugEnabled()) {
-            logger.debug("For processId [{}] found [{}] not finished taskIds", processId, notFinishedItems.size());
+            logger.debug("For process [{}] found [{}] not finished taskIds", processId, notFinishedItems.size());
         }
 
         Collection<TaskContainer> taskContainers = new ArrayList<>(notFinishedItems.size());
@@ -103,17 +141,17 @@ public class RecoveryTask implements Callable {
             TaskContainer taskContainer = taskDao.getTask(taskId, processId);
 
             if (taskContainer == null) {
-                logger.warn("Not found task container [{}] in task repository", taskId);
+                logger.warn("For process [{}] not found task container [{}] in task repository", processId, taskId);
 
                 return null;
             }
 
-            logger.debug("Found not finished task container [{}]", taskId, taskContainer);
+            logger.trace("For process [{}] found not finished task container [{}]", processId, taskContainer);
             taskContainers.add(taskContainer);
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info("For processId [{}] found [{}] not finished task containers", processId, taskContainers.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("For process [{}] found [{}] not finished task containers", processId, taskContainers.size());
         }
 
         return taskContainers;
@@ -121,7 +159,7 @@ public class RecoveryTask implements Callable {
 
     private void restartProcess(UUID processId) {
         TaskContainer startTaskContainer = processBackend.getStartTask(processId);
-        logger.info("For processId [{}] get start task [{}]", processId, startTaskContainer);
+        logger.debug("For process [{}] get start task [{}]", processId, startTaskContainer);
 
         // emulate TaskServer.startProcess()
         taskDao.addTask(startTaskContainer);
@@ -129,6 +167,6 @@ public class RecoveryTask implements Callable {
 
         restartTasks(Arrays.asList(startTaskContainer));
 
-        logger.info("Restart process [{}] from start task [{}]", startTaskContainer.getProcessId(), startTaskContainer);
+        logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
     }
 }
