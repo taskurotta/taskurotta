@@ -23,11 +23,11 @@ public class WorkflowStarter {
     private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
     public void startWork() {
-        if(startTasks) {
+        if (startTasks) {
             final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
             final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
 
-            if(startTasksInBackground) {
+            if (startTasksInBackground) {
                 startAllTasksInBackground(decider);
             } else {
                 startAllTasks(decider);
@@ -54,7 +54,7 @@ public class WorkflowStarter {
             try{
                 decider.performAction();
                 started++;
-                if(started%10 == 0) {
+                if (started%10 == 0) {
                     logger.info("Started [{}] processes", started);
                 }
             } catch(ServerException ex) {

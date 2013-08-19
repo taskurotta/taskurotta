@@ -3,6 +3,7 @@ package ru.taskurotta.backend.dependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
+import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
@@ -13,6 +14,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -20,17 +22,15 @@ import java.util.UUID;
  * Date: 4/5/13
  * Time: 11:17 AM
  */
-public class GeneralDependencyBackend implements DependencyBackend {
+public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(GeneralDependencyBackend.class);
 
     private GraphDao graphDao;
-    private int retryTimes;
 
-    public GeneralDependencyBackend(GraphDao graphDao, int retryTimes) {
+    public GeneralDependencyBackend(GraphDao graphDao) {
 
         this.graphDao = graphDao;
-        this.retryTimes = retryTimes;
     }
 
     @Override
@@ -38,26 +38,60 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
         logger.debug("applyDecision() taskDecision = [{}]", taskDecision);
 
-        UUID finishedTaskId = taskDecision.getTaskId();
-        UUID processId = taskDecision.getProcessId();
-        DependencyDecision resultDecision = new DependencyDecision(processId);
+        final UUID finishedTaskId = taskDecision.getTaskId();
+        final UUID processId = taskDecision.getProcessId();
+        final DependencyDecision resultDecision = new DependencyDecision(processId);
 
-        Modification modification = createLinksModification(taskDecision);
+        final Modification modification = createLinksModification(taskDecision);
 
-        for (int i = 0; i < retryTimes; i++) {
+//        for (int i = 0; i < retryTimes; i++) {
+//
+//            Graph graph = graphDao.getGraph(processId);
+//
+//            if (!graph.hasNotFinishedItem(finishedTaskId)) {
+//                logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+//                return resultDecision; // ignore task decision and its tasks
+//            }
+//
+//            graph.apply(modification);
+//
+//            if (logger.isDebugEnabled()) {
+//                logger.debug("Graph  copy: " + graph.copy());
+//            }
+//
+//            if (graphDao.updateGraph(graph)) {
+//                resultDecision.setProcessFinished(graph.isFinished());
+//                return resultDecision.withReadyTasks(graph.getReadyItems());
+//            }
+//        }
 
-            Graph graph = graphDao.getGraph(processId);
+        boolean isSuccess = graphDao.changeGraph(new GraphDao.Updater() {
 
-            if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
-                return resultDecision; // ignore task decision and its tasks
+            public UUID getProcessId() {
+                return processId;
             }
 
-            graph.apply(modification);
-            if (graphDao.updateGraph(graph)) {
+            public boolean apply(Graph graph) {
+
+                if (!graph.hasNotFinishedItem(finishedTaskId)) {
+                    logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+                    return false; // ignore task decision and its tasks
+                }
+
+                graph.apply(modification);
                 resultDecision.setProcessFinished(graph.isFinished());
-                return resultDecision.withReadyTasks(graph.getReadyItems());
+                resultDecision.withReadyTasks(graph.getReadyItems());
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Graph  copy: " + graph.copy());
+                }
+
+                return true;
             }
+        });
+
+        if (isSuccess) {
+            return resultDecision;
         }
 
         logger.warn("Can't apply graph modification");
@@ -71,6 +105,16 @@ public class GeneralDependencyBackend implements DependencyBackend {
         logger.debug("startProcess() task = [{}]", task);
 
         graphDao.createGraph(task.getProcessId(), task.getTaskId());
+    }
+
+    @Override
+    public Graph getGraph(UUID processId) {
+        return graphDao.getGraph(processId);
+    }
+
+    @Override
+    public boolean changeGraph(GraphDao.Updater updater) {
+        return graphDao.changeGraph(updater);
     }
 
 
@@ -129,32 +173,50 @@ public class GeneralDependencyBackend implements DependencyBackend {
 
                 modification.linkItem(childTaskId, arg.getTaskId());
 
-            } else if (arg.isObjectArray() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
+            } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals
+                    (argTypes[j])) { //should wait for all promises in collection to be ready
 
-                processWaitArray(modification, childTaskId, arg);
+                processWaitCollection(modification, childTaskId, arg);
+
             }
+
         }
 
-        if (taskOptionsContainer != null && taskOptionsContainer.getPromisesWaitFor() != null) {
-            ArgContainer[] promisesWaitForArgContainers = taskOptionsContainer.getPromisesWaitFor();
+        if (taskOptionsContainer == null) {
+            return;
+        }
 
-            for (ArgContainer argContainer : promisesWaitForArgContainers) {
-                if (argContainer.isReady()) {
-                    modification.linkItem(childTaskId, argContainer.getTaskId());
-                }
+        ArgContainer[] promisesWaitForArgContainers = taskOptionsContainer.getPromisesWaitFor();
+
+        if (promisesWaitForArgContainers == null) {
+            return;
+        }
+
+        for (ArgContainer argContainer : promisesWaitForArgContainers) {
+            if (argContainer.isReady()) {
+                modification.linkItem(childTaskId, argContainer.getTaskId());
             }
         }
     }
 
-    private void processWaitArray(Modification modification, UUID childTaskId, ArgContainer parentArg) {
-        ArgContainer[] innerValues = parentArg.getCompositeValue();
-        for (ArgContainer arg : innerValues) {
-            if (arg.isObjectArray()) {
-                processWaitArray(modification, childTaskId, arg);
-            } else if (arg.isPromise() && !arg.isReady()) {
-                modification.linkItem(childTaskId, arg.getTaskId());
+
+    private void processWaitCollection(Modification modification, UUID childTaskId, ArgContainer collectionArg) {
+        ArgContainer[] items = collectionArg.getCompositeValue();
+        for (ArgContainer item : items) {
+            if (item.isPromise() && !item.isReady()) {
+                modification.linkItem(childTaskId, item.getTaskId());
             }
         }
     }
 
+    @Override
+    public Collection<UUID> getProcessTasks(UUID processId) {
+        Graph graph = graphDao.getGraph(processId);
+
+        if (graph == null) {
+            return null;
+        }
+
+        return graph.getProcessTasks();
+    }
 }

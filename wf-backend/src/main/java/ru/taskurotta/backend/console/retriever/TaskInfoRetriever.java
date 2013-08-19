@@ -4,7 +4,7 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -14,14 +14,14 @@ import java.util.UUID;
  */
 public interface TaskInfoRetriever {
 
-    public TaskContainer getTask(UUID taskId);
+    public TaskContainer getTask(UUID taskId, UUID processId);
 
-    public List<TaskContainer> getProcessTasks(UUID processId);
+    public Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId);
 
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public DecisionContainer getTaskDecision(UUID taskId);
+    public DecisionContainer getDecision(UUID taskId, UUID processId);
 
-    public List<TaskContainer> getRepeatedTasks(int iterationCount);
+    public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
 
 }

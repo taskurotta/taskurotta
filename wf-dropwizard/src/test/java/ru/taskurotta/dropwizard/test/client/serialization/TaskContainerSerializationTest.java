@@ -8,7 +8,6 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 
 import java.io.File;
 
@@ -25,19 +24,19 @@ public class TaskContainerSerializationTest {
 
         TaskContainer original = EntitiesFactory.createTaskContainer();
 
-        TaskContainerWrapper resultWrapper = null;
+        TaskContainer result = null;
         try {
             File tmpJsonFile = tmpFolder.newFile();
-            jacksonMapper.writeValue(tmpJsonFile, new TaskContainerWrapper(original));
-            resultWrapper = jacksonMapper.readValue(tmpJsonFile, TaskContainerWrapper.class);
+            jacksonMapper.writeValue(tmpJsonFile, original);
+            result = jacksonMapper.readValue(tmpJsonFile, TaskContainer.class);
         } catch (Exception e) {
             logger.error("Exception at (de)serialization of TaskContainerWrapper to tmp File", e);
             Assert.fail("Exception at (de)serialization of TaskContainerWrapper to tmp File");
         }
 
-        Assert.assertNotNull(resultWrapper);
+        Assert.assertNotNull(result);
 
-        EntitiesComparator.compare(original, resultWrapper.getTaskContainer());
+        EntitiesComparator.compare(original, result);
     }
 
 }

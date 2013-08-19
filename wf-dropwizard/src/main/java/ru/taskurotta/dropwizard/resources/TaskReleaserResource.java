@@ -4,8 +4,8 @@ import com.yammer.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.dropwizard.TaskurottaResource;
-import ru.taskurotta.dropwizard.client.serialization.wrapper.DecisionContainerWrapper;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.transport.model.DecisionContainer;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -24,12 +24,12 @@ public class TaskReleaserResource {
 
     @POST
     @Timed
-    public Response release(DecisionContainerWrapper resultContainer) {
+    public Response release(DecisionContainer resultContainer) {
         logger.debug("release resource called with entity[{}]", resultContainer);
 
         try {
-            taskServer.release(resultContainer.getResultContainer());
-            logger.debug("Task successfully released, [{}]", resultContainer.getResultContainer());
+            taskServer.release(resultContainer);
+            logger.debug("Task successfully released, [{}]", resultContainer);
         } catch(Throwable e) {
             logger.error("Releasing of task["+resultContainer+"] failed!", e);
             return Response.serverError().build();

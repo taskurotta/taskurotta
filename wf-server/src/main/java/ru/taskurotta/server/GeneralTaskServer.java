@@ -7,6 +7,10 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.queue.TaskQueueItem;
+import ru.taskurotta.backend.snapshot.SnapshotService;
+import ru.taskurotta.backend.statistics.Metrics;
+import ru.taskurotta.backend.statistics.StaticMetrics;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
@@ -27,14 +31,40 @@ import java.util.UUID;
  */
 public class GeneralTaskServer implements TaskServer {
 
-    protected final static Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+
+    private static final Metrics.CheckPoint chpStartProcess = StaticMetrics.create("GeneralTaskServer.startProcess");
+    private static final Metrics.CheckPoint chpPoll = StaticMetrics.create("GeneralTaskServer.poll");
+    private static final Metrics.CheckPoint chpPoll_empty = StaticMetrics.create("GeneralTaskServer.poll_empty");
+    private static final Metrics.CheckPoint chpRelease = StaticMetrics.create("GeneralTaskServer.release");
+    private static final Metrics.CheckPoint chpProcessDecision_error = StaticMetrics.create("GeneralTaskServer" +
+            ".processDecision_error");
+    private static final Metrics.CheckPoint chpProcessDecision_fail = StaticMetrics.create("GeneralTaskServer" +
+            ".processDecision_fail");
+    private static final Metrics.CheckPoint chpProcessDecision_ok = StaticMetrics.create("GeneralTaskServer" +
+            ".processDecision_ok");
 
     protected ProcessBackend processBackend;
     protected TaskBackend taskBackend;
     protected QueueBackend queueBackend;
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
+    protected SnapshotService snapshotService;
 
+    /*
+     *  For tests ONLY
+     */
+    public GeneralTaskServer() {
+
+    }
+
+    public SnapshotService getSnapshotService() {
+        return snapshotService;
+    }
+
+    public void setSnapshotService(SnapshotService snapshotService) {
+        this.snapshotService = snapshotService;
+    }
 
     public GeneralTaskServer(BackendBundle backendBundle) {
         this.processBackend = backendBundle.getProcessBackend();
@@ -54,6 +84,8 @@ public class GeneralTaskServer implements TaskServer {
 
     @Override
     public void startProcess(TaskContainer task) {
+
+        long smt = System.currentTimeMillis();
 
         // some consistence check
         if (!task.getType().equals(TaskType.DECIDER_START)) {
@@ -79,65 +111,90 @@ public class GeneralTaskServer implements TaskServer {
 
 
         processBackend.startProcessCommit(task);
+
+        chpStartProcess.mark(smt);
     }
 
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
 
-        if (configBackend.isActorBlocked(ActorUtils.getActorId(actorDefinition))) {
-            // TODO: ? We should inform client about block. It should catch exception and try to sleep some time ?
-            // TODO: ? Or we should sleep 60 seconds as usual ?
-            return null;
+        long smt = System.currentTimeMillis();
+
+        String actorId = ActorUtils.getActorId(actorDefinition);
+
+        if (configBackend.isActorBlocked(actorId)) {
+            throw null;
         }
 
         // atomic statement
-        UUID taskId = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        if (tqi == null) {
 
-        if (taskId == null) {
+            chpPoll_empty.mark(smt);
             return null;
         }
 
         // idempotent statement
-        final TaskContainer taskContainer = taskBackend.getTaskToExecute(taskId);
+        TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
 
-        queueBackend.pollCommit(actorDefinition.getFullName(), taskId);
+        queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
+
+        chpPoll.mark(smt);
 
         return taskContainer;
     }
 
 
+    public DependencyBackend getDependencyBackend() {
+        return dependencyBackend;
+    }
+
     @Override
     public void release(DecisionContainer taskDecision) {
+
+        long smt = System.currentTimeMillis();
+
+        if (configBackend.isActorBlocked(taskDecision.getActorId())) {
+            return;
+        }
 
         // save it firstly
         taskBackend.addDecision(taskDecision);
         processDecision(taskDecision);
+
+        chpRelease.mark(smt);
     }
 
-    protected boolean processDecision(DecisionContainer taskDecision) {
-        boolean requireSnaphot = false;
+    /**
+     * @return true if snapshot processing required, false otherwise
+     */
+    public void processDecision(DecisionContainer taskDecision) {
+
+        logger.debug("Start processing task decision[{}]", taskDecision);
+
+        long smt = System.currentTimeMillis();
 
         UUID taskId = taskDecision.getTaskId();
+        UUID processId = taskDecision.getProcessId();
 
-        logger.debug("Start processing task decision[{}]", taskId);
 
         // if Error
         if (taskDecision.containsError()) {
-
             // enqueue task immediately if needed
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId);
+                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
                 enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
             }
 
             taskBackend.addDecisionCommit(taskDecision);
-            return requireSnaphot;
-        }
 
+            chpProcessDecision_error.mark(smt);
+            return;
+        }
 
         // idempotent statement
         DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
@@ -150,7 +207,9 @@ public class GeneralTaskServer implements TaskServer {
 
             // leave release() method.
             // RELEASE_TIMEOUT should be automatically fired
-            return requireSnaphot;
+
+            chpProcessDecision_fail.mark(smt);
+            return;
         }
 
         List<UUID> readyTasks = dependencyDecision.getReadyTasks();
@@ -160,32 +219,36 @@ public class GeneralTaskServer implements TaskServer {
             for (UUID taskId2Queue : readyTasks) {
 
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue);
+                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue, processId);
                 enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
             }
 
         }
 
         if (dependencyDecision.isProcessFinished()) {
-            processBackend.finishProcess(dependencyDecision.getFinishedProcessId(),
+            processBackend.finishProcess(processId,
                     dependencyDecision.getFinishedProcessValue());
-            requireSnaphot = true;
+            taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
         }
 
         taskBackend.addDecisionCommit(taskDecision);
 
+        processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);
 
-        return requireSnaphot;
+        chpProcessDecision_ok.mark(smt);
+    }
+
+    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
+        logger.debug("Snapshot processing initialized with taskDecision[{}], dependencyDecision[{}]", taskDecision, dependencyDecision);
+        //TODO: implement it
     }
 
     /**
      * Send task to the queue for processing
-     * @param taskId -
-     * @param processId -
-     * @param actorId -
+     *
      * @param startTime time to start delayed task. set to 0 to start it immediately
-     * @param taskList -
+     * @param taskList  -
      */
     protected void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
 
@@ -203,6 +266,6 @@ public class GeneralTaskServer implements TaskServer {
             }
         }
 
-        return  taskList;
+        return taskList;
     }
 }

@@ -10,6 +10,7 @@
 
     <div style="float: left;">
         <a class="btn btn-link" ng-click="update()">Refresh</a>
+        <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
     </div>
     <div style="float:right">
         <tsk-autorefresh update-action="update()"></tsk-autorefresh>
@@ -33,11 +34,11 @@
             <td>{{getStartIndex(queueTasksPage.pageNumber, queueTasksPage.pageSize)+$index}}</td>
 
             <td>
-                <a class="btn btn-link" style="cursor: pointer;" ng-href="#/tasks/task/{{queueItem.id}}">{{queueItem.id}}</a>
+                <a class="btn btn-link" style="cursor: pointer;" ng-href="#/tasks/task/{{queueItem.processId}}/{{queueItem.taskId}}">{{queueItem.taskId}}</a>
             </td>
             <td>{{queueItem.taskList}}</td>
             <td>{{queueItem.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
-            <td>{{queueItem.insertTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
+            <td>{{queueItem.enqueueTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
         </tr>
         </tbody>
 

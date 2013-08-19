@@ -30,7 +30,7 @@ public abstract class AbstractAspectProfiler {
             return result;
         } finally {
             String name = profiled.name().trim().length()>0? profiled.name(): getProfileName(pjp);
-            if(!(profiled.notNull() && result==null)) {
+            if (!(profiled.notNull() && result==null)) {
                 addData(name, System.currentTimeMillis() - start);
             }
         }

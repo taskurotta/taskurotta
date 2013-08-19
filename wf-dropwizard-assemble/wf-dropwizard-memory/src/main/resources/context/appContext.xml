@@ -5,7 +5,6 @@
        xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-
             http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
     <context:property-placeholder/>
@@ -76,15 +75,7 @@
     <bean id="dependencyBackend"
         class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
         <constructor-arg name="graphDao" ref="graphDao" />
-        <constructor-arg name="retryTimes" value="${retryTimes}" />
     </bean>
-
-    <!--<bean id="dependencyBackend"-->
-        <!--class="ru.taskurotta.backend.dependency.graph.GraphDependencyBackend">-->
-        <!--<property name="taskNodeDao">-->
-            <!--<bean class="ru.taskurotta.backend.dependency.graph.MemoryTaskNodeDao" />-->
-        <!--</property>-->
-    <!--</bean>-->
 
     <bean id="graphDao"
         class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />

@@ -6,7 +6,10 @@ import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Wait;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.recipes.wait.worker.WaitWorkerClient;
-import ru.taskurotta.test.FlowArbiter;
+import ru.taskurotta.test.flow.FlowArbiter;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Created by void 13.05.13 19:33
@@ -21,16 +24,16 @@ public class WaitDeciderImpl implements WaitDecider {
     @Override
     public void start() {
         arbiter.notify("start");
-        Promise<Integer> data[] = new Promise[3];
+        Collection<Promise<Integer>> data = new ArrayList();
         //data[0] = worker.prepare();
-        for (int i = 0; i < data.length; i++) {
-            data[i] = worker.generate();
+        for (int i = 0; i < 3; i++) {
+            data.add(worker.generate());
         }
         async.waitForStart(data);
     }
 
     @Asynchronous
-    public void waitForStart(@Wait Promise<Integer> data[]) {
+    public void waitForStart(@Wait Collection<Promise<Integer>> data) {
         arbiter.notify("waitFor");
         int result = 0;
         for (Promise<Integer> promise : data) {

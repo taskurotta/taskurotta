@@ -4,10 +4,12 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
+import ru.taskurotta.backend.queue.TaskQueueItem;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,17 +28,22 @@ public interface ConsoleManager {
     /**
      * @return list of all existing TaskContainers for a given process
      */
-    public List<TaskContainer> getProcessTasks(UUID processUuid);
+    public Collection<TaskContainer> getProcessTasks(UUID processUuid);
 
     /**
      * @return paginated view of a given queue content
      */
-    public GenericPage<QueuedTaskVO> getEnqueueTasks(String queueName, int pageNum, int pageSize);
+    public GenericPage<TaskQueueItem> getEnqueueTasks(String queueName, int pageNum, int pageSize);
 
     /**
      * @return TaskContainer for a given guid or null if task not found
      */
-    public TaskContainer getTask(UUID taskId);
+    public TaskContainer getTask(UUID taskId, UUID processId);
+
+    /**
+     * @return DecisionContainer for a given guid or null if decision not found
+     */
+    public DecisionContainer getDecision(UUID taskId, UUID processId);
 
     /**
      * @return process representation object for a given guid or null if process not found
@@ -52,7 +59,7 @@ public interface ConsoleManager {
 
     public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize);
 
-    public TaskTreeVO getTreeForTask(UUID taskUuid);
+    public TaskTreeVO getTreeForTask(UUID taskUuid, UUID processId);
 
     public TaskTreeVO getTreeForProcess(UUID processUuid);
 
@@ -60,6 +67,9 @@ public interface ConsoleManager {
 
     public List<QueueVO> getQueuesHovering(float periodSize);
 
-    public List<TaskContainer> getRepeatedTasks(int iterationCount);
+    public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
 
+    public void blockActor(String actorId);
+
+    public void unblockActor(String actorId);
 }

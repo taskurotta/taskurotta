@@ -1,6 +1,7 @@
 package ru.taskurotta.transport.model;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 
 /**
@@ -8,7 +9,7 @@ import java.io.StringWriter;
  * Date: 2/25/13
  * Time: 6:02 PM
  */
-public class ErrorContainer {
+public class ErrorContainer implements Serializable {
 
     private String className;
     private String message;
@@ -86,7 +87,7 @@ public class ErrorContainer {
                 "className='" + className + '\'' +
                 ", message='" + message + '\'' +
                 ", stackTrace='" + stackTrace + '\'' +
-                "} " + super.toString();
+                "} ";
     }
 
 }

@@ -6,8 +6,8 @@ import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.recipes.summator.ArbiterProfilerImpl;
 import ru.taskurotta.recipes.summator.worker.AddWorkerClient;
-import ru.taskurotta.test.FlowArbiterFactory;
-import ru.taskurotta.test.IncorrectFlowException;
+import ru.taskurotta.test.flow.FlowArbiterFactory;
+import ru.taskurotta.test.flow.IncorrectFlowException;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class SummatorDeciderImpl implements SummatorDecider {
         selfAsync.waitForResult(add(preResult));
 	}
 
-	private Promise<Integer> add(Promise<Integer> data[]) {
+	private Promise<Integer> add(Promise<Integer>[] data) {
 		if (data.length == 1) {
 			return data[0];
 		}

@@ -66,6 +66,6 @@ public class ActorSchedulingOptionsContainer {
                 "customId='" + customId + '\'' +
                 ", startTime=" + startTime +
                 ", taskList='" + taskList + '\'' +
-                "} " + super.toString();
+                "} ";
     }
 }

@@ -5,18 +5,21 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
-import ru.taskurotta.backend.console.model.QueuedTaskVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
+import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
+import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
+import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +37,8 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private CheckpointInfoRetriever checkpointInfo;
     private ProfileInfoRetriever profileInfo;
     private DecisionInfoRetriever decisionInfo;
-
+    private ConfigInfoRetriever configInfo;
+    private GraphInfoRetriever graphInfo;
 
     @Override
     public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
@@ -43,7 +47,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         }
         List<QueueVO> tmpResult = null;
         GenericPage<String> queuesPage = queueInfo.getQueueList(pageNumber, pageSize);
-        if (queuesPage != null) {
+        if (queuesPage != null && queuesPage.getItems()!=null) {
             tmpResult = new ArrayList<>();
             for (String queueName : queuesPage.getItems()) {
                 QueueVO queueVO = new QueueVO();
@@ -52,19 +56,19 @@ public class ConsoleManagerImpl implements ConsoleManager {
                 tmpResult.add(queueVO);
             }
         }
-        return new GenericPage<QueueVO>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
+        return new GenericPage<>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
     }
 
     @Override
-    public List<TaskContainer> getProcessTasks(UUID processUuid) {
+    public Collection<TaskContainer> getProcessTasks(UUID processId) {
         if (taskInfo == null) {
             return null;
         }
-        return taskInfo.getProcessTasks(processUuid);
+        return taskInfo.getProcessTasks(graphInfo.getProcessTasks(processId), processId);
     }
 
     @Override
-    public GenericPage<QueuedTaskVO> getEnqueueTasks(String queueName, int pageNum, int pageSize) {
+    public GenericPage<TaskQueueItem> getEnqueueTasks(String queueName, int pageNum, int pageSize) {
         if (queueInfo == null) {
             return null;
         }
@@ -72,11 +76,19 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public TaskContainer getTask(UUID taskId) {
+    public TaskContainer getTask(UUID taskId, UUID processId) {
         if (taskInfo == null) {
             return null;
         }
-        return taskInfo.getTask(taskId);
+        return taskInfo.getTask(taskId, processId);
+    }
+
+    @Override
+    public DecisionContainer getDecision(UUID taskId, UUID processId) {
+        if (taskInfo == null) {
+            return null;
+        }
+        return taskInfo.getDecision(taskId, processId);
     }
 
     @Override
@@ -112,18 +124,18 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public TaskTreeVO getTreeForTask(UUID taskId) {
+    public TaskTreeVO getTreeForTask(UUID taskId, UUID processId) {
         TaskTreeVO result = new TaskTreeVO(taskId);
-        TaskContainer task = taskInfo.getTask(taskId);
+        TaskContainer task = taskInfo.getTask(taskId, processId);
         if (task != null) {
             result.setDesc(task.getActorId() + " - " + task.getMethod());
         }
-        DecisionContainer decision = taskInfo.getTaskDecision(taskId);
+        DecisionContainer decision = taskInfo.getDecision(taskId, processId);
         if (decision != null && decision.getTasks() != null && decision.getTasks().length != 0) {
             TaskTreeVO[] childs = new TaskTreeVO[decision.getTasks().length];
             for (int i = 0; i < decision.getTasks().length; i++) {
                 TaskContainer childTask = decision.getTasks()[i];
-                TaskTreeVO childTree = getTreeForTask(childTask.getTaskId());
+                TaskTreeVO childTree = getTreeForTask(childTask.getTaskId(), processId);
                 childTree.setParent(taskId);
                 childTree.setDesc(childTask.getActorId() + " - " + childTask.getMethod());
                 childs[i] = childTree;
@@ -139,7 +151,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         TaskTreeVO result = null;
         ProcessVO process = processInfo.getProcess(processUuid);
         if (process != null && process.getStartTaskUuid() != null) {
-            result = getTreeForTask(process.getStartTaskUuid());
+            result = getTreeForTask(process.getStartTaskUuid(), processUuid);
         }
         return result;
     }
@@ -173,8 +185,17 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
 
     @Override
-    public List<TaskContainer> getRepeatedTasks(int iterationCount) {
+    public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {
         return taskInfo.getRepeatedTasks(iterationCount);
+    }
+
+    @Override
+    public void blockActor(String actorId) {
+        configInfo.blockActor(actorId);
+    }
+
+    public void unblockActor(String actorId) {
+        configInfo.unblockActor(actorId);
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {
@@ -199,5 +220,13 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     public void setDecisionInfo(DecisionInfoRetriever decisionInfo) {
         this.decisionInfo = decisionInfo;
+    }
+
+    public void setConfigInfo(ConfigInfoRetriever configInfo) {
+        this.configInfo = configInfo;
+    }
+
+    public void setGraphInfo(GraphInfoRetriever graphInfo) {
+        this.graphInfo = graphInfo;
     }
 }

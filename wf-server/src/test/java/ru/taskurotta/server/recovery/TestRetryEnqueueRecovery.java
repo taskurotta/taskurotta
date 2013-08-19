@@ -1,6 +1,7 @@
 package ru.taskurotta.server.recovery;
 
 import junit.framework.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ public class TestRetryEnqueueRecovery {
         performRecoveryCheck(recoveryFactory.getTaskServer(), recoveryFactory.getRecoveryProcess(TaskBackend.class), 1);
     }
 
+    @Ignore
     @Test
     public void testQueueBackendRecovery() {
         RecoveryFactory recoveryFactory = new RecoveryFactory(timeout, timeoutUnit);
@@ -73,7 +75,7 @@ public class TestRetryEnqueueRecovery {
 
         for(int i=0; i<times; i++) {
             TaskContainer polledTask = taskServer.poll(ActorUtils.getActorDefinition(actorId));
-            if(polledTask!=null) {
+            if (polledTask!=null) {
                 result.add(polledTask);
             }
         }

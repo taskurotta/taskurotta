@@ -1,1 +1,1 @@
-start java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 -jar target/wf-dropwizard-memory-0.1.0.jar server target/classes/TaskQueueConfig.yml
+start java -DassetsMode=dev -Ddw.http.port=8089 -Ddw.http.adminPort=8090 -jar target/wf-dropwizard-memory-0.2.0-SNAPSHOT.jar server src/main/resources/conf.yml

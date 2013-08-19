@@ -14,7 +14,7 @@ import java.util.UUID;
 @SuppressWarnings("UnusedDeclaration")
 public class ArgContainer implements Cloneable, Serializable {
     public enum ValueType {
-        PLAIN, PROMISE, ARRAY, OBJECT_ARRAY
+        PLAIN, ARRAY, COLLECTION
     }
 
     private String className;
@@ -23,23 +23,26 @@ public class ArgContainer implements Cloneable, Serializable {
     private String JSONValue;
     private ValueType type;
     private ArgContainer[] compositeValue;
+    private boolean promise = false;
 
     public ArgContainer() {
     }
 
-    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, String JSONValue) {
+    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, boolean promise, String JSONValue) {
         this.type = type;
         this.className = className;
         this.taskId = taskId;
         this.isReady = isReady;
+        this.promise = promise;
         this.JSONValue = JSONValue;
     }
 
-    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, ArgContainer[] values) {
+    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, boolean promise, ArgContainer[] values) {
         this.type = type;
         this.className = className;
         this.taskId = taskId;
         this.isReady = isReady;
+        this.promise = promise;
         this.compositeValue = values;
     }
 
@@ -50,19 +53,19 @@ public class ArgContainer implements Cloneable, Serializable {
         this.isReady = source.isReady;
         this.JSONValue = source.JSONValue;
         this.compositeValue = source.compositeValue;
+        this.promise = source.promise;
     }
 
     public String getClassName() {
         return className;
     }
 
-    private void setClassName(String className) {
+    public void setClassName(String className) {
         this.className = className;
     }
 
-    @JsonIgnore
     public boolean isPromise() {
-        return ValueType.PROMISE.equals(type);
+        return promise;
     }
 
     @JsonIgnore
@@ -71,26 +74,46 @@ public class ArgContainer implements Cloneable, Serializable {
     }
 
     @JsonIgnore
-    public boolean isObjectArray() {
-        return ValueType.OBJECT_ARRAY.equals(type);
+    public boolean isCollection() {
+        return ValueType.COLLECTION.equals(type);
+    }
+
+    @JsonIgnore
+    public boolean isPlain() {
+        return ValueType.PLAIN.equals(type);
     }
 
     public ValueType getType() {
         return type;
     }
 
-    private void setType(ValueType type) {
+    public void setType(ValueType type) {
         this.type = type;
     }
 
+    public void setPromise(boolean promise) {
+        this.promise = promise;
+    }
+
+//    /**
+//     * Create new ArgContainer as a copy of this and change its value type
+//     * @param type - new value type
+//     * @return created object
+//     */
+//    public ArgContainer updateType(ValueType type) {
+//        ArgContainer result = new ArgContainer(this);
+//        result.type = type;
+//        return result;
+//    }
+
     /**
      * Create new ArgContainer as a copy of this and change its value type
-     * @param type - new value type
+     * @param promise - new container type
      * @return created object
      */
-    public ArgContainer updateType(ValueType type) {
+    public ArgContainer updateType(boolean promise) {
         ArgContainer result = new ArgContainer(this);
-        result.type = type;
+        result.promise = promise;
         return result;
     }
 
@@ -98,7 +121,7 @@ public class ArgContainer implements Cloneable, Serializable {
         return taskId;
     }
 
-    private void setTaskId(UUID taskId) {
+    public void setTaskId(UUID taskId) {
         this.taskId = taskId;
     }
 
@@ -124,6 +147,8 @@ public class ArgContainer implements Cloneable, Serializable {
         result.JSONValue = source.JSONValue;
         result.compositeValue = source.compositeValue;
         result.isReady = source.isReady;
+        result.promise = source.promise;
+        result.type = source.type;
         return result;
     }
 
@@ -131,7 +156,7 @@ public class ArgContainer implements Cloneable, Serializable {
         return isReady;
     }
 
-    private void setReady(boolean ready) {
+    public void setReady(boolean ready) {
         isReady = ready;
     }
 
@@ -139,7 +164,7 @@ public class ArgContainer implements Cloneable, Serializable {
         return JSONValue;
     }
 
-    private void setJSONValue(String JSONValue) {
+    public void setJSONValue(String JSONValue) {
         this.JSONValue = JSONValue;
     }
 
@@ -147,7 +172,7 @@ public class ArgContainer implements Cloneable, Serializable {
         return compositeValue;
     }
 
-    private void setCompositeValue(ArgContainer[] compositeValue) {
+    public void setCompositeValue(ArgContainer[] compositeValue) {
         this.compositeValue = compositeValue;
     }
 
@@ -160,6 +185,7 @@ public class ArgContainer implements Cloneable, Serializable {
                 ", JSONValue='" + JSONValue + '\'' +
                 ", type=" + type +
                 ", compositeValue=" + Arrays.toString(compositeValue) +
-                '}';
+                ", promise=" + promise +
+                "} ";
     }
 }

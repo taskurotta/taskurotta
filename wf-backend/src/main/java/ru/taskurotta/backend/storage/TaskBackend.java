@@ -4,6 +4,7 @@ import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,19 +22,19 @@ public interface TaskBackend extends CheckpointServiceProvider {
      * All resolved promise arguments should be swapped to original value objects.
      * Task state should be changed to "process"
      *
-     * @param taskId
-     * @return
+     * @param taskId - ID of the task
+     * @return TaskContainer with the task
      */
-    public TaskContainer getTaskToExecute(UUID taskId);
+    public TaskContainer getTaskToExecute(UUID taskId, UUID processId);
 
 
     /**
      * Return task as it was registered
      *
-     * @param taskId
-     * @return
+     * @param taskId - ID of the task
+     * @return TaskContainer with the task
      */
-    public TaskContainer getTask(UUID taskId);
+    public TaskContainer getTask(UUID taskId, UUID processId);
 
 
     /**
@@ -63,9 +64,18 @@ public interface TaskBackend extends CheckpointServiceProvider {
     /**
      * Return all decisions for particular process in the right chronological order.
      *
-     * @param processId
-     * @return
+     * @param processId - ID of the process
+     * @return List of DecisionContainer with all decisions for particular process in the right chronological order.
      */
     public List<DecisionContainer> getAllTaskDecisions(UUID processId);
+
+    /**
+     * Clean up resources after process.
+     * Backend should avoid synchronous removing artifacts due to performance issues.
+     *
+     * @param processId - ID of the process
+     * @param finishedTaskIds - all task UUIDs of finished process
+     */
+    public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
 
 }

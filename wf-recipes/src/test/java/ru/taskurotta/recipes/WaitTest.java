@@ -3,8 +3,8 @@ package ru.taskurotta.recipes;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import org.junit.Test;
 import ru.taskurotta.bootstrap.Bootstrap;
-import ru.taskurotta.test.BasicFlowArbiter;
-import ru.taskurotta.test.FlowArbiterFactory;
+import ru.taskurotta.test.flow.BasicFlowArbiter;
+import ru.taskurotta.test.flow.FlowArbiterFactory;
 
 import java.io.IOException;
 

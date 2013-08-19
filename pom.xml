@@ -1,11 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: WF-seda parent module</name>
@@ -20,18 +19,20 @@
         <java.version>1.7</java.version>
 
         <slf4j.version>1.7.5</slf4j.version>
-        <spring.version>3.1.3.RELEASE</spring.version>
+        <spring.version>3.2.3.RELEASE</spring.version>
+        <spring-data-mongodb.version>1.2.3.RELEASE</spring-data-mongodb.version>
         <jackson.version>2.1.1</jackson.version>
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.2</aspectj.version>
+        <hazelcast.version>2.6</hazelcast.version>
+        <commons-dbcp.version>1.4</commons-dbcp.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
 
     <modules>
         <module>wf-core</module>
-        <module>wf-mongotest</module>
         <module>wf-bootstrap</module>
         <module>wf-client</module>
         <module>wf-example</module>
@@ -42,7 +43,10 @@
         <module>wf-dropwizard-assemble</module>
         <module>wf-backend</module>
         <module>wf-backend-ora</module>
+        <module>wf-backend-hz</module>
+        <module>wf-util</module>
         <module>wf-transport</module>
+        <module>wf-snapshot</module>
         <module>wf-test</module>
     </modules>
 
@@ -61,6 +65,24 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
             <distributionManagement>
                 <repository>
                     <id>internal-releases</id>
@@ -91,6 +113,12 @@
                 <version>${spring.version}</version>
             </dependency>
             <!-- /spring -->
+
+            <dependency>
+                <groupId>com.hazelcast</groupId>
+                <artifactId>hazelcast-all</artifactId>
+                <version>${hazelcast.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>cglib</groupId>
@@ -173,7 +201,11 @@
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
-
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>1.0</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -223,7 +255,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute/>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -236,7 +268,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute/>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>

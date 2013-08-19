@@ -12,58 +12,63 @@ import java.util.UUID;
 public class Checkpoint implements Serializable {
 
     /**
-     * Entity entityGuid
+     * TaskId owning this checkpoint
      */
-    private UUID entityGuid;
+    protected UUID taskId;
 
     /**
-     * Type of entity guid field references to
+     * ProcessId of a task owning this checkpoint
      */
-    private String entityType;
+    protected UUID processId;
+
+    /**
+     * Type of actor for task owning this checkpoint
+     */
+    protected String actorId;
 
     /**
      * Type of timeout for which checkpoint is set
      */
-    private TimeoutType timeoutType;
+    protected TimeoutType timeoutType;
 
     /**
      * Checkpoint time
      */
-    private long time;
+    protected long time;
 
-    public Checkpoint(TimeoutType timeoutType, UUID entityGuid, String entityType, long time) {
-        setEntityGuid(entityGuid);
+    public Checkpoint(TimeoutType timeoutType, UUID taskId, UUID processId, String actorId, long time) {
+        this.timeoutType = timeoutType;
+        this.taskId = taskId;
+        this.processId = processId;
+        this.actorId = actorId;
         this.time = time;
-        this.entityType = entityType;
-        setTimeoutType(timeoutType);
     }
 
     public Checkpoint() {
     }
 
-    public UUID getEntityGuid() {
-        return entityGuid;
-    }
-    public void setEntityGuid(UUID entityGuid) {
-        if (null == entityGuid) {
-            throw new IllegalArgumentException("Entity guid cannot be null");
-        }
-        this.entityGuid = entityGuid;
+    public UUID getTaskId() {
+        return taskId;
     }
 
-    public long getTime() {
-        return time;
-    }
-    public void setTime(long time) {
-        this.time = time;
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
     }
 
-    public String getEntityType() {
-        return entityType;
+    public UUID getProcessId() {
+        return processId;
     }
 
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
+    }
+
+    public String getActorId() {
+        return actorId;
+    }
+
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
     }
 
     public TimeoutType getTimeoutType() {
@@ -71,56 +76,52 @@ public class Checkpoint implements Serializable {
     }
 
     public void setTimeoutType(TimeoutType timeoutType) {
-        if (null == timeoutType) {
-            throw new IllegalArgumentException("TimeoutType cannot be null");
-        }
         this.timeoutType = timeoutType;
     }
 
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
     @Override
-    public String toString() {
-        return "Checkpoint [entityGuid=" + entityGuid + ", entityType=" + entityType
-                + ", timeoutType=" + timeoutType + ", time=" + time + "]";
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Checkpoint)) return false;
+
+        Checkpoint that = (Checkpoint) o;
+
+        if (time != that.time) return false;
+        if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
+        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (timeoutType != that.timeoutType) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((entityType == null) ? 0 : entityType.hashCode());
-        result = prime * result + ((entityGuid == null) ? 0 : entityGuid.hashCode());
-        result = prime * result + (int) (time ^ (time >>> 32));
-        result = prime * result
-                + ((timeoutType == null) ? 0 : timeoutType.hashCode());
+        int result = taskId != null ? taskId.hashCode() : 0;
+        result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (actorId != null ? actorId.hashCode() : 0);
+        result = 31 * result + (timeoutType != null ? timeoutType.hashCode() : 0);
+        result = 31 * result + (int) (time ^ (time >>> 32));
         return result;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Checkpoint other = (Checkpoint) obj;
-        if (entityType == null) {
-            if (other.entityType != null)
-                return false;
-        } else if (!entityType.equals(other.entityType))
-            return false;
-        if (entityGuid == null) {
-            if (other.entityGuid != null)
-                return false;
-        } else if (!entityGuid.equals(other.entityGuid))
-            return false;
-        if (time != other.time)
-            return false;
-        //noinspection RedundantIfStatement
-        if (timeoutType != other.timeoutType)
-            return false;
-        return true;
+    public String toString() {
+        return "Checkpoint{" +
+                "taskId=" + taskId +
+                ", processId=" + processId +
+                ", actorId='" + actorId + '\'' +
+                ", timeoutType=" + timeoutType +
+                ", time=" + time +
+                "} " + super.toString();
     }
 
 }

@@ -20,10 +20,10 @@ public class MemoryAspectProfiler extends AbstractAspectProfiler implements Prof
 
     public synchronized void addData(String profileName, long time) {
         ProfileVO profile = getProfile(profileName);
-        if(time > profile.getMax()) {
+        if (time > profile.getMax()) {
             profile.setMax(time);
         }
-        if(profile.getMin()==0 || time < profile.getMin()) {
+        if (profile.getMin()==0 || time < profile.getMin()) {
             profile.setMin(time);
         }
 
@@ -38,7 +38,7 @@ public class MemoryAspectProfiler extends AbstractAspectProfiler implements Prof
 
     public synchronized ProfileVO getProfile(String name) {
         ProfileVO result = profiles.get(name);
-        if(result == null) {
+        if (result == null) {
             result = new ProfileVO();
             result.setName(name);
             profiles.put(name, result);
@@ -49,7 +49,7 @@ public class MemoryAspectProfiler extends AbstractAspectProfiler implements Prof
 
     public synchronized List<ProfileVO> getProfileInfo() {
         List<ProfileVO> result = null;
-        if(!profiles.keySet().isEmpty()) {
+        if (!profiles.keySet().isEmpty()) {
             result = new ArrayList<>();
             result.addAll(profiles.values());
         }

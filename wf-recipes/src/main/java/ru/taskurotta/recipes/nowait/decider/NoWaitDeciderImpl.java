@@ -7,7 +7,7 @@ import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.recipes.nowait.workers.FastWorkerClient;
-import ru.taskurotta.test.FlowArbiter;
+import ru.taskurotta.test.flow.FlowArbiter;
 
 /**
  * Created by void 27.03.13 17:11
@@ -25,6 +25,7 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 		arbiter.notify("start");
 		Promise<Integer> pB = worker.taskB();
 		Promise<Integer> pC = worker.taskC();
+		Promise<Integer> pD = worker.taskD(pB);
 		Promise<Integer> pProcess = async.process(pB, pC);
 		async.finish(pProcess);
 	}

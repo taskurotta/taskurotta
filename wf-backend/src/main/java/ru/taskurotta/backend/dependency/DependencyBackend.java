@@ -1,8 +1,12 @@
 package ru.taskurotta.backend.dependency;
 
+import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.UUID;
 
 /**
  * User: romario
@@ -18,4 +22,8 @@ public interface DependencyBackend {
     public DependencyDecision applyDecision(DecisionContainer taskDecision);
 
     public void startProcess(TaskContainer task);
+
+    public Graph getGraph(UUID processId);
+
+    public boolean changeGraph(GraphDao.Updater updater);
 }

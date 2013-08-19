@@ -1,7 +1,13 @@
 <div>
     <table width="100%">
         <tr>
-            <td style="text-align: left;"><h3>Processes list</h3></td>
+            <td style="text-align: left;">
+                <h3>Processes list</h3>
+                <div style="float: left;">
+                    <a class="btn btn-link" ng-click="update()">Refresh</a>
+                    <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
+                </div>
+            </td>
             <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
         </tr>
     </table>
@@ -32,7 +38,7 @@
                    ng-href="#/processes/process/{{process.processUuid}}">{{process.processUuid}}</a>
             </td>
             <td>
-                <a ng-href="#/tasks/task/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
+                <a ng-href="#/tasks/task/{{process.processUuid}}/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
             </td>
             <td>
                 {{process.customId}}
@@ -48,6 +54,6 @@
         </tbody>
     </table>
 
-    <div>Total: <b>{{queuesPage.items.length}}</b> processes</div>
+    <div>Total: <b>{{processesPage.totalCount}}</b> processes</div>
 
 </div>

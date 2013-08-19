@@ -2,7 +2,6 @@ var consoleServices = angular.module("console.services", ['ngResource']);
 
 consoleServices.factory("$$data", function ($resource, $http) {
 
-    //TODO: use benefits(if there are any) of a $resource service?
     var resultService = {
         getQueueContent: function (queueName, pageNumber, pageSize) {
             return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
@@ -10,11 +9,11 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getQueueList: function (pageNumber, pageSize) {
             return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
-        getTask: function (taskId) {
-            return $http.get('/rest/console/task/' + encodeURIComponent(taskId));
+        getTask: function (taskId, processId) {
+            return $http.get('/rest/console/task/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         },
-        getTaskTree: function (taskId) {
-            return $http.get('/rest/console/tree/task/' + encodeURIComponent(taskId));
+        getTaskTree: function (taskId, processId) {
+            return $http.get('/rest/console/tree/task/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         },
         listTasks: function (pageNumber, pageSize) {
             return $http.get('/rest/console/tasks/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
@@ -25,8 +24,8 @@ consoleServices.factory("$$data", function ($resource, $http) {
         findProcess: function (searchType, id) {
             return $http.get('/rest/console/process/search?type=' + encodeURIComponent(searchType) + "&id=" + encodeURIComponent(id));
         },
-        getProcessTree: function (processId) {
-            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId));
+        getProcessTree: function (processId, startTaskId) {
+            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
         },
         getProcessesList: function (pageNumber, pageSize) {
             return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
@@ -42,6 +41,15 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getRepeatedTasks: function (iterationCount) {
             return $http.get('/rest/console/repeatedTasks/?iterationCount=' + iterationCount);
+        },
+        getTaskDecision: function(taskId, processId){
+            return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
+        },
+        blockActor: function(actorId){
+            return $http.post('/rest/console/actor/block/', actorId);
+        },
+        unblockActor: function(actorId){
+            return $http.post('/rest/console/actor/unblock/', actorId);
         }
     };
 

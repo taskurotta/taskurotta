@@ -104,12 +104,16 @@ public class MemoryCheckpointService implements CheckpointService {
                 result = result && checkpoint.getTime() < command.getMaxTime();
             }
 
-            if(command.getEntityType() != null) {
-                result = result && command.getEntityType().equals(checkpoint.getEntityType());
+            if (command.getActorId() != null) {
+                result = result && command.getActorId().equals(checkpoint.getActorId());
             }
 
-            if (command.getEntityGuid() != null) {
-                result = result && command.getEntityGuid().equals(checkpoint.getEntityGuid());
+            if (command.getTaskId() != null) {
+                result = result && command.getTaskId().equals(checkpoint.getTaskId());
+            }
+
+            if (command.getProcessId() != null) {
+                result = result && command.getProcessId().equals(checkpoint.getProcessId());
             }
         }
         return result;
@@ -138,14 +142,14 @@ public class MemoryCheckpointService implements CheckpointService {
     }
 
 
-    private List<Checkpoint> getCheckpoints(UUID uuid, TimeoutType timeoutType) {
+    private List<Checkpoint> getTaskCheckpoints(UUID taskId, TimeoutType timeoutType) {
         List<Checkpoint> result = new ArrayList<Checkpoint>();
         if (timeoutType != null) {
             Set<Checkpoint> set = getTypedSet(timeoutType, false);
             if (set != null) {
                 synchronized (set) {
                     for (Checkpoint item : set) {
-                        if (item.getEntityGuid().equals(uuid)) {
+                        if (item.getTaskId().equals(taskId)) {
                             result.add(item);
                         }
                     }
@@ -162,15 +166,15 @@ public class MemoryCheckpointService implements CheckpointService {
     }
 
     @Override
-    public int removeEntityCheckpoints(UUID uuid, TimeoutType timeoutType) {
-        logger.debug("before remove all {} checkpoints for {}", timeoutType, uuid);
+    public int removeTaskCheckpoints(UUID taskId, UUID processId, TimeoutType timeoutType) {
+        logger.debug("before remove all {} checkpoints for taskId {}", timeoutType, taskId);
         int result = 0;
-        List<Checkpoint> checkpoints = getCheckpoints(uuid, timeoutType);
+        List<Checkpoint> checkpoints = getTaskCheckpoints(taskId, timeoutType);
         if (checkpoints != null && !checkpoints.isEmpty()) {
             removeCheckpoints(timeoutType, checkpoints);
             result = checkpoints.size();
         }
-        logger.debug("removed {} checkpoints for {}", result, uuid);
+        logger.debug("removed {} checkpoints for taskId {}", result, taskId);
         return result;
     }
 

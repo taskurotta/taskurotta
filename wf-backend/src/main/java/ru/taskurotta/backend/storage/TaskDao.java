@@ -4,6 +4,7 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
  * Date: 09.04.13
  */
 public interface TaskDao {
-    TaskContainer getTask(UUID taskId);
+    TaskContainer getTask(UUID taskId, UUID processId);
 
     void addDecision(DecisionContainer taskDecision);
 
@@ -20,13 +21,15 @@ public interface TaskDao {
 
     void updateTask(TaskContainer taskContainer);
 
-    DecisionContainer getDecision(UUID taskId);
+    DecisionContainer getDecision(UUID taskId, UUID processId);
 
-    boolean isTaskReleased(UUID taskId);
-
-    List<TaskContainer> getProcessTasks(UUID processUuid);
+    boolean isTaskReleased(UUID taskId, UUID processId);
 
     GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public List<TaskContainer> getRepeatedTasks(int iterationCount);
+    List<TaskContainer> getRepeatedTasks(int iterationCount);
+
+    TaskContainer removeTask(UUID taskId, UUID processId);
+
+    void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds);
 }

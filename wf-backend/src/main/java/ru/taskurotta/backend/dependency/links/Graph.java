@@ -22,6 +22,7 @@ import java.util.UUID;
  * Date: 4/5/13
  * Time: 11:35 AM
  */
+@SuppressWarnings("UnusedDeclaration")
 public class Graph implements Serializable {
 
     private final static Logger logger = LoggerFactory.getLogger(Graph.class);
@@ -29,12 +30,14 @@ public class Graph implements Serializable {
     public static UUID[] EMPTY_ARRAY = new UUID[0];
 
     private int version = 0;
-    private UUID graphId;
+    private UUID graphId;       //should be equal to process ID
 
     /**
-     * Set of all not finished items in this process
+     * Map of all not finished items in this process and its time of start in milliseconds.
+     * It has 0 value if item is not started yet.
      */
-    private Set<UUID> notFinishedItems = new HashSet<>();
+    private Map<UUID, Long> notFinishedItems = new HashMap<>();
+
 
     /**
      * Key UUID is a waiting items and value is Set of ready but frozen.
@@ -47,6 +50,9 @@ public class Graph implements Serializable {
      */
     private Map<UUID, Set<UUID>> links = new HashMap<>();
 
+    //todo convention name
+    private Set<UUID> finishedItems = new HashSet<>();
+
 
     // modification stuff.
 
@@ -54,12 +60,29 @@ public class Graph implements Serializable {
     private UUID[] readyItems;
 
 
+    private long touchTimeMillis;
+    private long lastApplyTimeMillis;
+
+    /**
+     * generic constructor for deserializer
+     */
     public Graph() {
+        touchTimeMillis = System.currentTimeMillis();
+        lastApplyTimeMillis = 0;
     }
 
+    /**
+     * Create new graph
+     *
+     * @param graphId   - should be equal to process ID
+     * @param startItem - ID of the first task in process
+     */
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
-        notFinishedItems.add(startItem);
+        notFinishedItems.put(startItem, 0L);
+
+        touchTimeMillis = System.currentTimeMillis();
+        lastApplyTimeMillis = 0;
     }
 
 
@@ -99,10 +122,10 @@ public class Graph implements Serializable {
 
 
     public boolean hasNotFinishedItem(UUID itemId) {
-        return notFinishedItems.contains(itemId);
+        return notFinishedItems.containsKey(itemId);
     }
 
-    public Set<UUID> getNotFinishedItems() {
+    public Map<UUID, Long> getNotFinishedItems() {
         return notFinishedItems;
     }
 
@@ -118,7 +141,7 @@ public class Graph implements Serializable {
         this.version = version;
     }
 
-    public void setNotFinishedItems(Set<UUID> notFinishedItems) {
+    public void setNotFinishedItems(Map<UUID, Long> notFinishedItems) {
         this.notFinishedItems = notFinishedItems;
     }
 
@@ -148,15 +171,23 @@ public class Graph implements Serializable {
         return notFinishedItems.isEmpty();
     }
 
+    public Set<UUID> getFinishedItems() {
+        return finishedItems;
+    }
+
+    public void setFinishedItems(Set<UUID> finishedItems) {
+        this.finishedItems = finishedItems;
+    }
+
     /**
-     * Method calculates or returns previous calculated released items.
+     * Apply changes to the graph
      *
-     * @param modification
-     * @return
+     * @param modification - diff object to apply
      */
     public void apply(Modification modification) {
 
         logger.debug("apply() modification = [{}]", modification);
+        long smt = System.currentTimeMillis();
 
         this.modification = modification;
 
@@ -166,6 +197,7 @@ public class Graph implements Serializable {
 
         // remove finished item from set
         notFinishedItems.remove(finishedItem);
+        finishedItems.add(finishedItem);
 
         UUID waitForAfterRelease = modification.getWaitForAfterRelease();
 
@@ -178,7 +210,9 @@ public class Graph implements Serializable {
         if (newItems != null) {
 
             // add all new items to set
-            notFinishedItems.addAll(newItems);
+            for (UUID newItemId : newItems) {
+                notFinishedItems.put(newItemId, 0L);
+            }
         }
 
         // add all new links
@@ -191,7 +225,7 @@ public class Graph implements Serializable {
 
                     // prevent link to already finished item.
                     // it is possible case for @NoWait Promise which are used on deep child task
-                    if (!notFinishedItems.contains(newItemLink)) {
+                    if (!notFinishedItems.containsKey(newItemLink)) {
                         continue;
                     }
 
@@ -305,13 +339,34 @@ public class Graph implements Serializable {
         Set<UUID> frozenItemsSet = frozenReadyItems.remove(finishedItem);
         if (frozenItemsSet != null) {
 
-            if (readyItemsList == null) {
-                readyItemsList = new LinkedList<>();
+            // hide again this items to stash with new frozen dependency
+            if (waitForAfterRelease != null) {
+
+                logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
+
+                Set<UUID> newFrozenItemsSet = frozenReadyItems.get(waitForAfterRelease);
+
+                if (newFrozenItemsSet == null) {
+                    newFrozenItemsSet = new HashSet<>();
+                    frozenReadyItems.put(waitForAfterRelease, newFrozenItemsSet);
+                }
+
+                newFrozenItemsSet.addAll(frozenItemsSet);
+
+//                logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
+//
+//                frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
+            } else {
+
+
+                if (readyItemsList == null) {
+                    readyItemsList = new LinkedList<>();
+                }
+
+                logger.debug("apply() new frozen items [{}]", frozenItemsSet);
+
+                readyItemsList.addAll(frozenItemsSet);
             }
-
-            logger.debug("apply() new frozen items [{}]", frozenItemsSet);
-
-            readyItemsList.addAll(frozenItemsSet);
         }
 
 
@@ -320,7 +375,12 @@ public class Graph implements Serializable {
             readyItems = EMPTY_ARRAY;
         } else {
             readyItems = readyItemsList.toArray(new UUID[readyItemsList.size()]);
+            for (UUID readyItemsId : readyItems) {
+                notFinishedItems.put(readyItemsId, smt);
+            }
         }
+
+        touchTimeMillis = lastApplyTimeMillis = smt;
 
     }
 
@@ -342,16 +402,51 @@ public class Graph implements Serializable {
     public boolean isTaskWaitOtherTasks(UUID taskId, int taskQuantity) {
         Set<UUID> waitForTasks = links.get(taskId);
 
+        logger.debug("waitForTasks = " + waitForTasks);
+
         if (waitForTasks == null) {
             return false;
         }
 
+        //noinspection SimplifiableIfStatement
         if (taskQuantity == -1 && !waitForTasks.isEmpty()) {
             return true;
         }
 
         return waitForTasks.size() == taskQuantity;
     }
+
+    public void clearFinishedItems() {
+        finishedItems.clear();
+    }
+
+    /**
+     * Method for creating copy of the graph
+     *
+     * @return copy of the current graph
+     */
+    public Graph copy() {
+        final Graph copy = new Graph();
+        copy.setGraphId(graphId);
+        copy.setLinks(copyMapUuidWithSetOfUuid(links));
+        copy.setNotFinishedItems(new HashMap<>(notFinishedItems));
+        copy.setFrozenReadyItems(copyMapUuidWithSetOfUuid(frozenReadyItems));
+        copy.setFinishedItems(new HashSet<>(finishedItems));
+        copy.setVersion(version);
+        copy.setTouchTimeMillis(touchTimeMillis);
+        copy.setLastApplyTimeMillis(lastApplyTimeMillis);
+        return copy;
+    }
+
+    private static Map<UUID, Set<UUID>> copyMapUuidWithSetOfUuid(Map<UUID, Set<UUID>> original) {
+        final Map<UUID, Set<UUID>> copy = new HashMap<>();
+        for (Map.Entry<UUID, Set<UUID>> entry : original.entrySet()) {
+            Set<UUID> copyOfSet = new HashSet<>(entry.getValue());
+            copy.put(entry.getKey(), copyOfSet);
+        }
+        return copy;
+    }
+
 
     @Override
     public String toString() {
@@ -361,10 +456,38 @@ public class Graph implements Serializable {
                 ", notFinishedItems=" + notFinishedItems +
                 ", frozenReadyItems=" + frozenReadyItems +
                 ", links=" + links +
+                ", finishedItems=" + finishedItems +
                 ", modification=" + modification +
-                ", readyItems=" + (readyItems == null ? null : Arrays.asList(readyItems)) +
+                ", readyItems=" + Arrays.toString(readyItems) +
+                ", touchTimeMillis=" + touchTimeMillis +
+                ", lastApplyTimeMillis=" + lastApplyTimeMillis +
                 '}';
     }
 
+
+    public Collection<UUID> getProcessTasks() {
+        Collection<UUID> allProcessTasks = new HashSet<>();
+
+        allProcessTasks.addAll(notFinishedItems.keySet());
+        allProcessTasks.addAll(finishedItems);
+
+        return allProcessTasks;
+    }
+
+    public long getTouchTimeMillis() {
+        return touchTimeMillis;
+    }
+
+    public void setTouchTimeMillis(long touchTimeMillis) {
+        this.touchTimeMillis = touchTimeMillis;
+    }
+
+    public long getLastApplyTimeMillis() {
+        return lastApplyTimeMillis;
+    }
+
+    public void setLastApplyTimeMillis(long lastApplyTimeMillis) {
+        this.lastApplyTimeMillis = lastApplyTimeMillis;
+    }
 }
 

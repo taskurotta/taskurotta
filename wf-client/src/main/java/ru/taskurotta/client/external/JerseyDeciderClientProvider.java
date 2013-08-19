@@ -14,7 +14,6 @@ import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskContainerWrapper;
 
 import javax.ws.rs.core.MediaType;
 import java.util.UUID;
@@ -73,7 +72,7 @@ public class JerseyDeciderClientProvider implements DeciderClientProvider {
             requestBuilder.type(MediaType.APPLICATION_JSON);
             requestBuilder.accept(MediaType.APPLICATION_JSON);
 
-            String jsonValue = objectFactory.writeAsString(new TaskContainerWrapper(taskContainer));
+            String jsonValue = objectFactory.getPlainJson(taskContainer);
             requestBuilder.post(jsonValue);
             logger.debug("Send JSON [{}] to task server to resource [{}]", jsonValue, resource);
         } catch (UniformInterfaceException e) {

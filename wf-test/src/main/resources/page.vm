@@ -1,0 +1,84 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages: ["corechart"]});
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['$xTitle', '$yTitle'],
+                #foreach($mapEntry in $axisData.entrySet())
+                    ['$mapEntry.key', $mapEntry.value],
+                #end
+            ]);
+
+            var options = {
+                title: '$chartTitle',
+                hAxis: {
+                    title: '$xTitle'
+                }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+    <style type="text/css">
+        table.gridtable {
+            font-family: verdana, arial, sans-serif;
+            font-size: 14px;
+            width: 500px;
+            color: #333333;
+            border-width: 1px;
+            border-color: #666666;
+            border-collapse: collapse;
+        }
+
+        table.gridtable th {
+            border-width: 1px;
+            padding: 8px;
+            border-style: solid;
+            border-color: #666666;
+            background-color: #dedede;
+        }
+
+        table.gridtable td {
+            border-width: 1px;
+            padding: 8px;
+            border-style: solid;
+            border-color: #666666;
+            background-color: #ffffff;
+        }
+        .test-data{
+           margin-left: 100px;
+        }
+    </style>
+</head>
+<body>
+<div id="chart_div" style="width: 900px; height: 500px;"></div>
+
+<div class="test-data">
+    <h3>Test data</h3>
+    <table class="gridtable">
+        <thead>
+        <tr>
+            <th>
+                $xTitle
+            </th>
+            <th>
+                $yTitle
+            </th>
+        </tr>
+        </thead>
+    <tbody>
+        #foreach($mapEntry in $axisData.entrySet())
+        <tr>
+            <td>$mapEntry.key</td>
+            <td>$mapEntry.value</td>
+        </tr>
+        </tbody>
+        #end
+    </table>
+</div>
+</body>
+</html>

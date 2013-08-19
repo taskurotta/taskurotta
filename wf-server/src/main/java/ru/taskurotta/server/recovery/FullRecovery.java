@@ -57,7 +57,7 @@ public class FullRecovery {
 
             for (UUID taskToQueueId : tasksToQueueList) {
 
-                TaskContainer task2Queue = taskBackend.getTask(taskToQueueId);
+                TaskContainer task2Queue = taskBackend.getTask(taskToQueueId, taskContainer.getProcessId());
 
                 queueBackend.enqueueItem(task2Queue.getActorId(), taskToQueueId, task2Queue.getProcessId(),
                         task2Queue.getStartTime(), null); // This time may be shifted by RetryPolicy
