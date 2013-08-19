@@ -76,7 +76,7 @@ public class RecoveryTask implements Callable {
         }
 
         Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
-        if (taskContainers == null) {
+        if (taskContainers == null || taskContainers.isEmpty()) {
             logger.warn("For process [{}] not found task containers, restart process", processId);
 
             restartProcess(processId);
