@@ -6,11 +6,10 @@
 	<parent>
 		<groupId>ru.taskurotta</groupId>
 		<artifactId>ru.taskurotta</artifactId>
-		<version>0.2.0</version>
+		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>wf-core</artifactId>
-	<version>0.2.0</version>
 
 	<packaging>jar</packaging>
 	<name>Taskurotta :: WF core components</name>
