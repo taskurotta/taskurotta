@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
-import ru.taskurotta.backend.hz.Constants;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.statistics.Metrics;
 import ru.taskurotta.backend.statistics.StaticMetrics;
@@ -32,12 +31,11 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
 
     private static final Metrics.CheckPoint chpRelease = StaticMetrics.create("HazelcastTaskServer.release");
-    private static final Metrics.CheckPoint chpProcessDecision_async = StaticMetrics.create("HazelcastTaskServer" +
-            ".processDecision_async");
+    private static final Metrics.CheckPoint chpProcessDecision_async = StaticMetrics.create("HazelcastTaskServer.processDecision_async");
 
     protected HazelcastInstance hzInstance;
 
-    protected String executorServiceName = Constants.DEFAULT_EXECUTOR_SERVICE_NAME;
+    protected String executorServiceName = "decisionProcessingExecutorService";
 
     protected static HazelcastTaskServer instance;
     protected static final Object instanceMonitor = 0;
