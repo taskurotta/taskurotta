@@ -117,6 +117,7 @@
 
         <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
         <property name="hzQueueConfigSupport" ref="queueConfigSupport" />
+        <property name="mongoTemplate" ref="mongoTemplate" />
     </bean>
 
 

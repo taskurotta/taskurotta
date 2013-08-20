@@ -18,14 +18,14 @@ public class TaskCreator implements ApplicationListener<ContextRefreshedEvent> {
     private ClientServiceManager clientServiceManager;
 
     private int count;
-
+    private long startDelay;
 
     public void createStartTask(MultiplierDeciderClient deciderClient) {
         log.info("warming up task launcher...");
-        long startTime = System.currentTimeMillis() + 1200000;
+        long startTime = System.currentTimeMillis() + startDelay;
         ActorSchedulingOptions actorSchedulingOptions = new ActorSchedulingOptionsImpl();
         for (int i = 0; i < count; i++) {
-            for (int j = 0; j < 1000; j++) {
+            for (int j = 0; j < 1; j++) {
                 int a = (int)(Math.random() * 100);
                 int b = (int)(Math.random() * 100);
                 actorSchedulingOptions.setStartTime(startTime);
@@ -41,6 +41,10 @@ public class TaskCreator implements ApplicationListener<ContextRefreshedEvent> {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public void setStartDelay(long startDelay) {
+        this.startDelay = startDelay;
     }
 
     @Override

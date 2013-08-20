@@ -9,6 +9,9 @@ import com.hazelcast.query.Predicate;
 import com.hazelcast.query.PredicateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
@@ -57,6 +60,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private volatile AtomicInteger updateQueueActivityCounter = new AtomicInteger(0);
     private volatile AtomicLong lastUpdateQueueActivity = new AtomicLong(System.currentTimeMillis());
+
+    private MongoTemplate mongoTemplate;
 
     public void setHzQueueConfigSupport(HzQueueSpringConfigSupport hzQueueConfigSupport) {
         this.hzQueueConfigSupport = hzQueueConfigSupport;
@@ -182,10 +187,10 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         synchronized (hzQueues) {
             queue = hzQueues.get(queueName);
-            if(queue!=null) {
+            if (queue != null) {
                 return queue;
             }
-            if(hzQueueConfigSupport!=null) {
+            if (hzQueueConfigSupport != null) {
                 hzQueueConfigSupport.createQueueConfig(queueName);
             } else {
                 logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzQueueBackend, queues are not persistent!");
@@ -212,16 +217,17 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         }
         synchronized (hzDelayedQueues) {
             map = hzDelayedQueues.get(queueName);
-            if(map!=null) {
+            if (map != null) {
                 return map;
             }
-            if(hzQueueConfigSupport!=null) {
+            if (hzQueueConfigSupport != null) {
                 hzQueueConfigSupport.createMapConfig(queueName);
             } else {
                 logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzQueueBackend, delayed queues are not persistent!");
             }
 
             map = hazelcastInstance.getMap(queueName);
+            map.addIndex("startTime", true);
             hzDelayedQueues.put(queueName, map);
         }
 
@@ -320,20 +326,28 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
                 Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
                 Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
 
-                if(readyItems.isEmpty()) {
-                    logger.debug("No ready tasks found");
-                    return;
-                }
-
                 if (logger.isDebugEnabled()) {
                     long endTime = System.nanoTime();
-                    logger.debug("spent time (search): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName, waitingItems.size());
+                    logger.debug("search time (in memory): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName, waitingItems.size());
                 }
 
                 for (TaskQueueItem next : readyItems) {
                     queue.add(next);
                     waitingItems.remove(next.getTaskId());
                 }
+
+                List<TaskQueueItem> readyItemList = mongoTemplate.find(Query.query(Criteria.where("startTime").lt(System.currentTimeMillis())), TaskQueueItem.class, mapName);
+
+                if (logger.isDebugEnabled()) {
+                    long endTime = System.nanoTime();
+                    logger.debug("search time (in mongo): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName, waitingItems.size());
+                }
+
+                for (TaskQueueItem next : readyItemList) {
+                    queue.add(next);
+                    waitingItems.remove(next.getTaskId());
+                }
+
             }
             long endTime = System.nanoTime();
 
@@ -355,5 +369,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     public void setPollActivityPeriod(long pollActivityPeriod) {
         this.pollActivityPeriod = pollActivityPeriod;
+    }
+
+    public void setMongoTemplate(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
     }
 }
