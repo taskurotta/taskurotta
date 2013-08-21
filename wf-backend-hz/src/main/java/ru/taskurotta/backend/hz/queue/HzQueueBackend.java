@@ -58,8 +58,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private IMap<String, Long> queueActivityMap;
 
-    private volatile AtomicInteger updateQueueActivityCounter = new AtomicInteger(0);
-    private volatile AtomicLong lastUpdateQueueActivity = new AtomicLong(System.currentTimeMillis());
+    private AtomicInteger updateQueueActivityCounter = new AtomicInteger(0);
+    private AtomicLong lastUpdateQueueActivity = new AtomicLong(System.currentTimeMillis());
 
     private MongoTemplate mongoTemplate;
 
