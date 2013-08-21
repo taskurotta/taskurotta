@@ -322,25 +322,11 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
                 IMap<UUID, TaskQueueItem> waitingItems = getHzDelayedMap(mapName);
                 IQueue<TaskQueueItem> queue = getHzQueue(queueName);
 
-                EntryObject entryObject = new PredicateBuilder().getEntryObject();
-                Predicate predicate = entryObject.get("startTime").lessThan(System.currentTimeMillis());
-                Collection<TaskQueueItem> readyItems = waitingItems.values(predicate);
-
-                if (logger.isDebugEnabled()) {
-                    long endTime = System.nanoTime();
-                    logger.debug("search time (in memory): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName, waitingItems.size());
-                }
-
-                for (TaskQueueItem next : readyItems) {
-                    queue.add(next);
-                    waitingItems.remove(next.getTaskId());
-                }
-
                 List<TaskQueueItem> readyItemList = mongoTemplate.find(Query.query(Criteria.where("startTime").lt(System.currentTimeMillis())), TaskQueueItem.class, mapName);
 
                 if (logger.isDebugEnabled()) {
                     long endTime = System.nanoTime();
-                    logger.debug("search time (in mongo): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItems.size(), queueName, waitingItems.size());
+                    logger.debug("search time (in mongo): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f",(endTime - startTime) / 1e9), readyItemList.size(), queueName, waitingItems.size());
                 }
 
                 for (TaskQueueItem next : readyItemList) {
