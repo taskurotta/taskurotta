@@ -6,7 +6,6 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
 import ru.taskurotta.backend.dependency.links.GraphDao;
-import ru.taskurotta.backend.hz.checkpoint.CheckpointServiceImpl;
 import ru.taskurotta.backend.hz.config.HzConfigBackend;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;

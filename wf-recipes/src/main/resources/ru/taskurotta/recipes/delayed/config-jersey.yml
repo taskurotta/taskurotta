@@ -11,6 +11,7 @@ spreader:
         context: ru/taskurotta/recipes/delayed/SpreaderBeans-jersey.xml
         properties:
           count: 100
+          startDelay: 120000
           startTasks: true
           startTasksInBackground: false
           endpoint: "http://localhost:8811"
