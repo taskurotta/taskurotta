@@ -7,8 +7,10 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
@@ -34,16 +36,18 @@ public class RecoveryTask implements Callable {
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
+    private TaskBackend taskBackend;
     // time out between recovery process in milliseconds
     private long recoveryProcessTimeOut;
 
     private UUID processId;
 
-    public RecoveryTask(QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, long recoveryProcessTimeOut, UUID processId) {
+    public RecoveryTask(QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut, UUID processId) {
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
         this.processBackend = processBackend;
+        this.taskBackend = taskBackend;
         this.recoveryProcessTimeOut = recoveryProcessTimeOut;
         this.processId = processId;
     }
@@ -76,12 +80,20 @@ public class RecoveryTask implements Callable {
         }
 
         Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
-        if (taskContainers == null || taskContainers.isEmpty()) {
+        if (taskContainers == null) {
             logger.warn("For process [{}] not found task containers, restart process", processId);
 
             restartProcess(processId);
 
             return null;
+        }
+
+        if (taskContainers.isEmpty()) {
+            logger.warn("For process [{}] not found not finished tasks, replay process", processId);
+
+            taskContainers = replayProcess(processBackend.getStartTask(processId));
+
+            // ToDo (stukushin): if after replay process taskContainers is empty, than finish process
         }
 
         restartTasks(taskContainers);
@@ -168,5 +180,36 @@ public class RecoveryTask implements Callable {
         restartTasks(Arrays.asList(startTaskContainer));
 
         logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
+    }
+
+    private Collection<TaskContainer> replayProcess(final TaskContainer taskContainer) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("For process [{}] try to replay task [{}]", taskContainer.getProcessId(), taskContainer);
+        }
+
+        DecisionContainer decisionContainer = taskBackend.getDecision(taskContainer.getTaskId(), taskContainer.getProcessId());
+        if (logger.isTraceEnabled()) {
+            logger.trace("For process [{}], task [{}] get decision container [{}]", taskContainer.getProcessId(), taskContainer.getTaskId(), decisionContainer);
+        }
+
+        if (decisionContainer == null) {
+            return new ArrayList<TaskContainer>(){{add(taskContainer);}};
+        }
+
+        TaskContainer[] arrTaskContainers = decisionContainer.getTasks();
+        if (logger.isTraceEnabled()) {
+            logger.trace("For process [{}], decision [{}] get new [{}] tasks", taskContainer.getProcessId(), decisionContainer.getTaskId(), arrTaskContainers.length);
+        }
+
+        Collection<TaskContainer> taskContainers = new ArrayList<>();
+        for (TaskContainer tc : arrTaskContainers) {
+            taskContainers.addAll(replayProcess(tc));
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("For process [{}], task [{}] found [{}] child tasks", taskContainer.getProcessId(), taskContainer.getTaskId(), taskContainers.size());
+        }
+
+        return taskContainers;
     }
 }
