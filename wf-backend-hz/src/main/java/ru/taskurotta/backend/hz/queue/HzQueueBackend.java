@@ -158,11 +158,12 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             logger.debug("poll() returns taskId [{}]. Queue.size: {}", result, queue.size());
         }
 
-        if (queuePoolCountMap.get(queueName) > pollCountForUpdateLastActivity || (System.currentTimeMillis() - queueLastPoolMap.get(queueName)) > pollPeriodForUpdateLastActivity) {
+        int pollCount = queuePoolCountMap.get(queueName) + 1;
+        if (pollCount > pollCountForUpdateLastActivity || (System.currentTimeMillis() - queueLastPoolMap.get(queueName)) > pollPeriodForUpdateLastActivity) {
             queuePoolCountMap.put(queueName, 0);
             queueLastPoolMap.put(queueName, result == null ? System.currentTimeMillis() : result.getEnqueueTime());
         } else {
-            queuePoolCountMap.put(queueName, queuePoolCountMap.get(queueName) + 1);
+            queuePoolCountMap.put(queueName, pollCount);
         }
 
         return result;
