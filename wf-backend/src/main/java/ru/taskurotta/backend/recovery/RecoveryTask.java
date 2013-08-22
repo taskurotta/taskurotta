@@ -7,8 +7,10 @@ import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
@@ -34,6 +36,7 @@ public class RecoveryTask implements Callable {
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
+    private TaskBackend taskBackend;
     // time out between recovery process in milliseconds
     private long recoveryProcessTimeOut;
 
@@ -168,5 +171,40 @@ public class RecoveryTask implements Callable {
         restartTasks(Arrays.asList(startTaskContainer));
 
         logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
+    }
+
+    private Collection<TaskContainer> replayProcess(TaskContainer taskContainer) {
+        UUID processId = taskContainer.getProcessId();
+        UUID taskId = taskContainer.getTaskId();
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("For process [{}] try to replay task [{}]", taskContainer.getProcessId(), taskContainer);
+        }
+
+        Collection<TaskContainer> taskContainers = new ArrayList<>();
+
+        DecisionContainer decisionContainer = taskBackend.getDecision(taskId, processId);
+        if (logger.isTraceEnabled()) {
+            logger.trace("For process [{}], task [{}] get decision container [{}]", processId, taskId, decisionContainer);
+        }
+
+        if (decisionContainer == null) {
+            return new ArrayList<>();
+        }
+
+        TaskContainer[] arrTaskContainers = decisionContainer.getTasks();
+        if (logger.isTraceEnabled()) {
+            logger.trace("For process [{}], decision [{}] get new [{}] tasks", processId, decisionContainer.getTaskId(), arrTaskContainers.length);
+        }
+
+        for (TaskContainer tc : arrTaskContainers) {
+            taskContainers.addAll(replayProcess(tc));
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("For process [{}], task [{}] found [{}] child tasks", processId, taskId, taskContainers.size());
+        }
+
+        return taskContainers;
     }
 }

@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -53,13 +51,11 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private HzQueueSpringConfigSupport hzQueueConfigSupport;
 
-    private int pollActivityCount = 1000; // poll count between update queue activity
-    private long pollActivityPeriod = 60000; // period between update queue activity in milliseconds
+    private int pollCountForUpdateLastActivity = 1000; // polls count between update queue activity
+    private long pollPeriodForUpdateLastActivity = 60000; // period between polls for update queue activity in milliseconds
 
-    private IMap<String, Long> queueActivityMap;
-
-    private AtomicInteger updateQueueActivityCounter = new AtomicInteger(0);
-    private AtomicLong lastUpdateQueueActivity = new AtomicLong(System.currentTimeMillis());
+    private IMap<String, Long> queueLastPoolMap;
+    private IMap<String, Integer> queuePoolCountMap;
 
     private MongoTemplate mongoTemplate;
 
@@ -72,7 +68,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
 
-        this.queueActivityMap = hazelcastInstance.getMap("queueActivityMap");
+        this.queueLastPoolMap = hazelcastInstance.getMap("queueLastPoolMap");
+        this.queuePoolCountMap = hazelcastInstance.getMap("queuePoolCountMap");
 
         delayedTasksLock = hazelcastInstance.getLock(DELAYED_TASKS_LOCK);
     }
@@ -161,11 +158,11 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             logger.debug("poll() returns taskId [{}]. Queue.size: {}", result, queue.size());
         }
 
-        if (updateQueueActivityCounter.incrementAndGet() > pollActivityCount || (System.currentTimeMillis() - lastUpdateQueueActivity.get()) > pollActivityPeriod) {
-            updateQueueActivityCounter.set(0);
-            lastUpdateQueueActivity.set(System.currentTimeMillis());
-
-            queueActivityMap.put(queueName, result == null ? System.currentTimeMillis() : result.getEnqueueTime());
+        if (queuePoolCountMap.get(queueName) > pollCountForUpdateLastActivity || (System.currentTimeMillis() - queueLastPoolMap.get(queueName)) > pollPeriodForUpdateLastActivity) {
+            queuePoolCountMap.put(queueName, 0);
+            queueLastPoolMap.put(queueName, result == null ? System.currentTimeMillis() : result.getEnqueueTime());
+        } else {
+            queuePoolCountMap.put(queueName, queuePoolCountMap.get(queueName) + 1);
         }
 
         return result;
@@ -174,9 +171,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     /**
      * This is a cache proxy of hazelcastInstance.getQueue invocations
-     *
-     * @param queueName
-     * @return
      */
     private IQueue<TaskQueueItem> getHzQueue(String queueName) {
         IQueue<TaskQueueItem> queue = hzQueues.get(queueName);
@@ -205,9 +199,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     /**
      * This is a cache proxy of hazelcastInstance.getQueue invocations
-     *
-     * @param queueName
-     * @return
      */
     private IMap<UUID, TaskQueueItem> getHzDelayedMap(String queueName) {
         IMap<UUID, TaskQueueItem> map = hzDelayedQueues.get(queueName);
@@ -360,15 +351,15 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     public long getLastQueueActivity(String actorId, String taskList) {
-        return queueActivityMap.get(createQueueName(actorId, taskList));
+        return queueLastPoolMap.get(createQueueName(actorId, taskList));
     }
 
-    public void setPollActivityCount(int pollActivityCount) {
-        this.pollActivityCount = pollActivityCount;
+    public void setPollCountForUpdateLastActivity(int pollCountForUpdateLastActivity) {
+        this.pollCountForUpdateLastActivity = pollCountForUpdateLastActivity;
     }
 
-    public void setPollActivityPeriod(long pollActivityPeriod) {
-        this.pollActivityPeriod = pollActivityPeriod;
+    public void setPollPeriodForUpdateLastActivity(long pollPeriodForUpdateLastActivity) {
+        this.pollPeriodForUpdateLastActivity = pollPeriodForUpdateLastActivity;
     }
 
     public void setMongoTemplate(MongoTemplate mongoTemplate) {
