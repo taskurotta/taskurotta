@@ -9,6 +9,7 @@ import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.recovery.RecoveryBackend;
 import ru.taskurotta.backend.recovery.RecoveryTask;
 import ru.taskurotta.backend.storage.ProcessBackend;
+import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
 import java.util.UUID;
@@ -29,6 +30,7 @@ public class HzRecoveryBackend implements RecoveryBackend {
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
+    private TaskBackend taskBackend;
 
     private String analyzeProcessQueueName;
 
@@ -37,13 +39,14 @@ public class HzRecoveryBackend implements RecoveryBackend {
     // time out between recovery process in milliseconds
     private long recoveryProcessTimeOut = 600000;
 
-    public HzRecoveryBackend(HazelcastInstance hazelcastInstance, String analyzeProcessQueueName, QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend) {
+    public HzRecoveryBackend(HazelcastInstance hazelcastInstance, String analyzeProcessQueueName, QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend) {
         this.hazelcastInstance = hazelcastInstance;
         this.analyzeProcessQueueName = analyzeProcessQueueName;
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
         this.processBackend = processBackend;
+        this.taskBackend = taskBackend;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class HzRecoveryBackend implements RecoveryBackend {
 
         UUID processId = analyzeProcessQueue.poll();
         while (processId != null) {
-            executorService.submit(new RecoveryTask(queueBackend, dependencyBackend, taskDao, processBackend, recoveryProcessTimeOut, processId));
+            executorService.submit(new RecoveryTask(queueBackend, dependencyBackend, taskDao, processBackend, taskBackend, recoveryProcessTimeOut, processId));
 
             logger.debug("Submit new Recovery task for process [{}]", processId);
 
