@@ -15,8 +15,6 @@
     <name>Taskurotta :: Dropwizard transport modules assembler</name>
 
     <modules>
-        <module>wf-dropwizard-memory</module>
-        <module>wf-dropwizard-hz-poc</module>
         <module>wf-dropwizard-hz-oracle</module>
     </modules>
 

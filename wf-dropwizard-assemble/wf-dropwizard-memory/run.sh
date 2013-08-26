@@ -1,1 +1,0 @@
-java -DassetsMode=dev -Ddw.http.port=8811 -Ddw.http.adminPort=8090 -jar target/wf-dropwizard-memory-0.2.0-SNAPSHOT.jar server src/main/resources/conf.yml
