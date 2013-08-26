@@ -19,7 +19,7 @@ public class DArgTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DArgTest.class);
 
-    @Test
+//    @Test
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
         new Bootstrap("ru/taskurotta/recipes/darg/conf.yml").start();
 
