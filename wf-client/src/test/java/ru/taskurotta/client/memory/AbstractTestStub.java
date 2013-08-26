@@ -158,7 +158,7 @@ public class AbstractTestStub {
     }
 
     public void release(UUID taskAId, Object value, Task[] newTasks) {
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks);
+        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
         deciderTaskSpreader.release(taskADecision);

@@ -46,13 +46,18 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), new UndefinedActorException(key), RuntimeContext.getCurrent().getTasks());
             } else {
 
+                long startTime = System.currentTimeMillis();
+
                 Object value = targetReference.invoke(task.getArgs());
 
+                long executionTime = System.currentTimeMillis() - startTime;
+
                 Task[] tasks = RuntimeContext.getCurrent().getTasks();
-                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks);
+
+                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks, executionTime);
             }
         } catch(Throwable e) {
-            log.error("Unexpected error processing task ["+task+"]", e);
+            log.error("Unexpected error processing task [" + task + "]", e);
 
             assert targetReference != null;
             RetryPolicy retryPolicy = targetReference.getRetryPolicy();

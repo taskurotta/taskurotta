@@ -41,4 +41,6 @@ public interface TaskDecision {
     Throwable getException();
 
     long getRestartTime();
+
+    long getExecutionTime();
 }
