@@ -16,7 +16,7 @@ import ru.taskurotta.exception.server.ServerException;
  * Time: 19:29
  */
 public class ActorExecutor implements Runnable {
-    private final static Logger log = LoggerFactory.getLogger(ActorExecutor.class);
+    private final static Logger logger = LoggerFactory.getLogger(ActorExecutor.class);
 
     private Profiler profiler;
     private RuntimeProcessor runtimeProcessor;
@@ -33,7 +33,9 @@ public class ActorExecutor implements Runnable {
 
     @Override
     public void run() {
-        log.trace("Started executor thread [{}]", Thread.currentThread().getName());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Started executor thread [{}]", Thread.currentThread().getName());
+        }
 
         threadRun.set(Boolean.TRUE);
 
@@ -42,38 +44,49 @@ public class ActorExecutor implements Runnable {
             profiler.cycleStart();
 
             try {
-                log.trace("Thread [{}]: Poll", Thread.currentThread().getName());
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Thread [{}]: Poll", Thread.currentThread().getName());
+                }
                 Task task = taskSpreader.poll();
 
                 if (task == null) {
                     continue;
                 }
 
-                log.trace("Thread [{}]: execute task [{}]", Thread.currentThread().getName(), task);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Thread [{}]: try to execute task [{}]", Thread.currentThread().getName(), task);
+                }
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
-                log.trace("Thread [{}]: Release decision [{}] of task [{}]", Thread.currentThread().getName(), taskDecision, task);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Thread [{}]: try to release decision [{}] of task [{}]", Thread.currentThread().getName(), taskDecision, task);
+                }
                 taskSpreader.release(taskDecision);
+
             } catch (ServerConnectionException ex) {
-                log.error("Connection to task server error. {}: {}", ex.getCause().getClass(), ex.getMessage());
+                logger.error("Connection to task server error. {}: {}", ex.getCause().getClass(), ex.getMessage());
             } catch (ServerException ex) {
-                log.error("Error at client-server communication", ex);
+                logger.error("Error at client-server communication", ex);
             } catch (Throwable t) {
-                log.error("Unexpected actor execution error", t);
+                logger.error("Unexpected actor execution error", t);
             } finally {
                 profiler.cycleFinish();
             }
-
         }
 
-        log.trace("Exit executor thread [{}]", Thread.currentThread().getName());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Exit executor thread [{}]", Thread.currentThread().getName());
+        }
     }
 
     /**
      * stop current thread
      */
     void stopThread() {
-        log.trace("Set threadRun = false for thread [{}]", Thread.currentThread().getName());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Set threadRun = false for thread [{}]", Thread.currentThread().getName());
+        }
         threadRun.set(Boolean.FALSE);
     }
 
@@ -81,7 +94,7 @@ public class ActorExecutor implements Runnable {
      * stop all threads
      */
     void stopInstance() {
-        log.debug("Shutdown ActorExecutor");
+        logger.debug("Shutdown ActorExecutor");
         instanceRun = false;
     }
 }
