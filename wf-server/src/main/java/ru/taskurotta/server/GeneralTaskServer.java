@@ -21,7 +21,7 @@ import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -167,7 +167,7 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     /**
-     * @return true if snapshot processing required, false otherwise
+     *
      */
     public void processDecision(DecisionContainer taskDecision) {
 
@@ -212,7 +212,7 @@ public class GeneralTaskServer implements TaskServer {
             return;
         }
 
-        List<UUID> readyTasks = dependencyDecision.getReadyTasks();
+        Set<UUID> readyTasks = dependencyDecision.getReadyTasks();
 
         if (readyTasks != null) {
 

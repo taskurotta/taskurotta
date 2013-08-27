@@ -289,8 +289,8 @@ public class Graph implements Serializable {
                         readyItemsList = new LinkedList<>();
                     }
 
-                    logger.debug("apply() after remove [{}] this item has no dependencies and added to readyItemsList " +
-                            "[{}]", finishedItem, releaseCandidate);
+                    logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to readyItemsList " +
+                            "[{}]", finishedItem, releaseCandidate, readyItemsList);
 
                     readyItemsList.add(releaseCandidate);
                 }
@@ -307,7 +307,7 @@ public class Graph implements Serializable {
                         readyItemsList = new LinkedList<>();
                     }
 
-                    logger.debug("apply() new item [{}] has no links and added to  readyItemsList", newItem);
+                    logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
 
                     readyItemsList.add(newItem);
                 }

@@ -57,7 +57,7 @@ logback:
         - ru.taskurotta.server.json:
              key: name
              \@level: DEBUG
-        - ru.taskurotta.backend.storage:
+        - ru.taskurotta.backend:
              key: name
              \@level: DEBUG
         - ru.taskurotta.bootstrap.config:
