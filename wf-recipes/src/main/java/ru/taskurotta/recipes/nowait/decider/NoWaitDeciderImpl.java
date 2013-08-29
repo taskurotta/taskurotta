@@ -27,7 +27,7 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 		Promise<Integer> pC = worker.taskC();
 		Promise<Integer> pD = worker.taskD(pB);
 		Promise<Integer> pProcess = async.process(pB, pC);
-		async.finish(pProcess);
+		async.finish(pD, pProcess);
 	}
 
 	@Asynchronous
@@ -39,8 +39,8 @@ public class NoWaitDeciderImpl implements NoWaitDecider {
 	}
 
 	@Asynchronous
-	public void finish(Promise<Integer> p) {
-		log.info("finish: {}", p.get());
+	public void finish(Promise<Integer> pD, Promise<Integer> p) {
+		log.info("finish: taskD: {}, process: {}", pD.get(), p.get());
 		arbiter.notify("finish");
 	}
 

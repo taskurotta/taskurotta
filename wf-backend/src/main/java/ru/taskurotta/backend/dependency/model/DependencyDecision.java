@@ -49,7 +49,7 @@ public class DependencyDecision {
     }
 
     public DependencyDecision withReadyTasks(UUID[] taskIds) {
-        addReadyTasks(taskIds);
+		readyTasks = new HashSet<>(Arrays.asList(taskIds));
         return this;
     }
 

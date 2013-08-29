@@ -73,7 +73,12 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
 
             public boolean apply(Graph graph) {
 
-                if (!graph.hasNotFinishedItem(finishedTaskId)) {
+                if (null == graph) {
+					logger.warn("Can't find graph for process [{}].", processId);
+					return false; // ignore task decision and its tasks
+				}
+
+				if (!graph.hasNotFinishedItem(finishedTaskId)) {
                     logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
                     return false; // ignore task decision and its tasks
                 }
