@@ -45,7 +45,7 @@
                                 <argument>-DassetsMode=dev</argument>
                                 <argument>-Ddw.http.port=8811</argument>
                                 <argument>-Ddw.http.adminPort=8812</argument>
-                                <argument>-Ddw.logging.file.currentLogFilename="./target/logs/service1.log"</argument>
+                                <argument>-Ddw.logging.file.currentLogFilename=./target/logs/service1.log</argument>
                                 <argument>-jar</argument>
                                 <argument>target/${project.build.finalName}.jar</argument>
                                 <argument>server</argument>
