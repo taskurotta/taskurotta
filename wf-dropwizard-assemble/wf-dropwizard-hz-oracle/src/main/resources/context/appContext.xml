@@ -194,7 +194,8 @@
     </bean>
     <!-- /Recovery -->
 
-    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
+    <!-- Task server -->
+    <bean id="hzTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
@@ -204,6 +205,14 @@
         <property name="hzInstance" ref="hzInstance" />
         <property name="nodeCustomName" value="${node.custom.name}" />
     </bean>
+
+    <bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.JmxDataListener" />
+
+    <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">
+        <constructor-arg name="taskServer" ref="hzTaskServer"/>
+        <constructor-arg name="dataListener" ref="dataListener"/>
+    </bean>
+    <!-- /Task server -->
 
     <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">

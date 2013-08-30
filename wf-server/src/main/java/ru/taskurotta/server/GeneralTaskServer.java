@@ -9,8 +9,6 @@ import ru.taskurotta.backend.dependency.model.DependencyDecision;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.snapshot.SnapshotService;
-import ru.taskurotta.backend.statistics.Metrics;
-import ru.taskurotta.backend.statistics.StaticMetrics;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
@@ -32,17 +30,6 @@ import java.util.UUID;
 public class GeneralTaskServer implements TaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
-
-    private static final Metrics.CheckPoint chpStartProcess = StaticMetrics.create("GeneralTaskServer.startProcess");
-    private static final Metrics.CheckPoint chpPoll = StaticMetrics.create("GeneralTaskServer.poll");
-    private static final Metrics.CheckPoint chpPoll_empty = StaticMetrics.create("GeneralTaskServer.poll_empty");
-    private static final Metrics.CheckPoint chpRelease = StaticMetrics.create("GeneralTaskServer.release");
-    private static final Metrics.CheckPoint chpProcessDecision_error = StaticMetrics.create("GeneralTaskServer" +
-            ".processDecision_error");
-    private static final Metrics.CheckPoint chpProcessDecision_fail = StaticMetrics.create("GeneralTaskServer" +
-            ".processDecision_fail");
-    private static final Metrics.CheckPoint chpProcessDecision_ok = StaticMetrics.create("GeneralTaskServer" +
-            ".processDecision_ok");
 
     protected ProcessBackend processBackend;
     protected TaskBackend taskBackend;
@@ -85,8 +72,6 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public void startProcess(TaskContainer task) {
 
-        long smt = System.currentTimeMillis();
-
         // some consistence check
         if (!task.getType().equals(TaskType.DECIDER_START)) {
             // TODO: send error to client
@@ -109,17 +94,12 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
 
-
         processBackend.startProcessCommit(task);
-
-        chpStartProcess.mark(smt);
     }
 
 
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
-
-        long smt = System.currentTimeMillis();
 
         String actorId = ActorUtils.getActorId(actorDefinition);
 
@@ -130,8 +110,6 @@ public class GeneralTaskServer implements TaskServer {
         // atomic statement
         TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
         if (tqi == null) {
-
-            chpPoll_empty.mark(smt);
             return null;
         }
 
@@ -139,8 +117,6 @@ public class GeneralTaskServer implements TaskServer {
         TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
 
         queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
-
-        chpPoll.mark(smt);
 
         return taskContainer;
     }
@@ -153,8 +129,6 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public void release(DecisionContainer taskDecision) {
 
-        long smt = System.currentTimeMillis();
-
         if (configBackend.isActorBlocked(taskDecision.getActorId())) {
             return;
         }
@@ -162,8 +136,6 @@ public class GeneralTaskServer implements TaskServer {
         // save it firstly
         taskBackend.addDecision(taskDecision);
         processDecision(taskDecision);
-
-        chpRelease.mark(smt);
     }
 
     /**
@@ -173,11 +145,8 @@ public class GeneralTaskServer implements TaskServer {
 
         logger.debug("Start processing task decision[{}]", taskDecision);
 
-        long smt = System.currentTimeMillis();
-
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
-
 
         // if Error
         if (taskDecision.containsError()) {
@@ -192,7 +161,6 @@ public class GeneralTaskServer implements TaskServer {
 
             taskBackend.addDecisionCommit(taskDecision);
 
-            chpProcessDecision_error.mark(smt);
             return;
         }
 
@@ -207,8 +175,6 @@ public class GeneralTaskServer implements TaskServer {
 
             // leave release() method.
             // RELEASE_TIMEOUT should be automatically fired
-
-            chpProcessDecision_fail.mark(smt);
             return;
         }
 
@@ -235,8 +201,6 @@ public class GeneralTaskServer implements TaskServer {
 
         processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);
-
-        chpProcessDecision_ok.mark(smt);
     }
 
     protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {

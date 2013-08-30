@@ -54,17 +54,28 @@ public class ActorThreadPool {
      * @return boolean
      */
     public synchronized boolean mute() {
-        logger.trace("Try to stop actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Try to stop actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+        }
 
         if (activeActorExecutorThreadCount == 1) {
-            logger.debug("Only one active actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Only one active actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+            }
+
             return false;
         }
 
-        logger.trace("Stopping actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Stopping actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+        }
+
         actorExecutor.stopThread();
         activeActorExecutorThreadCount--;
-        logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount);
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount);
+        }
 
         return true;
     }
@@ -74,7 +85,10 @@ public class ActorThreadPool {
      */
     public synchronized void wake() {
         if (activeActorExecutorThreadCount == size) {
-            logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount);
+            if (logger.isTraceEnabled()) {
+                logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount);
+            }
+
             return;
         }
 
@@ -93,14 +107,19 @@ public class ActorThreadPool {
         }
 
         activeActorExecutorThreadCount = size;
-        logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount);
+        }
     }
 
     /**
      * Gracefully shutdown pool
      */
     public void shutdown() {
-        logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), SHUTDOWN_TIMEOUT / 1000);
+        if (logger.isInfoEnabled()) {
+            logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), SHUTDOWN_TIMEOUT / 1000);
+        }
 
         actorExecutor.stopInstance();
 
@@ -123,11 +142,16 @@ public class ActorThreadPool {
                 for (Thread thread : actorExecutorThreads) {
                     if (thread.isAlive()) {
                         if (System.currentTimeMillis() - startTime.get() >= SHUTDOWN_TIMEOUT) {
-                            logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
+                            if (logger.isWarnEnabled()) {
+                                logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
+                            }
+
                             return;
                         }
 
-                        logger.trace("Actor [{}]'s thread [{}] is alive, wait util thread dies", actorClass.getName(), thread.getName());
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Actor [{}]'s thread [{}] is alive, wait util thread dies", actorClass.getName(), thread.getName());
+                        }
 
                         TimeUnit.SECONDS.sleep(SLEEP_TIMEOUT);
                         hasAlive.set(Boolean.TRUE);
@@ -138,7 +162,9 @@ public class ActorThreadPool {
                 }
             }
 
-            logger.info("Successfully shutdown pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - startTime.get()) / 1000);
+            if (logger.isInfoEnabled()) {
+                logger.info("Successfully shutdown pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - startTime.get()) / 1000);
+            }
         } catch (InterruptedException e) {
             logger.error("Throw exception while try to gracefully shutdown actor [" + actorClass.getName() + "]", e);
             // just exit
@@ -155,6 +181,8 @@ public class ActorThreadPool {
         actorExecutorThreads[i] = thread;
         thread.start();
 
-        logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
+        if (logger.isTraceEnabled()) {
+            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
+        }
     }
 }

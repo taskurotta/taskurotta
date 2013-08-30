@@ -26,10 +26,8 @@ import ru.taskurotta.util.ActorUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -256,7 +254,7 @@ public class ObjectFactory {
             }
         }
 
-        DecisionContainer result = new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, actorId);
+        DecisionContainer result = new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, actorId, taskDecision.getExecutionTime());
         logger.debug("DECISION: dumpResult for taskDecision[{}] is [{}]", taskDecision, result);
         return result;
     }
@@ -288,10 +286,9 @@ public class ObjectFactory {
     }
 
     private ArgContainer[] parseCollectionValues(Object collection) {
-        List<ArgContainer> result = new ArrayList();
-        Iterator iterator = ((Collection)collection).iterator();
-        while(iterator.hasNext()) {
-            result.add(dumpArg(iterator.next()));
+        List<ArgContainer> result = new ArrayList<>();
+        for (Object o : ((Collection) collection)) {
+            result.add(dumpArg(o));
         }
         return result.toArray(new ArgContainer[result.size()]);
     }

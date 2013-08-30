@@ -21,13 +21,15 @@ public class TaskDecisionImpl implements TaskDecision {
     private Throwable exception;
     private boolean error;
     private long restartTime = NO_RESTART;
+    private long executionTime;
 
-	public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks) {
+	public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks, long executionTime) {
         this.uuid = uuid;
         this.processId = processId;
         this.value = value;
         this.tasks = tasks;
         this.error = false;
+        this.executionTime = executionTime;
 	}
 
     public TaskDecisionImpl(UUID uuid, UUID processId, Throwable exception, Task[] tasks) {
@@ -81,6 +83,11 @@ public class TaskDecisionImpl implements TaskDecision {
     }
 
     @Override
+    public long getExecutionTime() {
+        return executionTime;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -120,6 +127,7 @@ public class TaskDecisionImpl implements TaskDecision {
                 ", exception=" + exception +
                 ", error=" + error +
                 ", restartTime=" + restartTime +
-                '}';
+                ", executionTime=" + executionTime +
+                "} " + super.toString();
     }
 }
