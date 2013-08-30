@@ -4,9 +4,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.Instance;
-import com.hazelcast.query.EntryObject;
-import com.hazelcast.query.Predicate;
-import com.hazelcast.query.PredicateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,7 +18,6 @@ import ru.taskurotta.backend.queue.TaskQueueItem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -193,6 +189,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
             queue = hazelcastInstance.getQueue(queueName);//never null
             hzQueues.put(queueName, queue);
+
+            queuePoolCountMap.put(queueName, 0);
+            queueLastPoolMap.put(queueName, 0l);
         }
 
         return queue;

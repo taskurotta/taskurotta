@@ -18,11 +18,12 @@ public class DecisionContainer implements Serializable {
     private long restartTime;
     private TaskContainer[] tasks;
     private String actorId;
+    private long executionTime;
 
     public DecisionContainer() {
     }
 
-    public DecisionContainer(UUID taskId, UUID processId, ArgContainer value, ErrorContainer errorContainer, long restartTime, TaskContainer[] tasks, String actorId) {
+    public DecisionContainer(UUID taskId, UUID processId, ArgContainer value, ErrorContainer errorContainer, long restartTime, TaskContainer[] tasks, String actorId, long executionTime) {
         this.taskId = taskId;
         this.processId = processId;
         this.value = value;
@@ -30,6 +31,7 @@ public class DecisionContainer implements Serializable {
         this.restartTime = restartTime;
         this.tasks = tasks;
         this.actorId = actorId;
+        this.executionTime = executionTime;
     }
 
     public UUID getTaskId() {
@@ -64,6 +66,10 @@ public class DecisionContainer implements Serializable {
         return actorId;
     }
 
+    public long getExecutionTime() {
+        return executionTime;
+    }
+
     @Override
     public String toString() {
         return "DecisionContainer{" +
@@ -74,7 +80,8 @@ public class DecisionContainer implements Serializable {
                 ", restartTime=" + restartTime +
                 ", tasks=" + Arrays.toString(tasks) +
                 ", actorId='" + actorId + '\'' +
-                "} ";
+                ", executionTime=" + executionTime +
+                "} " + super.toString();
     }
 
     @Override
@@ -84,6 +91,7 @@ public class DecisionContainer implements Serializable {
 
         DecisionContainer that = (DecisionContainer) o;
 
+        if (executionTime != that.executionTime) return false;
         if (restartTime != that.restartTime) return false;
         if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
         if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
@@ -105,6 +113,7 @@ public class DecisionContainer implements Serializable {
         result = 31 * result + (int) (restartTime ^ (restartTime >>> 32));
         result = 31 * result + (tasks != null ? Arrays.hashCode(tasks) : 0);
         result = 31 * result + (actorId != null ? actorId.hashCode() : 0);
+        result = 31 * result + (int) (executionTime ^ (executionTime >>> 32));
         return result;
     }
 }

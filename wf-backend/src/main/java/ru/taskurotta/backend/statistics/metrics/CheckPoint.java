@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,20 +22,18 @@ import java.util.concurrent.Executors;
 public class CheckPoint {
 
     private String name;
-
     private DataListener dataListener;
 
     private long timeout = 1000; // 1 second
-    private long lastDumpTime = System.currentTimeMillis();
 
-    private final Map<String, Collection<Long>> marks = new ConcurrentHashMap<>();
+    private static final Map<String, Collection<Long>> marks = new ConcurrentHashMap<>();
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final Timer timer;
+    private final TimerTask dumpTimerTask;
 
-    public CheckPoint(String name, DataListener dataListener) {
-        this.name = name;
-        this.dataListener = dataListener;
-    }
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+    private static final Object monitor = new Object();
 
     class MarkTask implements Callable<Void> {
 
@@ -48,37 +47,40 @@ public class CheckPoint {
 
         @Override
         public Void call() throws Exception {
-            synchronized (marks) {
+
+            synchronized (monitor) {
                 Collection<Long> periods = marks.get(actorId);
 
                 if (periods == null) {
                     periods = new ArrayList<>();
-                    marks.put(actorId, periods);
                 }
 
                 periods.add(period);
-            }
 
-            dump();
+                marks.put(actorId, periods);
+            }
 
             return null;
         }
+    }
 
-        private void dump() {
-            if (System.currentTimeMillis() - lastDumpTime < timeout) {
-                return;
-            }
-
-            lastDumpTime = System.currentTimeMillis();
-
+    class DumpTimerTask extends TimerTask {
+        @Override
+        public void run() {
             Set<Map.Entry<String, Collection<Long>>> entries;
-            synchronized (marks) {
+
+            synchronized (monitor) {
+                if (marks.isEmpty()) {
+                    return;
+                }
+
                 entries = new HashSet<>(marks.entrySet());
+
                 marks.clear();
             }
 
             for (Map.Entry<String, Collection<Long>> entry : entries) {
-                dataListener.handle(name, entry.getKey(), getAverageValue(entry.getValue()), System.currentTimeMillis());
+                dataListener.handle(CheckPoint.class.getSimpleName(), name, entry.getKey(), getAverageValue(entry.getValue()), System.currentTimeMillis());
             }
         }
 
@@ -93,11 +95,25 @@ public class CheckPoint {
         }
     }
 
+    public CheckPoint(String name, DataListener dataListener) {
+        this.name = name;
+        this.dataListener = dataListener;
+
+        timer = new Timer("CheckPointDumper");
+        dumpTimerTask = new DumpTimerTask();
+        timer.schedule(dumpTimerTask, 0, timeout);
+    }
+
     public void mark(String actorId, long period) {
         executorService.submit(new MarkTask(actorId, period));
     }
 
     public void setTimeout(long timeout) {
         this.timeout = timeout;
+    }
+
+    public void shutdown() {
+        dumpTimerTask.cancel();
+        timer.cancel();
     }
 }

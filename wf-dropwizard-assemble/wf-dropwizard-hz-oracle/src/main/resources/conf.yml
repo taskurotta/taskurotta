@@ -37,6 +37,8 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
+        ru.taskurotta.backend.statistics.datalisteners: TRACE
+        ru.taskurotta.backend.statistics.metrics: TRACE
 #        ru.taskurotta.recovery: DEBUG
 #        ru.taskurotta.backend.recovery: DEBUG
 #        ru.taskurotta.backend.hz.support: DEBUG

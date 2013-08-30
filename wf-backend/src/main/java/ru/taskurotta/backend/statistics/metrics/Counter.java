@@ -1,9 +1,12 @@
 package ru.taskurotta.backend.statistics.metrics;
 
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
-import ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -17,17 +20,18 @@ import java.util.concurrent.Executors;
 public class Counter {
 
     private String name;
-
     private DataListener dataListener;
 
-    private long timeout = 60000; // 1 minute
-    private long lastDumpTime = System.currentTimeMillis();
+    private long timeout = 1000; // 1 second
 
-    private final Map<String, Long> marks = new ConcurrentHashMap<>();
+    private static final Map<String, Long> marks = new ConcurrentHashMap<>();
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final Timer timer;
+    private final TimerTask dumpTimerTask;
 
-    public static final String NO_NAME_ACTOR = "noNameActor";
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+    private static final Object monitor = new Object();
 
     class MarkTask implements Callable<Void> {
 
@@ -39,53 +43,62 @@ public class Counter {
 
         @Override
         public Void call() throws Exception {
-            synchronized (marks) {
+
+            synchronized (monitor) {
                 Long count = marks.get(actorId);
 
                 if (count == null) {
-                    marks.put(actorId, 1l);
-                } else {
-                    marks.put(actorId, count + 1);
+                    count = 0l;
                 }
 
-                dump();
+                marks.put(actorId, count + 1);
             }
 
             return null;
         }
+    }
 
-        private void dump() {
-            if (System.currentTimeMillis() - lastDumpTime < timeout) {
-                return;
-            }
+    class DumpTimerTask extends TimerTask {
 
-            synchronized (marks) {
-                for (Map.Entry<String, Long> entry : marks.entrySet()) {
-                    dataListener.handle(name, entry.getKey(), entry.getValue(), System.currentTimeMillis());
+        @Override
+        public void run() {
+            Set<Map.Entry<String, Long>> entries;
+
+            synchronized (monitor) {
+                if (marks.isEmpty()) {
+                    return;
                 }
 
-                marks.clear();
+                entries = new HashSet<>(marks.entrySet());
 
-                lastDumpTime = System.currentTimeMillis();
+                marks.clear();
+            }
+
+            for (Map.Entry<String, Long> entry : entries) {
+                dataListener.handle(Counter.class.getSimpleName(), name, entry.getKey(), entry.getValue(), System.currentTimeMillis());
             }
         }
     }
 
-    public Counter(String name) {
-        this.name = name;
-        this.dataListener = new LoggerDataListener();
-    }
-
-    public Counter(String name, DataListener dataListener) {
+    public Counter(final String name, final DataListener dataListener) {
         this.name = name;
         this.dataListener = dataListener;
+
+        timer = new Timer("CounterDumper");
+        dumpTimerTask = new DumpTimerTask();
+        timer.schedule(dumpTimerTask, 0, timeout);
     }
 
     public void mark(String actorId) {
         executorService.submit(new MarkTask(actorId));
     }
 
-    public void mark() {
-        mark(NO_NAME_ACTOR);
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    public void shutdown() {
+        dumpTimerTask.cancel();
+        timer.cancel();
     }
 }
