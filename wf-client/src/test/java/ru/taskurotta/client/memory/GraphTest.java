@@ -42,6 +42,7 @@ public class GraphTest extends AbstractTestStub {
         pollDeciderTask(null);
     }
 
+	@org.junit.Ignore
 	@Test
 	public void chainTasks() {
 		UUID taskIdA = UUID.randomUUID();
