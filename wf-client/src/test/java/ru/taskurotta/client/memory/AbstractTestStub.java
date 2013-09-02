@@ -26,9 +26,12 @@ import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * User: romario
@@ -145,14 +148,27 @@ public class AbstractTestStub {
         taskServer.startProcess(objectFactory.dumpTask(task));
     }
 
-    public Task pollDeciderTask(UUID expectedTaskId) {
+    public Task assertEmptyQueue() {
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
 
         Task polledTask = deciderTaskSpreader.poll();
 
         UUID polledTaskId = polledTask == null? null: polledTask.getId();
 
-        assertEquals(expectedTaskId, polledTaskId);
+        assertEquals(null, polledTaskId);
+
+        return polledTask;
+    }
+
+    public Task pollDeciderTask(UUID ... expectedTaskId) {
+        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
+
+        Task polledTask = deciderTaskSpreader.poll();
+
+        UUID polledTaskId = polledTask == null? null: polledTask.getId();
+
+		List taskIdList = Arrays.asList(expectedTaskId);
+		assertTrue(taskIdList.contains(polledTaskId));
 
         return polledTask;
     }

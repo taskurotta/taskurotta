@@ -135,6 +135,7 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
         modification.setCompletedItem(taskDecision.getTaskId());
 
         ArgContainer value = taskDecision.getValue();
+		logger.debug("createLinksModification for [{}] : value [{}]", taskDecision, value);
         if (value != null && value.isPromise() && !value.isReady()) {
             modification.setWaitForAfterRelease(value.getTaskId());
         }

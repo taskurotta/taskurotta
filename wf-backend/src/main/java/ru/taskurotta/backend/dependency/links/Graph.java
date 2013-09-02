@@ -278,8 +278,8 @@ public class Graph implements Serializable {
                         frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
                     }
 
-                    logger.debug("apply() after remove [{}] this item has no dependencies and will be frozen " +
-                            "[{}]", finishedItem, releaseCandidate);
+                    logger.debug("apply() after remove [{}] this item [{}] has no dependencies and will be frozen ",
+                            finishedItem, releaseCandidate);
 
                     frozenItemsSet.add(releaseCandidate);
 
@@ -289,8 +289,8 @@ public class Graph implements Serializable {
                         readyItemsList = new LinkedList<>();
                     }
 
-                    logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to readyItemsList " +
-                            "[{}]", finishedItem, releaseCandidate, readyItemsList);
+                    logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to " +
+                            "readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
 
                     readyItemsList.add(releaseCandidate);
                 }
