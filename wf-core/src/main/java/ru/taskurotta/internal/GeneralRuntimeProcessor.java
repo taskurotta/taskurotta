@@ -2,11 +2,13 @@ package ru.taskurotta.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.Environment;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.UndefinedActorException;
+import ru.taskurotta.exception.test.TestException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
@@ -56,7 +58,8 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
                 taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks, executionTime);
             }
-        } catch(Throwable e) {
+        } catch (Throwable e) {
+
             log.error("Unexpected error processing task [" + task + "]", e);
 
             assert targetReference != null;
@@ -74,7 +77,11 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             }
 
             taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), e, RuntimeContext.getCurrent().getTasks(), restartTime);
-
+            if (Environment.getInstance().getType() == Environment.Type.TEST) {
+                if (e.getCause() instanceof TestException){
+                    throw new RuntimeException(e);
+                }
+            }
         } finally {
             RuntimeContext.finish();
         }

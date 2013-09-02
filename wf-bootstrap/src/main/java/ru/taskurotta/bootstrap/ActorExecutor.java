@@ -2,6 +2,7 @@ package ru.taskurotta.bootstrap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.Environment;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -70,9 +71,13 @@ public class ActorExecutor implements Runnable {
                 logger.error("Error at client-server communication", ex);
             } catch (Throwable t) {
                 logger.error("Unexpected actor execution error", t);
+                if (Environment.getInstance().getType() == Environment.Type.TEST) {
+                    throw new RuntimeException(t);
+                }
             } finally {
                 profiler.cycleFinish();
             }
+
         }
 
         if (logger.isTraceEnabled()) {

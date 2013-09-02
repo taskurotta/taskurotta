@@ -176,12 +176,13 @@ public class MemoryGraphDao implements GraphDao {
 
             Graph graph = getGraph(processId);
 
-            if (updater.apply(graph)) {
-                if (updateGraph(graph)) {
-                    return true;
-                }
-            }
+            if (!updater.apply(graph)) {
+				break;
+			}
 
+			if (updateGraph(graph)) {
+				return true;
+			}
         }
 
         return false;  //To change body of implemented methods use File | Settings | File Templates.

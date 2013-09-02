@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,5 +18,45 @@
     <modules>
         <module>wf-dropwizard-hz-oracle</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>hz-mongo-oracle-env</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-Dcom.sun.management.jmxremote.port=9999</argument>
+                                <argument>-Dcom.sun.management.jmxremote.authenticate=false</argument>
+                                <argument>-Dcom.sun.management.jmxremote.ssl=false</argument>
+                                <argument>-Dts.node.custom.name="node1"</argument>
+                                <argument>-DassetsMode=dev</argument>
+                                <argument>-Ddw.http.port=8811</argument>
+                                <argument>-Ddw.http.adminPort=8812</argument>
+                                <argument>-Ddw.logging.file.currentLogFilename=./target/logs/service1.log</argument>
+                                <argument>-jar</argument>
+                                <argument>target/${project.build.finalName}.jar</argument>
+                                <argument>server</argument>
+                                <argument>src/main/resources/conf.yml</argument>
+                            </arguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 
 </project>

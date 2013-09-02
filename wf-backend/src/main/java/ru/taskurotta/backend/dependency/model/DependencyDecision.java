@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.dependency.model;
 
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 public class DependencyDecision {
 
-    private List<UUID> readyTasks;
+    private Set<UUID> readyTasks;
     private boolean isProcessFinished;
     private UUID finishedProcessId;
     private String finishedProcessValue;
@@ -28,7 +28,7 @@ public class DependencyDecision {
     public void addReadyTask(UUID taskId) {
 
         if (readyTasks == null) {
-            readyTasks = new LinkedList<UUID>();
+            readyTasks = new HashSet<>();
         }
 
         readyTasks.add(taskId);
@@ -37,7 +37,7 @@ public class DependencyDecision {
     public void addReadyTasks(UUID[] taskIds) {
 
         if (readyTasks == null) {
-            readyTasks = new LinkedList<UUID>();
+            readyTasks = new HashSet<>();
         }
 
         readyTasks.addAll(Arrays.asList(taskIds));
@@ -49,11 +49,11 @@ public class DependencyDecision {
     }
 
     public DependencyDecision withReadyTasks(UUID[] taskIds) {
-        addReadyTasks(taskIds);
+		readyTasks = new HashSet<>(Arrays.asList(taskIds));
         return this;
     }
 
-    public List<UUID> getReadyTasks() {
+    public Set<UUID> getReadyTasks() {
         return readyTasks;
     }
 
