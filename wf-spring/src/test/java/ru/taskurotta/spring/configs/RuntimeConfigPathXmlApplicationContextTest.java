@@ -26,7 +26,6 @@ public class RuntimeConfigPathXmlApplicationContextTest {
     }
 
     @Test
-    @Ignore
     public void testGetRuntimeProcessor() throws Exception {
         assertNotNull(runtimeConfigPathXmlApplicationContext.getRuntimeProcessor(TestActor.class));
     }
