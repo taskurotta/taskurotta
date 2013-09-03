@@ -20,7 +20,7 @@ properties:
   pollDelayUnit: "SECONDS"
   hz.mancenter.enabled: true
   hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
-  hz.nodes: localhost:7777,localhost:7778
+  hz.nodes: localhost:7777
   mongo.host: localhost
   mongo.port: 27017
   oradb.url: "jdbc:oracle:thin:@10.129.3.163:1531:testext"
@@ -33,8 +33,8 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
-        ru.taskurotta.backend.statistics.datalisteners: TRACE
-        ru.taskurotta.backend.statistics.metrics: TRACE
+#        ru.taskurotta.backend.statistics.datalisteners: TRACE
+#        ru.taskurotta.backend.statistics.metrics: TRACE
 #        ru.taskurotta.recovery: DEBUG
 #        ru.taskurotta.backend.recovery: DEBUG
 #        ru.taskurotta.backend.hz.support: DEBUG
