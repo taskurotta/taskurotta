@@ -66,6 +66,6 @@ public class TaskOptionsContainer implements Serializable {
                 "argTypes=" + Arrays.toString(argTypes) +
                 ", actorSchedulingOptions=" + actorSchedulingOptions +
                 ", promisesWaitFor=" + Arrays.toString(promisesWaitFor) +
-                "} " + super.toString();
+                "}";
     }
 }

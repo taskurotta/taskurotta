@@ -43,8 +43,8 @@ public class DArgDeciderImpl implements DArgDecider {
 
     @Asynchronous
     public void waitResultAndLogIt(Promise<String> resultValue, Promise<String> p1, Promise<String> p2, Promise<String> p3) {
-        arbiter.notify("waitResultAndLogIt");
-        logger.info("Result getted is [{}]", resultValue);
+		logger.info("Result getted is [{}], [{}], [{}], [{}]", resultValue, p1, p2, p3 );
+		arbiter.notify("waitResultAndLogIt");
     }
 
     @Asynchronous

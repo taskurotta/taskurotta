@@ -36,6 +36,17 @@ public class FastWorkerImpl implements FastWorker {
 		return 3;
 	}
 
+	@Override
+	public int slowTaskD() {
+		log.info("slowTaskD()");
+		arbiter.notify("taskD");
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) { //
+		}
+		return 4;
+	}
+
 	public void setArbiter(FlowArbiter arbiter) {
 		this.arbiter = arbiter;
 	}

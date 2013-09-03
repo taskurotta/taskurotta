@@ -10,4 +10,5 @@ public interface FastWorker {
 	public int taskB();
 	public int taskC();
 	public int taskD(int b);
+	public int slowTaskD();
 }

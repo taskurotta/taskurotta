@@ -32,11 +32,11 @@ public class MetricsTaskServer implements TaskServer {
     public MetricsTaskServer(TaskServer taskServer, DataListener dataListener) {
         this.taskServer = taskServer;
 
-        startProcessCheckPoint = MetricsManager.createTimer("startProcess", dataListener);
-        pollCheckPoint = MetricsManager.createTimer("poll", dataListener);
-        releaseCheckPoint = MetricsManager.createTimer("release", dataListener);
+        startProcessCheckPoint = MetricsManager.createCheckPoint("startProcess", dataListener);
+        pollCheckPoint = MetricsManager.createCheckPoint("poll", dataListener);
+        releaseCheckPoint = MetricsManager.createCheckPoint("release", dataListener);
 
-        taskExecutionTimeCheckPoint = MetricsManager.createTimer("executionTime", dataListener);
+        taskExecutionTimeCheckPoint = MetricsManager.createCheckPoint("executionTime", dataListener);
 
         startProcessCounter = MetricsManager.createCounter("startProcess", dataListener);
         pollCounter = MetricsManager.createCounter("poll", dataListener);
