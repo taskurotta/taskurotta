@@ -26,8 +26,6 @@ public class JmxDataListener implements DataListener {
 
     private static final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 
-    private static final Object monitor = new Object();
-
     private static final String domain = "ru.taskurotta.metrics";
 
     private static final String separator = "#";
@@ -102,7 +100,7 @@ public class JmxDataListener implements DataListener {
     @Override
     public void handle(String type, String name, String actorId, long value, long time) {
 
-        synchronized (monitor) {
+        synchronized (metricsMap) {
             String key = type + "#" + name + "#" + actorId;
 
             Metrics metrics = metricsMap.get(key);
@@ -135,11 +133,13 @@ public class JmxDataListener implements DataListener {
     }
 
     private ObjectName createName(String type, String name) {
+        String key = domain + "." + type;
+
         try {
-            return new ObjectName(domain + "." + type, "name", name);
+            return new ObjectName(key, "name", name);
         } catch (MalformedObjectNameException e) {
             try {
-                return new ObjectName(domain + "." + type, "name", ObjectName.quote(name));
+                return new ObjectName(key, "name", ObjectName.quote(name));
             } catch (MalformedObjectNameException e1) {
                 logger.warn("Unable to register [{}]", name, e1);
                 throw new RuntimeException(e1);

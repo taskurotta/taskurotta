@@ -27,6 +27,7 @@ public class MetricsTaskServer implements TaskServer {
     private static Counter startProcessCounter = null;
     private static Counter pollCounter = null;
     private static Counter releaseCounter = null;
+
     private static Counter errorDecisionCounter = null;
 
     public MetricsTaskServer(TaskServer taskServer, DataListener dataListener) {
@@ -48,13 +49,15 @@ public class MetricsTaskServer implements TaskServer {
     @Override
     public void startProcess(TaskContainer task) {
 
-        startProcessCounter.mark(task.getActorId());
+        String actorId = task.getActorId();
+
+        startProcessCounter.mark(actorId);
 
         long startTime = System.currentTimeMillis();
 
         taskServer.startProcess(task);
 
-        startProcessCheckPoint.mark(task.getActorId(), System.currentTimeMillis() - startTime);
+        startProcessCheckPoint.mark(actorId, System.currentTimeMillis() - startTime);
     }
 
     @Override
@@ -76,19 +79,21 @@ public class MetricsTaskServer implements TaskServer {
     @Override
     public void release(DecisionContainer taskResult) {
 
-        releaseCounter.mark(taskResult.getActorId());
+        String actorId = taskResult.getActorId();
+
+        releaseCounter.mark(actorId);
 
         if (taskResult.containsError()) {
-            errorDecisionCounter.mark(taskResult.getActorId());
+            errorDecisionCounter.mark(actorId);
         }
 
         long startTime = System.currentTimeMillis();
 
         taskServer.release(taskResult);
 
-        releaseCheckPoint.mark(taskResult.getActorId(), System.currentTimeMillis() - startTime);
+        releaseCheckPoint.mark(actorId, System.currentTimeMillis() - startTime);
 
-        taskExecutionTimeCheckPoint.mark(taskResult.getActorId(), taskResult.getExecutionTime());
+        taskExecutionTimeCheckPoint.mark(actorId, taskResult.getExecutionTime());
     }
 
     public void shutdown() {

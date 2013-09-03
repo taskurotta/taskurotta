@@ -33,8 +33,6 @@ public class CheckPoint {
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
-    private static final Object monitor = new Object();
-
     class MarkTask implements Callable<Void> {
 
         private String actorId;
@@ -48,7 +46,7 @@ public class CheckPoint {
         @Override
         public Void call() throws Exception {
 
-            synchronized (monitor) {
+            synchronized (marks) {
                 Collection<Long> periods = marks.get(actorId);
 
                 if (periods == null) {
@@ -69,7 +67,7 @@ public class CheckPoint {
         public void run() {
             Set<Map.Entry<String, Collection<Long>>> entries;
 
-            synchronized (monitor) {
+            synchronized (marks) {
                 if (marks.isEmpty()) {
                     return;
                 }
