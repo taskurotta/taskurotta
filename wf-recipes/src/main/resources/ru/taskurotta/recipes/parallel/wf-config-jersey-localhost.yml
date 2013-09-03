@@ -12,7 +12,7 @@ spreader:
         properties:
           cycles: 1000
           accuracy: 100000
-          endpoint: "http://localhost:8811"
+          endpoint: "http://localhost:8821"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000

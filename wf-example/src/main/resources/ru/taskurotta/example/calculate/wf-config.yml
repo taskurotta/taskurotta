@@ -19,7 +19,7 @@ spreader:
           count: 100
           startTasks: true
           startTasksInBackground: true
-          endpoint: "http://localhost:8821"
+          endpoint: "http://localhost:8811"
           threadPoolSize: 30
           readTimeout: 0
           connectTimeout: 3000
