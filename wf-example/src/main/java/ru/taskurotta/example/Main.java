@@ -1,9 +1,9 @@
 package ru.taskurotta.example;
 
+import java.io.IOException;
+
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import ru.taskurotta.bootstrap.Bootstrap;
-
-import java.io.IOException;
 
 /**
  * User: stukushin
@@ -13,7 +13,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
         if (args.length == 0) {
-            new Bootstrap("ru/taskurotta/example/calculate/wf-config.yml").start();
+            new Bootstrap("ru/taskurotta/example/calculate/wf-config-jersey.yml").start();
         } else {
             new Bootstrap(args).start();
         }

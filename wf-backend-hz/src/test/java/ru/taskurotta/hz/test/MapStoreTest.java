@@ -1,5 +1,7 @@
 package ru.taskurotta.hz.test;
 
+import java.util.UUID;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
@@ -15,8 +17,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.backend.hz.TaskKey;
 import ru.taskurotta.backend.queue.TaskQueueItem;
-
-import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -62,7 +62,7 @@ public class MapStoreTest {
         IMap<String, String> hzMap = hzInstance.getMap(testMapName);
         int size = 100;
 
-        for(int i = 0; i<size; i++) {
+        for (int i = 0; i < size; i++) {
             hzMap.put("key-" + i, "val-" + i);
         }
 
@@ -76,7 +76,7 @@ public class MapStoreTest {
         hzMap.remove("key-" + 11);
 
         Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
-        Assert.assertTrue("Mongo collection should be " + (size-2) + " length", mongoMap.count() == (size-2));
+        Assert.assertTrue("Mongo collection should be " + (size - 2) + " length", mongoMap.count() == (size - 2));
 
     }
 
@@ -85,7 +85,7 @@ public class MapStoreTest {
         String testMapName = PURE_EVICTION_MAP;
         IMap<String, String> hzMap = hzInstance.getMap(testMapName);
 
-        for(int i = 0; i<101; i++) {
+        for (int i = 0; i < 101; i++) {
             hzMap.put("key-" + i, "val-" + i);
             try {
                 Thread.sleep(1);//just in case to ensure LRU policy applied correctly
@@ -110,7 +110,7 @@ public class MapStoreTest {
 
         int size = 100;
 
-        for(int i = 0; i<(size+1); i++) {
+        for (int i = 0; i < (size + 1); i++) {
             hzMap.put("key-" + i, "val-" + i);
             try {
                 Thread.sleep(1);//just in case to ensure LRU policy applied correctly
@@ -122,24 +122,24 @@ public class MapStoreTest {
         DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
         logger.info("EVICTION WITH MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
 
-        int afterEvictionSize = size/2 + 1;//half was evicted and then one added
-        Assert.assertTrue("Hazelcast should have "+afterEvictionSize+" values, but has: " + hzMap.size(), hzMap.size()== afterEvictionSize);//on last iteration 50% should be evicted and then current +1 added
-        Assert.assertTrue("Mapstore should still contain all "+(size+1)+" values", mongoMap.count() == (size+1));
+        int afterEvictionSize = size / 2 + 1;//half was evicted and then one added
+        Assert.assertTrue("Hazelcast should have " + afterEvictionSize + " values, but has: " + hzMap.size(), hzMap.size() == afterEvictionSize);//on last iteration 50% should be evicted and then current +1 added
+        Assert.assertTrue("Mapstore should still contain all " + (size + 1) + " values", mongoMap.count() == (size + 1));
 
 
         //81 and 82 keys exist in mongo and HZ memory
         hzMap.remove("key-" + 81);
         hzMap.remove("key-" + 82);
 
-        int newSize = size-1;//2 values were deleted
-        Assert.assertTrue("Hazelcast should have "+(afterEvictionSize-2)+" values, but has: " + hzMap.size(), hzMap.size()== afterEvictionSize-2);
-        Assert.assertTrue("Mapstore should still contain all "+newSize+" values", mongoMap.count() == newSize);
+        int newSize = size - 1;//2 values were deleted
+        Assert.assertTrue("Hazelcast should have " + (afterEvictionSize - 2) + " values, but has: " + hzMap.size(), hzMap.size() == afterEvictionSize - 2);
+        Assert.assertTrue("Mapstore should still contain all " + newSize + " values", mongoMap.count() == newSize);
 
         //10 and 11 keys were evicted to mongo, so they exist only there
         hzMap.remove("key-" + 10);
         hzMap.remove("key-" + 11);
 
-        int newSize2 = size-3;//another 2 values were deleted
+        int newSize2 = size - 3;//another 2 values were deleted
         Assert.assertTrue("Hazelcast should have " + (afterEvictionSize - 2) + " values, but has: " + hzMap.size(), hzMap.size() == afterEvictionSize - 2);
         Assert.assertTrue("Mapstore should still contain all " + newSize2 + " values", mongoMap.count() == newSize2);
 
@@ -159,7 +159,7 @@ public class MapStoreTest {
         int size = 10;
         UUID processId = UUID.randomUUID();
 
-        for(int i = 0; i<size; i++) {
+        for (int i = 0; i < size; i++) {
             UUID taskId = UUID.randomUUID();
             hzMap.put(new TaskKey(processId, taskId), taskId);
         }
@@ -185,7 +185,7 @@ public class MapStoreTest {
         int size = 100;
         UUID processId = UUID.randomUUID();
 
-        for(int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             hzQueue.add(getRandomTaskQueueItem(processId));
         }
         logger.info("QUEUE MAPSTORE: max queueMap size is [{}]", hzMap.size());
@@ -194,12 +194,12 @@ public class MapStoreTest {
 
         hzQueue.add(getRandomTaskQueueItem(processId));//should trigger eviction
 
-        logger.info("QUEUE MAPSTORE: queueMap size after eviction is [{}], keyset size[{}]", hzMap.size(), hzMap.keySet().size());
+        logger.info("QUEUE MAPSTORE: queueMap size after eviction is [{}]", hzMap.size());
         logger.info("QUEUE MAPSTORE: queue size after eviction is [{}]", hzQueue.size());
         logger.info("QUEUE MAPSTORE: queueMap size after eviction(after call to hzQueue.size() ) is [{}]", hzMap.size());
         logger.info("QUEUE MAPSTORE: mongoDB size after eviction is [{}]", mongoMap.getCount());
 
-        for(int i = 0; i < size+1; i++) {
+        for (int i = 0; i < size + 1; i++) {
             TaskQueueItem tqi = hzQueue.poll();
         }
 

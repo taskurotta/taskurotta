@@ -1,9 +1,5 @@
 package ru.taskurotta.backend.dependency.links;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is not thread safe object. It should be synchronized with backend by version value.
@@ -80,9 +80,6 @@ public class Graph implements Serializable {
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
         notFinishedItems.put(startItem, 0L);
-
-        touchTimeMillis = System.currentTimeMillis();
-        lastApplyTimeMillis = 0;
     }
 
 

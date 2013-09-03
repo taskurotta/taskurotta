@@ -1,11 +1,5 @@
 package ru.taskurotta.recovery;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,6 +8,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
+import javax.sql.DataSource;
+
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: stukushin
@@ -39,7 +39,10 @@ public class ProcessAnalyzer {
     }
 
     public void init() {
-        logger.debug("Try to find incomplete processes");
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to find incomplete processes at {}", new Date());
+        }
 
         IQueue<UUID> analyzeProcessQueue = hazelcastInstance.getQueue(analyzeProcessQueueName);
 
@@ -60,7 +63,7 @@ public class ProcessAnalyzer {
         analyzeProcessQueue.addAll(processIds);
 
         if (logger.isInfoEnabled()) {
-            logger.info("Add [{}] process ids for analyze", processIds.size());
+            logger.info("Add [{}] process ids for analyze at {}", processIds.size(), new Date());
         }
     }
 
@@ -70,7 +73,7 @@ public class ProcessAnalyzer {
         long fromTime = System.currentTimeMillis();
 
         if (logger.isInfoEnabled()) {
-            logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
+            logger.info("Try to find incomplete processes, was started before [{}] ({})", fromTime, new Date(fromTime));
         }
 
         String query = "SELECT * FROM (SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";

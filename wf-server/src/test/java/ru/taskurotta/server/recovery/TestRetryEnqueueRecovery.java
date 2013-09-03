@@ -1,5 +1,10 @@
 package ru.taskurotta.server.recovery;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -12,11 +17,6 @@ import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class TestRetryEnqueueRecovery {
 
@@ -73,9 +73,9 @@ public class TestRetryEnqueueRecovery {
     private List<TaskContainer> pollForTasks(TaskServer taskServer, String actorId, int times) {
         List<TaskContainer> result = new ArrayList<TaskContainer>();
 
-        for(int i=0; i<times; i++) {
+        for (int i = 0; i < times; i++) {
             TaskContainer polledTask = taskServer.poll(ActorUtils.getActorDefinition(actorId));
-            if (polledTask!=null) {
+            if (polledTask != null) {
                 result.add(polledTask);
             }
         }
@@ -88,7 +88,7 @@ public class TestRetryEnqueueRecovery {
         try {
             Thread.sleep(sleepFor);
         } catch (InterruptedException e) {
-            logger.error("Thread sleep for["+sleepFor+"] interrupted!", e);
+            logger.error("Thread sleep for[" + sleepFor + "] interrupted!", e);
         }
     }
 

@@ -1,12 +1,5 @@
 package ru.taskurotta.recipes.multiplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import ru.taskurotta.client.ClientServiceManager;
-import ru.taskurotta.client.DeciderClientProvider;
-
 import java.io.Console;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -14,6 +7,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import ru.taskurotta.client.ClientServiceManager;
+import ru.taskurotta.client.DeciderClientProvider;
 
 /**
  * Created by void 09.07.13 19:35

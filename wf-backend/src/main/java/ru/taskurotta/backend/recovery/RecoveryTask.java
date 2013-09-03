@@ -1,6 +1,14 @@
 package ru.taskurotta.backend.recovery;
 
-import org.slf4j.Logger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -14,15 +22,6 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-
 /**
  * User: stukushin
  * Date: 15.08.13
@@ -30,7 +29,7 @@ import java.util.concurrent.Callable;
  */
 public class RecoveryTask implements Callable {
 
-    private static Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
+    private static org.slf4j.Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
 
     private QueueBackend queueBackend;
     private DependencyBackend dependencyBackend;
@@ -193,7 +192,9 @@ public class RecoveryTask implements Callable {
         }
 
         if (decisionContainer == null) {
-            return new ArrayList<TaskContainer>(){{add(taskContainer);}};
+            return new ArrayList<TaskContainer>() {{
+                add(taskContainer);
+            }};
         }
 
         TaskContainer[] arrTaskContainers = decisionContainer.getTasks();

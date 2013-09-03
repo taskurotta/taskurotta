@@ -132,10 +132,10 @@ consoleDirectives.directive('tskTree', ['$compile', function ($compile) {
             childrenExpr = repeatExpr[2];
             tElement.attr('ng-repeat', childExpr + ' in ' + childExpr + '.' + childrenExpr);
 
-            return function link (scope, element) {
+            return function link(scope, element) {
 
                 scope.$depth = scope.$depth || 0;
-                scope.$watch(childExpr, function(child) {
+                scope.$watch(childExpr, function (child) {
 
                     var childScope = scope.$new();
 
@@ -165,7 +165,7 @@ consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
 
             $scope.argsJson = "[]";
 
-            $scope.create = function() {
+            $scope.create = function () {
                 $scope.process.args = angular.fromJson($scope.argsJson);
                 $log.log("create process: " + angular.toJson($scope.process));
                 $http.post("/rest/tasks/start?generateId=true", $scope.process);

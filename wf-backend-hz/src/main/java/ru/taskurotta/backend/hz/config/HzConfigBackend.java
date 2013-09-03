@@ -1,5 +1,12 @@
 package ru.taskurotta.backend.hz.config;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.HazelcastInstance;
@@ -14,13 +21,6 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin

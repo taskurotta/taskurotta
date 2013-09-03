@@ -1,5 +1,8 @@
 package ru.taskurotta.backend.dependency;
 
+import java.util.Collection;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Profiled;
@@ -13,9 +16,6 @@ import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-
-import java.util.Collection;
-import java.util.UUID;
 
 /**
  * User: romario
@@ -74,11 +74,11 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
             public boolean apply(Graph graph) {
 
                 if (null == graph) {
-					logger.warn("Can't find graph for process [{}].", processId);
-					return false; // ignore task decision and its tasks
-				}
+                    logger.warn("Can't find graph for process [{}].", processId);
+                    return false; // ignore task decision and its tasks
+                }
 
-				if (!graph.hasNotFinishedItem(finishedTaskId)) {
+                if (!graph.hasNotFinishedItem(finishedTaskId)) {
                     logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
                     return false; // ignore task decision and its tasks
                 }
@@ -135,7 +135,7 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
         modification.setCompletedItem(taskDecision.getTaskId());
 
         ArgContainer value = taskDecision.getValue();
-		logger.debug("createLinksModification for [{}] : value [{}]", taskDecision, value);
+        logger.debug("createLinksModification for [{}] : value [{}]", taskDecision, value);
         if (value != null && value.isPromise() && !value.isReady()) {
             modification.setWaitForAfterRelease(value.getTaskId());
         }

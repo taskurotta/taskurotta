@@ -1,7 +1,10 @@
 package ru.taskurotta.client.hazelcast;
 
-import com.hazelcast.core.DistributedTask;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.TaskSpreader;
@@ -13,10 +16,6 @@ import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 /**
  * User: stukushin
@@ -30,8 +29,8 @@ public class HzTaskSpreader implements TaskSpreader {
     private ActorDefinition actorDefinition;
     private ObjectFactory objectFactory;
 
-    private ExecutorService pollExecutorService;
-    private ExecutorService releaseExecutorService;
+    private IExecutorService pollExecutorService;
+    private IExecutorService releaseExecutorService;
 
     public HzTaskSpreader(HazelcastInstance hazelcastInstance, ActorDefinition actorDefinition) {
         this.actorDefinition = actorDefinition;
@@ -45,7 +44,7 @@ public class HzTaskSpreader implements TaskSpreader {
     public Task poll() {
         logger.trace("Try poll for actor definition [{}]", actorDefinition);
 
-        Future<?> future = pollExecutorService.submit(new DistributedTask<>(new PollTask(actorDefinition)));
+        Future<?> future = pollExecutorService.submit(new PollTask(actorDefinition));
         TaskContainer taskContainer;
         try {
             taskContainer = (TaskContainer) future.get();
@@ -65,7 +64,7 @@ public class HzTaskSpreader implements TaskSpreader {
 
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, actorDefinition.getFullName());
 
-        Future<?> future = releaseExecutorService.submit(new DistributedTask<>(new ReleaseTask(decisionContainer), taskDecision.getProcessId()));
+        Future<?> future = releaseExecutorService.submitToKeyOwner(new ReleaseTask(decisionContainer), taskDecision.getProcessId());
         try {
             future.get();
         } catch (InterruptedException | ExecutionException e) {
