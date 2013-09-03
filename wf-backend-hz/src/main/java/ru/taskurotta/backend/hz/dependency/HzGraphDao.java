@@ -1,5 +1,10 @@
 package ru.taskurotta.backend.hz.dependency;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
@@ -7,11 +12,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Memory graph dao with Hazelcast
@@ -101,20 +101,18 @@ public class HzGraphDao implements GraphDao {
     private boolean updateGraph(Graph modifiedGraph) {
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
-        if (modifiedGraph.getModification() != null) {
-            DecisionRow decisionRow = new DecisionRow();
+        DecisionRow decisionRow = new DecisionRow();
 
-            Modification modification = modifiedGraph.getModification();
-            decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
-            decisionRow.modification = modification;
-            decisionRow.readyItems = modifiedGraph.getReadyItems();
+        Modification modification = modifiedGraph.getModification();
+        decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
+        decisionRow.modification = modification;
+        decisionRow.readyItems = modifiedGraph.getReadyItems();
 
-            decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
-        }
+        decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
 
         graphs.set(modifiedGraph.getGraphId(), modifiedGraph, 0, TimeUnit.NANOSECONDS);//hz feature
-
         return true;
+
     }
 
 

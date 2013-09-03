@@ -13,7 +13,6 @@
     <bean id="taskCreator" class="ru.taskurotta.recipes.delayed.TaskCreator">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>
-        <property name="startDelay" value="${startDelay}"/>
     </bean>
 
 </beans>

@@ -18,10 +18,10 @@
                 <value>show</value>
             </list>
         </constructor-arg>
-        <property name="strictFlowCheck" value="false" />
+        <property name="strictFlowCheck" value="false"/>
     </bean>
 
     <bean class="ru.taskurotta.test.flow.FlowArbiterFactory">
-        <property name="instance" ref="arbiter" />
+        <property name="instance" ref="arbiter"/>
     </bean>
 </beans>

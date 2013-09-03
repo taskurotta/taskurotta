@@ -1,14 +1,5 @@
 package ru.taskurotta.backend.hz.util;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.ItemListener;
-import com.hazelcast.monitor.LocalQueueStats;
-import com.hazelcast.partition.MigrationEvent;
-import com.hazelcast.partition.MigrationListener;
-import com.hazelcast.partition.Partition;
-import com.hazelcast.partition.PartitionService;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,6 +8,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IQueue;
+import com.hazelcast.core.ItemListener;
+import com.hazelcast.core.MigrationEvent;
+import com.hazelcast.core.MigrationListener;
+import com.hazelcast.core.Partition;
+import com.hazelcast.monitor.LocalQueueStats;
 
 /**
  * User: romario
@@ -32,7 +31,7 @@ public class MemberQueue<E> implements IQueue<E> {
 
     private String name;
     private HazelcastInstance hzInstance;
-    private PartitionService partitionService;
+    private com.hazelcast.core.PartitionService partitionService;
 
     private class MemberState {
 
@@ -159,7 +158,7 @@ public class MemberQueue<E> implements IQueue<E> {
             Object item = queue.poll();
 
             if (item != null) {
-                return (E)item;
+                return (E) item;
             }
         }
 
@@ -218,14 +217,16 @@ public class MemberQueue<E> implements IQueue<E> {
     }
 
     @Override
-    public void addItemListener(ItemListener<E> eItemListener, boolean b) {
+    public String addItemListener(ItemListener<E> eItemListener, boolean b) {
         //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @Override
-    public void removeItemListener(ItemListener<E> eItemListener) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    public boolean removeItemListener(String registrationId) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
 
     @Override
     public int size() {
@@ -323,10 +324,6 @@ public class MemberQueue<E> implements IQueue<E> {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public InstanceType getInstanceType() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public void destroy() {

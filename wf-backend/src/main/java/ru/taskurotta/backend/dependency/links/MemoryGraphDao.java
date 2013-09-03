@@ -1,15 +1,15 @@
 package ru.taskurotta.backend.dependency.links;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -138,21 +138,18 @@ public class MemoryGraphDao implements GraphDao {
 
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
-        if (modifiedGraph.getModification() != null) {
+        DecisionRow decisionRow = new DecisionRow();
 
-            DecisionRow decisionRow = new DecisionRow();
+        Modification modification = modifiedGraph.getModification();
+        decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
+        decisionRow.modification = modification;
+        decisionRow.readyItems = modifiedGraph.getReadyItems();
 
-            Modification modification = modifiedGraph.getModification();
-            decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
-            decisionRow.modification = modification;
-            decisionRow.readyItems = modifiedGraph.getReadyItems();
-
-            decisions.put(decisionRow.itemId, decisionRow);
-        }
+        decisions.put(decisionRow.itemId, decisionRow);
 
         GraphRow graphRow = graphs.get(modifiedGraph.getGraphId());
-
         return graphRow.updateGraph(modifiedGraph);
+
     }
 
 
@@ -177,12 +174,12 @@ public class MemoryGraphDao implements GraphDao {
             Graph graph = getGraph(processId);
 
             if (!updater.apply(graph)) {
-				break;
-			}
+                break;
+            }
 
-			if (updateGraph(graph)) {
-				return true;
-			}
+            if (updateGraph(graph)) {
+                return true;
+            }
         }
 
         return false;  //To change body of implemented methods use File | Settings | File Templates.

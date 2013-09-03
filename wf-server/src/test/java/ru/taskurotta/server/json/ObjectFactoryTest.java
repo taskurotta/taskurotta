@@ -1,5 +1,17 @@
 package ru.taskurotta.server.json;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static junit.framework.Assert.assertEquals;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -13,18 +25,6 @@ import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * User: romario
@@ -378,14 +378,14 @@ public class ObjectFactoryTest {
         coll.add(pArray);
 
         testInternal(coll);
-        assertEquals(( (TestObject[]) ((Promise) coll.iterator().next()).get())[1].getData(), 11);
+        assertEquals(((TestObject[]) ((Promise) coll.iterator().next()).get())[1].getData(), 11);
     }
 
     @Test
     public void argCollectionOfPromiseOfList() {
         ArrayList<TestObject> arrayList = new ArrayList();
         arrayList.add(new TestObject("child", 10));
-        Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>)arrayList);
+        Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>) arrayList);
 
         Promise<TestObject[]> pArray = Promise.asPromise(new TestObject[]{new TestObject("child", 10),
                 new TestObject("child2", 11)});
@@ -401,7 +401,7 @@ public class ObjectFactoryTest {
     @Test
     public void argPromiseOfEmptyCollection() {
         ArrayList<TestObject> arrayList = new ArrayList();
-        Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>)arrayList);
+        Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>) arrayList);
 
         ArgContainer arg = objectFactory.dumpArg(pList);
         Promise<List<TestObject>> pListNew = (Promise<List<TestObject>>) objectFactory.parseArg(arg);

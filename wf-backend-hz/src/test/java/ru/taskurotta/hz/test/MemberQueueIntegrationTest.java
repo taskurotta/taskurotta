@@ -1,17 +1,14 @@
 package ru.taskurotta.hz.test;
 
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.partition.Partition;
-import com.hazelcast.partition.PartitionService;
-import org.junit.Test;
-import ru.taskurotta.backend.hz.util.MemberQueue;
-
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static junit.framework.Assert.assertEquals;
+
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IQueue;
+import com.hazelcast.core.PartitionService;
+import ru.taskurotta.backend.hz.util.MemberQueue;
 
 /**
  * User: romario
@@ -59,8 +56,7 @@ public class MemberQueueIntegrationTest {
 
         boolean isOwner(long value) {
 
-            Partition partition = partitionService.getPartition(value);
-            return ((MemberQueue) queue).isPartitionOwner(partition.getPartitionId());
+            return ((MemberQueue) queue).isPartitionOwner(partitionService.getPartition(value).getPartitionId());
         }
 
         @Override
@@ -75,7 +71,7 @@ public class MemberQueueIntegrationTest {
     //@Test
     public void testSeveralInstances() throws InterruptedException {
 
-        boolean smartQueue = false;
+        boolean smartQueue = true;
         int amountOfTasks = 10000;
         int serversQuantity = 2;
         int clientsQuantity = 1;
@@ -166,7 +162,7 @@ public class MemberQueueIntegrationTest {
 
             if (item == null) {
                 testServer[robinChoose] = null;
-                if (++ emptyServers == testServer.length) {
+                if (++emptyServers == testServer.length) {
                     break;
                 } else {
                     continue;

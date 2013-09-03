@@ -1,5 +1,11 @@
 package ru.taskurotta.backend.hz.storage;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
@@ -9,12 +15,6 @@ import ru.taskurotta.backend.hz.TaskKey;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * TaskDao storing tasks in HZ shared(and processId partitioned) maps

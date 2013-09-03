@@ -17,7 +17,7 @@ public class MetricsManager {
     private static final Map<String, CheckPoint> checkPoints = new ConcurrentHashMap<>();
     private static final Map<String, Counter> counters = new ConcurrentHashMap<>();
 
-    public static CheckPoint createTimer(String name, DataListener dataListener) {
+    public static CheckPoint createCheckPoint(String name, DataListener dataListener) {
         CheckPoint checkPoint = checkPoints.get(name);
 
         if (checkPoint != null) {

@@ -23,13 +23,9 @@ properties:
   hz.nodes: localhost:7777,localhost:7778
   mongo.host: localhost
   mongo.port: 27017
-  oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
+  oradb.url: "jdbc:oracle:thin:@10.129.3.163:1531:testext"
   oradb.user: "taskurotta"
   oradb.password: "taskurotta"
-#  oradb.url: "jdbc:oracle:thin:@172.16.4.240:1521:pgudb"
-#  oradb.user: "rip_rr"
-#  oradb.password: "rip_rr"
-
 
 #Http server configuration:
 logging:
@@ -55,7 +51,7 @@ logging:
         archive: true
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
-        logFormat: "%-4r [%t] %-5p %c - %m%n"
+        logFormat: "%-4r %d [%t] %-5p %c - %m%n"
 
 http:
     rootPath: "/rest/*"

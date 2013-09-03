@@ -1,5 +1,9 @@
 package ru.taskurotta.recipes.multiplier;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -9,10 +13,6 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by void 12.07.13 18:29
@@ -32,7 +32,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     public LifetimeProfiler(Class actorClass, Properties properties) {
         if (properties.containsKey("exitAfterAll")) {
-            exitAfterAll = (Boolean)properties.get("exitAfterAll");
+            exitAfterAll = (Boolean) properties.get("exitAfterAll");
         }
 
         if (properties.containsKey("tasksForStat")) {
@@ -71,7 +71,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     if (TaskCreator.canWork.get()) {
                         TaskCreator.canWork.set(false);
-                        System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double)(lastTime - startTime) );
+                        System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime - startTime));
                         taskCount.set(0);
                         if (exitAfterAll) {
                             System.exit(0);

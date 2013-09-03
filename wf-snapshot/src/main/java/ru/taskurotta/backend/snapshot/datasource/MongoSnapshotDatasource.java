@@ -1,14 +1,14 @@
 package ru.taskurotta.backend.snapshot.datasource;
 
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
-import ru.taskurotta.backend.snapshot.Snapshot;
-
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
+import ru.taskurotta.backend.snapshot.Snapshot;
 
 /**
  * User: greg

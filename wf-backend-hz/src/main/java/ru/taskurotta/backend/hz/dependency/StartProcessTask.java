@@ -1,12 +1,12 @@
 package ru.taskurotta.backend.hz.dependency;
 
+import java.io.Serializable;
+import java.util.concurrent.Callable;
+
 import com.hazelcast.core.PartitionAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.transport.model.TaskContainer;
-
-import java.io.Serializable;
-import java.util.concurrent.Callable;
 
 /**
  * User: stukushin

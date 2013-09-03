@@ -7,20 +7,20 @@
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder/>
-    <context:annotation-config />
+    <context:annotation-config/>
 
     <!-- Jersey client with embedded apache HTTP client for connection pooling -->
-    <bean id = "taskServer" class="ru.taskurotta.dropwizard.client.jersey.JerseyHttpTaskServerProxy" >
-        <property name="endpoint" value = "${endpoint}" />
-        <property name="connectTimeout" value="${connectTimeout}" />
-        <property name="readTimeout" value = "${readTimeout}" />
-        <property name="threadPoolSize" value = "${threadPoolSize}" />
+    <bean id="taskServer" class="ru.taskurotta.dropwizard.client.jersey.JerseyHttpTaskServerProxy">
+        <property name="endpoint" value="${endpoint}"/>
+        <property name="connectTimeout" value="${connectTimeout}"/>
+        <property name="readTimeout" value="${readTimeout}"/>
+        <property name="threadPoolSize" value="${threadPoolSize}"/>
         <!-- All connections are for the same host, so value matches threadpool size -->
-        <property name="maxConnectionsPerHost" value="${threadPoolSize}" />
+        <property name="maxConnectionsPerHost" value="${threadPoolSize}"/>
     </bean>
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
-        <constructor-arg name="taskServer" ref="taskServer" />
+        <constructor-arg name="taskServer" ref="taskServer"/>
     </bean>
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.delayed.TaskCreator">

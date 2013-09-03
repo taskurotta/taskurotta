@@ -17,7 +17,7 @@ public class LoggerDataListener implements DataListener {
     @Override
     public void handle(String type, String name, String actorId, long value, long time) {
         if (logger.isDebugEnabled()) {
-            logger.debug("Metric [{}] [{}] = [{}] for actor [{}], collected at [{}]", type, name, value, actorId, new Date(time));
+            logger.debug("METRICS: [{}] [{}] = [{}] for actor [{}], collected at [{}]", type, name, value, actorId, new Date(time));
         }
     }
 }

@@ -1,19 +1,20 @@
 package ru.taskurotta.backend.hz.support;
 
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MapStoreConfig;
-import com.hazelcast.config.MaxSizeConfig;
+import java.util.Properties;
+
 import com.hazelcast.config.QueueConfig;
+import com.hazelcast.config.QueueStoreConfig;
+import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
-import com.hazelcast.core.Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -26,31 +27,28 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private static final Logger logger = LoggerFactory.getLogger(HzQueueSpringConfigSupport.class);
 
     private static final String BACKING_MAP_NAME_SUFFIX = "backingMap";
-    private static final String MAP_CONFIG_LOCK = "mapConfigLock";
     private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
+
 
     private ApplicationContext applicationContext;
     private HazelcastInstance hzInstance;
-    private String mapStoreBeanName;
 
+
+    //    private String queueStoreBeanName;
     private int maxSize = 100;
-    private int maxSizePerJvm = 0;
-    private int evictionPercentage = 25;
     private int backupCount = 0;
     private int asyncBackupsCount = 0;
-    private String evictionPolicy = "LRU";
-    private int writeDelaySeconds = 0;
 
-    private String maxSizePolicy = "cluster_wide_map_size";
+    private int memoryLimit = 100;
+    private boolean binary = false;
+    private int bulkLoad = 10;
 
 
-    private ILock mapConfigLock;
     private ILock queueConfigLock;
 
 
     public HzQueueSpringConfigSupport(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;
-        this.mapConfigLock = hzInstance.getLock(MAP_CONFIG_LOCK);
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
     }
 
@@ -58,76 +56,52 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         try {
             queueConfigLock.lock();
 
-            if(isQueueExists(queueName)) {
+            if (isQueueExists(queueName)) {
                 logger.debug("Skip creating queue[{}] config: it already exists...", queueName);
                 return;
             }
             String mapName = queueName + BACKING_MAP_NAME_SUFFIX;
-            createMapConfig(mapName);
 
             QueueConfig qc = new QueueConfig();
             qc.setName(queueName);
-            qc.setBackingMapRef(mapName);
-            qc.setMaxSizePerJVM(maxSizePerJvm);
+            qc.setMaxSize(maxSize);
+
+            qc.setQueueStoreConfig(createQueueStoreConfig(queueName));
 
             hzInstance.getConfig().addQueueConfig(qc);
-            logger.debug("Config for queue name[{}] with mapstore bean [{}] added...", queueName, mapStoreBeanName);
+            logger.debug("Config for queue name[{}] added...", queueName);
 
         } finally {
             queueConfigLock.unlock();
         }
     }
 
-    public void createMapConfig(String mapName) {
-        try {
-            mapConfigLock.lock();
-
-            if(isMapExists(mapName)) {
-                logger.debug("Skip creating map[{}] config: it already exists...", mapName);
-                return;
-            }
-
-            MapStoreConfig msc = new MapStoreConfig();
-            msc.setEnabled(true);
-            msc.setImplementation(applicationContext.getBean(mapStoreBeanName));
-            msc.setWriteDelaySeconds(writeDelaySeconds);
-
-            MapConfig mc = new MapConfig();
-            mc.setName(mapName);
-            mc.setEvictionPercentage(evictionPercentage);
-            mc.setBackupCount(backupCount);
-            mc.setAsyncBackupCount(asyncBackupsCount);
-            mc.setEvictionPolicy(evictionPolicy);
-
-            MaxSizeConfig maxSizeCfg = new MaxSizeConfig();
-            maxSizeCfg.setMaxSizePolicy(maxSizePolicy);
-            maxSizeCfg.setSize(maxSize);
-            mc.setMaxSizeConfig(maxSizeCfg);
-            mc.setMapStoreConfig(msc);
-
-            hzInstance.getConfig().addMapConfig(mc);
-            logger.debug("Config for map name[{}] with mapstore bean [{}] added...", mapName, mapStoreBeanName);
-
-        } finally {
-            mapConfigLock.unlock();
-        }
+    public QueueStoreConfig createQueueStoreConfig(String queueName) {
+        QueueStoreConfig result = new QueueStoreConfig(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
+        result.setEnabled(true);
+        Properties properties = new Properties();
+        properties.put("binary", this.binary);
+        properties.put("memory-limit", this.memoryLimit);
+        properties.put("bulk-load", this.bulkLoad);
+        result.setProperties(properties);
+        return result;
     }
 
     private boolean isMapExists(String name) {
-       boolean result = false;
-       for(Instance inst: hzInstance.getInstances()) {
-           if(inst.getInstanceType().isMap() && name.equals(((IMap) inst).getName())) {
-               result = true;
-               break;
-           }
-       }
-       return result;
+        boolean result = false;
+        for (DistributedObject inst : hzInstance.getDistributedObjects()) {
+            if ((inst instanceof IMap) && name.equals(inst.getName())) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private boolean isQueueExists(String name) {
         boolean result = false;
-        for(Instance inst: hzInstance.getInstances()) {
-            if(inst.getInstanceType().isQueue() && name.equals(((IQueue) inst).getName())) {
+        for (DistributedObject inst : hzInstance.getDistributedObjects()) {
+            if ((inst instanceof IQueue) && name.equals(inst.getName())) {
                 result = true;
                 break;
             }
@@ -140,21 +114,15 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-    public void setMapStoreBeanName(String mapStoreBeanName) {
-        this.mapStoreBeanName = mapStoreBeanName;
+    public void setHzInstance(HazelcastInstance hzInstance) {
+        this.hzInstance = hzInstance;
     }
+
 
     public void setMaxSize(int maxSize) {
         this.maxSize = maxSize;
     }
 
-    public void setMaxSizePerJvm(int maxSizePerJvm) {
-        this.maxSizePerJvm = maxSizePerJvm;
-    }
-
-    public void setEvictionPercentage(int evictionPercentage) {
-        this.evictionPercentage = evictionPercentage;
-    }
 
     public void setBackupCount(int backupCount) {
         this.backupCount = backupCount;
@@ -164,15 +132,39 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         this.asyncBackupsCount = asyncBackupsCount;
     }
 
-    public void setEvictionPolicy(String evictionPolicy) {
-        this.evictionPolicy = evictionPolicy;
+    public boolean isBinary() {
+        return binary;
     }
 
-    public void setWriteDelaySeconds(int writeDelaySeconds) {
-        this.writeDelaySeconds = writeDelaySeconds;
+    public void setBinary(boolean binary) {
+        this.binary = binary;
     }
 
-    public void setMaxSizePolicy(String maxSizePolicy) {
-        this.maxSizePolicy = maxSizePolicy;
+    public int getBackupCount() {
+        return backupCount;
+    }
+
+    public int getAsyncBackupsCount() {
+        return asyncBackupsCount;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
+    }
+
+    public int getMemoryLimit() {
+        return memoryLimit;
+    }
+
+    public void setMemoryLimit(int memoryLimit) {
+        this.memoryLimit = memoryLimit;
+    }
+
+    public int getBulkLoad() {
+        return bulkLoad;
+    }
+
+    public void setBulkLoad(int bulkLoad) {
+        this.bulkLoad = bulkLoad;
     }
 }
