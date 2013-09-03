@@ -73,7 +73,7 @@ public class ProcessAnalyzer {
             logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
         }
 
-        String query = "SELECT * FROM (SELECT process_id FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
+        String query = "SELECT * FROM (SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         int incompleteProcessCount = 0;
 
