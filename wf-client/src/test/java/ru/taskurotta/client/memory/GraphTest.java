@@ -39,7 +39,7 @@ public class GraphTest extends AbstractTestStub {
         pollDeciderTask(taskIdB);
 
         // should be empty queue
-        pollDeciderTask(null);
+        assertEmptyQueue();
     }
 
 	@org.junit.Ignore

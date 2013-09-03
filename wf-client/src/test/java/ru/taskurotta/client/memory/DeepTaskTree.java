@@ -47,8 +47,7 @@ public class DeepTaskTree extends AbstractTestStub {
         // poll task B
         pollDeciderTask(taskIdB);
 
-        // should be empty queue
-        pollDeciderTask(null);
+        assertEmptyQueue();
 
         // release task B
         Task deciderTaskD = deciderTask(taskIdD, TaskType.DECIDER_ASYNCHRONOUS, "D");
@@ -59,8 +58,7 @@ public class DeepTaskTree extends AbstractTestStub {
         // poll task D
         pollDeciderTask(taskIdD);
 
-        // should be empty queue
-        pollDeciderTask(null);
+		assertEmptyQueue();
 
         // release task D
         Task deciderTaskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E");
@@ -70,10 +68,9 @@ public class DeepTaskTree extends AbstractTestStub {
         // poll task E
         pollDeciderTask(taskIdE);
 
-        // should be empty queue
-        pollDeciderTask(null);
+		assertEmptyQueue();
 
-        // release task E
+		// release task E
         release(taskIdE, 1, null);
 
 
@@ -83,8 +80,7 @@ public class DeepTaskTree extends AbstractTestStub {
         // release task C
         release(taskIdC, 1, null);
 
-        // should be empty queue
-        pollDeciderTask(null);
+		assertEmptyQueue();
     }
 
 }
