@@ -31,8 +31,6 @@ public class Counter {
 
     private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
-    private static final Object monitor = new Object();
-
     class MarkTask implements Callable<Void> {
 
         private String actorId;
@@ -44,7 +42,7 @@ public class Counter {
         @Override
         public Void call() throws Exception {
 
-            synchronized (monitor) {
+            synchronized (marks) {
                 Long count = marks.get(actorId);
 
                 if (count == null) {
@@ -64,7 +62,7 @@ public class Counter {
         public void run() {
             Set<Map.Entry<String, Long>> entries;
 
-            synchronized (monitor) {
+            synchronized (marks) {
                 if (marks.isEmpty()) {
                     return;
                 }
