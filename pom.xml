@@ -282,6 +282,7 @@
                     <configuration>
                         <skip>true</skip>
                         <trimStackTrace>false</trimStackTrace>
+                        <argLine>-Dtaskurotta.env=TEST</argLine>
                     </configuration>
                     <executions>
                         <execution>
