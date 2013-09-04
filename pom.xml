@@ -1,4 +1,4 @@
-    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -25,29 +25,29 @@
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.2</aspectj.version>
-        <hazelcast.version>2.6</hazelcast.version>
+        <hazelcast.version>3.0</hazelcast.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
 
     <modules>
-        <module>wf-core</module>
-        <module>wf-bootstrap</module>
-        <module>wf-client</module>
-        <module>wf-example</module>
-        <module>wf-spring</module>
-        <module>wf-server</module>
-        <module>wf-recipes</module>
-        <module>wf-dropwizard</module>
-        <module>wf-dropwizard-assemble</module>
-        <module>wf-backend</module>
-        <module>wf-backend-ora</module>
-        <module>wf-backend-hz</module>
-        <module>wf-util</module>
-        <module>wf-transport</module>
-        <module>wf-snapshot</module>
-        <module>wf-test</module>
+        <module>core</module>
+        <module>bootstrap</module>
+        <module>client</module>
+        <module>example</module>
+        <module>spring</module>
+        <module>server</module>
+        <module>recipes</module>
+        <module>dropwizard</module>
+        <module>assemble</module>
+        <module>backend</module>
+        <module>backend-ora</module>
+        <module>backend-hz</module>
+        <module>util</module>
+        <module>transport</module>
+        <module>snapshot</module>
+        <module>test</module>
     </modules>
 
     <profiles>
@@ -255,7 +255,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -268,7 +268,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
