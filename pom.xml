@@ -32,22 +32,22 @@
     </properties>
 
     <modules>
-        <module>wf-core</module>
-        <module>wf-bootstrap</module>
-        <module>wf-client</module>
-        <module>wf-example</module>
-        <module>wf-spring</module>
-        <module>wf-server</module>
-        <module>wf-recipes</module>
-        <module>wf-dropwizard</module>
-        <module>wf-dropwizard-assemble</module>
-        <module>wf-backend</module>
-        <module>wf-backend-ora</module>
-        <module>wf-backend-hz</module>
-        <module>wf-util</module>
-        <module>wf-transport</module>
-        <module>wf-snapshot</module>
-        <module>wf-test</module>
+        <module>core</module>
+        <module>bootstrap</module>
+        <module>client</module>
+        <module>example</module>
+        <module>spring</module>
+        <module>server</module>
+        <module>recipes</module>
+        <module>dropwizard</module>
+        <module>assemble</module>
+        <module>backend</module>
+        <module>backend-ora</module>
+        <module>backend-hz</module>
+        <module>util</module>
+        <module>transport</module>
+        <module>snapshot</module>
+        <module>test</module>
     </modules>
 
     <profiles>
