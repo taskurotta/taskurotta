@@ -13,7 +13,13 @@ import java.util.UUID;
  */
 public class GraphTest extends AbstractTestStub {
 
-    @Test
+	/**
+	 * - A -> B
+	 * - A -> BDuplicate
+	 *
+	 * BDuplicate should be ignored
+	 */
+	@Test
     public void duplicateDecisionRelease() {
         UUID taskIdA = UUID.randomUUID();
         UUID taskIdB = UUID.randomUUID();
@@ -38,11 +44,16 @@ public class GraphTest extends AbstractTestStub {
         // poll task B
         pollDeciderTask(taskIdB);
 
-        // should be empty queue
         assertEmptyQueue();
     }
 
-	@org.junit.Ignore
+	/**
+	 * - A -> B, C, E(B,C)
+	 * - B -> D
+	 *
+	 * task C will be released after task B
+	 * task E should be ready only after task D
+	 */
 	@Test
 	public void chainTasks() {
 		UUID taskIdA = UUID.randomUUID();
@@ -64,9 +75,9 @@ public class GraphTest extends AbstractTestStub {
 		// release decision with taskB and taskС and taskE
 		release(taskIdA, null, new Task[]{taskB, taskC, taskE});
 
-		// poll task B
+		// poll task (B or C)
 		pollDeciderTask(taskIdB, taskIdC);
-		// poll task C
+		// poll task (C or B)
 		pollDeciderTask(taskIdB, taskIdC);
 		assertEmptyQueue();
 

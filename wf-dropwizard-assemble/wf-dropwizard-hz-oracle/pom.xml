@@ -128,6 +128,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+        <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>wf-dropwizard</artifactId>
             <version>${project.version}</version>

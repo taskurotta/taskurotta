@@ -38,12 +38,6 @@ public class Graph implements Serializable {
      */
     private Map<UUID, Long> notFinishedItems = new HashMap<>();
 
-
-    /**
-     * Key UUID is a waiting items and value is Set of ready but frozen.
-     */
-    private Map<UUID, Set<UUID>> frozenReadyItems = new HashMap<>();
-
     /**
      * Links map where keys are tasks which depends from value set of other tasks.
      * For example, A(B, C) - A is a key and {B, C} is a set value of map.
@@ -126,10 +120,6 @@ public class Graph implements Serializable {
         return notFinishedItems;
     }
 
-    public Map<UUID, Set<UUID>> getFrozenReadyItems() {
-        return frozenReadyItems;
-    }
-
     public Map<UUID, Set<UUID>> getLinks() {
         return links;
     }
@@ -140,10 +130,6 @@ public class Graph implements Serializable {
 
     public void setNotFinishedItems(Map<UUID, Long> notFinishedItems) {
         this.notFinishedItems = notFinishedItems;
-    }
-
-    public void setFrozenReadyItems(Map<UUID, Set<UUID>> frozenReadyItems) {
-        this.frozenReadyItems = frozenReadyItems;
     }
 
     public void setLinks(Map<UUID, Set<UUID>> links) {
@@ -258,6 +244,11 @@ public class Graph implements Serializable {
                 Set<UUID> candidateLinks = links.get(releaseCandidate);
                 candidateLinks.remove(finishedItem);
 
+				// update changed dependency
+				if (waitForAfterRelease != null) {
+					candidateLinks.add(waitForAfterRelease);
+				}
+
                 if (!candidateLinks.isEmpty()) {
                     continue;
                 }
@@ -265,32 +256,15 @@ public class Graph implements Serializable {
                 // GC items without dependencies
                 links.remove(releaseCandidate);
 
-                // hide items to stash
-                if (waitForAfterRelease != null) {
+				// and add it to ready list
+				if (readyItemsList == null) {
+					readyItemsList = new LinkedList<>();
+				}
 
-                    Set<UUID> frozenItemsSet = frozenReadyItems.get(waitForAfterRelease);
+				logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to " +
+						"readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
 
-                    if (frozenItemsSet == null) {
-                        frozenItemsSet = new HashSet<>();
-                        frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
-                    }
-
-                    logger.debug("apply() after remove [{}] this item [{}] has no dependencies and will be frozen ",
-                            finishedItem, releaseCandidate);
-
-                    frozenItemsSet.add(releaseCandidate);
-
-                    // or add it to ready list directly
-                } else {
-                    if (readyItemsList == null) {
-                        readyItemsList = new LinkedList<>();
-                    }
-
-                    logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to " +
-                            "readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
-
-                    readyItemsList.add(releaseCandidate);
-                }
+				readyItemsList.add(releaseCandidate);
             }
         }
 
@@ -331,41 +305,6 @@ public class Graph implements Serializable {
                 }
             }
         }
-
-        // add all frozen items to ready items set
-        Set<UUID> frozenItemsSet = frozenReadyItems.remove(finishedItem);
-        if (frozenItemsSet != null) {
-
-            // hide again this items to stash with new frozen dependency
-            if (waitForAfterRelease != null) {
-
-                logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
-
-                Set<UUID> newFrozenItemsSet = frozenReadyItems.get(waitForAfterRelease);
-
-                if (newFrozenItemsSet == null) {
-                    newFrozenItemsSet = new HashSet<>();
-                    frozenReadyItems.put(waitForAfterRelease, newFrozenItemsSet);
-                }
-
-                newFrozenItemsSet.addAll(frozenItemsSet);
-
-//                logger.debug("apply() hide again this frozen items [{}]", frozenItemsSet);
-//
-//                frozenReadyItems.put(waitForAfterRelease, frozenItemsSet);
-            } else {
-
-
-                if (readyItemsList == null) {
-                    readyItemsList = new LinkedList<>();
-                }
-
-                logger.debug("apply() new frozen items [{}]", frozenItemsSet);
-
-                readyItemsList.addAll(frozenItemsSet);
-            }
-        }
-
 
         // return empty or full array of new ready items.
         if (readyItemsList == null) {
@@ -427,7 +366,6 @@ public class Graph implements Serializable {
         copy.setGraphId(graphId);
         copy.setLinks(copyMapUuidWithSetOfUuid(links));
         copy.setNotFinishedItems(new HashMap<>(notFinishedItems));
-        copy.setFrozenReadyItems(copyMapUuidWithSetOfUuid(frozenReadyItems));
         copy.setFinishedItems(new HashSet<>(finishedItems));
         copy.setVersion(version);
         copy.setTouchTimeMillis(touchTimeMillis);
@@ -451,7 +389,6 @@ public class Graph implements Serializable {
                 "version=" + version +
                 ", graphId=" + graphId +
                 ", notFinishedItems=" + notFinishedItems +
-                ", frozenReadyItems=" + frozenReadyItems +
                 ", links=" + links +
                 ", finishedItems=" + finishedItems +
                 ", modification=" + modification +
