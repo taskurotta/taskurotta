@@ -32,33 +32,24 @@ public class JmxDataListener implements DataListener {
 
     public interface MetricsMBean {
 
-        public String getType();
-
         public String getName();
 
         public String getActorId();
 
-        public long getValue();
+        public long getCount();
+
+        public double getValue();
 
         public long getTime();
     }
 
     public class Metrics implements MetricsMBean {
 
-        private String type;
         private String name;
         private String actorId;
-        private long value;
+        private long count;
+        private double value;
         private long time;
-
-        @Override
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
 
         @Override
         public String getName() {
@@ -79,11 +70,20 @@ public class JmxDataListener implements DataListener {
         }
 
         @Override
-        public long getValue() {
+        public long getCount() {
+            return count;
+        }
+
+        public void setCount(long count) {
+            this.count = count;
+        }
+
+        @Override
+        public double getValue() {
             return value;
         }
 
-        public void setValue(long value) {
+        public void setValue(double value) {
             this.value = value;
         }
 
@@ -98,48 +98,53 @@ public class JmxDataListener implements DataListener {
     }
 
     @Override
-    public void handle(String type, String name, String actorId, long value, long time) {
+    public void handle(String name, String actorId, long count, double value, long time) {
 
-        synchronized (metricsMap) {
-            String key = type + "#" + name + "#" + actorId;
+        String key = name + separator + actorId;
 
-            Metrics metrics = metricsMap.get(key);
+        logger.trace("[{}]#[{}]: find metrics for [{}]", name, actorId, key);
 
-            if (metrics != null) {
-                metrics.setType(type);
-                metrics.setName(name);
-                metrics.setActorId(actorId);
-                metrics.setValue(value);
-                metrics.setTime(time);
+        Metrics metrics = metricsMap.get(key);
 
-                return;
+        logger.trace("[{}]#[{}]: for [{}] found metrics [{}]", name, actorId, key, metrics);
+
+        if (metrics == null) {
+            synchronized (metricsMap) {
+                metrics = metricsMap.get(key);
+
+                if (metrics == null) {
+                    metrics = new Metrics();
+
+                    logger.trace("[{}]#[{}]: create metrics [{}]", name, actorId, metrics);
+
+                    try {
+                        mBeanServer.registerMBean(metrics, createName(key));
+                    } catch (InstanceAlreadyExistsException | NotCompliantMBeanException | MBeanRegistrationException e) {
+                        logger.error("Catch exception while register MBean for [" + name + "]", e);
+                    }
+
+                    metricsMap.put(key, metrics);
+
+                    logger.trace("[{}]#[{}]: save metrics [{}] for key [{}]", name, actorId, metrics, key);
+                }
             }
-
-            metrics = new Metrics();
-            metrics.setType(type);
-            metrics.setName(name);
-            metrics.setActorId(actorId);
-            metrics.setValue(value);
-            metrics.setTime(time);
-
-            try {
-                mBeanServer.registerMBean(metrics, createName(type, name + separator + actorId));
-            } catch (InstanceAlreadyExistsException | NotCompliantMBeanException | MBeanRegistrationException e) {
-                logger.error("Catch exception while register MBean for [" + name + "]", e);
-            }
-
-            metricsMap.put(key, metrics);
         }
+
+        metrics.setName(name);
+        metrics.setActorId(actorId);
+        metrics.setCount(count);
+        metrics.setValue(value);
+        metrics.setTime(time);
+
+        logger.trace("[{}]#[{}]: update metrics [{}] for key [{}]", name, actorId, metrics, key);
     }
 
-    private ObjectName createName(String type, String name) {
-        String key = domain + "." + type;
-
+    private ObjectName createName(String name) {
         try {
-            return new ObjectName(key, "name", name);
+            return new ObjectName(domain, "name", name);
         } catch (MalformedObjectNameException e) {
             try {
-                return new ObjectName(key, "name", ObjectName.quote(name));
+                return new ObjectName(domain, "name", ObjectName.quote(name));
             } catch (MalformedObjectNameException e1) {
                 logger.warn("Unable to register [{}]", name, e1);
                 throw new RuntimeException(e1);
