@@ -140,7 +140,7 @@ public class RecoveryTask implements Callable {
     }
 
     private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
-        Map<UUID, Long> notFinishedItems = graph.getNotReleasedItems();
+        Map<UUID, Long> notFinishedItems = graph.getNotFinishedItems();
         if (logger.isDebugEnabled()) {
             logger.debug("For process [{}] found [{}] not finished taskIds", processId, notFinishedItems.size());
         }
