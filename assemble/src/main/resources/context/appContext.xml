@@ -222,10 +222,13 @@
         <property name="nodeCustomName" value="${node.custom.name}"/>
     </bean>
 
-    <bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.JmxDataListener"/>
+    <bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />
+
+    <bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener"/>
 
     <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">
         <constructor-arg name="taskServer" ref="hzTaskServer"/>
+        <constructor-arg name="metricsManager" ref="metricsManager"/>
         <constructor-arg name="dataListener" ref="dataListener"/>
     </bean>
     <!-- /Task server -->
@@ -237,11 +240,11 @@
 
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
-        <property name="url" value="jdbc:oracle:thin:@10.129.3.163:1531/testext"/>
+        <property name="url" value="${oradb.url}"/>
         <property name="initialSize" value="10"/>
         <property name="maxActive" value="8"/>
-        <property name="username" value="taskurotta"/>
-        <property name="password" value="taskurotta"/>
+        <property name="username" value="${oradb.user}"/>
+        <property name="password" value="${oradb.password}"/>
     </bean>
     <!-- /Data source -->
 

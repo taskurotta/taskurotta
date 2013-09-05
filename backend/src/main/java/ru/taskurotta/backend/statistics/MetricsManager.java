@@ -1,11 +1,18 @@
 package ru.taskurotta.backend.statistics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
+import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
-import ru.taskurotta.backend.statistics.metrics.Counter;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -14,58 +21,58 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MetricsManager {
 
-    private static final Map<String, CheckPoint> checkPoints = new ConcurrentHashMap<>();
-    private static final Map<String, Counter> counters = new ConcurrentHashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(MetricsManager.class);
 
-    public static CheckPoint createCheckPoint(String name, DataListener dataListener) {
-        CheckPoint checkPoint = checkPoints.get(name);
+    private final Map<String, CheckPoint> checkPoints;
 
-        if (checkPoint != null) {
-            return checkPoint;
-        }
+    private final ScheduledExecutorService executorService;
 
-        synchronized (checkPoints) {
-            checkPoint = checkPoints.get(name);
-
-            if (checkPoint != null) {
-                return checkPoint;
-            }
-
-            checkPoint = new CheckPoint(name, dataListener);
-            checkPoints.put(name, checkPoint);
-        }
-
-        return checkPoint;
+    public MetricsManager() {
+        this(0, 1, TimeUnit.SECONDS);
     }
 
-    public static Counter createCounter(String name, DataListener dataListener) {
-        Counter counter = counters.get(name);
+    public MetricsManager(long initialDelay, long delay, TimeUnit unit) {
+        this.checkPoints = new ConcurrentHashMap<>();
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
 
-        if (counter != null) {
-            return counter;
-        }
+        this.executorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                Collection<CheckPoint> values = new ArrayList<>(checkPoints.values());
 
-        synchronized (counters) {
-            counter = counters.get(name);
-
-            if (counter != null) {
-                return counter;
+                for (CheckPoint checkPoint : values) {
+                    checkPoint.dump();
+                }
             }
-
-            counter = new Counter(name, dataListener);
-            counters.put(name, counter);
-        }
-
-        return counter;
+        }, initialDelay, delay, unit);
     }
 
-    public static void shutdown() {
-        for (Map.Entry<String, CheckPoint> entry : checkPoints.entrySet()) {
-            entry.getValue().shutdown();
+    public void mark(String name, String actorId, long period, DataListener dataListener) {
+        String key = name + "#" + actorId;
+
+        CheckPoint checkPoint = checkPoints.get(key);
+
+        if (checkPoint == null) {
+            synchronized (checkPoints) {
+                checkPoint = checkPoints.get(key);
+
+                if (checkPoint == null) {
+                    checkPoint = new ArrayCheckPoint(name, actorId, dataListener);
+                    checkPoints.put(key, checkPoint);
+                }
+            }
         }
 
-        for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-            entry.getValue().shutdown();
+        checkPoint.mark(period);
+    }
+
+    public void shutdown() {
+        executorService.shutdown();
+
+        try {
+            executorService.awaitTermination(1, TimeUnit.SECONDS);
+        } catch (InterruptedException ignored) {
+            // do nothing
         }
     }
 }
