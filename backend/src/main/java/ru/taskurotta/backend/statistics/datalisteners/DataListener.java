@@ -6,5 +6,5 @@ package ru.taskurotta.backend.statistics.datalisteners;
  * Time: 19:01
  */
 public interface DataListener {
-    public void handle(String name, String actorId, int count, double value, long time);
+    public void handle(String name, String actorId, long count, double value, long time);
 }

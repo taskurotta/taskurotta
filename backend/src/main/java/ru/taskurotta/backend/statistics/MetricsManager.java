@@ -1,10 +1,10 @@
 package ru.taskurotta.backend.statistics;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
+import ru.taskurotta.backend.statistics.metrics.MeanCheckPoint;
+import ru.taskurotta.backend.statistics.metrics.YammerCheckPoint;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,8 +20,6 @@ import java.util.concurrent.TimeUnit;
  * Time: 15:12
  */
 public class MetricsManager {
-
-    private static final Logger logger = LoggerFactory.getLogger(MetricsManager.class);
 
     private final Map<String, CheckPoint> checkPoints;
 
@@ -57,7 +55,7 @@ public class MetricsManager {
                 checkPoint = checkPoints.get(key);
 
                 if (checkPoint == null) {
-                    checkPoint = new ArrayCheckPoint(name, actorId, dataListener);
+                    checkPoint = new YammerCheckPoint(name, actorId, dataListener);
                     checkPoints.put(key, checkPoint);
                 }
             }

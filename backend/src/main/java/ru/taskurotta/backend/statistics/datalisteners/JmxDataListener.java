@@ -36,7 +36,7 @@ public class JmxDataListener implements DataListener {
 
         public String getActorId();
 
-        public int getCount();
+        public long getCount();
 
         public double getValue();
 
@@ -47,7 +47,7 @@ public class JmxDataListener implements DataListener {
 
         private String name;
         private String actorId;
-        private int count;
+        private long count;
         private double value;
         private long time;
 
@@ -70,11 +70,11 @@ public class JmxDataListener implements DataListener {
         }
 
         @Override
-        public int getCount() {
+        public long getCount() {
             return count;
         }
 
-        public void setCount(int count) {
+        public void setCount(long count) {
             this.count = count;
         }
 
@@ -98,7 +98,7 @@ public class JmxDataListener implements DataListener {
     }
 
     @Override
-    public void handle(String name, String actorId, int count, double value, long time) {
+    public void handle(String name, String actorId, long count, double value, long time) {
 
         String key = name + separator + actorId;
 

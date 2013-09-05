@@ -3,6 +3,7 @@ package ru.taskurotta.backend.statistics.metrics;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 /**
  * User: stukushin
@@ -15,25 +16,30 @@ public class ArrayCheckPoint implements CheckPoint {
     private String actorId;
     private DataListener dataListener;
 
-    private int size = 5000;
-    private long data[];
+    private final int size;
+    private AtomicLongArray data;
 
     private AtomicInteger position = new AtomicInteger(0);
     private AtomicInteger lastDumpPositionAtomicInteger = new AtomicInteger(0);
 
     public ArrayCheckPoint(String name, String actorId, DataListener dataListener) {
+        this(name, actorId, dataListener, 5000);
+    }
+
+    public ArrayCheckPoint(String name, String actorId, DataListener dataListener, int size) {
         this.name = name;
         this.actorId = actorId;
         this.dataListener = dataListener;
+        this.size = size;
 
-        this.data = new long[size];
+        this.data = new AtomicLongArray(size);
     }
 
     @Override
     public void mark(long period) {
         position.compareAndSet(size, 0);
 
-        data[position.getAndIncrement()] = period;
+        data.set(position.getAndIncrement(), period);
 
         position.compareAndSet(size, 0);
     }
@@ -55,15 +61,15 @@ public class ArrayCheckPoint implements CheckPoint {
 
         if (lastPosition < currentPosition) {
             for (int i = lastPosition; i < currentPosition; i++) {
-                sum += data[i];
+                sum += data.get(i);
             }
         } else {
             for (int i = lastPosition; i < size; i++) {
-                sum += data[i];
+                sum += data.get(i);
             }
 
             for (int i = 0; i < currentPosition; i++) {
-                sum += data[i];
+                sum += data.get(i);
             }
         }
 
