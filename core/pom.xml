@@ -12,7 +12,7 @@
 	<artifactId>core</artifactId>
 
 	<packaging>jar</packaging>
-	<name>Taskurotta :: WF core components</name>
+	<name>Taskurotta :: Core components</name>
 
 	<dependencies>
         <dependency>

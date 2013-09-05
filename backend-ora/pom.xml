@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>backend-ora</artifactId>
-    <name>Taskurotta :: Backend Oracle implementation</name>
+    <name>Taskurotta :: Backend implementation with Oracle</name>
 
     <profiles>
         <profile>
