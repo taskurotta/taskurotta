@@ -78,7 +78,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
         // check not finished items in graph
-        assertFalse(dependencyBackend.getGraph(processId).getNotFinishedItems().isEmpty());
+        assertFalse(dependencyBackend.getGraph(processId).getNotReleasedItems().isEmpty());
 
         // recovery process
         new RecoveryTask(memoryQueueBackend, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
@@ -121,7 +121,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
             @Override
             public boolean apply(Graph graph) {
                 graph.setVersion(graph.getVersion() + 1);
-                graph.setNotFinishedItems(new HashMap<UUID, Long>());
+                graph.setNotReleasedItems(new HashMap<UUID, Long>());
                 return true;
             }
         });

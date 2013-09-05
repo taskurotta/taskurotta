@@ -4,6 +4,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint;
+import ru.taskurotta.backend.statistics.metrics.AtomicCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
 import ru.taskurotta.backend.statistics.metrics.MeanCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.YammerCheckPoint;
@@ -39,16 +40,18 @@ public class SpeedTest {
     class MockDataListener implements DataListener {
         @Override
         public void handle(String name, String actorId, long count, double value, long time) {
-            // do nothing
+            System.out.println("DataListener count = " + count + ", value = " + value);
         }
     }
 
     class MarkTask implements Callable<Long> {
 
         private CheckPoint checkPoint;
+        private int data;
 
-        MarkTask(CheckPoint checkPoint) {
+        MarkTask(CheckPoint checkPoint, int data) {
             this.checkPoint = checkPoint;
+            this.data = data;
         }
 
         @Override
@@ -56,7 +59,7 @@ public class SpeedTest {
 
             long start = System.nanoTime();
 
-            checkPoint.mark(random.nextInt(size));
+            checkPoint.mark(data);
 
             return System.nanoTime() - start;
         }
@@ -66,23 +69,36 @@ public class SpeedTest {
     @Test
     public void testCheckPoint() throws ExecutionException, InterruptedException {
         List<CheckPoint> checkPoints = new ArrayList<>();
+        checkPoints.add(new AtomicCheckPoint(name, actorId, dataListener));
         checkPoints.add(new ArrayCheckPoint(name, actorId, dataListener));
         checkPoints.add(new YammerCheckPoint(name, actorId, dataListener));
         checkPoints.add(new MeanCheckPoint(name, actorId, dataListener));
 
+
         Collections.shuffle(checkPoints);
 
+        int[] testData = new int[size];
+        long sum = 0;
+        for (int i = 0; i < size; i++) {
+            testData[i] = random.nextInt(100);
+            sum += testData[i];
+        }
+
+        System.out.println("Real mean value is " + (double) sum / size);
+
         for (CheckPoint checkPoint : checkPoints) {
-            test(checkPoint);
+            System.out.println(" Test for [" + checkPoint.getClass().getSimpleName() + "]...");
+            test(checkPoint, testData);
+            checkPoint.dump();
         }
     }
 
-    private void test(CheckPoint checkPoint) throws InterruptedException, ExecutionException {
+    private void test(CheckPoint checkPoint, int[] testData) throws InterruptedException, ExecutionException {
 
         List<MarkTask> tasks = new ArrayList<>(size);
 
         for (int i = 0; i < size; i++) {
-            tasks.add(new MarkTask(checkPoint));
+            tasks.add(new MarkTask(checkPoint, testData[i]));
         }
 
         List<Future<Long>> futures = executorService.invokeAll(tasks);
@@ -101,6 +117,6 @@ public class SpeedTest {
             }
         }
 
-        System.out.println("For [" + checkPoint.getClass().getSimpleName() + "] mean = " + sum / size);
+        System.out.println("For [" + checkPoint.getClass().getSimpleName() + "] mean speed = " + sum / size);
     }
 }
