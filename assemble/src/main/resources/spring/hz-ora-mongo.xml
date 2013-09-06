@@ -95,7 +95,7 @@
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongo"/>
-        <constructor-arg name="databaseName" value="test"/>
+        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
         <property name="writeConcern" ref="writeConcern"/>
     </bean>
 
