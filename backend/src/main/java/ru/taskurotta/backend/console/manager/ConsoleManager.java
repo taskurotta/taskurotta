@@ -72,4 +72,6 @@ public interface ConsoleManager {
     public void blockActor(String actorId);
 
     public void unblockActor(String actorId);
+
+    public Collection<String> getActorIdList();
 }

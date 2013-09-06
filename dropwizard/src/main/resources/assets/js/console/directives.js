@@ -176,3 +176,75 @@ consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
         replace: true
     };
 }]);
+
+consoleDirectives.directive('tskPlot', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            datasetUrl: "=",
+            options: "@",
+            dataset: "@",
+            width: "@",
+            height: "@",
+            updatePeriod: "="
+        },
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $window, $log, $http, $$timeUtil) {
+
+            var jPlot = $($element);
+            //Setting css width and height if explicitly set
+            if($scope.width) { jPlot.css("width", $scope.width); }
+            if($scope.height) { jPlot.css("height", $scope.height); }
+
+            //defaults
+            if($scope.options) {
+                $log.info("$scope.options is: " + $scope.options);
+            } else {
+                $scope.options = {
+                    series: {
+                        lines: { show: true },
+                        points: { show: true },
+                        shadowSize: 0
+                    }
+                };
+            }
+
+
+            if($scope.dataset) {
+                $log.log("Scope dataset is: " + $scope.dataset);
+                $.plot($element, $scope.dataset, $scope.options);
+            } else if($scope.datasetUrl) {
+                $log.log("Scope datasetUrl is: " + $scope.datasetUrl);
+                var plotElem = $.plot($element, [], $scope.options);
+
+                $scope.updateByUrl = function() {
+                    $http.get($scope.datasetUrl).then(function(value) {
+                        $log.info("New datasets getted are: " + angular.toJson(value.data));
+                        plotElem.setData(value.data);
+                        plotElem.setupGrid();
+                        plotElem.draw();
+                    });
+                };
+
+                $scope.$watch('datasetUrl', function(newVal, oldVal){
+                    $scope.updateByUrl();
+                });
+
+                var refreshTriggerId = -1;
+                $scope.$watch('updatePeriod', function(newVal, oldVal) {
+                     if(newVal > 0){
+                         refreshTriggerId = $$timeUtil.setInterval($scope.updateByUrl, newVal * 1000, $scope);//Start autoUpdate
+                     } else {
+                         $$timeUtil.clearInterval(refreshTriggerId);
+                     }
+                });
+
+            } else {
+                $log.error("No dataset or dataset-url attributes are defined for tsk-plot directive");
+            }
+
+
+        }],
+        replace: true
+    };
+}]);

@@ -13,8 +13,8 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <context:property-placeholder/>
-    <context:annotation-config/>
+    <context:property-placeholder />
+    <context:annotation-config />
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
@@ -54,7 +54,12 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
+            <hz:map name="actorPreferencesMap" backup-count="0" eviction-policy="LRU" eviction-percentage="25">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
+            </hz:map>
+
         </hz:config>
+
     </hz:hazelcast>
 
     <!-- Queues persistence support -->
@@ -90,6 +95,17 @@
     </bean>
     <!-- /Queues persistence support -->
 
+
+
+    <!-- Config support -->
+    <bean id="hzConfigBackendSupport" class="ru.taskurotta.backend.hz.support.HzConfigBackendSupport" init-method="init">
+        <property name = "hzInstance" ref = "hzInstance" />
+        <property name = "queuePrefix" value = "${hz.task.queue.prefix}" />
+    </bean>
+    <!-- /Config support -->
+
+
+
     <!-- Mongo -->
     <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}"/>
 
@@ -111,6 +127,8 @@
     </bean>
     <!-- /Mongo -->
 
+
+
     <!-- REST resources -->
     <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
@@ -122,6 +140,8 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
     <!-- /REST resources -->
+
+
 
     <!-- Backends -->
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
@@ -165,8 +185,9 @@
         <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
-
     <!-- /Backends -->
+
+
 
     <!-- Health checks -->
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
@@ -174,6 +195,9 @@
         <property name="taskServer" ref="taskServer"/>
     </bean>
     <!-- /Health checks -->
+
+
+
 
     <!-- Recovery -->
     <bean id="processRecoveryService" class="ru.taskurotta.recovery.ProcessRecoveryService" init-method="init">
@@ -188,6 +212,7 @@
         <property name="threadCount" value="${recovery.process.thread.count}" />
         <property name="useDaemonThreads" value = "true" />
         <property name="processBatchSize" value="${recovery.process.batch.size}" />
+        <property name="startupRecovery" value = "${recovery.startup.run}" />
     </bean>
 
     <bean id = "processRecoveryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
@@ -209,6 +234,9 @@
         </property>
     </bean>
     <!-- /Recovery -->
+
+
+
 
     <!-- Task server -->
     <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
@@ -233,6 +261,10 @@
     <!--</bean>-->
     <!-- /Task server -->
 
+
+
+
+
     <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
         <constructor-arg name="targetDataSource" ref="originalDataSource"/>
@@ -247,6 +279,9 @@
         <property name="password" value="${oradb.password}"/>
     </bean>
     <!-- /Data source -->
+
+
+
 
     <!-- Transactions -->
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

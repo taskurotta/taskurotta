@@ -1,0 +1,99 @@
+<div>
+
+    <div style="width:100%;margin:5px;" class="well" collapse="isCollapsed">
+        <table style="width:100%; margin:0px;padding:0px;">
+            <tr>
+                <td style="width:20px;"></td>
+                <td style="height: 30px;">
+                    <h4>Specify metrics options:</h4>
+                </td>
+                <td style="width:20px;">
+                    <span ng-click="isCollapsed = !isCollapsed" style="cursor:pointer;">
+                        <span class="badge" ng-hide="isCollapsed" popover="Hide filter" popover-trigger="mouseenter" popover-placement="left">&and;</span>
+                        <span class="badge" ng-show="isCollapsed" popover="Show filter" popover-trigger="mouseenter" popover-placement="left">&or;</span>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td style="width:20px;"></td>
+                <td>
+                    <table cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td style="padding-left: 25px;">
+                                <span style="cursor:pointer;" popover="Select type of metric data to show. It would be represented at the plot diagram below." popover-placement="right" class="badge badge-info">?</span>
+                                <b>Metrics type:</b>
+                            </td>
+                            <td style="padding-left: 25px;">
+                                <select ng-model="selection.metric" ng-options="m.name for m in metrics" style="width: 300px;"></select>
+                            </td>
+                            <td style="padding-left: 25px;">
+                                <span ng-show="selection.metric.type == 3">
+                                    <span style="cursor:pointer;" popover="ActorId value is required for this metric type. Please specify it."
+                                          popover-placement="right" class="badge badge-important">?</span>
+                                    <b>ActorId:</b>
+                                </span>
+                            </td>
+                            <td style="padding-left: 25px;">
+                                <select ng-show="selection.metric.type == 3" ng-model="selection.actorId" ng-options="actorId for actorId in actorIds"></select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 25px;">
+                                <span style="cursor:pointer;" popover="Select a method targeted by this metric."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Metrics method:</b>
+                            </td>
+                            <td style="padding-left: 25px;">
+                                <select ng-model="selection.metric.method" ng-options="m for m in metricsMethods" style="width: 300px;"></select>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 25px;">
+                                <span style="cursor:pointer;" popover="Enable to update plot data at real time (new data would be requested every second)."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Follow the plot: </b>
+                            </td>
+                            <td style="padding-left: 25px;">
+                                <input type="checkbox" ng-model="followMetric" ng-true-value="1" ng-false-value="0"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="width:20px;"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="width:100%;margin: 10px;" class="well">
+        <table style="width:100%;height:100%;">
+            <tr>
+                <td style="vertical-align: top;width:640px;">
+                    <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric"/>
+                </td>
+                <td style = "vertical-align:top;text-align:left;">
+                    <div class="well">
+                        <span class="badge badge-info" style="cursor:pointer;" popover="Select datasets to show on the diagram" popover-placement="right">?</span>
+                        <b>Datasets:</b>
+                        <ul>
+                            <li ng-repeat="actorId in actorIds">
+                                <label class="checkbox">
+                                    <input type="checkbox" ng-model="selection.actorIds[actorId]" id="{{actorId}}"/><small>{{ actorId }}</small>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="alert">
+                        <strong>Warning!</strong> All values are random and does not reflect reality for now.
+                    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>

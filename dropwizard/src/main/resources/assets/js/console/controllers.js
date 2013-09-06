@@ -343,6 +343,52 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
     $scope.update();
 
 });
+
+consoleControllers.controller("metricsController", function ($scope, $$data, $log) {
+    $scope.isCollapsed = false;
+    $scope.metricsMethods = ["poll", "release", "startProcess"];
+    $scope.actorIds = [];
+    $scope.metrics = [];
+
+    //selected objects
+    $scope.selection = {
+        actorIds: {},
+        metric: {},
+        method: "",
+        actorId: ""
+    };
+
+    var getSelectedDataSets = function() {
+        var result = "";
+        for(var actorId in $scope.selection.actorIds) {
+            if($scope.selection.actorIds[actorId]) {
+                if(result.length > 0) {
+                    result = result + ",";
+                }
+                result = result + actorId;
+            }
+        }
+        return result;
+    };
+
+    $scope.getDataSetUrl = function() {
+        return "/rest/console/metrics/data?type=" + $scope.selection.metric.type + "&dataset=" + encodeURIComponent(getSelectedDataSets());
+    };
+
+    $$data.listActors().then(function(value) {
+        $scope.actorIds = angular.fromJson(value.data || {});
+        $scope.selectedActorIds = new Array($scope.actorIds.length);
+        $log.info("metricsController: actors list getted is" + angular.toJson($scope.actorIds));
+    });
+
+    $$data.listMetricsType().then(function(value) {
+        $scope.metrics = angular.fromJson(value.data || []);
+        $log.info("metricsController: metrics type list getted is" + angular.toJson($scope.metrics));
+    });
+
+
+});
+
 consoleControllers.controller("homeController", function ($scope) {
 });
 consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {
