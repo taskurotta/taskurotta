@@ -23,7 +23,7 @@ properties:
   hz.nodes: localhost:7777
   mongo.host: localhost
   mongo.port: 27017
-  oradb.url: "jdbc:oracle:thin:@10.129.3.163:1531:testext"
+  oradb.url: "jdbc:oracle:thin:@db1.fccland.ru:1521:orcl.fccland.ru"
   oradb.user: "taskurotta"
   oradb.password: "taskurotta"
 
