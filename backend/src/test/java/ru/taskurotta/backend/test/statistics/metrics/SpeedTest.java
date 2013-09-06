@@ -4,6 +4,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint;
+import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint2;
 import ru.taskurotta.backend.statistics.metrics.AtomicCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
 import ru.taskurotta.backend.statistics.metrics.MeanCheckPoint;
@@ -71,6 +72,7 @@ public class SpeedTest {
         List<CheckPoint> checkPoints = new ArrayList<>();
         checkPoints.add(new AtomicCheckPoint(name, actorId, dataListener));
         checkPoints.add(new ArrayCheckPoint(name, actorId, dataListener));
+        checkPoints.add(new ArrayCheckPoint2(name, actorId, dataListener));
         checkPoints.add(new YammerCheckPoint(name, actorId, dataListener));
         checkPoints.add(new MeanCheckPoint(name, actorId, dataListener));
 
@@ -80,7 +82,7 @@ public class SpeedTest {
         int[] testData = new int[size];
         long sum = 0;
         for (int i = 0; i < size; i++) {
-            testData[i] = random.nextInt(100);
+            testData[i] = random.nextInt(100000);
             sum += testData[i];
         }
 
