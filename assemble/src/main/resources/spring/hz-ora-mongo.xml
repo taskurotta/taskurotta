@@ -222,10 +222,13 @@
         <property name="nodeCustomName" value="${node.custom.name}"/>
     </bean>
 
-    <bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.JmxDataListener"/>
+    <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
+
+    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener"/>-->
 
     <!--<bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">-->
         <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->
+        <!--<constructor-arg name="metricsManager" ref="metricsManager"/>-->
         <!--<constructor-arg name="dataListener" ref="dataListener"/>-->
     <!--</bean>-->
     <!-- /Task server -->
