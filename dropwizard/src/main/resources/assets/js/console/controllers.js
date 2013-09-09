@@ -345,17 +345,22 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 });
 
 consoleControllers.controller("metricsController", function ($scope, $$data, $log) {
-    $scope.isCollapsed = false;
-    $scope.metricsMethods = ["poll", "release", "startProcess"];
+    $scope.collapse = {
+        filter: false,
+        plot: false
+    };
     $scope.actorIds = [];
-    $scope.metrics = [];
+    $scope.metricsOptions = {};
 
     //selected objects
     $scope.selection = {
         actorIds: {},
         metric: {},
         method: "",
-        actorId: ""
+        actorId: "",
+        scopeMode: {},
+        dataMode: {},
+        periodMode: {}
     };
 
     var getSelectedDataSets = function() {
@@ -372,18 +377,26 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
     };
 
     $scope.getDataSetUrl = function() {
-        return "/rest/console/metrics/data?type=" + $scope.selection.metric.type + "&dataset=" + encodeURIComponent(getSelectedDataSets());
+        var dataset = getSelectedDataSets();
+        var type = $scope.selection.dataMode.value;
+        var scope = $scope.selection.scopeMode.value;
+        var period = $scope.selection.periodMode.value;
+        var metric = $scope.selection.metric.value;
+        if(!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
+            return "/rest/console/metrics/data?metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset);
+        }
+        return "";
     };
 
     $$data.listActors().then(function(value) {
         $scope.actorIds = angular.fromJson(value.data || {});
         $scope.selectedActorIds = new Array($scope.actorIds.length);
-        $log.info("metricsController: actors list getted is" + angular.toJson($scope.actorIds));
+        $log.info("metricsController: actors list size getted is: " + $scope.actorIds.length);
     });
 
-    $$data.listMetricsType().then(function(value) {
-        $scope.metrics = angular.fromJson(value.data || []);
-        $log.info("metricsController: metrics type list getted is" + angular.toJson($scope.metrics));
+    $$data.getMetricsOptions().then(function(value) {
+        $scope.metricsOptions = angular.fromJson(value.data || {});
+        $log.info("metricsController: metricsOptions getted is: " + angular.toJson(value.data));
     });
 
 

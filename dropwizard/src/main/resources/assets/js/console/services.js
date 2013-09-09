@@ -54,8 +54,8 @@ consoleServices.factory("$$data", function ($resource, $http) {
         listActors: function() {
             return $http.get('/rest/console/actor/list/');
         },
-        listMetricsType: function() {
-            return $http.get('/rest/console/metrics/types/');
+        getMetricsOptions: function() {
+            return $http.get('/rest/console/metrics/options/');
         }
 
     };

@@ -27,14 +27,43 @@
     <bean id="consoleActorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource" parent="baseConsoleResource" />
 
     <bean id="consoleMetricsResource" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsResource" parent="baseConsoleResource" >
-        <property name="merticTypes">
+        <property name="metricsDataHandler" ref="consoleMetricsDataHandler" />
+        <property name="metricsOptionsHandler" ref="consoleMetricsOptionsHandler" />
+    </bean>
+
+    <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataHandler">
+    </bean>
+
+    <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsHandler" >
+        <property name="metrics">
             <map>
-                <entry key="1" value="Mean processing time for actors (local node)" />
-                <entry key="2" value="Mean processing time for actors (cluster)" />
-                <entry key="3" value="Actor detailed statistics" />
+                <entry key="Metric1" value="Some description for metric 1" />
+                <entry key="Metric2" value="Some description for metric 2" />
+            </map>
+        </property>
+
+        <property name="dataTypes">
+            <map>
+                <entry key="rate" value="Mean rate (count/sec)" />
+                <entry key="mean" value="Mean time (ms)" />
+            </map>
+        </property>
+
+        <property name="periods">
+            <map>
+                <entry key="hour" value="Last hour" />
+                <entry key="day" value="Last 24 hours" />
+            </map>
+        </property>
+
+        <property name="scopes">
+            <map>
+                <entry key="cluster" value="Cluster (all nodes)" />
+                <entry key="local" value="Local node" />
             </map>
         </property>
     </bean>
+
 
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend"/>
