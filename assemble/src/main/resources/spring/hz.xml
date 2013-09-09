@@ -53,30 +53,6 @@
         </hz:config>
     </hz:hazelcast>
 
-    <!-- Queues persistence support -->
-    <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
-
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="maxSize" value="500000"/>
-        <property name="memoryLimit" value="100000"/>
-        <property name="binary" value="true"/>
-        <property name="bulkLoad" value="500"/>
-    </bean>
-
-    <bean class="ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport" id="hzMapConfigSpringSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="evictionPercentage" value="25"/>
-        <property name="evictionPolicy" value="LRU"/>
-        <property name="mapStoreBeanName" value="mongoMapStore"/>
-        <property name="maxSize" value="1000"/>
-    </bean>
-
     <!-- REST resources -->
     <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
