@@ -1,7 +1,5 @@
 package ru.taskurotta.backend.hz.support;
 
-import java.util.Properties;
-
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.DistributedObject;
@@ -15,6 +13,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mongodb.core.MongoTemplate;
+
+import java.util.Properties;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -42,6 +42,7 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private int memoryLimit = 100;
     private boolean binary = false;
     private int bulkLoad = 10;
+    private boolean mongoSupport = true;
 
 
     private ILock queueConfigLock;
@@ -60,7 +61,6 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
                 logger.debug("Skip creating queue[{}] config: it already exists...", queueName);
                 return;
             }
-            String mapName = queueName + BACKING_MAP_NAME_SUFFIX;
 
             QueueConfig qc = new QueueConfig();
             qc.setName(queueName);
@@ -77,7 +77,12 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     }
 
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
-        QueueStoreConfig result = new QueueStoreConfig(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
+        QueueStoreConfig result;
+        if (mongoSupport) {
+            result = new QueueStoreConfig(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
+        } else {
+            result = new QueueStoreConfig();
+        }
         result.setEnabled(true);
         Properties properties = new Properties();
         properties.put("binary", this.binary);
@@ -166,5 +171,13 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
 
     public void setBulkLoad(int bulkLoad) {
         this.bulkLoad = bulkLoad;
+    }
+
+    public boolean isMongoSupport() {
+        return mongoSupport;
+    }
+
+    public void setMongoSupport(boolean mongoSupport) {
+        this.mongoSupport = mongoSupport;
     }
 }
