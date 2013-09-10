@@ -28,13 +28,9 @@ public class JmxDataListener implements DataListener {
 
     private static final String domain = "ru.taskurotta.metrics";
 
-    private static final String separator = "#";
-
     public interface MetricsMBean {
 
         public String getName();
-
-        public String getActorId();
 
         public long getCount();
 
@@ -46,7 +42,6 @@ public class JmxDataListener implements DataListener {
     public class Metrics implements MetricsMBean {
 
         private String name;
-        private String actorId;
         private long count;
         private double value;
         private long time;
@@ -58,15 +53,6 @@ public class JmxDataListener implements DataListener {
 
         public void setName(String name) {
             this.name = name;
-        }
-
-        @Override
-        public String getActorId() {
-            return actorId;
-        }
-
-        public void setActorId(String actorId) {
-            this.actorId = actorId;
         }
 
         @Override
@@ -98,45 +84,52 @@ public class JmxDataListener implements DataListener {
     }
 
     @Override
-    public void handle(String name, String actorId, long count, double value, long time) {
+    public void handle(String name, long count, double value, long time) {
 
-        String key = name + separator + actorId;
+        logger.trace("[{}]: find metrics for", name);
 
-        logger.trace("[{}]#[{}]: find metrics for [{}]", name, actorId, key);
+        Metrics metrics = metricsMap.get(name);
 
-        Metrics metrics = metricsMap.get(key);
-
-        logger.trace("[{}]#[{}]: for [{}] found metrics [{}]", name, actorId, key, metrics);
+        logger.trace("[{}]: found metrics [{}]", name, metrics);
 
         if (metrics == null) {
             synchronized (metricsMap) {
-                metrics = metricsMap.get(key);
+                metrics = metricsMap.get(name);
 
                 if (metrics == null) {
                     metrics = new Metrics();
 
-                    logger.trace("[{}]#[{}]: create metrics [{}]", name, actorId, metrics);
+                    logger.trace("[{}]: create metrics [{}]", name, metrics);
 
                     try {
-                        mBeanServer.registerMBean(metrics, createName(key));
+                        mBeanServer.registerMBean(metrics, createName(name));
                     } catch (InstanceAlreadyExistsException | NotCompliantMBeanException | MBeanRegistrationException e) {
                         logger.error("Catch exception while register MBean for [" + name + "]", e);
                     }
 
-                    metricsMap.put(key, metrics);
+                    metricsMap.put(name, metrics);
 
-                    logger.trace("[{}]#[{}]: save metrics [{}] for key [{}]", name, actorId, metrics, key);
+                    logger.trace("[{}]: save metrics [{}]", name, metrics);
                 }
             }
         }
 
         metrics.setName(name);
-        metrics.setActorId(actorId);
         metrics.setCount(count);
         metrics.setValue(value);
         metrics.setTime(time);
 
-        logger.trace("[{}]#[{}]: update metrics [{}] for key [{}]", name, actorId, metrics, key);
+        logger.trace("[{}]: update metrics [{}]", name, metrics);
+    }
+
+    @Override
+    public long[] getHourCount() {
+        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public long[] getDayCount() {
+        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private ObjectName createName(String name) {

@@ -3,12 +3,7 @@ package ru.taskurotta.backend.test.statistics.metrics;
 import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
-import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint;
-import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint2;
-import ru.taskurotta.backend.statistics.metrics.AtomicCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
-import ru.taskurotta.backend.statistics.metrics.MeanCheckPoint;
-import ru.taskurotta.backend.statistics.metrics.YammerCheckPoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,13 +29,12 @@ public class SpeedTest {
     private Random random = new Random();
 
     private int size = 100000;
-    private long[] data;
 
     private ExecutorService executorService = Executors.newFixedThreadPool(8);
 
     class MockDataListener implements DataListener {
         @Override
-        public void handle(String name, String actorId, long count, double value, long time) {
+        public void handle(String name, long count, double value, long time) {
             System.out.println("DataListener count = " + count + ", value = " + value);
         }
     }
@@ -70,12 +64,7 @@ public class SpeedTest {
     @Test
     public void testCheckPoint() throws ExecutionException, InterruptedException {
         List<CheckPoint> checkPoints = new ArrayList<>();
-        checkPoints.add(new AtomicCheckPoint(name, actorId, dataListener));
-        checkPoints.add(new ArrayCheckPoint(name, actorId, dataListener));
-        checkPoints.add(new ArrayCheckPoint2(name, actorId, dataListener));
-        checkPoints.add(new YammerCheckPoint(name, actorId, dataListener));
-        checkPoints.add(new MeanCheckPoint(name, actorId, dataListener));
-
+        checkPoints.add(new CheckPoint(name, dataListener));
 
         Collections.shuffle(checkPoints);
 
