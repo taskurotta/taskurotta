@@ -15,9 +15,19 @@ public class LoggerDataListener implements DataListener {
     private final static Logger logger = LoggerFactory.getLogger(LoggerDataListener.class);
 
     @Override
-    public void handle(String name, String actorId, long count, double value, long time) {
+    public void handle(String name, long count, double value, long time) {
         if (logger.isInfoEnabled()) {
-            logger.info("METRICS: [{}]#[{}]: value = [{}], count = [{}] collected at [{}]", name, actorId, value, count, new Date(time));
+            logger.info("METRICS: [{}]: value = [{}], count = [{}] collected at [{}]", name, value, count, new Date(time));
         }
+    }
+
+    @Override
+    public long[] getHourCount() {
+        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public long[] getDayCount() {
+        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

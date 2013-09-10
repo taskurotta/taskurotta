@@ -3,12 +3,7 @@ package ru.taskurotta.backend.test.statistics.metrics;
 import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
-import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint;
-import ru.taskurotta.backend.statistics.metrics.ArrayCheckPoint2;
-import ru.taskurotta.backend.statistics.metrics.AtomicCheckPoint;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
-import ru.taskurotta.backend.statistics.metrics.MeanCheckPoint;
-import ru.taskurotta.backend.statistics.metrics.YammerCheckPoint;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,20 +23,27 @@ import java.util.concurrent.Future;
  */
 public class SpeedTest {
 
-    private String name = "testName";
-    private String actorId = "testActorId";
     private DataListener dataListener = new MockDataListener();
     private Random random = new Random();
 
     private int size = 100000;
-    private long[] data;
 
     private ExecutorService executorService = Executors.newFixedThreadPool(8);
 
     class MockDataListener implements DataListener {
         @Override
-        public void handle(String name, String actorId, long count, double value, long time) {
+        public void handle(String name, long count, double value, long time) {
             System.out.println("DataListener count = " + count + ", value = " + value);
+        }
+
+        @Override
+        public long[] getHourCount() {
+            return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public long[] getDayCount() {
+            return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 
@@ -70,12 +72,7 @@ public class SpeedTest {
     @Test
     public void testCheckPoint() throws ExecutionException, InterruptedException {
         List<CheckPoint> checkPoints = new ArrayList<>();
-        checkPoints.add(new AtomicCheckPoint(name, actorId, dataListener));
-        checkPoints.add(new ArrayCheckPoint(name, actorId, dataListener));
-        checkPoints.add(new ArrayCheckPoint2(name, actorId, dataListener));
-        checkPoints.add(new YammerCheckPoint(name, actorId, dataListener));
-        checkPoints.add(new MeanCheckPoint(name, actorId, dataListener));
-
+        checkPoints.add(new CheckPoint("testName", dataListener));
 
         Collections.shuffle(checkPoints);
 

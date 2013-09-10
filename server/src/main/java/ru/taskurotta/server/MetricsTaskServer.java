@@ -1,7 +1,10 @@
 package ru.taskurotta.server;
 
-import ru.taskurotta.backend.statistics.MetricsManager;
+import ru.taskurotta.backend.statistics.ActorMetricsManager;
+import ru.taskurotta.backend.statistics.GeneralMetricsManager;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
+import ru.taskurotta.backend.statistics.datalisteners.LoggerActorDataListener;
+import ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
@@ -15,7 +18,8 @@ import ru.taskurotta.util.ActorUtils;
 public class MetricsTaskServer implements TaskServer {
 
     private TaskServer taskServer;
-    private MetricsManager metricsManager;
+    private GeneralMetricsManager generalMetricsManager;
+    private ActorMetricsManager actorMetricsManager;
     private DataListener dataListener;
 
     public static final String START_PROCESS = "startProcess";
@@ -24,9 +28,10 @@ public class MetricsTaskServer implements TaskServer {
     public static final String EXECUTION_TIME = "executionTime";
     public static final String ERROR_DECISION = "errorDecision";
 
-    public MetricsTaskServer(TaskServer taskServer, MetricsManager metricsManager, DataListener dataListener) {
+    public MetricsTaskServer(TaskServer taskServer, GeneralMetricsManager generalMetricsManager, ActorMetricsManager actorMetricsManager,DataListener dataListener) {
         this.taskServer = taskServer;
-        this.metricsManager = metricsManager;
+        this.generalMetricsManager = generalMetricsManager;
+        this.actorMetricsManager = actorMetricsManager;
         this.dataListener = dataListener;
     }
 
@@ -39,7 +44,9 @@ public class MetricsTaskServer implements TaskServer {
 
         taskServer.startProcess(task);
 
-        metricsManager.mark(START_PROCESS, actorId, System.currentTimeMillis() - startTime, dataListener);
+        generalMetricsManager.mark(START_PROCESS, System.currentTimeMillis() - startTime, dataListener);
+
+        actorMetricsManager.mark(actorId, START_PROCESS, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
     }
 
     @Override
@@ -51,7 +58,9 @@ public class MetricsTaskServer implements TaskServer {
 
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
-        metricsManager.mark(POLL, actorId, System.currentTimeMillis() - startTime, dataListener);
+        generalMetricsManager.mark(POLL, System.currentTimeMillis() - startTime, dataListener);
+
+        actorMetricsManager.mark(actorId, POLL, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
 
         return taskContainer;
     }
@@ -65,16 +74,22 @@ public class MetricsTaskServer implements TaskServer {
 
         taskServer.release(taskResult);
 
-        metricsManager.mark(RELEASE, actorId, System.currentTimeMillis() - startTime, dataListener);
+        generalMetricsManager.mark(RELEASE, System.currentTimeMillis() - startTime, dataListener);
 
-        metricsManager.mark(EXECUTION_TIME, actorId, taskResult.getExecutionTime(), dataListener);
+        actorMetricsManager.mark(actorId, RELEASE, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
+
+        generalMetricsManager.mark(EXECUTION_TIME, taskResult.getExecutionTime(), dataListener);
+
+        actorMetricsManager.mark(actorId, EXECUTION_TIME, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
 
         if (taskResult.containsError()) {
-            metricsManager.mark(ERROR_DECISION, actorId, taskResult.getExecutionTime(), dataListener);
+            generalMetricsManager.mark(ERROR_DECISION, taskResult.getExecutionTime(), dataListener);
+
+            actorMetricsManager.mark(actorId, ERROR_DECISION, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
         }
     }
 
     public void shutdown() {
-        metricsManager.shutdown();
+        generalMetricsManager.shutdown();
     }
 }
