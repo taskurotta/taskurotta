@@ -31,8 +31,10 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
 
     $scope.totalTasks = function () {
         var result = 0;
-        for (var i = 0; i < $scope.queuesPage.items.length; i++) {
-            result = result + $scope.queuesPage.items[i].count;
+        if($scope.queuesPage.items) {
+            for (var i = 0; i < $scope.queuesPage.items.length; i++) {
+                result = result + $scope.queuesPage.items[i].count;
+            }
         }
         return result;
     };
@@ -42,10 +44,10 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
 
         $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize).then(function (value) {
             $scope.queuesPage = angular.fromJson(value.data || {});
-            $log.info("queueListController: successfully updated queue state");
+            $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
         }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("queueListController: queue state update failed: " + errReason);
+            $scope.feedback = angular.toJson(errReason);
+            $log.error("queueListController: queue state update failed: " + $scope.feedback);
         });
 
     };
@@ -112,31 +114,10 @@ consoleControllers.controller("processListController", function ($scope, $$data,
     $scope.update();
 });
 
-consoleControllers.controller("profilesController", function ($scope, $$data, $log) {
-    $scope.feedback = "";
-    $scope.profiles = [];
-
-    //Updates profiles by polling REST resource
-    $scope.update = function () {
-        $$data.getProfiles().then(function (value) {
-            $scope.profiles = angular.fromJson(value.data || {});
-            $log.info("profilesController: successfully updated profiles");
-        }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("profilesController: profiles update failed: " + errReason);
-        });
-
-    };
-
-    //Initialization:
-    $scope.update();
-
-});
-
-consoleControllers.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
+consoleControllers.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {//id=
     $scope.process = {};
     $scope.taskTree = {};
-    $scope.id = $routeParams.processId;
+    $scope.processId = $routeParams.processId;
     $scope.feedback = "";
 
     $scope.update = function () {
@@ -148,44 +129,34 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
                 $scope.taskTree = angular.fromJson(value.data || {});
                 $log.info("processCardController: successfully updated process[" + $routeParams.processId + "]/["+$scope.process.startTaskUuid+"] tree");
             }, function (errReason) {
-                $scope.feedback = errReason;
-                $log.error("processCardController: process[" + $routeParams.processId + "] tree update failed: " + errReason);
+                $scope.feedback = angular.toJson(errReason);
+                $log.error("processCardController: process[" + $routeParams.processId + "] tree update failed: " + $scope.feedback);
             });
 
         }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("processCardController: process[" + $routeParams.id + "] update failed: " + errReason);
+            $scope.feedback = angular.toJson(errReason);
+            $log.error("processCardController: process[" + $routeParams.processId + "] update failed: " + $scope.feedback);
         });
-
-
     };
 
     $scope.update();
 });
 
-consoleControllers.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
-    $scope.id = $routeParams.id || '';
-    $scope.type = $routeParams.type;
+consoleControllers.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams, $location) {//params: customId, processId
+    $scope.customId = $routeParams.customId || '';
+    $scope.processId = $routeParams.processId || '';
     $scope.processes = [];
 
     $scope.update = function () {
-        if ($scope.type == 'custom_id') { //searching process by customID
-            $$data.findProcess($scope.type, $scope.id).then(function (value) {
-                $scope.processes = angular.fromJson(value.data || {});
-                $log.info("processSearchController: successfully found processes with customId started with[" + $scope.id + "]");
-            }, function (errReason) {
-                $scope.feedback = errReason;
-                $log.error("processSearchController: search for processes with customId started wirh [" + $scope.id + "] failed: " + errReason);
-            });
-        } else if ($scope.type == 'process_id') {//searching process by ID
-            $$data.findProcess($scope.type, $scope.id).then(function (value) {
-                $scope.processes = angular.fromJson(value.data || {});
-                $log.info("processSearchController: successfully found processes with Id started with[" + $scope.id + "]");
-            }, function (errReason) {
-                $scope.feedback = errReason;
-                $log.error("processSearchController: search for processes with Id started wirh [" + $scope.id + "] failed: " + errReason);
-            });
-        }
+        $$data.findProcess($scope.processId, $scope.customId).then(function (value) {
+            $scope.processes = angular.fromJson(value.data || []);
+            $location.search("customId", $scope.customId);
+            $location.search("processId", $scope.processId);
+            $log.info("processSearchController: successfully found["+$scope.processes.length+"] processes");
+        }, function (errReason) {
+            $scope.feedback = angular.fromJson(errReason);
+            $log.error("processSearchController: process search failed: " + $scope.feedback);
+        });
     };
 
     $scope.update();
@@ -211,8 +182,8 @@ consoleControllers.controller("taskListController", function ($scope, $$data, $l
             $scope.tasksPage = angular.fromJson(value.data || {});
             $log.info("taskListController: successfully updated tasks page");
         }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("queueListController: tasks page update failed: " + errReason);
+            $scope.feedback = angular.toJson(errReason);
+            $log.error("queueListController: tasks page update failed: " + $scope.feedback);
         });
 
     };
@@ -226,13 +197,15 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
     $scope.task = {};
     $scope.taskTree = {};
     $scope.taskDecision = {};
-    $scope.id = $routeParams.taskId;
+    $scope.taskId = $routeParams.taskId;
+    $scope.processId = $routeParams.processId;
 
     $scope.feedback = "";
+
     $scope.update = function () {
         $$data.getTask($routeParams.taskId, $routeParams.processId).then(function (value) {
             $scope.task = angular.fromJson(value.data || {});
-            $log.info("taskController: successfully updated task[" + $routeParams.id + "] content");
+            $log.info("taskController: successfully updated task[" + $routeParams.taskId + "] content");
 
             $$data.getTaskTree($routeParams.taskId, $routeParams.processId).then(function (value) {
                 $scope.taskTree = angular.fromJson(value.data || {});
@@ -242,18 +215,18 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
                     $scope.taskDecision = angular.fromJson(value.data || {});
                     $log.info("taskController: successfully updated task decision[" + $routeParams.taskId + "] content");
                 }, function (errReason) {
-                    $scope.feedback = errReason;
-                    $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + errReason);
+                    $scope.feedback = angular.toJson(errReason);
+                    $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + $scope.feedback);
                 });
 
             }, function (errReason) {
-                $scope.feedback = errReason;
-                $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + errReason);
+                $scope.feedback = angular.toJson(errReason);
+                $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + $scope.feedback);
             });
 
         }, function (errReason) {
-            $scope.feedback = errReason;
-            $log.error("taskController: task[" + $routeParams.id + "] update failed: " + errReason);
+            $scope.feedback = angular.toJson(errReason);
+            $log.error("taskController: task[" + $routeParams.taskId + "] update failed: " + $scope.feedback);
         });
     };
 
@@ -261,28 +234,21 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
 
 });
 
-consoleControllers.controller("taskSearchController", function ($scope, $routeParams, $$data, $log) {
-    $scope.taskId = $routeParams.id || '';
-    $scope.processId = $routeParams.id || '';
-    $scope.type = $routeParams.type;
+consoleControllers.controller("taskSearchController", function ($scope, $routeParams, $$data, $log, $location) {
+    $scope.taskId = $routeParams.taskId || '';
+    $scope.processId = $routeParams.processId || '';
     $scope.tasks = [];
 
     $scope.update = function () {
-        if ($scope.type == 'task_id') { //searching task by ID
-            $$data.getTask($scope.taskId, $scope.processId).then(function (value) {
-                $scope.tasks = [angular.fromJson(value.data || {})];
-                $log.info("taskSearchController: successfully updated task[" + $routeParams.taskId + "] content");
+        if($scope.taskId || $scope.processId) {
+            $$data.findTasks($scope.processId, $scope.taskId).then(function (value) {
+                $scope.tasks = angular.fromJson(value.data || []);
+                $location.search("processId", $scope.processId);
+                $location.search("taskId", $scope.taskId);
+                $log.info("taskSearchController: found [" + $scope.tasks.length + "] tasks");
             }, function (errReason) {
-                $scope.feedback = errReason;
-                $log.error("taskSearchController: task[" + $routeParams.taskId + "] update failed: " + errReason);
-            });
-        } else if ($scope.type == 'process_id') {//searching tasks for given process
-            $$data.getProcessTasks($scope.processId).then(function (value) {
-                $scope.tasks = angular.fromJson(value.data || {});
-                $log.info("taskSearchController: successfully updated process[" + $routeParams.processId + "] tasks list");
-            }, function (errReason) {
-                $scope.feedback = errReason;
-                $log.error("taskController: process[" + $routeParams.processId + "] tasks update failed: " + errReason);
+                $scope.feedback = angular.toJson(errReason);
+                $log.error("taskSearchController: task search update failed: " + $scope.feedback);
             });
         }
     };

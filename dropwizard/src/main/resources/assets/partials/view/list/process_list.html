@@ -36,10 +36,10 @@
             </td>
             <td>
                 <a class="btn btn-link"
-                   ng-href="#/processes/process/{{process.processUuid}}">{{process.processUuid}}</a>
+                   ng-href="#/processes/process?processId={{process.processUuid}}">{{process.processUuid}}</a>
             </td>
             <td>
-                <a ng-href="#/tasks/task/{{process.processUuid}}/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
+                <a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
             </td>
             <td>
                 {{process.customId}}

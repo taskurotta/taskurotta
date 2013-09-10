@@ -21,9 +21,9 @@ public class ProcessSearchResource extends BaseResource {
 
 
     @GET
-    public Response getProcessInfo(@QueryParam("type") Optional<String> type, @QueryParam("id") Optional<String> id) {
+    public Response getProcessInfo(@QueryParam("processId") Optional<String> processId, @QueryParam("customId") Optional<String> customId) {
         try {
-            List<ProcessVO> processes = consoleManager.findProcesses(type.or(DEFAULT_TYPE), id.or(""));
+            List<ProcessVO> processes = consoleManager.findProcesses(processId.or(""), customId.or(""));
             logger.debug("Processes getted is [{}]", processes);
             return Response.ok(processes, MediaType.APPLICATION_JSON).build();
         } catch (Throwable e) {

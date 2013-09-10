@@ -28,13 +28,12 @@
         </tr>
         </thead>
 
-
         <tbody>
         <tr ng-repeat="queueItem in queueTasksPage.items">
             <td>{{getStartIndex(queueTasksPage.pageNumber, queueTasksPage.pageSize)+$index}}</td>
 
             <td>
-                <a class="btn btn-link" style="cursor: pointer;" ng-href="#/tasks/task/{{queueItem.processId}}/{{queueItem.taskId}}">{{queueItem.taskId}}</a>
+                <a class="btn btn-link" style="cursor: pointer;" ng-href="#/processes/task?processId={{queueItem.processId}}&taskId={{queueItem.taskId}}">{{queueItem.taskId}}</a>
             </td>
             <td>{{queueItem.taskList}}</td>
             <td>{{queueItem.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
@@ -50,6 +49,6 @@
 
     </table>
 
-    <div>Total: <b><b>{{queueTasksPage.totalCount}}</b></b> tasks</div>
+    <div>Total: <b>{{queueTasksPage.totalCount}}</b> tasks</div>
 
 </div>

@@ -203,7 +203,6 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
         }
     }
 
-
     private void processWaitCollection(Modification modification, UUID childTaskId, ArgContainer collectionArg) {
         ArgContainer[] items = collectionArg.getCompositeValue();
         for (ArgContainer item : items) {

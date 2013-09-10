@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.storage;
 
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -32,4 +33,6 @@ public interface TaskDao {
     TaskContainer removeTask(UUID taskId, UUID processId);
 
     void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds);
+
+    List<TaskContainer> findTasks(TaskSearchCommand command);
 }

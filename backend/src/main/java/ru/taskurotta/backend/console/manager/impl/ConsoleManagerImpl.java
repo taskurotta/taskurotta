@@ -11,9 +11,11 @@ import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
 import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
+import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -157,11 +159,19 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public List<ProcessVO> findProcesses(String type, String id) {
+    public List<ProcessVO> findProcesses(String processId, String customId) {
         if (processInfo == null) {
             return null;
         }
-        return processInfo.findProcesses(type, id);
+        return processInfo.findProcesses(new ProcessSearchCommand(processId, customId));
+    }
+
+    @Override
+    public List<TaskContainer> findTasks(String processId, String taskId) {
+        if(taskInfo == null) {
+            return null;
+        }
+        return taskInfo.findTasks(new TaskSearchCommand(processId, taskId));
     }
 
     @Override

@@ -10,7 +10,7 @@ consoleServices.factory("$$data", function ($resource, $http) {
             return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
         getTask: function (taskId, processId) {
-            return $http.get('/rest/console/task/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
+            return $http.get('/rest/console/task?processId=' + encodeURIComponent(processId) + '&taskId=' + encodeURIComponent(taskId));
         },
         getTaskTree: function (taskId, processId) {
             return $http.get('/rest/console/tree/task/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
@@ -21,8 +21,11 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getProcess: function (processId) {
             return $http.get('/rest/console/process/' + encodeURIComponent(processId));
         },
-        findProcess: function (searchType, id) {
-            return $http.get('/rest/console/process/search?type=' + encodeURIComponent(searchType) + "&id=" + encodeURIComponent(id));
+        findTasks: function (processId, taskId) {
+            return $http.get('/rest/console/task/search?processId=' + encodeURIComponent(processId) + "&taskId=" + encodeURIComponent(taskId));
+        },
+        findProcess: function (processId, customId) {
+            return $http.get('/rest/console/process/search?processId=' + encodeURIComponent(processId) + "&customId=" + encodeURIComponent(customId));
         },
         getProcessTree: function (processId, startTaskId) {
             return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
@@ -32,9 +35,6 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getProcessTasks: function (processId) {
             return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
-        },
-        getProfiles: function () {
-            return $http.get('/rest/console/profiles');
         },
         getHoveringQueues: function (periodSize) {
             return $http.get('/rest/console/hoveringQueues/?periodSize=' + periodSize);

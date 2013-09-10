@@ -1,10 +1,12 @@
 package ru.taskurotta.backend.console.retriever;
 
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -15,6 +17,8 @@ import java.util.UUID;
 public interface TaskInfoRetriever {
 
     public TaskContainer getTask(UUID taskId, UUID processId);
+
+    public List<TaskContainer> findTasks(TaskSearchCommand command);
 
     public Collection<TaskContainer> getProcessTasks(Collection<UUID> processTaskIds, UUID processId);
 

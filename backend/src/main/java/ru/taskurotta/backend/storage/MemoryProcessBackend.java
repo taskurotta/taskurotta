@@ -1,19 +1,21 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -94,19 +96,31 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     }
 
     @Override
-    public List<ProcessVO> findProcesses(final String type, final String id) {
+    public List<ProcessVO> findProcesses(final ProcessSearchCommand command) {
         List<ProcessVO> result = new ArrayList<>();
-        if ((id != null) && (!id.isEmpty())) {
-            result.addAll(Collections2.filter(processesStorage.values(), new com.google.common.base.Predicate<ProcessVO>() {
-                @Override
-                public boolean apply(ProcessVO process) {
-                    if (SEARCH_BY_ID.equals(type)) {
-                        return process.getProcessUuid().toString().startsWith(id);
-                    } else if (SEARCH_BY_CUSTOM_ID.equals(type)) {
-                        return process.getCustomId().startsWith(id);
-                    }
-                    return false;
+        if (command.getCustomId()!=null || command.getProcessId()!=null ) {
+            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+
+                private boolean hasText(String target){
+                    return target != null && target.trim().length()>0;
                 }
+
+                private boolean isValid (ProcessVO processVO) {
+                    boolean isValid = true;
+                    if (hasText(command.getCustomId())) {
+                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getCustomId());
+                    }
+                    if (hasText(command.getProcessId())) {
+                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getProcessId());
+                    }
+                    return isValid;
+                }
+
+                @Override
+                public boolean apply(ProcessVO processVO) {
+                    return isValid(processVO);
+                }
+
             }));
         }
         return result;

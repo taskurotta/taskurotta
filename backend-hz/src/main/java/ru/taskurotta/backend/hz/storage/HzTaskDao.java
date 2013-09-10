@@ -1,20 +1,22 @@
 package ru.taskurotta.backend.hz.storage;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.backend.hz.TaskKey;
 import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TaskDao storing tasks in HZ shared(and processId partitioned) maps
@@ -97,6 +99,37 @@ public class HzTaskDao implements TaskDao {
     @Override
     public void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds) {
         // do nothing
+    }
+
+    @Override
+    public List<TaskContainer> findTasks(final TaskSearchCommand command) {
+        List<TaskContainer> result = new ArrayList<>();
+        if(command!=null && !command.isEmpty()) {
+            result.addAll(Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
+
+                private boolean hasText(String target){
+                    return target != null && target.trim().length()>0;
+                }
+
+                private boolean isValid (TaskContainer taskContainer) {
+                    boolean isValid = true;
+                    if (hasText(command.getTaskId())) {
+                        isValid = isValid && taskContainer.getTaskId().toString().startsWith(command.getTaskId());
+                    }
+                    if (hasText(command.getProcessId())) {
+                        isValid = isValid && taskContainer.getProcessId().toString().startsWith(command.getProcessId());
+                    }
+                    return isValid;
+                }
+
+                @Override
+                public boolean apply(TaskContainer processVO) {
+                    return isValid(processVO);
+                }
+
+            }));
+        }
+        return result;
     }
 
     public void setId2TaskMapName(String id2TaskMapName) {

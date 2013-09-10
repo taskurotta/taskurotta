@@ -4,7 +4,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
@@ -14,11 +14,11 @@ import java.util.UUID;
  * User: dimadin
  * Date: 23.05.13 15:29
  */
-@Path("/console/task/{processId}/{taskId}")
+@Path("/console/task")
 public class TaskResource extends BaseResource {
 
     @GET
-    public Response getTask(@PathParam("taskId")String taskId, @PathParam("processId")String processId) {
+    public Response getTask(@QueryParam("taskId")String taskId, @QueryParam("processId")String processId) {
 
         try {
             TaskContainer taskContainer = consoleManager.getTask(UUID.fromString(taskId), UUID.fromString(processId));

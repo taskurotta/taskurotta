@@ -63,7 +63,9 @@ public interface ConsoleManager {
 
     public TaskTreeVO getTreeForProcess(UUID processUuid);
 
-    public List<ProcessVO> findProcesses(String type, String id);
+    public List<ProcessVO> findProcesses(String processId, String customId);
+
+    public List<TaskContainer> findTasks(String processId, String taskId);
 
     public List<QueueVO> getQueuesHovering(float periodSize);
 

@@ -8,12 +8,12 @@
     </table>
 
     <div ng-hide="process.processUuid.length > 0" class="text-warning">
-        Process not found by id {{id}}
+        Searching for process id {{processId}} ...
     </div>
 
     <div ng-show="process.processUuid.length > 0">
         <div>
-            <a class="btn btn-link" ng-href="#/tasks/search/process_id/{{process.processUuid}}">List task for this
+            <a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processUuid}}">List task for this
                 process</a>
         </div>
 
@@ -24,7 +24,8 @@
             </tr>
             <tr>
                 <td class="form-header">Start task ID:</td>
-                <td><a ng-href="#/tasks/task/{{process.processUuid}}/{{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
+                <td>
+                    <a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
                 </td>
             </tr>
             <tr>
@@ -47,12 +48,12 @@
 
         <div style="background-color: #f5f5f5;padding:2px;">
             <h3>Process tree:</h3>
-            <b>&#8595<a ng-href="#/tasks/task/{{process.processUuid}}/{{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>
+            <b>&#8595<a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>
             <div class="tree">
                 <ul style="border: 1px dotted grey;" ng-show="taskTree.children.length>0">
                     <li ng-repeat="child in taskTree.children" tsk-tree>
                         <div>
-                            <a ng-href="#/tasks/task/{{process.processUuid}}/{{child.id}}" class="btn btn-link">{{child.id}}</a>
+                            <a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{child.id}}" class="btn btn-link">{{child.id}}</a>
                             <span class="muted">{{child.desc}}</span>
                         </div>
                         <ul style="border: 1px dotted grey;" ng-show="child.children.length>0">

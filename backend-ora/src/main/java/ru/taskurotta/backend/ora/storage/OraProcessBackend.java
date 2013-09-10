@@ -1,15 +1,5 @@
 package ru.taskurotta.backend.ora.storage;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -18,11 +8,22 @@ import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
+import ru.taskurotta.backend.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.backend.ora.tools.PagedQueryBuilder;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.exception.BackendCriticalException;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: moroz
@@ -208,16 +209,14 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public List<ProcessVO> findProcesses(String type, String id) {
+    public List<ProcessVO> findProcesses(ProcessSearchCommand command) {
         List<ProcessVO> result = new ArrayList<>();
-        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS WHERE %ST LIKE ? AND ROWNUM <= 200";
-        query = (!SEARCH_BY_CUSTOM_ID.equals(type)) ? query.replace("%ST", "PROCESS_ID") : query.replace("%ST", "CUSTOM_ID");
-        ResultSet rs = null;
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(query);
-        ) {
-            if ((id != null) && (!id.isEmpty())) {
-                ps.setString(1, id + "%");
+        if(command!=null && !command.isEmpty()) {
+            String query = getSearchSql(command);
+            ResultSet rs = null;
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement ps = connection.prepareStatement(query);
+            ) {
                 rs = ps.executeQuery();
                 while (rs.next()) {
                     ProcessVO process = new ProcessVO();
@@ -229,13 +228,33 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
                     process.setReturnValueJson(rs.getString("return_value"));
                     result.add(process);
                 }
+            } catch (SQLException ex) {
+                log.error("DataBase exception on query ["+query+"]: " + ex.getMessage(), ex);
+                throw new BackendCriticalException("Database error", ex);
+            } finally {
+                closeResultSet(rs);
             }
-        } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResultSet(rs);
         }
         return result;
     }
+
+    private String getSearchSql(ProcessSearchCommand command) {
+        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS WHERE ");
+        boolean requireAndCdtn = false;
+        if(command.getProcessId()!=null && command.getProcessId().trim().length()>0) {
+            sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
+            requireAndCdtn = true;
+        }
+        if(command.getCustomId()!=null && command.getCustomId().trim().length()>0) {
+            if(requireAndCdtn) {
+                sb.append(" AND ");
+            }
+            sb.append("CUSTOM_ID LIKE '").append(command.getCustomId()).append("%'");
+        }
+
+        sb.append(" AND ROWNUM <= 200");
+
+        return sb.toString();
+    }
+
 }

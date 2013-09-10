@@ -15,8 +15,8 @@
             <button class="btn" ng-click="update()">Refresh</button>
             <br/><br/>
             <span ng-show="tasks.length >= 200" style="text-align: center;" class="error-box">
-            Search result contains more than 200 lines. Please, refine your search.
-                </span>
+                Search result contains more than 200 lines. Please, refine your search.
+            </span>
         </form>
 
         <table class="table table-striped table-bordered table-hover">
@@ -34,12 +34,13 @@
             <tbody>
             <tr ng-repeat="task in tasks">
                 <td>{{$index+1}}</td>
-                <td><a class="btn btn-link" style="cursor: pointer;" ng-href="#/tasks/task/{{task.taskId}}">{{task.taskId}}</a></td>
+                <td><a class="btn btn-link" style="cursor: pointer;" ng-href="#/processes/task?taskId={{task.taskId}}">{{task.taskId}}</a></td>
                 <td>{{task.type}}</td>
                 <td>{{task.actorId}}</td>
                 <td>{{task.method}}</td>
-                <td><a clas="btn btn-link" style="cursor: pointer;"
-                       ng-href="#/processes/process/{{encodeURI(task.processId)}}">{{task.processId}}</a></td>
+                <td>
+                    <a clas="btn btn-link" style="cursor: pointer;" ng-href="#/processes/process?processId={{encodeURI(task.processId)}}">{{task.processId}}</a>
+                </td>
                 <td>{{task.args}}</td>
             </tr>
             </tbody>

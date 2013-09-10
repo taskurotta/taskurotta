@@ -1,11 +1,5 @@
 package ru.taskurotta.backend.storage;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
@@ -13,10 +7,17 @@ import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
+import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -150,20 +151,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         if (taskDecision == null) {
             logger.debug("getTaskValue() taskDecision == null");
             return null;
-
-            //HACK FOR DEBUG
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            taskDecision = taskDao.getDecision(taskId, processId);
-//            if(taskDecision == null) {
-//                logger.debug("STILL NULL (bug in dependency?)!");
-//                return null;
-//            } else {
-//                logger.debug("RERUN(bug in non-locking DAO operations?): taskDecision getted for[{}] is [{}]", taskId, taskDecision); //<-- this message in log! bug detected
-//            }
         }
 
         ArgContainer result = taskDecision.getValue();
@@ -182,6 +169,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         TaskContainer task = taskDao.getTask(taskId, processId);
         logger.debug("Task received by uuid[{}], is[{}]", taskId, task);
         return task;
+    }
+
+    @Override
+    public List<TaskContainer> findTasks(TaskSearchCommand command) {
+        return taskDao.findTasks(command);
     }
 
     @Override
