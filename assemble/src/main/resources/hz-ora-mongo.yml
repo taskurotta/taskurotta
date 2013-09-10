@@ -27,6 +27,7 @@ properties:
   oradb.user: "taskurotta"
   oradb.password: "taskurotta"
   recovery.startup.run: false
+  hz.queue.restore: true
 
 #Http server configuration:
 logging:

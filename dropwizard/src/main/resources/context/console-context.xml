@@ -5,9 +5,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <!--<aop:aspectj-autoproxy/>-->
-    <!--<bean id="profilingAspect" class="ru.taskurotta.backend.profile.impl.MemoryAspectProfiler"/>-->
-
     <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
         <property name="consoleManager" ref="consoleManager"/>
     </bean>
