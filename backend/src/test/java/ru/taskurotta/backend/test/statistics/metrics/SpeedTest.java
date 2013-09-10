@@ -2,6 +2,7 @@ package ru.taskurotta.backend.test.statistics.metrics;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import ru.taskurotta.backend.statistics.datalisteners.AbstractDataListener;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 import ru.taskurotta.backend.statistics.metrics.CheckPoint;
 
@@ -30,20 +31,9 @@ public class SpeedTest {
 
     private ExecutorService executorService = Executors.newFixedThreadPool(8);
 
-    class MockDataListener implements DataListener {
-        @Override
-        public void handle(String name, long count, double value, long time) {
-            System.out.println("DataListener count = " + count + ", value = " + value);
-        }
-
-        @Override
-        public long[] getHourCount() {
-            return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public long[] getDayCount() {
-            return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
+    class MockDataListener extends AbstractDataListener {
+        public void handle(String name, long count, double mean, long time) {
+            System.out.println("DataListener count = " + count + ", mean = " + mean);
         }
     }
 
@@ -83,7 +73,7 @@ public class SpeedTest {
             sum += testData[i];
         }
 
-        System.out.println("Real mean value is " + (double) sum / size);
+        System.out.println("Real mean mean is " + (double) sum / size);
 
         for (CheckPoint checkPoint : checkPoints) {
             System.out.println(" Test for [" + checkPoint.getClass().getSimpleName() + "]...");

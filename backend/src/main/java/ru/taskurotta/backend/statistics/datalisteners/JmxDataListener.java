@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date: 28.08.13
  * Time: 17:52
  */
-public class JmxDataListener implements DataListener {
+public class JmxDataListener extends AbstractDataListener {
 
     private static final Logger logger = LoggerFactory.getLogger(JmxDataListener.class);
 
@@ -32,59 +32,53 @@ public class JmxDataListener implements DataListener {
 
         public String getName();
 
-        public long getCount();
+        public long[] getHourCounts();
 
-        public double getValue();
+        public double[] getHourMeans();
 
-        public long getTime();
+        public long[] getDayCounts();
+
+        public double[] getDayMeans();
     }
 
     public class Metrics implements MetricsMBean {
 
         private String name;
-        private long count;
-        private double value;
-        private long time;
+        private DataListener dataListener;
+
+        public Metrics(String name, DataListener dataListener) {
+            this.name = name;
+            this.dataListener = dataListener;
+        }
 
         @Override
         public String getName() {
             return name;
         }
 
-        public void setName(String name) {
-            this.name = name;
+        @Override
+        public long[] getHourCounts() {
+            return dataListener.getHourCounts();
         }
 
         @Override
-        public long getCount() {
-            return count;
-        }
-
-        public void setCount(long count) {
-            this.count = count;
+        public double[] getHourMeans() {
+            return dataListener.getHourMeans();
         }
 
         @Override
-        public double getValue() {
-            return value;
-        }
-
-        public void setValue(double value) {
-            this.value = value;
+        public long[] getDayCounts() {
+            return dataListener.getDayCounts();
         }
 
         @Override
-        public long getTime() {
-            return time;
-        }
-
-        public void setTime(long time) {
-            this.time = time;
+        public double[] getDayMeans() {
+            return dataListener.getDayMeans();
         }
     }
 
-    @Override
-    public void handle(String name, long count, double value, long time) {
+    public void handle(String name, long count, double mean, long time) {
+        super.handle(name, count, mean, time);
 
         logger.trace("[{}]: find metrics for", name);
 
@@ -97,7 +91,7 @@ public class JmxDataListener implements DataListener {
                 metrics = metricsMap.get(name);
 
                 if (metrics == null) {
-                    metrics = new Metrics();
+                    metrics = new Metrics(name, this);
 
                     logger.trace("[{}]: create metrics [{}]", name, metrics);
 
@@ -114,22 +108,7 @@ public class JmxDataListener implements DataListener {
             }
         }
 
-        metrics.setName(name);
-        metrics.setCount(count);
-        metrics.setValue(value);
-        metrics.setTime(time);
-
         logger.trace("[{}]: update metrics [{}]", name, metrics);
-    }
-
-    @Override
-    public long[] getHourCount() {
-        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public long[] getDayCount() {
-        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private ObjectName createName(String name) {

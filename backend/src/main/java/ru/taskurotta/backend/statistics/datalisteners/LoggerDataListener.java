@@ -10,24 +10,15 @@ import java.util.Date;
  * Date: 26.08.13
  * Time: 19:02
  */
-public class LoggerDataListener implements DataListener {
+public class LoggerDataListener extends AbstractDataListener {
 
     private final static Logger logger = LoggerFactory.getLogger(LoggerDataListener.class);
 
-    @Override
-    public void handle(String name, long count, double value, long time) {
+    public void handle(String name, long count, double mean, long time) {
+        super.handle(name, count, mean, time);
+
         if (logger.isInfoEnabled()) {
-            logger.info("METRICS: [{}]: value = [{}], count = [{}] collected at [{}]", name, value, count, new Date(time));
+            logger.info("METRICS: [{}]: mean = [{}], count = [{}] collected at [{}]", name, mean, count, new Date(time));
         }
-    }
-
-    @Override
-    public long[] getHourCount() {
-        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public long[] getDayCount() {
-        return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

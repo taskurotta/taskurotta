@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.statistics.datalisteners;
 
+import com.google.common.util.concurrent.AtomicDoubleArray;
+
 import java.util.concurrent.atomic.AtomicLongArray;
 
 /**
@@ -7,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
  * Date: 09.09.13
  * Time: 13:47
  */
-abstract class ActorDataListener implements DataListener {
+public abstract class AbstractDataListener implements DataListener {
 
     private final int SECONDS_IN_MINUTE = 60;
     private final int MINUTES_IN_HOUR = 60;
@@ -21,42 +23,48 @@ abstract class ActorDataListener implements DataListener {
     private final AtomicLongArray hourCounts = new AtomicLongArray(SECONDS_IN_HOUR);
     private final AtomicLongArray dayCounts = new AtomicLongArray(MINUTES_IN_23_HOURS);
 
+    private final AtomicDoubleArray hourMeans = new AtomicDoubleArray(SECONDS_IN_HOUR);
+    private final AtomicDoubleArray dayMeans = new AtomicDoubleArray(MINUTES_IN_23_HOURS);
+
     @Override
-    public void handle(String name, long count, double value, long time) {
+    public void handle(String name, long count, double mean, long time) {
 
         long period = System.currentTimeMillis() - time;
 
         if (period < MILLISECONDS_IN_HOUR) {
-            addCountToSecond(time, count);
+            saveDataForSeconds(time, count, mean);
         }
 
         if (period > MILLISECONDS_IN_HOUR && period < MILLISECONDS_IN_DAY) {
-            addCountToMinute(time, count);
+            saveDataForMinutes(time, count, mean);
         }
     }
 
-    private void addCountToSecond(long time, long count) {
+    private void saveDataForSeconds(long time, long count, double mean) {
         int position = hourPosition(time); // second
 
         hourCounts.addAndGet(position, count);
+        hourMeans.addAndGet(position, mean);
 
         if (position % SECONDS_IN_MINUTE == 0) {
             transferToDayCount(time - MILLISECONDS_IN_HOUR + 1, position, position + SECONDS_IN_MINUTE);
         }
     }
 
-    private void addCountToMinute(long time, long count) {
+    private void saveDataForMinutes(long time, long count, double mean) {
         int position = dayPosition(time); // minute
 
         dayCounts.addAndGet(position, count);
+        dayMeans.addAndGet(position, mean);
 
         if (position % MINUTES_IN_HOUR == 0) {
-            removeItems(dayCounts, position, position + MINUTES_IN_HOUR);
+            removeItemsFromDayData(position, position + MINUTES_IN_HOUR);
         }
     }
 
     private void transferToDayCount(long time, int from, int to) {
-        long sum = 0;
+        long counts = 0;
+        double means = 0;
         int counter;
 
         int length = SECONDS_IN_HOUR;
@@ -66,59 +74,67 @@ abstract class ActorDataListener implements DataListener {
 
             if (to < length) {
                 for (int i = from; i < to; i++) {
-                    sum += hourCounts.getAndSet(i, 0);
+                    counts += hourCounts.getAndSet(i, 0);
+                    means += hourMeans.getAndAdd(i, 0);
                 }
             } else {
                 for (int i = from; i < length; i++) {
-                    sum += hourCounts.getAndSet(i, 0);
+                    counts += hourCounts.getAndSet(i, 0);
+                    means += hourMeans.getAndAdd(i, 0);
                 }
 
                 for (int i = 0; i < to - length; i++) {
-                    sum += hourCounts.getAndSet(i, 0);
+                    counts += hourCounts.getAndSet(i, 0);
+                    means += hourMeans.getAndAdd(i, 0);
                 }
             }
         } else {
             counter = length - from + to;
 
             for (int i = from; i < length; i++) {
-                sum += hourCounts.getAndSet(i, 0);
+                counts += hourCounts.getAndSet(i, 0);
+                means += hourMeans.getAndAdd(i, 0);
             }
 
             for (int i = 0; i < to; i++) {
-                sum += hourCounts.getAndSet(i, 0);
+                counts += hourCounts.getAndSet(i, 0);
+                means += hourMeans.getAndAdd(i, 0);
             }
         }
 
-        addCountToMinute(time, sum / counter);
+        saveDataForMinutes(time, counts / counter, means / counter);
     }
 
-    private void removeItems(AtomicLongArray data, int from, int to) {
-        int length = data.length();
+    private void removeItemsFromDayData(int from, int to) {
+        int length = hourCounts.length();
 
         if (from < to) {
             if (to < length) {
                 for (int i = from; i < to; i++) {
-                    data.set(i, 0);
+                    hourCounts.set(i, 0);
+                    hourMeans.set(i, 0);
                 }
             } else {
                 for (int i = from; i < length; i++) {
-                    data.set(i, 0);
+                    hourCounts.set(i, 0);
+                    hourMeans.set(i, 0);
                 }
 
                 for (int i = 0; i < to - length; i++) {
-                    data.set(i, 0);
+                    hourCounts.set(i, 0);
+                    hourMeans.set(i, 0);
                 }
             }
         } else {
             for (int i = from; i < length; i++) {
-                data.set(i, 0);
+                hourCounts.set(i, 0);
+                hourMeans.set(i, 0);
             }
 
             for (int i = 0; i < to; i++) {
-                data.set(i, 0);
+                hourCounts.set(i, 0);
             }
         }
-
     }
 
     private int hourPosition(long time) {
@@ -130,12 +146,13 @@ abstract class ActorDataListener implements DataListener {
     }
 
     @Override
-    public long[] getHourCount() {
+    public long[] getHourCounts() {
         long[] data = new long[SECONDS_IN_HOUR];
 
         int i = 0;
 
         long now = System.currentTimeMillis();
+
         while (i < SECONDS_IN_HOUR) {
             int position = hourPosition(now + i * MILLISECONDS_IN_SECONDS);
 
@@ -148,16 +165,55 @@ abstract class ActorDataListener implements DataListener {
     }
 
     @Override
-    public long[] getDayCount() {
+    public long[] getDayCounts() {
         long[] data = new long[MINUTES_IN_23_HOURS];
 
         int i = 0;
 
         long now = System.currentTimeMillis();
+
         while (i < MINUTES_IN_23_HOURS) {
             int position = dayPosition(now + i * MILLISECONDS_IN_SECONDS * SECONDS_IN_MINUTE);
 
             data[i] = dayCounts.get(position);
+
+            i++;
+        }
+
+        return data;
+    }
+
+    @Override
+    public double[] getHourMeans() {
+        double[] data = new double[SECONDS_IN_HOUR];
+
+        int i = 0;
+
+        long now = System.currentTimeMillis();
+
+        while (i < SECONDS_IN_HOUR) {
+            int position = hourPosition(now + i * MILLISECONDS_IN_SECONDS);
+
+            data[i] = hourMeans.get(position);
+
+            i++;
+        }
+
+        return data;
+    }
+
+    @Override
+    public double[] getDayMeans() {
+        double[] data = new double[MINUTES_IN_23_HOURS];
+
+        int i = 0;
+
+        long now = System.currentTimeMillis();
+
+        while (i < MINUTES_IN_23_HOURS) {
+            int position = dayPosition(now + i * MILLISECONDS_IN_SECONDS * SECONDS_IN_MINUTE);
+
+            data[i] = dayMeans.get(position);
 
             i++;
         }

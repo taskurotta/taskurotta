@@ -93,7 +93,7 @@ public class ActorMetricsManager {
         return names;
     }
 
-    public long[] getHourCount(String actorId, String name) {
+    public long[] getHourCounts(String actorId, String name) {
 
         DataListener dataListener = getDataListener(actorId, name);
 
@@ -101,17 +101,37 @@ public class ActorMetricsManager {
             return new long[0];
         }
 
-        return dataListener.getHourCount();
+        return dataListener.getHourCounts();
     }
 
-    public long[] getDayCount(String actorId, String name) {
+    public long[] getDayCounts(String actorId, String name) {
         DataListener dataListener = getDataListener(actorId, name);
 
         if (dataListener == null) {
             return new long[0];
         }
 
-        return dataListener.getDayCount();
+        return dataListener.getDayCounts();
+    }
+
+    public double[] getHourMeans(String actorId, String name) {
+        DataListener dataListener = getDataListener(actorId, name);
+
+        if (dataListener == null) {
+            return new double[0];
+        }
+
+        return dataListener.getHourMeans();
+    }
+
+    public double[] getDayMeans(String actorId, String name) {
+        DataListener dataListener = getDataListener(actorId, name);
+
+        if (dataListener == null) {
+            return new double[0];
+        }
+
+        return dataListener.getDayMeans();
     }
 
     private DataListener getDataListener(String actorId, String name) {
