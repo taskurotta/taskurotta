@@ -343,6 +343,65 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
     $scope.update();
 
 });
+
+consoleControllers.controller("metricsController", function ($scope, $$data, $log) {
+    $scope.collapse = {
+        filter: false,
+        plot: false
+    };
+    $scope.actorIds = [];
+    $scope.metricsOptions = {};
+
+    //selected objects
+    $scope.selection = {
+        actorIds: {},
+        metric: {},
+        method: "",
+        actorId: "",
+        scopeMode: {},
+        dataMode: {},
+        periodMode: {}
+    };
+
+    var getSelectedDataSets = function() {
+        var result = "";
+        for(var actorId in $scope.selection.actorIds) {
+            if($scope.selection.actorIds[actorId]) {
+                if(result.length > 0) {
+                    result = result + ",";
+                }
+                result = result + actorId;
+            }
+        }
+        return result;
+    };
+
+    $scope.getDataSetUrl = function() {
+        var dataset = getSelectedDataSets();
+        var type = $scope.selection.dataMode.value;
+        var scope = $scope.selection.scopeMode.value;
+        var period = $scope.selection.periodMode.value;
+        var metric = $scope.selection.metric.value;
+        if(!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
+            return "/rest/console/metrics/data?metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset);
+        }
+        return "";
+    };
+
+    $$data.listActors().then(function(value) {
+        $scope.actorIds = angular.fromJson(value.data || {});
+        $scope.selectedActorIds = new Array($scope.actorIds.length);
+        $log.info("metricsController: actors list size getted is: " + $scope.actorIds.length);
+    });
+
+    $$data.getMetricsOptions().then(function(value) {
+        $scope.metricsOptions = angular.fromJson(value.data || {});
+        $log.info("metricsController: metricsOptions getted is: " + angular.toJson(value.data));
+    });
+
+
+});
+
 consoleControllers.controller("homeController", function ($scope) {
 });
 consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {

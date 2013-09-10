@@ -176,3 +176,73 @@ consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
         replace: true
     };
 }]);
+
+consoleDirectives.directive('tskPlot', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {//'=' enables ability to $watch
+            datasetUrl: "=",
+            options: "@",
+            width: "@",
+            height: "@",
+            updatePeriod: "="
+        },
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $window, $log, $http, $$timeUtil) {
+
+            var jPlot = $($element);
+            //Setting css width and height if explicitly set
+            if($scope.width) { jPlot.css("width", $scope.width); }
+            if($scope.height) { jPlot.css("height", $scope.height); }
+
+            //defaults
+            if($scope.options) {
+                $log.info("$scope.options is: " + $scope.options);
+            } else {
+                $scope.options = {
+                    series: {
+                        lines: { show: true },
+                        points: { show: true },
+                        shadowSize: 0
+                    }
+                };
+            }
+
+            var plotElem = $.plot($element, [], $scope.options);
+            var refreshTriggerId = -1;
+            var updatePlotData = function(newData, updateGrid) {
+                $log.info("Update plot data. New datasets count: " + newData.length);
+                plotElem.setData(newData);
+                if(updateGrid) {
+                    plotElem.setupGrid();
+                }
+                plotElem.draw();
+            };
+
+            $scope.update = function() {
+                $log.log("Using datasetUrl attribute for update.");
+                $http.get($scope.datasetUrl).then(function(value) {
+                    updatePlotData(value.data, true);
+                });
+            };
+
+            $scope.$watch('updatePeriod', function(newVal, oldVal) {
+                if(newVal > 0){
+                    refreshTriggerId = $$timeUtil.setInterval($scope.update, newVal * 1000, $scope);//Start autoUpdate
+                } else {
+                    $$timeUtil.clearInterval(refreshTriggerId);
+                }
+            });
+
+            $scope.$watch('datasetUrl', function(newVal, oldVal) {
+                if(newVal) {
+                    $scope.update();
+                } else {
+                    updatePlotData([], true);//reset plot data
+                }
+            });
+
+        }],
+        replace: true
+    };
+}]);

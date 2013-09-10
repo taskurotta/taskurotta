@@ -1,4 +1,4 @@
-var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives']);
+var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap']);
 
 consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
 
@@ -48,6 +48,9 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         templateUrl: '/partials/view/process_search.html',
         controller: "processSearchController"
     });
+    $routeProvider.when('/processes/create', {
+        templateUrl: '/partials/view/process_create.html'
+    });
 
     //tasks
     $routeProvider.when('/tasks', {
@@ -76,6 +79,11 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         controller: "profilesController"
     });
 
+    $routeProvider.when('/monitoring/metrics', {
+        templateUrl: '/partials/view/metrics.html',
+        controller: "metricsController"
+    });
+
     $routeProvider.when('/monitoring/hoveringQueues', {
         templateUrl: '/partials/view/hoveringQueues.html',
         controller: "hoveringQueuesController"
@@ -85,6 +93,7 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         templateUrl: '/partials/view/repeatedTasks.html',
         controller: "repeatedTasksController"
     });
+
 
 //unused
     $routeProvider.when('/about', {

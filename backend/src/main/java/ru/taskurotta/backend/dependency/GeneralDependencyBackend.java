@@ -1,11 +1,7 @@
 package ru.taskurotta.backend.dependency;
 
-import java.util.Collection;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.annotation.Profiled;
 import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
@@ -16,6 +12,9 @@ import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
+
+import java.util.Collection;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -105,7 +104,6 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
     }
 
     @Override
-    @Profiled
     public void startProcess(TaskContainer task) {
         logger.debug("startProcess() task = [{}]", task);
 

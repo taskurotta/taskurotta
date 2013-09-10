@@ -5,9 +5,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <aop:aspectj-autoproxy/>
-    <bean id="profilingAspect" class="ru.taskurotta.backend.profile.impl.MemoryAspectProfiler"/>
-
     <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
         <property name="consoleManager" ref="consoleManager"/>
     </bean>
@@ -24,15 +21,54 @@
     <bean id="hoveringQueuesResource" class="ru.taskurotta.dropwizard.resources.console.HoveringQueuesResource" parent="baseConsoleResource"/>
     <bean id="repeatedTasks" class="ru.taskurotta.dropwizard.resources.console.RepeatedTasksResource" parent="baseConsoleResource"/>
     <bean id="consoleTaskDecisionResource" class="ru.taskurotta.dropwizard.resources.console.TaskDecisionResource" parent="baseConsoleResource" />
-    <bean id="consoleActorBlockAction" class="ru.taskurotta.dropwizard.resources.console.ActorBlockAction" parent="baseConsoleResource" />
-    <bean id="consoleActorUnblockAction" class="ru.taskurotta.dropwizard.resources.console.ActorUnblockAction" parent="baseConsoleResource" />
+    <bean id="consoleActorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource" parent="baseConsoleResource" />
+
+    <bean id="consoleMetricsResource" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsResource" parent="baseConsoleResource" >
+        <property name="metricsDataHandler" ref="consoleMetricsDataHandler" />
+        <property name="metricsOptionsHandler" ref="consoleMetricsOptionsHandler" />
+    </bean>
+
+    <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataHandler">
+    </bean>
+
+    <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsHandler" >
+        <property name="metrics">
+            <map>
+                <entry key="Metric1" value="Some description for metric 1" />
+                <entry key="Metric2" value="Some description for metric 2" />
+            </map>
+        </property>
+
+        <property name="dataTypes">
+            <map>
+                <entry key="rate" value="Mean rate (count/sec)" />
+                <entry key="mean" value="Mean time (ms)" />
+            </map>
+        </property>
+
+        <property name="periods">
+            <map>
+                <entry key="hour" value="Last hour" />
+                <entry key="day" value="Last 24 hours" />
+            </map>
+        </property>
+
+        <property name="scopes">
+            <map>
+                <entry key="cluster" value="Cluster (all nodes)" />
+                <entry key="local" value="Local node" />
+            </map>
+        </property>
+    </bean>
+
 
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend"/>
-        <property name="profileInfo" ref="profilingAspect"/>
+        <!--<property name="profileInfo" ref="profilingAspect"/>-->
         <property name="taskInfo" ref="taskBackend"/>
         <property name="processInfo" ref="processBackend"/>
         <property name="graphInfo" ref="dependencyBackend"/>
+        <property name="configInfo" ref="configBackend" />
     </bean>
 
 </beans>

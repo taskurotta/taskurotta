@@ -1,11 +1,5 @@
 package ru.taskurotta.backend.console.manager.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
@@ -23,6 +17,12 @@ import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Default implementation of ConsoleManager
@@ -183,6 +183,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return tmpResult;
     }
 
+    public Collection<String> getActorIdList() {
+         return configInfo.getActorIdList();
+    }
 
     @Override
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {
@@ -194,6 +197,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         configInfo.blockActor(actorId);
     }
 
+    @Override
     public void unblockActor(String actorId) {
         configInfo.unblockActor(actorId);
     }

@@ -23,8 +23,6 @@ import java.util.concurrent.Future;
  */
 public class SpeedTest {
 
-    private String name = "testName";
-    private String actorId = "testActorId";
     private DataListener dataListener = new MockDataListener();
     private Random random = new Random();
 
@@ -36,6 +34,16 @@ public class SpeedTest {
         @Override
         public void handle(String name, long count, double value, long time) {
             System.out.println("DataListener count = " + count + ", value = " + value);
+        }
+
+        @Override
+        public long[] getHourCount() {
+            return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        public long[] getDayCount() {
+            return new long[0];  //To change body of implemented methods use File | Settings | File Templates.
         }
     }
 
@@ -64,7 +72,7 @@ public class SpeedTest {
     @Test
     public void testCheckPoint() throws ExecutionException, InterruptedException {
         List<CheckPoint> checkPoints = new ArrayList<>();
-        checkPoints.add(new CheckPoint(name, dataListener));
+        checkPoints.add(new CheckPoint("testName", dataListener));
 
         Collections.shuffle(checkPoints);
 

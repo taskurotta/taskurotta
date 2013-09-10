@@ -5,7 +5,7 @@ contextLocation: "classpath*:spring/hz-ora-mongo.xml, classpath*:context/console
 #Used for static resource serving in development mode
 assets:
   overrides:
-    /: ../../dropwizard/src/main/resources/assets/
+    /: ../dropwizard/src/main/resources/assets/
 
 #Configuration of actors served by this server:
 actorConfig:
@@ -26,6 +26,8 @@ properties:
   oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
   oradb.user: "taskurotta"
   oradb.password: "taskurotta"
+  recovery.startup.run: false
+  hz.queue.restore: true
 
 #Http server configuration:
 logging:
@@ -33,18 +35,7 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
-#        ru.taskurotta.backend.statistics.datalisteners: TRACE
-#        ru.taskurotta.backend.statistics.metrics: TRACE
-#        ru.taskurotta.recovery: DEBUG
-#        ru.taskurotta.backend.recovery: DEBUG
-#        ru.taskurotta.backend.hz.support: DEBUG
-#        ru.taskurotta.backend.hz.recovery: DEBUG
-#        ru.taskurotta.backend.hz.dependency: DEBUG
-#        ru.taskurotta.dropwizard.server.core: INFO
-#        ru.taskurotta.server: INFO
-#        ru.taskurotta.dropwizard.hz: INFO
-#        ru.taskurotta.backend.hz.server: INFO
-#        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
+        ru.taskurotta.dropwizard.resources.console: DEBUG
         com.yammer: INFO
     file:
         enabled: true

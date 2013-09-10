@@ -42,15 +42,22 @@ consoleServices.factory("$$data", function ($resource, $http) {
         getRepeatedTasks: function (iterationCount) {
             return $http.get('/rest/console/repeatedTasks/?iterationCount=' + iterationCount);
         },
-        getTaskDecision: function(taskId, processId){
+        getTaskDecision: function(taskId, processId) {
             return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         },
-        blockActor: function(actorId){
+        blockActor: function(actorId) {
             return $http.post('/rest/console/actor/block/', actorId);
         },
-        unblockActor: function(actorId){
+        unblockActor: function(actorId) {
             return $http.post('/rest/console/actor/unblock/', actorId);
+        },
+        listActors: function() {
+            return $http.get('/rest/console/actor/list/');
+        },
+        getMetricsOptions: function() {
+            return $http.get('/rest/console/metrics/options/');
         }
+
     };
 
     return resultService;

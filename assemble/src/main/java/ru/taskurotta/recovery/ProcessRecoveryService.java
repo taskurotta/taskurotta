@@ -49,6 +49,7 @@ public class ProcessRecoveryService {
     private long recoveryProcessTimeOut = 180000l;
     private int threadCount = 8;
     private boolean useDaemonThreads = true;
+    private boolean startupRecovery = true;
     private int processBatchSize = 1000;
 
     private ExecutorService executorService;
@@ -65,8 +66,11 @@ public class ProcessRecoveryService {
                 return thread;
             }
         });
-        int result = findAndSubmitRecovery();
-        logger.info("[{}] processes submitted to recovery at startup", result);
+
+        if(startupRecovery) {
+            int result = findAndSubmitRecovery();
+            logger.info("[{}] processes submitted to recovery at startup", result);
+        }
     }
 
     public int findAndSubmitRecovery() {
@@ -186,5 +190,9 @@ public class ProcessRecoveryService {
 
     public void setUseDaemonThreads(boolean useDaemonThreads) {
         this.useDaemonThreads = useDaemonThreads;
+    }
+
+    public void setStartupRecovery(boolean startupRecovery) {
+        this.startupRecovery = startupRecovery;
     }
 }

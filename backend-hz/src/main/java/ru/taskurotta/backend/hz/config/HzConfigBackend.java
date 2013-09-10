@@ -1,12 +1,5 @@
 package ru.taskurotta.backend.hz.config;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.HazelcastInstance;
@@ -21,6 +14,14 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -94,7 +95,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
                 updateExpirationPolicyConfigSet();
             }
         }, false);
-
 
         updateActorPreferencesMap();
         updateExpirationPolicyConfigSet();
@@ -176,22 +176,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         localExpPolicies = new HashSet<>(distributedExpPolicies);
     }
 
-    public int getDefaultTimeout() {
-        return defaultTimeout;
-    }
-
-    public void setDefaultTimeout(int defaultTimeout) {
-        this.defaultTimeout = defaultTimeout;
-    }
-
-    public TimeUnit getDefaultTimeUnit() {
-        return defaultTimeUnit;
-    }
-
-    public void setDefaultTimeUnit(TimeUnit defaultTimeUnit) {
-        this.defaultTimeUnit = defaultTimeUnit;
-    }
-
     @Override
     public void blockActor(String actorId) {
         IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
@@ -224,4 +208,27 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
 
         logger.debug("Unblock actorId [{}]", actorId);
     }
+
+    @Override
+    public Collection<String> getActorIdList() {
+        IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
+        return actorPreferencesMap.keySet();
+    }
+
+    public int getDefaultTimeout() {
+        return defaultTimeout;
+    }
+
+    public void setDefaultTimeout(int defaultTimeout) {
+        this.defaultTimeout = defaultTimeout;
+    }
+
+    public TimeUnit getDefaultTimeUnit() {
+        return defaultTimeUnit;
+    }
+
+    public void setDefaultTimeUnit(TimeUnit defaultTimeUnit) {
+        this.defaultTimeUnit = defaultTimeUnit;
+    }
+
 }
