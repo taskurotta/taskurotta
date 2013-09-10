@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class GeneralMetricsManager {
 
     private final Map<String, CheckPoint> checkPoints;
+    private final Map<String, DataListener> dataListeners;
 
     private final ScheduledExecutorService executorService;
 
@@ -28,6 +29,8 @@ public class GeneralMetricsManager {
 
     public GeneralMetricsManager(long initialDelay, long delay, TimeUnit unit) {
         this.checkPoints = new ConcurrentHashMap<>();
+        this.dataListeners = new ConcurrentHashMap<>();
+
         this.executorService = Executors.newSingleThreadScheduledExecutor();
 
         this.executorService.scheduleWithFixedDelay(new Runnable() {
@@ -51,7 +54,9 @@ public class GeneralMetricsManager {
 
                 if (checkPoint == null) {
                     checkPoint = new CheckPoint(name, dataListener);
+
                     checkPoints.put(name, checkPoint);
+                    dataListeners.put(name, dataListener);
                 }
             }
         }
@@ -59,6 +64,62 @@ public class GeneralMetricsManager {
         checkPoint.mark(period);
 
         return checkPoint;
+    }
+
+    public Collection<String> getNames() {
+        return checkPoints.keySet();
+    }
+
+    public long[] getHourCounts(String name) {
+        DataListener dataListener = getDataListener(name);
+
+        if (dataListener == null) {
+            return new long[0];
+        }
+
+        return dataListener.getHourCounts();
+    }
+
+    public long[] getDayCounts(String name) {
+        DataListener dataListener = getDataListener(name);
+
+        if (dataListener == null) {
+            return new long[0];
+        }
+
+        return dataListener.getDayCounts();
+    }
+
+    public double[] getHourMeans(String name) {
+        DataListener dataListener = getDataListener(name);
+
+        if (dataListener == null) {
+            return new double[0];
+        }
+
+        return dataListener.getHourMeans();
+    }
+
+    public double[] getDayMeans(String name) {
+        DataListener dataListener = getDataListener(name);
+
+        if (dataListener == null) {
+            return new double[0];
+        }
+
+        return dataListener.getDayMeans();
+    }
+
+    private DataListener getDataListener(String name) {
+        if (name == null) {
+            return null;
+        }
+
+        if (!checkPoints.containsKey(name)) {
+            return null;
+        }
+
+        return dataListeners.get(name);
     }
 
     public void shutdown() {

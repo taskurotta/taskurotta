@@ -10,9 +10,9 @@ import java.util.Date;
  * Date: 10.09.13
  * Time: 16:20
  */
-public class LoggerActorDataListener extends ActorDataListener {
+public class LoggerActorDataListener extends AbstractDataListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoggerActorDataListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoggerDataListener.class);
 
     private String actorId;
 
@@ -20,12 +20,11 @@ public class LoggerActorDataListener extends ActorDataListener {
         this.actorId = actorId;
     }
 
-    @Override
-    public void handle(String name, long count, double value, long time) {
-        super.handle(name, count, value, time);
+    public void handle(String name, long count, double mean, long time) {
+        super.handle(name, count, mean, time);
 
         if (logger.isInfoEnabled()) {
-            logger.info("METRICS: [{}]#[{}]: value = [{}], count = [{}] collected at [{}]", name, actorId, value, count, new Date(time));
+            logger.info("METRICS: [{}]#[{}]: mean = [{}], count = [{}] collected at [{}]", name, actorId, mean, count, new Date(time));
         }
     }
 }

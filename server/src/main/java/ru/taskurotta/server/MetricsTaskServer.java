@@ -4,7 +4,6 @@ import ru.taskurotta.backend.statistics.ActorMetricsManager;
 import ru.taskurotta.backend.statistics.GeneralMetricsManager;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 import ru.taskurotta.backend.statistics.datalisteners.LoggerActorDataListener;
-import ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
