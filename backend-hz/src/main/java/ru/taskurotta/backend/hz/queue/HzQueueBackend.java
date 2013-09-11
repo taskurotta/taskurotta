@@ -1,14 +1,5 @@
 package ru.taskurotta.backend.hz.queue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
@@ -25,6 +16,15 @@ import ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport;
 import ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -216,10 +216,10 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (map != null) {
                 return map;
             }
-            if (hzQueueConfigSupport != null) {
+            if (hzMapConfigSpringSupport != null) {
                 hzMapConfigSpringSupport.createMapConfig(queueName);
             } else {
-                logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzQueueBackend, delayed queues are not persistent!");
+                logger.warn("WARNING: hzMapConfigSpringSupport implementation is not set to HzQueueBackend, delayed queues are not persistent!");
             }
 
             map = hazelcastInstance.getMap(queueName);

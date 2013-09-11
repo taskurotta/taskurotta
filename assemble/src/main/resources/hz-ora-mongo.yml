@@ -19,7 +19,7 @@ properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
   hz.mancenter.enabled: true
-  hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
+  hz.mancenter.url: "http://localhost:8080/mancenter-3.0.2"
   hz.nodes: localhost:7777
   mongo.host: localhost
   mongo.port: 27017

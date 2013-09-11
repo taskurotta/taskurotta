@@ -151,6 +151,7 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
 
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport" />
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
 

@@ -1,13 +1,10 @@
 package ru.taskurotta.backend.hz.support;
 
-import java.util.Properties;
-
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +12,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mongodb.core.MongoTemplate;
+
+import java.util.Properties;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -84,17 +83,6 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         properties.put("memory-limit", this.memoryLimit);
         properties.put("bulk-load", this.bulkLoad);
         result.setProperties(properties);
-        return result;
-    }
-
-    private boolean isMapExists(String name) {
-        boolean result = false;
-        for (DistributedObject inst : hzInstance.getDistributedObjects()) {
-            if ((inst instanceof IMap) && name.equals(inst.getName())) {
-                result = true;
-                break;
-            }
-        }
         return result;
     }
 

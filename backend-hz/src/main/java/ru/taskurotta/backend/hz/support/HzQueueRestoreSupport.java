@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 public class HzQueueRestoreSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueRestoreSupport.class);
+    private static final String BACKING_MAP_SUFFIX = ".backingMap";
 
     private MongoTemplate mongoTemplate;
     private HazelcastInstance hzInstance;
@@ -26,8 +27,8 @@ public class HzQueueRestoreSupport {
         if (restore) {
             int queueRestored = 0;
             for (String collectionName : mongoTemplate.getCollectionNames()) {
-                if (collectionName.startsWith("q:" + queuePrefix)) {//is backing queue
-                    String queueName = collectionName.substring(2);
+                if (collectionName.startsWith(queuePrefix)) {//is backing queue
+                    String queueName = collectionName.endsWith(BACKING_MAP_SUFFIX)? collectionName.substring(0, collectionName.lastIndexOf(BACKING_MAP_SUFFIX)): collectionName;
                     if (hzQueueSpringConfigSupport != null) {
                         hzQueueSpringConfigSupport.createQueueConfig(queueName);
                     } else {
