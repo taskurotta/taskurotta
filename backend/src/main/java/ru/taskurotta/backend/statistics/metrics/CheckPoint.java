@@ -36,7 +36,7 @@ public class CheckPoint {
             State oldState = stateRef.get();
 
             newState.counter = oldState.counter + 1;
-            newState.mean = ((oldState.mean * oldState.counter) + period) / newState.counter;
+            newState.mean = oldState.mean + (period - oldState.mean) / newState.counter;
 
             if (stateRef.compareAndSet(oldState, newState)) {
                 break;
