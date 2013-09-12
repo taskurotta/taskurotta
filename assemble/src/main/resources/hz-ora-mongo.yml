@@ -36,6 +36,7 @@ logging:
         com.hazelcast: INFO
         ru.taskurotta: INFO
         ru.taskurotta.dropwizard.resources.console: DEBUG
+        ru.taskurotta.backend.statistics.datalisteners: WARN
         com.yammer: INFO
     file:
         enabled: true

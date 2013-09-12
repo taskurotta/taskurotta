@@ -31,15 +31,15 @@
     </bean>
 
     <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataHandler">
+        <property name="actorMetricsManager" ref="actorMetricsManager" />
+        <property name="generalMetricsManager" ref="generalMetricsManager" />
     </bean>
 
     <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsHandler" >
-        <property name="metrics">
-            <map>
-                <entry key="Metric1" value="Some description for metric 1" />
-                <entry key="Metric2" value="Some description for metric 2" />
-            </map>
-        </property>
+
+        <property name="actorMetricsManager" ref="actorMetricsManager" />
+
+        <property name="generalMetricsManager" ref="generalMetricsManager" />
 
         <property name="dataTypes">
             <map>

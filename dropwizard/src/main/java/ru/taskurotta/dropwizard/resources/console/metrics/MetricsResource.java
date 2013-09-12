@@ -24,20 +24,21 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
 
     @GET
     public Response getMetrics(@PathParam("action") String action, @QueryParam("type") Optional<String> typeOpt, @QueryParam("period") Optional<String> periodOpt,
-                                    @QueryParam("scope") Optional<String> scopeOpt, @QueryParam("actor") Optional<String> actorOpt,
-                                        @QueryParam("metric") Optional<String> metricOpt, @QueryParam("dataset") Optional<String> dataSetOpt) {
+                                    @QueryParam("scope") Optional<String> scopeOpt, @QueryParam("metric") Optional<String> metricOpt, @QueryParam("zeroes") Optional<Boolean> zeroesOpt,
+                                    @QueryParam("dataset") Optional<String> dataSetOpt) {
         String dataType = typeOpt.or(OPT_UNDEFINED);
         String period = periodOpt.or(OPT_UNDEFINED);
         String scope = scopeOpt.or(OPT_UNDEFINED);
-        String actor = actorOpt.or(OPT_UNDEFINED);
-        String metric = actorOpt.or(OPT_UNDEFINED);
+        String metric = metricOpt.or(OPT_UNDEFINED);
+        boolean zeroes = zeroesOpt.or(Boolean.TRUE);
 
         List<String> dataSetNames = extractDatasets(dataSetOpt.or(""));
         try {
 
-            if(ACTION_METRICS_DATA.equals(action)) {
-                return metricsDataHandler.getMetricsDataResponse(metric, scope, dataType, period, dataSetNames);
-
+            if(ACTION_ACTOR_METRICS_DATA.equals(action)) {
+                return metricsDataHandler.getActorMetricsDataResponse(!zeroes, metric, scope, dataType, period, dataSetNames);
+            } else if(ACTION_GENERAL_METRICS_DATA.equals(action)) {
+                return metricsDataHandler.getGeneralMetricsDataResponse(!zeroes, metric, scope, dataType, period);
             } else if(ACTION_METRICS_OPTIONS.equals(action)) {
                 return metricsOptionsHandler.getMetricsTypes();
 
@@ -46,7 +47,7 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
             }
 
         } catch (Throwable e) {
-            logger.error("Error getting metrics for action[" + action + "], metric[" + metric + "], dataType[" + dataType + "], period["+dataType+"], scope["+scope+"], actor["+actor+"], dataSet["+dataSetNames+"]", e);
+            logger.error("Error getting metrics for action[" + action + "], zeroes["+zeroes+"], metric[" + metric + "], dataType[" + dataType + "], period["+dataType+"], scope["+scope+"], dataSet["+dataSetNames+"]", e);
             return Response.serverError().build();
         }
 

@@ -310,7 +310,7 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 
 });
 
-consoleControllers.controller("metricsController", function ($scope, $$data, $log) {
+consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location) {
     $scope.collapse = {
         filter: false,
         plot: false
@@ -320,36 +320,63 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
 
     //selected objects
     $scope.selection = {
-        actorIds: {},
+        actorSpecific: false,
+        zeroes: true,
+        datasets: {},
         metric: {},
-        method: "",
-        actorId: "",
         scopeMode: {},
         dataMode: {},
         periodMode: {}
     };
 
-    var getSelectedDataSets = function() {
+    $scope.getSelectedDataSets = function() {
         var result = "";
-        for(var actorId in $scope.selection.actorIds) {
-            if($scope.selection.actorIds[actorId]) {
+        for(var ds in $scope.selection.datasets) {
+            if($scope.selection.datasets[ds]) {
                 if(result.length > 0) {
                     result = result + ",";
                 }
-                result = result + actorId;
+                result = result + ds;
             }
         }
         return result;
     };
 
+    $scope.getMetricsList = function() {
+        if($scope.selection.actorSpecific) {
+            return $scope.metricsOptions.actorMetrics;
+        } else {
+            return $scope.metricsOptions.generalMetrics;
+        }
+    };
+
+    $scope.getDatasetList = function() {
+        if ($scope.selection.actorSpecific) {
+            return $scope.actorIds;
+        } else {
+            var mainDatasetName = "main";
+            if($scope.selection.metric.name) {
+                mainDatasetName = "main - " + $scope.selection.metric.name;
+            }
+            return [mainDatasetName];
+        }
+    };
+
     $scope.getDataSetUrl = function() {
-        var dataset = getSelectedDataSets();
+        var dataset = $scope.getSelectedDataSets();
         var type = $scope.selection.dataMode.value;
         var scope = $scope.selection.scopeMode.value;
         var period = $scope.selection.periodMode.value;
         var metric = $scope.selection.metric.value;
-        if(!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
-            return "/rest/console/metrics/data?metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset);
+        var action = "generalData";
+        var zeroes = $scope.selection.zeroes;
+
+        if($scope.selection.actorSpecific) {
+            action = "actorData";
+        }
+
+        if (!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
+            return "/rest/console/metrics/"+action+"/?zeroes="+zeroes+"&metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset);
         }
         return "";
     };
@@ -362,13 +389,33 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
 
     $$data.getMetricsOptions().then(function(value) {
         $scope.metricsOptions = angular.fromJson(value.data || {});
-        $log.info("metricsController: metricsOptions getted is: " + angular.toJson(value.data));
+        $log.info("metricsController: metricsOptions getted are: " + angular.toJson(value.data));
+
+
+        //Select first available values by default
+        if($scope.metricsOptions.scopes && $scope.metricsOptions.scopes.length>0) {
+            $scope.selection.scopeMode = $scope.metricsOptions.scopes[0];
+        }
+        if($scope.metricsOptions.periods && $scope.metricsOptions.periods.length>0) {
+            $scope.selection.periodMode = $scope.metricsOptions.periods[0];
+        }
+        if($scope.metricsOptions.dataTypes && $scope.metricsOptions.dataTypes.length>0) {
+            $scope.selection.dataMode = $scope.metricsOptions.dataTypes[0];
+        }
+        if($scope.metricsOptions.generalMetrics && $scope.metricsOptions.generalMetrics.length>0) {
+            $scope.selection.metric = $scope.metricsOptions.generalMetrics[0];
+        }
+
+
     });
 
 
 });
 
 consoleControllers.controller("homeController", function ($scope) {
+});
+
+consoleControllers.controller("actorListController", function ($scope, $$data, $timeout) {
 });
 consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {
 });
