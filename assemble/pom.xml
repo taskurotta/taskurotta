@@ -229,7 +229,7 @@
                                 <argument>-jar</argument>
                                 <argument>target/${project.build.finalName}.jar</argument>
                                 <argument>server</argument>
-                                <argument>src/main/resources/memory.yml</argument>
+                                <argument>src/main/resources/hz-mongo.yml</argument>
                             </arguments>
                         </configuration>
                     </plugin>
