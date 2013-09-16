@@ -1,9 +1,6 @@
 package ru.taskurotta.server;
 
-import ru.taskurotta.backend.statistics.ActorMetricsManager;
-import ru.taskurotta.backend.statistics.GeneralMetricsManager;
-import ru.taskurotta.backend.statistics.datalisteners.DataListener;
-import ru.taskurotta.backend.statistics.datalisteners.LoggerActorDataListener;
+import ru.taskurotta.backend.statistics.MetricFactory;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
@@ -17,21 +14,17 @@ import ru.taskurotta.util.ActorUtils;
 public class MetricsTaskServer implements TaskServer {
 
     private TaskServer taskServer;
-    private GeneralMetricsManager generalMetricsManager;
-    private ActorMetricsManager actorMetricsManager;
-    private DataListener dataListener;
+    private MetricFactory metricsFactory;
 
     public static final String START_PROCESS = "startProcess";
     public static final String POLL = "poll";
+    public static final String SUCCESSFUL_POLL = "successfulPoll";
     public static final String RELEASE = "release";
     public static final String EXECUTION_TIME = "executionTime";
     public static final String ERROR_DECISION = "errorDecision";
 
-    public MetricsTaskServer(TaskServer taskServer, GeneralMetricsManager generalMetricsManager, ActorMetricsManager actorMetricsManager,DataListener dataListener) {
+    public MetricsTaskServer(TaskServer taskServer) {
         this.taskServer = taskServer;
-        this.generalMetricsManager = generalMetricsManager;
-        this.actorMetricsManager = actorMetricsManager;
-        this.dataListener = dataListener;
     }
 
     @Override
@@ -43,9 +36,9 @@ public class MetricsTaskServer implements TaskServer {
 
         taskServer.startProcess(task);
 
-        generalMetricsManager.mark(START_PROCESS, System.currentTimeMillis() - startTime, dataListener);
+        long invocationTime = System.currentTimeMillis()-startTime;
+        metricsFactory.getInstance(START_PROCESS).mark(actorId, invocationTime);
 
-        actorMetricsManager.mark(actorId, START_PROCESS, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
     }
 
     @Override
@@ -57,9 +50,12 @@ public class MetricsTaskServer implements TaskServer {
 
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
-        generalMetricsManager.mark(POLL, System.currentTimeMillis() - startTime, dataListener);
+        long invocationTime = System.currentTimeMillis() - startTime;
+        metricsFactory.getInstance(POLL).mark(actorId, invocationTime);
 
-        actorMetricsManager.mark(actorId, POLL, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
+        if(taskContainer!=null) {
+            metricsFactory.getInstance(SUCCESSFUL_POLL).mark(actorId, invocationTime);
+        }
 
         return taskContainer;
     }
@@ -73,22 +69,18 @@ public class MetricsTaskServer implements TaskServer {
 
         taskServer.release(taskResult);
 
-        generalMetricsManager.mark(RELEASE, System.currentTimeMillis() - startTime, dataListener);
+        long invocationTime = System.currentTimeMillis() - startTime;
 
-        actorMetricsManager.mark(actorId, RELEASE, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
-
-        generalMetricsManager.mark(EXECUTION_TIME, taskResult.getExecutionTime(), dataListener);
-
-        actorMetricsManager.mark(actorId, EXECUTION_TIME, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
+        metricsFactory.getInstance(RELEASE).mark(actorId, invocationTime);
+        metricsFactory.getInstance(EXECUTION_TIME).mark(actorId, taskResult.getExecutionTime());
 
         if (taskResult.containsError()) {
-            generalMetricsManager.mark(ERROR_DECISION, taskResult.getExecutionTime(), dataListener);
-
-            actorMetricsManager.mark(actorId, ERROR_DECISION, System.currentTimeMillis() - startTime, new LoggerActorDataListener(actorId));
+            metricsFactory.getInstance(ERROR_DECISION).mark(actorId, taskResult.getExecutionTime());
         }
+
     }
 
-    public void shutdown() {
-        generalMetricsManager.shutdown();
+    public void setMetricsFactory(MetricFactory metricsFactory) {
+        this.metricsFactory = metricsFactory;
     }
 }

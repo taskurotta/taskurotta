@@ -6,13 +6,14 @@ package ru.taskurotta.backend.statistics.datalisteners;
  * Time: 18:30
  */
 public interface DataListener {
-    void handle(String name, long count, double mean, long time);
 
-    long[] getHourCounts();
+    void handle(String metricName, String datasetName, long count, double mean, long currentTime);
 
-    long[] getDayCounts();
-
-    double[] getHourMeans();
-
-    double[] getDayMeans();
+//    long[] getHourCounts();
+//
+//    long[] getDayCounts();
+//
+//    double[] getHourMeans();
+//
+//    double[] getDayMeans();
 }

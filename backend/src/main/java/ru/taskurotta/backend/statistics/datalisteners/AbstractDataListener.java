@@ -27,7 +27,7 @@ public abstract class AbstractDataListener implements DataListener {
     private final AtomicDoubleArray dayMeans = new AtomicDoubleArray(MINUTES_IN_23_HOURS);
 
     @Override
-    public void handle(String name, long count, double mean, long time) {
+    public void handle(String metricName, String datasetName, long count, double mean, long time) {
 
         long period = System.currentTimeMillis() - time;
 
@@ -145,7 +145,6 @@ public abstract class AbstractDataListener implements DataListener {
         return (int) ((time / MILLISECONDS_IN_SECONDS / SECONDS_IN_MINUTE) % MINUTES_IN_23_HOURS);
     }
 
-    @Override
     public long[] getHourCounts() {
         long[] data = new long[SECONDS_IN_HOUR];
 
@@ -164,7 +163,6 @@ public abstract class AbstractDataListener implements DataListener {
         return data;
     }
 
-    @Override
     public long[] getDayCounts() {
         long[] data = new long[MINUTES_IN_23_HOURS];
 
@@ -183,7 +181,6 @@ public abstract class AbstractDataListener implements DataListener {
         return data;
     }
 
-    @Override
     public double[] getHourMeans() {
         double[] data = new double[SECONDS_IN_HOUR];
 
@@ -202,7 +199,6 @@ public abstract class AbstractDataListener implements DataListener {
         return data;
     }
 
-    @Override
     public double[] getDayMeans() {
         double[] data = new double[MINUTES_IN_23_HOURS];
 

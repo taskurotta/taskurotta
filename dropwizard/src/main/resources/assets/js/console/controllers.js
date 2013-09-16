@@ -320,8 +320,8 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
 
     //selected objects
     $scope.selection = {
-        actorSpecific: false,
-        zeroes: true,
+        showDatasets: false,
+        omitZeroes: false,
         datasets: {},
         metric: {},
         scopeMode: {},
@@ -342,23 +342,10 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         return result;
     };
 
-    $scope.getMetricsList = function() {
-        if($scope.selection.actorSpecific) {
-            return $scope.metricsOptions.actorMetrics;
-        } else {
-            return $scope.metricsOptions.generalMetrics;
-        }
-    };
 
     $scope.getDatasetList = function() {
-        if ($scope.selection.actorSpecific) {
-            return $scope.actorIds;
-        } else {
-            var mainDatasetName = "main";
-            if($scope.selection.metric.name) {
-                mainDatasetName = "main - " + $scope.selection.metric.name;
-            }
-            return [mainDatasetName];
+        if($scope.metricsOptions.dataSetDesc && $scope.selection.metric.value) {
+            return $scope.metricsOptions.dataSetDesc[$scope.selection.metric.value];
         }
     };
 
@@ -368,8 +355,8 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         var scope = $scope.selection.scopeMode.value;
         var period = $scope.selection.periodMode.value;
         var metric = $scope.selection.metric.value;
-        var action = "generalData";
-        var zeroes = $scope.selection.zeroes;
+        var action = "data";
+        var zeroes = !$scope.selection.omitZeroes;
 
         if($scope.selection.actorSpecific) {
             action = "actorData";

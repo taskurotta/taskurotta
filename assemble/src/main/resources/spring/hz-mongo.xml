@@ -184,6 +184,10 @@
         <property name="nodeCustomName" value="${node.custom.name}"/>
     </bean>
 
+    <!-- Metrics -->
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
+    <!-- /Metrics -->
+
     <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
 
     <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener"/>-->

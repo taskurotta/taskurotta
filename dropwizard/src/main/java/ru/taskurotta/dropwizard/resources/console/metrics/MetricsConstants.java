@@ -7,8 +7,7 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
  */
 public interface MetricsConstants {
 
-    public static final String ACTION_ACTOR_METRICS_DATA = "actorData";
-    public static final String ACTION_GENERAL_METRICS_DATA = "generalData";
+    public static final String ACTION_METRICS_DATA = "data";
     public static final String ACTION_METRICS_OPTIONS = "options";
 
     public static final String OPT_SCOPE_CLUSTER = "cluster";

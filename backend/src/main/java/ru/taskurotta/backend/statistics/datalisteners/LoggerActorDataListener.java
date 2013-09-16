@@ -20,11 +20,11 @@ public class LoggerActorDataListener extends AbstractDataListener {
         this.actorId = actorId;
     }
 
-    public void handle(String name, long count, double mean, long time) {
-        super.handle(name, count, mean, time);
+    public void handle(String metricName, String datasetName, long count, double mean, long time) {
+        super.handle(metricName, datasetName, count, mean, time);
 
         if (logger.isInfoEnabled()) {
-            logger.info("METRICS: [{}]#[{}]: mean = [{}], count = [{}] collected at [{}]", name, actorId, mean, count, new Date(time));
+            logger.info("METRICS: [{}]#[{}]: mean = [{}], count = [{}] collected at [{}]", metricName, actorId, mean, count, new Date(time));
         }
     }
 }

@@ -210,19 +210,17 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
 
             var plotElem = $.plot($element, [], $scope.options);
             var refreshTriggerId = -1;
-            var updatePlotData = function(newData, updateGrid) {
+            var updatePlotData = function(newData) {
                 $log.info("Update plot data. New datasets count: " + newData.length);
                 plotElem.setData(newData);
-                if(updateGrid) {
-                    plotElem.setupGrid();
-                }
+                plotElem.setupGrid();
                 plotElem.draw();
             };
 
             $scope.update = function() {
                 $log.log("Using datasetUrl attribute for update.");
                 $http.get($scope.datasetUrl).then(function(value) {
-                    updatePlotData(value.data, true);
+                    updatePlotData(value.data);
                 });
             };
 
@@ -238,7 +236,7 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
                 if(newVal) {
                     $scope.update();
                 } else {
-                    updatePlotData([], true);//reset plot data
+                    updatePlotData([]);//reset plot data
                 }
             });
 

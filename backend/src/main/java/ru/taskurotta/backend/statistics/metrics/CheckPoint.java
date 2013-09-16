@@ -11,9 +11,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class CheckPoint {
 
-    private String name;
-    private DataListener dataListener;
-
     private AtomicReference<State> stateRef = new AtomicReference<>();
 
     private class State {
@@ -21,10 +18,7 @@ public class CheckPoint {
         protected volatile double mean = 0;
     }
 
-    public CheckPoint(String name, DataListener dataListener) {
-        this.name = name;
-        this.dataListener = dataListener;
-
+    public CheckPoint() {
         stateRef.set(new State());
     }
 
@@ -44,8 +38,9 @@ public class CheckPoint {
         }
     }
 
-    public void dump() {
-        State oldState = stateRef.get();
-        dataListener.handle(name, oldState.counter, oldState.mean, System.currentTimeMillis());
+    public void dumpCurrentState(DataListener dataListener, String metricName, String datasetName) {
+        State state = stateRef.getAndSet(new State());//Reset state and get old value for dumping
+        dataListener.handle(metricName, datasetName, state.counter, state.mean, System.currentTimeMillis());
     }
+
 }

@@ -253,26 +253,18 @@
     <!-- /Task server -->
 
     <!-- Metrics -->
-    <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">
+    <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer">
         <constructor-arg name="taskServer" ref="originalTaskServer" />
-        <constructor-arg name="actorMetricsManager" ref="actorMetricsManager" />
-        <constructor-arg name="generalMetricsManager" ref="generalMetricsManager" />
-        <constructor-arg name="dataListener" ref="dataListener" />
+        <property name="metricsFactory" ref="metricsFactory" />
     </bean>
 
-    <bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener" />
-
-    <bean id="actorMetricsManager" class="ru.taskurotta.backend.statistics.ActorMetricsManager" destroy-method="shutdown">
-        <constructor-arg name="delay" value="1" />
-        <constructor-arg name="initialDelay" value="0" />
-        <constructor-arg name="unit" value="SECONDS" />
+    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
+        <constructor-arg name="dumpPeriod" value = "1" />
+        <constructor-arg name="dumpingThreads" value = "1" />
+        <constructor-arg name="dataListener" ref="metricsDataHandler" />
     </bean>
 
-    <bean id="generalMetricsManager" class="ru.taskurotta.backend.statistics.GeneralMetricsManager">
-        <constructor-arg name="delay" value="1" />
-        <constructor-arg name="initialDelay" value="0" />
-        <constructor-arg name="unit" value="SECONDS" />
-    </bean>
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
     <!-- /Metrics -->
 
 

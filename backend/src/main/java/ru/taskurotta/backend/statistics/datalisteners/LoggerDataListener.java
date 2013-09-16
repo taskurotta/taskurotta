@@ -14,11 +14,11 @@ public class LoggerDataListener extends AbstractDataListener {
 
     private final static Logger logger = LoggerFactory.getLogger(LoggerDataListener.class);
 
-    public void handle(String name, long count, double mean, long time) {
-        super.handle(name, count, mean, time);
+    public void handle(String metricName, String datasetName, long count, double mean, long time) {
+        super.handle(metricName, datasetName, count, mean, time);
 
         if (logger.isInfoEnabled()) {
-            logger.info("METRICS: [{}]: mean = [{}], count = [{}] collected at [{}]", name, mean, count, new Date(time));
+            logger.info("METRICS: [{}]: mean = [{}], count = [{}] collected at [{}]", metricName, mean, count, new Date(time));
         }
     }
 }

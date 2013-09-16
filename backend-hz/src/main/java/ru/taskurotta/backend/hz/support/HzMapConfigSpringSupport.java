@@ -41,7 +41,7 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
         this.mapConfigLock = hzInstance.getLock(MAP_CONFIG_LOCK);
     }
 
-    public void createMapConfig(String mapName) {
+    public void createMapConfig (String mapName) {
         try {
             mapConfigLock.lock();
 
@@ -62,7 +62,6 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
             mc.setAsyncBackupCount(asyncBackupsCount);
             mc.setEvictionPolicy(MapConfig.EvictionPolicy.valueOf(evictionPolicy));
             mc.setMapStoreConfig(msc);
-
 
             MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
             maxSizeConfig.setSize(maxSize);

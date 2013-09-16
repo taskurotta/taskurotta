@@ -3,14 +3,14 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.statistics.ActorMetricsManager;
-import ru.taskurotta.backend.statistics.GeneralMetricsManager;
+import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,31 +23,54 @@ public class MetricsOptionsHandler implements MetricsConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsOptionsHandler.class);
 
-    private ActorMetricsManager actorMetricsManager;
-    private GeneralMetricsManager generalMetricsManager;
+    private MetricsDataRetriever dataRetriever;
 
     private Map<String, String> dataTypes;
     private Map<String, String> scopes;
     private Map<String, String> periods;
 
     public Response getMetricsTypes() {
-        Collection<String> actorMetrics = actorMetricsManager.getNames();
-        Collection<String> generalMetrics = generalMetricsManager.getNames();
-
-        logger.debug("ActorMetrics getted [{}], generalMetrics getted [{}]", actorMetrics, generalMetrics);
-
         MetricsOptionsVO result = new MetricsOptionsVO();
-        result.actorMetrics = getMetricsTypeOptions(actorMetrics);
-        result.generalMetrics = getMetricsTypeOptions(generalMetrics);
+        List<OptionVO> metricsDesc = getAsOptions(dataRetriever.getMetricNames());
+        result.metricDesc = metricsDesc;
+        result.dataSetDesc = getDataSetDescOptions(metricsDesc);
         result.dataTypes = getOptionsFromMap(dataTypes);
         result.periods = getOptionsFromMap(periods);
         result.scopes = getOptionsFromMap(scopes);
+
+        logger.debug("Metrics options getted [{}]", result);
 
         return Response.ok(result, MediaType.APPLICATION_JSON).build();
     }
 
 
-    private List<OptionVO> getMetricsTypeOptions(Collection<String> metricsNames) {
+    public Map<String, List<OptionVO>> getDataSetDescOptions(List<OptionVO> metrics) {
+        Map<String, List<OptionVO>> result = null;
+
+        if (metrics!=null && !metrics.isEmpty()) {
+            result = new HashMap();
+            for (OptionVO metric : metrics) {
+                Collection<String> dataSetNames = dataRetriever.getDataSetsNames(metric.getValue());
+                List<OptionVO> dataSetDescs = setIsGeneralFlag(getAsOptions(dataSetNames), metric.getValue());
+                result.put(metric.getValue(), dataSetDescs);
+            }
+        }
+
+        return result;
+    }
+
+    private List<OptionVO> setIsGeneralFlag(List<OptionVO> target, String dataSetValueToMark) {
+        if(target!=null && !target.isEmpty()) {
+            for(OptionVO option: target) {
+                if(dataSetValueToMark.equals(option.getValue())) {
+                    option.setGeneral(true);
+                }
+            }
+        }
+        return target;
+    }
+
+    private List<OptionVO> getAsOptions(Collection<String> metricsNames) {
         List<OptionVO> result = new ArrayList<>();
         int i = 0;
 
@@ -77,12 +100,12 @@ public class MetricsOptionsHandler implements MetricsConstants {
     }
 
     protected static class MetricsOptionsVO implements Serializable {
+
         protected List<OptionVO> dataTypes;////metrics dataTypes: ex., rate or execution time
         protected List<OptionVO> scopes;//metrics scope: ex., local node or cluster
         protected List<OptionVO> periods;//metrics intervals: ex., last hour or last 24 hours
-        protected List<OptionVO> generalMetrics;
-        protected List<OptionVO> actorMetrics;
-
+        protected List<OptionVO> metricDesc;
+        protected Map<String, List<OptionVO>> dataSetDesc;
 
         public List<OptionVO> getDataTypes() {
             return dataTypes;
@@ -96,12 +119,12 @@ public class MetricsOptionsHandler implements MetricsConstants {
             return periods;
         }
 
-        public List<OptionVO> getGeneralMetrics() {
-            return generalMetrics;
+        public List<OptionVO> getMetricDesc() {
+            return metricDesc;
         }
 
-        public List<OptionVO> getActorMetrics() {
-            return actorMetrics;
+        public Map<String, List<OptionVO>> getDataSetDesc() {
+            return dataSetDesc;
         }
 
         @Override
@@ -110,8 +133,8 @@ public class MetricsOptionsHandler implements MetricsConstants {
                     "dataTypes=" + dataTypes +
                     ", scopes=" + scopes +
                     ", periods=" + periods +
-                    ", generalMetrics=" + generalMetrics +
-                    ", actorMetrics=" + actorMetrics +
+                    ", metricDesc=" + metricDesc +
+                    ", dataSetDesc=" + dataSetDesc +
                     "} ";
         }
     }
@@ -123,6 +146,7 @@ public class MetricsOptionsHandler implements MetricsConstants {
 
         private String value;
         private String name;
+        private boolean general = false;
 
         public String getName() {
             return name;
@@ -140,11 +164,20 @@ public class MetricsOptionsHandler implements MetricsConstants {
             return value;
         }
 
+        public boolean isGeneral() {
+            return general;
+        }
+
+        public void setGeneral(boolean general) {
+            this.general = general;
+        }
+
         @Override
         public String toString() {
             return "OptionVO{" +
                     "value='" + value + '\'' +
                     ", name='" + name + '\'' +
+                    ", general=" + general +
                     "} ";
         }
     }
@@ -165,12 +198,7 @@ public class MetricsOptionsHandler implements MetricsConstants {
     }
 
     @Required
-    public void setActorMetricsManager(ActorMetricsManager actorMetricsManager) {
-        this.actorMetricsManager = actorMetricsManager;
-    }
-
-    @Required
-    public void setGeneralMetricsManager(GeneralMetricsManager generalMetricsManager) {
-        this.generalMetricsManager = generalMetricsManager;
+    public void setDataRetriever(MetricsDataRetriever dataRetriever) {
+        this.dataRetriever = dataRetriever;
     }
 }

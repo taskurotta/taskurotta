@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
         <property name="consoleManager" ref="consoleManager"/>
@@ -31,15 +29,12 @@
     </bean>
 
     <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataHandler">
-        <property name="actorMetricsManager" ref="actorMetricsManager" />
-        <property name="generalMetricsManager" ref="generalMetricsManager" />
+        <property name="dataRetriever" ref="metricsDataHandler" />
     </bean>
 
     <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsHandler" >
 
-        <property name="actorMetricsManager" ref="actorMetricsManager" />
-
-        <property name="generalMetricsManager" ref="generalMetricsManager" />
+        <property name="dataRetriever" ref="metricsDataHandler" />
 
         <property name="dataTypes">
             <map>

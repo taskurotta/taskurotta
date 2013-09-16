@@ -88,4 +88,6 @@
         <property name="taskServer" ref="taskServer" />
     </bean>
 
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
+
 </beans>

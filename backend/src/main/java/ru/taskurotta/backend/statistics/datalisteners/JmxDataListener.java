@@ -44,9 +44,9 @@ public class JmxDataListener extends AbstractDataListener {
     public class Metrics implements MetricsMBean {
 
         private String name;
-        private DataListener dataListener;
+        private AbstractDataListener dataListener;
 
-        public Metrics(String name, DataListener dataListener) {
+        public Metrics(String name, AbstractDataListener dataListener) {
             this.name = name;
             this.dataListener = dataListener;
         }
@@ -77,38 +77,38 @@ public class JmxDataListener extends AbstractDataListener {
         }
     }
 
-    public void handle(String name, long count, double mean, long time) {
-        super.handle(name, count, mean, time);
+    public void handle(String metricName, String datasetName, long count, double mean, long time) {
+        super.handle(metricName, datasetName, count, mean, time);
 
-        logger.trace("[{}]: find metrics for", name);
+        logger.trace("[{}]: find metrics for", metricName);
 
-        Metrics metrics = metricsMap.get(name);
+        Metrics metrics = metricsMap.get(metricName);
 
-        logger.trace("[{}]: found metrics [{}]", name, metrics);
+        logger.trace("[{}]: found metrics [{}]", metricName, metrics);
 
         if (metrics == null) {
             synchronized (metricsMap) {
-                metrics = metricsMap.get(name);
+                metrics = metricsMap.get(metricName);
 
                 if (metrics == null) {
-                    metrics = new Metrics(name, this);
+                    metrics = new Metrics(metricName, this);
 
-                    logger.trace("[{}]: create metrics [{}]", name, metrics);
+                    logger.trace("[{}]: create metrics [{}]", metricName, metrics);
 
                     try {
-                        mBeanServer.registerMBean(metrics, createName(name));
+                        mBeanServer.registerMBean(metrics, createName(metricName));
                     } catch (InstanceAlreadyExistsException | NotCompliantMBeanException | MBeanRegistrationException e) {
-                        logger.error("Catch exception while register MBean for [" + name + "]", e);
+                        logger.error("Catch exception while register MBean for [" + metricName + "]", e);
                     }
 
-                    metricsMap.put(name, metrics);
+                    metricsMap.put(metricName, metrics);
 
-                    logger.trace("[{}]: save metrics [{}]", name, metrics);
+                    logger.trace("[{}]: save metrics [{}]", metricName, metrics);
                 }
             }
         }
 
-        logger.trace("[{}]: update metrics [{}]", name, metrics);
+        logger.trace("[{}]: update metrics [{}]", metricName, metrics);
     }
 
     private ObjectName createName(String name) {

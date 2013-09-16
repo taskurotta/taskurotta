@@ -29,16 +29,15 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
         String dataType = typeOpt.or(OPT_UNDEFINED);
         String period = periodOpt.or(OPT_UNDEFINED);
         String scope = scopeOpt.or(OPT_UNDEFINED);
-        String metric = metricOpt.or(OPT_UNDEFINED);
+        String metricName = metricOpt.or(OPT_UNDEFINED);
         boolean zeroes = zeroesOpt.or(Boolean.TRUE);
 
         List<String> dataSetNames = extractDatasets(dataSetOpt.or(""));
         try {
 
-            if(ACTION_ACTOR_METRICS_DATA.equals(action)) {
-                return metricsDataHandler.getActorMetricsDataResponse(!zeroes, metric, scope, dataType, period, dataSetNames);
-            } else if(ACTION_GENERAL_METRICS_DATA.equals(action)) {
-                return metricsDataHandler.getGeneralMetricsDataResponse(!zeroes, metric, scope, dataType, period);
+            if(ACTION_METRICS_DATA.equals(action)) {
+                return metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period, !zeroes);
+
             } else if(ACTION_METRICS_OPTIONS.equals(action)) {
                 return metricsOptionsHandler.getMetricsTypes();
 
@@ -47,7 +46,7 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
             }
 
         } catch (Throwable e) {
-            logger.error("Error getting metrics for action[" + action + "], zeroes["+zeroes+"], metric[" + metric + "], dataType[" + dataType + "], period["+dataType+"], scope["+scope+"], dataSet["+dataSetNames+"]", e);
+            logger.error("Error getting metrics for action[" + action + "], zeroes["+zeroes+"], metricName[" + metricName + "], dataType[" + dataType + "], period["+dataType+"], scope["+scope+"], dataSet["+dataSetNames+"]", e);
             return Response.serverError().build();
         }
 
