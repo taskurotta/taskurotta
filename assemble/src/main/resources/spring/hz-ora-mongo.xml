@@ -38,23 +38,23 @@
             <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
             <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU" eviction-percentage="25">
+            <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.decision.map.name}" backup-count="0" eviction-policy="LRU" eviction-percentage="25">
+            <hz:map name="${hz.decision.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.map.name}" backup-count="0" eviction-policy="LRU" eviction-percentage="25">
+            <hz:map name="${hz.graph.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" eviction-policy="LRU" eviction-percentage="25">
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="actorPreferencesMap" backup-count="0" eviction-policy="LRU" eviction-percentage="25">
+            <hz:map name="actorPreferencesMap" backup-count="0" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
