@@ -1,5 +1,9 @@
 package ru.taskurotta.backend.dependency.links;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,10 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is not thread safe object. It should be synchronized with backend by version value.
@@ -55,14 +55,37 @@ public class Graph implements Serializable {
 
 
     private long touchTimeMillis;
-    private long lastApplyTimeMillis;
+    private long lastApplyTimeMillis = 0;
 
     /**
      * generic constructor for deserializer
      */
     public Graph() {
         touchTimeMillis = System.currentTimeMillis();
-        lastApplyTimeMillis = 0;
+    }
+
+    /**
+     * smart constructor for deserializer
+     */
+    public Graph(int version, UUID graphId, Map<UUID, Long> notFinishedItems, Map<UUID, Set<UUID>> links,
+                 Set<UUID> finishedItems, long lastApplyTimeMillis) {
+
+        this.version = version;
+        this.graphId = graphId;
+
+        if (notFinishedItems != null) {
+            this.notFinishedItems = notFinishedItems;
+        }
+
+        if (links != null) {
+            this.links = links;
+        }
+
+        if (finishedItems != null) {
+            this.finishedItems = finishedItems;
+        }
+
+        this.lastApplyTimeMillis = lastApplyTimeMillis;
     }
 
     /**
@@ -73,6 +96,7 @@ public class Graph implements Serializable {
      */
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
+
         notFinishedItems.put(startItem, 0L);
     }
 
@@ -244,10 +268,10 @@ public class Graph implements Serializable {
                 Set<UUID> candidateLinks = links.get(releaseCandidate);
                 candidateLinks.remove(finishedItem);
 
-				// update changed dependency
-				if (waitForAfterRelease != null) {
-					candidateLinks.add(waitForAfterRelease);
-				}
+                // update changed dependency
+                if (waitForAfterRelease != null) {
+                    candidateLinks.add(waitForAfterRelease);
+                }
 
                 if (!candidateLinks.isEmpty()) {
                     continue;
@@ -256,15 +280,15 @@ public class Graph implements Serializable {
                 // GC items without dependencies
                 links.remove(releaseCandidate);
 
-				// and add it to ready list
-				if (readyItemsList == null) {
-					readyItemsList = new LinkedList<>();
-				}
+                // and add it to ready list
+                if (readyItemsList == null) {
+                    readyItemsList = new LinkedList<>();
+                }
 
-				logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to " +
-						"readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
+                logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to " +
+                        "readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
 
-				readyItemsList.add(releaseCandidate);
+                readyItemsList.add(releaseCandidate);
             }
         }
 
@@ -422,6 +446,38 @@ public class Graph implements Serializable {
 
     public void setLastApplyTimeMillis(long lastApplyTimeMillis) {
         this.lastApplyTimeMillis = lastApplyTimeMillis;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Graph)) return false;
+
+        Graph graph = (Graph) o;
+
+        if (lastApplyTimeMillis != graph.lastApplyTimeMillis) return false;
+        if (touchTimeMillis != graph.touchTimeMillis) return false;
+        if (version != graph.version) return false;
+        if (finishedItems != null ? !finishedItems.equals(graph.finishedItems) : graph.finishedItems != null)
+            return false;
+        if (graphId != null ? !graphId.equals(graph.graphId) : graph.graphId != null) return false;
+        if (links != null ? !links.equals(graph.links) : graph.links != null) return false;
+        if (notFinishedItems != null ? !notFinishedItems.equals(graph.notFinishedItems) : graph.notFinishedItems != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = version;
+        result = 31 * result + (graphId != null ? graphId.hashCode() : 0);
+        result = 31 * result + (notFinishedItems != null ? notFinishedItems.hashCode() : 0);
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (finishedItems != null ? finishedItems.hashCode() : 0);
+        result = 31 * result + (int) (touchTimeMillis ^ (touchTimeMillis >>> 32));
+        result = 31 * result + (int) (lastApplyTimeMillis ^ (lastApplyTimeMillis >>> 32));
+        return result;
     }
 }
 

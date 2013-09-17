@@ -1,10 +1,5 @@
 package ru.taskurotta.backend.hz.dependency;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
@@ -12,6 +7,11 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.Modification;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Memory graph dao with Hazelcast
@@ -39,10 +39,16 @@ public class HzGraphDao implements GraphDao {
     /**
      * Table of row contains decision stuff
      */
-    private static class DecisionRow implements Serializable {
+    public static class DecisionRow implements Serializable {
         private UUID itemId;
         private Modification modification;
         private UUID[] readyItems;
+
+        public DecisionRow(UUID itemId, Modification modification, UUID[] readyItems) {
+            this.itemId = itemId;
+            this.modification = modification;
+            this.readyItems = readyItems;
+        }
 
         @SuppressWarnings("RedundantIfStatement")
         @Override
@@ -66,6 +72,18 @@ public class HzGraphDao implements GraphDao {
             result = 31 * result + (modification != null ? modification.hashCode() : 0);
             result = 31 * result + (readyItems != null ? Arrays.hashCode(readyItems) : 0);
             return result;
+        }
+
+        public UUID getItemId() {
+            return itemId;
+        }
+
+        public Modification getModification() {
+            return modification;
+        }
+
+        public UUID[] getReadyItems() {
+            return readyItems;
         }
     }
 
@@ -101,12 +119,9 @@ public class HzGraphDao implements GraphDao {
     private boolean updateGraph(Graph modifiedGraph) {
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
-        DecisionRow decisionRow = new DecisionRow();
-
         Modification modification = modifiedGraph.getModification();
-        decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
-        decisionRow.modification = modification;
-        decisionRow.readyItems = modifiedGraph.getReadyItems();
+
+        DecisionRow decisionRow = new DecisionRow(modifiedGraph.getModification().getCompletedItem(), modification, modifiedGraph.getReadyItems());
 
         decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
 
