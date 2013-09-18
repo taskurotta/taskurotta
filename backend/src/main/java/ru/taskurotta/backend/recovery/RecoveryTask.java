@@ -138,7 +138,6 @@ public class RecoveryTask implements Callable {
                 continue;
             }
 
-
             String queueName = queueBackend.createQueueName(taskContainer.getActorId(), taskList);
             Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
             if (lastEnqueueTime < taskContainer.getStartTime()) {

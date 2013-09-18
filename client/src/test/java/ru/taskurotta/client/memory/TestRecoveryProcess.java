@@ -45,7 +45,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         assertNull(dependencyBackend.getGraph(processId));
 
         // recovery process
-        new RecoveryTask(memoryQueueBackend, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
+        new RecoveryTask(memoryQueueBackend, memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
 
         // check start task in queue
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
@@ -81,7 +81,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         assertFalse(dependencyBackend.getGraph(processId).getNotFinishedItems().isEmpty());
 
         // recovery process
-        new RecoveryTask(memoryQueueBackend, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
+        new RecoveryTask(memoryQueueBackend, memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));
@@ -127,7 +127,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         });
 
         // recovery process
-        new RecoveryTask(memoryQueueBackend, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
+        new RecoveryTask(memoryQueueBackend, memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l, processId).call();
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));

@@ -155,6 +155,13 @@
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
 
+    <bean id="queueBackendStatistics" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mergePeriod" value="1"/>
+        <constructor-arg name="mergePeriodTimeUnit" value="MINUTES"/>
+    </bean>
+
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
 
@@ -207,6 +214,7 @@
         <property name="hazelcastInstance" ref="hzInstance" />
         <property name="processBackend" ref="processBackend" />
         <property name="queueBackend" ref="queueBackend" />
+        <property name="queueBackendStatistics" ref="queueBackendStatistics"/>
         <property name="recoveryProcessTimeOut" value = "${recovery.process.timeout}" />
         <property name="taskBackend" ref="taskBackend" />
         <property name="taskDao" ref="taskDao" />
