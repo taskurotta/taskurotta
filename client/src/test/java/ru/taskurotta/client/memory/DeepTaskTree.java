@@ -22,7 +22,7 @@ public class DeepTaskTree extends AbstractTestStub {
      * task C should be ready only after task E
      */
     @Test
-    public void testNoWait() {
+    public void testDeepTree() {
 
         UUID taskIdA = UUID.randomUUID();
         UUID taskIdB = UUID.randomUUID();
@@ -41,7 +41,7 @@ public class DeepTaskTree extends AbstractTestStub {
         Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
         Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C", new Object[]{promise(taskB)});
 
-        release(taskIdA, null, new Task[]{taskB, taskC});
+        release(taskIdA, null, taskB, taskC);
 
 
         // poll task B
@@ -52,7 +52,7 @@ public class DeepTaskTree extends AbstractTestStub {
         // release task B
         Task deciderTaskD = deciderTask(taskIdD, TaskType.DECIDER_ASYNCHRONOUS, "D");
 
-        release(taskIdB, promise(deciderTaskD), new Task[]{deciderTaskD});
+        release(taskIdB, promise(deciderTaskD), deciderTaskD);
 
 
         // poll task D
@@ -62,7 +62,7 @@ public class DeepTaskTree extends AbstractTestStub {
 
         // release task D
         Task deciderTaskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E");
-        release(taskIdD, promise(deciderTaskE), new Task[]{deciderTaskE});
+        release(taskIdD, promise(deciderTaskE), deciderTaskE);
 
 
         // poll task E
@@ -71,16 +71,65 @@ public class DeepTaskTree extends AbstractTestStub {
 		assertEmptyQueue();
 
 		// release task E
-        release(taskIdE, 1, null);
+        release(taskIdE, 1);
 
 
         // poll task C
         pollDeciderTask(taskIdC);
 
         // release task C
-        release(taskIdC, 1, null);
+        release(taskIdC, 1);
 
 		assertEmptyQueue();
     }
 
+	/**
+	 * - A -> B, C, E(B,C)
+	 * - B -> D
+	 *
+	 * task C will be released after task B
+	 * task E should be ready only after task D
+	 */
+	@Test
+	public void chainTasks() {
+		UUID taskIdA = UUID.randomUUID();
+		UUID taskIdB = UUID.randomUUID();
+		UUID taskIdC = UUID.randomUUID();
+		UUID taskIdD = UUID.randomUUID();
+		UUID taskIdE = UUID.randomUUID();
+
+		// start process
+		startProcess(deciderTask(taskIdA, TaskType.DECIDER_START, "A"));
+
+		// poll task A
+		pollDeciderTask(taskIdA);
+
+		// release task A
+		Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
+		Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C");
+		Task taskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E", new Object[]{promise(taskB), promise(taskC)});
+		// release decision with taskB and taskС and taskE
+		release(taskIdA, null, taskB, taskC, taskE);
+
+		// poll task (B or C)
+		pollDeciderTask(taskIdB, taskIdC);
+		// poll task (C or B)
+		pollDeciderTask(taskIdB, taskIdC);
+		assertEmptyQueue();
+
+		// release task B
+		Task taskD = deciderTask(taskIdD, TaskType.DECIDER_ASYNCHRONOUS, "D");
+		// release decision with taskD and return taskD as promise
+		release(taskIdB, promise(taskD), taskD);
+
+		// poll task D
+		pollDeciderTask(taskIdD);
+		assertEmptyQueue();
+
+		// release task C
+		release(taskIdC, null);
+
+		// Task E should wait for release of task D
+		assertEmptyQueue();
+	}
 }
