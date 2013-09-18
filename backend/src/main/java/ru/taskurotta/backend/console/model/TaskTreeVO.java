@@ -10,9 +10,15 @@ import java.util.UUID;
  */
 public class TaskTreeVO {
 
+    public static final int STATE_UNDEFINED = -1;
+    public static final int STATE_NOT_ANSWERED = 0;
+    public static final int STATE_SUCCESS = 1;
+    public static final int STATE_ERROR = 2;
+
     private UUID id;//task uuid of current node
     private UUID parent;//parent task tree
     private String desc;
+    private int state=STATE_UNDEFINED;
     private TaskTreeVO[] children;//child task trees
 
     public TaskTreeVO(){
@@ -54,13 +60,22 @@ public class TaskTreeVO {
         this.children = children;
     }
 
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
         return "TaskTreeVO{" +
                 "id=" + id +
                 ", parent=" + parent +
                 ", desc='" + desc + '\'' +
+                ", state=" + state +
                 ", children=" + Arrays.toString(children) +
-                '}';
+                "} ";
     }
 }

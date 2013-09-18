@@ -104,4 +104,15 @@ consoleApp.run(function ($rootScope, $log) {
     $rootScope.getStartIndex = function (pageNum, pageSize) {
         return (pageNum - 1) * pageSize + 1;
     };
+    $rootScope.getTreeStateIconClass = function(state) {
+        if(state == 0) {
+            return "icon-question-sign";
+        } else if (state == 1) {
+            return "icon-ok";
+        } else if (state == 2) {
+            return "icon-ban-circle";
+        } else {
+            return "icon-question-sign";
+        }
+    };
 });

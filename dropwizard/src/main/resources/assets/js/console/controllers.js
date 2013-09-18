@@ -310,10 +310,21 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 
 });
 
-consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location) {
+consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
+    $scope.dataHolder = [];
+
     $scope.collapse = {
         filter: false,
-        plot: false
+        plot: false,
+        table: true
+    };
+
+    $scope.getTableData = function () {
+        if($scope.collapse.table) {
+            return [];
+        } else {
+            return $scope.dataHolder;
+        }
     };
     $scope.actorIds = [];
     $scope.metricsOptions = {};
@@ -344,9 +355,20 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
 
 
     $scope.getDatasetList = function() {
-        if($scope.metricsOptions.dataSetDesc && $scope.selection.metric.value) {
-            return $scope.metricsOptions.dataSetDesc[$scope.selection.metric.value];
+        var result = [];
+        if(angular.isDefined($scope.selection.metric.value)
+            && angular.isDefined($scope.metricsOptions.dataSetDesc)
+            && angular.isDefined($scope.metricsOptions.dataSetDesc)) {
+            var allDatasetsForMetric = $scope.metricsOptions.dataSetDesc[$scope.selection.metric.value];
+            if(allDatasetsForMetric) {//TODO: use filter?
+                for(var i = 0; i<allDatasetsForMetric.length; i++) {
+                    if($scope.selection.showDatasets || (allDatasetsForMetric[i].general == !$scope.selection.showDatasets)) {
+                        result.push(allDatasetsForMetric[i]);
+                    }
+                }
+            }
         }
+        return result;
     };
 
     $scope.getDataSetUrl = function() {
@@ -389,8 +411,8 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         if($scope.metricsOptions.dataTypes && $scope.metricsOptions.dataTypes.length>0) {
             $scope.selection.dataMode = $scope.metricsOptions.dataTypes[0];
         }
-        if($scope.metricsOptions.generalMetrics && $scope.metricsOptions.generalMetrics.length>0) {
-            $scope.selection.metric = $scope.metricsOptions.generalMetrics[0];
+        if($scope.metricsOptions.metricDesc && $scope.metricsOptions.metricDesc.length>0) {
+            $scope.selection.metric = $scope.metricsOptions.metricDesc[0];
         }
 
 

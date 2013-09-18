@@ -17,6 +17,7 @@
             </table>
         </div>
 
+
         <div collapse = "collapse.filter">
             <table style="width:100%; margin:0px;padding:0px;">
                 <tr>
@@ -31,7 +32,7 @@
 
                                             <tr>
                                                 <td>
-                                                <span style="cursor:pointer;" popover="Specify metrics checkpoint to show. Enable checkbox to show actor specific metrics. Otherwise general metrics would be used."
+                                                <span style="cursor:pointer;" popover="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."
                                                       popover-placement="right" class="badge badge-info">?</span>
                                                     <b>Metric:</b>
                                                 </td>
@@ -43,6 +44,7 @@
                                                     </label>
 
                                                     <select ng-model="selection.metric" ng-options="m.name for m in metricsOptions.metricDesc"></select>
+                                                    <br /><small><span ng-hide="metricsOptions.metricDesc.length>0" class="alert alert-warning">No available metrics to show</span></small>
                                                 </td>
                                             </tr>
 
@@ -53,7 +55,7 @@
                                                     <b>Scope:</b>
                                                 </td>
                                                 <td>
-                                                    <select ng-model="selection.scopeMode" ng-options = "sm.name for sm in metricsOptions.scopes" />
+                                                    <select ng-model="selection.scopeMode" ng-options = "sm.name for sm in metricsOptions.scopes" disabled/>
                                                 </td>
                                             </tr>
 
@@ -108,6 +110,10 @@
                                         </table>
                                     </div>
 
+                                    <!--<div class="well">-->
+                                        <!--<div style="width:300px; height:250px;" id="plot-overview" />-->
+                                    <!--</div>-->
+
                                 </td>
                             </tr>
                         </table>
@@ -119,6 +125,8 @@
         </div>
 
     </div>
+
+
 
     <div style="width:100%;" class="well">
 
@@ -142,14 +150,17 @@
             <table style="width:100%;height:100%;">
                 <tr>
                     <td style="vertical-align: top;width:640px;">
-                        <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric" />
+                        <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric" holder="dataHolder" overview="plot-overview"/>
                     </td>
                     <td style = "vertical-align:top;text-align:left;">
-                        <div class="well">
+                        <div class="well" style="height: 400px;overflow:auto;">
                             <span class="badge badge-info" style="cursor:pointer;" popover="Select datasets to show on the diagram" popover-placement="right">?</span>
                             <b>Datasets:</b>
+
+                            <div ng-hide = "getDatasetList().length>0" class="alert alert-warning">No selected datasets to show</div>
+
                             <ul>
-                                <li ng-repeat="ds in getDatasetList() | filter:{general:!selection.showDatasets}">
+                                <li ng-repeat="ds in getDatasetList()">
                                     <label class="checkbox">
                                         <input type="checkbox" ng-model="selection.datasets[ds.value]"/><small>{{ ds.name }}</small>
                                     </label>
@@ -163,5 +174,65 @@
         </div>
 
     </div>
+
+
+
+    <div style="width:100%;" class="well">
+
+        <div>
+            <table cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td style="text-align: left;">
+                        <h4>Data table: <small><span class="alert alert-info">Hide to increase UI performance on multiple datasets</span></small></h4>
+                    </td>
+                    <td style="text-align: right;">
+                        <span ng-click="collapse.table = !collapse.table" style="cursor:pointer;">
+                            <i class="icon-chevron-up" ng-hide="collapse.table" popover="Hide data table" popover-trigger="mouseenter" popover-placement="left"></i>
+                            <i class="icon-chevron-down"  ng-show="collapse.table" popover="Show data table" popover-trigger="mouseenter" popover-placement="left"></i>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div collapse = "collapse.table">
+            <table class="table table-condensed table-striped" ng-hide="collapse.table">
+                <thead>
+                    <tr>
+                        <th style="width:30%;">Dataset</th>
+                        <th>Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="dataset in getTableData()">
+                        <td>
+                            <b>{{ dataset.label }}</b>
+                        </td>
+                        <td>
+                            <div style="height: 300px; overflow: auto;">
+                                <table class="table table-condensed table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th><b>X:</b></th>
+                                            <th><b>Y:</b></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="dot in dataset.data">
+                                            <td><small>{{ dot[0] }}</small></td>
+                                            <td><small>{{ dot[1] }}</small></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div ng-hide = "getTableData().length>0" class="alert alert-warning">No selected datasets to show</div>
+        </div>
+
+    </div>
+
 
 </div>

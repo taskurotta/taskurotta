@@ -4,7 +4,7 @@ runtime:
       instance:
         context: ru/taskurotta/example/calculate/RuntimeBeans.xml
         properties:
-          sleep: -1
+          sleep: 800
           failChance: 0.0
 
 
@@ -17,6 +17,7 @@ spreader:
           count: 10
           startTasks: true
           startTasksInBackground: false
+          startTaskPeriodSeconds: 30
           endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0

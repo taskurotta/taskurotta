@@ -9,6 +9,9 @@ import ru.taskurotta.exception.server.ServerException;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class WorkflowStarter {
 
@@ -20,6 +23,8 @@ public class WorkflowStarter {
 
     private boolean startTasksInBackground = false;
 
+    private int startTaskPeriodSeconds = -1;
+
     private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
     public void startWork() {
@@ -27,16 +32,32 @@ public class WorkflowStarter {
             final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
             final MathActionDeciderClient decider = deciderClientProvider.getDeciderClient(MathActionDeciderClient.class);
 
-            if (startTasksInBackground) {
-                startAllTasksInBackground(decider);
+            if(startTaskPeriodSeconds > 0) {
+
+                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
+                ses.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        startTasks(decider);
+                    }
+                }, 0, startTaskPeriodSeconds, TimeUnit.SECONDS);
+
             } else {
-                startAllTasks(decider);
+                startTasks(decider);
             }
 
             logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
         }
     }
 
+
+    public void startTasks(final MathActionDeciderClient decider) {
+        if (startTasksInBackground) {
+            startAllTasksInBackground(decider);
+        } else {
+            startAllTasks(decider);
+        }
+    }
 
     private void startAllTasksInBackground(final MathActionDeciderClient decider) {
         Thread starter = new Thread () {
@@ -77,5 +98,9 @@ public class WorkflowStarter {
 
     public void setStartTasksInBackground(boolean startTasksInBackground) {
         this.startTasksInBackground = startTasksInBackground;
+    }
+
+    public void setStartTaskPeriodSeconds(int startTaskPeriodSeconds) {
+        this.startTaskPeriodSeconds = startTaskPeriodSeconds;
     }
 }
