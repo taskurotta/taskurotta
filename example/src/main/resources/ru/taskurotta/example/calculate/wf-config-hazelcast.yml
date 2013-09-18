@@ -17,6 +17,7 @@ spreader:
           count: 300
           startTasks: true
           startTasksInBackground: true
+          startTaskPeriodSeconds: -1
           loggingPeriod: 10000
           taskPollDelay: 1
 

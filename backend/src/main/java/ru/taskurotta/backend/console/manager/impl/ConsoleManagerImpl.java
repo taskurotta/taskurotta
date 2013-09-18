@@ -133,6 +133,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
             result.setDesc(task.getActorId() + " - " + task.getMethod());
         }
         DecisionContainer decision = taskInfo.getDecision(taskId, processId);
+        result.setState(getTaskTreeStatus(decision));
         if (decision != null && decision.getTasks() != null && decision.getTasks().length != 0) {
             TaskTreeVO[] childs = new TaskTreeVO[decision.getTasks().length];
             for (int i = 0; i < decision.getTasks().length; i++) {
@@ -146,6 +147,16 @@ public class ConsoleManagerImpl implements ConsoleManager {
         }
 
         return result;
+    }
+
+    private int getTaskTreeStatus(DecisionContainer dc) {
+        if(dc == null) {
+            return TaskTreeVO.STATE_NOT_ANSWERED;
+        } else if(dc.getErrorContainer()!=null) {
+            return TaskTreeVO.STATE_ERROR;
+        } else {
+            return TaskTreeVO.STATE_SUCCESS;
+        }
     }
 
     @Override

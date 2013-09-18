@@ -35,6 +35,7 @@
         <property name="count" value="${count}"/>
         <property name="startTasks" value="${startTasks}" />
         <property name="startTasksInBackground" value = "${startTasksInBackground}" />
+        <property name="startTaskPeriodSeconds" value="${startTaskPeriodSeconds}" />
     </bean>
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
