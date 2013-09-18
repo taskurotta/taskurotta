@@ -32,6 +32,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static final Lock MONITOR = new ReentrantLock(true);
     public static final AtomicBoolean CAN_WORK = new AtomicBoolean(false);
 
+    private ExecutorService executorService;
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("onApplicationEvent");
@@ -44,8 +46,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
         MONITOR.lock();
-        ExecutorService executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-
         try {
             CAN_WORK.set(false);
             final CountDownLatch latch = new CountDownLatch(1);
@@ -81,13 +81,21 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
             MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
             System.out.println("Infinity cycle started");
-            while (true) {
+            CountDownLatch countDownLatch = new CountDownLatch(500);
+            executorService = Executors.newFixedThreadPool(THREADS_COUNT);
+            while (countDownLatch.getCount()>0) {
                 createStartTask(deciderClient);
                 try {
                     Thread.sleep(SLEEP_TIME);
+                    countDownLatch.countDown();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         } else {
             System.out.println("No console available!!");
