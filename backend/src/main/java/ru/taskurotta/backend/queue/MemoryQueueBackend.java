@@ -239,7 +239,8 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.checkpointService = checkpointService;
     }
 
-    private String createQueueName(String actorId, String taskList) {
+    @Override
+    public String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
     }
 

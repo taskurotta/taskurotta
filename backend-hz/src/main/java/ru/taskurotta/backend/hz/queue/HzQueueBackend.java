@@ -49,9 +49,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     private HzQueueSpringConfigSupport hzQueueConfigSupport;
     private HzMapConfigSpringSupport hzMapConfigSpringSupport;
 
-    private int pollCountForUpdateLastActivity = 1000; // polls count between update queue activity
-    private long pollPeriodForUpdateLastActivity = 60000; // period between polls for update queue activity in milliseconds
-
     private IMap<String, Long> queueLastPoolMap;
     private IMap<String, Integer> queuePoolCountMap;
 
@@ -156,16 +153,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             logger.debug("poll() returns taskId [{}]. Queue.size: {}", result, queue.size());
         }
 
-        int pollCount = queuePoolCountMap.get(queueName) + 1;
-        if (pollCount > pollCountForUpdateLastActivity || (System.currentTimeMillis() - queueLastPoolMap.get(queueName)) > pollPeriodForUpdateLastActivity) {
-            queuePoolCountMap.put(queueName, 0);
-            queueLastPoolMap.put(queueName, result == null ? System.currentTimeMillis() : result.getEnqueueTime());
-        } else {
-            queuePoolCountMap.put(queueName, pollCount);
-        }
-
         return result;
-
     }
 
     /**
@@ -287,7 +275,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         return null;
     }
 
-    private String createQueueName(String actorId, String taskList) {
+    @Override
+    public String createQueueName(String actorId, String taskList) {
         StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
 
         result.append(actorId);
@@ -344,18 +333,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         } finally {
             delayedTasksLock.unlock();
         }
-    }
-
-    public long getLastQueueActivity(String actorId, String taskList) {
-        return queueLastPoolMap.get(createQueueName(actorId, taskList));
-    }
-
-    public void setPollCountForUpdateLastActivity(int pollCountForUpdateLastActivity) {
-        this.pollCountForUpdateLastActivity = pollCountForUpdateLastActivity;
-    }
-
-    public void setPollPeriodForUpdateLastActivity(long pollPeriodForUpdateLastActivity) {
-        this.pollPeriodForUpdateLastActivity = pollPeriodForUpdateLastActivity;
     }
 
     public HzMapConfigSpringSupport getHzMapConfigSpringSupport() {

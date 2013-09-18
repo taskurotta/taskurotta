@@ -31,4 +31,6 @@ public interface QueueBackend extends CheckpointServiceProvider {
 
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
 
+    public String createQueueName(String actorId, String taskList);
+
 }

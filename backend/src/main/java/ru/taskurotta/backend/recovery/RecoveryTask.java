@@ -32,6 +32,7 @@ public class RecoveryTask implements Callable {
     private static org.slf4j.Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
 
     private QueueBackend queueBackend;
+    private QueueBackendStatistics queueBackendStatistics;
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
@@ -41,8 +42,9 @@ public class RecoveryTask implements Callable {
 
     private UUID processId;
 
-    public RecoveryTask(QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut, UUID processId) {
+    public RecoveryTask(QueueBackend queueBackend, QueueBackendStatistics queueBackendStatistics, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut, UUID processId) {
         this.queueBackend = queueBackend;
+        this.queueBackendStatistics = queueBackendStatistics;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
         this.processBackend = processBackend;
@@ -129,6 +131,19 @@ public class RecoveryTask implements Callable {
                 if (actorSchedulingOptionsContainer != null) {
                     taskList = actorSchedulingOptionsContainer.getTaskList();
                 }
+            }
+
+            if (taskContainer.getStartTime() > System.currentTimeMillis()) {
+                // this task must start in future, ignore it
+                continue;
+            }
+
+
+            String queueName = queueBackend.createQueueName(taskContainer.getActorId(), taskList);
+            Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
+            if (lastEnqueueTime < taskContainer.getStartTime()) {
+                // this task must start later than last task pushed to queue
+                continue;
             }
 
             queueBackend.enqueueItem(taskContainer.getActorId(), taskContainer.getTaskId(), taskContainer.getProcessId(), taskContainer.getStartTime(), taskList);
