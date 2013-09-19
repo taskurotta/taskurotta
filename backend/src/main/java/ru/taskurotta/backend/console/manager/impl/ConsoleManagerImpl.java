@@ -6,15 +6,14 @@ import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
-import ru.taskurotta.backend.console.retriever.CheckpointInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;
 import ru.taskurotta.backend.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
-import ru.taskurotta.backend.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.backend.console.retriever.ProfileInfoRetriever;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
+import ru.taskurotta.backend.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -36,7 +35,6 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private QueueInfoRetriever queueInfo;
     private ProcessInfoRetriever processInfo;
     private TaskInfoRetriever taskInfo;
-    private CheckpointInfoRetriever checkpointInfo;
     private ProfileInfoRetriever profileInfo;
     private DecisionInfoRetriever decisionInfo;
     private ConfigInfoRetriever configInfo;
@@ -233,10 +231,6 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     public void setTaskInfo(TaskInfoRetriever taskInfo) {
         this.taskInfo = taskInfo;
-    }
-
-    public void setCheckpointInfo(CheckpointInfoRetriever checkpointInfo) {
-        this.checkpointInfo = checkpointInfo;
     }
 
     public void setProfileInfo(ProfileInfoRetriever profileInfo) {

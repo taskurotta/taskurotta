@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.recovery;
 
-import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 
@@ -62,9 +61,6 @@ public abstract class AbstractQueueBackendStatistics implements QueueBackendStat
     }
 
     @Override
-    public void pollCommit(String actorId, UUID taskId, UUID processId) {}
-
-    @Override
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
         queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
     }
@@ -72,10 +68,5 @@ public abstract class AbstractQueueBackendStatistics implements QueueBackendStat
     @Override
     public String createQueueName(String actorId, String taskList) {
         return queueBackend.createQueueName(actorId, taskList);
-    }
-
-    @Override
-    public CheckpointService getCheckpointService() {
-        return null;
     }
 }

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport;
@@ -219,10 +218,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public void pollCommit(String actorId, UUID taskId, UUID processId) {
-    }
-
-    @Override
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
         // set it to current time for precisely repeat
@@ -278,11 +273,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         IQueue<TaskQueueItem> queue = getHzQueue(queueName);
 
         return queue.contains(taskQueueItem);
-    }
-
-    @Override
-    public CheckpointService getCheckpointService() {
-        return null;
     }
 
     @Override

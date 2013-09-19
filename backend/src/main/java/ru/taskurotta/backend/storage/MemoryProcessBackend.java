@@ -2,8 +2,6 @@ package ru.taskurotta.backend.storage;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
@@ -24,9 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
-    private CheckpointService checkpointService = new MemoryCheckpointService();
     private Map<UUID, ProcessVO> processesStorage = new ConcurrentHashMap<>();
-
 
     @Override
     public void startProcess(TaskContainer task) {
@@ -35,40 +31,14 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
         processesStorage.put(task.getProcessId(), process);
-
-        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
-        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
-    }
-
-    @Override
-    public void startProcessCommit(TaskContainer task) {
-
-        //should be at the end of the method
-        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
-        //checkpointService.removeTaskCheckpoints(task.getTaskId(), task.getProcessId(), TimeoutType.PROCESS_START_TO_COMMIT);
     }
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
-
         ProcessVO process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
         processesStorage.put(processId, process);
-
-        //should be at the end of the method
-        //checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_START_TO_CLOSE);
-        //checkpointService.removeTaskCheckpoints(process.getStartTaskUuid(), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
-    }
-
-    @Override
-    public CheckpointService getCheckpointService() {
-        return checkpointService;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void setCheckpointService(CheckpointService checkpointService) {
-        this.checkpointService = checkpointService;
     }
 
     @Override
@@ -108,7 +78,7 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
                 private boolean isValid (ProcessVO processVO) {
                     boolean isValid = true;
                     if (hasText(command.getCustomId())) {
-                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getCustomId());
+                        isValid = processVO.getProcessUuid().toString().startsWith(command.getCustomId());
                     }
                     if (hasText(command.getProcessId())) {
                         isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getProcessId());

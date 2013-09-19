@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.storage;
 
-import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -13,7 +12,7 @@ import java.util.UUID;
  * Date: 4/1/13
  * Time: 12:11 PM
  */
-public interface TaskBackend extends CheckpointServiceProvider {
+public interface TaskBackend {
 
     public void startProcess(TaskContainer taskContainer);
 
@@ -36,27 +35,12 @@ public interface TaskBackend extends CheckpointServiceProvider {
      */
     public TaskContainer getTask(UUID taskId, UUID processId);
 
-
-    /**
-     * Create RELEASE_TIMEOUT checkpoint
-     *
-     * @param taskDecision
-     */
     public void addDecision(DecisionContainer taskDecision);
 
     /**
      * Idempotent getter for task decisions
      */
     public DecisionContainer getDecision(UUID taskId, UUID processId);
-
-    /**
-     * Delete RELEASE_TIMEOUT checkpoint
-     *
-     * @param taskDecision
-     */
-    public void addDecisionCommit(DecisionContainer taskDecision);
-
-
 
     public List<TaskContainer> getAllRunProcesses();
 

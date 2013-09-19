@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.config.impl;
 
-import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
@@ -40,11 +39,6 @@ public class MemoryConfigBackend implements ConfigBackend {
 	    ActorPreferences defaultActorPrefs = new ActorPreferences();
 	    defaultActorPrefs.setBlocked(false);
 	    defaultActorPrefs.setId("default");
-	    Properties expirationPolicies = new Properties();
-	    for(TimeoutType timeoutType: TimeoutType.values()) {
-	        expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
-	    }
-	    defaultActorPrefs.setTimeoutPolicies(expirationPolicies);
 	    result[0] = defaultActorPrefs;
 	    return result;
 	}
