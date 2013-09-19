@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -29,7 +30,7 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
  */
 public class RecoveryTask implements Callable {
 
-    private static org.slf4j.Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
 
     private QueueBackend queueBackend;
     private QueueBackendStatistics queueBackendStatistics;
@@ -124,6 +125,8 @@ public class RecoveryTask implements Callable {
     private void restartTasks(Collection<TaskContainer> taskContainers) {
         for (TaskContainer taskContainer : taskContainers) {
 
+            String actorId = taskContainer.getActorId();
+
             String taskList = null;
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
             if (taskOptionsContainer != null) {
@@ -131,6 +134,11 @@ public class RecoveryTask implements Callable {
                 if (actorSchedulingOptionsContainer != null) {
                     taskList = actorSchedulingOptionsContainer.getTaskList();
                 }
+            }
+
+            if (queueBackend.isTaskInQueue(actorId, taskList, taskContainer.getTaskId(), taskContainer.getProcessId())) {
+                // task already in queue, never recovery
+                continue;
             }
 
             if (taskContainer.getStartTime() > System.currentTimeMillis()) {

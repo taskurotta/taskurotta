@@ -38,6 +38,11 @@ public abstract class AbstractQueueBackendStatistics implements QueueBackendStat
     public TaskQueueItem poll(String actorId, String taskList) {
 
         TaskQueueItem taskQueueItem = queueBackend.poll(actorId, taskList);
+
+        if (taskQueueItem == null) {
+            return taskQueueItem;
+        }
+
         Long current = taskQueueItem.getEnqueueTime();
 
         String queueName = createQueueName(actorId, taskList);

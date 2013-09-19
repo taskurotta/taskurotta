@@ -67,6 +67,30 @@ public class TaskQueueItem implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TaskQueueItem that = (TaskQueueItem) o;
+
+        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
+        if (queueName != null ? !queueName.equals(that.queueName) : that.queueName != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = taskId != null ? taskId.hashCode() : 0;
+        result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
+        result = 31 * result + (queueName != null ? queueName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "TaskQueueItem{" +
                 "taskId=" + taskId +

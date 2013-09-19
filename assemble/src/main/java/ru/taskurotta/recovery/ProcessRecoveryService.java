@@ -113,9 +113,7 @@ public class ProcessRecoveryService {
             logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
         }
 
-        String query = "SELECT * FROM (SELECT process_id FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
-
-        int incompleteProcessCount = 0;
+        String query = "SELECT * FROM (SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -125,8 +123,6 @@ public class ProcessRecoveryService {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                incompleteProcessCount++;
-
                 UUID processId = UUID.fromString(resultSet.getString("process_id"));
 
                 processIds.add(processId);
@@ -138,7 +134,9 @@ public class ProcessRecoveryService {
             throw new IllegalStateException("Database error", ex);
         }
 
-        logger.info("Found [{}] incomplete processes", incompleteProcessCount);
+        if (logger.isInfoEnabled()) {
+            logger.info("Found [{}] incomplete processes", processIds.size());
+        }
 
         return processIds;
     }

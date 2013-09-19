@@ -266,6 +266,21 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
+    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
+        String queueName = createQueueName(actorId, taskList);
+
+        TaskQueueItem taskQueueItem = new TaskQueueItem();
+        taskQueueItem.setProcessId(processId);
+        taskQueueItem.setTaskId(taskId);
+        taskQueueItem.setQueueName(queueName);
+        taskQueueItem.setTaskList(taskList);
+
+        IQueue<TaskQueueItem> queue = getHzQueue(queueName);
+
+        return queue.contains(taskQueueItem);
+    }
+
+    @Override
     public CheckpointService getCheckpointService() {
         return null;
     }

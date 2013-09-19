@@ -111,7 +111,7 @@ public class AbstractTestStub {
 
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        return memoryQueueBackend.isTaskInQueue(actorDefinition, taskId, processId);
+        return memoryQueueBackend.isTaskInQueue(actorDefinition.getFullName(), actorDefinition.getTaskList(), taskId, processId);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {

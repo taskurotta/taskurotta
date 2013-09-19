@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.queue;
 
 import ru.taskurotta.backend.checkpoint.CheckpointServiceProvider;
+import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;
 
@@ -30,6 +31,8 @@ public interface QueueBackend extends CheckpointServiceProvider {
 
 
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
+
+    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId);
 
     public String createQueueName(String actorId, String taskList);
 
