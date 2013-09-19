@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -15,6 +16,7 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ArgContainer.ValueType;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -231,7 +233,25 @@ public class ObjectFactory {
             return null;
         }
 
-        return new TaskOptionsContainer(taskOptions.getArgTypes());
+		ActorSchedulingOptionsContainer optionsContainer = null;
+		ActorSchedulingOptions actorSchedulingOptions = taskOptions.getActorSchedulingOptions();
+		if (null != actorSchedulingOptions) {
+			optionsContainer = new ActorSchedulingOptionsContainer();
+			optionsContainer.setStartTime(actorSchedulingOptions.getStartTime());
+			optionsContainer.setCustomId(actorSchedulingOptions.getCustomId());
+			optionsContainer.setTaskList(actorSchedulingOptions.getTaskList());
+		}
+
+		ArgContainer promisesWaitForDumped[] = null;
+		Promise<?>[] promisesWaitFor = taskOptions.getPromisesWaitFor();
+		if (null != promisesWaitFor) {
+			promisesWaitForDumped = new ArgContainer[promisesWaitFor.length];
+			for (int i=0; i < promisesWaitFor.length; i++) {
+				promisesWaitForDumped[i] = dumpArg(promisesWaitFor[i]);
+			}
+		}
+
+		return new TaskOptionsContainer(taskOptions.getArgTypes(), optionsContainer, promisesWaitForDumped);
     }
 
 

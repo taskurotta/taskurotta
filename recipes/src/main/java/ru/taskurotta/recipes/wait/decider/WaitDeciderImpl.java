@@ -24,7 +24,7 @@ public class WaitDeciderImpl implements WaitDecider {
     @Override
     public void start() {
         arbiter.notify("start");
-        Collection<Promise<Integer>> data = new ArrayList();
+        Collection<Promise<Integer>> data = new ArrayList<>();
         //data[0] = worker.prepare();
         for (int i = 0; i < 3; i++) {
             data.add(worker.generate());

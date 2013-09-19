@@ -175,7 +175,7 @@ public class AbstractTestStub {
         return polledTask;
     }
 
-    public void release(UUID taskAId, Object value, Task[] newTasks) {
+    public void release(UUID taskAId, Object value, Task... newTasks) {
         TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));

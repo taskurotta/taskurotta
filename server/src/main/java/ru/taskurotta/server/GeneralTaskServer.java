@@ -21,6 +21,8 @@ import ru.taskurotta.util.ActorUtils;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 /**
  * User: romario
@@ -149,15 +151,13 @@ public class GeneralTaskServer implements TaskServer {
         UUID processId = taskDecision.getProcessId();
 
         // if Error
-        if (taskDecision.containsError()) {
+        if (taskDecision.containsError() && taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
             // enqueue task immediately if needed
-            if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
-                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
-                logger.debug("Error task enqueued again, taskId [{}]", taskId);
-                enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
-            }
+			// WARNING: This is not optimal code. We are getting whole task only for name and version values.
+			TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
+			logger.debug("Error task enqueued again, taskId [{}]", taskId);
+			enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
 
             taskBackend.addDecisionCommit(taskDecision);
 
