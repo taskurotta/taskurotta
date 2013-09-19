@@ -4,7 +4,6 @@ import junit.framework.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.console.model.ProcessVO;
-import ru.taskurotta.backend.ora.checkpoint.OracleCheckpointService;
 import ru.taskurotta.backend.ora.storage.OraProcessBackend;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -15,7 +14,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 public class ProcessTestIT {
 
     private DbConnect connection = new DbConnect();
-    private OraProcessBackend dao = new OraProcessBackend(connection.getDataSource(), new OracleCheckpointService(connection.getDataSource()));
+    private OraProcessBackend dao = new OraProcessBackend(connection.getDataSource());
 
     @Ignore
     @Test

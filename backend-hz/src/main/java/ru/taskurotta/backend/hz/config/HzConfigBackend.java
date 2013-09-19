@@ -9,7 +9,6 @@ import com.hazelcast.core.ItemEvent;
 import com.hazelcast.core.ItemListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
@@ -137,13 +136,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         ActorPreferences actorPreferences = new ActorPreferences();
         actorPreferences.setBlocked(false);
         actorPreferences.setId("default");
-
-        Properties expirationPolicies = new Properties();
-        for (TimeoutType timeoutType : TimeoutType.values()) {
-            expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
-        }
-        actorPreferences.setTimeoutPolicies(expirationPolicies);
-
         return new ActorPreferences[]{actorPreferences};
     }
 

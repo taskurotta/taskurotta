@@ -2,9 +2,6 @@ package ru.taskurotta.backend.ora.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
@@ -31,17 +28,14 @@ import java.util.UUID;
  */
 public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
-    private CheckpointService checkpointService;
-
     private DataSource dataSource;
 
     private final static Logger log = LoggerFactory.getLogger(OraProcessBackend.class);
 
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
-    public OraProcessBackend(DataSource dataSource, CheckpointService checkpointService) {
+    public OraProcessBackend(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.checkpointService = checkpointService;
     }
 
     @Override
@@ -58,25 +52,6 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
         }
-
-        ResultSet rs = null;
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT START_TASK_ID FROM PROCESS WHERE process_id = ?")
-        ) {
-            ps.setString(1, processId.toString());
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                String startTaskId = rs.getString("START_TASK_ID");
-                checkpointService.removeTaskCheckpoints(UUID.fromString(startTaskId), processId, TimeoutType.PROCESS_START_TO_CLOSE);
-                checkpointService.removeTaskCheckpoints(UUID.fromString(startTaskId), processId, TimeoutType.PROCESS_SCHEDULE_TO_CLOSE);
-            }
-        } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
-        } finally {
-            closeResultSet(rs);
-        }
-
     }
 
     @Override
@@ -84,7 +59,6 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
         log.debug("Starting process with TaskContainer [{}]", task);
 
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_SCHEDULE_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state, start_json) VALUES (?, ?, ?, ?, ?,?)")
         ) {
@@ -100,16 +74,6 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
         }
-    }
-
-    @Override
-    public void startProcessCommit(TaskContainer task) {
-        checkpointService.addCheckpoint(new Checkpoint(TimeoutType.PROCESS_START_TO_CLOSE, task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime()));
-    }
-
-    @Override
-    public CheckpointService getCheckpointService() {
-        return checkpointService;
     }
 
     @Override
@@ -166,7 +130,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         long totalCount = 0;
         ResultSet rs = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS"));
+             PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE FROM PROCESS"))
         ) {
             int startIndex = (pageNumber - 1) * pageSize + 1;
             int endIndex = startIndex + pageSize - 1;
@@ -195,7 +159,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             closeResultSet(rs);
         }
 
-        return new GenericPage(result, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(result, pageNumber, pageSize, totalCount);
     }
 
     private static void closeResultSet(ResultSet rs) {
@@ -215,7 +179,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             String query = getSearchSql(command);
             ResultSet rs = null;
             try (Connection connection = dataSource.getConnection();
-                 PreparedStatement ps = connection.prepareStatement(query);
+                 PreparedStatement ps = connection.prepareStatement(query)
             ) {
                 rs = ps.executeQuery();
                 while (rs.next()) {

@@ -35,13 +35,11 @@ public class HzBackendBundle implements BackendBundle {
 
     public HzBackendBundle(int pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
 
-        HzProcessBackend hzProcessBackend = new HzProcessBackend(hazelcastInstance);
-        this.processBackend = hzProcessBackend;
+        this.processBackend = new HzProcessBackend(hazelcastInstance);
 
-        this.taskBackend = new GeneralTaskBackend(taskDao, null);
+        this.taskBackend = new GeneralTaskBackend(taskDao);
 
-        HzQueueBackend hzQueueBackend = new HzQueueBackend(pollDelay, TimeUnit.SECONDS, hazelcastInstance);
-        this.queueBackend = hzQueueBackend;
+        this.queueBackend = new HzQueueBackend(pollDelay, TimeUnit.SECONDS, hazelcastInstance);
 
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao);

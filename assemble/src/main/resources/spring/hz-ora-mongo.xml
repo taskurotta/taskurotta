@@ -187,10 +187,7 @@
         <constructor-arg ref="hzInstance"/>
     </bean>
 
-    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService"/>
-
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
-        <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
     <!-- /Backends -->

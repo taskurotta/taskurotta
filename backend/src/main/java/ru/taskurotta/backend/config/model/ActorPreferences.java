@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.config.model;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * Server-side preferences of registered actor
@@ -11,7 +10,6 @@ public class ActorPreferences implements Serializable {
     private String id;
     private boolean blocked = false;
     private String queueName;
-    private Properties timeoutPolicies;
 
     public String getId() {
         return id;
@@ -31,12 +29,6 @@ public class ActorPreferences implements Serializable {
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
     }
-    public Properties getTimeoutPolicies() {
-        return timeoutPolicies;
-    }
-    public void setTimeoutPolicies(Properties timeoutPolicies) {
-        this.timeoutPolicies = timeoutPolicies;
-    }
 
     @Override
     public String toString() {
@@ -44,8 +36,7 @@ public class ActorPreferences implements Serializable {
                 "id='" + id + '\'' +
                 ", blocked=" + blocked +
                 ", queueName='" + queueName + '\'' +
-                ", timeoutPolicies=" + timeoutPolicies +
-                '}';
+                "} " + super.toString();
     }
 
 }

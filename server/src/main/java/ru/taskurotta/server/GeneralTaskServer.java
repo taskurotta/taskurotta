@@ -21,8 +21,6 @@ import ru.taskurotta.util.ActorUtils;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 /**
  * User: romario
@@ -95,8 +93,6 @@ public class GeneralTaskServer implements TaskServer {
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
-
-        processBackend.startProcessCommit(task);
     }
 
 
@@ -116,11 +112,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // idempotent statement
-        TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
-
-        queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
-
-        return taskContainer;
+        return taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
     }
 
 
@@ -159,8 +151,6 @@ public class GeneralTaskServer implements TaskServer {
 			logger.debug("Error task enqueued again, taskId [{}]", taskId);
 			enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
 
-            taskBackend.addDecisionCommit(taskDecision);
-
             return;
         }
 
@@ -196,8 +186,6 @@ public class GeneralTaskServer implements TaskServer {
                     dependencyDecision.getFinishedProcessValue());
             taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
         }
-
-        taskBackend.addDecisionCommit(taskDecision);
 
         processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);

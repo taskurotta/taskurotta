@@ -4,9 +4,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.retriever.ProcessInfoRetriever;
@@ -26,7 +23,6 @@ import java.util.concurrent.TimeUnit;
  * Date: 13.06.13 16:00
  */
 public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
-    private final static Logger logger = LoggerFactory.getLogger(HzProcessBackend.class);
 
     private String processesStorageMapName = "processesStorage";//default
     private HazelcastInstance hzInstance;
@@ -46,11 +42,6 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public void startProcessCommit(TaskContainer task) {
-
-    }
-
-    @Override
     public void finishProcess(UUID processId, String returnValue) {
 
         // TODO: get map reference only one time
@@ -60,12 +51,6 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setReturnValueJson(returnValue);
         processMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
-
-    @Override
-    public CheckpointService getCheckpointService() {
-        return null;
-    }
-
 
     @Override
     public ProcessVO getProcess(UUID processUUID) {
@@ -109,7 +94,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
                 private boolean isValid (ProcessVO processVO) {
                     boolean isValid = true;
                     if (hasText(command.getCustomId())) {
-                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getCustomId());
+                        isValid = processVO.getProcessUuid().toString().startsWith(command.getCustomId());
                     }
                     if (hasText(command.getProcessId())) {
                         isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getProcessId());
