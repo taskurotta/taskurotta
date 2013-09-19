@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
+import ru.taskurotta.backend.recovery.QueueBackendStatistics;
 import ru.taskurotta.backend.recovery.RecoveryTask;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
@@ -41,6 +42,7 @@ public class ProcessRecoveryService {
     private HazelcastInstance hazelcastInstance;
 
     private QueueBackend queueBackend;
+    private QueueBackendStatistics queueBackendStatistics;
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
@@ -86,7 +88,7 @@ public class ProcessRecoveryService {
 
             for(UUID processId: processIds) {
                 if (isLocalItem(processId)) {//filter only local processes for recovery. Every node recovers its own processes
-                    executorService.submit(new RecoveryTask(queueBackend, dependencyBackend, taskDao, processBackend, taskBackend, recoveryProcessTimeOut, processId));
+                    executorService.submit(new RecoveryTask(queueBackend, queueBackendStatistics, dependencyBackend, taskDao, processBackend, taskBackend, recoveryProcessTimeOut, processId));
                     result++;
                 }
             }
@@ -111,9 +113,7 @@ public class ProcessRecoveryService {
             logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
         }
 
-        String query = "SELECT * FROM (SELECT process_id FROM process p WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
-
-        int incompleteProcessCount = 0;
+        String query = "SELECT * FROM (SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
@@ -123,8 +123,6 @@ public class ProcessRecoveryService {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                incompleteProcessCount++;
-
                 UUID processId = UUID.fromString(resultSet.getString("process_id"));
 
                 processIds.add(processId);
@@ -136,7 +134,9 @@ public class ProcessRecoveryService {
             throw new IllegalStateException("Database error", ex);
         }
 
-        logger.info("Found [{}] incomplete processes", incompleteProcessCount);
+        if (logger.isInfoEnabled()) {
+            logger.info("Found [{}] incomplete processes", processIds.size());
+        }
 
         return processIds;
     }
@@ -162,6 +162,11 @@ public class ProcessRecoveryService {
     @Required
     public void setQueueBackend(QueueBackend queueBackend) {
         this.queueBackend = queueBackend;
+    }
+
+    @Required
+    public void setQueueBackendStatistics(QueueBackendStatistics queueBackendStatistics) {
+        this.queueBackendStatistics = queueBackendStatistics;
     }
 
     @Required

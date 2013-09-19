@@ -5,13 +5,10 @@ import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.exception.BackendCriticalException;
-import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -82,7 +79,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
                 result.add(queueNames[i]);
             }
         }
-        return new GenericPage<String>(result, pageNum, pageSize, queues.size());
+        return new GenericPage<>(result, pageNum, pageSize, queues.size());
     }
 
     @Override
@@ -92,7 +89,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
-        List<TaskQueueItem> result = new ArrayList<TaskQueueItem>();
+        List<TaskQueueItem> result = new ArrayList<>();
         DelayedTaskElement[] tasks = new DelayedTaskElement[getQueue(queueName).size()];
         tasks = getQueue(queueName).toArray(tasks);
 
@@ -102,7 +99,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
                 result.add(dte);
             }
         }
-        return new GenericPage<TaskQueueItem>(result, pageNum, pageSize, tasks.length);
+        return new GenericPage<>(result, pageNum, pageSize, tasks.length);
     }
 
 
@@ -214,7 +211,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
                 queue = queues.get(queueName);
                 if (queue == null) {
-                    queue = new DelayQueue<DelayedTaskElement>();
+                    queue = new DelayQueue<>();
                     queues.put(queueName, queue);
                 }
             }
@@ -222,8 +219,9 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         return queue;
     }
 
-    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
+    @Override
+    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
         DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, processId, 0, System.currentTimeMillis());
 
@@ -239,7 +237,8 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.checkpointService = checkpointService;
     }
 
-    private String createQueueName(String actorId, String taskList) {
+    @Override
+    public String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
     }
 

@@ -144,7 +144,7 @@
 
 
     <!-- Backends -->
-    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+    <bean id="originalQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}"/>
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
 
@@ -153,6 +153,13 @@
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport" />
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+    </bean>
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
+        <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mergePeriod" value="${hz.recovery.merge.period}"/>
+        <constructor-arg name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
@@ -207,6 +214,7 @@
         <property name="hazelcastInstance" ref="hzInstance" />
         <property name="processBackend" ref="processBackend" />
         <property name="queueBackend" ref="queueBackend" />
+        <property name="queueBackendStatistics" ref="queueBackend"/>
         <property name="recoveryProcessTimeOut" value = "${recovery.process.timeout}" />
         <property name="taskBackend" ref="taskBackend" />
         <property name="taskDao" ref="taskDao" />

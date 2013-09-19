@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
@@ -29,9 +30,10 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
  */
 public class RecoveryTask implements Callable {
 
-    private static org.slf4j.Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecoveryTask.class);
 
     private QueueBackend queueBackend;
+    private QueueBackendStatistics queueBackendStatistics;
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
     private ProcessBackend processBackend;
@@ -41,8 +43,9 @@ public class RecoveryTask implements Callable {
 
     private UUID processId;
 
-    public RecoveryTask(QueueBackend queueBackend, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut, UUID processId) {
+    public RecoveryTask(QueueBackend queueBackend, QueueBackendStatistics queueBackendStatistics, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut, UUID processId) {
         this.queueBackend = queueBackend;
+        this.queueBackendStatistics = queueBackendStatistics;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
         this.processBackend = processBackend;
@@ -122,6 +125,8 @@ public class RecoveryTask implements Callable {
     private void restartTasks(Collection<TaskContainer> taskContainers) {
         for (TaskContainer taskContainer : taskContainers) {
 
+            String actorId = taskContainer.getActorId();
+
             String taskList = null;
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
             if (taskOptionsContainer != null) {
@@ -129,6 +134,23 @@ public class RecoveryTask implements Callable {
                 if (actorSchedulingOptionsContainer != null) {
                     taskList = actorSchedulingOptionsContainer.getTaskList();
                 }
+            }
+
+            if (queueBackend.isTaskInQueue(actorId, taskList, taskContainer.getTaskId(), taskContainer.getProcessId())) {
+                // task already in queue, never recovery
+                continue;
+            }
+
+            if (taskContainer.getStartTime() > System.currentTimeMillis()) {
+                // this task must start in future, ignore it
+                continue;
+            }
+
+            String queueName = queueBackend.createQueueName(taskContainer.getActorId(), taskList);
+            Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
+            if (lastEnqueueTime < taskContainer.getStartTime()) {
+                // this task must start later than last task pushed to queue
+                continue;
             }
 
             queueBackend.enqueueItem(taskContainer.getActorId(), taskContainer.getTaskId(), taskContainer.getProcessId(), taskContainer.getStartTime(), taskList);
