@@ -11,8 +11,6 @@ assets:
 actorConfig:
   actorPreferences:
     - id: "default"
-      timeoutPolicies:
-        TASK_START_TO_CLOSE: "TIMEOUT: 15 seconds"
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:

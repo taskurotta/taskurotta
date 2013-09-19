@@ -48,9 +48,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     private HzQueueSpringConfigSupport hzQueueConfigSupport;
     private HzMapConfigSpringSupport hzMapConfigSpringSupport;
 
-    private IMap<String, Long> queueLastPoolMap;
-    private IMap<String, Integer> queuePoolCountMap;
-
     private MongoTemplate mongoTemplate;
 
     public void setHzQueueConfigSupport(HzQueueSpringConfigSupport hzQueueConfigSupport) {
@@ -61,9 +58,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
-
-        this.queueLastPoolMap = hazelcastInstance.getMap("queueLastPoolMap");
-        this.queuePoolCountMap = hazelcastInstance.getMap("queuePoolCountMap");
 
         delayedTasksLock = hazelcastInstance.getLock(DELAYED_TASKS_LOCK);
     }
@@ -181,9 +175,6 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
             queue = hazelcastInstance.getQueue(queueName);//never null
             hzQueues.put(queueName, queue);
-
-            queuePoolCountMap.put(queueName, 0);
-            queueLastPoolMap.put(queueName, 0l);
         }
 
         return queue;
