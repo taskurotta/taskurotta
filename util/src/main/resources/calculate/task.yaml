@@ -9,7 +9,7 @@ endpoint: "http://localhost:8080"
 #Submitted task configuration. If value not specified it would fallback to default
 task:
   #Required!
-  actorId: "ru.taskurotta.example.calculate.decider.MathActionDecider#1.0"
+  actorId: "ru.taskurotta.recipes.calculate.decider.MathActionDecider#1.0"
   #Required!
   method: "performAction"
 #  type: "DECIDER_START"

@@ -35,7 +35,6 @@
         <module>core</module>
         <module>bootstrap</module>
         <module>client</module>
-        <module>example</module>
         <module>spring</module>
         <module>server</module>
         <module>recipes</module>
