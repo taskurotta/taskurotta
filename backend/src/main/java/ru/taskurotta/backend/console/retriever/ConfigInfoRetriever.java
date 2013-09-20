@@ -1,6 +1,6 @@
 package ru.taskurotta.backend.console.retriever;
 
-import java.util.Collection;
+import ru.taskurotta.backend.console.model.GenericPage;
 
 /**
  * User: stukushin
@@ -13,5 +13,6 @@ public interface ConfigInfoRetriever {
 
     public void unblockActor(String actorId);
 
-    public Collection<String> getActorIdList();
+    public GenericPage<String> getActorIdList(int pageNum, int pageSize);
+
 }

@@ -37,18 +37,16 @@ public class MetricFactory {
     }
 
     public Metric getInstance(String name) {
-        Metric result = metricsCache.get(name);
 
-        if(result == null) {
+        if(!metricsCache.containsKey(name)) {
             synchronized (metricsCache) {
                 if(!metricsCache.containsKey(name)) {
-                    result = instantiate(name, dumpPeriod);
-                    metricsCache.put(name, result);
+                    metricsCache.put(name, instantiate(name, dumpPeriod));
                 }
             }
         }
 
-        return result;
+        return metricsCache.get(name);
     }
 
 

@@ -28,11 +28,11 @@
         <property name="metricsOptionsHandler" ref="consoleMetricsOptionsHandler" />
     </bean>
 
-    <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataHandler">
+    <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider">
         <property name="dataRetriever" ref="metricsDataHandler" />
     </bean>
 
-    <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsHandler" >
+    <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsProvider" >
 
         <property name="dataRetriever" ref="metricsDataHandler" />
 

@@ -107,6 +107,16 @@
                                                     <label style="margin-left:25px;" class="checkbox small"><b>Remove zero values</b><input type="checkbox" ng-model="selection.omitZeroes" /></label>
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <td>
+                                                    <span style="cursor:pointer;" popover="Enable to perform smoothing of the plot data. The larger smoothing rate the more average values (with less points on the plot) are."
+                                                          popover-placement="right" class="badge badge-info">?</span>
+                                                </td>
+                                                <td>
+                                                    <select class="input-small" ng-model="selection.smoothRate" ng-options = "rate for rate in smoothRates" />Smooth rate
+                                                </td>
+                                            </tr>
+
                                         </table>
                                     </div>
 

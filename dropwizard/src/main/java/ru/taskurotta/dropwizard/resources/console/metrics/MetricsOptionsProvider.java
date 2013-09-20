@@ -19,9 +19,9 @@ import java.util.Map;
  * User: dimadin
  * Date: 09.09.13 16:34
  */
-public class MetricsOptionsHandler implements MetricsConstants {
+public class MetricsOptionsProvider implements MetricsConstants {
 
-    private static final Logger logger = LoggerFactory.getLogger(MetricsOptionsHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MetricsOptionsProvider.class);
 
     private MetricsDataRetriever dataRetriever;
 

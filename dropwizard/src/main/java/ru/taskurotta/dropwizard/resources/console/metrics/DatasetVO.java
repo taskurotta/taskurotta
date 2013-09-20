@@ -10,17 +10,17 @@ import java.util.List;
  */
 public class DatasetVO implements Serializable {
     private int id = 0;
-    private List<double[]> data;
+    private List<Number[]> data;
     private String label;
 
     private boolean clickable = true;
     private boolean hoverable = true;
 
-    public List<double[]> getData() {
+    public List<Number[]> getData() {
         return data;
     }
 
-    public void setData(List<double[]> data) {
+    public void setData(List<Number[]> data) {
         this.data = data;
     }
 

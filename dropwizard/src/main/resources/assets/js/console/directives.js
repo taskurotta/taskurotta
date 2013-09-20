@@ -197,7 +197,7 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
 
             var options = {
                 legend: {
-                    show: false
+                    show: true
                 },
                 series: {
                     lines: {
@@ -210,50 +210,56 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
                 yaxis: {
                     ticks: 5
                 },
-                selection: {
-                    mode: "xy"
+//                selection: {
+//                    mode: "xy"
+//                },
+                zoom: {
+                    interactive: true
+                },
+                pan: {
+                    interactive: true
                 }
             };
 
-            var getFilteredDataset = function(targetDataset, xMin, xMax, yMin, yMax) {
-                var result = [];
-                if(targetDataset && targetDataset.length>0) {
-                    for(var i = 0; i<targetDataset.length; i++) {
-                        var dot = targetDataset[i];
-                        if((dot[0]>=xMin) && (dot[0]<=xMax) && (dot[1]>=yMin) && (dot[1]<=yMax)) {
-                            result.push(dot);
-                        }
-                    }
-                }
-                return result;
-            };
+//            var getFilteredDataset = function(targetDataset, xMin, xMax, yMin, yMax) {
+//                var result = [];
+//                if(targetDataset && targetDataset.length>0) {
+//                    for(var i = 0; i<targetDataset.length; i++) {
+//                        var dot = targetDataset[i];
+//                        if((dot[0]>=xMin) && (dot[0]<=xMax) && (dot[1]>=yMin) && (dot[1]<=yMax)) {
+//                            result.push(dot);
+//                        }
+//                    }
+//                }
+//                return result;
+//            };
 
             var plotElem = $.plot(jPlot, [], options);
-            jPlot.bind("plotselected", function (event, ranges) {
-
-                // clamp the zooming to prevent eternal zoom
-
-                if (ranges.xaxis.to - ranges.xaxis.from < 0.00001) {
-                    ranges.xaxis.to = ranges.xaxis.from + 0.00001;
-                }
-
-                if (ranges.yaxis.to - ranges.yaxis.from < 0.00001) {
-                    ranges.yaxis.to = ranges.yaxis.from + 0.00001;
-                }
-
-                // do the zooming
-                var originalData = plotElem.getData();
-                for(var i = 0; i < originalData.length; i++ ) {
-                    originalData[i].data = getFilteredDataset(originalData[i].data, ranges.xaxis.from, ranges.xaxis.to, ranges.yaxis.from, ranges.yaxis.to);
-                }
-                plotElem = $.plot(jPlot, originalData,
-                    $.extend(true, {}, options, {
-                        xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
-                        yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
-                    })
-                );
-
-            });
+//            jPlot.bind("plotselected", function (event, ranges) {
+//
+//                // clamp the zooming to prevent eternal zoom
+//
+//                if (ranges.xaxis.to - ranges.xaxis.from < 0.00001) {
+//                    ranges.xaxis.to = ranges.xaxis.from + 0.00001;
+//                }
+//
+//                if (ranges.yaxis.to - ranges.yaxis.from < 0.00001) {
+//                    ranges.yaxis.to = ranges.yaxis.from + 0.00001;
+//                }
+//
+//                // do the zooming
+//                var originalData = plotElem.getData();
+//                for(var i = 0; i < originalData.length; i++ ) {
+//                    originalData[i].data = getFilteredDataset(originalData[i].data, ranges.xaxis.from, ranges.xaxis.to, ranges.yaxis.from, ranges.yaxis.to);
+//                }
+//                plotElem = $.plot(jPlot, originalData,
+//                    $.extend(true, {}, options, {
+//                        xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+//                        yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+//                    })
+//                );
+//
+//            });
 
 
             var refreshTriggerId = -1;

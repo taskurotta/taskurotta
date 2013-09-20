@@ -312,6 +312,7 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 
 consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
     $scope.dataHolder = [];
+    $scope.smoothRates = [-1, 2, 3, 5, 7, 10, 20, 30, 100];
 
     $scope.collapse = {
         filter: false,
@@ -332,6 +333,7 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
     //selected objects
     $scope.selection = {
         showDatasets: false,
+        smoothRate: -1,
         omitZeroes: false,
         datasets: {},
         metric: {},
@@ -368,6 +370,11 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
                 }
             }
         }
+
+        if (result.length == 0) {
+            $scope.selection.datasets = {};
+        }
+
         return result;
     };
 
@@ -379,13 +386,14 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         var metric = $scope.selection.metric.value;
         var action = "data";
         var zeroes = !$scope.selection.omitZeroes;
+        var smooth = $scope.selection.smoothRate;
 
         if($scope.selection.actorSpecific) {
             action = "actorData";
         }
 
         if (!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
-            return "/rest/console/metrics/"+action+"/?zeroes="+zeroes+"&metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset);
+            return "/rest/console/metrics/"+action+"/?zeroes="+zeroes+"&metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset) + "&smooth=" + smooth;
         }
         return "";
     };
@@ -399,7 +407,6 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
     $$data.getMetricsOptions().then(function(value) {
         $scope.metricsOptions = angular.fromJson(value.data || {});
         $log.info("metricsController: metricsOptions getted are: " + angular.toJson(value.data));
-
 
         //Select first available values by default
         if($scope.metricsOptions.scopes && $scope.metricsOptions.scopes.length>0) {
@@ -415,20 +422,60 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
             $scope.selection.metric = $scope.metricsOptions.metricDesc[0];
         }
 
-
     });
 
 
 });
 
 consoleControllers.controller("homeController", function ($scope) {
+
 });
 
 consoleControllers.controller("actorListController", function ($scope, $$data, $timeout) {
+    $scope.feedback = "";
+
+    //Init paging object
+    $scope.actorsPage = {
+        pageSize: 5,
+        pageNumber: 1,
+        totalCount: 0,
+        items: []
+    };
+
+    $scope.totalTasks = function () {
+        var result = 0;
+        if($scope.actorsPage.items) {
+            for (var i = 0; i < $scope.actorsPage.items.length; i++) {
+                result = result + $scope.actorsPage.items[i].count;
+            }
+        }
+        return result;
+    };
+
+    //Updates queues states  by polling REST resource
+    $scope.update = function () {
+
+        $$data.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
+            $scope.actorsPage = angular.fromJson(value.data || {});
+            $log.info("actorListController: successfully updated queues state: " + angular.toJson($scope.actorsPage));
+        }, function (errReason) {
+            $scope.feedback = angular.toJson(errReason);
+            $log.error("actorListController: queue state update failed: " + $scope.feedback);
+        });
+
+    };
+
+    //Initialization:
+    $scope.update();
+
 });
+
 consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {
+
 });
+
 consoleControllers.controller("aboutController", function ($scope) {
+
 });
 
 

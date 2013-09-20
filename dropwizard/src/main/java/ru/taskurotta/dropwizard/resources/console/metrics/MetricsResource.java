@@ -8,6 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,25 +20,36 @@ import java.util.List;
 @Path("/console/metrics/{action}")
 public class MetricsResource extends BaseResource implements MetricsConstants {
 
-    private MetricsDataHandler metricsDataHandler;
-    private MetricsOptionsHandler metricsOptionsHandler;
+    private MetricsDataProvider metricsDataHandler;
+    private MetricsOptionsProvider metricsOptionsHandler;
 
     @GET
     public Response getMetrics(@PathParam("action") String action, @QueryParam("type") Optional<String> typeOpt, @QueryParam("period") Optional<String> periodOpt,
                                     @QueryParam("scope") Optional<String> scopeOpt, @QueryParam("metric") Optional<String> metricOpt, @QueryParam("zeroes") Optional<Boolean> zeroesOpt,
-                                    @QueryParam("dataset") Optional<String> dataSetOpt) {
+                                    @QueryParam("dataset") Optional<String> dataSetOpt, @QueryParam("smooth") Optional<Integer> smoothOpt) {
         String dataType = typeOpt.or(OPT_UNDEFINED);
         String period = periodOpt.or(OPT_UNDEFINED);
         String scope = scopeOpt.or(OPT_UNDEFINED);
         String metricName = metricOpt.or(OPT_UNDEFINED);
         boolean zeroes = zeroesOpt.or(Boolean.TRUE);
+        Integer smooth = smoothOpt.or(-1);
 
         List<String> dataSetNames = extractDatasets(dataSetOpt.or(""));
         try {
 
             if(ACTION_METRICS_DATA.equals(action)) {
-                return metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period, !zeroes);
-
+                List<DatasetVO> dataSets = metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period);
+                if (smooth > 0) {
+                    for(DatasetVO ds: dataSets) {
+                        ds.setData(MetricsDataFilter.getSmoothedDataSet(ds.getData(), smooth));
+                    }
+                }
+                if (!zeroes) {
+                    for(DatasetVO ds: dataSets) {
+                        ds.setData(MetricsDataFilter.getNonZeroValuesDataSet(ds.getData()));
+                    }
+                }
+                return Response.ok(dataSets, MediaType.APPLICATION_JSON).build();
             } else if(ACTION_METRICS_OPTIONS.equals(action)) {
                 return metricsOptionsHandler.getMetricsTypes();
 
@@ -67,12 +79,12 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
 
 
     @Required
-    public void setMetricsDataHandler(MetricsDataHandler metricsDataHandler) {
+    public void setMetricsDataHandler(MetricsDataProvider metricsDataHandler) {
         this.metricsDataHandler = metricsDataHandler;
     }
 
     @Required
-    public void setMetricsOptionsHandler(MetricsOptionsHandler metricsOptionsHandler) {
+    public void setMetricsOptionsHandler(MetricsOptionsProvider metricsOptionsHandler) {
         this.metricsOptionsHandler = metricsOptionsHandler;
     }
 
