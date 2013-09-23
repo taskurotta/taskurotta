@@ -218,9 +218,11 @@
                         <configuration>
                             <executable>java</executable>
                             <arguments>
-                                <argument>-Dcom.sun.management.jmxremote.port=9999</argument>
-                                <argument>-Dcom.sun.management.jmxremote.authenticate=false</argument>
-                                <argument>-Dcom.sun.management.jmxremote.ssl=false</argument>
+                                <argument>-Xms256m</argument>
+                                <argument>-Xmx256m</argument>
+                                <!--<argument>-Dcom.sun.management.jmxremote.port=9999</argument>-->
+                                <!--<argument>-Dcom.sun.management.jmxremote.authenticate=false</argument>-->
+                                <!--<argument>-Dcom.sun.management.jmxremote.ssl=false</argument>-->
                                 <argument>-Dts.node.custom.name="node1"</argument>
                                 <argument>-DassetsMode=dev</argument>
                                 <argument>-Ddw.http.port=8811</argument>
