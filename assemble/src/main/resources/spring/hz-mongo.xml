@@ -180,7 +180,7 @@
     </bean>
 
     <!-- Metrics -->
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandlerOld" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
     <!-- /Metrics -->
 
     <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->

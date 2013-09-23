@@ -22,7 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class StressTaskCreator implements Runnable, ApplicationListener<ContextRefreshedEvent> {
 
     private final static Logger log = LoggerFactory.getLogger(StressTaskCreator.class);
-    public static final int SLEEP_TIME = 15000;
 
     private ClientServiceManager clientServiceManager;
 
@@ -32,6 +31,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private int countOfCycles = 125;
 
     public static final Lock MONITOR = new ReentrantLock(true);
+    public static CountDownLatch LATCH;
     public static final AtomicBoolean CAN_WORK = new AtomicBoolean(false);
 
     private ExecutorService executorService;
@@ -94,13 +94,16 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             CountDownLatch countDownLatch = new CountDownLatch(countOfCycles);
             executorService = Executors.newFixedThreadPool(THREADS_COUNT);
             while (countDownLatch.getCount() > 0) {
+                LATCH = new CountDownLatch(1);
+                createStartTask(deciderClient);
+                System.out.println("Latch locked!");
                 try {
-                    createStartTask(deciderClient);
-                    Thread.sleep(SLEEP_TIME);
-                    countDownLatch.countDown();
+                    LATCH.await();
+                    System.out.println("Cycle " + countDownLatch.getCount()+" of "+countOfCycles +" finished");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                countDownLatch.countDown();
             }
             try {
                 countDownLatch.await();
