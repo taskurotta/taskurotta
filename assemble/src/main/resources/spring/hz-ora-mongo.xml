@@ -145,7 +145,7 @@
 
 
     <!-- Backends -->
-    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+    <bean id="originalQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}"/>
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
 
@@ -154,6 +154,13 @@
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport" />
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+    </bean>
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
+        <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mergePeriod" value="${hz.recovery.merge.period}"/>
+        <constructor-arg name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
@@ -181,10 +188,7 @@
         <constructor-arg ref="hzInstance"/>
     </bean>
 
-    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService"/>
-
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
-        <constructor-arg name="checkpointService" ref="voidCheckpointService"/>
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
     <!-- /Backends -->
@@ -208,6 +212,7 @@
         <property name="hazelcastInstance" ref="hzInstance" />
         <property name="processBackend" ref="processBackend" />
         <property name="queueBackend" ref="queueBackend" />
+        <property name="queueBackendStatistics" ref="queueBackend"/>
         <property name="recoveryProcessTimeOut" value = "${recovery.process.timeout}" />
         <property name="taskBackend" ref="taskBackend" />
         <property name="taskDao" ref="taskDao" />
@@ -261,7 +266,7 @@
 
     <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
         <constructor-arg name="dumpPeriod" value = "1" />
-        <constructor-arg name="dumpingThreads" value = "1" />
+        <constructor-arg name="dumpingThreads" value = "3" />
         <constructor-arg name="dataListener" ref="metricsDataHandler" />
     </bean>
 

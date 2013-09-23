@@ -7,6 +7,7 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
+import ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -41,6 +42,7 @@ import static junit.framework.Assert.assertTrue;
 public class AbstractTestStub {
 
     protected MemoryQueueBackend memoryQueueBackend;
+    protected MemoryQueueBackendStatistics memoryQueueBackendStatistics;
     protected GeneralTaskBackend memoryStorageBackend;
     protected DependencyBackend dependencyBackend;
     protected BackendBundle backendBundle;
@@ -109,7 +111,7 @@ public class AbstractTestStub {
 
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        return memoryQueueBackend.isTaskInQueue(actorDefinition, taskId, processId);
+        return memoryQueueBackend.isTaskInQueue(actorDefinition.getFullName(), actorDefinition.getTaskList(), taskId, processId);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {
@@ -173,7 +175,7 @@ public class AbstractTestStub {
         return polledTask;
     }
 
-    public void release(UUID taskAId, Object value, Task[] newTasks) {
+    public void release(UUID taskAId, Object value, Task... newTasks) {
         TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));

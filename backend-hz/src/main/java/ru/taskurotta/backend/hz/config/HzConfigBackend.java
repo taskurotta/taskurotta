@@ -9,13 +9,13 @@ import com.hazelcast.core.ItemEvent;
 import com.hazelcast.core.ItemListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -137,13 +137,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         ActorPreferences actorPreferences = new ActorPreferences();
         actorPreferences.setBlocked(false);
         actorPreferences.setId("default");
-
-        Properties expirationPolicies = new Properties();
-        for (TimeoutType timeoutType : TimeoutType.values()) {
-            expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
-        }
-        actorPreferences.setTimeoutPolicies(expirationPolicies);
-
         return new ActorPreferences[]{actorPreferences};
     }
 
@@ -210,9 +203,10 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     }
 
     @Override
-    public Collection<String> getActorIdList() {
+    public GenericPage<String> getActorIdList(int pageNum, int pageSize) {
         IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-        return actorPreferencesMap.keySet();
+        Set<String> ids = actorPreferencesMap.keySet();
+        return new GenericPage<String>(new ArrayList<String>(ids), pageNum, pageSize, ids.size());
     }
 
     public int getDefaultTimeout() {

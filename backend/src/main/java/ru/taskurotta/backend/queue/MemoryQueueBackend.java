@@ -4,14 +4,9 @@ import net.sf.cglib.core.CollectionUtils;
 import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.impl.MemoryCheckpointService;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.exception.BackendCriticalException;
-import ru.taskurotta.util.ActorDefinition;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,8 +31,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
-    private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<String, DelayQueue<DelayedTaskElement>>();
-    private CheckpointService checkpointService = new MemoryCheckpointService();
+    private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<>();
 
     public MemoryQueueBackend(int pollDelay) {
 
@@ -82,7 +76,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
                 result.add(queueNames[i]);
             }
         }
-        return new GenericPage<String>(result, pageNum, pageSize, queues.size());
+        return new GenericPage<>(result, pageNum, pageSize, queues.size());
     }
 
     @Override
@@ -92,7 +86,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
-        List<TaskQueueItem> result = new ArrayList<TaskQueueItem>();
+        List<TaskQueueItem> result = new ArrayList<>();
         DelayedTaskElement[] tasks = new DelayedTaskElement[getQueue(queueName).size()];
         tasks = getQueue(queueName).toArray(tasks);
 
@@ -102,7 +96,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
                 result.add(dte);
             }
         }
-        return new GenericPage<TaskQueueItem>(result, pageNum, pageSize, tasks.length);
+        return new GenericPage<>(result, pageNum, pageSize, tasks.length);
     }
 
 
@@ -160,17 +154,10 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     public TaskQueueItem poll(String actorId, String taskList) {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
-        TaskQueueItem result = null;
+        TaskQueueItem result;
 
         try {
             result = queue.poll(pollDelay, pollDelayUnit);
-
-            if (result != null) {
-                UUID taskId = result.getTaskId();
-                UUID processId = result.getProcessId();
-                //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_POLL_TO_COMMIT, taskId, processId, actorId, System.currentTimeMillis()));
-            }
-
         } catch (InterruptedException e) {
             logger.error("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
             throw new BackendCriticalException("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
@@ -180,12 +167,6 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         return result;
 
-    }
-
-    @Override
-    public void pollCommit(String actorId, UUID taskId, UUID processId) {
-        //checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_SCHEDULE_TO_START);
-        //checkpointService.removeTaskCheckpoints(taskId, processId, TimeoutType.TASK_POLL_TO_COMMIT);
     }
 
     @Override
@@ -199,9 +180,6 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         queue.add(new DelayedTaskElement(taskId, processId, startTime, System.currentTimeMillis()));
 
-        //Checkpoints for SCHEDULED_TO_START, SCHEDULE_TO_CLOSE timeouts
-        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_START, taskId, processId, actorId, startTime));
-        //checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_SCHEDULE_TO_CLOSE, taskId, processId, actorId, startTime));
         logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
     }
 
@@ -214,7 +192,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
                 queue = queues.get(queueName);
                 if (queue == null) {
-                    queue = new DelayQueue<DelayedTaskElement>();
+                    queue = new DelayQueue<>();
                     queues.put(queueName, queue);
                 }
             }
@@ -222,8 +200,9 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         return queue;
     }
 
-    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorDefinition.getFullName(), actorDefinition.getTaskList()));
+    @Override
+    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
+        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
         DelayedTaskElement delayedTaskElement = new DelayedTaskElement(taskId, processId, 0, System.currentTimeMillis());
 
@@ -231,15 +210,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public CheckpointService getCheckpointService() {
-        return checkpointService;
-    }
-
-    public void setCheckpointService(CheckpointService checkpointService) {
-        this.checkpointService = checkpointService;
-    }
-
-    private String createQueueName(String actorId, String taskList) {
+    public String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
     }
 

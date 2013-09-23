@@ -51,8 +51,8 @@ consoleServices.factory("$$data", function ($resource, $http) {
         unblockActor: function(actorId) {
             return $http.post('/rest/console/actor/unblock/', actorId);
         },
-        listActors: function() {
-            return $http.get('/rest/console/actor/list/');
+        listActors: function(pageNumber, pageSize) {
+            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
         getMetricsOptions: function() {
             return $http.get('/rest/console/metrics/options/');

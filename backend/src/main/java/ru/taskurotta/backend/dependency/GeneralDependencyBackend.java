@@ -43,27 +43,6 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
 
         final Modification modification = createLinksModification(taskDecision);
 
-//        for (int i = 0; i < retryTimes; i++) {
-//
-//            Graph graph = graphDao.getGraph(processId);
-//
-//            if (!graph.hasNotFinishedItem(finishedTaskId)) {
-//                logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
-//                return resultDecision; // ignore task decision and its tasks
-//            }
-//
-//            graph.apply(modification);
-//
-//            if (logger.isDebugEnabled()) {
-//                logger.debug("Graph  copy: " + graph.copy());
-//            }
-//
-//            if (graphDao.updateGraph(graph)) {
-//                resultDecision.setProcessFinished(graph.isFinished());
-//                return resultDecision.withReadyTasks(graph.getReadyItems());
-//            }
-//        }
-
         boolean isSuccess = graphDao.changeGraph(new GraphDao.Updater() {
 
             public UUID getProcessId() {
@@ -177,11 +156,10 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
 
                 modification.linkItem(childTaskId, arg.getTaskId());
 
-            } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals
-                    (argTypes[j])) { //should wait for all promises in collection to be ready
+            } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
+				//should wait for all promises in collection to be ready
 
                 processWaitCollection(modification, childTaskId, arg);
-
             }
 
         }
@@ -197,7 +175,7 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
         }
 
         for (ArgContainer argContainer : promisesWaitForArgContainers) {
-            if (argContainer.isReady()) {
+            if (!argContainer.isReady()) {
                 modification.linkItem(childTaskId, argContainer.getTaskId());
             }
         }

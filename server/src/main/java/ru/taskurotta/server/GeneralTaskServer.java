@@ -93,8 +93,6 @@ public class GeneralTaskServer implements TaskServer {
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
-
-        processBackend.startProcessCommit(task);
     }
 
 
@@ -114,11 +112,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // idempotent statement
-        TaskContainer taskContainer = taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
-
-        queueBackend.pollCommit(actorDefinition.getFullName(), tqi.getTaskId(), tqi.getProcessId());
-
-        return taskContainer;
+        return taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
     }
 
 
@@ -149,17 +143,13 @@ public class GeneralTaskServer implements TaskServer {
         UUID processId = taskDecision.getProcessId();
 
         // if Error
-        if (taskDecision.containsError()) {
+        if (taskDecision.containsError() && taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
             // enqueue task immediately if needed
-            if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
 
-                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
-                logger.debug("Error task enqueued again, taskId [{}]", taskId);
-                enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
-            }
-
-            taskBackend.addDecisionCommit(taskDecision);
+			// WARNING: This is not optimal code. We are getting whole task only for name and version values.
+			TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
+			logger.debug("Error task enqueued again, taskId [{}]", taskId);
+			enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
 
             return;
         }
@@ -196,8 +186,6 @@ public class GeneralTaskServer implements TaskServer {
                     dependencyDecision.getFinishedProcessValue());
             taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
         }
-
-        taskBackend.addDecisionCommit(taskDecision);
 
         processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);

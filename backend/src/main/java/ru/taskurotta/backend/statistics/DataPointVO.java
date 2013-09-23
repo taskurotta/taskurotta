@@ -5,9 +5,14 @@ package ru.taskurotta.backend.statistics;
  * User: dimadin
  * Date: 15.09.13 16:28
  */
-public class DataPointVO<T> {
+public class DataPointVO<T extends Number> {
     private long time;
     private T value;
+
+    public DataPointVO(T value, long time) {
+        this.value = value;
+        this.time = time;
+    }
 
     public long getTime() {
         return time;
@@ -32,4 +37,5 @@ public class DataPointVO<T> {
                 ", value=" + value +
                 "} ";
     }
+
 }

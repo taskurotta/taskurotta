@@ -20,9 +20,15 @@ public class MetricFactory {
 
     private ScheduledExecutorService executorService;
 
-    private int dumpPeriod;//defines time resolution for metrics dataset
+    /**
+     * Defines time resolution for metrics dataset in seonds
+     */
+    private int dumpPeriod;
 
-    private DataListener dataListener;//handler for dataset time resolution point (storing/aggregating)
+    /**
+     * Handler for dataset time resolution point (storing/aggregating)
+     */
+    private DataListener dataListener;
 
     public MetricFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener) {
         this.executorService = Executors.newScheduledThreadPool(dumpingThreads);
@@ -31,18 +37,16 @@ public class MetricFactory {
     }
 
     public Metric getInstance(String name) {
-        Metric result = metricsCache.get(name);
 
-        if(result == null) {
+        if(!metricsCache.containsKey(name)) {
             synchronized (metricsCache) {
                 if(!metricsCache.containsKey(name)) {
-                    result = instantiate(name, dumpPeriod);
-                    metricsCache.put(name, result);
+                    metricsCache.put(name, instantiate(name, dumpPeriod));
                 }
             }
         }
 
-        return result;
+        return metricsCache.get(name);
     }
 
 

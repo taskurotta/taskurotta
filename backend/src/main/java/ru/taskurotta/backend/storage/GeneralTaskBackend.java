@@ -2,9 +2,6 @@ package ru.taskurotta.backend.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.CheckpointService;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
-import ru.taskurotta.backend.checkpoint.model.Checkpoint;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
@@ -30,15 +27,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     private TaskDao taskDao;
 
-    private CheckpointService checkpointService;
-
     public GeneralTaskBackend(TaskDao taskDao) {
         this.taskDao = taskDao;
-    }
-
-    public GeneralTaskBackend(TaskDao taskDao, CheckpointService checkpointService) {
-        this(taskDao);
-        this.checkpointService = checkpointService;
     }
 
     @Override
@@ -90,19 +80,11 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             }
         }
 
-        //Setting TASK_START checkpoint
-        if (checkpointService != null) {
-            Checkpoint startCheckpoint = new Checkpoint(TimeoutType.TASK_START_TO_CLOSE, taskId, task.getProcessId(), task.getActorId(), System.currentTimeMillis());
-            checkpointService.addCheckpoint(startCheckpoint);
-        }
-
-
         return task;
     }
 
 
     private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskType taskType) {
-        ArgContainer result = null;
 
         if (pArg.isReady() && !TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
             logger.debug("Got initialized promise, switch it to value");
@@ -202,27 +184,14 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
 
-        TaskContainer task = null;
-
-        if (checkpointService != null) {
-            task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
-
-            if (task != null) {
-                checkpointService.addCheckpoint(new Checkpoint(TimeoutType.TASK_RELEASE_TO_COMMIT, task.getTaskId(), task.getProcessId(), task.getActorId(), System.currentTimeMillis()));
-            } else {
-                logger.debug("Task with null value getted for decision[{}]", taskDecision);
-            }
-
-        }
+        TaskContainer task;
 
         taskDao.addDecision(taskDecision);
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
 
-            if (task == null) {
-                task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
-            }
+            task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
 
             // TODO: should be optimized
             task.incrementNumberOfAttempts();
@@ -240,19 +209,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
         return taskDao.getDecision(taskId, processId);
-    }
-
-    @Override
-    public void addDecisionCommit(DecisionContainer taskDecision) {
-        //Removing checkpoints
-
-        if (checkpointService == null) {
-            return;
-        }
-
-        checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_START_TO_CLOSE);
-        checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_SCHEDULE_TO_CLOSE);
-        checkpointService.removeTaskCheckpoints(taskDecision.getTaskId(), taskDecision.getProcessId(), TimeoutType.TASK_RELEASE_TO_COMMIT);
     }
 
     @Override
@@ -274,15 +230,4 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     public boolean isTaskReleased(UUID taskId, UUID processId) {
         return taskDao.isTaskReleased(taskId, processId);
     }
-
-    @Override
-    public CheckpointService getCheckpointService() {
-        return checkpointService;
-    }
-
-    public void setCheckpointService(CheckpointService checkpointService) {
-        this.checkpointService = checkpointService;
-    }
-
-
 }
