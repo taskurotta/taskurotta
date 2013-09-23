@@ -96,10 +96,9 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             while (countDownLatch.getCount() > 0) {
                 LATCH = new CountDownLatch(1);
                 createStartTask(deciderClient);
-                System.out.println("Latch locked!");
                 try {
                     LATCH.await();
-                    System.out.println("Cycle " + countDownLatch.getCount()+" of "+countOfCycles +" finished");
+                    System.out.println("Remain " + countDownLatch.getCount()+" of "+countOfCycles +" finished");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
