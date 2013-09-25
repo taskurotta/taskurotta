@@ -14,10 +14,11 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.schedule.JobConstants;
-import ru.taskurotta.schedule.JobManager;
-import ru.taskurotta.schedule.JobStore;
 import ru.taskurotta.schedule.JobVO;
+import ru.taskurotta.schedule.storage.JobStore;
+import ru.taskurotta.server.TaskServer;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -33,6 +34,8 @@ public class QuartzJobManager implements JobManager {
 
     private JobStore jobStore;
     private Scheduler scheduler;
+    private QueueInfoRetriever queueInfoRetriever;
+    private TaskServer taskServer;
 
     public QuartzJobManager() throws SchedulerException {
         this.scheduler = new StdSchedulerFactory().getScheduler();
@@ -80,9 +83,9 @@ public class QuartzJobManager implements JobManager {
 
     private void runJob(JobVO job) throws SchedulerException {
         JobDataMap jdm = new JobDataMap();
-        jdm.put("task", job.getTask());
-        jdm.put("id", job.getId());
-        jdm.put("name", job.getName());
+        jdm.put("job", job);
+        jdm.put("queueInfoRetriever", queueInfoRetriever);
+        jdm.put("taskServer", taskServer);
 
         JobDetail jobDetail = JobBuilder
                 .newJob(EnqueueTaskJob.class)
@@ -164,4 +167,13 @@ public class QuartzJobManager implements JobManager {
         this.jobStore = jobStore;
     }
 
+    @Required
+    public void setQueueInfoRetriever(QueueInfoRetriever queueInfoRetriever) {
+        this.queueInfoRetriever = queueInfoRetriever;
+    }
+
+    @Required
+    public void setTaskServer(TaskServer taskServer) {
+        this.taskServer = taskServer;
+    }
 }

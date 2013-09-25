@@ -3,7 +3,7 @@ package ru.taskurotta.schedule.storage.ora;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.BackendCriticalException;
-import ru.taskurotta.schedule.JobStore;
+import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 
 /**
- * Created with IntelliJ IDEA.
+ * Oracle implementation of Scheduled tasks storage
  * User: dimadin
  * Date: 24.09.13 15:35
  */

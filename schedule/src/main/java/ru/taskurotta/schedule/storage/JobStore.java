@@ -1,4 +1,6 @@
-package ru.taskurotta.schedule;
+package ru.taskurotta.schedule.storage;
+
+import ru.taskurotta.schedule.JobVO;
 
 import java.util.Collection;
 

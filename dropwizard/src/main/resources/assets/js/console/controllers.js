@@ -482,13 +482,14 @@ consoleControllers.controller("scheduleCreateController", function ($scope, tskS
     $scope.name = "";
     $scope.feedback = "";
     $scope.cron = "";
+    $scope.checkQueue = false;
     $scope.task = {
         type: "WORKER_SCHEDULED"
     };
     $scope.types = ["WORKER_SCHEDULED", "DECIDER_START"];
 
     $scope.create = function() {
-        $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name), $scope.task).then(
+        $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name) + "&allowDuplicates=" + !$scope.checkQueue, $scope.task).then(
             function(value) {
                 $location.url("/schedule/list");
             },

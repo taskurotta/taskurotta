@@ -8,8 +8,8 @@ import com.hazelcast.core.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.schedule.JobConstants;
-import ru.taskurotta.schedule.JobManager;
-import ru.taskurotta.schedule.JobStore;
+import ru.taskurotta.schedule.manager.JobManager;
+import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.schedule.JobVO;
 
 import java.util.ArrayList;

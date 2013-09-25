@@ -11,12 +11,12 @@
 
     <table width="100%">
         <tr>
-            <td style="vertical-align: top; width: 400px;">
+            <td style="vertical-align: top; width: 430px;">
                 <div class="well">
                     <h4>Job properties:</h4>
                     <table class="table table-condensed">
                         <tr>
-                            <td>
+                            <td style="width: 200px;">
                                 <span style="cursor:pointer;" popover="Specify the human readable name of the job."
                                       popover-placement="right" class="badge badge-info">?</span>
                                 <b>Job name:</b>
@@ -33,6 +33,16 @@
                             </td>
                             <td>
                                 <input class="input-small search-query" type="text" ng-model="cron" required />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="If enabled, queue size would be checked first before adding TaskContainer. If queue already contains some unpolled items, job skips current iteration."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Mode:</b>
+                            </td>
+                            <td>
+                                <label class="checkbox"><input class="input-small search-query" type="checkbox" ng-model="checkQueue" />Check queue size first</label>
                             </td>
                         </tr>
                     </table>

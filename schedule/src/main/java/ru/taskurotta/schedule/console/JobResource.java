@@ -1,14 +1,15 @@
 package ru.taskurotta.schedule.console;
 
 import com.google.common.base.Optional;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.schedule.JobConstants;
-import ru.taskurotta.schedule.JobStore;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.adapter.HzJobMessageHandler;
 import ru.taskurotta.schedule.adapter.HzMessage;
+import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
 
@@ -22,8 +23,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,13 +49,15 @@ public class JobResource implements JobConstants {
     public Response processGet(@PathParam("action")String action) {
         if (ACTION_LIST.equals(action)) {
             Collection<Long> taskIds = jobStore.getJobIds();
-            List<JobVO> result = null;
+            List<JobExtVO> result = null;
             if (taskIds!=null && !taskIds.isEmpty()) {
                 result = new ArrayList<>();
                 for (Long id: taskIds) {
                     JobVO task = jobStore.getJob(id);
                     if (task != null) {
-                        result.add(task);
+                        JobExtVO taskExt = new JobExtVO(task);
+                        taskExt.nextExecutionTime = getNextExecutionTime(task.getCron());
+                        result.add(taskExt);
                     }
                 }
             }
@@ -59,6 +65,22 @@ public class JobResource implements JobConstants {
         } else {
             logger.error("Unsupported combination of method[GET] and action["+action+"].");
             return Response.serverError().build();
+        }
+    }
+
+    public static class JobExtVO extends JobVO implements Serializable {
+        protected Date nextExecutionTime;
+
+        public JobExtVO(JobVO job) {
+            this.id = job.getId();
+            this.name = job.getName();
+            this.cron = job.getCron();
+            this.task = job.getTask();
+            this.status = job.getStatus();
+        }
+
+        public Date getNextExecutionTime() {
+            return nextExecutionTime;
         }
     }
 
@@ -70,7 +92,7 @@ public class JobResource implements JobConstants {
         if (ACTION_CREATE.equals(action)) {
             logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt.or(""), nameOpt.or(""), task);
 
-            JobVO job= new JobVO();
+            JobVO job = new JobVO();
             job.setCron(cron);
             job.setAllowDuplicates(allowDuplicates);
             job.setName(name);
@@ -114,6 +136,19 @@ public class JobResource implements JobConstants {
         int numberOfAttempts = target.getNumberOfAttempts()!=0? target.getNumberOfAttempts(): 5;
 
         return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), type, startTime, numberOfAttempts, target.getArgs(), target.getOptions());
+    }
+
+
+    public Date getNextExecutionTime(String cron) {
+        Date result = null;
+
+        try {
+            result = new CronExpression(cron).getNextValidTimeAfter(new Date());
+        } catch (ParseException e) {
+            logger.error("Cannot parse cron " + cron, e);
+        }
+
+        return result;
     }
 
     @Required

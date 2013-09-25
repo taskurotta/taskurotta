@@ -1,4 +1,4 @@
-package ru.taskurotta.schedule;
+package ru.taskurotta.schedule.manager;
 
 import java.util.Date;
 

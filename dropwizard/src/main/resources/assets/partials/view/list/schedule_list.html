@@ -38,8 +38,15 @@
                 <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.status)">
                     <td>{{ $index + 1}} </td>
                     <td>{{ st.name }}</td>
-                    <td>{{ st.cron }}</td>
-                    <td><span class="muted">Not implemented yet</span></td>
+                    <td>
+                        {{ st.cron }}
+                        <span ng-if="!st.allowDuplicates" class="muted"><br /><small>Queue is checked before insert</small></span>
+                    </td>
+                    <td>
+                        <span ng-if="st.status==1">
+                            <small>{{ st.nextExecutionTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
+                        </span>
+                    </td>
                     <td>
                         <span ng-class="getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
 

@@ -10,12 +10,12 @@ import java.io.Serializable;
  * Date: 23.09.13 10:31
  */
 public class JobVO implements Serializable {
-    private long id = -1;
-    private String name;
-    private String cron;
-    private TaskContainer task;
-    private boolean allowDuplicates = true;
-    private int status = JobConstants.STATUS_UNDEFINED;
+    protected long id = -1;
+    protected String name;
+    protected String cron;
+    protected TaskContainer task;
+    protected boolean allowDuplicates = true;
+    protected int status = JobConstants.STATUS_UNDEFINED;
 
     public long getId() {
         return id;

@@ -4,7 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IdGenerator;
-import ru.taskurotta.schedule.JobStore;
+import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.schedule.JobVO;
 
 import java.util.Collection;
