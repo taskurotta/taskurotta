@@ -177,6 +177,62 @@ consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
     };
 }]);
 
+consoleDirectives.directive('tskTaskForm', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {},
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $window, $log, $http) {
+            $scope.taskTypes = ["DECIDER_START", "WORKER", "DECIDER_ASYNCHRONIOUS"];
+
+            $scope.processUUID = "process-uuid";
+            $scope.taskUUID = "task-uuid";
+
+            $scope.actorMethod = "actor-method";
+            $scope.actorId = "actor-id";
+            $scope.taskType = "DECIDER_START";
+            $scope.taskStartTime = new Date();
+
+            $scope.args = [];
+            $scope.options = {};
+
+
+        }],
+        templateUrl: "/partials/widget/task_container_form.html",
+        replace: true
+    };
+}]);
+
+consoleDirectives.directive('tskArgForm', ['$http', '$compile', function ($http, $compile) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            arg: "="
+        },
+        template: "<li></li>",
+        link: function (scope, element, attrs) {
+            if (angular.isArray(scope.arg.compositeValue)) {
+                element.append("<tsk-arg-list-form args='arg.compositeValue'></tsk-arg-list-form>");
+                $compile(element.contents())(scope)
+            }
+        },
+        replace: true
+    };
+}]);
+
+consoleDirectives.directive('tskArgListForm', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            args: "="
+        },
+        template: "<ul><tsk-arg-form ng-repeat='arg in args' arg='arg'></tsk-arg-form></ul>",
+        replace: true
+    };
+}]);
+
 consoleDirectives.directive('tskPlot', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
@@ -210,9 +266,6 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
                 yaxis: {
                     ticks: 5
                 },
-//                selection: {
-//                    mode: "xy"
-//                },
                 zoom: {
                     interactive: true
                 },

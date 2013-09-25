@@ -6,5 +6,5 @@ package ru.taskurotta.transport.model;
  * Time: 16:24
  */
 public enum TaskType {
-    DECIDER_START, DECIDER_ASYNCHRONOUS, WORKER
+    DECIDER_START, DECIDER_ASYNCHRONOUS, WORKER, WORKER_SCHEDULED
 }

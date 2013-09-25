@@ -19,9 +19,9 @@
                         <a href="#/queues">Queues</a>
                     </li>
 
-                    <li ng-class="isActiveTab('/actors')">
-                        <a href="#/actors/list">Actors</a>
-                    </li>
+                    <!--<li ng-class="isActiveTab('/actors')">-->
+                        <!--<a href="#/actors/list">Actors</a>-->
+                    <!--</li>-->
 
                     <li class="dropdown ng-class:isActiveTab('/processes');">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Processes <b class="caret"></b></a>
@@ -44,6 +44,10 @@
                             <li><a href="#/monitoring/repeatedTasks">Hovering tasks list</a></li>
                             <li><a href="#/monitoring/metrics">Metrics</a></li>
                         </ul>
+                    </li>
+
+                    <li ng-class="isActiveTab('/schedule')">
+                        <a href="#/schedule/list">Schedule</a>
                     </li>
 
                 </ul>

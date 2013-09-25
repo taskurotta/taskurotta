@@ -58,7 +58,6 @@
         </property>
     </bean>
 
-
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend"/>
         <!--<property name="profileInfo" ref="profilingAspect"/>-->

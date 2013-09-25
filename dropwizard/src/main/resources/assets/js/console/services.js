@@ -1,5 +1,16 @@
 var consoleServices = angular.module("console.services", ['ngResource']);
 
+consoleServices.factory("tskSchedule", function ($resource, $http) {
+    var resultService = {
+        getScheduledTasks: function() {
+
+        },
+        createScheduledTask: function(cron, name, task) {
+
+        }
+    };
+});
+
 consoleServices.factory("$$data", function ($resource, $http) {
 
     var resultService = {

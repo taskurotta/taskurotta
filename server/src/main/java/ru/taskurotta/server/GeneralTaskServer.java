@@ -73,9 +73,9 @@ public class GeneralTaskServer implements TaskServer {
     public void startProcess(TaskContainer task) {
 
         // some consistence check
-        if (!task.getType().equals(TaskType.DECIDER_START)) {
+        if (!(task.getType().equals(TaskType.DECIDER_START) || task.getType().equals(TaskType.WORKER_SCHEDULED))) {
             // TODO: send error to client
-            throw new IllegalStateException("Can not start process. Task should be type of " + TaskType.DECIDER_START);
+            throw new IllegalStateException("Can not start process with task type["+task.getType()+"]. Should be one of [" + TaskType.DECIDER_START + ", " + TaskType.WORKER_SCHEDULED + "]");
         }
 
         // registration of new process

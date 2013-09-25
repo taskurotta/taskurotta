@@ -478,5 +478,94 @@ consoleControllers.controller("aboutController", function ($scope) {
 
 });
 
+consoleControllers.controller("scheduleCreateController", function ($scope, tskSchedule, $log, $http, $location) {
+    $scope.name = "";
+    $scope.feedback = "";
+    $scope.cron = "";
+    $scope.task = {
+        type: "WORKER_SCHEDULED"
+    };
+    $scope.types = ["WORKER_SCHEDULED", "DECIDER_START"];
+
+    $scope.create = function() {
+        $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name), $scope.task).then(
+            function(value) {
+                $location.url("/schedule/list");
+            },
+            function(err){
+
+            });
+    };
+
+});
+
+consoleControllers.controller("scheduleListController", function ($scope, tskSchedule, $http, $log) {
+
+    $scope.scheduledTasks = [];
+
+    $scope.getStatusClassName = function(status) {
+        var result = "warning";
+        if(status == -2) {
+            result = "error";
+        } else if(status == -1) {
+            result = "info";
+        } else if(status == 1) {
+            result = "success";
+        }
+
+        return result;
+    };
+
+    $scope.getStatusText = function(status) {
+        var result = "Undefined status";
+        if(status == -2) {
+            result = "Errored";
+        } else if(status == -1) {
+            result = "Inactive";
+        } else if(status == 1) {
+            result = "Active";
+        }
+
+        return result;
+    };
+
+
+    $scope.update = function() {
+        $http.get("/rest/console/schedule/list").then(function(value) {
+            $scope.scheduledTasks = value.data;
+        }, function(errReason) {
+
+        });
+    };
+
+    $scope.activate = function(id) {
+        $http.post("/rest/console/schedule/activate/?id=" + id, id).then(function(value) {
+            $scope.update();
+        }, function(errReason) {
+
+        });
+    };
+
+    $scope.deactivate = function(id) {
+        $http.post("/rest/console/schedule/deactivate/?id="+id, id).then(function(value) {
+            $scope.update();
+        }, function(errReason) {
+
+        });
+    };
+
+    $scope.delete = function(id) {
+        $http.post("/rest/console/schedule/delete/?id="+id, id).then(function(value) {
+            $scope.update();
+        }, function(errReason) {
+
+        });
+    };
+
+    $scope.update();
+
+});
+
+
 
 

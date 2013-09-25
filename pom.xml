@@ -47,6 +47,7 @@
         <module>transport</module>
         <module>snapshot</module>
         <module>test</module>
+        <module>schedule</module>
     </modules>
 
     <profiles>

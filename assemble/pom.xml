@@ -156,6 +156,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>schedule</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>oracle-jdbc15</artifactId>
             <version>11.1.0.7.0</version>

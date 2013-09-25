@@ -1,0 +1,99 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:10px;">
+                <h4>Create scheduled task</h4>
+            </td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+    <div ng-show="feedback.length>0" class="err-message">Error: <span>{{feedback}}</span></div>
+
+    <table width="100%">
+        <tr>
+            <td style="vertical-align: top; width: 400px;">
+                <div class="well">
+                    <h4>Job properties:</h4>
+                    <table class="table table-condensed">
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="Specify the human readable name of the job."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Job name:</b>
+                            </td>
+                            <td>
+                                <input class="input search-query" type="text" ng-model="name" required />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="Cron expression to trigger task."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Cron:</b>
+                            </td>
+                            <td>
+                                <input class="input-small search-query" type="text" ng-model="cron" required />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <td style="vertical-align: top;">
+                <div class="well">
+                    <h4>Task properties:</h4>
+                    <table class="table">
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="ActorId of the actor to trigger."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>ActorId:</b>
+                            </td>
+                            <td>
+                                <input class="input-large search-query" type="text" ng-model="task.actorId" required/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="Method of the actor to trigger."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Method name:</b>
+                            </td>
+                            <td>
+                                <input class="input-large search-query" type="text" ng-model="task.method" required/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="Type of the actor to trigger."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Actor type:</b>
+                            </td>
+                            <td>
+                                <select ng-model="task.type" ng-options="type for type in types" required />
+                            </td>
+                        </tr>
+
+                        <!--<tr>-->
+                            <!--<td>-->
+                                <!--<span style="cursor:pointer;" popover="Arguments for the actor invokation. Should be represented as valid JSON string."-->
+                                      <!--popover-placement="right" class="badge badge-info">?</span>-->
+                                <!--<b>Args JSON:</b>-->
+                            <!--</td>-->
+                            <!--<td>-->
+                                <!--<textarea ng-model="task.argsJson"></textarea>-->
+                            <!--</td>-->
+                        <!--</tr>-->
+                    </table>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td></td>
+            <td>
+                <button class="btn" ng-click="create()">Create scheduled task</button>
+            </td>
+        </tr>
+    </table>
+
+</div>

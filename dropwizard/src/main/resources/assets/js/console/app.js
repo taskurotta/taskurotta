@@ -89,6 +89,17 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         controller: "actorListController"
     });
 
+    //SCHEDULE
+    $routeProvider.when('/schedule/list', {
+        templateUrl: '/partials/view/list/schedule_list.html',
+        controller: "scheduleListController"
+    });
+
+    $routeProvider.when('/schedule/create', {
+        templateUrl: '/partials/view/card/schedule_card.html',
+        controller: "scheduleCreateController"
+    });
+
     //DEFAULT
     $routeProvider.otherwise({
         redirectTo: '/home'

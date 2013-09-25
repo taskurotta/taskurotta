@@ -1,0 +1,57 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:10px;">
+                <h4>Scheduled tasks</h4>
+            </td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <div ng-show="feedback.length>0" class="err-message">Error: <span>{{feedback}}</span></div>
+
+    <div class="well" style="margin:5px;">
+
+        <div style="float: left;">
+            <a ng-href="#/schedule/create" class="btn btn-small" popover="Add scheduled task" popover-trigger="mouseenter"><i class="icon-plus"></i></a><span class="muted">&nbsp;add job</span>
+        </div>
+
+        <div style="float: right;">
+            <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
+            <a class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></a>
+        </div>
+
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Job name</th>
+                    <th>Cron</th>
+                    <th>Next start</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Actions</th>
+
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.status)">
+                    <td>{{ $index + 1}} </td>
+                    <td>{{ st.name }}</td>
+                    <td>{{ st.cron }}</td>
+                    <td><span class="muted">Not implemented yet</span></td>
+                    <td>
+                        <span ng-class="getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
+
+                    </td>
+                    <td>
+                        <a ng-if="st.status==-1" class="btn btn-small" ng-click="activate(st.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>
+                        <a ng-if="st.status==1" class="btn btn-small" ng-click="deactivate(st.id)" popover="Stop job" popover-trigger="mouseenter"><i class="icon-stop"></i></a>
+                        <a class="btn btn-small" ng-click="delete(st.id)" popover="Delete job" popover-trigger="mouseenter"><i class="icon-ban-circle"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
