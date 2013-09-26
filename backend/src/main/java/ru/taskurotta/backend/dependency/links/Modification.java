@@ -65,6 +65,14 @@ public class Modification implements Serializable {
         newItems.add(newItem);
     }
 
+    public void setNewItems(Set<UUID> newItems) {
+        this.newItems = newItems;
+    }
+
+    public void setLinks(Map<UUID, Set<UUID>> links) {
+        this.links = links;
+    }
+
     public UUID getWaitForAfterRelease() {
         return waitForAfterRelease;
     }
@@ -81,6 +89,33 @@ public class Modification implements Serializable {
                 ", links=" + links +
                 ", newItems=" + newItems +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Modification that = (Modification) o;
+
+        if (completedItem != null ? !completedItem.equals(that.completedItem) : that.completedItem != null)
+            return false;
+        if (links != null ? !links.equals(that.links) : that.links != null) return false;
+        if (newItems != null ? !newItems.equals(that.newItems) : that.newItems != null) return false;
+        if (waitForAfterRelease != null ? !waitForAfterRelease.equals(that.waitForAfterRelease) : that.waitForAfterRelease != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = completedItem != null ? completedItem.hashCode() : 0;
+        result = 31 * result + (waitForAfterRelease != null ? waitForAfterRelease.hashCode() : 0);
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (newItems != null ? newItems.hashCode() : 0);
+        return result;
     }
 }
 

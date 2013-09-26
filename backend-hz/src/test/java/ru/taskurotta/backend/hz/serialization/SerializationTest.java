@@ -8,6 +8,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.links.Modification;
+import ru.taskurotta.backend.hz.dependency.HzGraphDao;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,7 +37,9 @@ public class SerializationTest {
 
         SerializerConfig sc = new SerializerConfig().
                 setImplementation(new GraphStreamSerializer()).
-                setTypeClass(Graph.class);
+                setTypeClass(Graph.class).
+                setImplementation(new DecisionRowStreamSerializer()).
+                setTypeClass(HzGraphDao.DecisionRow.class);
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
@@ -60,6 +64,41 @@ public class SerializationTest {
         if (graph != graphFromMap) {
             System.out.println("graphFromMap = " + graphFromMap);
         }
+    }
+
+    @Test
+    public void decisionRowSerializationTest() {
+        UUID itemUuid = UUID.randomUUID();
+        UUID completeUuid = UUID.randomUUID();
+        UUID waitAfterRelease = UUID.randomUUID();
+
+        Modification modification = new Modification();
+
+        Map<UUID, Set<UUID>> links = new HashMap<>();
+        Set<UUID> linksSet = new HashSet<>();
+        UUID link1 = UUID.randomUUID();
+        linksSet.add(link1);
+        UUID linkKey = UUID.randomUUID();
+        links.put(linkKey, linksSet);
+
+        UUID newItem1 = UUID.randomUUID();
+        UUID newItem2 = UUID.randomUUID();
+
+
+        modification.setCompletedItem(completeUuid);
+        modification.setWaitForAfterRelease(waitAfterRelease);
+        modification.setLinks(links);
+        modification.addNewItem(newItem1);
+        modification.addNewItem(newItem2);
+
+
+        HzGraphDao.DecisionRow decisionRow = new HzGraphDao.DecisionRow(itemUuid, modification, null);
+
+        hzMap.put("dec", decisionRow);
+
+        HzGraphDao.DecisionRow fromMapDecisionRow = (HzGraphDao.DecisionRow) hzMap.get("dec");
+
+        assertEquals(decisionRow, fromMapDecisionRow);
     }
 
     private static Graph newRandomGraph() {
