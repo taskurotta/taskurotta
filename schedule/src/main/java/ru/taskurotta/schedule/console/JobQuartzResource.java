@@ -5,6 +5,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.util.StringUtils;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.adapter.HzJobMessageHandler;
@@ -21,6 +22,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.Serializable;
@@ -100,6 +102,8 @@ public class JobQuartzResource implements JobConstants {
             job.setTask(extendTask(task));
             job.setStatus(STATUS_INACTIVE);
 
+            validateJob(job);
+
             long id = jobStore.addJob(job);
             logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", name, cron, id);
             return Response.ok(id, MediaType.APPLICATION_JSON).build();
@@ -108,6 +112,19 @@ public class JobQuartzResource implements JobConstants {
             return Response.serverError().build();
         }
 
+    }
+
+
+    public void validateJob(JobVO job) {
+        try {
+            CronExpression.validateExpression(job.getCron());
+            if (!StringUtils.hasText(job.getName())) {
+                throw new IllegalArgumentException("Job name cannot be empty");
+            }
+        } catch(Throwable e) {
+            logger.error("Job validation exception, job ["+job+"]", e);
+            throw new WebApplicationException(e);
+        }
     }
 
     @POST
