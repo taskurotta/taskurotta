@@ -23,6 +23,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
@@ -185,7 +186,12 @@ public class ObjectFactory {
         UUID processId = taskContainer.getProcessId();
         UUID taskId = taskContainer.getTaskId();
         ActorDefinition actorDef = ActorUtils.getActorDefinition(taskContainer.getActorId());
-        TaskTarget taskTarget = new TaskTargetImpl(taskContainer.getType(), actorDef.getName(), actorDef.getVersion(), taskContainer.getMethod());
+
+        TaskType taskType = taskContainer.getType();
+        if(TaskType.WORKER_SCHEDULED.equals(taskContainer.getType())) {
+            taskType = TaskType.WORKER;//scheduled worker is worker actor
+        }
+        TaskTarget taskTarget = new TaskTargetImpl(taskType, actorDef.getName(), actorDef.getVersion(), taskContainer.getMethod());
         Object[] args = null;
 
         ArgContainer[] argContainers = taskContainer.getArgs();

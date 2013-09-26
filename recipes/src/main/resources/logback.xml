@@ -16,9 +16,12 @@
         </encoder>
     </appender>
 
-	<logger name="ru.taskurotta" level="TRACE" />
+	<logger name="ru.taskurotta" level="INFO" />
 	<logger name="ru.taskurotta.server.json.ObjectFactory" level="WARN" />
     <logger name="org.springframework" level="OFF"/>
+    <logger name="httpclient.wire" level="WARN" />
+    <logger name="org.apache.commons.httpclient" level="WARN" />
+
 
 	<root>
 		<appender-ref ref="STDOUT" />
