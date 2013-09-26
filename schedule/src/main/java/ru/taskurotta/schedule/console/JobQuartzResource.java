@@ -10,6 +10,7 @@ import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.adapter.HzJobMessageHandler;
 import ru.taskurotta.schedule.adapter.HzMessage;
+import ru.taskurotta.schedule.manager.JobManager;
 import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
@@ -45,6 +46,7 @@ public class JobQuartzResource implements JobConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(JobQuartzResource.class);
     private JobStore jobStore;
+    private JobManager jobManager;
     private HzJobMessageHandler hzScheduleEventDispatcher;
 
     @GET
@@ -59,6 +61,9 @@ public class JobQuartzResource implements JobConstants {
                     if (task != null) {
                         JobExtVO taskExt = new JobExtVO(task);
                         taskExt.nextExecutionTime = getNextExecutionTime(task.getCron());
+                        if (taskExt.getStatus() == STATUS_ACTIVE) {
+                            taskExt.local = jobManager.isActive(task);
+                        }
                         result.add(taskExt);
                     }
                 }
@@ -73,6 +78,7 @@ public class JobQuartzResource implements JobConstants {
 
     public static class JobExtVO extends JobVO implements Serializable {
         protected Date nextExecutionTime;
+        protected boolean local=false;
 
         public JobExtVO(JobVO job) {
             this.id = job.getId();
@@ -84,6 +90,10 @@ public class JobQuartzResource implements JobConstants {
 
         public Date getNextExecutionTime() {
             return nextExecutionTime;
+        }
+
+        public boolean isLocal() {
+            return local;
         }
     }
 
@@ -183,4 +193,8 @@ public class JobQuartzResource implements JobConstants {
         this.hzScheduleEventDispatcher = hzScheduleEventDispatcher;
     }
 
+    @Required
+    public void setJobManager(JobManager jobManager) {
+        this.jobManager = jobManager;
+    }
 }

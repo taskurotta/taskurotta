@@ -1,5 +1,7 @@
 package ru.taskurotta.schedule.manager;
 
+import ru.taskurotta.schedule.JobVO;
+
 import java.util.Date;
 
 /**
@@ -27,5 +29,10 @@ public interface JobManager {
      * @return next execution time for the job
      */
     public Date getNextExecutionTime(long id);
+
+    /**
+     * @return is job active
+     */
+    public boolean isActive(JobVO job);
 
 }

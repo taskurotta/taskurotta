@@ -49,7 +49,7 @@
                     </td>
                     <td>
                         <span ng-class="getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
-
+                        <i ng-if="st.local" class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" />
                     </td>
                     <td>
                         <a ng-if="st.status==-1" class="btn btn-small" ng-click="activate(st.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>

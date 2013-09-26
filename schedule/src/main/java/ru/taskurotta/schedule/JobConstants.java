@@ -7,18 +7,17 @@ package ru.taskurotta.schedule;
  */
 public interface JobConstants {
 
-    public static final String ACTION_LIST = "list";
-    public static final String ACTION_CREATE = "create";
-    public static final String ACTION_EDIT = "edit";
-    public static final String ACTION_DELETE = "delete";
-    public static final String ACTION_ACTIVATE = "activate";
-    public static final String ACTION_DEACTIVATE = "deactivate";
-    public static final String ACTION_VALIDATE = "validate";
+    String ACTION_LIST = "list";
+    String ACTION_CREATE = "create";
+    String ACTION_EDIT = "edit";
+    String ACTION_DELETE = "delete";
+    String ACTION_ACTIVATE = "activate";
+    String ACTION_DEACTIVATE = "deactivate";
 
-    public static final int STATUS_ACTIVE = 1;
-    public static final int STATUS_INACTIVE = -1;
-    public static final int STATUS_UNDEFINED = 0;
-    public static final int STATUS_ERROR = -2;
+    int STATUS_ACTIVE = 1;
+    int STATUS_INACTIVE = -1;
+    int STATUS_UNDEFINED = 0;
+    int STATUS_ERROR = -2;
 
 
 

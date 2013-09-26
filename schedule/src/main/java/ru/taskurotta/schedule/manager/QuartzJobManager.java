@@ -50,7 +50,7 @@ public class QuartzJobManager implements JobManager {
 
         if (job != null) {
             try {
-                if(!isJobScheduled(job)) {
+                if(!isActive(job)) {
                     runJob(job);
                     jobStore.updateJobStatus(job.getId(), JobConstants.STATUS_ACTIVE);
                 }
@@ -67,7 +67,7 @@ public class QuartzJobManager implements JobManager {
         return result;
     }
 
-    private boolean isJobScheduled(JobVO job) {
+    public boolean isActive(JobVO job) {
         boolean result = false;
 
         try {
@@ -120,7 +120,7 @@ public class QuartzJobManager implements JobManager {
 
         if (job != null) {
             try {
-                if(isJobScheduled(job)) {
+                if(isActive(job)) {
                     stopJob(job);
                     jobStore.updateJobStatus(job.getId(), JobConstants.STATUS_INACTIVE);
                 }

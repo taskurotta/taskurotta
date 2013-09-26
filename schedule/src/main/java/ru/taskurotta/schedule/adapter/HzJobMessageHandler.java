@@ -73,7 +73,6 @@ public class HzJobMessageHandler implements MessageListener<HzMessage>, JobConst
             nodeLock.lock();
             regId = topic.addMessageListener(this);
             logger.debug("Current node registered as message listener with id[{}]. Scheduled tasks sync started.", regId);
-
             synchronizeScheduledTasksWithStore();
 
         } catch (Throwable e) {
