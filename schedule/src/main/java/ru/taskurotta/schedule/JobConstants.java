@@ -13,6 +13,7 @@ public interface JobConstants {
     public static final String ACTION_DELETE = "delete";
     public static final String ACTION_ACTIVATE = "activate";
     public static final String ACTION_DEACTIVATE = "deactivate";
+    public static final String ACTION_VALIDATE = "validate";
 
     public static final int STATUS_ACTIVE = 1;
     public static final int STATUS_INACTIVE = -1;

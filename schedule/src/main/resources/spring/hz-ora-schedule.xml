@@ -5,10 +5,12 @@
 
 
     <!-- CONSOLE -->
-    <bean id = "consoleScheduleResource" class="ru.taskurotta.schedule.console.JobResource">
+    <bean id = "consoleScheduleResource" class="ru.taskurotta.schedule.console.JobQuartzResource">
         <property name="jobStore" ref="scheduleStore" />
         <property name="hzScheduleEventDispatcher" ref="hzScheduleMessageDispatcher" />
     </bean>
+
+    <bean id="consoleScheduleValidator" class="ru.taskurotta.schedule.console.JobValidationResource" />
     <!-- /CONSOLE -->
 
 

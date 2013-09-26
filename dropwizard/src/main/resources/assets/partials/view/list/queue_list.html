@@ -16,7 +16,7 @@
         </div>
 
         <div style="float: right;">
-            <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
+            <img id="loading" src="/img/ajax-loader.gif" />
             <a class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></a>
         </div>
         <table class="table table-striped table-bordered table-hover">
@@ -27,9 +27,9 @@
             </thead>
 
             <tfoot>
-            <td colspan="3">
-                <tsk-paginator generic-page="queuesPage" update-action="update()"></tsk-paginator>
-            </td>
+                <td colspan="3">
+                    <tsk-paginator generic-page="queuesPage" update-action="update()"></tsk-paginator>
+                </td>
             </tfoot>
 
             <tbody>

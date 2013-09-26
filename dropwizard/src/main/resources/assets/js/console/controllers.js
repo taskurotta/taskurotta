@@ -484,19 +484,43 @@ consoleControllers.controller("scheduleCreateController", function ($scope, tskS
     $scope.cron = "";
     $scope.checkQueue = false;
     $scope.task = {
-        type: "WORKER_SCHEDULED"
+        type: "WORKER_SCHEDULED",
+        method: "",
+        actorId: ""
     };
     $scope.types = ["WORKER_SCHEDULED", "DECIDER_START"];
+
+    $scope.isCronValid = false;
 
     $scope.create = function() {
         $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name) + "&allowDuplicates=" + !$scope.checkQueue, $scope.task).then(
             function(value) {
                 $location.url("/schedule/list");
             },
-            function(err){
-
+            function(err) {
+                $scope.feedback = angular.toJson(err);
             });
     };
+
+    $scope.validateCron = function() {
+        if ($scope.cron.length > 0) {
+            $http.get("/rest/console/schedule/validate/cron?value="+encodeURIComponent($scope.cron))
+                .then(function(value) {
+                    if (value.data.length>0) {
+                        $scope.isCronValid = false;
+                    } else {
+                        $scope.isCronValid = true;
+                    }
+                }, function(errMes) {
+                    $scope.feedback = angular.toJson(errMes);
+                });
+        }
+    };
+
+    $scope.isValidForm = function() {
+        var exists = angular.isDefined($scope.name) && angular.isDefined($scope.isCronValid) && angular.isDefined($scope.task.method) && angular.isDefined($scope.task.actorId);
+        return exists && $scope.name.length>0 && $scope.isCronValid && $scope.task.method.length>0 && $scope.task.actorId.length>0;
+    }
 
 });
 

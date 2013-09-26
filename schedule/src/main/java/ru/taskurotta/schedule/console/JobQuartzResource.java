@@ -39,9 +39,9 @@ import java.util.UUID;
 @Path("/console/schedule/{action}")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class JobResource implements JobConstants {
+public class JobQuartzResource implements JobConstants {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobResource.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobQuartzResource.class);
     private JobStore jobStore;
     private HzJobMessageHandler hzScheduleEventDispatcher;
 
@@ -62,6 +62,7 @@ public class JobResource implements JobConstants {
                 }
             }
             return Response.ok(result, MediaType.APPLICATION_JSON).build();
+
         } else {
             logger.error("Unsupported combination of method[GET] and action["+action+"].");
             return Response.serverError().build();
@@ -149,6 +150,10 @@ public class JobResource implements JobConstants {
         }
 
         return result;
+    }
+
+    public Response validate() {
+        return null;
     }
 
     @Required

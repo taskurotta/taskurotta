@@ -32,7 +32,13 @@
                                 <b>Cron:</b>
                             </td>
                             <td>
-                                <input class="input-small search-query" type="text" ng-model="cron" required />
+                                <table cellpadding="0" cellspacing="0" >
+                                    <tr>
+                                        <td><input class="input-small search-query" type="text" ng-model="cron" ng-change="validateCron()" required /></td>
+                                        <td ng-if="cron.length>0 && isCronValid" popover="Valid cron expression" popover-trigger="mouseenter"><i class="icon-thumbs-up" /></td>
+                                        <td ng-if="cron.length>0 && !isCronValid" popover = "Incorrect cron expression" popover-trigger="mouseenter"><i class="icon-thumbs-down" /></td>
+                                    </tr>
+                                </table>
                             </td>
                         </tr>
                         <tr>
@@ -101,7 +107,7 @@
         <tr>
             <td></td>
             <td>
-                <button class="btn" ng-click="create()">Create scheduled task</button>
+                <a class="btn" ng-click="create()" ng-disabled="!isValidForm()">Create scheduled task</a>
             </td>
         </tr>
     </table>
