@@ -48,8 +48,15 @@
                         </span>
                     </td>
                     <td>
-                        <span ng-class="getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
-                        <i ng-if="st.local" class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" />
+                        <table cellspacing="0" cellpadding="0">
+                            <tr ng-class="getStatusClassName(st.status)">
+                                <td>
+                                    <span ng-class="'badge badge-' + getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
+                                </td>
+                                <td ng-if="st.status==1 && st.local"><i class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" /></td>
+                                <td ng-if="st.status==1 && !st.local"><i class="icon-globe" popover="Scheduled on some remote node" popover-trigger="mouseenter" /></td>
+                            </tr>
+                        </table>
                     </td>
                     <td>
                         <a ng-if="st.status==-1" class="btn btn-small" ng-click="activate(st.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>

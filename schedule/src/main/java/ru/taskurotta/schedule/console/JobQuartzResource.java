@@ -60,8 +60,8 @@ public class JobQuartzResource implements JobConstants {
                     JobVO task = jobStore.getJob(id);
                     if (task != null) {
                         JobExtVO taskExt = new JobExtVO(task);
-                        taskExt.nextExecutionTime = getNextExecutionTime(task.getCron());
                         if (taskExt.getStatus() == STATUS_ACTIVE) {
+                            taskExt.nextExecutionTime = getNextExecutionTime(task.getCron());
                             taskExt.local = jobManager.isActive(task);
                         }
                         result.add(taskExt);
@@ -86,6 +86,7 @@ public class JobQuartzResource implements JobConstants {
             this.cron = job.getCron();
             this.task = job.getTask();
             this.status = job.getStatus();
+            this.allowDuplicates = job.isAllowDuplicates();
         }
 
         public Date getNextExecutionTime() {
