@@ -9,4 +9,6 @@ public class ObjectTypes {
 
     public static final int GRAPH = 1;
     public static final int GRAPH_DECISION_ROW = 2;
+    public static final int ARG_CONTAINER = 3;
+
 }

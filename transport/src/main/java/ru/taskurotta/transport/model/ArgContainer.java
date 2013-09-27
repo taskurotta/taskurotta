@@ -14,7 +14,17 @@ import java.util.UUID;
 @SuppressWarnings("UnusedDeclaration")
 public class ArgContainer implements Cloneable, Serializable {
     public enum ValueType {
-        PLAIN, ARRAY, COLLECTION
+        PLAIN(0), ARRAY(1), COLLECTION(2);
+
+        int value;
+
+        ValueType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
     }
 
     private String className;
@@ -108,6 +118,7 @@ public class ArgContainer implements Cloneable, Serializable {
 
     /**
      * Create new ArgContainer as a copy of this and change its value type
+     *
      * @param promise - new container type
      * @return created object
      */
@@ -127,6 +138,7 @@ public class ArgContainer implements Cloneable, Serializable {
 
     /**
      * Create new ArgContainer as a copy of this and change its task ID
+     *
      * @param taskId - new task ID
      * @return created object
      */
@@ -138,6 +150,7 @@ public class ArgContainer implements Cloneable, Serializable {
 
     /**
      * Create new ArgContainer as a copy of this and change its value fields
+     *
      * @param source - source of new value
      * @return created object
      */

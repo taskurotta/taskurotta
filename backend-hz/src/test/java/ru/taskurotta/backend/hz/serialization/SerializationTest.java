@@ -5,14 +5,18 @@ import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
+import ru.taskurotta.transport.model.ArgContainer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -39,7 +43,9 @@ public class SerializationTest {
                 setImplementation(new GraphStreamSerializer()).
                 setTypeClass(Graph.class).
                 setImplementation(new DecisionRowStreamSerializer()).
-                setTypeClass(HzGraphDao.DecisionRow.class);
+                setTypeClass(HzGraphDao.DecisionRow.class).
+                setImplementation(new ArgContainerSerializer()).
+                setTypeClass(ArgContainer.class);
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
@@ -99,6 +105,60 @@ public class SerializationTest {
         HzGraphDao.DecisionRow fromMapDecisionRow = (HzGraphDao.DecisionRow) hzMap.get("dec");
 
         assertEquals(decisionRow, fromMapDecisionRow);
+    }
+
+    @Test
+    public void argContainerSerializationTest() {
+        List<ArgContainer> containerList = new ArrayList<>();
+
+        ArgContainer argContainer1 = new ArgContainer();
+        argContainer1.setTaskId(UUID.randomUUID());
+        argContainer1.setClassName("simple1");
+        argContainer1.setJSONValue("jsonData1");
+        argContainer1.setPromise(false);
+        argContainer1.setReady(true);
+        argContainer1.setType(ArgContainer.ValueType.COLLECTION);
+
+        containerList.add(argContainer1);
+
+        List<ArgContainer> containerList1 = new ArrayList<>();
+        ArgContainer argContainer2 = new ArgContainer();
+        argContainer2.setTaskId(UUID.randomUUID());
+        argContainer2.setClassName("simple2");
+        argContainer2.setJSONValue("jsonData2");
+        argContainer2.setPromise(false);
+        argContainer2.setReady(true);
+        argContainer2.setType(ArgContainer.ValueType.COLLECTION);
+
+        containerList1.add(argContainer2);
+        ArgContainer[] array1 = new ArgContainer[containerList1.size()];
+        containerList1.toArray(array1);
+
+        argContainer1.setCompositeValue(array1);
+
+        ArgContainer argContainer = new ArgContainer();
+        argContainer.setClassName("simpleClass");
+        argContainer.setJSONValue("jsonData");
+        argContainer.setPromise(true);
+        argContainer.setType(ArgContainer.ValueType.ARRAY);
+        argContainer.setReady(false);
+        argContainer.setTaskId(UUID.randomUUID());
+
+        ArgContainer[] array = new ArgContainer[containerList.size()];
+        containerList.toArray(array);
+
+        argContainer.setCompositeValue(array);
+        hzMap.put("argContainer", argContainer);
+        ArgContainer getted = (ArgContainer) hzMap.get("argContainer");
+
+
+        Assert.assertEquals(argContainer.getClassName(), getted.getClassName());
+        Assert.assertEquals(argContainer.getJSONValue(), getted.getJSONValue());
+        Assert.assertEquals(argContainer.isPromise(), getted.isPromise());
+        Assert.assertEquals(argContainer.getType(), getted.getType());
+        Assert.assertEquals(argContainer.isReady(), getted.isReady());
+        Assert.assertEquals(argContainer.getTaskId(), getted.getTaskId());
+        Assert.assertEquals(argContainer.getCompositeValue()[0].getCompositeValue()[0].getClassName(), "simple2");
     }
 
     private static Graph newRandomGraph() {
