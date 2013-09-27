@@ -11,9 +11,11 @@ import org.junit.Test;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
+import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.ArgContainer;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,7 +47,9 @@ public class SerializationTest {
                 setImplementation(new DecisionRowStreamSerializer()).
                 setTypeClass(HzGraphDao.DecisionRow.class).
                 setImplementation(new ArgContainerSerializer()).
-                setTypeClass(ArgContainer.class);
+                setTypeClass(ArgContainer.class).
+                setImplementation(new ActorSchedulingOptionsContainerSerializer()).
+                setTypeClass(ActorSchedulingOptionsContainer.class);
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
@@ -159,6 +163,19 @@ public class SerializationTest {
         Assert.assertEquals(argContainer.isReady(), getted.isReady());
         Assert.assertEquals(argContainer.getTaskId(), getted.getTaskId());
         Assert.assertEquals(argContainer.getCompositeValue()[0].getCompositeValue()[0].getClassName(), "simple2");
+    }
+
+    @Test
+    public void actorSchedulingOptionsContainerSerializerTest(){
+        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+        container.setCustomId("customId");
+        container.setStartTime(new Date().getTime());
+        container.setTaskList("taskList");
+        hzMap.put("actorScheduledOptionsContainer", container);
+
+        ActorSchedulingOptionsContainer getted = (ActorSchedulingOptionsContainer) hzMap.get("actorScheduledOptionsContainer");
+
+        assertEquals(container, getted);
     }
 
     private static Graph newRandomGraph() {
