@@ -1,11 +1,13 @@
 package ru.taskurotta.transport.model;
 
+import java.io.Serializable;
+
 /**
  * User: stukushin
  * Date: 21.05.13
  * Time: 14:03
  */
-public class ActorSchedulingOptionsContainer {
+public class ActorSchedulingOptionsContainer implements Serializable {
 
     private String customId;
     private long startTime;

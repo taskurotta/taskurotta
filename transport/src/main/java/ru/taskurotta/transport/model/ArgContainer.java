@@ -25,6 +25,14 @@ public class ArgContainer implements Cloneable, Serializable {
         public int getValue() {
             return value;
         }
+
+        public static ValueType fromInt(int i) {
+            if (i == 0) return ValueType.PLAIN;
+            if (i == 1) return ValueType.ARRAY;
+            if (i == 2) return ValueType.COLLECTION;
+            return null;
+        }
+
     }
 
     private String className;

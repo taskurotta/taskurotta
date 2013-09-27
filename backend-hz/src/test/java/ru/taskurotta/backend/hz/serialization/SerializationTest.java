@@ -13,6 +13,8 @@ import ru.taskurotta.backend.dependency.links.Modification;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,8 +50,11 @@ public class SerializationTest {
                 setTypeClass(HzGraphDao.DecisionRow.class).
                 setImplementation(new ArgContainerSerializer()).
                 setTypeClass(ArgContainer.class).
+                setImplementation(new TaskOptionsContainerSerializer()).
+                setTypeClass(TaskOptionsContainer.class).
                 setImplementation(new ActorSchedulingOptionsContainerSerializer()).
                 setTypeClass(ActorSchedulingOptionsContainer.class);
+
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
@@ -166,16 +171,56 @@ public class SerializationTest {
     }
 
     @Test
-    public void actorSchedulingOptionsContainerSerializerTest(){
+    public void actorSchedulingOptionsContainerSerializerTest() {
         ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
         hzMap.put("actorScheduledOptionsContainer", container);
-
         ActorSchedulingOptionsContainer getted = (ActorSchedulingOptionsContainer) hzMap.get("actorScheduledOptionsContainer");
-
         assertEquals(container, getted);
+    }
+
+    @Test
+    public void taskOptionsContainerTest() {
+        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+        container.setCustomId("customId");
+        container.setStartTime(new Date().getTime());
+        container.setTaskList("taskList");
+
+        List<ArgContainer> containerList = new ArrayList<>();
+
+        ArgContainer argContainer1 = new ArgContainer();
+        argContainer1.setTaskId(UUID.randomUUID());
+        argContainer1.setClassName("simple1");
+        argContainer1.setJSONValue("jsonData1");
+        argContainer1.setPromise(false);
+        argContainer1.setReady(true);
+        argContainer1.setType(ArgContainer.ValueType.COLLECTION);
+
+        ArgContainer argContainer2 = new ArgContainer();
+        argContainer2.setTaskId(UUID.randomUUID());
+        argContainer2.setClassName("simple2");
+        argContainer2.setJSONValue("jsonData2");
+        argContainer2.setPromise(false);
+        argContainer2.setReady(true);
+        argContainer2.setType(ArgContainer.ValueType.COLLECTION);
+
+        containerList.add(argContainer1);
+        containerList.add(argContainer2);
+
+        ArgContainer[] array = new ArgContainer[containerList.size()];
+        containerList.toArray(array);
+
+        TaskOptionsContainer taskOptionsContainer = new TaskOptionsContainer(new ArgType[]{ArgType.NO_WAIT, ArgType.WAIT}, container, array);
+        hzMap.put("taskOptionsContainer", taskOptionsContainer);
+
+        TaskOptionsContainer getted = (TaskOptionsContainer) hzMap.get("taskOptionsContainer");
+
+        assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
+        assertEquals(taskOptionsContainer.getActorSchedulingOptions().getStartTime(), getted.getActorSchedulingOptions().getStartTime());
+        assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
+
     }
 
     private static Graph newRandomGraph() {

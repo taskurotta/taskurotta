@@ -52,18 +52,7 @@ public class ArgContainerSerializer implements StreamSerializer<ArgContainer> {
         int type = in.readInt();
         ArgContainer.ValueType valueType = null;
         if (type != -1) {
-            switch (type) {
-                case 0:
-                    valueType = ArgContainer.ValueType.PLAIN;
-                    break;
-                case 1:
-                    valueType = ArgContainer.ValueType.ARRAY;
-                    break;
-                case 2:
-                    valueType = ArgContainer.ValueType.COLLECTION;
-                    break;
-            }
-
+            valueType = ArgContainer.ValueType.fromInt(type);
         }
         boolean promise = in.readBoolean();
 
