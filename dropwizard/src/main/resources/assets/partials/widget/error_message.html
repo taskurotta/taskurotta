@@ -1,0 +1,27 @@
+<div class="alert alert-error">
+    <table class="table table-condensed">
+        <tr>
+            <td><h4>Status {{model.status}}</h4></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>{{model.data}}</td>
+            <td>
+                <span ng-click="detail=!detail" style="cursor:pointer;">
+                    <i ng-class="getCollapseIconClassName(detail)" popover="Detailed" popover-trigger="mouseenter" popover-placement="left"></i>
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div collapse = "!detail">
+                    <span class="muted">{{model.config | json}}</span>
+                </div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+
+
+
+</div>

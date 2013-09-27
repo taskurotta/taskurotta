@@ -350,3 +350,38 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
         replace: true
     };
 }]);
+
+consoleDirectives.directive('tskErrMessage', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            model: "="
+        },
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $window, $log, $http) {
+            $scope.detail = false;
+
+            $scope.getCollapseIconClassName = function(visible) {
+                if (visible) {
+                    return "icon-chevron-up";
+                } else {
+                    return "icon-chevron-down";
+                }
+            };
+
+            $scope.getCollapseIconText = function(visible) {
+                if (visible) {
+                    return "Hide details";
+                } else {
+                    return "Show details";
+                }
+            };
+
+        }],
+        templateUrl: "/partials/widget/error_message.html",
+        replace: true
+    };
+}]);
+
+
+

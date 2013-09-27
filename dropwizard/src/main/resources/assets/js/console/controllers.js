@@ -493,17 +493,19 @@ consoleControllers.controller("scheduleCreateController", function ($scope, tskS
     $scope.isCronValid = false;
 
     $scope.create = function() {
-        $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name) + "&allowDuplicates=" + !$scope.checkQueue, $scope.task).then(
-            function(value) {
-                $location.url("/schedule/list");
-            },
-            function(err) {
-                $scope.feedback = angular.toJson(err);
-            });
+       if($scope.isValidForm()) {
+            $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name) + "&allowDuplicates=" + !$scope.checkQueue, $scope.task).then(
+                function(value) {
+                    $location.url("/schedule/list");
+                },
+                function(err) {
+                    $scope.feedback = err;
+                });
+        }
     };
 
     $scope.validateCron = function() {
-        if ($scope.cron.length > 0) {
+        if ($scope.cron && $scope.cron.length > 0) {
             $http.get("/rest/console/schedule/validate/cron?value="+encodeURIComponent($scope.cron))
                 .then(function(value) {
                     if (value.data.length>0) {
