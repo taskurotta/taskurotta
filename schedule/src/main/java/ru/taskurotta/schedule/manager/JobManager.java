@@ -2,6 +2,7 @@ package ru.taskurotta.schedule.manager;
 
 import ru.taskurotta.schedule.JobVO;
 
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -34,5 +35,10 @@ public interface JobManager {
      * @return is job active
      */
     public boolean isActive(JobVO job);
+
+    /**
+     * @return scheduled by this manager job ids
+     */
+    public Collection<Long> getScheduledJobIds();
 
 }

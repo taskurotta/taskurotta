@@ -33,6 +33,9 @@
             </tfoot>
 
             <tbody>
+            <tr ng-if="!initialized">
+                <td colspan="3" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
             <tr ng-repeat="queue in queuesPage.items">
                 <td>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</td>
                 <td>

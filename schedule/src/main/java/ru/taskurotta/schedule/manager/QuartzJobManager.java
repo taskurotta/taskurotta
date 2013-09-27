@@ -11,6 +11,7 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -21,7 +22,11 @@ import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.server.TaskServer;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Default implementation of scheduled task manager with Quartz
@@ -78,6 +83,40 @@ public class QuartzJobManager implements JobManager {
         }
 
         logger.debug("Job name [{}] isScheduled[{}], job[{}]", job.getName(), result, job);
+        return result;
+    }
+
+
+    public Collection<Long> getScheduledJobIds() {
+        Collection<Long> result = null;
+
+        try {
+            List<String> jobGroupNames = scheduler.getJobGroupNames();
+            if (jobGroupNames!=null && !jobGroupNames.isEmpty()) {
+                result = new ArrayList<>();
+                for (String groupName : jobGroupNames) {
+                    Set<JobKey> jobKeyList = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName));
+                    if (jobKeyList!=null && !jobKeyList.isEmpty()) {
+                        for (JobKey jobKey : jobKeyList) {
+                            Long longValue = null;
+                            String jobIdStr = jobKey.getName();
+                            try {
+                                longValue = Long.parseLong(jobIdStr);
+                            } catch (Exception e) {
+                                logger.error("Cannot parse job id ["+jobIdStr+"]", e);
+                                longValue = -1l;
+                            }
+                            result.add(longValue);
+                        }
+                    }
+                }
+            }
+        } catch(SchedulerException e) {
+            String errorMessage = "Error at getting job ids: " + e.getMessage();
+            logger.error(errorMessage, e);
+            throw new RuntimeException(errorMessage);
+        }
+
         return result;
     }
 

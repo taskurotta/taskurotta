@@ -26,6 +26,7 @@ properties:
   oradb.password: "taskurotta"
   recovery.startup.run: false
   hz.queue.restore: true
+  recovery.process.cron: "0 0 0/8 * * ?"
 
 #Http server configuration:
 logging:

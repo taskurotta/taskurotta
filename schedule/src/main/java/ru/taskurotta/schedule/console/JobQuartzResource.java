@@ -70,6 +70,11 @@ public class JobQuartzResource implements JobConstants {
             }
             return Response.ok(result, MediaType.APPLICATION_JSON).build();
 
+        } else if(ACTION_NODE_COUNT.equals(action)) {
+            Collection<Long> jobIds = jobManager.getScheduledJobIds();
+            int size = jobIds!=null? jobIds.size(): 0;
+            return Response.ok(size, MediaType.APPLICATION_JSON).build();
+
         } else {
             logger.error("Unsupported combination of method[GET] and action["+action+"].");
             return Response.serverError().build();

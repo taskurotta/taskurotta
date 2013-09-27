@@ -23,6 +23,9 @@
             </thead>
 
             <tbody>
+            <tr ng-if="!initialized">
+                <td colspan="4" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
             <tr ng-repeat="actor in actorsPage.items">
                 <td>
                     {{getStartIndex(actorsPage.pageNumber, actorsPage.pageSize) + $index}}

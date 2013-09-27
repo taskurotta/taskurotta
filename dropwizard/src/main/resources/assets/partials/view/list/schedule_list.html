@@ -8,7 +8,9 @@
         </tr>
     </table>
 
-    <div ng-show="feedback.length>0" class="err-message">Error: <span>{{feedback}}</span></div>
+    <div ng-if="feedback.status>=500">
+        <tsk-err-message model="feedback"></tsk-err-message>
+    </div>
 
     <div class="well" style="margin:5px;">
 
@@ -26,6 +28,7 @@
                 <tr>
                     <th style="width: 40px;">#</th>
                     <th>Job name</th>
+                    <th>Actor ID</th>
                     <th>Cron</th>
                     <th>Next start</th>
                     <th style="width: 80px;">Status</th>
@@ -35,9 +38,17 @@
             </thead>
 
             <tbody>
-                <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.status)">
+            <tr ng-if="!initialized">
+                <td colspan="7" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
+            <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.status)">
                     <td>{{ $index + 1}} </td>
                     <td>{{ st.name }}</td>
+                    <td>
+                        <small><b>{{ st.task.actorId }}</b></small>
+                        <span class="muted"><br /><small>Method: {{st.task.method}} </small></span>
+                    </td>
+
                     <td>
                         {{ st.cron }}
                         <span ng-if="!st.allowDuplicates" class="muted"><br /><small>Queue is checked before insert</small></span>
@@ -66,6 +77,13 @@
                 </tr>
             </tbody>
         </table>
+
+        <div>
+            <span ng-if="!totalInitialized"><img src="/img/ajax-loader.gif"/></span>
+            <span ng-if="totalInitialized" class="muted">
+                Currently scheduled on node: <b>{{total}}</b>
+            </span>
+        </div>
 
     </div>
 </div>

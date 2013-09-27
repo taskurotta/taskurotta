@@ -9,7 +9,7 @@ public interface JobConstants {
 
     String ACTION_LIST = "list";
     String ACTION_CREATE = "create";
-    String ACTION_EDIT = "edit";
+    String ACTION_NODE_COUNT = "node_count";
     String ACTION_DELETE = "delete";
     String ACTION_ACTIVATE = "activate";
     String ACTION_DEACTIVATE = "deactivate";
