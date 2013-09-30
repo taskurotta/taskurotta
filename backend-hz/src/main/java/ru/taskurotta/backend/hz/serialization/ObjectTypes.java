@@ -14,6 +14,7 @@ public class ObjectTypes {
     public static final int TASK_OPTIONS_CONTAINER = 5;
     public static final int TASK_CONTAINER = 6;
     public static final int ERROR_CONTAINER = 7;
+    public static final int DECISION_CONTAINER = 8;
 
 
 }
