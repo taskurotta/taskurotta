@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.taskurotta.backend.hz.serialization.SerializationTools.readArgsContainerArray;
+import static ru.taskurotta.backend.hz.serialization.SerializationTools.writeArgsContainerArray;
+
 /**
  * User: greg
  */
@@ -34,15 +37,7 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
             out.writeInt(-1);
         }
 
-        int argContainersCount = object.getPromisesWaitFor().length;
-        if (object.getPromisesWaitFor() != null && argContainersCount > 0) {
-            out.writeInt(argContainersCount);
-            for (int i = 0; i < argContainersCount; i++) {
-                argContainerSerializer.write(out, object.getPromisesWaitFor()[i]);
-            }
-        } else {
-            out.writeInt(-1);
-        }
+        writeArgsContainerArray(out, object.getPromisesWaitFor());
     }
 
     @Override
@@ -59,15 +54,8 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
         ArgType[] argTypeArray = new ArgType[argTypeList.size()];
         argTypeList.toArray(argTypeArray);
 
-        int argContainersCount = in.readInt();
-        List<ArgContainer> argContainerList = new ArrayList<>();
-        if (argContainersCount != -1) {
-            for (int i = 0; i < argContainersCount; i++) {
-                argContainerList.add(argContainerSerializer.read(in));
-            }
-        }
-        ArgContainer[] argContainersArray = new ArgContainer[argContainerList.size()];
-        argContainerList.toArray(argContainersArray);
+
+        ArgContainer[] argContainersArray = readArgsContainerArray(in);
 
         return new TaskOptionsContainer(argTypeArray, actorSchedulingOptionsContainer, argContainersArray);
     }

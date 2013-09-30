@@ -6,5 +6,23 @@ package ru.taskurotta.transport.model;
  * Time: 16:24
  */
 public enum TaskType {
-    DECIDER_START, DECIDER_ASYNCHRONOUS, WORKER
+    DECIDER_START(0), DECIDER_ASYNCHRONOUS(1), WORKER(2);
+
+    int value;
+
+    TaskType(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+
+    public static TaskType fromInt(int i) {
+        if (i == 0) return TaskType.DECIDER_START;
+        if (i == 1) return TaskType.DECIDER_ASYNCHRONOUS;
+        if (i == 2) return TaskType.WORKER;
+        return null;
+    }
 }
