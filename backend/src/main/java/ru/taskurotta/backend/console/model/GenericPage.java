@@ -35,4 +35,14 @@ public class GenericPage<T> {
     public long getTotalCount() {
         return totalCount;
     }
+
+    @Override
+    public String toString() {
+        return "GenericPage{" +
+                "pageNumber=" + pageNumber +
+                ", totalCount=" + totalCount +
+                ", pageSize=" + pageSize +
+                ", items=" + items +
+                "} ";
+    }
 }

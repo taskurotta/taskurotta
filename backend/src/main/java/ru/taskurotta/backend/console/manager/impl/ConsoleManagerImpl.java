@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.console.manager.impl;
 
 import ru.taskurotta.backend.console.manager.ConsoleManager;
-import ru.taskurotta.backend.console.model.ActorVO;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
@@ -203,26 +202,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return tmpResult;
     }
 
-    public Collection<ActorVO> getActorList(int pageNum, int pageSize) {
-        Collection<ActorVO> result = null;
-        GenericPage<String> actorIdPage = configInfo.getActorIdList(pageNum, pageSize);
-        //TODO: implements it
-        return result;
-    }
-
     @Override
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {
         return taskInfo.getRepeatedTasks(iterationCount);
-    }
-
-    @Override
-    public void blockActor(String actorId) {
-        configInfo.blockActor(actorId);
-    }
-
-    @Override
-    public void unblockActor(String actorId) {
-        configInfo.unblockActor(actorId);
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

@@ -14,6 +14,7 @@ import java.util.Collection;
  * User: dimadin
  * Date: 23.09.13 11:20
  */
+@Deprecated //in favour of some persistent storage implementation
 public class HzJobStore implements JobStore {
 
     private HazelcastInstance hzInstance;

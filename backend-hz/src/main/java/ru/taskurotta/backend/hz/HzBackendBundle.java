@@ -1,7 +1,5 @@
 package ru.taskurotta.backend.hz;
 
-import java.util.concurrent.TimeUnit;
-
 import com.hazelcast.core.HazelcastInstance;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
@@ -17,6 +15,8 @@ import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: romario
@@ -43,7 +43,7 @@ public class HzBackendBundle implements BackendBundle {
 
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao);
-        this.configBackend = new HzConfigBackend(hazelcastInstance);
+        this.configBackend = new HzConfigBackend(hazelcastInstance, "actorPreferencesMap");
     }
 
     @Override

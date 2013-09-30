@@ -54,7 +54,7 @@
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="actorPreferencesMap" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
+            <hz:map name="${hz.actor.preferences.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
@@ -102,9 +102,22 @@
     <bean id="hzConfigBackendSupport" class="ru.taskurotta.backend.hz.support.HzConfigBackendSupport" init-method="init">
         <property name = "hzInstance" ref = "hzInstance" />
         <property name = "queuePrefix" value = "${hz.task.queue.prefix}" />
+        <property name="actorPreferencesMapName" value = "${hz.actor.preferences.map.name}" />
+    </bean>
+
+    <bean id="actorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource" >
+        <property name="actorConfigManager" ref="actorConfigManager" />
     </bean>
     <!-- /Config support -->
 
+
+    <!--  Actor config support  -->
+    <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.HzActorConfigManager">
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
+        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}" />
+    </bean>
+    <!-- /Actor config support -->
 
 
     <!-- Mongo -->
@@ -185,7 +198,8 @@
     </bean>
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
-        <constructor-arg ref="hzInstance"/>
+        <constructor-arg name = "hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}" />
     </bean>
 
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">

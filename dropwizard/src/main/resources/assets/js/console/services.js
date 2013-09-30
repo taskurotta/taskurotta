@@ -11,6 +11,24 @@ consoleServices.factory("tskSchedule", function ($resource, $http) {
     };
 });
 
+consoleServices.factory("tskActors", function ($resource, $http) {
+    var resultService = {
+        blockActor: function(actorId) {
+            return $http.post('/rest/console/actor/block/', actorId);
+        },
+
+        unblockActor: function(actorId) {
+            return $http.post('/rest/console/actor/unblock/', actorId);
+        },
+
+        listActors: function(pageNumber, pageSize) {
+            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        }
+    };
+
+    return resultService;
+});
+
 consoleServices.factory("$$data", function ($resource, $http) {
 
     var resultService = {
@@ -55,15 +73,6 @@ consoleServices.factory("$$data", function ($resource, $http) {
         },
         getTaskDecision: function(taskId, processId) {
             return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
-        },
-        blockActor: function(actorId) {
-            return $http.post('/rest/console/actor/block/', actorId);
-        },
-        unblockActor: function(actorId) {
-            return $http.post('/rest/console/actor/unblock/', actorId);
-        },
-        listActors: function(pageNumber, pageSize) {
-            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
         getMetricsOptions: function() {
             return $http.get('/rest/console/metrics/options/');

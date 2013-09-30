@@ -456,12 +456,13 @@ consoleControllers.controller("homeController", function ($scope) {
 
 });
 
-consoleControllers.controller("actorListController", function ($scope, $$data, $timeout) {
+consoleControllers.controller("actorListController", function ($scope, $$data, $timeout, tskActors, $log) {
     $scope.feedback = "";
     $scope.initialized = false;
+
     //Init paging object
     $scope.actorsPage = {
-        pageSize: 5,
+        pageSize: 10,
         pageNumber: 1,
         totalCount: 0,
         items: []
@@ -480,24 +481,20 @@ consoleControllers.controller("actorListController", function ($scope, $$data, $
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
-        $$data.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
-            $scope.actorsPage = angular.fromJson(value.data || {});
+        tskActors.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
+            $scope.actorsPage = value.data || {};
             $scope.initialized = true;
-            $log.info("actorListController: successfully updated queues state: " + angular.toJson($scope.actorsPage));
+            $log.info("actorListController: successfully updated actors list: " + angular.toJson($scope.actorsPage));
         }, function (errReason) {
             $scope.feedback = angular.toJson(errReason);
             $scope.initialized = true;
-            $log.error("actorListController: queue state update failed: " + $scope.feedback);
+            $log.error("actorListController: actor list update failed: " + $scope.feedback);
         });
 
     };
 
     //Initialization:
     $scope.update();
-
-});
-
-consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {
 
 });
 
@@ -607,6 +604,7 @@ consoleControllers.controller("scheduleListController", function ($scope, tskSch
         }, function(errReason) {
             $scope.feedback = errReason;
             $scope.initialized = true;
+            $scope.totalInitialized = true;
         });
     };
 

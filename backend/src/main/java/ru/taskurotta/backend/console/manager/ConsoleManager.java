@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.console.manager;
 
-import ru.taskurotta.backend.console.model.ActorVO;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
@@ -72,9 +71,4 @@ public interface ConsoleManager {
 
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
 
-    public void blockActor(String actorId);
-
-    public void unblockActor(String actorId);
-
-    public Collection<ActorVO> getActorList(int pageNum, int pageSize);
 }

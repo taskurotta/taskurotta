@@ -15,37 +15,38 @@
         </div>
 
         <table class="table table-striped table-bordered table-hover">
+
             <thead>
                 <th style="width: 40px;">№</th>
-                <th>Actor id</th>
+                <th>Actor ID</th>
                 <th style="width: 200px;">Last active</th>
                 <th style="width: 50px;">Compare</th>
             </thead>
 
             <tbody>
-            <tr ng-if="!initialized">
-                <td colspan="4" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
-            </tr>
-            <tr ng-repeat="actor in actorsPage.items">
-                <td>
-                    {{getStartIndex(actorsPage.pageNumber, actorsPage.pageSize) + $index}}
-                </td>
+                <tr ng-if="!initialized">
+                    <td colspan="4" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+                </tr>
+                <tr ng-repeat="actor in actorsPage.items">
+                    <td>
+                        {{getStartIndex(actorsPage.pageNumber, actorsPage.pageSize) + $index}}
+                    </td>
 
-                <td>
-                    <a ng-href="#/actors/actor?actorId={{actor.actorId}}" class="btn btn-link"><i class="icon-signal" />{{actor.actorId}}</a>
-                </td>
-                <td>
-                    {{ actor.lastActive }}
-                </td>
-                <td>
-                    <input type="checkbox" />
-                </td>
-            </tr>
+                    <td>
+                        <b>{{actor.actorId}}</b>
+                    </td>
+                    <td>
+                        <span class="muted">Not implemented</span>
+                    </td>
+                    <td>
+                        <input type="checkbox" disabled />
+                    </td>
+                </tr>
             </tbody>
 
             <tfoot>
                 <td colspan="4">
-                    <div tsk-paginator generic-page="processesPage" update-action="update()"></div>
+                    <div tsk-paginator generic-page="actorsPage" update-action="update()"></div>
                 </td>
             </tfoot>
 
@@ -55,11 +56,11 @@
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                     <td style="text-align:left;">
-                        <div>Total: <b>{{actorsPage.totalCount}}</b> actors</div>
+                        <div>Total: <b>{{actorsPage.totalCount || 0}}</b> actors</div>
                     </td>
                     <td style="text-align:right;">
                         <div>
-                            <a ng-href="" class="btn btn-small" type="button"><b>Compare</b></a>
+                            <a ng-href="" class="btn btn-small" type="button" disabled><b>Compare</b></a>
                         </div>
                     </td>
                 </tr>
