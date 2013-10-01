@@ -169,7 +169,6 @@
         <constructor-arg ref="hzInstance"/>
     </bean>
 
-    <bean id="voidCheckpointService" class="ru.taskurotta.backend.checkpoint.VoidCheckpointService"/>
 
     <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
