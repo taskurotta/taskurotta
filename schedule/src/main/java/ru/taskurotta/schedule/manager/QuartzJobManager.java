@@ -73,6 +73,10 @@ public class QuartzJobManager implements JobManager {
     }
 
     public boolean isActive(JobVO job) {
+        if (job == null) {
+            throw new IllegalArgumentException("Cannot check state for null job");
+        }
+
         boolean result = false;
 
         try {

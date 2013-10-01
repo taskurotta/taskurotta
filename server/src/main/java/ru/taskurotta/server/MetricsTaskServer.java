@@ -17,13 +17,6 @@ public class MetricsTaskServer implements TaskServer {
     private TaskServer taskServer;
     private MetricFactory metricsFactory;
 
-    public static final String START_PROCESS = "startProcess";
-    public static final String POLL = "poll";
-    public static final String SUCCESSFUL_POLL = "successfulPoll";
-    public static final String RELEASE = "release";
-    public static final String EXECUTION_TIME = "executionTime";
-    public static final String ERROR_DECISION = "errorDecision";
-
     public MetricsTaskServer(TaskServer taskServer) {
         this.taskServer = taskServer;
     }
@@ -38,9 +31,9 @@ public class MetricsTaskServer implements TaskServer {
         taskServer.startProcess(task);
 
         long invocationTime = System.currentTimeMillis()-startTime;
-        Metric startProcessMetric = metricsFactory.getInstance(START_PROCESS);
+        Metric startProcessMetric = metricsFactory.getInstance(MetricName.START_PROCESS.getValue());
         startProcessMetric.mark(actorId, invocationTime);
-        startProcessMetric.mark(START_PROCESS, invocationTime);
+        startProcessMetric.mark(MetricName.START_PROCESS.getValue(), invocationTime);
 
     }
 
@@ -54,14 +47,14 @@ public class MetricsTaskServer implements TaskServer {
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
         long invocationTime = System.currentTimeMillis() - startTime;
-        Metric pollMetric = metricsFactory.getInstance(POLL);
+        Metric pollMetric = metricsFactory.getInstance(MetricName.POLL.getValue());
         pollMetric.mark(actorId, invocationTime);
-        pollMetric.mark(POLL, invocationTime);
+        pollMetric.mark(MetricName.POLL.getValue(), invocationTime);
 
         if (taskContainer!=null) {
-            Metric successPollMetric = metricsFactory.getInstance(SUCCESSFUL_POLL);
+            Metric successPollMetric = metricsFactory.getInstance(MetricName.SUCCESSFUL_POLL.getValue());
             successPollMetric.mark(actorId, invocationTime);
-            successPollMetric.mark(SUCCESSFUL_POLL, invocationTime);
+            successPollMetric.mark(MetricName.SUCCESSFUL_POLL.getValue(), invocationTime);
         }
 
         return taskContainer;
@@ -78,18 +71,18 @@ public class MetricsTaskServer implements TaskServer {
 
         long invocationTime = System.currentTimeMillis() - startTime;
 
-        Metric releaseMetric = metricsFactory.getInstance(RELEASE);
+        Metric releaseMetric = metricsFactory.getInstance(MetricName.RELEASE.getValue());
         releaseMetric.mark(actorId, invocationTime);
-        releaseMetric.mark(RELEASE, invocationTime);
+        releaseMetric.mark(MetricName.RELEASE.getValue(), invocationTime);
 
-        Metric execTimeMetric = metricsFactory.getInstance(EXECUTION_TIME);
+        Metric execTimeMetric = metricsFactory.getInstance(MetricName.EXECUTION_TIME.getValue());
         execTimeMetric.mark(actorId, taskResult.getExecutionTime());
-        execTimeMetric.mark(EXECUTION_TIME, taskResult.getExecutionTime());
+        execTimeMetric.mark(MetricName.EXECUTION_TIME.getValue(), taskResult.getExecutionTime());
 
         if (taskResult.containsError()) {
-            Metric errMetric = metricsFactory.getInstance(ERROR_DECISION);
+            Metric errMetric = metricsFactory.getInstance(MetricName.ERROR_DECISION.getValue());
             errMetric.mark(actorId, taskResult.getExecutionTime());
-            errMetric.mark(ERROR_DECISION, taskResult.getExecutionTime());
+            errMetric.mark(MetricName.ERROR_DECISION.getValue(), taskResult.getExecutionTime());
         }
 
     }

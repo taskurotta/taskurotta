@@ -3,6 +3,7 @@ package ru.taskurotta.backend.console.retriever;
 import ru.taskurotta.backend.statistics.DataPointVO;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * Interface for retrieving data on metrics
@@ -40,5 +41,10 @@ public interface MetricsDataRetriever {
      * Retrieve aggregated statistic for given metric and dataset
      */
     DataPointVO<Double>[] getMeansForLastDay(String metricName, String datasetName);
+
+    /**
+     * @return last update date
+     */
+    public Date getLastActivityTime(String metricName, String datasetName);
 
 }

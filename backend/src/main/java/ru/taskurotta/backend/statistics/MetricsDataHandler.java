@@ -7,9 +7,11 @@ import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
@@ -34,6 +36,10 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
         private AtomicReferenceArray<DataPointVO<Long>> dsCounts;
         private AtomicReferenceArray<DataPointVO<Double>> dsMean;
 
+        private AtomicLong updated = new AtomicLong(-1);
+        private AtomicLong lastActive = new AtomicLong(-1);
+
+
         public DataRowVO (int size, String metricName, String dataSetName) {
             this.metricName = metricName;
             this.dataSetName = dataSetName;
@@ -48,6 +54,11 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
             int position = getPosition();
             this.dsCounts.set(position, new DataPointVO<Long>(count, measureTime));
             this.dsMean.set(position, new DataPointVO<Double>(mean, measureTime));
+
+            this.updated.set(new Date().getTime());
+            if (count>0 && lastActive.get()<measureTime) {
+                this.lastActive.set(measureTime);
+            }
             return position;
         }
 
@@ -86,6 +97,14 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
                 }
             }
             return result/this.size;
+        }
+
+        public long getUpdated() {
+            return this.updated.get();
+        }
+
+        public long getLatestActivity() {
+            return this.lastActive.get();
         }
 
     }
@@ -221,6 +240,26 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
                 result[i] = row.dsMean.get(i);
             }
         }
+        return result;
+    }
+
+    @Override
+    public Date getLastActivityTime(String metricName, String datasetName) {
+        Date result = null;
+        String key = getKey(metricName, datasetName);
+        DataRowVO row = lastHourDataHolder.get(key);
+
+        if (row == null) {
+            row = lastDayDataHolder.get(getKey(metricName, datasetName));
+        }
+
+        if (row != null) {
+            long latestActivity = row.getLatestActivity();
+            if (latestActivity>0) {
+                result = new Date(latestActivity);
+            }
+        }
+
         return result;
     }
 

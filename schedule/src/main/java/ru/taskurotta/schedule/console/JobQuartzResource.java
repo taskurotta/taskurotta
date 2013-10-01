@@ -185,10 +185,6 @@ public class JobQuartzResource implements JobConstants {
         return result;
     }
 
-    public Response validate() {
-        return null;
-    }
-
     @Required
     public void setJobStore(JobStore jobStore) {
         this.jobStore = jobStore;
