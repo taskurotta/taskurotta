@@ -167,6 +167,7 @@
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
         <constructor-arg ref="hzInstance"/>
+        <constructor-arg name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}"/>
     </bean>
 
 
