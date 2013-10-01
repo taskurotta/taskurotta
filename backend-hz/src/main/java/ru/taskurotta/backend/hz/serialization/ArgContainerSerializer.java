@@ -33,7 +33,12 @@ public class ArgContainerSerializer implements StreamSerializer<ArgContainer> {
 
     private void serializePlain(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
         writeString(out, argContainer.getClassName());
-        UUIDSerializer.write(out, argContainer.getTaskId());
+        if (argContainer.getTaskId() == null) {
+            out.writeBoolean(false);
+        } else {
+            out.writeBoolean(true);
+            UUIDSerializer.write(out, argContainer.getTaskId());
+        }
         out.writeBoolean(argContainer.isReady());
         writeString(out, argContainer.getJSONValue());
         if (argContainer.getType() != null) {
@@ -43,10 +48,15 @@ public class ArgContainerSerializer implements StreamSerializer<ArgContainer> {
         }
         out.writeBoolean(argContainer.isPromise());
     }
+
     private ArgContainer deserializePlain(ObjectDataInput in) throws IOException {
         ArgContainer arg = new ArgContainer();
         String className = readString(in);
-        UUID taskId = UUIDSerializer.read(in);
+        UUID taskId = null;
+        boolean taskIdSetted = in.readBoolean();
+        if (taskIdSetted) {
+            taskId = UUIDSerializer.read(in);
+        }
         boolean ready = in.readBoolean();
         String jsonValue = readString(in);
         int type = in.readInt();

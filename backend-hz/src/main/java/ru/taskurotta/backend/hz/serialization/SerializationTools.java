@@ -18,28 +18,38 @@ public class SerializationTools {
     private static TaskContainerSerializer taskContainerSerializer = new TaskContainerSerializer();
 
     public static void writeString(ObjectDataOutput out, String str) throws IOException {
-        int size = str.length();
-        out.writeInt(size);
-        for (int i = 0; i < size; i++) {
-            out.writeChar(str.charAt(i));
+        if (str != null && !str.equals("")) {
+            out.writeBoolean(true);
+            int size = str.length();
+            out.writeInt(size);
+            for (char ch : str.toCharArray()) {
+                out.writeChar(ch);
+            }
+        } else {
+            out.writeBoolean(false);
         }
     }
 
     public static String readString(ObjectDataInput in) throws IOException {
-        int size = in.readInt();
-        List<Character> chars = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            chars.add(in.readChar());
+        boolean strExist = in.readBoolean();
+        if (strExist) {
+            int size = in.readInt();
+            List<Character> chars = new ArrayList<>();
+            for (int i = 0; i < size; i++) {
+                chars.add(in.readChar());
+            }
+            StringBuilder sb = new StringBuilder(chars.size());
+            for (Character c : chars)
+                sb.append(c);
+            return sb.toString();
+        } else {
+            return null;
         }
-        StringBuilder sb = new StringBuilder(chars.size());
-        for (Character c : chars)
-            sb.append(c);
-        return sb.toString();
     }
 
 
     public static void writeArgsContainerArray(ObjectDataOutput out, ArgContainer[] argContainers) throws IOException {
-        int argContainersCount = argContainers.length;
+        int argContainersCount = (argContainers != null) ? argContainers.length : -1;
         if (argContainers != null && argContainersCount > 0) {
             out.writeInt(argContainersCount);
             for (int i = 0; i < argContainersCount; i++) {
