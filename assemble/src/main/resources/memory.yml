@@ -10,35 +10,6 @@ assets:
 actorConfig:
   actorPreferences:
     - id: "default"
-      timeoutPolicies:
-#        PROCESS_START_TO_CLOSE: "skipping holidays 1 day timeout"
-#        PROCESS_SCHEDULE_TO_START: "timeout 15 seconds"
-#        PROCESS_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
-        TASK_START_TO_CLOSE: "TIMEOUT: 15 seconds"
-#        TASK_SCHEDULE_TO_START: "timeout 15 seconds"
-#        TASK_SCHEDULE_TO_CLOSE: "timeout 15 seconds"
-#        TASK_POLL_TO_COMMIT: "timeout 15 seconds"
-#        TASK_RELEASE_TO_COMMIT: "timeout 15 seconds"
-
-#List of expiration policies available for actors:
-#  expirationPolicies:
-#    - name: "timeout 15 seconds"
-#      className: "ru.taskurotta.server.config.expiration.impl.TimeoutPolicy"
-#      properties:
-#        timeout: 15
-#        timeUnit: "SECONDS"
-#    - name: "retriable 60 seconds timeout"
-#      className: "ru.taskurotta.server.config.expiration.impl.TimeoutWithFixedRetryPolicy"
-#      properties:
-#        timeout: 60
-#        timeUnit: "SECONDS"
-#        retry: 10
-#    - name: "skipping holidays 1 day timeout"
-#      className: "ru.taskurotta.server.config.expiration.impl.SkippingHolidaysTimeoutPolicy"
-#      properties:
-#        timeout: "1 days"
-#        location: "target/classes/holidays.txt"
-#        format: "yyyy-MM-dd"
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:

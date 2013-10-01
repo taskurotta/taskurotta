@@ -72,6 +72,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         StressTaskCreator.CAN_WORK.set(false);
                         System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime - startTime));
                         taskCount.set(0);
+                        if (StressTaskCreator.LATCH != null) {
+                            StressTaskCreator.LATCH.countDown();
+                        }
                         if (exitAfterAll) {
                             System.exit(0);
                         }

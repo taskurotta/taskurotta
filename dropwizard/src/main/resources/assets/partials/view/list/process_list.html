@@ -30,6 +30,9 @@
             </tfoot>
 
             <tbody>
+            <tr ng-if="!initialized">
+                <td colspan="6" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
             <tr ng-repeat="process in processesPage.items">
                 <td>
                     {{getStartIndex(processesPage.pageNumber, processesPage.pageSize) + $index}}

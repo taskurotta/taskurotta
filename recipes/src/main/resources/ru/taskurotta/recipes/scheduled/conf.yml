@@ -1,0 +1,42 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/scheduled/context.xml
+        properties:
+          endpoint: "http://localhost:8811"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/scheduled/context.xml
+        properties:
+          endpoint: "http://localhost:8811"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+
+policy:
+  - MainPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 1
+          maximumRetryIntervalSeconds: 30
+          maximumAttempts: 10
+
+actor:
+  - LoggingWorker:
+      actorInterface: ru.taskurotta.recipes.scheduled.TimeLoggerImpl
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      policyConfig: MainPolicyConfig
+      count: 5
+      properties:
+        failover: "25 SECONDS"

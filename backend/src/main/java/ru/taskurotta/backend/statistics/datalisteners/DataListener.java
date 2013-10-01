@@ -9,11 +9,4 @@ public interface DataListener {
 
     void handle(String metricName, String datasetName, long count, double mean, long currentTime);
 
-//    long[] getHourCounts();
-//
-//    long[] getDayCounts();
-//
-//    double[] getHourMeans();
-//
-//    double[] getDayMeans();
 }

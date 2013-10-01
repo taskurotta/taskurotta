@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.dependency.links;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,20 +27,17 @@ public class Modification implements Serializable {
     public void linkItem(UUID thisItem, UUID... waitForItems) {
 
         if (links == null) {
-            links = new HashMap<UUID, Set<UUID>>();
+            links = new HashMap<>();
         }
 
         Set<UUID> knownWaitForItems = links.get(thisItem);
 
         if (knownWaitForItems == null) {
-            knownWaitForItems = new HashSet<UUID>();
+            knownWaitForItems = new HashSet<>();
             links.put(thisItem, knownWaitForItems);
         }
 
-        for (UUID waitForItem : waitForItems) {
-            knownWaitForItems.add(waitForItem);
-        }
-
+		Collections.addAll(knownWaitForItems, waitForItems);
     }
 
     public UUID getCompletedItem() {
@@ -60,7 +58,7 @@ public class Modification implements Serializable {
 
     public void addNewItem(UUID newItem) {
         if (newItems == null) {
-            newItems = new HashSet<UUID>();
+            newItems = new HashSet<>();
         }
         newItems.add(newItem);
     }

@@ -17,9 +17,10 @@ consoleControllers.controller("rootController", function ($rootScope, $scope, $l
     };
 });
 
-consoleControllers.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
+consoleControllers.controller("queueListController", function ($scope, $$data, $$timeUtil, $log, $timeout) {
 
     $scope.feedback = "";
+    $scope.initialized = false;
 
     //Init paging object
     $scope.queuesPage = {
@@ -45,9 +46,11 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
         $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize).then(function (value) {
             $scope.queuesPage = angular.fromJson(value.data || {});
             $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
+            $scope.initialized = true;
         }, function (errReason) {
             $scope.feedback = angular.toJson(errReason);
             $log.error("queueListController: queue state update failed: " + $scope.feedback);
+            $scope.initialized = true;
         });
 
     };
@@ -97,14 +100,18 @@ consoleControllers.controller("processListController", function ($scope, $$data,
         items: []
     };
 
+    $scope.initialized = false;
+
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
         $$data.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize).then(function (value) {
             $scope.processesPage = angular.fromJson(value.data || {});
+            $scope.initialized = true;
             $log.info("processListController: successfully updated processes list");
         }, function (errReason) {
             $scope.feedback = errReason;
+            $scope.initialized = true;
             $log.error("processListController: process list update failed: " + errReason);
         });
 
@@ -119,6 +126,7 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
     $scope.feedback = "";
+    $scope.initialized = false;
 
     $scope.update = function () {
         $$data.getProcess($routeParams.processId).then(function (value) {
@@ -127,14 +135,17 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
 
             $$data.getProcessTree($routeParams.processId, $scope.process.startTaskUuid).then(function (value) {
                 $scope.taskTree = angular.fromJson(value.data || {});
+                $scope.initialized = true;
                 $log.info("processCardController: successfully updated process[" + $routeParams.processId + "]/["+$scope.process.startTaskUuid+"] tree");
             }, function (errReason) {
                 $scope.feedback = angular.toJson(errReason);
+                $scope.initialized = true;
                 $log.error("processCardController: process[" + $routeParams.processId + "] tree update failed: " + $scope.feedback);
             });
 
         }, function (errReason) {
             $scope.feedback = angular.toJson(errReason);
+            $scope.initialized = true;
             $log.error("processCardController: process[" + $routeParams.processId + "] update failed: " + $scope.feedback);
         });
     };
@@ -166,6 +177,7 @@ consoleControllers.controller("processSearchController", function ($scope, $$dat
 consoleControllers.controller("taskListController", function ($scope, $$data, $log) {
 
     $scope.feedback = "";
+    $scope.initialized = false;
 
     //Init paging object
     $scope.tasksPage = {
@@ -180,9 +192,11 @@ consoleControllers.controller("taskListController", function ($scope, $$data, $l
 
         $$data.listTasks($scope.tasksPage.pageNumber, $scope.tasksPage.pageSize).then(function (value) {
             $scope.tasksPage = angular.fromJson(value.data || {});
+            $scope.initialized = true;
             $log.info("taskListController: successfully updated tasks page");
         }, function (errReason) {
             $scope.feedback = angular.toJson(errReason);
+            $scope.initialized = true;
             $log.error("queueListController: tasks page update failed: " + $scope.feedback);
         });
 
@@ -200,6 +214,8 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
     $scope.taskId = $routeParams.taskId;
     $scope.processId = $routeParams.processId;
 
+    $scope.initialized = false;
+
     $scope.feedback = "";
 
     $scope.update = function () {
@@ -209,23 +225,28 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
 
             $$data.getTaskTree($routeParams.taskId, $routeParams.processId).then(function (value) {
                 $scope.taskTree = angular.fromJson(value.data || {});
+                $scope.initialized = true;
                 $log.info("taskController: successfully updated task tree[" + $routeParams.taskId + "] content");
 
                 $$data.getTaskDecision($routeParams.taskId, $routeParams.processId).then(function (value) {
                     $scope.taskDecision = angular.fromJson(value.data || {});
+                    $scope.initialized = true;
                     $log.info("taskController: successfully updated task decision[" + $routeParams.taskId + "] content");
                 }, function (errReason) {
                     $scope.feedback = angular.toJson(errReason);
+                    $scope.initialized = true;
                     $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + $scope.feedback);
                 });
 
             }, function (errReason) {
                 $scope.feedback = angular.toJson(errReason);
+                $scope.initialized = true;
                 $log.error("taskController: task[" + $routeParams.taskId + "] tree update failed: " + $scope.feedback);
             });
 
         }, function (errReason) {
             $scope.feedback = angular.toJson(errReason);
+            $scope.initialized = true;
             $log.error("taskController: task[" + $routeParams.taskId + "] update failed: " + $scope.feedback);
         });
     };
@@ -239,15 +260,19 @@ consoleControllers.controller("taskSearchController", function ($scope, $routePa
     $scope.processId = $routeParams.processId || '';
     $scope.tasks = [];
 
+    $scope.initialized = false;
+
     $scope.update = function () {
         if($scope.taskId || $scope.processId) {
             $$data.findTasks($scope.processId, $scope.taskId).then(function (value) {
                 $scope.tasks = angular.fromJson(value.data || []);
                 $location.search("processId", $scope.processId);
                 $location.search("taskId", $scope.taskId);
+                $scope.initialized = true;
                 $log.info("taskSearchController: found [" + $scope.tasks.length + "] tasks");
             }, function (errReason) {
                 $scope.feedback = angular.toJson(errReason);
+                $scope.initialized = true;
                 $log.error("taskSearchController: task search update failed: " + $scope.feedback);
             });
         }
@@ -310,10 +335,22 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 
 });
 
-consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location) {
+consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
+    $scope.dataHolder = [];
+    $scope.smoothRates = [-1, 2, 3, 5, 7, 10, 20, 30, 100];
+
     $scope.collapse = {
         filter: false,
-        plot: false
+        plot: false,
+        table: true
+    };
+
+    $scope.getTableData = function () {
+        if($scope.collapse.table) {
+            return [];
+        } else {
+            return $scope.dataHolder;
+        }
     };
     $scope.actorIds = [];
     $scope.metricsOptions = {};
@@ -321,6 +358,7 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
     //selected objects
     $scope.selection = {
         showDatasets: false,
+        smoothRate: -1,
         omitZeroes: false,
         datasets: {},
         metric: {},
@@ -344,9 +382,25 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
 
 
     $scope.getDatasetList = function() {
-        if($scope.metricsOptions.dataSetDesc && $scope.selection.metric.value) {
-            return $scope.metricsOptions.dataSetDesc[$scope.selection.metric.value];
+        var result = [];
+        if(angular.isDefined($scope.selection.metric.value)
+            && angular.isDefined($scope.metricsOptions.dataSetDesc)
+            && angular.isDefined($scope.metricsOptions.dataSetDesc)) {
+            var allDatasetsForMetric = $scope.metricsOptions.dataSetDesc[$scope.selection.metric.value];
+            if(allDatasetsForMetric) {//TODO: use filter?
+                for(var i = 0; i<allDatasetsForMetric.length; i++) {
+                    if($scope.selection.showDatasets || (allDatasetsForMetric[i].general == !$scope.selection.showDatasets)) {
+                        result.push(allDatasetsForMetric[i]);
+                    }
+                }
+            }
         }
+
+        if (result.length == 0) {
+            $scope.selection.datasets = {};
+        }
+
+        return result;
     };
 
     $scope.getDataSetUrl = function() {
@@ -357,13 +411,14 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         var metric = $scope.selection.metric.value;
         var action = "data";
         var zeroes = !$scope.selection.omitZeroes;
+        var smooth = $scope.selection.smoothRate;
 
         if($scope.selection.actorSpecific) {
             action = "actorData";
         }
 
         if (!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
-            return "/rest/console/metrics/"+action+"/?zeroes="+zeroes+"&metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset);
+            return "/rest/console/metrics/"+action+"/?zeroes="+zeroes+"&metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset) + "&smooth=" + smooth;
         }
         return "";
     };
@@ -378,7 +433,6 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         $scope.metricsOptions = angular.fromJson(value.data || {});
         $log.info("metricsController: metricsOptions getted are: " + angular.toJson(value.data));
 
-
         //Select first available values by default
         if($scope.metricsOptions.scopes && $scope.metricsOptions.scopes.length>0) {
             $scope.selection.scopeMode = $scope.metricsOptions.scopes[0];
@@ -389,10 +443,9 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         if($scope.metricsOptions.dataTypes && $scope.metricsOptions.dataTypes.length>0) {
             $scope.selection.dataMode = $scope.metricsOptions.dataTypes[0];
         }
-        if($scope.metricsOptions.generalMetrics && $scope.metricsOptions.generalMetrics.length>0) {
-            $scope.selection.metric = $scope.metricsOptions.generalMetrics[0];
+        if($scope.metricsOptions.metricDesc && $scope.metricsOptions.metricDesc.length>0) {
+            $scope.selection.metric = $scope.metricsOptions.metricDesc[0];
         }
-
 
     });
 
@@ -400,14 +453,189 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
 });
 
 consoleControllers.controller("homeController", function ($scope) {
+
 });
 
-consoleControllers.controller("actorListController", function ($scope, $$data, $timeout) {
+consoleControllers.controller("actorListController", function ($scope, $$data, $timeout, tskActors, $log) {
+    $scope.feedback = "";
+    $scope.initialized = false;
+
+    //Init paging object
+    $scope.actorsPage = {
+        pageSize: 10,
+        pageNumber: 1,
+        totalCount: 0,
+        items: []
+    };
+
+    $scope.totalTasks = function () {
+        var result = 0;
+        if($scope.actorsPage.items) {
+            for (var i = 0; i < $scope.actorsPage.items.length; i++) {
+                result = result + $scope.actorsPage.items[i].count;
+            }
+        }
+        return result;
+    };
+
+    //Updates queues states  by polling REST resource
+    $scope.update = function () {
+
+        tskActors.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
+            $scope.actorsPage = value.data || {};
+            $scope.initialized = true;
+            $log.info("actorListController: successfully updated actors list: " + angular.toJson($scope.actorsPage));
+        }, function (errReason) {
+            $scope.feedback = angular.toJson(errReason);
+            $scope.initialized = true;
+            $log.error("actorListController: actor list update failed: " + $scope.feedback);
+        });
+
+    };
+
+    //Initialization:
+    $scope.update();
+
 });
-consoleControllers.controller("actorsController", function ($scope, $$data, $timeout) {
-});
+
 consoleControllers.controller("aboutController", function ($scope) {
+
 });
+
+consoleControllers.controller("scheduleCreateController", function ($scope, tskSchedule, $log, $http, $location) {
+    $scope.name = "";
+    $scope.feedback = "";
+    $scope.cron = "";
+    $scope.checkQueue = false;
+    $scope.task = {
+        type: "WORKER_SCHEDULED",
+        method: "",
+        actorId: ""
+    };
+    $scope.types = ["WORKER_SCHEDULED", "DECIDER_START"];
+
+    $scope.isCronValid = false;
+
+    $scope.create = function() {
+       if($scope.isValidForm()) {
+            $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name) + "&allowDuplicates=" + !$scope.checkQueue, $scope.task).then(
+                function(value) {
+                    $location.url("/schedule/list");
+                },
+                function(err) {
+                    $scope.feedback = err;
+                });
+        }
+    };
+
+    $scope.validateCron = function() {
+        if ($scope.cron && $scope.cron.length > 0) {
+            $http.get("/rest/console/schedule/validate/cron?value="+encodeURIComponent($scope.cron))
+                .then(function(value) {
+                    if (value.data.length>0) {
+                        $scope.isCronValid = false;
+                    } else {
+                        $scope.isCronValid = true;
+                    }
+                }, function(errMes) {
+                    $scope.feedback = angular.toJson(errMes);
+                });
+        }
+    };
+
+    $scope.isValidForm = function() {
+        var exists = angular.isDefined($scope.name) && angular.isDefined($scope.isCronValid) && angular.isDefined($scope.task.method) && angular.isDefined($scope.task.actorId);
+        return exists && $scope.name.length>0 && $scope.isCronValid && $scope.task.method.length>0 && $scope.task.actorId.length>0;
+    }
+
+});
+
+consoleControllers.controller("scheduleListController", function ($scope, tskSchedule, $http, $log) {
+
+    $scope.scheduledTasks = [];
+    $scope.feedback = {};
+
+    $scope.initialized = false;
+
+    $scope.total = "undefined";
+    $scope.totalInitialized = false;
+
+
+    $scope.getStatusClassName = function(status) {
+        var result = "warning";
+        if(status == -2) {
+            result = "error";
+        } else if(status == -1) {
+            result = "info";
+        } else if(status == 1) {
+            result = "success";
+        }
+
+        return result;
+    };
+
+    $scope.getStatusText = function(status) {
+        var result = "Undefined status";
+        if(status == -2) {
+            result = "Errored";
+        } else if(status == -1) {
+            result = "Inactive";
+        } else if(status == 1) {
+            result = "Active";
+        }
+
+        return result;
+    };
+
+
+    $scope.update = function() {
+        $http.get("/rest/console/schedule/list").then(function(value) {
+            $scope.scheduledTasks = value.data;
+            $scope.initialized = true;
+
+            $http.get("/rest/console/schedule/node_count").then(function(value){
+                $scope.total = value.data || "undefined";
+                $scope.totalInitialized = true;
+            }, function(errValue) {
+                $scope.total = "undefined";
+                $scope.totalInitialized = true;
+            });
+
+        }, function(errReason) {
+            $scope.feedback = errReason;
+            $scope.initialized = true;
+            $scope.totalInitialized = true;
+        });
+    };
+
+    $scope.activate = function(id) {
+        $http.post("/rest/console/schedule/activate/?id=" + id, id).then(function(value) {
+            $scope.update();
+        }, function(errReason) {
+            $scope.feedback = errReason;
+        });
+    };
+
+    $scope.deactivate = function(id) {
+        $http.post("/rest/console/schedule/deactivate/?id="+id, id).then(function(value) {
+            $scope.update();
+        }, function(errReason) {
+            $scope.feedback = errReason;
+        });
+    };
+
+    $scope.delete = function(id) {
+        $http.post("/rest/console/schedule/delete/?id="+id, id).then(function(value) {
+            $scope.update();
+        }, function(errReason) {
+            $scope.feedback = errReason;
+        });
+    };
+
+    $scope.update();
+
+});
+
 
 
 

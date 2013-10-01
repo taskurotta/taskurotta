@@ -1,0 +1,89 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:10px;">
+                <h4>Scheduled tasks</h4>
+            </td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <div ng-if="feedback.status>=500">
+        <tsk-err-message model="feedback"></tsk-err-message>
+    </div>
+
+    <div class="well" style="margin:5px;">
+
+        <div style="float: left;">
+            <a ng-href="#/schedule/create" class="btn btn-small" popover="Add scheduled task" popover-trigger="mouseenter"><i class="icon-plus"></i></a><span class="muted">&nbsp;add job</span>
+        </div>
+
+        <div style="float: right;">
+            <img id="loading" src="/img/ajax-loader.gif" style="display: none;" />
+            <a class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></a>
+        </div>
+
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">#</th>
+                    <th>Job name</th>
+                    <th>Actor ID</th>
+                    <th>Cron</th>
+                    <th>Next start</th>
+                    <th style="width: 80px;">Status</th>
+                    <th>Actions</th>
+
+                </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-if="!initialized">
+                <td colspan="7" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
+            <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.status)">
+                    <td>{{ $index + 1}} </td>
+                    <td>{{ st.name }}</td>
+                    <td>
+                        <small><b>{{ st.task.actorId }}</b></small>
+                        <span class="muted"><br /><small>Method: {{st.task.method}} </small></span>
+                    </td>
+
+                    <td>
+                        {{ st.cron }}
+                        <span ng-if="!st.allowDuplicates" class="muted"><br /><small>Queue is checked before insert</small></span>
+                    </td>
+                    <td>
+                        <span ng-if="st.status==1">
+                            <small>{{ st.nextExecutionTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
+                        </span>
+                    </td>
+                    <td>
+                        <table cellspacing="0" cellpadding="0">
+                            <tr ng-class="getStatusClassName(st.status)">
+                                <td>
+                                    <span ng-class="'badge badge-' + getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
+                                </td>
+                                <td ng-if="st.status==1 && st.local"><i class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" /></td>
+                                <td ng-if="st.status==1 && !st.local"><i class="icon-globe" popover="Scheduled on some remote node" popover-trigger="mouseenter" /></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td>
+                        <a ng-if="st.status==-1" class="btn btn-small" ng-click="activate(st.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>
+                        <a ng-if="st.status==1" class="btn btn-small" ng-click="deactivate(st.id)" popover="Stop job" popover-trigger="mouseenter"><i class="icon-stop"></i></a>
+                        <a class="btn btn-small" ng-click="delete(st.id)" popover="Delete job" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div>
+            <span ng-if="!totalInitialized"><img src="/img/ajax-loader.gif"/></span>
+            <span ng-if="totalInitialized" class="muted">
+                Currently scheduled on node: <b>{{total}}</b>
+            </span>
+        </div>
+
+    </div>
+</div>

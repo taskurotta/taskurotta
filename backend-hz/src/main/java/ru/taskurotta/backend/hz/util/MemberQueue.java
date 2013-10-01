@@ -217,6 +217,11 @@ public class MemberQueue<E> implements IQueue<E> {
     }
 
     @Override
+    public String getServiceName() {
+        return null;
+    }
+
+    @Override
     public String addItemListener(ItemListener<E> eItemListener, boolean b) {
         //To change body of implemented methods use File | Settings | File Templates.
         return null;

@@ -12,34 +12,31 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Metric {
 
     private final Map<String, CheckPoint> dataSets = new ConcurrentHashMap<>();
-    private final CheckPoint mainDataSet = new CheckPoint();
     private String name;
 
     public Metric(String name) {
         this.name = name;
     }
 
-    public void mark(String actorId, long period) {
-        this.mainDataSet.mark(period);
+    public void mark(String dataSetName, long period) {
 
-        if (!dataSets.containsKey(actorId)) {
+        if (!dataSets.containsKey(dataSetName)) {
             synchronized (dataSets) {
-                if (!dataSets.containsKey(actorId)) {
-                    dataSets.put(actorId, new CheckPoint());
+                if (!dataSets.containsKey(dataSetName)) {
+                    dataSets.put(dataSetName, new CheckPoint());
                 }
             }
         }
-        CheckPoint actorCheckpoint = dataSets.get(actorId);
 
-        actorCheckpoint.mark(period);
+        CheckPoint dataSetCheckpoint = dataSets.get(dataSetName);
+        dataSetCheckpoint.mark(period);
 
     }
 
     public void dump(DataListener dataListener) {
-        mainDataSet.dumpCurrentState(dataListener, name, name);
-        for (String actorId: dataSets.keySet()) {
-            CheckPoint chp = dataSets.get(actorId);
-            chp.dumpCurrentState(dataListener, name, actorId);
+        for (String dsName: dataSets.keySet()) {
+            CheckPoint chp = dataSets.get(dsName);
+            chp.dumpCurrentState(dataListener, name, dsName);
         }
     }
 

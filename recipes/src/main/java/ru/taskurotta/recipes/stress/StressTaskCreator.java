@@ -22,15 +22,19 @@ import java.util.concurrent.locks.ReentrantLock;
 public class StressTaskCreator implements Runnable, ApplicationListener<ContextRefreshedEvent> {
 
     private final static Logger log = LoggerFactory.getLogger(StressTaskCreator.class);
-    public static final int SLEEP_TIME = 30000;
 
     private ClientServiceManager clientServiceManager;
 
 
     private static int THREADS_COUNT = 100;
 
+    private int countOfCycles = 125;
+
     public static final Lock MONITOR = new ReentrantLock(true);
+    public static CountDownLatch LATCH;
     public static final AtomicBoolean CAN_WORK = new AtomicBoolean(false);
+
+    private ExecutorService executorService;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -44,8 +48,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
         MONITOR.lock();
-        ExecutorService executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-
         try {
             CAN_WORK.set(false);
             final CountDownLatch latch = new CountDownLatch(1);
@@ -73,6 +75,14 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         }
     }
 
+    public int getCountOfCycles() {
+        return countOfCycles;
+    }
+
+    public void setCountOfCycles(int countOfCycles) {
+        this.countOfCycles = countOfCycles;
+    }
+
     @Override
     public void run() {
         Console console = System.console();
@@ -80,14 +90,24 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         if (console != null) {
             DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
             MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
-            System.out.println("Infinity cycle started");
-            while (true) {
+            System.out.println(countOfCycles + " cycle test started");
+            CountDownLatch countDownLatch = new CountDownLatch(countOfCycles);
+            executorService = Executors.newFixedThreadPool(THREADS_COUNT);
+            while (countDownLatch.getCount() > 0) {
+                LATCH = new CountDownLatch(1);
                 createStartTask(deciderClient);
                 try {
-                    Thread.sleep(SLEEP_TIME);
+                    LATCH.await();
+                    System.out.println("Remain " + countDownLatch.getCount()+" of "+countOfCycles +" finished");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                countDownLatch.countDown();
+            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         } else {
             System.out.println("No console available!!");

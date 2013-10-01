@@ -1,6 +1,7 @@
 package ru.taskurotta.server;
 
 import ru.taskurotta.backend.statistics.MetricFactory;
+import ru.taskurotta.backend.statistics.metrics.Metric;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
@@ -37,7 +38,9 @@ public class MetricsTaskServer implements TaskServer {
         taskServer.startProcess(task);
 
         long invocationTime = System.currentTimeMillis()-startTime;
-        metricsFactory.getInstance(START_PROCESS).mark(actorId, invocationTime);
+        Metric startProcessMetric = metricsFactory.getInstance(START_PROCESS);
+        startProcessMetric.mark(actorId, invocationTime);
+        startProcessMetric.mark(START_PROCESS, invocationTime);
 
     }
 
@@ -51,10 +54,14 @@ public class MetricsTaskServer implements TaskServer {
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
         long invocationTime = System.currentTimeMillis() - startTime;
-        metricsFactory.getInstance(POLL).mark(actorId, invocationTime);
+        Metric pollMetric = metricsFactory.getInstance(POLL);
+        pollMetric.mark(actorId, invocationTime);
+        pollMetric.mark(POLL, invocationTime);
 
-        if(taskContainer!=null) {
-            metricsFactory.getInstance(SUCCESSFUL_POLL).mark(actorId, invocationTime);
+        if (taskContainer!=null) {
+            Metric successPollMetric = metricsFactory.getInstance(SUCCESSFUL_POLL);
+            successPollMetric.mark(actorId, invocationTime);
+            successPollMetric.mark(SUCCESSFUL_POLL, invocationTime);
         }
 
         return taskContainer;
@@ -71,11 +78,18 @@ public class MetricsTaskServer implements TaskServer {
 
         long invocationTime = System.currentTimeMillis() - startTime;
 
-        metricsFactory.getInstance(RELEASE).mark(actorId, invocationTime);
-        metricsFactory.getInstance(EXECUTION_TIME).mark(actorId, taskResult.getExecutionTime());
+        Metric releaseMetric = metricsFactory.getInstance(RELEASE);
+        releaseMetric.mark(actorId, invocationTime);
+        releaseMetric.mark(RELEASE, invocationTime);
+
+        Metric execTimeMetric = metricsFactory.getInstance(EXECUTION_TIME);
+        execTimeMetric.mark(actorId, taskResult.getExecutionTime());
+        execTimeMetric.mark(EXECUTION_TIME, taskResult.getExecutionTime());
 
         if (taskResult.containsError()) {
-            metricsFactory.getInstance(ERROR_DECISION).mark(actorId, taskResult.getExecutionTime());
+            Metric errMetric = metricsFactory.getInstance(ERROR_DECISION);
+            errMetric.mark(actorId, taskResult.getExecutionTime());
+            errMetric.mark(ERROR_DECISION, taskResult.getExecutionTime());
         }
 
     }

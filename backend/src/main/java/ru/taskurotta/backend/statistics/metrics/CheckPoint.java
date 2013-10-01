@@ -15,7 +15,7 @@ public class CheckPoint {
 
     private class State {
         protected volatile long counter = 0;
-        protected volatile double mean = 0;
+        protected volatile double sum = 0;
     }
 
     public CheckPoint() {
@@ -30,7 +30,7 @@ public class CheckPoint {
             State oldState = stateRef.get();
 
             newState.counter = oldState.counter + 1;
-            newState.mean = oldState.mean + (period - oldState.mean) / newState.counter;
+            newState.sum = oldState.sum + period;
 
             if (stateRef.compareAndSet(oldState, newState)) {
                 break;
@@ -40,7 +40,7 @@ public class CheckPoint {
 
     public void dumpCurrentState(DataListener dataListener, String metricName, String datasetName) {
         State state = stateRef.getAndSet(new State());//Reset state and get old value for dumping
-        dataListener.handle(metricName, datasetName, state.counter, state.mean, System.currentTimeMillis());
+        dataListener.handle(metricName, datasetName, state.counter, state.sum/state.counter, System.currentTimeMillis());
     }
 
 }

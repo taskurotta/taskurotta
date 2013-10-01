@@ -10,7 +10,6 @@ import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.config.model.ActorPreferences;
-import ru.taskurotta.backend.hz.config.HzConfigBackend;
 
 import javax.annotation.PostConstruct;
 
@@ -27,6 +26,7 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
     private static final Logger logger  = LoggerFactory.getLogger(HzConfigBackendSupport.class);
     private String queuePrefix;
     private HazelcastInstance hzInstance;
+    private String actorPreferencesMapName;
 
     @PostConstruct
     private void init() {
@@ -38,7 +38,7 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
         DistributedObject obj = event.getDistributedObject();
 
         if ((obj instanceof IQueue) && (obj.getName().startsWith(queuePrefix))) {//created new task queue object
-            ILock lock = hzInstance.getLock(HzConfigBackend.ACTOR_PREFERENCES_MAP_NAME);
+            ILock lock = hzInstance.getLock(actorPreferencesMapName);
             try {
                 lock.lock();
                 String actorId = obj.getName().substring(queuePrefix.length());
@@ -48,7 +48,7 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
                     ap.setBlocked(false);
                     ap.setQueueName(obj.getName());
 
-                    IMap<String, ActorPreferences> distributedActorPreferences = hzInstance.getMap(HzConfigBackend.ACTOR_PREFERENCES_MAP_NAME);
+                    IMap<String, ActorPreferences> distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
                     distributedActorPreferences.put(actorId, ap);
                     logger.info("New actor [{}] has been registered", actorId);
                 }
@@ -59,7 +59,7 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
     }
 
     private boolean isActorConfigExists(String actorId) {
-        IMap<String, ActorPreferences> actorPrefs = hzInstance.getMap(HzConfigBackend.ACTOR_PREFERENCES_MAP_NAME);
+        IMap<String, ActorPreferences> actorPrefs = hzInstance.getMap(actorPreferencesMapName);
         return actorPrefs.containsKey(actorId);
     }
 
@@ -74,5 +74,9 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
 
     public void setHzInstance(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;
+    }
+
+    public void setActorPreferencesMapName(String actorPreferencesMapName) {
+        this.actorPreferencesMapName = actorPreferencesMapName;
     }
 }

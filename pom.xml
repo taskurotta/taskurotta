@@ -25,7 +25,7 @@
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.2</aspectj.version>
-        <hazelcast.version>3.0</hazelcast.version>
+        <hazelcast.version>3.0.2</hazelcast.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
 
         <skip.integration.tests>true</skip.integration.tests>
@@ -35,7 +35,6 @@
         <module>core</module>
         <module>bootstrap</module>
         <module>client</module>
-        <module>example</module>
         <module>spring</module>
         <module>server</module>
         <module>recipes</module>
@@ -48,6 +47,7 @@
         <module>transport</module>
         <module>snapshot</module>
         <module>test</module>
+        <module>schedule</module>
     </modules>
 
     <profiles>

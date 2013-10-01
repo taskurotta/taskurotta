@@ -34,23 +34,19 @@
             <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
             <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:map name="${hz.task.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000"
-                    eviction-percentage="25">
+            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.decision.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000"
-                    eviction-percentage="25">
+            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000"
-                    eviction-percentage="25">
+            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" eviction-policy="LRU" max-size="1000"
-                    eviction-percentage="25">
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
             <hz:serialization>
@@ -159,8 +155,7 @@
         <constructor-arg name="taskDao" ref="taskDao"/>
     </bean>
 
-    <bean id="dependencyBackend" class="ru.taskurotta.backend.hz.dependency.HzDependencyBackend"
-          factory-method="createInstance">
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.hz.dependency.HzDependencyBackend" factory-method="createInstance">
         <constructor-arg name="graphDao" ref="graphDao"/>
     </bean>
 
@@ -203,7 +198,7 @@
     </bean>
 
     <!-- Metrics -->
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler"/>
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
     <!-- /Metrics -->
 
     <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
@@ -211,11 +206,12 @@
     <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener"/>-->
 
     <!--<bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">-->
-    <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->
-    <!--<constructor-arg name="metricsManager" ref="metricsManager"/>-->
-    <!--<constructor-arg name="dataListener" ref="dataListener"/>-->
+        <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->
+        <!--<constructor-arg name="metricsManager" ref="metricsManager"/>-->
+        <!--<constructor-arg name="dataListener" ref="dataListener"/>-->
     <!--</bean>-->
     <!-- /Task server -->
+
 
 
 </beans>

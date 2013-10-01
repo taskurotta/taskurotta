@@ -33,7 +33,10 @@
             </thead>
 
             <tbody>
-                <tr ng-repeat="task in tasksPage.items">
+            <tr ng-if="!initialized">
+                <td colspan="7" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
+            <tr ng-repeat="task in tasksPage.items">
                     <td>
                         {{getStartIndex(tasksPage.pageNumber, tasksPage.pageSize) + $index}}
                     </td>

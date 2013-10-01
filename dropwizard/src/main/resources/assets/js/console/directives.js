@@ -177,16 +177,72 @@ consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
     };
 }]);
 
+consoleDirectives.directive('tskTaskForm', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {},
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $window, $log, $http) {
+            $scope.taskTypes = ["DECIDER_START", "WORKER", "DECIDER_ASYNCHRONIOUS"];
+
+            $scope.processUUID = "process-uuid";
+            $scope.taskUUID = "task-uuid";
+
+            $scope.actorMethod = "actor-method";
+            $scope.actorId = "actor-id";
+            $scope.taskType = "DECIDER_START";
+            $scope.taskStartTime = new Date();
+
+            $scope.args = [];
+            $scope.options = {};
+
+
+        }],
+        templateUrl: "/partials/widget/task_container_form.html",
+        replace: true
+    };
+}]);
+
+consoleDirectives.directive('tskArgForm', ['$http', '$compile', function ($http, $compile) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            arg: "="
+        },
+        template: "<li></li>",
+        link: function (scope, element, attrs) {
+            if (angular.isArray(scope.arg.compositeValue)) {
+                element.append("<tsk-arg-list-form args='arg.compositeValue'></tsk-arg-list-form>");
+                $compile(element.contents())(scope)
+            }
+        },
+        replace: true
+    };
+}]);
+
+consoleDirectives.directive('tskArgListForm', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            args: "="
+        },
+        template: "<ul><tsk-arg-form ng-repeat='arg in args' arg='arg'></tsk-arg-form></ul>",
+        replace: true
+    };
+}]);
+
 consoleDirectives.directive('tskPlot', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
         scope: {//'=' enables ability to $watch
             datasetUrl: "=",
-            options: "@",
             width: "@",
             height: "@",
-            updatePeriod: "="
+            updatePeriod: "=",
+            holder: "="
         },
         controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $window, $log, $http, $$timeUtil) {
 
@@ -195,30 +251,80 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
             if($scope.width) { jPlot.css("width", $scope.width); }
             if($scope.height) { jPlot.css("height", $scope.height); }
 
-            //defaults
-            if($scope.options) {
-                $log.info("$scope.options is: " + $scope.options);
-            } else {
-                $scope.options = {
-                    series: {
-                        lines: { show: true },
-                        points: { show: true },
-                        shadowSize: 0
+            var options = {
+                legend: {
+                    show: true
+                },
+                series: {
+                    lines: {
+                        show: true
+                    },
+                    points: {
+                        show: true
                     }
-                };
-            }
+                },
+                yaxis: {
+                    ticks: 5
+                },
+                zoom: {
+                    interactive: true
+                },
+                pan: {
+                    interactive: true
+                }
+            };
 
-            var plotElem = $.plot($element, [], $scope.options);
+//            var getFilteredDataset = function(targetDataset, xMin, xMax, yMin, yMax) {
+//                var result = [];
+//                if(targetDataset && targetDataset.length>0) {
+//                    for(var i = 0; i<targetDataset.length; i++) {
+//                        var dot = targetDataset[i];
+//                        if((dot[0]>=xMin) && (dot[0]<=xMax) && (dot[1]>=yMin) && (dot[1]<=yMax)) {
+//                            result.push(dot);
+//                        }
+//                    }
+//                }
+//                return result;
+//            };
+
+            var plotElem = $.plot(jPlot, [], options);
+//            jPlot.bind("plotselected", function (event, ranges) {
+//
+//                // clamp the zooming to prevent eternal zoom
+//
+//                if (ranges.xaxis.to - ranges.xaxis.from < 0.00001) {
+//                    ranges.xaxis.to = ranges.xaxis.from + 0.00001;
+//                }
+//
+//                if (ranges.yaxis.to - ranges.yaxis.from < 0.00001) {
+//                    ranges.yaxis.to = ranges.yaxis.from + 0.00001;
+//                }
+//
+//                // do the zooming
+//                var originalData = plotElem.getData();
+//                for(var i = 0; i < originalData.length; i++ ) {
+//                    originalData[i].data = getFilteredDataset(originalData[i].data, ranges.xaxis.from, ranges.xaxis.to, ranges.yaxis.from, ranges.yaxis.to);
+//                }
+//                plotElem = $.plot(jPlot, originalData,
+//                    $.extend(true, {}, options, {
+//                        xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
+//                        yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
+//                    })
+//                );
+//
+//            });
+
+
             var refreshTriggerId = -1;
             var updatePlotData = function(newData) {
                 $log.info("Update plot data. New datasets count: " + newData.length);
-                plotElem.setData(newData);
-                plotElem.setupGrid();
-                plotElem.draw();
+                if($scope.holder) {
+                    $scope.holder = newData;
+                }
+                plotElem = $.plot(jPlot, newData, options);
             };
 
             $scope.update = function() {
-                $log.log("Using datasetUrl attribute for update.");
                 $http.get($scope.datasetUrl).then(function(value) {
                     updatePlotData(value.data);
                 });
@@ -244,3 +350,38 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
         replace: true
     };
 }]);
+
+consoleDirectives.directive('tskErrMessage', ['$http', function ($http) {
+    return {
+        restrict: 'ECA',//Element, Class, Attribute
+        terminal: true,
+        scope: {
+            model: "="
+        },
+        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $window, $log, $http) {
+            $scope.detail = false;
+
+            $scope.getCollapseIconClassName = function(visible) {
+                if (visible) {
+                    return "icon-chevron-up";
+                } else {
+                    return "icon-chevron-down";
+                }
+            };
+
+            $scope.getCollapseIconText = function(visible) {
+                if (visible) {
+                    return "Hide details";
+                } else {
+                    return "Show details";
+                }
+            };
+
+        }],
+        templateUrl: "/partials/widget/error_message.html",
+        replace: true
+    };
+}]);
+
+
+

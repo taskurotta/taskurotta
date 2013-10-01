@@ -9,13 +9,11 @@ import com.hazelcast.core.ItemEvent;
 import com.hazelcast.core.ItemListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.checkpoint.TimeoutType;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,7 +32,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
 
     private HazelcastInstance hazelcastInstance;
 
-    public static final String ACTOR_PREFERENCES_MAP_NAME = "actorPreferencesMap";
     public static final String EXPIRATION_POLICY_CONFIG_SET_NAME = "expirationPolicyConfigSet";
 
     private volatile Map<String, ActorPreferences> localActorPreferences = new HashMap<>();
@@ -43,22 +40,26 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     private int defaultTimeout = 1;
     private TimeUnit defaultTimeUnit = TimeUnit.SECONDS;
 
-    public HzConfigBackend(HazelcastInstance hazelcastInstance) {
+    private String actorPreferencesMapName;
+
+    public HzConfigBackend(HazelcastInstance hazelcastInstance, String actorPreferencesMapName) {
         this.hazelcastInstance = hazelcastInstance;
+        this.actorPreferencesMapName = actorPreferencesMapName;
 
         init();
     }
 
-    public HzConfigBackend(HazelcastInstance hazelcastInstance, int defaultTimeout, TimeUnit defaultTimeUnit) {
+    public HzConfigBackend(HazelcastInstance hazelcastInstance, int defaultTimeout, TimeUnit defaultTimeUnit, String actorPreferencesMapName) {
         this.hazelcastInstance = hazelcastInstance;
         this.defaultTimeout = defaultTimeout;
         this.defaultTimeUnit = defaultTimeUnit;
+        this.actorPreferencesMapName = actorPreferencesMapName;
 
         init();
     }
 
     private void init() {
-        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
+        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(actorPreferencesMapName);
 
         distributedActorPreferences.addEntryListener(new EntryListener<String, ActorPreferences>() {
             @Override
@@ -137,13 +138,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         ActorPreferences actorPreferences = new ActorPreferences();
         actorPreferences.setBlocked(false);
         actorPreferences.setId("default");
-
-        Properties expirationPolicies = new Properties();
-        for (TimeoutType timeoutType : TimeoutType.values()) {
-            expirationPolicies.put(timeoutType.toString(), "default_timeout_policy");
-        }
-        actorPreferences.setTimeoutPolicies(expirationPolicies);
-
         return new ActorPreferences[]{actorPreferences};
     }
 
@@ -161,8 +155,8 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     }
 
     private void updateActorPreferencesMap() {
-        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-        logger.trace("Update [{}] = [{}]", ACTOR_PREFERENCES_MAP_NAME, distributedActorPreferences);
+        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(actorPreferencesMapName);
+        logger.trace("Update [{}] = [{}]", actorPreferencesMapName, distributedActorPreferences);
 
         // to performance reason
         localActorPreferences = new HashMap<>(distributedActorPreferences);
@@ -174,45 +168,6 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
 
         // to performance reason
         localExpPolicies = new HashSet<>(distributedExpPolicies);
-    }
-
-    @Override
-    public void blockActor(String actorId) {
-        IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-
-        ActorPreferences actorPreferences = actorPreferencesMap.get(actorId);
-        if (actorPreferences == null) {
-            actorPreferences = new ActorPreferences();
-            actorPreferences.setId(actorId);
-        }
-
-        actorPreferences.setBlocked(true);
-
-        actorPreferencesMap.set(actorId, actorPreferences, 0, TimeUnit.NANOSECONDS);
-
-        logger.debug("Block actorId [{}]", actorId);
-    }
-
-    @Override
-    public void unblockActor(String actorId) {
-        IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-
-        ActorPreferences actorPreferences = actorPreferencesMap.get(actorId);
-
-        if (actorPreferences == null) {
-            return;
-        }
-
-        actorPreferences.setBlocked(false);
-        actorPreferencesMap.set(actorId, actorPreferences, 0, TimeUnit.NANOSECONDS);
-
-        logger.debug("Unblock actorId [{}]", actorId);
-    }
-
-    @Override
-    public Collection<String> getActorIdList() {
-        IMap<String, ActorPreferences> actorPreferencesMap = hazelcastInstance.getMap(ACTOR_PREFERENCES_MAP_NAME);
-        return actorPreferencesMap.keySet();
     }
 
     public int getDefaultTimeout() {

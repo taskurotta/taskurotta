@@ -11,14 +11,12 @@ assets:
 actorConfig:
   actorPreferences:
     - id: "default"
-      timeoutPolicies:
-        TASK_START_TO_CLOSE: "TIMEOUT: 15 seconds"
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
-  hz.mancenter.enabled: true
+  hz.mancenter.enabled: false
   hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
   hz.nodes: localhost:7777
   mongo.host: localhost

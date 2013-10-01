@@ -89,6 +89,17 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         controller: "actorListController"
     });
 
+    //SCHEDULE
+    $routeProvider.when('/schedule/list', {
+        templateUrl: '/partials/view/list/schedule_list.html',
+        controller: "scheduleListController"
+    });
+
+    $routeProvider.when('/schedule/create', {
+        templateUrl: '/partials/view/card/schedule_card.html',
+        controller: "scheduleCreateController"
+    });
+
     //DEFAULT
     $routeProvider.otherwise({
         redirectTo: '/home'
@@ -103,5 +114,16 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
 consoleApp.run(function ($rootScope, $log) {
     $rootScope.getStartIndex = function (pageNum, pageSize) {
         return (pageNum - 1) * pageSize + 1;
+    };
+    $rootScope.getTreeStateIconClass = function(state) {
+        if(state == 0) {
+            return "icon-question-sign";
+        } else if (state == 1) {
+            return "icon-ok";
+        } else if (state == 2) {
+            return "icon-ban-circle";
+        } else {
+            return "icon-question-sign";
+        }
     };
 });

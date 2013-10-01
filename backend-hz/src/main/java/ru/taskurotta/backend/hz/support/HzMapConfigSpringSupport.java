@@ -32,6 +32,7 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
     private int writeDelaySeconds;
     private int evictionPercentage;
     private int backupCount;
+    private int timeToLive;
     private int asyncBackupsCount;
     private String evictionPolicy;
     private int maxSize;
@@ -60,6 +61,7 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
             mc.setEvictionPercentage(evictionPercentage);
             mc.setBackupCount(backupCount);
             mc.setAsyncBackupCount(asyncBackupsCount);
+            mc.setTimeToLiveSeconds(timeToLive);
             mc.setEvictionPolicy(MapConfig.EvictionPolicy.valueOf(evictionPolicy));
             mc.setMapStoreConfig(msc);
 
@@ -168,4 +170,11 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
         this.writeDelaySeconds = writeDelaySeconds;
     }
 
+    public int getTimeToLive() {
+        return timeToLive;
+    }
+
+    public void setTimeToLive(int timeToLive) {
+        this.timeToLive = timeToLive;
+    }
 }
