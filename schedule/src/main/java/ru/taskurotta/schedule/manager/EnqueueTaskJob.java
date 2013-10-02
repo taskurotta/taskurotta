@@ -47,6 +47,8 @@ public class EnqueueTaskJob implements Job {
 
         } catch (Throwable e) {
             logger.error("Cannot execute scheduled job for task ["+taskContainer+"]", e);
+
+            //TODO: dimadin: add job stop after repeated exceptions
         }
     }
 

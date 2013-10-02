@@ -116,6 +116,8 @@
         <constructor-arg name="hzInstance" ref="hzInstance" />
         <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
         <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}" />
+
+        <property name="metricsDataRetriever" ref="metricsDataHandler" />
     </bean>
     <!-- /Actor config support -->
 
@@ -160,21 +162,25 @@
     <!-- Backends -->
     <bean id="originalQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}"/>
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
 
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
 
-        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <property name="hzQueueConfigSupport" ref="queueConfigSupport" />
         <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport" />
-        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}" />
     </bean>
+
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
         <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="mergePeriod" value="${hz.recovery.merge.period}"/>
         <constructor-arg name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
+
+        <property name="metricsFactory" ref="metricsFactory" />
     </bean>
+
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
         <constructor-arg name="hzInstance" ref="hzInstance"/>

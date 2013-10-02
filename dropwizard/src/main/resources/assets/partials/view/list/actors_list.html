@@ -8,6 +8,10 @@
         </tr>
     </table>
 
+    <div ng-if="feedback.status>=500">
+        <tsk-err-message model="feedback"></tsk-err-message>
+    </div>
+
     <div class="well" style="margin:5px;">
         <div style="float: right;">
             <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
@@ -17,10 +21,11 @@
         <table class="table table-striped table-bordered table-hover">
 
             <thead>
-                <th style="width: 40px;">№</th>
-                <th>Actor ID</th>
-                <th style="width: 200px;">Last active</th>
-                <th style="width: 50px;">Compare</th>
+                <th style="width: 40px;"><small>№</small></th>
+                <th><small>Actor ID</small></th>
+                <th style="width: 120px;"><small>Queue balance</small></th>
+                <th style="width: 180px;"><small>Last activity</small></th>
+                <th style="width: 50px;"><small>Actions</small></th>
             </thead>
 
             <tbody>
@@ -33,13 +38,52 @@
                     </td>
 
                     <td>
-                        <b>{{actor.actorId}}</b>
+                        <a class="btn btn-link"><small>{{actor.actorId}}</small></a>
                     </td>
+
                     <td>
-                        <span class="muted">Not implemented</span>
+                        <div ng-if="actor.queueState">
+                            <small>
+                                <span ng-if="actor.queueState.outHour>=0 && actor.queueState.inHour>=0">
+                                    <b class="muted">Last hour:</b>
+                                    <b ng-if="actor.queueState.outHour<actor.queueState.inHour" style="color: red;" popover="Warning: overwhelming income" popover-trigger="mouseenter">&#x25B2;</b>
+                                    <b ng-if="actor.queueState.outHour>=actor.queueState.inHour" style="color: green;" popover="Decreasing (stable)" popover-trigger="mouseenter">&#x25BC;</b>
+                                    <br />in: <b ng-if="actor.queueState.inHour>=0">{{actor.queueState.inHour}}</b>, out: <b ng-if="actor.queueState.outHour>=0">{{actor.queueState.outHour}}</b>
+                                </span>
+
+                                <br />
+
+                                <span ng-if="actor.queueState.outDay>=0 && actor.queueState.inDay>=0">
+                                    <br />
+                                    <b class="muted">Last day:</b>
+                                    <b ng-if="actor.queueState.outDay<actor.queueState.inDay" style="color: red;" popover="Warning: overwhelming income" popover-trigger="mouseenter">&#x25B2;</b>
+                                    <b ng-if="actor.queueState.outDay>=actor.queueState.inDay" style="color: green;" popover="Decreasing (stable)" popover-trigger="mouseenter">&#x25BC;</b>
+                                    <br />in: <b ng-if="actor.queueState.inDay>=0">{{actor.queueState.inDay}}</b>, out: <b ng-if="actor.queueState.outDay>=0">{{actor.queueState.outDay}}</b>
+                                </span>
+                            </small>
+                        </div>
                     </td>
+
                     <td>
-                        <input type="checkbox" disabled />
+                        <small><b class="muted">Poll:</b> {{ actor.lastPoll || "n/a" | date:'dd-MM-yyyy HH:mm:ss' }}</small>
+                            <br />
+                        <small><b class="muted">Release:</b> {{ actor.lastRelease || "n/a" | date:'dd-MM-yyyy HH:mm:ss' }}</small>
+                    </td>
+
+                    <td>
+                        <table cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td>
+                                    <label class="checkbox"><input type="checkbox" disabled /><a class="btn-link" disabled><small>Compare</small></a></label>
+                                </td>
+                                <td ng-if="actor.block">
+                                    <a class="btn" disabled><small>Unblock</small></a>
+                                </td>
+                                <td ng-if="!actor.block">
+                                    <a class="btn" disabled><small>Block</small></a>
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
             </tbody>

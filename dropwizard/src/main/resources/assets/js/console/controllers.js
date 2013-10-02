@@ -423,11 +423,11 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         return "";
     };
 
-    $$data.listActors().then(function(value) {
-        $scope.actorIds = angular.fromJson(value.data || {});
-        $scope.selectedActorIds = new Array($scope.actorIds.length);
-        $log.info("metricsController: actors list size getted is: " + $scope.actorIds.length);
-    });
+//    $$data.listActors().then(function(value) {
+//        $scope.actorIds = angular.fromJson(value.data || {});
+//        $scope.selectedActorIds = new Array($scope.actorIds.length);
+//        $log.info("metricsController: actors list size getted is: " + $scope.actorIds.length);
+//    });
 
     $$data.getMetricsOptions().then(function(value) {
         $scope.metricsOptions = angular.fromJson(value.data || {});
@@ -486,9 +486,9 @@ consoleControllers.controller("actorListController", function ($scope, $$data, $
             $scope.initialized = true;
             $log.info("actorListController: successfully updated actors list: " + angular.toJson($scope.actorsPage));
         }, function (errReason) {
-            $scope.feedback = angular.toJson(errReason);
+            $scope.feedback = errReason;
             $scope.initialized = true;
-            $log.error("actorListController: actor list update failed: " + $scope.feedback);
+            $log.error("actorListController: actor list update failed: " + angular.toJson($scope.feedback));
         });
 
     };

@@ -6,6 +6,9 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.recovery.AbstractQueueBackendStatistics;
+import ru.taskurotta.backend.statistics.MetricFactory;
+import ru.taskurotta.backend.statistics.metrics.Metric;
+import ru.taskurotta.server.MetricName;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,13 +19,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
- * Date: 18.09.13
- * Time: 11:50
+ * Date: 18.09.13 Time: 11:50
  */
 public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
 
     private HzQueueBackend queueBackend;
     private HazelcastInstance hzInstance;
+
+    private MetricFactory metricsFactory;
 
     public static final String lastPolledTaskEnqueueTimesName = "lastPolledTaskEnqueueTimes";
 
@@ -91,6 +95,17 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
     }
 
     @Override
+    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+        long start = System.currentTimeMillis();
+        queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
+        long invocationTime = System.currentTimeMillis() - start;
+
+        Metric enqueueMetric = metricsFactory.getInstance(MetricName.ENQUEUE.getValue());
+        enqueueMetric.mark(MetricName.ENQUEUE.getValue(), invocationTime);
+        enqueueMetric.mark(actorId, invocationTime);
+    }
+
+    @Override
     public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
         return queueBackend.getQueueContent(queueName, pageNum, pageSize);
     }
@@ -98,5 +113,9 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
     @Override
     public Map<String, Integer> getHoveringCount(float periodSize) {
         return queueBackend.getHoveringCount(periodSize);
+    }
+
+    public void setMetricsFactory(MetricFactory metricsFactory) {
+        this.metricsFactory = metricsFactory;
     }
 }

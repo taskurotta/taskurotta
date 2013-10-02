@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.manager.ActorConfigManager;
 import ru.taskurotta.backend.console.model.ActorVO;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.statistics.QueueStateVO;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -17,6 +18,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: stukushin, dimadin
@@ -59,9 +63,10 @@ public class ActorResource {
 
         try {
             if (ACTION_LIST.equals(action)) {
-                GenericPage<ActorVO> actors = actorConfigManager.getActorList(pageNum.or(1), pageSize.or(10));
-                logger.debug("Actor list getted is [{}]", actors);
-                return Response.ok(actors, MediaType.APPLICATION_JSON).build();
+                GenericPage<ActorExtVO> extActors = extendActorFeatures(actorConfigManager.getActorList(pageNum.or(1), pageSize.or(10)));
+                logger.debug("Actor list getted is [{}]", extActors);
+
+                return Response.ok(extActors, MediaType.APPLICATION_JSON).build();
             } else {
                 logger.error("Unknown actor action["+action+"] getted");
                 return Response.serverError().build();
@@ -71,6 +76,47 @@ public class ActorResource {
             return Response.serverError().build();
         }
 
+    }
+
+    private GenericPage<ActorExtVO> extendActorFeatures(GenericPage<ActorVO> actors) {
+        GenericPage<ActorExtVO> result = null;
+        if (actors != null) {
+            List<ActorExtVO> items = new ArrayList<>();
+            if (actors.getItems()!=null && !actors.getItems().isEmpty()) {
+                for (ActorVO actor: actors.getItems()) {
+                    ActorExtVO extActor = new ActorExtVO(actor);
+                    extActor.queueState = actorConfigManager.getQueueState(actor.getActorId());
+                    items.add(extActor);
+                }
+            }
+            result = new GenericPage<ActorExtVO>(items, actors.getPageNumber(), actors.getPageSize(), actors.getTotalCount());
+        }
+        return result;
+    }
+
+    //ActorVO with extended features for console UI
+    protected static class ActorExtVO extends ActorVO implements Serializable {
+
+        protected QueueStateVO queueState;
+
+        public ActorExtVO(ActorVO actor) {
+            this.actorId = actor.getActorId();
+            this.blocked = actor.isBlocked();
+            this.queueName = actor.getQueueName();
+            this.lastPoll = actor.getLastPoll();
+            this.lastRelease = actor.getLastRelease();
+        }
+
+        public QueueStateVO getQueueState() {
+            return queueState;
+        }
+
+        @Override
+        public String toString() {
+            return "ActorExtVO{" +
+                    "queueState=" + queueState +
+                    "} " + super.toString();
+        }
     }
 
     @Required

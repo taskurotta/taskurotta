@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.console.model;
 
+import java.util.Date;
+
 /**
  * Created with IntelliJ IDEA.
  * User: dimadin
@@ -7,10 +9,12 @@ package ru.taskurotta.backend.console.model;
  */
 public class ActorVO {
 
-    private String actorId;
-    private long lastActive;
-    private String queueName;
-    private boolean blocked;
+    protected String actorId;
+    protected Date lastPoll;
+    protected Date lastRelease;
+
+    protected String queueName;
+    protected boolean blocked;
 
     public boolean isBlocked() {
         return blocked;
@@ -28,14 +32,6 @@ public class ActorVO {
         this.actorId = actorId;
     }
 
-    public long getLastActive() {
-        return lastActive;
-    }
-
-    public void setLastActive(long lastActive) {
-        this.lastActive = lastActive;
-    }
-
     public String getQueueName() {
         return queueName;
     }
@@ -44,11 +40,28 @@ public class ActorVO {
         this.queueName = queueName;
     }
 
+    public Date getLastPoll() {
+        return lastPoll;
+    }
+
+    public void setLastPoll(Date lastPoll) {
+        this.lastPoll = lastPoll;
+    }
+
+    public Date getLastRelease() {
+        return lastRelease;
+    }
+
+    public void setLastRelease(Date lastRelease) {
+        this.lastRelease = lastRelease;
+    }
+
     @Override
     public String toString() {
         return "ActorVO{" +
                 "actorId='" + actorId + '\'' +
-                ", lastActive=" + lastActive +
+                ", lastPoll=" + lastPoll +
+                ", lastRelease=" + lastRelease +
                 ", queueName='" + queueName + '\'' +
                 ", blocked=" + blocked +
                 "} ";
