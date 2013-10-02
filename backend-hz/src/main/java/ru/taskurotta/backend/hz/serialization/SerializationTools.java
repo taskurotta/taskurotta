@@ -77,8 +77,8 @@ public class SerializationTools {
         int taskContainersCount = taskContainers.length;
         if (taskContainers != null && taskContainersCount > 0) {
             out.writeInt(taskContainersCount);
-            for (int i = 0; i < taskContainersCount; i++) {
-                taskContainerSerializer.write(out, taskContainers[i]);
+            for (TaskContainer taskContainer : taskContainers) {
+                taskContainerSerializer.write(out, taskContainer);
             }
         } else {
             out.writeInt(-1);
