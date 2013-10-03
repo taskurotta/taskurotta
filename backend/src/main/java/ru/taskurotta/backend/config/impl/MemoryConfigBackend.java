@@ -1,10 +1,12 @@
 package ru.taskurotta.backend.config.impl;
 
 import ru.taskurotta.backend.config.ConfigBackend;
+import ru.taskurotta.backend.config.ConfigBackendUtils;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 
-import java.util.Properties;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -12,17 +14,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class MemoryConfigBackend implements ConfigBackend {
 
-	private ActorPreferences[] actorPreferences;
-	private ExpirationPolicyConfig[] expirationPolicies;
+	private Collection<ActorPreferences> actorPreferences;
+	private Collection<ExpirationPolicyConfig> expirationPolicies;
 
 	private int defaultTimeout = 1;
 	private TimeUnit defaultTimeunit  = TimeUnit.SECONDS;
-	
-	@Override
+
 	public boolean isActorBlocked(String actorId) {
         boolean result = false;
-        ActorPreferences[] actorPreferences = getAllActorPreferences();
-        if (actorPreferences!=null && actorPreferences.length>0) {
+        Collection<ActorPreferences> actorPreferences = getAllActorPreferences();
+        if (actorPreferences!=null && !actorPreferences.isEmpty()) {
             for(ActorPreferences aPref: actorPreferences) {
                 if (aPref.getId().equals(actorId)) {
                     result = aPref.isBlocked();
@@ -34,49 +35,64 @@ public class MemoryConfigBackend implements ConfigBackend {
 
 	}
 
-	private ActorPreferences[] getDefaultActorPreferences() {
-	    ActorPreferences[] result = new ActorPreferences[1];
-	    ActorPreferences defaultActorPrefs = new ActorPreferences();
-	    defaultActorPrefs.setBlocked(false);
-	    defaultActorPrefs.setId("default");
-	    result[0] = defaultActorPrefs;
-	    return result;
-	}
+    @Override
+    public void blockActor(String actorId) {
+        setBlockedState(actorId, true);
+    }
 
-	private ExpirationPolicyConfig[] getDefaultPolicies(Integer timeout, TimeUnit unit) {
-	    ExpirationPolicyConfig[] result = new ExpirationPolicyConfig[1];
-	    ExpirationPolicyConfig timeoutPolicy = new ExpirationPolicyConfig();
-	    timeoutPolicy.setName("default_timeout_policy");
-	    timeoutPolicy.setClassName("ru.taskurotta.server.config.expiration.impl.TimeoutPolicy");
-	    Properties policyProps = new Properties();
-	    policyProps.put("timeout", timeout);
-	    policyProps.put("timeUnit", unit.toString());
-	    timeoutPolicy.setProperties(policyProps);
-	    result[0] = timeoutPolicy;
-	    return result;
-	}
+    private void setBlockedState(String actorId, boolean isBlocked) {
+        Collection<ActorPreferences> actorPreferences = getAllActorPreferences();
+        boolean checked = false;
+        if (actorPreferences!=null && !actorPreferences.isEmpty()) {
+            for(ActorPreferences aPref: actorPreferences) {
+                if (aPref.getId().equals(actorId)) {
+                    aPref.setBlocked(isBlocked);
+                    checked = true;
+                    break;
+                }
+            }
 
-	@Override
-	public ActorPreferences[] getAllActorPreferences() {
+            if (!checked) {
+                ActorPreferences ap = new ActorPreferences();
+                ap.setId(actorId);
+                ap.setBlocked(isBlocked);
+                actorPreferences.add(ap);
+            }
+
+        }
+    }
+
+    @Override
+    public void unblockActor(String actorId) {
+        setBlockedState(actorId, false);
+    }
+
+	public Collection<ActorPreferences> getAllActorPreferences() {
 	    if (actorPreferences == null) {
-	        actorPreferences = getDefaultActorPreferences();
+	        actorPreferences = ConfigBackendUtils.getDefaultActorPreferences();
 	    }
 		return actorPreferences;
 	}
 
 	public void setActorPreferences(ActorPreferences[] actorPreferences) {
-		this.actorPreferences = actorPreferences;
+        if (actorPreferences!=null) {
+            this.actorPreferences = Arrays.asList(actorPreferences);
+        } else {
+            this.actorPreferences = null;
+        }
 	}
 
-	@Override
-    public ExpirationPolicyConfig[] getAllExpirationPolicies() {
+    public void setActorPreferencesCollection(Collection<ActorPreferences> actorPreferences) {
+        this.actorPreferences = actorPreferences;
+    }
+
+    public Collection<ExpirationPolicyConfig> getAllExpirationPolicies() {
 	    if (expirationPolicies == null) {
-	        expirationPolicies = getDefaultPolicies(defaultTimeout, defaultTimeunit);
+	        expirationPolicies = ConfigBackendUtils.getDefaultPolicies(defaultTimeout, defaultTimeunit);
 	    }
         return expirationPolicies;
     }
 
-    @Override
     public ActorPreferences getActorPreferences(String actorId) {
         ActorPreferences result = null;
         if (actorPreferences!=null) {
@@ -91,6 +107,15 @@ public class MemoryConfigBackend implements ConfigBackend {
     }
 
     public void setExpirationPolicies(ExpirationPolicyConfig[] expirationPolicies) {
+        if (expirationPolicies!=null) {
+            this.expirationPolicies = Arrays.asList(expirationPolicies);
+        } else {
+            this.expirationPolicies = null;
+        }
+
+    }
+
+    public void setExpirationPoliciesCollection(Collection<ExpirationPolicyConfig> expirationPolicies) {
         this.expirationPolicies = expirationPolicies;
     }
 

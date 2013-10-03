@@ -102,7 +102,8 @@ public class GeneralTaskServer implements TaskServer {
         String actorId = ActorUtils.getActorId(actorDefinition);
 
         if (configBackend.isActorBlocked(actorId)) {
-            throw null;
+            logger.warn("Rejected  blocked actor [{}] poll request", actorId);
+            return null;
         }
 
         // atomic statement
@@ -124,6 +125,7 @@ public class GeneralTaskServer implements TaskServer {
     public void release(DecisionContainer taskDecision) {
 
         if (configBackend.isActorBlocked(taskDecision.getActorId())) {
+            logger.warn("Rejected  blocked actor [{}] release request", taskDecision.getActorId());
             return;
         }
 

@@ -107,6 +107,7 @@
 
     <bean id="actorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource" >
         <property name="actorConfigManager" ref="actorConfigManager" />
+        <property name="configBackend" ref="configBackend" />
     </bean>
     <!-- /Config support -->
 
@@ -181,6 +182,10 @@
         <property name="metricsFactory" ref="metricsFactory" />
     </bean>
 
+    <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
+        <constructor-arg name="actorPreferencesMapName" value = "${hz.actor.preferences.map.name}" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+    </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
@@ -201,11 +206,6 @@
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="graphsMapName" value="${hz.graph.map.name}"/>
         <constructor-arg name="decisionsMapName" value="${hz.graph.decision.map.name}"/>
-    </bean>
-
-    <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
-        <constructor-arg name = "hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}" />
     </bean>
 
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
@@ -290,7 +290,7 @@
         <constructor-arg name="dataListener" ref="metricsDataHandler" />
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init" />
     <!-- /Metrics -->
 
 

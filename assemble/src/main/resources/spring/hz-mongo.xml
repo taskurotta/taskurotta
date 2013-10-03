@@ -88,6 +88,7 @@
         <property name="evictionPercentage" value="25"/>
         <property name="evictionPolicy" value="LRU"/>
         <property name="mapStoreBeanName" value="mongoMapStore"/>
+        <property name="timeToLive" value="5"/>
         <property name="maxSize" value="1000"/>
     </bean>
 
@@ -166,6 +167,8 @@
     </bean>
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
+        <constructor-arg name = "hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="actorPreferencesMapName" value = "${hz.actor.preferences.map.name}" />
         <constructor-arg ref="hzInstance"/>
         <constructor-arg name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}"/>
     </bean>

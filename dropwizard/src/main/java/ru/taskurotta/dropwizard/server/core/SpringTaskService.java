@@ -17,7 +17,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import ru.taskurotta.dropwizard.server.YamlConfigBackend;
+import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 
 import javax.ws.rs.Path;
 import java.io.IOException;
@@ -62,10 +62,10 @@ public class SpringTaskService extends Service<TaskServerConfig> {
                         @Override
                         public Object postProcessBeforeInitialization(Object bean, String beanName)
                                 throws BeansException {
-                            if (bean instanceof YamlConfigBackend) {
-                                YamlConfigBackend yamlBean = (YamlConfigBackend)bean;
-                                yamlBean.setActorPreferences(configuration.getActorConfig().getAllActorPreferences());
-                                yamlBean.setExpirationPolicies(configuration.getActorConfig().getAllExpirationPolicies());
+                            if (bean instanceof MemoryConfigBackend) {
+                                MemoryConfigBackend cfgBean = (MemoryConfigBackend)bean;
+                                cfgBean.setActorPreferencesCollection(configuration.getActorConfig().getAllActorPreferences());
+                                cfgBean.setExpirationPoliciesCollection(configuration.getActorConfig().getAllExpirationPolicies());
                             }
                             return bean;
                         }

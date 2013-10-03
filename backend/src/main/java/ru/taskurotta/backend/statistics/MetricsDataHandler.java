@@ -19,6 +19,8 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * Date: 19.09.13 10:30
  */
 public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
+    private static MetricsDataRetriever singleton;
+
     private static final int SECONDS_IN_MINUTE = 60;
     private static final int SECONDS_IN_HOUR = 3600;
     private static final int MINUTES_IN_24_HOURS = 24 * SECONDS_IN_MINUTE;
@@ -26,6 +28,13 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
     private Map<String, DataRowVO> lastHourDataHolder = new ConcurrentHashMap<>();
     private Map<String, DataRowVO> lastDayDataHolder = new ConcurrentHashMap<>();
 
+    public static MetricsDataRetriever getDataRetrieverInstance() {
+        return singleton;
+    }
+
+    private void init() {
+        singleton = this;
+    }
 
     private static class DataRowVO {
         private final String metricName;

@@ -10,14 +10,15 @@ import com.hazelcast.core.ItemListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.config.ConfigBackend;
+import ru.taskurotta.backend.config.ConfigBackendUtils;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -104,54 +105,60 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     @Override
     public boolean isActorBlocked(String actorId) {
         ActorPreferences actorPreferences = localActorPreferences.get(actorId);
+        logger.debug("actorPreferences getted in isActorBlocked[{]] are [{}] ", actorId, actorPreferences);
         return actorPreferences != null && actorPreferences.isBlocked();
     }
 
     @Override
-    public ActorPreferences[] getAllActorPreferences() {
+    public void blockActor(String actorId) {
+        setBlockedState(actorId, true);
+    }
+
+    private void setBlockedState(String actorId, boolean isBlocked) {
+        IMap<String, ActorPreferences> distributedActorPreferences = hazelcastInstance.getMap(actorPreferencesMapName);
+        ActorPreferences value = null;
+
+        if (!distributedActorPreferences.containsKey(actorId)) {
+            value = new ActorPreferences();
+            value.setId(actorId);
+        } else {
+            value = distributedActorPreferences.get(actorId);
+        }
+
+        value.setBlocked(isBlocked);
+        distributedActorPreferences.put(actorId, value);
+
+    }
+
+    @Override
+    public void unblockActor(String actorId) {
+        setBlockedState(actorId, false);
+    }
+
+    public Collection<ActorPreferences> getAllActorPreferences() {
         if (localActorPreferences.isEmpty()) {
-            return getDefaultActorPreferences();
+            for (ActorPreferences ap: ConfigBackendUtils.getDefaultActorPreferences()) {
+                localActorPreferences.put(ap.getId(), ap);
+            }
         }
 
-        return (ActorPreferences[]) localActorPreferences.values().toArray();
+        return localActorPreferences.values();
     }
 
-    @Override
-    public ExpirationPolicyConfig[] getAllExpirationPolicies() {
+    public Collection<ExpirationPolicyConfig> getAllExpirationPolicies() {
         if (localExpPolicies.isEmpty()) {
-            return getDefaultPolicies(defaultTimeout, defaultTimeUnit);
+            localExpPolicies.addAll(ConfigBackendUtils.getDefaultPolicies(defaultTimeout, defaultTimeUnit));
         }
 
-        return (ExpirationPolicyConfig[]) localExpPolicies.toArray();
+        return localExpPolicies;
     }
 
-    @Override
     public ActorPreferences getActorPreferences(String actorId) {
         if (!localActorPreferences.containsKey(actorId)) {
             return null;
         }
 
         return localActorPreferences.get(actorId);
-    }
-
-    private ActorPreferences[] getDefaultActorPreferences() {
-        ActorPreferences actorPreferences = new ActorPreferences();
-        actorPreferences.setBlocked(false);
-        actorPreferences.setId("default");
-        return new ActorPreferences[]{actorPreferences};
-    }
-
-    private ExpirationPolicyConfig[] getDefaultPolicies(Integer timeout, TimeUnit unit) {
-        ExpirationPolicyConfig timeoutPolicy = new ExpirationPolicyConfig();
-        timeoutPolicy.setName("default_timeout_policy");
-        timeoutPolicy.setClassName("ru.taskurotta.server.config.expiration.impl.TimeoutPolicy");
-
-        Properties policyProps = new Properties();
-        policyProps.put("timeout", timeout);
-        policyProps.put("timeUnit", unit.toString());
-        timeoutPolicy.setProperties(policyProps);
-
-        return new ExpirationPolicyConfig[]{timeoutPolicy};
     }
 
     private void updateActorPreferencesMap() {
@@ -166,7 +173,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
         ISet<ExpirationPolicyConfig> distributedExpPolicies = hazelcastInstance.getSet(EXPIRATION_POLICY_CONFIG_SET_NAME);
         logger.trace("Update [{}] = [{}]", EXPIRATION_POLICY_CONFIG_SET_NAME, distributedExpPolicies);
 
-        // to performance reason
+        // for is blocked check performance reason
         localExpPolicies = new HashSet<>(distributedExpPolicies);
     }
 

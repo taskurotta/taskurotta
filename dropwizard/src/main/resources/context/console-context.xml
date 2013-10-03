@@ -63,7 +63,6 @@
         <property name="taskInfo" ref="taskBackend"/>
         <property name="processInfo" ref="processBackend"/>
         <property name="graphInfo" ref="dependencyBackend"/>
-        <property name="configInfo" ref="configBackend" />
     </bean>
 
 </beans>

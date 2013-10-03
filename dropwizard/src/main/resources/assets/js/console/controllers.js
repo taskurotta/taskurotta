@@ -1,4 +1,4 @@
-var consoleControllers = angular.module("console.controllers", ['console.services']);
+var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal']);
 
 consoleControllers.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
 
@@ -17,7 +17,7 @@ consoleControllers.controller("rootController", function ($rootScope, $scope, $l
     };
 });
 
-consoleControllers.controller("queueListController", function ($scope, $$data, $$timeUtil, $log, $timeout) {
+consoleControllers.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
 
     $scope.feedback = "";
     $scope.initialized = false;
@@ -423,12 +423,6 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         return "";
     };
 
-//    $$data.listActors().then(function(value) {
-//        $scope.actorIds = angular.fromJson(value.data || {});
-//        $scope.selectedActorIds = new Array($scope.actorIds.length);
-//        $log.info("metricsController: actors list size getted is: " + $scope.actorIds.length);
-//    });
-
     $$data.getMetricsOptions().then(function(value) {
         $scope.metricsOptions = angular.fromJson(value.data || {});
         $log.info("metricsController: metricsOptions getted are: " + angular.toJson(value.data));
@@ -456,7 +450,7 @@ consoleControllers.controller("homeController", function ($scope) {
 
 });
 
-consoleControllers.controller("actorListController", function ($scope, $$data, $timeout, tskActors, $log) {
+consoleControllers.controller("actorListController", ['$scope', '$$data', 'tskActors', '$log', '$modal', function ($scope, $$data, tskActors, $log, $modal) {
     $scope.feedback = "";
     $scope.initialized = false;
 
@@ -466,6 +460,98 @@ consoleControllers.controller("actorListController", function ($scope, $$data, $
         pageNumber: 1,
         totalCount: 0,
         items: []
+    };
+
+    $scope.selection = {
+        actorIds: {}
+    };
+
+    $scope.getSelectedActorIds = function() {
+        var result = [];
+        for (var key in $scope.selection.actorIds) {
+            if ($scope.selection.actorIds[key]) {
+                result.push(key);
+            }
+        }
+        return result;
+    };
+
+    $scope.isSeveralActorsSelected = function(){
+        return $scope.getSelectedActorIds().length > 1;
+    };
+
+    $scope.isActorSelected = function(actorId) {
+        var selected = $scope.getSelectedActorIds();
+        for (var i = 0; i<selected.length; i++) {
+            if (selected[i] == actorId) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    $scope.isSelectionLinkActive = function(actorId) {
+        return $scope.isSeveralActorsSelected() && $scope.isActorSelected(actorId);
+    };
+
+    $scope.blockActor = function(actorId) {
+
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve'
+        });
+
+        modalInstance.result.then(function(okMess){
+            tskActors.blockActor(actorId).then(function(success) {
+                $log.log("Actor ["+actorId+"] have been blocked");
+                $scope.update();
+            }, function(error) {
+                $log.error("Error blocking actor ["+actorId+"]: " + angular.toJson(error));
+                $scope.feedback = error;
+                $scope.update();
+            });
+        }, function(cancelMsg) {
+            //do nothing
+        });
+    };
+
+    $scope.unblockActor = function(actorId) {
+        var modalInstance = $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve'
+        });
+
+        modalInstance.result.then(function(okMess){
+            tskActors.unblockActor(actorId).then(function(success) {
+                $log.log("Actor ["+actorId+"] have been unblocked");
+                $scope.update();
+            }, function(error) {
+                $log.error("Error unblocking actor ["+actorId+"]: " + angular.toJson(error));
+                $scope.feedback = error;
+                $scope.update();
+            });
+        }, function(cancelMsg) {
+            //do nothing
+        });
+
+    };
+
+    $scope.hasHourRateData = function(actorVO) {
+        var result = false;
+        if (actorVO.queueState) {
+            result = (actorVO.queueState.totalOutHour && actorVO.queueState.totalOutHour>=0)
+                || (actorVO.queueState.totalInHour && actorVO.queueState.totalInHour>=0);
+        }
+        return result;
+    };
+
+    $scope.hasDayRateData = function(actorVO) {
+        var result = false;
+        if (actorVO.queueState) {
+            result = (actorVO.queueState.totalOutDay && actorVO.queueState.totalOutDay>=0)
+                || (actorVO.queueState.totalInDay && actorVO.queueState.totalInDay>=0);
+        }
+        return result;
     };
 
     $scope.totalTasks = function () {
@@ -496,7 +582,7 @@ consoleControllers.controller("actorListController", function ($scope, $$data, $
     //Initialization:
     $scope.update();
 
-});
+}]);
 
 consoleControllers.controller("aboutController", function ($scope) {
 

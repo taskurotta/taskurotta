@@ -14,10 +14,10 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 10
+          count: 20
           startTasks: true
-          startTasksInBackground: false
-          startTaskPeriodSeconds: 30
+          startTasksInBackground: true
+          startTaskPeriodSeconds: -1
           endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0

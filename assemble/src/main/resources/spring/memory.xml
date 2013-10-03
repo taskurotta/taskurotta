@@ -52,13 +52,13 @@
         class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
 
     <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
-    <bean id="configBackend" class="ru.taskurotta.dropwizard.server.YamlConfigBackend" />
+    <bean id="configBackend" class="ru.taskurotta.backend.config.impl.MemoryConfigBackend" />
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
         <constructor-arg name="name" value="check task server" />
         <property name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandlerOld" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
 
 </beans>
