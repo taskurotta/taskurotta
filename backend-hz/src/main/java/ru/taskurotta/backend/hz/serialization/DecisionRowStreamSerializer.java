@@ -92,8 +92,10 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
             for (int i = 0; i < readyItemCount; i++) {
                 list.add(UUIDSerializer.read(in));
             }
+            UUID[] arrayOfUUID = new UUID[list.size()];
+            list.toArray(arrayOfUUID);
 
-            return new HzGraphDao.DecisionRow(itemId, modification, (UUID[]) list.toArray());
+            return new HzGraphDao.DecisionRow(itemId, modification, arrayOfUUID);
         }
         return new HzGraphDao.DecisionRow(itemId, modification, null);
     }
