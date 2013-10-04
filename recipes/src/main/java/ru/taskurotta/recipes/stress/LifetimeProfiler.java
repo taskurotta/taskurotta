@@ -44,13 +44,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                if (!StressTaskCreator.CAN_WORK.get()) {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(100);
-                    } catch (InterruptedException e) { //
-                    }
-                    return null;
-                }
 
                 if (taskCount.get() == 0) {
                     lastTime = startTime = System.currentTimeMillis();
@@ -66,21 +59,15 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         lastTime = curTime;
                     }
                 } else {
-                    StressTaskCreator.MONITOR.lock();
-
-                    if (StressTaskCreator.CAN_WORK.get()) {
-                        StressTaskCreator.CAN_WORK.set(false);
-                        System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime - startTime));
-                        taskCount.set(0);
-                        if (StressTaskCreator.LATCH != null) {
-                            StressTaskCreator.LATCH.countDown();
-                        }
-                        if (exitAfterAll) {
-                            System.exit(0);
-                        }
+                    System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime - startTime));
+                    taskCount.set(0);
+                    if (StressTaskCreator.LATCH != null) {
+                        StressTaskCreator.LATCH.countDown();
+                    }
+                    if (exitAfterAll) {
+                        System.exit(0);
                     }
 
-                    StressTaskCreator.MONITOR.unlock();
                 }
                 return task;
             }

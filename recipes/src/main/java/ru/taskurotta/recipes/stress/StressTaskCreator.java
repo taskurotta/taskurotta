@@ -12,9 +12,6 @@ import java.io.Console;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: greg
@@ -29,10 +26,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private static int THREADS_COUNT = 100;
 
     private int countOfCycles = 100;
-
-    public static final Lock MONITOR = new ReentrantLock(true);
     public static CountDownLatch LATCH;
-    public static final AtomicBoolean CAN_WORK = new AtomicBoolean(false);
 
     private ExecutorService executorService;
 
@@ -47,31 +41,24 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     }
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
-        MONITOR.lock();
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        for (int i = 0; i < 2000; i++) {
+            final int a = (int) (Math.random() * 100);
+            final int b = (int) (Math.random() * 100);
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    deciderClient.multiply(a, b);
+                    latch.countDown();
+                }
+            });
+        }
+
         try {
-            CAN_WORK.set(false);
-            final CountDownLatch latch = new CountDownLatch(1);
-
-            for (int i = 0; i < 2000; i++) {
-                final int a = (int) (Math.random() * 100);
-                final int b = (int) (Math.random() * 100);
-                executorService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        deciderClient.multiply(a, b);
-                        latch.countDown();
-                    }
-                });
-            }
-
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                log.error("latch.await() about process creations was interrupted", e);
-            }
-        } finally {
-            CAN_WORK.set(true);
-            MONITOR.unlock();
+            latch.await();
+        } catch (InterruptedException e) {
+            log.error("latch.await() about process creations was interrupted", e);
         }
     }
 
