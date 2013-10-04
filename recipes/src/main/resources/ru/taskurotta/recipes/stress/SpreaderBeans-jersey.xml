@@ -25,6 +25,7 @@
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.stress.StressTaskCreator">
         <property name="clientServiceManager" ref="clientServiceManager"/>
+        <property name="countOfCycles" value="${cycles}"/>
     </bean>
 
 </beans>

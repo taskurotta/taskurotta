@@ -28,7 +28,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     private static int THREADS_COUNT = 100;
 
-    private int countOfCycles = 125;
+    private int countOfCycles = 100;
 
     public static final Lock MONITOR = new ReentrantLock(true);
     public static CountDownLatch LATCH;
@@ -98,7 +98,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                 createStartTask(deciderClient);
                 try {
                     LATCH.await();
-                    System.out.println("Remain " + countDownLatch.getCount()+" of "+countOfCycles +" finished");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

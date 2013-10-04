@@ -17,6 +17,7 @@ spreader:
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
+          cycles: 100
 
 profiler:
   - MainProfilerConfig:

@@ -10,7 +10,7 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
-    <bean id="multiplyDecider" class="ru.taskurotta.recipes.multiplier.MultiplierDeciderImpl"></bean>
+    <bean id="multiplyDecider" class="ru.taskurotta.recipes.multiplier.MultiplierDeciderImpl"/>
 
     <bean id="arbiter" class="ru.taskurotta.test.flow.BasicFlowArbiter">
         <constructor-arg name="stages">

@@ -13,8 +13,8 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <context:property-placeholder />
-    <context:annotation-config />
+    <context:property-placeholder/>
+    <context:annotation-config/>
 
     <hz:hazelcast id="hzInstance">
         <hz:config>
@@ -38,26 +38,48 @@
             <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
             <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
+            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+                    max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
+            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+                    max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
+            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+                    max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+                    max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.actor.preferences.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU" max-size="1000" eviction-percentage="25">
+            <hz:map name="${hz.actor.preferences.map.name}" backup-count="0" time-to-live-seconds="5"
+                    eviction-policy="LRU" max-size="1000" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
-
+            <hz:serialization>
+                <hz:serializers>
+                    <hz:serializer type-class="ru.taskurotta.backend.dependency.links.Graph"
+                                   class-name="ru.taskurotta.backend.hz.serialization.GraphStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.backend.hz.dependency.HzGraphDao.DecisionRow"
+                                   class-name="ru.taskurotta.backend.hz.serialization.DecisionRowStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ArgContainerSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ActorSchedulingOptionsContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ActorSchedulingOptionsContainerSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ErrorContainerSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskContainerSerializer"/>
+                </hz:serializers>
+            </hz:serialization>
         </hz:config>
 
     </hz:hazelcast>
@@ -97,28 +119,28 @@
     <!-- /Queues persistence support -->
 
 
-
     <!-- Config support -->
-    <bean id="hzConfigBackendSupport" class="ru.taskurotta.backend.hz.support.HzConfigBackendSupport" init-method="init">
-        <property name = "hzInstance" ref = "hzInstance" />
-        <property name = "queuePrefix" value = "${hz.task.queue.prefix}" />
-        <property name="actorPreferencesMapName" value = "${hz.actor.preferences.map.name}" />
+    <bean id="hzConfigBackendSupport" class="ru.taskurotta.backend.hz.support.HzConfigBackendSupport"
+          init-method="init">
+        <property name="hzInstance" ref="hzInstance"/>
+        <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}"/>
     </bean>
 
-    <bean id="actorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource" >
-        <property name="actorConfigManager" ref="actorConfigManager" />
-        <property name="configBackend" ref="configBackend" />
+    <bean id="actorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource">
+        <property name="actorConfigManager" ref="actorConfigManager"/>
+        <property name="configBackend" ref="configBackend"/>
     </bean>
     <!-- /Config support -->
 
 
     <!--  Actor config support  -->
     <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.HzActorConfigManager">
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
-        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}" />
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>
 
-        <property name="metricsDataRetriever" ref="metricsDataHandler" />
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
     </bean>
     <!-- /Actor config support -->
 
@@ -145,7 +167,6 @@
     <!-- /Mongo -->
 
 
-
     <!-- REST resources -->
     <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
         <property name="taskServer" ref="taskServer"/>
@@ -159,17 +180,16 @@
     <!-- /REST resources -->
 
 
-
     <!-- Backends -->
     <bean id="originalQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}"/>
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
 
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
 
-        <property name="hzQueueConfigSupport" ref="queueConfigSupport" />
-        <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport" />
-        <property name="queueNamePrefix" value="${hz.task.queue.prefix}" />
+        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport"/>
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
 
 
@@ -179,12 +199,12 @@
         <constructor-arg name="mergePeriod" value="${hz.recovery.merge.period}"/>
         <constructor-arg name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
 
-        <property name="metricsFactory" ref="metricsFactory" />
+        <property name="metricsFactory" ref="metricsFactory"/>
     </bean>
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
-        <constructor-arg name="actorPreferencesMapName" value = "${hz.actor.preferences.map.name}" />
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
@@ -198,7 +218,8 @@
         <constructor-arg name="taskDao" ref="taskDao"/>
     </bean>
 
-    <bean id="dependencyBackend" class="ru.taskurotta.backend.hz.dependency.HzDependencyBackend" factory-method="createInstance">
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.hz.dependency.HzDependencyBackend"
+          factory-method="createInstance">
         <constructor-arg name="graphDao" ref="graphDao"/>
     </bean>
 
@@ -214,7 +235,6 @@
     <!-- /Backends -->
 
 
-
     <!-- Health checks -->
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
         <constructor-arg name="name" value="check task server"/>
@@ -223,32 +243,30 @@
     <!-- /Health checks -->
 
 
-
-
     <!-- Recovery -->
     <bean id="processRecoveryService" class="ru.taskurotta.recovery.ProcessRecoveryService" init-method="init">
-        <property name="dataSource" ref="dataSource" />
-        <property name="dependencyBackend" ref="dependencyBackend" />
-        <property name="hazelcastInstance" ref="hzInstance" />
-        <property name="processBackend" ref="processBackend" />
-        <property name="queueBackend" ref="queueBackend" />
+        <property name="dataSource" ref="dataSource"/>
+        <property name="dependencyBackend" ref="dependencyBackend"/>
+        <property name="hazelcastInstance" ref="hzInstance"/>
+        <property name="processBackend" ref="processBackend"/>
+        <property name="queueBackend" ref="queueBackend"/>
         <property name="queueBackendStatistics" ref="queueBackend"/>
-        <property name="recoveryProcessTimeOut" value = "${recovery.process.timeout}" />
-        <property name="taskBackend" ref="taskBackend" />
-        <property name="taskDao" ref="taskDao" />
-        <property name="threadCount" value="${recovery.process.thread.count}" />
-        <property name="useDaemonThreads" value = "true" />
-        <property name="processBatchSize" value="${recovery.process.batch.size}" />
-        <property name="startupRecovery" value = "${recovery.startup.run}" />
+        <property name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
+        <property name="taskBackend" ref="taskBackend"/>
+        <property name="taskDao" ref="taskDao"/>
+        <property name="threadCount" value="${recovery.process.thread.count}"/>
+        <property name="useDaemonThreads" value="true"/>
+        <property name="processBatchSize" value="${recovery.process.batch.size}"/>
+        <property name="startupRecovery" value="${recovery.startup.run}"/>
     </bean>
 
-    <bean id = "processRecoveryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="cronExpression" value="${recovery.process.cron}" />
+    <bean id="processRecoveryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="${recovery.process.cron}"/>
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                <property name="targetObject" ref="processRecoveryService" />
-                <property name="targetMethod" value="findAndSubmitRecovery" />
-                <property name="concurrent" value="false" />
+                <property name="targetObject" ref="processRecoveryService"/>
+                <property name="targetMethod" value="findAndSubmitRecovery"/>
+                <property name="concurrent" value="false"/>
             </bean>
         </property>
     </bean>
@@ -256,17 +274,16 @@
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref bean="processRecoveryTrigger" />
+                <ref bean="processRecoveryTrigger"/>
             </list>
         </property>
     </bean>
     <!-- /Recovery -->
 
 
-
-
     <!-- Task server -->
-    <bean id="originalTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
+    <bean id="originalTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer"
+          factory-method="createInstance">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
@@ -280,17 +297,17 @@
 
     <!-- Metrics -->
     <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer">
-        <constructor-arg name="taskServer" ref="originalTaskServer" />
-        <property name="metricsFactory" ref="metricsFactory" />
+        <constructor-arg name="taskServer" ref="originalTaskServer"/>
+        <property name="metricsFactory" ref="metricsFactory"/>
     </bean>
 
     <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
-        <constructor-arg name="dumpPeriod" value = "1" />
-        <constructor-arg name="dumpingThreads" value = "3" />
-        <constructor-arg name="dataListener" ref="metricsDataHandler" />
+        <constructor-arg name="dumpPeriod" value="1"/>
+        <constructor-arg name="dumpingThreads" value="3"/>
+        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
     <!-- /Metrics -->
 
 
@@ -310,8 +327,6 @@
     <!-- /Data source -->
 
 
-
-
     <!-- Transactions -->
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
@@ -324,7 +339,8 @@
     </tx:advice>
 
     <aop:config>
-        <aop:pointcut id="serviceOperation" expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))"/>
+        <aop:pointcut id="serviceOperation"
+                      expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))"/>
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
     </aop:config>
     <!-- /Transactions -->
