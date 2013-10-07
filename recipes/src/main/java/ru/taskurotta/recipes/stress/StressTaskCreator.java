@@ -29,7 +29,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static CountDownLatch LATCH;
 
     private ExecutorService executorService;
-    private int initialSize = 2000;
+    private int initialSize = 5000;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -94,9 +94,11 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                 createStartTask(deciderClient);
                 try {
                     LATCH.await();
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
-                   e.printStackTrace();
+                    e.printStackTrace();
                 }
+
                 countDownLatch.countDown();
             }
             try {
