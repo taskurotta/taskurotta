@@ -52,6 +52,14 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                     deciderClient.multiply(a, b);
                 }
             });
+//            if (i % 2000 == 0) {
+//                try {
+//                    System.out.println("Going to sleep i=" + i);
+//                    Thread.sleep(5000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
 
     }

@@ -21,19 +21,14 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private final static Logger log = LoggerFactory.getLogger(LifetimeProfiler.class);
 
     private AtomicLong taskCount = new AtomicLong(0);
-    private long startTime;
-    private long lastTime;
-    private boolean exitAfterAll;
+    private AtomicLong startTime = new AtomicLong(0);
+    private AtomicLong lastTime = new AtomicLong(0);
     private int tasksForStat = 200;
 
     public LifetimeProfiler() {
     }
 
     public LifetimeProfiler(Class actorClass, Properties properties) {
-        if (properties.containsKey("exitAfterAll")) {
-            exitAfterAll = (Boolean) properties.get("exitAfterAll");
-        }
-
         if (properties.containsKey("tasksForStat")) {
             tasksForStat = (Integer) properties.get("tasksForStat");
         }
@@ -46,7 +41,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             public Task poll() {
 
                 if (taskCount.get() == 0) {
-                    lastTime = startTime = System.currentTimeMillis();
+                    long current = System.currentTimeMillis();
+                    lastTime.set(current);
+                    startTime.set(current);
                 }
 
                 Task task = taskSpreader.poll();
@@ -55,19 +52,15 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 if (null != task) {
                     long count = taskCount.incrementAndGet();
                     if (count % tasksForStat == 0) {
-                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, 0.001 * (curTime - lastTime), 1000.0D * tasksForStat / (curTime - lastTime));
-                        lastTime = curTime;
+                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, 0.001 * (curTime - lastTime.get()), 1000.0D * tasksForStat / (curTime - lastTime.get()));
+                        lastTime.set(curTime);
                     }
                 } else {
-                    System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime - startTime) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime - startTime));
+                    System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime.get() - startTime.get()) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime.get() - startTime.get()));
                     taskCount.set(0);
                     if (StressTaskCreator.LATCH != null) {
                         StressTaskCreator.LATCH.countDown();
                     }
-                    if (exitAfterAll) {
-                        System.exit(0);
-                    }
-
                 }
                 return task;
             }
@@ -77,10 +70,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 taskSpreader.release(taskDecision);
             }
         };
-    }
-
-    public void setExitAfterAll(boolean exitAfterAll) {
-        this.exitAfterAll = exitAfterAll;
     }
 
     public void setTasksForStat(int tasksForStat) {
