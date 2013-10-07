@@ -29,6 +29,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static CountDownLatch LATCH;
 
     private ExecutorService executorService;
+    private int initialSize = 2000;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -41,9 +42,9 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     }
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(initialSize);
 
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < initialSize; i++) {
             final int a = (int) (Math.random() * 100);
             final int b = (int) (Math.random() * 100);
             executorService.execute(new Runnable() {
@@ -70,6 +71,14 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         this.countOfCycles = countOfCycles;
     }
 
+    public int getInitialSize() {
+        return initialSize;
+    }
+
+    public void setInitialSize(int initialSize) {
+        this.initialSize = initialSize;
+    }
+
     @Override
     public void run() {
         Console console = System.console();
@@ -86,7 +95,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                 try {
                     LATCH.await();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                   e.printStackTrace();
                 }
                 countDownLatch.countDown();
             }
