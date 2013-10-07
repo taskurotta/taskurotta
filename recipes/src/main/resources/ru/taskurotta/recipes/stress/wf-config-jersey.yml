@@ -18,6 +18,7 @@ spreader:
           readTimeout: 0
           connectTimeout: 3000
           cycles: 100
+          initialSize: 5000
 
 profiler:
   - MainProfilerConfig:
