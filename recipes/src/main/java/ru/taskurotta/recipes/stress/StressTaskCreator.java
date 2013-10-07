@@ -95,6 +95,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             }
             try {
                 countDownLatch.await();
+                System.exit(0);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
