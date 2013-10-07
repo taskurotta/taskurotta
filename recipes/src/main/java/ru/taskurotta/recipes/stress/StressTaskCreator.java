@@ -42,7 +42,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     }
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
-        final CountDownLatch latch = new CountDownLatch(initialSize);
 
         for (int i = 0; i < initialSize; i++) {
             final int a = (int) (Math.random() * 100);
@@ -51,16 +50,10 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                 @Override
                 public void run() {
                     deciderClient.multiply(a, b);
-                    latch.countDown();
                 }
             });
         }
 
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            log.error("latch.await() about process creations was interrupted", e);
-        }
     }
 
     public int getCountOfCycles() {
@@ -94,7 +87,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                 createStartTask(deciderClient);
                 try {
                     LATCH.await();
-                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
