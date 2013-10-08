@@ -11,7 +11,6 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -20,9 +19,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
     private final static Logger log = LoggerFactory.getLogger(LifetimeProfiler.class);
 
-    private AtomicLong taskCount = new AtomicLong(0);
-    private AtomicLong startTime = new AtomicLong(0);
-    private AtomicLong lastTime = new AtomicLong(0);
+    public static AtomicLong taskCount = new AtomicLong(0);
+    public static AtomicLong startTime = new AtomicLong(0);
+    public static AtomicLong lastTime = new AtomicLong(0);
     private int tasksForStat = 200;
 
     public LifetimeProfiler() {
@@ -47,17 +46,18 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 }
 
                 Task task = taskSpreader.poll();
-
                 long curTime = System.currentTimeMillis();
                 if (null != task) {
+                    StressTaskCreator.GLOBAL_LATCH.countDown();
                     long count = taskCount.incrementAndGet();
                     if (count % tasksForStat == 0) {
-                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, 0.001 * (curTime - lastTime.get()), 1000.0D * tasksForStat / (curTime - lastTime.get()));
+                        double time = 0.001 * (curTime - lastTime.get());
+                        double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
+                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, time, rate);
                         lastTime.set(curTime);
                     }
                 } else {
-                    System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", taskCount.get(), 1.0 * (lastTime.get() - startTime.get()) / 1000.0, 1000.0 * taskCount.get() / (double) (lastTime.get() - startTime.get()));
-                    taskCount.set(0);
+                    lastTime.set(curTime);
                     if (StressTaskCreator.LATCH != null) {
                         StressTaskCreator.LATCH.countDown();
                     }

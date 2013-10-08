@@ -23,11 +23,12 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private ClientServiceManager clientServiceManager;
 
 
-    private static int THREADS_COUNT = 100;
+    private static int THREADS_COUNT = 50;
 
     private int countOfCycles = 100;
     private boolean needRun = true;
     public static CountDownLatch LATCH;
+    public static CountDownLatch GLOBAL_LATCH;
 
     private ExecutorService executorService;
     private int initialSize = 5000;
@@ -59,9 +60,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                     deciderClient.multiply(a, b);
                 }
             });
-            if (i % 1000 == 0) {
-                System.out.println("added to queue i=" + i);
-            }
         }
 
     }
@@ -85,14 +83,13 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     @Override
     public void run() {
         Console console = System.console();
-
+        GLOBAL_LATCH = new CountDownLatch(countOfCycles * initialSize);
         if (console != null) {
             DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
             MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
-            System.out.println(countOfCycles + " cycle test started");
-            CountDownLatch countDownLatch = new CountDownLatch(countOfCycles);
             executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-            while (countDownLatch.getCount() > 0) {
+            System.out.println("Test with " + countOfCycles + " cycles");
+            for (int i = 0; i < countOfCycles; i++) {
                 LATCH = new CountDownLatch(1);
                 createStartTask(deciderClient);
                 try {
@@ -100,15 +97,17 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-                countDownLatch.countDown();
             }
             try {
-                countDownLatch.await();
-                System.exit(0);
+                GLOBAL_LATCH.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            double time = 1.0 * (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get()) / 1000.0;
+            double rate = 1000.0 * LifetimeProfiler.taskCount.get() / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
+            System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", LifetimeProfiler.taskCount.get(), time, rate);
+            System.out.println("End");
+            System.exit(0);
         } else {
             System.out.println("No console available!!");
         }

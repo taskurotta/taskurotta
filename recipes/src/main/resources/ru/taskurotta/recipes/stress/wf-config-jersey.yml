@@ -11,11 +11,11 @@ spreader:
         context: ru/taskurotta/recipes/stress/SpreaderBeans-jersey.xml
         properties:
           endpoint: "http://localhost:8811"
-          threadPoolSize: 20
+          threadPoolSize: 100
           readTimeout: 0
           connectTimeout: 3000
-          cycles: 1
-          initialSize: 25000
+          cycles: 10
+          initialSize: 5000
           needRun: true
 
 profiler:
@@ -33,7 +33,7 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
-      count: 1
+      count: 20
 
 logback:
     appender:
