@@ -27,6 +27,7 @@
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="countOfCycles" value="${cycles}"/>
         <property name="initialSize" value="${initialSize}"/>
+        <property name="needRun" value="${needRun}"/>
     </bean>
 
 </beans>

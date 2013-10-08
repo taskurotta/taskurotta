@@ -26,6 +26,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private static int THREADS_COUNT = 100;
 
     private int countOfCycles = 100;
+    private boolean needRun = true;
     public static CountDownLatch LATCH;
 
     private ExecutorService executorService;
@@ -34,7 +35,13 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("onApplicationEvent");
-        Executors.newSingleThreadExecutor().submit(this);
+        if (needRun) {
+            Executors.newSingleThreadExecutor().submit(this);
+        }
+    }
+
+    public void setNeedRun(boolean needRun) {
+        this.needRun = needRun;
     }
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {
@@ -52,14 +59,9 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                     deciderClient.multiply(a, b);
                 }
             });
-//            if (i % 2000 == 0) {
-//                try {
-//                    System.out.println("Going to sleep i=" + i);
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            if (i % 1000 == 0) {
+                System.out.println("added to queue i=" + i);
+            }
         }
 
     }

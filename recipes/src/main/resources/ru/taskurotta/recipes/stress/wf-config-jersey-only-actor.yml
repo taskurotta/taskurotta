@@ -16,7 +16,7 @@ spreader:
           connectTimeout: 3000
           cycles: 1
           initialSize: 25000
-          needRun: true
+          needRun: false
 
 profiler:
   - MainProfilerConfig:
