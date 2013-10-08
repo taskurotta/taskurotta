@@ -108,6 +108,16 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
             return result/this.size;
         }
 
+        public long getTotalCount() {
+            long result = 0l;
+            for (int i = 0; i < this.size; i++) {
+                if (dsCounts.get(i) != null && dsCounts.get(i).getValue()>=0) {
+                    result += dsCounts.get(i).getValue();
+                }
+            }
+            return result;
+        }
+
         public long getUpdated() {
             return this.updated.get();
         }
@@ -138,7 +148,7 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
         DataRowVO dataRow = lastHourDataHolder.get(holderKey);
         int position = dataRow.populate(count, mean, measurementTime);
         if (position==(SECONDS_IN_HOUR-1)) {//last second in minute
-            handleMinute(metricName, datasetName, dataRow.getAverageCount(), dataRow.getAverageMean(), measurementTime);
+            handleMinute(metricName, datasetName, dataRow.getTotalCount(), dataRow.getAverageMean(), measurementTime);
         }
 
     }

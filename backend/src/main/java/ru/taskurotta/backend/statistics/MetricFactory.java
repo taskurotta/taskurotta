@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.statistics;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 import ru.taskurotta.backend.statistics.metrics.Metric;
 
@@ -15,6 +17,8 @@ import java.util.concurrent.TimeUnit;
  * Date: 12.09.13 17:21
  */
 public class MetricFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(MetricFactory.class);
 
     private Map<String, Metric> metricsCache = new ConcurrentHashMap<>();//stores created Metric instances
 
@@ -56,7 +60,12 @@ public class MetricFactory {
         this.executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                result.dump(dataListener);
+                try {
+                    result.dump(dataListener);
+                } catch (Throwable e) {//must catch all of the exceptions : scheduled pool shuts quietly on exception
+                    logger.error("Cannot dump metrics result", e);
+                }
+
             }
         }, 0, periodDelay, TimeUnit.SECONDS);
 

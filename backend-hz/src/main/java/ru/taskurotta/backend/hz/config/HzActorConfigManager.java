@@ -13,11 +13,14 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.backend.console.manager.ActorConfigManager;
 import ru.taskurotta.backend.console.model.ActorVO;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.MetricsStatDataVO;
 import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
 import ru.taskurotta.backend.statistics.QueueBalanceVO;
 import ru.taskurotta.server.MetricName;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -32,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 public class HzActorConfigManager implements ActorConfigManager {
 
     private static final Logger logger = LoggerFactory.getLogger(HzActorConfigManager.class);
+    public static final String ACTOR_CONFIG_EXECUTOR_SERVICE = "actorConfigExecutorService";
+
     private MongoTemplate mongoTemplate;
     private String actorConfigName;
     private HazelcastInstance hzInstance;
@@ -42,22 +47,6 @@ public class HzActorConfigManager implements ActorConfigManager {
         this.mongoTemplate = mongoTemplate;
         this.hzInstance = hzInstance;
     }
-
-//    protected GenericPage<String> getMongoDbActorIdList (int pageNum, int pageSize) {
-//        List<String> items = new ArrayList<String>();
-//        long total = 0;
-//        DBCollection dbColl =  mongoTemplate.getCollection(actorConfigName);
-//        if(dbColl!=null) {
-//            DBCursor cursor = dbColl.find().skip((pageNum-1)*pageSize).limit(pageSize);
-//            while (cursor.hasNext()) {
-//                DBObject value = cursor.next();
-//                items.add((String)value.get("_id"));
-//            }
-//            total = dbColl.count();
-//        }
-//        return new GenericPage<String>(items, pageNum, pageSize, total);
-//
-//    }
 
     protected GenericPage<ActorVO> getMongoDbActorsList (int pageNum, int pageSize) {
         List<ActorVO> items = new ArrayList<ActorVO>();
@@ -100,15 +89,15 @@ public class HzActorConfigManager implements ActorConfigManager {
 
     @Override
     public QueueBalanceVO getQueueState(final String actorId) {
-        IExecutorService executorService = hzInstance.getExecutorService("actorConfigExecutorService");
+        IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
 
-        Map<Member, Future<QueueBalanceVO>> futures = executorService.submitToMembers(new ComputeQueueBalanceTask(actorId), hzInstance.getCluster().getMembers());
+        Map <Member, Future <QueueBalanceVO>> futures = executorService.submitToMembers(new ComputeQueueBalanceTask(actorId), hzInstance.getCluster().getMembers());
 
         QueueBalanceVO result = new QueueBalanceVO();
         for (Future<QueueBalanceVO> future : futures.values()) {
             try {
                 QueueBalanceVO nodeVal = future.get(5, TimeUnit.SECONDS);
-                result = sumQueueStates(result, nodeVal);
+                result = HzActorConfigUtils.sumQueueStates(result, nodeVal);
                 if (nodeVal != null) {
                     result.setNodes(result.getNodes()+1);
                 }
@@ -120,52 +109,21 @@ public class HzActorConfigManager implements ActorConfigManager {
         return result;
     }
 
-    private static QueueBalanceVO sumQueueStates(QueueBalanceVO to, QueueBalanceVO from) {
-        if (from == null) {
-            return to;
-        } else if (to == null) {
-            return from;
-        } else {
-            to.setTotalOutHour(getSummedValue(to.getTotalOutHour(), from.getTotalOutHour()));
-            to.setOutHourPeriod(getMergedPeriod(to.getOutHourPeriod(), from.getOutHourPeriod()));
+    @Override
+    public Map<String, Collection<MetricsStatDataVO>> getMetricsData(Collection<String> metrics, Collection<String> actorIds) {
+        IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
+        Map<String, Collection<MetricsStatDataVO>> result = new HashMap<>();
 
-            to.setTotalOutDay(getSummedValue(to.getTotalOutDay(), from.getTotalOutDay()));
-            to.setOutDayPeriod(getMergedPeriod(to.getOutDayPeriod(), from.getOutDayPeriod()));
-
-            to.setTotalInHour(getSummedValue(to.getTotalInHour(), from.getTotalInHour()));
-            to.setInHourPeriod(getMergedPeriod(to.getInHourPeriod(), from.getInHourPeriod()));
-
-            to.setTotalInDay(getSummedValue(to.getTotalInDay(), from.getTotalInDay()));
-            to.setInDayPeriod(getMergedPeriod(to.getInDayPeriod(), from.getInDayPeriod()));
-
-            return to;
-        }
-    }
-
-    private static int getSummedValue(int val1, int val2) {
-        if (val1 < 0) {
-            return val2;
-        } else if(val2 < 0) {
-            return val1;
-        } else {
-            return val1 + val2;
-        }
-    }
-
-
-    private static long[] getMergedPeriod(long[] val1, long[] val2) {
-        long[] result = {-1l, -1l};
-
-        if ((val2[0] < 0) || (val1[0]>0 && val1[0]<val2[0])) {
-            result[0] = val1[0];
-        } else {
-            result[0] = val2[0];
-        }
-
-        if ((val2[1] < 0) || (val1[1]>0 && val1[1]>val2[1])) {
-            result[1] = val1[1];
-        } else {
-            result[1] = val2[1];
+        Map <Member, Future <Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(new ComputeMetricsStatDataTask(metrics, actorIds), hzInstance.getCluster().getMembers());
+        if (futures!=null && !futures.isEmpty()) {
+            for (Member member : futures.keySet()) {
+                try {
+                    Future <Collection<MetricsStatDataVO>> future = futures.get(member);
+                    result.put(member.toString(), future.get(5, TimeUnit.SECONDS));
+                } catch (Exception e) {
+                    logger.error("Cannot get metrics stat data for actorIds["+actorIds+"], metrics["+metrics+"]", e);
+                }
+            }
         }
 
         return result;

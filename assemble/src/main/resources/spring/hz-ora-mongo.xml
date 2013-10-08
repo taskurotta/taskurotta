@@ -127,10 +127,16 @@
         <property name="actorPreferencesMapName" value="${hz.actor.preferences.map.name}"/>
     </bean>
 
-    <bean id="actorResource" class="ru.taskurotta.dropwizard.resources.console.ActorResource">
+    <bean id="actorListResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorListResource">
         <property name="actorConfigManager" ref="actorConfigManager"/>
         <property name="configBackend" ref="configBackend"/>
     </bean>
+
+    <bean id = "actorCompareResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorCompareResource">
+        <property name="metricsDataRetriever" ref="metricsDataHandler" />
+        <property name="actorConfigManager" ref="actorConfigManager" />
+    </bean>
+
     <!-- /Config support -->
 
 
