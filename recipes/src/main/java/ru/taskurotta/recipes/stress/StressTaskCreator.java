@@ -31,7 +31,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static CountDownLatch GLOBAL_LATCH;
 
     private ExecutorService executorService;
-    private int initialSize = 5000;
+    private static int initialSize = 5000;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -72,12 +72,12 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         this.countOfCycles = countOfCycles;
     }
 
-    public int getInitialSize() {
+    public static int getInitialSize() {
         return initialSize;
     }
 
-    public void setInitialSize(int initialSize) {
-        this.initialSize = initialSize;
+    public static void setInitialSize(int initialSize) {
+       StressTaskCreator.initialSize = initialSize;
     }
 
     @Override
