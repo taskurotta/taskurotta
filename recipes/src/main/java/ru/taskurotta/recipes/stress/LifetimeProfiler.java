@@ -50,16 +50,17 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 if (null != task) {
                     StressTaskCreator.GLOBAL_LATCH.countDown();
                     long count = taskCount.incrementAndGet();
+                    if (count % (StressTaskCreator.getInitialSize() - 3000) == 0) {
+                        if (StressTaskCreator.LATCH != null) {
+                            System.out.println("Shot on " + count);
+                            StressTaskCreator.LATCH.countDown();
+                        }
+                    }
                     if (count % tasksForStat == 0) {
                         double time = 0.001 * (curTime - lastTime.get());
                         double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
                         System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, time, rate);
                         lastTime.set(curTime);
-                    }
-                } else {
-                    lastTime.set(curTime);
-                    if (StressTaskCreator.LATCH != null) {
-                        StressTaskCreator.LATCH.countDown();
                     }
                 }
                 return task;
