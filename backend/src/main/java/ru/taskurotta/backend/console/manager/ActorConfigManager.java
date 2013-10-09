@@ -2,7 +2,11 @@ package ru.taskurotta.backend.console.manager;
 
 import ru.taskurotta.backend.console.model.ActorVO;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.MetricsStatDataVO;
 import ru.taskurotta.backend.statistics.QueueBalanceVO;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Interface for the console manager providing
@@ -12,14 +16,10 @@ import ru.taskurotta.backend.statistics.QueueBalanceVO;
  */
 public interface ActorConfigManager {
 
-//    public void blockActor(String actorId);
-//
-//    public void unblockActor(String actorId);
-//
-//    public boolean isActorBlocked(String actorId);
-
     public GenericPage<ActorVO> getActorList(int pageNum, int pageSize);
 
     public QueueBalanceVO getQueueState(String actorId);
+
+    public Map<String, Collection<MetricsStatDataVO>> getMetricsData(Collection<String> metrics, Collection<String> actorIds);
 
 }

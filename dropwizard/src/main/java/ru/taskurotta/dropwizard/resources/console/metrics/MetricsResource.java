@@ -2,6 +2,7 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
 
 import com.google.common.base.Optional;
 import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 
 import javax.ws.rs.GET;
@@ -41,12 +42,12 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
                 List<DatasetVO> dataSets = metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period);
                 if (smooth > 0) {
                     for(DatasetVO ds: dataSets) {
-                        ds.setData(MetricsDataFilter.getSmoothedDataSet(ds.getData(), smooth));
+                        ds.setData(MetricsDataUtils.getSmoothedDataSet(ds.getData(), smooth));
                     }
                 }
                 if (!zeroes) {
                     for(DatasetVO ds: dataSets) {
-                        ds.setData(MetricsDataFilter.getNonZeroValuesDataSet(ds.getData()));
+                        ds.setData(MetricsDataUtils.getNonZeroValuesDataSet(ds.getData()));
                     }
                 }
                 return Response.ok(dataSets, MediaType.APPLICATION_JSON).build();

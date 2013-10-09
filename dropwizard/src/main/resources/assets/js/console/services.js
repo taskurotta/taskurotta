@@ -1,28 +1,25 @@
-var consoleServices = angular.module("console.services", ['ngResource']);
-
-consoleServices.factory("tskSchedule", function ($resource, $http) {
-    var resultService = {
-        getScheduledTasks: function() {
-
-        },
-        createScheduledTask: function(cron, name, task) {
-
-        }
-    };
-});
+var consoleServices = angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.services']);
 
 consoleServices.factory("tskActors", function ($resource, $http) {
     var resultService = {
-        blockActor: function(actorId) {
-            return $http.post('/rest/console/actor/block/', actorId);
+        setActorBlocked: function(actorId, isBlocked) {
+            var url = '/rest/console/actor/unblock/';
+            if (isBlocked) {
+                url = '/rest/console/actor/block/';
+            }
+            return $http.post(url, actorId);
         },
-
-        unblockActor: function(actorId) {
-            return $http.post('/rest/console/actor/unblock/', actorId);
-        },
-
         listActors: function(pageNumber, pageSize) {
             return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        },
+        listMetrics: function() {
+            return $http.get('/rest/console/actor/metrics/compare');
+        },
+        getMetricsData: function(actorIds, metricNames) {
+            var command = {};
+            command["actorIds"] = actorIds;
+            command["metrics"] = metricNames;
+            return $http.post('/rest/console/actor/metrics/compare', command);
         }
     };
 
@@ -83,30 +80,3 @@ consoleServices.factory("$$data", function ($resource, $http) {
     return resultService;
 
 });
-
-consoleServices.factory('$$timeUtil', ["$timeout",
-    function ($timeout) {
-        var _intervals = {}, _intervalUID = 1;
-
-        return {
-            setInterval: function (operation, interval, $scope) {
-                var _internalId = _intervalUID++;
-
-                _intervals[ _internalId ] = $timeout(function intervalOperation() {
-                    operation($scope || undefined);
-                    _intervals[ _internalId ] = $timeout(intervalOperation, interval);
-                }, interval);
-
-                $scope.$on('$destroy', function (e) {//cancel interval on change view
-                    $timeout.cancel(_intervals[_internalId]);
-                });
-
-                return _internalId;
-            },
-
-            clearInterval: function (id) {
-                return $timeout.cancel(_intervals[ id ]);
-            }
-        }
-    }
-]);

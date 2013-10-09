@@ -1,4 +1,4 @@
-var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal']);
+var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers']);
 
 consoleControllers.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
 
@@ -450,139 +450,6 @@ consoleControllers.controller("homeController", function ($scope) {
 
 });
 
-consoleControllers.controller("actorListController", ['$scope', '$$data', 'tskActors', '$log', '$modal', function ($scope, $$data, tskActors, $log, $modal) {
-    $scope.feedback = "";
-    $scope.initialized = false;
-
-    //Init paging object
-    $scope.actorsPage = {
-        pageSize: 10,
-        pageNumber: 1,
-        totalCount: 0,
-        items: []
-    };
-
-    $scope.selection = {
-        actorIds: {}
-    };
-
-    $scope.getSelectedActorIds = function() {
-        var result = [];
-        for (var key in $scope.selection.actorIds) {
-            if ($scope.selection.actorIds[key]) {
-                result.push(key);
-            }
-        }
-        return result;
-    };
-
-    $scope.isSeveralActorsSelected = function(){
-        return $scope.getSelectedActorIds().length > 1;
-    };
-
-    $scope.isActorSelected = function(actorId) {
-        var selected = $scope.getSelectedActorIds();
-        for (var i = 0; i<selected.length; i++) {
-            if (selected[i] == actorId) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    $scope.isSelectionLinkActive = function(actorId) {
-        return $scope.isSeveralActorsSelected() && $scope.isActorSelected(actorId);
-    };
-
-    $scope.blockActor = function(actorId) {
-
-        var modalInstance = $modal.open({
-            templateUrl: '/partials/view/modal/approve_msg.html',
-            windowClass: 'approve'
-        });
-
-        modalInstance.result.then(function(okMess){
-            tskActors.blockActor(actorId).then(function(success) {
-                $log.log("Actor ["+actorId+"] have been blocked");
-                $scope.update();
-            }, function(error) {
-                $log.error("Error blocking actor ["+actorId+"]: " + angular.toJson(error));
-                $scope.feedback = error;
-                $scope.update();
-            });
-        }, function(cancelMsg) {
-            //do nothing
-        });
-    };
-
-    $scope.unblockActor = function(actorId) {
-        var modalInstance = $modal.open({
-            templateUrl: '/partials/view/modal/approve_msg.html',
-            windowClass: 'approve'
-        });
-
-        modalInstance.result.then(function(okMess){
-            tskActors.unblockActor(actorId).then(function(success) {
-                $log.log("Actor ["+actorId+"] have been unblocked");
-                $scope.update();
-            }, function(error) {
-                $log.error("Error unblocking actor ["+actorId+"]: " + angular.toJson(error));
-                $scope.feedback = error;
-                $scope.update();
-            });
-        }, function(cancelMsg) {
-            //do nothing
-        });
-
-    };
-
-    $scope.hasHourRateData = function(actorVO) {
-        var result = false;
-        if (actorVO.queueState) {
-            result = (actorVO.queueState.totalOutHour && actorVO.queueState.totalOutHour>=0)
-                || (actorVO.queueState.totalInHour && actorVO.queueState.totalInHour>=0);
-        }
-        return result;
-    };
-
-    $scope.hasDayRateData = function(actorVO) {
-        var result = false;
-        if (actorVO.queueState) {
-            result = (actorVO.queueState.totalOutDay && actorVO.queueState.totalOutDay>=0)
-                || (actorVO.queueState.totalInDay && actorVO.queueState.totalInDay>=0);
-        }
-        return result;
-    };
-
-    $scope.totalTasks = function () {
-        var result = 0;
-        if($scope.actorsPage.items) {
-            for (var i = 0; i < $scope.actorsPage.items.length; i++) {
-                result = result + $scope.actorsPage.items[i].count;
-            }
-        }
-        return result;
-    };
-
-    //Updates queues states  by polling REST resource
-    $scope.update = function () {
-
-        tskActors.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
-            $scope.actorsPage = value.data || {};
-            $scope.initialized = true;
-            $log.info("actorListController: successfully updated actors list: " + angular.toJson($scope.actorsPage));
-        }, function (errReason) {
-            $scope.feedback = errReason;
-            $scope.initialized = true;
-            $log.error("actorListController: actor list update failed: " + angular.toJson($scope.feedback));
-        });
-
-    };
-
-    //Initialization:
-    $scope.update();
-
-}]);
 
 consoleControllers.controller("aboutController", function ($scope) {
 
@@ -721,7 +588,6 @@ consoleControllers.controller("scheduleListController", function ($scope, tskSch
     $scope.update();
 
 });
-
 
 
 

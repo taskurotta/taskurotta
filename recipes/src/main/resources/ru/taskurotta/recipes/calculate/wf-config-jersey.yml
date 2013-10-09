@@ -17,7 +17,7 @@ spreader:
           count: 20
           startTasks: true
           startTasksInBackground: true
-          startTaskPeriodSeconds: -1
+          startTaskPeriodSeconds: 5
           endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0

@@ -88,6 +88,11 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         templateUrl: '/partials/view/list/actors_list.html',
         controller: "actorListController"
     });
+    $routeProvider.when('/actors/compare', {
+        templateUrl: '/partials/view/card/actor_compare.html',
+        controller: "actorCompareController"
+    });
+
 
     //SCHEDULE
     $routeProvider.when('/schedule/list', {

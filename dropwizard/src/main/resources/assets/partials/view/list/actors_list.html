@@ -90,7 +90,11 @@
                                     <label class="checkbox">
                                         <input type="checkbox" ng-model="selection.actorIds[actor.actorId]" />
                                         <small ng-if="!isSelectionLinkActive(actor.actorId)">Compare</small>
-                                        <a ng-if="isSelectionLinkActive(actor.actorId)" class="btn-link" popover="Go to actor's metrics comparison view" popover-trigger="mouseenter"><small>Compare ({{getSelectedActorIds().length }})</small></a>
+                                        <a ng-if="isSelectionLinkActive(actor.actorId)"
+                                           class="btn-link" popover="Go to actor's metrics comparison view" popover-trigger="mouseenter"
+                                           ng-click="navigateToCompareView()">
+                                            <small>Compare ({{getSelectedActorIds().length }})</small>
+                                        </a>
                                     </label>
                                 </td>
                                 <td ng-if="actor.blocked">

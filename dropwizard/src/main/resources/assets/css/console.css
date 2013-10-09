@@ -156,3 +156,45 @@ div.tree {
     width: 250px;
     height: 40px;
 }
+
+.checkbox-group-table {
+    width: 400px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+}
+.checkbox-group-table td {
+    width: 50%;
+}
+
+.inner-table {
+    width: 100%;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
+.inner-table th,
+.inner-table td {
+    padding: 4px;
+    line-height: 15px;
+    text-align: left;
+    vertical-align: top;
+    border-top: 0;
+}
+
+
+.inner-table tbody + tbody {
+    border-top: 0;
+}
+
+.inner-table th, .inner-table tr, .inner-table td {
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+    border-bottom: 0;
+}
+
+
+/*.table .inner-table {*/
+    /*background-color: #ffffff;*/
+/*}*/
