@@ -37,7 +37,7 @@
 
         <property name="dataTypes">
             <map>
-                <entry key="rate" value="Mean rate (count/sec)" />
+                <entry key="rate" value="Counts (times)" />
                 <entry key="mean" value="Mean time (ms)" />
             </map>
         </property>

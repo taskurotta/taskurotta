@@ -337,7 +337,7 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 
 consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
     $scope.dataHolder = [];
-    $scope.smoothRates = [-1, 2, 3, 5, 7, 10, 20, 30, 100];
+    $scope.smoothRates = ["", 3, 7, 20, 30];
 
     $scope.collapse = {
         filter: false,
