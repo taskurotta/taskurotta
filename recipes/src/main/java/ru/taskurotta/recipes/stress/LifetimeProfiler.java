@@ -54,7 +54,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 if (null != task) {
                     StressTaskCreator.GLOBAL_LATCH.countDown();
                     long count = taskCount.incrementAndGet();
-                    deltaShot = 3000;
                     if (count % (StressTaskCreator.getInitialSize() - deltaShot) == 0) {
                         if (StressTaskCreator.LATCH != null) {
                             System.out.println("Shot on " + count);
