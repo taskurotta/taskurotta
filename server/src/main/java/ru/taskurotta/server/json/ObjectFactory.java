@@ -160,6 +160,11 @@ public class ObjectFactory {
     }
 
     private void setArgContainerValue(ArgContainer target, Object value) throws Exception {
+
+        if (value == null) {
+            value = String.valueOf("null");
+        }
+
         ValueType type = SerializationUtils.extractValueType(value.getClass());
         target.setType(type);
 

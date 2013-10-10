@@ -31,7 +31,7 @@ public class SerializationUtils {
     }
 
     public static ValueType extractValueType(Class argClass) {
-        ValueType result = null;
+        ValueType result;
         if (argClass.isArray()) {
             result = ValueType.ARRAY;
         } else if (Collection.class.isAssignableFrom(argClass)) {

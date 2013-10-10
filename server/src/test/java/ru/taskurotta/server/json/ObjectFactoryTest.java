@@ -48,6 +48,16 @@ public class ObjectFactoryTest {
     }
 
     @Test
+    public void argContainerPromiseWithNull() {
+        Object value = Promise.asPromise(null);
+
+        ArgContainer argContainer = objectFactory.dumpArg(value);
+        Object v = objectFactory.parseArg(argContainer);
+
+        assertEquals(v, value);
+    }
+
+    @Test
     public void argContainerArrayBoolean() {
         boolean[] arg = new boolean[10];
         for (int i = 0; i < arg.length; i++) {
