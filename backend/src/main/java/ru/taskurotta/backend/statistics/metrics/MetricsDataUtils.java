@@ -33,13 +33,46 @@ public class MetricsDataUtils {
         return result;
     }
 
+
+    public static boolean isContainNotNegativeValue(Number[] point) {//x and y point values
+        boolean result = true;
+        if (point!=null && point[0]!=null && point[1]!=null) {
+            for (int i = 0; i<2; i++) {
+                if(!isNotNegativeNumber(point[i])) {
+                    result = false;
+                    break;
+                }
+            }
+        } else{
+            result = false;
+        }
+        return result;
+    }
+
+
+    public static boolean isNotNegativeNumber(Number target) {
+        boolean result = false;
+        if (Long.class.isAssignableFrom(target.getClass())) {
+            result = (Long)target >= 0l;
+        } else if(Double.class.isAssignableFrom(target.getClass())) {
+            result = (Double)target >= 0d;
+        } else if(Integer.class.isAssignableFrom(target.getClass())) {
+            result = (Integer)target >= 0;
+        } else if(Float.class.isAssignableFrom(target.getClass())) {
+            result = (Float)target >= 0f;
+        }
+        return result;
+    }
+
     public static List<Number[]> getSmoothedDataSet(List<Number[]> target, int times) {
         List<Number[]> compressedData = new ArrayList<>();
         if (times>1 && target!=null && !target.isEmpty()) {
             for(int i = 0; i<target.size(); i++) {
-                if (((i+1)%times) == 0) {
-                    Number[] item = {target.get(i)[0], getAverageValue(i, times-1, target)};
-                    compressedData.add(item);
+                if(isContainNotNegativeValue(target.get(i))) {
+                    if (((i+1)%times) == 0) {
+                        Number[] item = {target.get(i)[0], getAverageValue(i, times-1, target)};
+                        compressedData.add(item);
+                    }
                 }
             }
         }
@@ -89,13 +122,19 @@ public class MetricsDataUtils {
     public static Number getAverageLongValue(List<Number[]> target, int from, int to) {
         Long result = 0l;
         int count = 0;
+
         for (int i = from; i < to; i++) {
-            if (target.get(i)!=null && target.get(i)[1]!=null) {
+            if (isContainNotNegativeValue(target.get(i))) {
                 result += target.get(i)[1].longValue();
+                count++;
             }
-            count++;
         }
-        return result/Long.valueOf(count);
+
+        if(count>0) {
+            result = result/Long.valueOf(count);
+        }
+
+        return result;
 
     }
 
@@ -103,13 +142,17 @@ public class MetricsDataUtils {
         Double result = 0d;
         int count = 0;
         for(int i = from; i < to; i++) {
-            if (target.get(i)!=null && target.get(i)[1]!=null) {
+            if (isContainNotNegativeValue(target.get(i))) {
                 result += target.get(i)[1].doubleValue();
+                count++;
             }
-            count++;
         }
 
-        return result/Double.valueOf(count);
+        if (count>0){
+            result = result/Double.valueOf(count);
+        }
+
+        return result;
 
     }
 

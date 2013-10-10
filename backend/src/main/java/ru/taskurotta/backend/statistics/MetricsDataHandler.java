@@ -2,6 +2,8 @@ package ru.taskurotta.backend.statistics;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
 import ru.taskurotta.backend.statistics.datalisteners.DataListener;
 
@@ -21,9 +23,12 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
     private static MetricsDataRetriever singleton;
 
-    private static final int SECONDS_IN_MINUTE = 60;
+    private static final Logger logger = LoggerFactory.getLogger(MetricsDataHandler.class);
+
+    private static final int MINUTES_IN_HOUR = 60;
     private static final int SECONDS_IN_HOUR = 3600;
-    private static final int MINUTES_IN_24_HOURS = 24 * SECONDS_IN_MINUTE;
+    private static final int SECONDS_IN_MINUTE = 60;
+    private static final int MINUTES_IN_24_HOURS = 24 * MINUTES_IN_HOUR;
 
     private Map<String, DataRowVO> lastHourDataHolder = new ConcurrentHashMap<>();
     private Map<String, DataRowVO> lastDayDataHolder = new ConcurrentHashMap<>();
@@ -72,12 +77,8 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
         }
 
         private int getPosition() {
-            int result = counter.incrementAndGet();
-            if (result == this.size) {
-                result = 0;
-            }
             counter.compareAndSet(this.size, 0);
-            return result;
+            return counter.getAndIncrement();
         }
 
         public String getMetricsName() {
@@ -88,30 +89,26 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
             return dataSetName;
         }
 
-        public long getAverageCount() {
-            long result = 0l;
-            for (int i = 0; i < this.size; i++) {
-                if (dsCounts.get(i) != null) {
-                    result += dsCounts.get(i).getValue();
-                }
-            }
-            return result/this.size;
-        }
-
         public double getAverageMean() {
             double result = 0l;
+            int resultCount = 0;
+
             for (int i = 0; i < this.size; i++) {
-                if (dsMean.get(i) != null) {
+                if (dsMean.get(i) != null && dsMean.get(i).getValue()!=null && dsMean.get(i).getValue()>=0) {
                     result += dsMean.get(i).getValue();
+                    resultCount++;
                 }
             }
-            return result/this.size;
+            if (resultCount>0){
+                result = result/Double.valueOf(resultCount);
+            }
+            return result;
         }
 
-        public long getTotalCount() {
+        public long getTotalCount(int positionFrom, int positionTo) {
             long result = 0l;
-            for (int i = 0; i < this.size; i++) {
-                if (dsCounts.get(i) != null && dsCounts.get(i).getValue()>=0) {
+            for (int i = positionFrom; i < positionTo; i++) {
+                if (dsCounts.get(i) != null && dsCounts.get(i).getValue()!=null && dsCounts.get(i).getValue()>=0) {
                     result += dsCounts.get(i).getValue();
                 }
             }
@@ -147,10 +144,10 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
 
         DataRowVO dataRow = lastHourDataHolder.get(holderKey);
         int position = dataRow.populate(count, mean, measurementTime);
-        if (position==(SECONDS_IN_HOUR-1)) {//last second in minute
-            handleMinute(metricName, datasetName, dataRow.getTotalCount(), dataRow.getAverageMean(), measurementTime);
+        if (position!=0 && position%SECONDS_IN_MINUTE == 0) {//new minute started
+            handleMinute(metricName, datasetName, dataRow.getTotalCount(position-SECONDS_IN_MINUTE, position), dataRow.getAverageMean(), measurementTime);
         }
-
+        logger.debug("Handled data for second [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
     }
 
     public void handleMinute(String metricName, String datasetName, long count, double mean, long measurementTime) {
@@ -166,7 +163,8 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
             dataRow = lastDayDataHolder.get(holderKey);
         }
 
-        dataRow.populate(count, mean, measurementTime);
+        int position = dataRow.populate(count, mean, measurementTime);
+        logger.debug("Handled data for minute [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
 
     }
 
