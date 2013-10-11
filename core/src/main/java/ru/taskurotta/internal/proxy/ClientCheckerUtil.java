@@ -113,18 +113,17 @@ public final class ClientCheckerUtil {
             // WARN: should we find the way to check generic parameter of the Promise class ?
 
             if (!clientParameterTypes[i].equals(actorParameterTypes[i])
-                    && !clientParameterTypes[i].isAssignableFrom(Promise.class)) {
+                    && !Promise.class.isAssignableFrom(clientParameterTypes[i])) {
 
                 throw new ProxyFactoryException("Client method parameters type should be either equal or Promise: "
                         + "client (" + clientInterface.getName() + "), actor (" + actorInterface.getName() + "), method ("
                         + clientMethod.getName() + ").");
             }
 
-
-            if (actorParameterTypes[i].isAssignableFrom(Promise.class)) {
+            if (Promise.class.isAssignableFrom(actorParameterTypes[i])) {
 				Annotation[][] parameterAnnotations = actorMethod.getParameterAnnotations();
 				boolean isNowait = false;
-				for (int j=0; j< parameterAnnotations[i].length; j++) {
+				for (int j = 0; j < parameterAnnotations[i].length; j++) {
 					if (parameterAnnotations[i][j] instanceof NoWait) {
 						isNowait = true;
 						break;
@@ -144,14 +143,14 @@ public final class ClientCheckerUtil {
         Class<?> actorReturnType = actorMethod.getReturnType();
         Class<?> clientReturnType = clientMethod.getReturnType();
 
-        if (actorReturnType.isAssignableFrom(Promise.class)) {
+        if (Promise.class.isAssignableFrom(actorReturnType)) {
             if (!actorMethod.isAnnotationPresent(Execute.class) && !actorMethod.isAnnotationPresent(Asynchronous.class)) {
                 throw new ProxyFactoryException("Only @Execute or @Asynchronous can return Promise:"
                         + " actor (" + actorInterface.getName() + "), method (" + clientMethod.getName() + ").");
             }
         }
 
-        if (!clientReturnType.isAssignableFrom(Promise.class)
+        if (!Promise.class.isAssignableFrom(clientReturnType)
                 && !(clientReturnType.equals(Void.TYPE) && actorReturnType.equals(Void.TYPE))) {
 
             throw new ProxyFactoryException("Client method return type should be either Void or Promise"

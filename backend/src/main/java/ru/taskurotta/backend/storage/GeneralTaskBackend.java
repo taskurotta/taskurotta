@@ -60,10 +60,12 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             for (int i = 0; i < args.length; i++) {
                 ArgContainer arg = args[i];
 
+                if (arg == null) {
+                    continue;
+                }
+
                 if (args[i].isPromise()) {
-
                     args[i] = processPromiseArgValue(args[i], processId, task.getType());
-
                 } else if (arg.isCollection()) {//can be collection of promises, case should be checked
                     ArgContainer[] compositeValue = arg.getCompositeValue();
                     for (int j = 0; j < compositeValue.length; j++) {

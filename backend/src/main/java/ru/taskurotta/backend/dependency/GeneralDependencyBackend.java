@@ -143,6 +143,10 @@ public class GeneralDependencyBackend implements DependencyBackend, GraphInfoRet
         for (int j = 0; j < args.length; j++) {
             ArgContainer arg = args[j];
 
+            if (arg == null) {
+                continue;
+            }
+
             if (arg.isPromise()) {
                 // skip resolved promises
                 if (arg.isReady()) {
