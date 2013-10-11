@@ -23,6 +23,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public static AtomicLong startTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
     private int tasksForStat = 200;
+    private int deltaShot = 3000;
 
     public LifetimeProfiler() {
     }
@@ -30,6 +31,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public LifetimeProfiler(Class actorClass, Properties properties) {
         if (properties.containsKey("tasksForStat")) {
             tasksForStat = (Integer) properties.get("tasksForStat");
+        }
+        if (properties.containsKey("deltaShot")) {
+            deltaShot = (Integer) properties.get("deltaShot");
         }
     }
 
@@ -50,7 +54,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 if (null != task) {
                     StressTaskCreator.GLOBAL_LATCH.countDown();
                     long count = taskCount.incrementAndGet();
-                    if (count % (StressTaskCreator.getInitialSize() - 3000) == 0) {
+                    if (count % (StressTaskCreator.getInitialSize() - deltaShot) == 0) {
                         if (StressTaskCreator.LATCH != null) {
                             System.out.println("Shot on " + count);
                             StressTaskCreator.LATCH.countDown();
