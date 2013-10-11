@@ -30,7 +30,12 @@ public class TaskContainerSerializer implements StreamSerializer<TaskContainer> 
         out.writeLong(object.getStartTime());
         out.writeInt(object.getNumberOfAttempts());
         writeArgsContainerArray(out, object.getArgs());
-        taskOptionsContainerSerializer.write(out, object.getOptions());
+        if (object.getOptions() == null) {
+            out.writeBoolean(false);
+        } else {
+            out.writeBoolean(true);
+            taskOptionsContainerSerializer.write(out, object.getOptions());
+        }
         UUIDSerializer.write(out, object.getProcessId());
     }
 
@@ -43,7 +48,11 @@ public class TaskContainerSerializer implements StreamSerializer<TaskContainer> 
         long startTime = in.readLong();
         int attempts = in.readInt();
         ArgContainer[] containers = readArgsContainerArray(in);
-        TaskOptionsContainer taskOptionsContainer = taskOptionsContainerSerializer.read(in);
+        boolean optionsExists = in.readBoolean();
+        TaskOptionsContainer taskOptionsContainer = null;
+        if (optionsExists) {
+            taskOptionsContainer = taskOptionsContainerSerializer.read(in);
+        }
         UUID processId = UUIDSerializer.read(in);
         return new TaskContainer(taskId, processId, method, actorId, taskType, startTime, attempts, containers, taskOptionsContainer);
     }
