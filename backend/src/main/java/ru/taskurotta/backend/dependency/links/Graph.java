@@ -1,9 +1,5 @@
 package ru.taskurotta.backend.dependency.links;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is not thread safe object. It should be synchronized with backend by version value.
@@ -47,21 +47,20 @@ public class Graph implements Serializable {
     //todo convention name
     private Set<UUID> finishedItems = new HashSet<>();
 
-
     // modification stuff.
-
     private Modification modification;
     private UUID[] readyItems;
 
 
     private long touchTimeMillis;
-    private long lastApplyTimeMillis = 0;
+    private long lastApplyTimeMillis;
 
     /**
      * generic constructor for deserializer
      */
     public Graph() {
         touchTimeMillis = System.currentTimeMillis();
+        lastApplyTimeMillis = 0;
     }
 
     /**
@@ -96,10 +95,8 @@ public class Graph implements Serializable {
      */
     public Graph(UUID graphId, UUID startItem) {
         this.graphId = graphId;
-
         notFinishedItems.put(startItem, 0L);
     }
-
 
     private static Map<UUID, Set<UUID>> reverseIt(Map<UUID, Set<UUID>> links) {
         Map<UUID, Set<UUID>> reverseResult = new HashMap<>();
@@ -124,17 +121,14 @@ public class Graph implements Serializable {
         return reverseResult;
     }
 
-
     public int getVersion() {
         return version;
     }
-
 
     @JsonIgnore
     public Modification getModification() {
         return modification;
     }
-
 
     public boolean hasNotFinishedItem(UUID itemId) {
         return notFinishedItems.containsKey(itemId);
@@ -192,37 +186,71 @@ public class Graph implements Serializable {
      * @param modification - diff object to apply
      */
     public void apply(Modification modification) {
-
+        long currentTime = System.currentTimeMillis();
         logger.debug("apply() modification = [{}]", modification);
-        long smt = System.currentTimeMillis();
 
         this.modification = modification;
-
         version++;
 
+        // process finished item
         UUID finishedItem = modification.getCompletedItem();
-
-        // remove finished item from set
         notFinishedItems.remove(finishedItem);
         finishedItems.add(finishedItem);
 
-        UUID waitForAfterRelease = modification.getWaitForAfterRelease();
+        // get new items without dependencies
+        List<UUID> readyItemsList = applyNewItems();
 
-        // add all new links to "links" map.
-        // update reverse map with new links
-        Map<UUID, Set<UUID>> reverseLinks = reverseIt(links);
-        Map<UUID, Set<UUID>> newLinks = modification.getLinks();
+        // update links collection and get release candidates
+        Set<UUID> reverseItemLinks = updateLinks();
+
+        // update readyItemList with old items that become ready
+        findReadyItems(readyItemsList, reverseItemLinks);
+
+        // return empty or full array of new ready items.
+        readyItems = readyItemsList.toArray(new UUID[readyItemsList.size()]);
+        for (UUID readyItemsId : readyItems) {
+            notFinishedItems.put(readyItemsId, currentTime);
+        }
+
+        touchTimeMillis = lastApplyTimeMillis = currentTime;
+    }
+
+    private List<UUID> applyNewItems() {
+        List<UUID> readyItemsList = new LinkedList<>();
 
         Collection<UUID> newItems = modification.getNewItems();
+
         if (newItems != null) {
 
             // add all new items to set
             for (UUID newItemId : newItems) {
                 notFinishedItems.put(newItemId, 0L);
             }
-        }
 
-        // add all new links
+            // add all new items without links to readyItemsList
+            Map<UUID, Set<UUID>> newLinks = modification.getLinks();
+            for (UUID newItem : newItems) {
+                if (newLinks == null || newLinks.get(newItem) == null) {
+                    logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
+
+                    readyItemsList.add(newItem);
+                }
+            }
+        }
+        return readyItemsList;
+    }
+
+    /**
+     * add all new links to "links" map. update reverseLinks
+     * @return set of items dependent from finished one
+     */
+    private Set<UUID> updateLinks() {
+
+        // update reverse map with new links
+        Map<UUID, Set<UUID>> reverseLinks = reverseIt(links);
+
+        Map<UUID, Set<UUID>> newLinks = modification.getLinks();
+
         if (newLinks != null) {
 
             for (UUID item : newLinks.keySet()) {
@@ -244,7 +272,6 @@ public class Graph implements Serializable {
                     }
 
                     itemLinks.add(newItemLink);
-
                 }
 
                 // update reverse map
@@ -254,94 +281,43 @@ public class Graph implements Serializable {
                 }
             }
         }
+        return reverseLinks.get(modification.getCompletedItem());
+    }
 
+    /**
+     * remove finished item from all set.
+     * find items without dependencies.
+     * @param readyItemsList - collection for ready items found
+     * @param reverseItemLinks - collection of release candidates
+     */
+    private void findReadyItems(List<UUID> readyItemsList, Set<UUID> reverseItemLinks) {
 
-        // remove finished item from all set
-        // find items without dependencies
-        Set<UUID> reverseItemLinks = reverseLinks.get(finishedItem);
+        if (reverseItemLinks == null) {
+            return;
+        }
 
-        List<UUID> readyItemsList = null;
+        UUID finishedItem = modification.getCompletedItem();
 
-        if (reverseItemLinks != null) {
+        for (UUID releaseCandidate : reverseItemLinks) {
+            Set<UUID> candidateLinks = links.get(releaseCandidate);
+            candidateLinks.remove(finishedItem);
 
-            for (UUID releaseCandidate : reverseItemLinks) {
-                Set<UUID> candidateLinks = links.get(releaseCandidate);
-                candidateLinks.remove(finishedItem);
+            UUID dependencySubstitution = modification.getWaitForAfterRelease();
+            // update changed dependency
+            if (dependencySubstitution != null) {
+                candidateLinks.add(dependencySubstitution);
+            }
 
-                // update changed dependency
-                if (waitForAfterRelease != null) {
-                    candidateLinks.add(waitForAfterRelease);
-                }
-
-                if (!candidateLinks.isEmpty()) {
-                    continue;
-                }
-
+            if (candidateLinks.isEmpty()) {
                 // GC items without dependencies
                 links.remove(releaseCandidate);
 
-                // and add it to ready list
-                if (readyItemsList == null) {
-                    readyItemsList = new LinkedList<>();
-                }
-
-                logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to " +
-                        "readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
+                logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to" +
+                        " readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
 
                 readyItemsList.add(releaseCandidate);
             }
         }
-
-        // add all new items without links to readyItemsList
-        if (newItems != null) {
-
-            for (UUID newItem : newItems) {
-                if (newLinks == null || newLinks.get(newItem) == null) {
-
-                    if (readyItemsList == null) {
-                        readyItemsList = new LinkedList<>();
-                    }
-
-                    logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
-
-                    readyItemsList.add(newItem);
-                }
-            }
-
-        }
-
-        // add all new items with links to already finished items
-        // in "add all new links" section we skip it because it was links to items not in notFinishedItems Set
-        if (newLinks != null) {
-
-            for (UUID item : newLinks.keySet()) {
-                Set<UUID> itemLinks = links.get(item);
-
-                if (itemLinks == null || itemLinks.isEmpty()) {
-
-                    if (readyItemsList == null) {
-                        readyItemsList = new LinkedList<>();
-                    }
-
-                    logger.debug("apply() new item [{}] has link to already finished item", item);
-
-                    readyItemsList.add(item);
-                }
-            }
-        }
-
-        // return empty or full array of new ready items.
-        if (readyItemsList == null) {
-            readyItems = EMPTY_ARRAY;
-        } else {
-            readyItems = readyItemsList.toArray(new UUID[readyItemsList.size()]);
-            for (UUID readyItemsId : readyItems) {
-                notFinishedItems.put(readyItemsId, smt);
-            }
-        }
-
-        touchTimeMillis = lastApplyTimeMillis = smt;
-
     }
 
     private static Set<UUID> getOrCreateReverseItemLinks(Map<UUID, Set<UUID>> reverseLinks, UUID item) {
