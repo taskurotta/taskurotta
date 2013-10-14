@@ -11,6 +11,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -22,8 +23,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public static AtomicLong taskCount = new AtomicLong(0);
     public static AtomicLong startTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
-    private int tasksForStat = 200;
+    public static int tasksForStat = 200;
     private int deltaShot = 3000;
+    private double deltaRate = 0;
+    private double previousRate = 0;
+    public static double totalDelta = 0;
+    private static AtomicBoolean timeIsZero = new AtomicBoolean(true);
 
     public LifetimeProfiler() {
     }
@@ -43,14 +48,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             @Override
             public Task poll() {
 
-                if (taskCount.get() == 0) {
-                    long current = System.currentTimeMillis();
-                    lastTime.set(current);
-                    startTime.set(current);
-                }
 
                 Task task = taskSpreader.poll();
-                long curTime = System.currentTimeMillis();
+
+
                 if (null != task) {
                     StressTaskCreator.GLOBAL_LATCH.countDown();
                     long count = taskCount.incrementAndGet();
@@ -60,11 +61,25 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             StressTaskCreator.LATCH.countDown();
                         }
                     }
-                    if (count % tasksForStat == 0) {
-                        double time = 0.001 * (curTime - lastTime.get());
-                        double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
-                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, time, rate);
-                        lastTime.set(curTime);
+                    if (!StressTaskCreator.isWarmingUp()) {
+                        if (timeIsZero.get()) {
+                            long current = System.currentTimeMillis();
+                            lastTime.set(current);
+                            startTime.set(current);
+                            timeIsZero.set(false);
+                        }
+                        long curTime = System.currentTimeMillis();
+                        if (count % tasksForStat == 0) {
+                            double time = 0.001 * (curTime - lastTime.get());
+                            double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
+                            if (previousRate != 0) {
+                                deltaRate = Math.abs(rate - previousRate);
+                                totalDelta += deltaRate;
+                            }
+                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f\n", count, time, rate, deltaRate);
+                            previousRate = rate;
+                            lastTime.set(curTime);
+                        }
                     }
                 }
                 return task;
