@@ -3,17 +3,17 @@ package ru.taskurotta.backend.process;
 /**
  * User: stukushin
  * Date: 11.10.13
- * Time: 18:24
+ * Time: 18:25
  */
-public class BrokenProcessVO {
+public class SearchCommand {
 
     private String processId;
     private String startActorId;
     private String brokenActorId;
-    private long time;
+    private long startPeriod = -1;
+    private long endPeriod = -1;
     private String errorMessage;
     private String errorClassName;
-    private String stackTrace;
 
     public String getProcessId() {
         return processId;
@@ -39,12 +39,20 @@ public class BrokenProcessVO {
         this.brokenActorId = brokenActorId;
     }
 
-    public long getTime() {
-        return time;
+    public long getStartPeriod() {
+        return startPeriod;
     }
 
-    public void setTime(long time) {
-        this.time = time;
+    public void setStartPeriod(long startPeriod) {
+        this.startPeriod = startPeriod;
+    }
+
+    public long getEndPeriod() {
+        return endPeriod;
+    }
+
+    public void setEndPeriod(long endPeriod) {
+        this.endPeriod = endPeriod;
     }
 
     public String getErrorMessage() {
@@ -61,26 +69,5 @@ public class BrokenProcessVO {
 
     public void setErrorClassName(String errorClassName) {
         this.errorClassName = errorClassName;
-    }
-
-    public String getStackTrace() {
-        return stackTrace;
-    }
-
-    public void setStackTrace(String stackTrace) {
-        this.stackTrace = stackTrace;
-    }
-
-    @Override
-    public String toString() {
-        return "BrokenProcessVO{" +
-                "processId='" + processId + '\'' +
-                ", startActorId='" + startActorId + '\'' +
-                ", brokenActorId='" + brokenActorId + '\'' +
-                ", time=" + time +
-                ", errorMessage='" + errorMessage + '\'' +
-                ", errorClassName='" + errorClassName + '\'' +
-                ", stackTrace='" + stackTrace + '\'' +
-                "} " + super.toString();
     }
 }
