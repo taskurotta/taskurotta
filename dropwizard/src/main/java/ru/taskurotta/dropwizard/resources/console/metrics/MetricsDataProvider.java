@@ -32,24 +32,28 @@ public class MetricsDataProvider implements MetricsConstants {
 
     private DatasetVO getDataset(String metricName, String dataSetName, String dataType, String period) {
         DatasetVO ds = new DatasetVO();
-        ds.setLabel(constructLabel(dataSetName, dataType, period));
+        //ds.setLabel(constructLabel(dataSetName, dataType, period));
+        ds.setLabel(dataSetName);
+        ds.setxLabel(getXLabel(dataType, period));
+        ds.setyLabel(getYLabel(dataType, period));
 
+        boolean useTimeline = true;
         if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
             DataPointVO<Long>[] rawData = dataRetriever.getCountsForLastDay(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
         } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             DataPointVO<Long>[] rawData = dataRetriever.getCountsForLastHour(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
             DataPointVO<Double>[] rawData = dataRetriever.getMeansForLastDay(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             DataPointVO<Double>[] rawData = dataRetriever.getMeansForLastHour(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
         } else {
            throw new IllegalArgumentException("Unsupported dataType["+dataType+"] and period["+period+"] combination");
         }
@@ -68,6 +72,34 @@ public class MetricsDataProvider implements MetricsConstants {
             return "X: time, s; Y: mean, ms. " + label;
         } else {
             return label;
+        }
+    }
+
+    private String getXLabel(String dataType, String period) {
+        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            return "Timeline: minutes ago";
+        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            return "Timeline: seconds ago";
+        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            return "Timeline: minutes ago";
+        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            return "Timeline: seconds ago";
+        } else {
+            return "";
+        }
+    }
+
+    private String getYLabel(String dataType, String period) {
+        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            return "Measured, times";
+        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            return "Measured, times";
+        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            return "Mean time, ms";
+        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            return "Mean time, ms";
+        } else {
+            return "";
         }
     }
 

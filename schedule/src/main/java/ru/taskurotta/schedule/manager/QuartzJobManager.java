@@ -129,6 +129,9 @@ public class QuartzJobManager implements JobManager {
         jdm.put("job", job);
         jdm.put("queueInfoRetriever", queueInfoRetriever);
         jdm.put("taskServer", taskServer);
+        jdm.put("jobStore", jobStore);
+        jdm.put("jobManager", this);
+
 
         JobDetail jobDetail = JobBuilder
                 .newJob(EnqueueTaskJob.class)

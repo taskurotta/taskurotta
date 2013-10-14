@@ -1,12 +1,14 @@
 CREATE TABLE TSK_SCHEDULED
 (
-  ID                  NUMBER                    NOT NULL,
-  NAME                VARCHAR2(256 char)        NOT NULL,
-  CRON                VARCHAR2(256 char)        NOT NULL,
-  STATUS              NUMBER                    NOT NULL,
-  JSON                VARCHAR2(2000 char)       NOT NULL,
-  CREATED             TIMESTAMP,
-  ALLOW_DUPLICATES    VARCHAR2(1 char)          NOT NULL,
+  ID                    NUMBER                    NOT NULL,
+  NAME                  VARCHAR2(256 char)        NOT NULL,
+  CRON                  VARCHAR2(256 char)        NOT NULL,
+  STATUS                NUMBER                    NOT NULL,
+  JSON                  VARCHAR2(2000 char)       NOT NULL,
+  CREATED               TIMESTAMP,
+  QUEUE_LIMIT           NUMBER,
+  ERR_COUNT             NUMBER,
+  LAST_ERR_MESSAGE      VARCHAR2(2000 char),
   PRIMARY KEY (ID)
 );
 
@@ -20,7 +22,7 @@ FOR EACH ROW
     IF :NEW.id IS NULL
     THEN
       SELECT
-        SEQ_TSK_SCHEDULED.NEXTVAL
+          SEQ_TSK_SCHEDULED.NEXTVAL
       INTO :NEW.id
       FROM DUAL;
     END IF;

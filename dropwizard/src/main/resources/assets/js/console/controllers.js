@@ -1,4 +1,4 @@
-var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers']);
+var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers']);
 
 consoleControllers.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
 
@@ -345,6 +345,55 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
         table: true
     };
 
+    //selected objects
+    $scope.selection = {
+        showDatasets: false,
+        smoothRate: "",
+        omitZeroes: false,
+        datasets: {},
+        metric: {},
+        scopeMode: {},
+        dataMode: {},
+        periodMode: {}
+    };
+
+    var getActiveDataset = function() {
+        var datasets = $scope.dataHolder;
+        if (datasets && datasets.length>0) {
+            for(var i = 0; i<datasets.length; i++) {
+                if (datasets[i].data && datasets[i].data.length>0) {
+                    return datasets[i];
+                }
+            }
+        }
+        return null;
+    };
+
+    //Uncheck previously selected datasets
+    $scope.$watch('selection.metric', function() {
+        for (var key in $scope.selection.datasets) {
+            $scope.selection.datasets[key] = false;
+        }
+    });
+
+    $scope.getYLabel = function() {
+        var activeDs = getActiveDataset();
+        if (activeDs) {
+            return activeDs.yLabel;
+        } else {
+            return "";
+        }
+    };
+
+    $scope.getXLabel = function() {
+        var activeDs = getActiveDataset();
+        if (activeDs) {
+            return activeDs.xLabel;
+        } else {
+            return "";
+        }
+    };
+
     $scope.getTableData = function () {
         if($scope.collapse.table) {
             return [];
@@ -354,18 +403,6 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
     };
     $scope.actorIds = [];
     $scope.metricsOptions = {};
-
-    //selected objects
-    $scope.selection = {
-        showDatasets: false,
-        smoothRate: -1,
-        omitZeroes: false,
-        datasets: {},
-        metric: {},
-        scopeMode: {},
-        dataMode: {},
-        periodMode: {}
-    };
 
     $scope.getSelectedDataSets = function() {
         var result = "";
@@ -454,140 +491,5 @@ consoleControllers.controller("homeController", function ($scope) {
 consoleControllers.controller("aboutController", function ($scope) {
 
 });
-
-consoleControllers.controller("scheduleCreateController", function ($scope, tskSchedule, $log, $http, $location) {
-    $scope.name = "";
-    $scope.feedback = "";
-    $scope.cron = "";
-    $scope.checkQueue = false;
-    $scope.task = {
-        type: "WORKER_SCHEDULED",
-        method: "",
-        actorId: ""
-    };
-    $scope.types = ["WORKER_SCHEDULED", "DECIDER_START"];
-
-    $scope.isCronValid = false;
-
-    $scope.create = function() {
-       if($scope.isValidForm()) {
-            $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.cron)+"&name="+encodeURIComponent($scope.name) + "&allowDuplicates=" + !$scope.checkQueue, $scope.task).then(
-                function(value) {
-                    $location.url("/schedule/list");
-                },
-                function(err) {
-                    $scope.feedback = err;
-                });
-        }
-    };
-
-    $scope.validateCron = function() {
-        if ($scope.cron && $scope.cron.length > 0) {
-            $http.get("/rest/console/schedule/validate/cron?value="+encodeURIComponent($scope.cron))
-                .then(function(value) {
-                    if (value.data.length>0) {
-                        $scope.isCronValid = false;
-                    } else {
-                        $scope.isCronValid = true;
-                    }
-                }, function(errMes) {
-                    $scope.feedback = angular.toJson(errMes);
-                });
-        }
-    };
-
-    $scope.isValidForm = function() {
-        var exists = angular.isDefined($scope.name) && angular.isDefined($scope.isCronValid) && angular.isDefined($scope.task.method) && angular.isDefined($scope.task.actorId);
-        return exists && $scope.name.length>0 && $scope.isCronValid && $scope.task.method.length>0 && $scope.task.actorId.length>0;
-    }
-
-});
-
-consoleControllers.controller("scheduleListController", function ($scope, tskSchedule, $http, $log) {
-
-    $scope.scheduledTasks = [];
-    $scope.feedback = {};
-
-    $scope.initialized = false;
-
-    $scope.total = "undefined";
-    $scope.totalInitialized = false;
-
-
-    $scope.getStatusClassName = function(status) {
-        var result = "warning";
-        if(status == -2) {
-            result = "error";
-        } else if(status == -1) {
-            result = "info";
-        } else if(status == 1) {
-            result = "success";
-        }
-
-        return result;
-    };
-
-    $scope.getStatusText = function(status) {
-        var result = "Undefined status";
-        if(status == -2) {
-            result = "Errored";
-        } else if(status == -1) {
-            result = "Inactive";
-        } else if(status == 1) {
-            result = "Active";
-        }
-
-        return result;
-    };
-
-
-    $scope.update = function() {
-        $http.get("/rest/console/schedule/list").then(function(value) {
-            $scope.scheduledTasks = value.data;
-            $scope.initialized = true;
-
-            $http.get("/rest/console/schedule/node_count").then(function(value){
-                $scope.total = value.data || "undefined";
-                $scope.totalInitialized = true;
-            }, function(errValue) {
-                $scope.total = "undefined";
-                $scope.totalInitialized = true;
-            });
-
-        }, function(errReason) {
-            $scope.feedback = errReason;
-            $scope.initialized = true;
-            $scope.totalInitialized = true;
-        });
-    };
-
-    $scope.activate = function(id) {
-        $http.post("/rest/console/schedule/activate/?id=" + id, id).then(function(value) {
-            $scope.update();
-        }, function(errReason) {
-            $scope.feedback = errReason;
-        });
-    };
-
-    $scope.deactivate = function(id) {
-        $http.post("/rest/console/schedule/deactivate/?id="+id, id).then(function(value) {
-            $scope.update();
-        }, function(errReason) {
-            $scope.feedback = errReason;
-        });
-    };
-
-    $scope.delete = function(id) {
-        $http.post("/rest/console/schedule/delete/?id="+id, id).then(function(value) {
-            $scope.update();
-        }, function(errReason) {
-            $scope.feedback = errReason;
-        });
-    };
-
-    $scope.update();
-
-});
-
 
 

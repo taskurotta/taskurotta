@@ -195,6 +195,12 @@ div.tree {
 }
 
 
+.axis-label {
+    font-family: monospace;
+    font-size: 8;
+    font-weight: bold;
+}
+
 /*.table .inner-table {*/
     /*background-color: #ffffff;*/
 /*}*/

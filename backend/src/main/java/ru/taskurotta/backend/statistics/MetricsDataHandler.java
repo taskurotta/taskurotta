@@ -25,10 +25,10 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataHandler.class);
 
-    private static final int MINUTES_IN_HOUR = 60;
-    private static final int SECONDS_IN_HOUR = 3600;
-    private static final int SECONDS_IN_MINUTE = 60;
-    private static final int MINUTES_IN_24_HOURS = 24 * MINUTES_IN_HOUR;
+    public static final int MINUTES_IN_HOUR = 60;
+    public static final int SECONDS_IN_HOUR = 3600;
+    public static final int SECONDS_IN_MINUTE = 60;
+    public static final int MINUTES_IN_24_HOURS = 24 * MINUTES_IN_HOUR;
 
     private Map<String, DataRowVO> lastHourDataHolder = new ConcurrentHashMap<>();
     private Map<String, DataRowVO> lastDayDataHolder = new ConcurrentHashMap<>();
@@ -77,7 +77,7 @@ public class MetricsDataHandler implements DataListener, MetricsDataRetriever {
         }
 
         private int getPosition() {
-            counter.compareAndSet(this.size, 0);
+            counter.compareAndSet(this.size, 0);//reset counter if exceeded
             return counter.getAndIncrement();
         }
 

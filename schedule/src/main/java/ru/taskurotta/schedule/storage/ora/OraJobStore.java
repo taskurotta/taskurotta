@@ -3,6 +3,7 @@ package ru.taskurotta.schedule.storage.ora;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -36,18 +37,20 @@ public class OraJobStore implements JobStore {
     @Override
     public long addJob(JobVO task) {
         try (Connection connection = dataSource.getConnection();
-        CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, ALLOW_DUPLICATES) VALUES (?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
+        CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
         ) {
             cs.setString(1, task.getName());
             cs.setString(2, task.getCron());
             cs.setInt(3, task.getStatus());
             cs.setString(4, (String) taskSerializer.serialize(task.getTask()));
             cs.setTimestamp(5, new Timestamp(new Date().getTime()));
-            cs.setString(6, task.isAllowDuplicates()? "Y": "N");
-            cs.registerOutParameter(7, Types.NUMERIC);
+            cs.setInt(6, task.getQueueLimit());
+            cs.setInt(7, task.getErrorCount());
+
+            cs.registerOutParameter(8, Types.NUMERIC);
             cs.execute();
 
-            Long resultId = cs.getLong(7);
+            Long resultId = cs.getLong(8);
             return resultId;
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
@@ -103,14 +106,10 @@ public class OraJobStore implements JobStore {
                 result.setName(rs.getString("NAME"));
                 result.setCron(rs.getString("CRON"));
                 result.setStatus(rs.getInt("STATUS"));
-                String allowDuplicates = rs.getString("ALLOW_DUPLICATES");
-                if (allowDuplicates!=null && allowDuplicates.equalsIgnoreCase("N")) {
-                    result.setAllowDuplicates(false);
-                } else {
-                    result.setAllowDuplicates(true);
-                }
+                result.setQueueLimit(rs.getInt("QUEUE_LIMIT"));
+                result.setErrorCount(rs.getInt("ERR_COUNT"));
+                result.setLastError(rs.getString("LAST_ERR_MESSAGE"));
                 result.setTask(taskSerializer.deserialize(rs.getString("JSON")));
-                return result;
             }
             return result;
         } catch (SQLException ex) {
@@ -135,6 +134,62 @@ public class OraJobStore implements JobStore {
         }
     }
 
+    @Override
+    public void updateJob(JobVO jobVO) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ? WHERE id = ? ");
+        ) {
+            ps.setString(1, jobVO.getName());
+            ps.setString(2, jobVO.getCron());
+            ps.setInt(3, jobVO.getStatus());
+            ps.setString(4, (String) taskSerializer.serialize(jobVO.getTask()));
+            ps.setTimestamp(5, new Timestamp(new Date().getTime()));
+            ps.setInt(6, jobVO.getQueueLimit());
+            ps.setLong(7, jobVO.getId());
+
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+    }
+
+    @Override
+    public int getJobStatus(long jobId) {
+        ResultSet rs = null;
+        int result = JobConstants.STATUS_UNDEFINED;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT status FROM TSK_SCHEDULED WHERE id = ? ");
+        ) {
+            ps.setLong(1, jobId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                result = rs.getInt("STATUS");
+            }
+            return result;
+        } catch (SQLException ex) {
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        } finally {
+            closeResultSet(rs);
+        }
+    }
+
+    @Override
+    public void updateErrorCount(long jobId, int count, String message) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET ERR_COUNT = ?, LAST_ERR_MESSAGE = ? WHERE id = ? ");
+        ) {
+            ps.setInt(1, count);
+            ps.setString(2, message);
+            ps.setLong(3, jobId);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+    }
+
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -148,5 +203,7 @@ public class OraJobStore implements JobStore {
             }
         }
     }
+
+
 
 }

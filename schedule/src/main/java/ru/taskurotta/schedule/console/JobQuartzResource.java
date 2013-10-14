@@ -50,21 +50,21 @@ public class JobQuartzResource implements JobConstants {
     private HzJobMessageHandler hzScheduleEventDispatcher;
 
     @GET
-    public Response processGet(@PathParam("action")String action) {
+    public Response processGet(@PathParam("action")String action, @QueryParam("id") Optional<Long> idOpt) {
         if (ACTION_LIST.equals(action)) {
             Collection<Long> taskIds = jobStore.getJobIds();
-            List<JobExtVO> result = null;
+            List<JobUI> result = null;
             if (taskIds!=null && !taskIds.isEmpty()) {
                 result = new ArrayList<>();
                 for (Long id: taskIds) {
-                    JobVO task = jobStore.getJob(id);
-                    if (task != null) {
-                        JobExtVO taskExt = new JobExtVO(task);
-                        if (taskExt.getStatus() == STATUS_ACTIVE) {
-                            taskExt.nextExecutionTime = getNextExecutionTime(task.getCron());
-                            taskExt.local = jobManager.isActive(task);
+                    JobVO jobVO= jobStore.getJob(id);
+                    if (jobVO != null) {
+                        JobUI jobUI = new JobUI(jobVO);
+                        if (jobVO.getStatus() == STATUS_ACTIVE) {
+                            jobUI.nextExecutionTime = getNextExecutionTime(jobVO.getCron());
+                            jobUI.local = jobManager.isActive(jobVO);
                         }
-                        result.add(taskExt);
+                        result.add(jobUI);
                     }
                 }
             }
@@ -75,23 +75,32 @@ public class JobQuartzResource implements JobConstants {
             int size = jobIds!=null? jobIds.size(): 0;
             return Response.ok(size, MediaType.APPLICATION_JSON).build();
 
+        } else if(ACTION_CARD.equals(action)) {
+            long id = idOpt.or(-1l);
+            JobVO jobVO = jobStore.getJob(id);
+            logger.debug("JobVO getted by id[{}] is [{}]", id, jobVO);
+            return Response.ok(jobVO, MediaType.APPLICATION_JSON).build();
+
         } else {
             logger.error("Unsupported combination of method[GET] and action["+action+"].");
             return Response.serverError().build();
         }
     }
 
-    public static class JobExtVO extends JobVO implements Serializable {
+    /**
+     * POJO wrapper for UI representation of JobVO with additional fields
+     */
+    public static class JobUI implements Serializable {
         protected Date nextExecutionTime;
         protected boolean local=false;
+        protected JobVO job;
 
-        public JobExtVO(JobVO job) {
-            this.id = job.getId();
-            this.name = job.getName();
-            this.cron = job.getCron();
-            this.task = job.getTask();
-            this.status = job.getStatus();
-            this.allowDuplicates = job.isAllowDuplicates();
+        public JobUI(JobVO job) {
+            this.job = job;
+        }
+
+        public JobVO getJob() {
+            return job;
         }
 
         public Date getNextExecutionTime() {
@@ -104,28 +113,43 @@ public class JobQuartzResource implements JobConstants {
     }
 
     @PUT
-    public Response addScheduledTask(@PathParam("action")String action, @QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt, @QueryParam("allowDuplicates")Optional<Boolean> duplicatesOtp, TaskContainer task) {
+    public Response createOrUpdateScheduledTask(@PathParam("action")String action, @QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
+                                                @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
         String cron = cronOpt.or("");
         String name = nameOpt.or("");
-        Boolean allowDuplicates = duplicatesOtp.or(Boolean.TRUE);
-        if (ACTION_CREATE.equals(action)) {
-            logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt.or(""), nameOpt.or(""), task);
+        Integer queueLimit = queueLimitOpt.or(-1);
+        Long jobId = jobIdOpt.or(-1l);
 
-            JobVO job = new JobVO();
-            job.setCron(cron);
-            job.setAllowDuplicates(allowDuplicates);
-            job.setName(name);
-            job.setTask(extendTask(task));
-            job.setStatus(STATUS_INACTIVE);
+        JobVO job = new JobVO();
+        job.setId(jobId);
+        job.setCron(cron);
+        job.setQueueLimit(queueLimit);
+        job.setName(name);
+        job.setTask(extendTask(task));
+        job.setStatus(STATUS_INACTIVE);//modification should be applied only for inactive tasks
+        validateJob(job);
 
-            validateJob(job);
+        try {
 
-            long id = jobStore.addJob(job);
-            logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", name, cron, id);
-            return Response.ok(id, MediaType.APPLICATION_JSON).build();
-        } else {
-            logger.error("Unsupported combination of method[POST] and action[" + action + "].");
-            return Response.serverError().build();
+            if (ACTION_CREATE.equals(action)) {
+                logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt.or(""), nameOpt.or(""), task);
+                long id = jobStore.addJob(job);
+                logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", name, cron, id);
+                return Response.ok(id, MediaType.APPLICATION_JSON).build();
+
+            } else if (ACTION_UPDATE.equals(action)) {
+                jobStore.updateJob(job);
+                logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
+                return Response.ok().build();
+
+            } else {
+                logger.error("Unsupported combination of method[POST] and action[" + action + "].");
+                return Response.serverError().build();
+            }
+
+        } catch (Exception e) {
+            logger.error("Unexpected error at action["+action+"] for job["+job+"]", e);
+            throw new WebApplicationException(e);
         }
 
     }
@@ -133,11 +157,30 @@ public class JobQuartzResource implements JobConstants {
 
     public void validateJob(JobVO job) {
         try {
+            if (job == null) {
+                throw new IllegalArgumentException("Job cannot be null");
+            }
             CronExpression.validateExpression(job.getCron());
             if (!StringUtils.hasText(job.getName())) {
                 throw new IllegalArgumentException("Job name cannot be empty");
             }
-        } catch(Throwable e) {
+            if (job.getId()>=0 && JobConstants.STATUS_ACTIVE == jobStore.getJobStatus(job.getId())) {
+                throw new IllegalArgumentException("Cannot modify active job["+job.getId()+"]!");
+            }
+            if (job.getTask() == null) {
+                throw new IllegalArgumentException("Job cannot contain null TaskContainer!");
+            } else {
+                if (!StringUtils.hasText(job.getTask().getActorId())) {
+                    throw new IllegalArgumentException("Job cannot contain empty Actor ID!");
+                }
+                if (!StringUtils.hasText(job.getTask().getMethod())) {
+                    throw new IllegalArgumentException("Job cannot contain empty Method field!");
+                } else if(job.getTask().getMethod().contains(" ")) {
+                    throw new IllegalArgumentException("Job's method cannot contain spaces!");
+                }
+            }
+
+        } catch (Throwable e) {
             logger.error("Job validation exception, job ["+job+"]", e);
             throw new WebApplicationException(e);
         }
@@ -166,7 +209,7 @@ public class JobQuartzResource implements JobConstants {
         UUID taskId = target.getTaskId()!=null? target.getTaskId(): UUID.randomUUID();
         UUID processId = target.getProcessId()!=null? target.getProcessId(): UUID.randomUUID();
         TaskType type = target.getType()!=null? target.getType(): TaskType.DECIDER_START;
-        long startTime = target.getStartTime()!=0? target.getStartTime(): -1;
+        long startTime = target.getStartTime()!=0? target.getStartTime(): System.currentTimeMillis();
         int numberOfAttempts = target.getNumberOfAttempts()!=0? target.getNumberOfAttempts(): 5;
 
         return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), type, startTime, numberOfAttempts, target.getArgs(), target.getOptions());

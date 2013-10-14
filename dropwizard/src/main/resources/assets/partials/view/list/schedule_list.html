@@ -15,7 +15,7 @@
     <div class="well" style="margin:5px;">
 
         <div style="float: left;">
-            <a ng-href="#/schedule/create" class="btn btn-small" popover="Add scheduled task" popover-trigger="mouseenter"><i class="icon-plus"></i></a><span class="muted">&nbsp;add job</span>
+            <a ng-href="#/schedule/card/new" class="btn btn-small" popover="Add scheduled task" popover-trigger="mouseenter"><i class="icon-plus"></i></a><span class="muted">&nbsp;add job</span>
         </div>
 
         <div style="float: right;">
@@ -41,38 +41,44 @@
             <tr ng-if="!initialized">
                 <td colspan="7" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
             </tr>
-            <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.status)">
-                    <td>{{ $index + 1}} </td>
-                    <td>{{ st.name }}</td>
+            <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.job.status)">
+                    <td>{{ $index + 1}}</td>
                     <td>
-                        <small><b>{{ st.task.actorId }}</b></small>
-                        <span class="muted"><br /><small>Method: {{st.task.method}} </small></span>
+                        <a ng-href="#/schedule/card/{{st.job.id}}" class="btn-link">{{ st.job.name }}</a>
+                    </td>
+                    <td>
+                        <small><b>{{ st.job.task.actorId }}</b></small>
+                        <span class="muted"><br /><small>Method: <b>{{st.job.task.method}}</b> </small></span>
                     </td>
 
                     <td>
-                        {{ st.cron }}
-                        <span ng-if="!st.allowDuplicates" class="muted"><br /><small>Queue is checked before insert</small></span>
+                        {{ st.job.cron }}
+                        <span ng-if="st.job.queueLimit>0" class="muted"><br /><small>Simultaneous tasks in queue limit: <b>{{st.job.queueLimit}}</b></small></span>
                     </td>
                     <td>
-                        <span ng-if="st.status==1">
+                        <span ng-if="st.job.status==1">
                             <small>{{ st.nextExecutionTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
                         </span>
+                        <div ng-if="st.job.status==-2" style="width: 200px;">
+                            <small>Stopped due to continuous error (more then 3 times). Last error message: <b>{{st.job.lastError}}</b></small>
+                        </div>
                     </td>
                     <td>
                         <table cellspacing="0" cellpadding="0">
-                            <tr ng-class="getStatusClassName(st.status)">
+                            <tr ng-class="getStatusClassName(st.job.status)">
                                 <td>
-                                    <span ng-class="'badge badge-' + getStatusClassName(st.status)">{{ getStatusText(st.status) }}</span>
+                                    <span ng-class="'badge badge-' + getStatusClassName(st.job.status)">{{ getStatusText(st.job.status) }}</span>
                                 </td>
-                                <td ng-if="st.status==1 && st.local"><i class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" /></td>
-                                <td ng-if="st.status==1 && !st.local"><i class="icon-globe" popover="Scheduled on some remote node" popover-trigger="mouseenter" /></td>
+                                <td ng-if="st.job.status==1 && st.local"><i class="icon-flag" popover="Scheduled on current node" popover-trigger="mouseenter" ></i></td>
+                                <td ng-if="st.job.status==1 && !st.local"><i class="icon-globe" popover="Scheduled on some remote node" popover-trigger="mouseenter" ></i></td>
                             </tr>
                         </table>
                     </td>
                     <td>
-                        <a ng-if="st.status==-1" class="btn btn-small" ng-click="activate(st.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>
-                        <a ng-if="st.status==1" class="btn btn-small" ng-click="deactivate(st.id)" popover="Stop job" popover-trigger="mouseenter"><i class="icon-stop"></i></a>
-                        <a class="btn btn-small" ng-click="delete(st.id)" popover="Delete job" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
+                        <a ng-if="st.job.status==-1" class="btn btn-small" ng-click="activate(st.job.id)" popover="Run job" popover-trigger="mouseenter"><i class="icon-play"></i></a>
+                        <a ng-if="st.job.status==-2" class="btn btn-small" ng-click="activate(st.job.id)" popover="Try run again" popover-trigger="mouseenter"><i class="icon-play"></i></a>
+                        <a ng-if="st.job.status==1" class="btn btn-small" ng-click="deactivate(st.job.id)" popover="Stop job" popover-trigger="mouseenter"><i class="icon-stop"></i></a>
+                        <a class="btn btn-small" ng-click="delete(st.job.id)" popover="Delete job" popover-trigger="mouseenter"><i class="icon-trash"></i></a>
                     </td>
                 </tr>
             </tbody>

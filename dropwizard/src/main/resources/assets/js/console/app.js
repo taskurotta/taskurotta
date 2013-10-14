@@ -100,9 +100,9 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         controller: "scheduleListController"
     });
 
-    $routeProvider.when('/schedule/create', {
+    $routeProvider.when('/schedule/card/:id', {
         templateUrl: '/partials/view/card/schedule_card.html',
-        controller: "scheduleCreateController"
+        controller: "scheduleCardController"
     });
 
     //DEFAULT

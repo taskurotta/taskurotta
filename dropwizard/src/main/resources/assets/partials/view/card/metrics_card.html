@@ -157,8 +157,20 @@
         <div collapse = "collapse.plot">
             <table style="width:100%;height:100%;">
                 <tr>
-                    <td style="vertical-align: top;width:640px;">
-                        <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric" holder="dataHolder" overview="plot-overview"/>
+                    <td style="vertical-align: top;width: 700px;">
+                        <table cellspacing="0" cellpadding="0" width="100%">
+                            <tr>
+                                <td style="width: 40px;"><span class="axis-label">{{getYLabel()}}</span></td>
+                                <td>
+                                    <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric" holder="dataHolder" overview="plot-overview"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td style="height: 30px;text-align: center;"><span class="axis-label">{{getXLabel()}}</span></td>
+                            </tr>
+                        </table>
+
                     </td>
                     <td style = "vertical-align:top;text-align:left;">
                         <div class="well" style="height: 400px;overflow:auto;">
@@ -227,8 +239,8 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="dot in dataset.data">
-                                            <td><small>{{ dot[0] }}</small></td>
-                                            <td><small>{{ dot[1] }}</small></td>
+                                            <td><small>{{ dot[0] }} {{dataset.xLabel}}</small></td>
+                                            <td><small>{{ dot[1] }} {{dataset.yLabel}}</small></td>
                                         </tr>
                                     </tbody>
                                 </table>

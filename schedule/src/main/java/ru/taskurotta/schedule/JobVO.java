@@ -10,12 +10,15 @@ import java.io.Serializable;
  * Date: 23.09.13 10:31
  */
 public class JobVO implements Serializable {
+
     protected long id = -1;
     protected String name;
     protected String cron;
     protected TaskContainer task;
-    protected boolean allowDuplicates = true;
+    protected int queueLimit = -1;
     protected int status = JobConstants.STATUS_UNDEFINED;
+    protected int errorCount = 0;
+    protected String lastError;
 
     public long getId() {
         return id;
@@ -57,12 +60,28 @@ public class JobVO implements Serializable {
         this.status = status;
     }
 
-    public boolean isAllowDuplicates() {
-        return allowDuplicates;
+    public int getQueueLimit() {
+        return queueLimit;
     }
 
-    public void setAllowDuplicates(boolean allowDuplicates) {
-        this.allowDuplicates = allowDuplicates;
+    public void setQueueLimit(int queueLimit) {
+        this.queueLimit = queueLimit;
+    }
+
+    public int getErrorCount() {
+        return errorCount;
+    }
+
+    public void setErrorCount(int errorCount) {
+        this.errorCount = errorCount;
+    }
+
+    public String getLastError() {
+        return lastError;
+    }
+
+    public void setLastError(String lastError) {
+        this.lastError = lastError;
     }
 
     @Override
@@ -72,8 +91,10 @@ public class JobVO implements Serializable {
                 ", name='" + name + '\'' +
                 ", cron='" + cron + '\'' +
                 ", task=" + task +
-                ", allowDuplicates=" + allowDuplicates +
+                ", queueLimit=" + queueLimit +
                 ", status=" + status +
+                ", errorCount=" + errorCount +
+                ", lastError='" + lastError + '\'' +
                 "} ";
     }
 

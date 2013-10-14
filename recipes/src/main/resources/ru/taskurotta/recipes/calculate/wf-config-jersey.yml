@@ -4,7 +4,7 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: 800
+          sleep: -1
           failChance: 0.0
 
 
@@ -14,7 +14,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 20
+          count: 100
           startTasks: true
           startTasksInBackground: true
           startTaskPeriodSeconds: 5

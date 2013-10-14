@@ -20,4 +20,10 @@ public interface JobStore {
 
     public void updateJobStatus(long id, int status);
 
+    public void updateJob(JobVO jobVO);
+
+    public int getJobStatus(long jobId);
+
+    public void updateErrorCount(long jobId, int count, String message);
+
 }

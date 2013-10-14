@@ -12,9 +12,8 @@ public class DatasetVO implements Serializable {
     private int id = 0;
     private List<Number[]> data;
     private String label;
-
-    private boolean clickable = true;
-    private boolean hoverable = true;
+    private String xLabel;
+    private String yLabel;
 
     public List<Number[]> getData() {
         return data;
@@ -32,22 +31,6 @@ public class DatasetVO implements Serializable {
         this.label = label;
     }
 
-    public boolean isClickable() {
-        return clickable;
-    }
-
-    public void setClickable(boolean clickable) {
-        this.clickable = clickable;
-    }
-
-    public boolean isHoverable() {
-        return hoverable;
-    }
-
-    public void setHoverable(boolean hoverable) {
-        this.hoverable = hoverable;
-    }
-
     public int getId() {
         return id;
     }
@@ -56,15 +39,31 @@ public class DatasetVO implements Serializable {
         this.id = id;
     }
 
+    public String getxLabel() {
+        return xLabel;
+    }
+
+    public void setxLabel(String xLabel) {
+        this.xLabel = xLabel;
+    }
+
+    public String getyLabel() {
+        return yLabel;
+    }
+
+    public void setyLabel(String yLabel) {
+        this.yLabel = yLabel;
+    }
+
     @Override
     public String toString() {
         return "DatasetVO{" +
                 "id=" + id +
                 ", data=" + data +
                 ", label='" + label + '\'' +
-                ", clickable=" + clickable +
-                ", hoverable=" + hoverable +
-                "} " + super.toString();
+                ", xLabel='" + xLabel + '\'' +
+                ", yLabel='" + yLabel + '\'' +
+                "} ";
     }
 
 }

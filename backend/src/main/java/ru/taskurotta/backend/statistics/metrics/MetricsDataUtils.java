@@ -3,6 +3,7 @@ package ru.taskurotta.backend.statistics.metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.statistics.MetricsDataHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +23,7 @@ public class MetricsDataUtils {
         List<Number[]> result = new ArrayList<>();
         if (target!=null && !target.isEmpty()) {
             for(Number[] item : target) {
-                if(item[1]!=null && item[1].doubleValue() != 0d) {
+                if(isContainNotNegativeValue(item, true)) {
                     result.add(item);
                 }
             }
@@ -34,14 +35,11 @@ public class MetricsDataUtils {
     }
 
 
-    public static boolean isContainNotNegativeValue(Number[] point) {//x and y point values
+    public static boolean isContainNotNegativeValue(Number[] point, boolean nullAllowed) {
         boolean result = true;
         if (point!=null && point[0]!=null && point[1]!=null) {
-            for (int i = 0; i<2; i++) {
-                if(!isNotNegativeNumber(point[i])) {
-                    result = false;
-                    break;
-                }
+            if (!isNotNegativeNumber(point[1], nullAllowed)) {//intrested only in value
+                result = false;
             }
         } else{
             result = false;
@@ -50,16 +48,21 @@ public class MetricsDataUtils {
     }
 
 
-    public static boolean isNotNegativeNumber(Number target) {
+    public static boolean isNotNegativeNumber(Number target, boolean nullAllowed) {
         boolean result = false;
-        if (Long.class.isAssignableFrom(target.getClass())) {
-            result = (Long)target >= 0l;
-        } else if(Double.class.isAssignableFrom(target.getClass())) {
-            result = (Double)target >= 0d;
-        } else if(Integer.class.isAssignableFrom(target.getClass())) {
-            result = (Integer)target >= 0;
-        } else if(Float.class.isAssignableFrom(target.getClass())) {
-            result = (Float)target >= 0f;
+        if (target == null) {
+           result = nullAllowed;
+
+        } else {
+            if (Long.class.isAssignableFrom(target.getClass())) {
+                result = (Long)target >= 0l;
+            } else if(Double.class.isAssignableFrom(target.getClass())) {
+                result = (Double)target >= 0d;
+            } else if(Integer.class.isAssignableFrom(target.getClass())) {
+                result = (Integer)target >= 0;
+            } else if(Float.class.isAssignableFrom(target.getClass())) {
+                result = (Float)target >= 0f;
+            }
         }
         return result;
     }
@@ -68,11 +71,9 @@ public class MetricsDataUtils {
         List<Number[]> compressedData = new ArrayList<>();
         if (times>1 && target!=null && !target.isEmpty()) {
             for(int i = 0; i<target.size(); i++) {
-                if(isContainNotNegativeValue(target.get(i))) {
-                    if (((i+1)%times) == 0) {
-                        Number[] item = {target.get(i)[0], getAverageValue(i, times-1, target)};
-                        compressedData.add(item);
-                    }
+                if (((i+1)%times) == 0) {
+                    Number[] item = {target.get(i)[0], getSiblingsAverage(i, times-1, target)};
+                    compressedData.add(item);
                 }
             }
         }
@@ -83,7 +84,10 @@ public class MetricsDataUtils {
         return compressedData;
     }
 
-    public static Number getAverageValue(int position, int siblingCount, List<Number[]> target) {
+    public static Number getSiblingsAverage(int position, int siblingCount, List<Number[]> target) {
+        if (target == null) {
+            return null;
+        }
         int min = position-siblingCount;
         int max = position+siblingCount;
         min = min<0? 0: min;
@@ -120,11 +124,14 @@ public class MetricsDataUtils {
     }
 
     public static Number getAverageLongValue(List<Number[]> target, int from, int to) {
-        Long result = 0l;
+        Long result = null;
         int count = 0;
 
         for (int i = from; i < to; i++) {
-            if (isContainNotNegativeValue(target.get(i))) {
+            if (isContainNotNegativeValue(target.get(i), false)) {
+                if (result == null) {
+                    result = 0l;
+                }
                 result += target.get(i)[1].longValue();
                 count++;
             }
@@ -139,16 +146,19 @@ public class MetricsDataUtils {
     }
 
     public static Number getAverageDoubleValue(List<Number[]> target, int from, int to) {
-        Double result = 0d;
+        Double result = null;
         int count = 0;
         for(int i = from; i < to; i++) {
-            if (isContainNotNegativeValue(target.get(i))) {
+            if (isContainNotNegativeValue(target.get(i), false)) {
+                if (result == null) {
+                    result = 0d;
+                }
                 result += target.get(i)[1].doubleValue();
                 count++;
             }
         }
 
-        if (count>0){
+        if (count > 0){
             result = result/Double.valueOf(count);
         }
 
@@ -156,17 +166,30 @@ public class MetricsDataUtils {
 
     }
 
-    public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target) {
+    public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline) {
         List<Number[]> result = new ArrayList<>();
         if(target!=null && target.length> 0) {
-            for (int i = 0; i<target.length; i++) {
+            for (int i = 0; i < target.length; i++) {
                 Number value = target[i]!=null? target[i].getValue(): null;
-                Number[] item = {i, value};
+
+                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length): i, value};
                 result.add(item);
             }
         }
         return result;
     }
+
+    public static Number convertToTime(int value, long time, int size) {
+        Number result = null;
+        if (size == MetricsDataHandler.MINUTES_IN_24_HOURS) {//data for a day per minute
+            result = -(MetricsDataHandler.MINUTES_IN_24_HOURS - value);
+
+        } else if (size == MetricsDataHandler.SECONDS_IN_HOUR) {//data for a hour per second
+            result = -(MetricsDataHandler.SECONDS_IN_HOUR - value);
+        }
+        return result;
+    }
+
 
     public static void sortDataSet(DataPointVO<? extends Number>[] target) {
         if(target!=null && target.length>0) {

@@ -8,7 +8,9 @@ package ru.taskurotta.schedule;
 public interface JobConstants {
 
     String ACTION_LIST = "list";
+    String ACTION_CARD = "card";
     String ACTION_CREATE = "create";
+    String ACTION_UPDATE = "update";
     String ACTION_NODE_COUNT = "node_count";
     String ACTION_DELETE = "delete";
     String ACTION_ACTIVATE = "activate";
