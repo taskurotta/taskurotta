@@ -8,7 +8,7 @@ package ru.taskurotta.backend.process;
 public class BrokenProcessVO {
 
     private String processId;
-    private String deciderActorId;
+    private String startActorId;
     private String brokenActorId;
     private long time;
     private String errorMessage;
@@ -23,12 +23,12 @@ public class BrokenProcessVO {
         this.processId = processId;
     }
 
-    public String getDeciderActorId() {
-        return deciderActorId;
+    public String getStartActorId() {
+        return startActorId;
     }
 
-    public void setDeciderActorId(String deciderActorId) {
-        this.deciderActorId = deciderActorId;
+    public void setStartActorId(String startActorId) {
+        this.startActorId = startActorId;
     }
 
     public String getBrokenActorId() {
@@ -75,7 +75,7 @@ public class BrokenProcessVO {
     public String toString() {
         return "BrokenProcessVO{" +
                 "processId='" + processId + '\'' +
-                ", deciderActorId='" + deciderActorId + '\'' +
+                ", startActorId='" + startActorId + '\'' +
                 ", brokenActorId='" + brokenActorId + '\'' +
                 ", time=" + time +
                 ", errorMessage='" + errorMessage + '\'' +

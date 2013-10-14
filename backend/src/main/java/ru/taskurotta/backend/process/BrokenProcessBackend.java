@@ -1,7 +1,6 @@
 package ru.taskurotta.backend.process;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * User: stukushin
@@ -13,7 +12,7 @@ public interface BrokenProcessBackend {
 
     public void save(BrokenProcessVO brokenProcessVO);
 
-    public Collection<BrokenProcessVO> find(SearchObject searchObject);
+    public Collection<BrokenProcessVO> find(SearchCommand searchCommand);
 
     public Collection<BrokenProcessVO> findAll();
 }

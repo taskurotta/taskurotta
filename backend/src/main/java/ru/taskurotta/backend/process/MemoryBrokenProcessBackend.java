@@ -29,7 +29,7 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
 
         String processId = brokenProcessVO.getProcessId();
 
-        addProcessId(deciderActorIds, brokenProcessVO.getDeciderActorId(), processId);
+        addProcessId(deciderActorIds, brokenProcessVO.getStartActorId(), processId);
         addProcessId(brokenActorIds, brokenProcessVO.getBrokenActorId(), processId);
         addProcessId(times, brokenProcessVO.getTime(), processId);
         addProcessId(errorMessages, brokenProcessVO.getErrorMessage(), processId);
@@ -40,57 +40,57 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
     }
 
     @Override
-    public Collection<BrokenProcessVO> find(SearchObject searchObject) {
+    public Collection<BrokenProcessVO> find(SearchCommand searchCommand) {
 
-        if (searchObject == null) {
+        if (searchCommand == null) {
             return new ArrayList<>();
         }
 
         List<String> processIds = new ArrayList<>();
         Collection<BrokenProcessVO> result = new ArrayList<>();
 
-        if (searchObject.getProcessId() != null) {
-            result.add(brokenProcess.get(searchObject.getProcessId()));
+        if (searchCommand.getProcessId() != null) {
+            result.add(brokenProcess.get(searchCommand.getProcessId()));
             return result;
         }
 
-        if (searchObject.getDeciderActorId() != null) {
-            searchByStartString(searchObject.getDeciderActorId(), deciderActorIds, processIds);
+        if (searchCommand.getStartActorId() != null) {
+            searchByStartString(searchCommand.getStartActorId(), deciderActorIds, processIds);
         }
 
-        if (searchObject.getBrokenActorId() != null) {
-            searchByStartString(searchObject.getBrokenActorId(), brokenActorIds, processIds);
+        if (searchCommand.getBrokenActorId() != null) {
+            searchByStartString(searchCommand.getBrokenActorId(), brokenActorIds, processIds);
         }
 
-        if (searchObject.getStartPeriod() > 0 && searchObject.getEndPeriod() > 0) {
+        if (searchCommand.getStartPeriod() > 0 && searchCommand.getEndPeriod() > 0) {
             Set<Map.Entry<Long, Set<String>>> entries = times.entrySet();
             for (Map.Entry<Long, Set<String>> entry: entries) {
-                if (entry.getKey() > searchObject.getStartPeriod() && entry.getKey() < searchObject.getEndPeriod()) {
+                if (entry.getKey() > searchCommand.getStartPeriod() && entry.getKey() < searchCommand.getEndPeriod()) {
                     merge(entry.getValue(), processIds);
                 }
             }
-        } else if (searchObject.getStartPeriod() > 0 && searchObject.getEndPeriod() < 0) {
+        } else if (searchCommand.getStartPeriod() > 0 && searchCommand.getEndPeriod() < 0) {
             Set<Map.Entry<Long, Set<String>>> entries = times.entrySet();
             for (Map.Entry<Long, Set<String>> entry: entries) {
-                if (entry.getKey() > searchObject.getStartPeriod()) {
+                if (entry.getKey() > searchCommand.getStartPeriod()) {
                     merge(entry.getValue(), processIds);
                 }
             }
-        } else if (searchObject.getStartPeriod() < 0 && searchObject.getEndPeriod() > 0) {
+        } else if (searchCommand.getStartPeriod() < 0 && searchCommand.getEndPeriod() > 0) {
             Set<Map.Entry<Long, Set<String>>> entries = times.entrySet();
             for (Map.Entry<Long, Set<String>> entry: entries) {
-                if (entry.getKey() < searchObject.getEndPeriod()) {
+                if (entry.getKey() < searchCommand.getEndPeriod()) {
                     merge(entry.getValue(), processIds);
                 }
             }
         }
 
-        if (searchObject.getErrorMessage() != null) {
-            searchByStartString(searchObject.getErrorMessage(), errorMessages, processIds);
+        if (searchCommand.getErrorMessage() != null) {
+            searchByStartString(searchCommand.getErrorMessage(), errorMessages, processIds);
         }
 
-        if (searchObject.getErrorClassName() != null) {
-            searchByStartString(searchObject.getErrorClassName(), errorClassNames, processIds);
+        if (searchCommand.getErrorClassName() != null) {
+            searchByStartString(searchCommand.getErrorClassName(), errorClassNames, processIds);
         }
 
         for (String processId : processIds) {

@@ -5,10 +5,10 @@ package ru.taskurotta.backend.process;
  * Date: 11.10.13
  * Time: 18:25
  */
-public class SearchObject {
+public class SearchCommand {
 
     private String processId;
-    private String deciderActorId;
+    private String startActorId;
     private String brokenActorId;
     private long startPeriod = -1;
     private long endPeriod = -1;
@@ -23,12 +23,12 @@ public class SearchObject {
         this.processId = processId;
     }
 
-    public String getDeciderActorId() {
-        return deciderActorId;
+    public String getStartActorId() {
+        return startActorId;
     }
 
-    public void setDeciderActorId(String deciderActorId) {
-        this.deciderActorId = deciderActorId;
+    public void setStartActorId(String startActorId) {
+        this.startActorId = startActorId;
     }
 
     public String getBrokenActorId() {
