@@ -33,11 +33,10 @@ public class OraJobStore implements JobStore {
     private DataSource dataSource;
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
-
     @Override
     public long addJob(JobVO task) {
         try (Connection connection = dataSource.getConnection();
-        CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
+            CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
         ) {
             cs.setString(1, task.getName());
             cs.setString(2, task.getCron());
