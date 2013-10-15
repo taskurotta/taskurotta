@@ -7,14 +7,9 @@ import com.hazelcast.core.Message;
 import com.hazelcast.core.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.dropwizard.resources.Action;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.manager.JobManager;
-import ru.taskurotta.schedule.storage.JobStore;
-import ru.taskurotta.schedule.JobVO;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Dispatches and process scheduling events from every node's console web UI
@@ -35,11 +30,9 @@ public class HzJobMessageHandler implements MessageListener<HzMessage>, JobConst
     private String scheduleTopicName;
 
     private JobManager jobManager;
-    private JobStore jobStore;
 
-    public HzJobMessageHandler(HazelcastInstance hzInstance, String scheduleTopicName, JobManager jobManager, JobStore jobStore) {
+    public HzJobMessageHandler(HazelcastInstance hzInstance, String scheduleTopicName, JobManager jobManager) {
         this.jobManager = jobManager;
-        this.jobStore = jobStore;
 
         this.hzInstance = hzInstance;
 
@@ -73,7 +66,7 @@ public class HzJobMessageHandler implements MessageListener<HzMessage>, JobConst
             nodeLock.lock();
             regId = topic.addMessageListener(this);
             logger.debug("Current node registered as message listener with id[{}]. Scheduled tasks sync started.", regId);
-            synchronizeScheduledTasksWithStore();
+            jobManager.synchronizeScheduledTasksWithStore();
 
         } catch (Throwable e) {
             logger.error("Error at schedule initialization!", e);
@@ -82,22 +75,6 @@ public class HzJobMessageHandler implements MessageListener<HzMessage>, JobConst
             }
             nodeLock.unlock();
         }
-    }
-
-
-    public void synchronizeScheduledTasksWithStore() {
-        Collection<Long> jobIds = jobStore.getJobIds();
-        List<Long> resumedJobs = new ArrayList();
-        if (jobIds!=null && !jobIds.isEmpty()) {
-            for (Long jobId : jobIds) {
-                JobVO sTask = jobStore.getJob(jobId);
-                if (sTask!=null && STATUS_ACTIVE == sTask.getStatus()) {
-                    jobManager.startJob(jobId);
-                    resumedJobs.add(jobId);
-                }
-            }
-        }
-        logger.info("Resumed jobs on schedule after sync are [{}]", resumedJobs);
     }
 
     public void dispatch(HzMessage message) {
@@ -112,15 +89,14 @@ public class HzJobMessageHandler implements MessageListener<HzMessage>, JobConst
 
         if (hzMessage != null) {
             String action = hzMessage.getAction();
-            if(ACTION_ACTIVATE.equals(action)) {
+            if(Action.ACTIVATE.getValue().equals(action)) {
                 jobManager.startJob(hzMessage.getId());
 
-            } else if (ACTION_DEACTIVATE.equals(action)) {
+            } else if (Action.DEACTIVATE.getValue().equals(action)) {
                 jobManager.stopJob(hzMessage.getId());
 
-            } else if(ACTION_DELETE.equals(action)) {
-                jobManager.stopJob(hzMessage.getId());
-                jobStore.removeJob(hzMessage.getId());
+            } else if(Action.DELETE.getValue().equals(action)) {
+                jobManager.removeJob(hzMessage.getId());
 
             } else {
                 logger.error("Unsupported action getted ["+action+"]");

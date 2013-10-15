@@ -316,6 +316,15 @@
     <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
     <!-- /Metrics -->
 
+    <!-- Broken process backend -->
+    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
+        <property name="dataSource" ref="dataSource" /><!-- Or jist original here? JDBC dao support class should support this -->
+        <property name="lobHandler" ref="lobHandler" />
+    </bean>
+
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" />
+    <!-- /Broken process backend -->
+
 
     <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
@@ -344,10 +353,20 @@
         </tx:attributes>
     </tx:advice>
 
+    <tx:advice id="brokenProcessTransactions" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="save" propagation="REQUIRES_NEW"/>
+        </tx:attributes>
+    </tx:advice>
+
     <aop:config>
         <aop:pointcut id="serviceOperation"
                       expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))"/>
+        <aop:pointcut id="brokenProcessOperation"
+                      expression="execution(* ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend.*(..))"/>
+
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
+        <aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>
     </aop:config>
     <!-- /Transactions -->
 

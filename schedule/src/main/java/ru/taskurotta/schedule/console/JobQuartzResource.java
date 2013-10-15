@@ -6,12 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.StringUtils;
+import ru.taskurotta.dropwizard.resources.Action;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.adapter.HzJobMessageHandler;
 import ru.taskurotta.schedule.adapter.HzMessage;
 import ru.taskurotta.schedule.manager.JobManager;
-import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
 
@@ -45,19 +45,18 @@ import java.util.UUID;
 public class JobQuartzResource implements JobConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(JobQuartzResource.class);
-    private JobStore jobStore;
     private JobManager jobManager;
     private HzJobMessageHandler hzScheduleEventDispatcher;
 
     @GET
     public Response processGet(@PathParam("action")String action, @QueryParam("id") Optional<Long> idOpt) {
-        if (ACTION_LIST.equals(action)) {
-            Collection<Long> taskIds = jobStore.getJobIds();
+        if (Action.LIST.getValue().equals(action)) {
+            Collection<Long> taskIds = jobManager.getJobIds();
             List<JobUI> result = null;
             if (taskIds!=null && !taskIds.isEmpty()) {
                 result = new ArrayList<>();
                 for (Long id: taskIds) {
-                    JobVO jobVO= jobStore.getJob(id);
+                    JobVO jobVO = jobManager.getJob(id);
                     if (jobVO != null) {
                         JobUI jobUI = new JobUI(jobVO);
                         if (jobVO.getStatus() == STATUS_ACTIVE) {
@@ -75,9 +74,9 @@ public class JobQuartzResource implements JobConstants {
             int size = jobIds!=null? jobIds.size(): 0;
             return Response.ok(size, MediaType.APPLICATION_JSON).build();
 
-        } else if(ACTION_CARD.equals(action)) {
+        } else if(Action.CARD.getValue().equals(action)) {
             long id = idOpt.or(-1l);
-            JobVO jobVO = jobStore.getJob(id);
+            JobVO jobVO = jobManager.getJob(id);
             logger.debug("JobVO getted by id[{}] is [{}]", id, jobVO);
             return Response.ok(jobVO, MediaType.APPLICATION_JSON).build();
 
@@ -131,14 +130,14 @@ public class JobQuartzResource implements JobConstants {
 
         try {
 
-            if (ACTION_CREATE.equals(action)) {
+            if (Action.CREATE.getValue().equals(action)) {
                 logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt.or(""), nameOpt.or(""), task);
-                long id = jobStore.addJob(job);
+                long id = jobManager.addJob(job);
                 logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", name, cron, id);
                 return Response.ok(id, MediaType.APPLICATION_JSON).build();
 
-            } else if (ACTION_UPDATE.equals(action)) {
-                jobStore.updateJob(job);
+            } else if (Action.UPDATE.getValue().equals(action)) {
+                jobManager.updateJob(job);
                 logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
                 return Response.ok().build();
 
@@ -164,7 +163,7 @@ public class JobQuartzResource implements JobConstants {
             if (!StringUtils.hasText(job.getName())) {
                 throw new IllegalArgumentException("Job name cannot be empty");
             }
-            if (job.getId()>=0 && JobConstants.STATUS_ACTIVE == jobStore.getJobStatus(job.getId())) {
+            if (job.getId()>=0 && JobConstants.STATUS_ACTIVE == jobManager.getJobStatus(job.getId())) {
                 throw new IllegalArgumentException("Cannot modify active job["+job.getId()+"]!");
             }
             if (job.getTask() == null) {
@@ -202,7 +201,9 @@ public class JobQuartzResource implements JobConstants {
     }
 
     private boolean isActionSupported(String action) {
-        return ACTION_DELETE.equals(action) || ACTION_ACTIVATE.equals(action) || ACTION_DEACTIVATE.equals(action);
+        return Action.DELETE.getValue().equals(action)
+                || Action.ACTIVATE.getValue().equals(action)
+                || Action.DEACTIVATE.getValue().equals(action);
     }
 
     public static TaskContainer extendTask(TaskContainer target) {
@@ -226,11 +227,6 @@ public class JobQuartzResource implements JobConstants {
         }
 
         return result;
-    }
-
-    @Required
-    public void setJobStore(JobStore jobStore) {
-        this.jobStore = jobStore;
     }
 
     @Required

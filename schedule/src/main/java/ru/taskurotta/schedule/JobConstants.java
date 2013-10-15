@@ -7,21 +7,16 @@ package ru.taskurotta.schedule;
  */
 public interface JobConstants {
 
-    String ACTION_LIST = "list";
-    String ACTION_CARD = "card";
-    String ACTION_CREATE = "create";
-    String ACTION_UPDATE = "update";
     String ACTION_NODE_COUNT = "node_count";
-    String ACTION_DELETE = "delete";
-    String ACTION_ACTIVATE = "activate";
-    String ACTION_DEACTIVATE = "deactivate";
 
     int STATUS_ACTIVE = 1;
     int STATUS_INACTIVE = -1;
     int STATUS_UNDEFINED = 0;
     int STATUS_ERROR = -2;
 
-
-
+    String DATA_KEY_JOB = "job";
+    String DATA_KEY_JOB_MANAGER = "jobManager";
+    String DATA_KEY_TASK_SERVER = "taskServer";
+    String DATA_KEY_QUEUE_INFO_RETRIEVER = "queueInfoRetriever";
 
 }

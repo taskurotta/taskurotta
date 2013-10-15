@@ -102,6 +102,7 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
     public Collection<BrokenProcessVO> find(SearchCommand searchCommand) {
         List<Object> parameters = new ArrayList<>();//order does matter
         StringBuilder sb = new StringBuilder(SQL_LIST_ALL + " WHERE 1=1 ");
+
         if (StringUtils.hasText(searchCommand.getStartActorId())) {
             sb.append("AND START_ACTOR_ID LIKE ? ");
             parameters.add("%" + searchCommand.getStartActorId());

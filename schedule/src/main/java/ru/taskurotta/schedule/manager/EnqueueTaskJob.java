@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
-import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -28,15 +27,15 @@ public class EnqueueTaskJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         JobDataMap jdm = context.getJobDetail().getJobDataMap();
-        JobVO job = (JobVO)jdm.get("job");
+        JobVO job = (JobVO)jdm.get(JobConstants.DATA_KEY_JOB);
+        JobManager jobManager = (JobManager)jdm.get(JobConstants.DATA_KEY_JOB_MANAGER);
         TaskContainer taskContainer = job!=null? job.getTask(): null;
-        TaskServer taskServer = (TaskServer)jdm.get("taskServer");
-        JobStore jobStore = (JobStore)jdm.get("jobStore");
-        QueueInfoRetriever queueInfoRetriever = (QueueInfoRetriever)jdm.get("queueInfoRetriever");
+        TaskServer taskServer = (TaskServer)jdm.get(JobConstants.DATA_KEY_TASK_SERVER);
+        QueueInfoRetriever queueInfoRetriever = (QueueInfoRetriever)jdm.get(JobConstants.DATA_KEY_QUEUE_INFO_RETRIEVER);
 
         try {
 
-            validateEntities(taskServer, job, queueInfoRetriever, jobStore);
+            validateEntities(taskServer, job, queueInfoRetriever, jobManager);
 
             if (job.getQueueLimit()>0) {
                 int size = queueInfoRetriever.getQueueTaskCount(taskContainer.getActorId());
@@ -54,22 +53,21 @@ public class EnqueueTaskJob implements Job {
             if (job.getErrorCount()>0) {
                 job.setErrorCount(0);
                 job.setLastError("");
-                jobStore.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());//reset error counter
+                jobManager.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());//reset error counter
             }
 
         } catch (Throwable e) {
             logger.error("Cannot execute scheduled job for task ["+taskContainer+"]", e);
 
-            if (jobStore != null && job!=null && job.getId()>0) {
+            if (jobManager != null && job!=null && job.getId()>0) {
                 job.setErrorCount(job.getErrorCount()+1);
                 job.setLastError(e.getClass().getName() + ": " + e.getMessage());
                 try {
-                    jobStore.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());
+                    jobManager.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());
 
                     if (job.getErrorCount()+1>=MAX_CONSEQUENTIAL_ERRORS) {
-                        JobManager jobManager = (JobManager) jdm.get("jobManager");
-                        if (jobManager != null && jobManager.stopJob(job.getId())) {
-                            jobStore.updateJobStatus(job.getId(), JobConstants.STATUS_ERROR);
+                        if (jobManager.stopJob(job.getId())) {
+                            jobManager.updateJobStatus(job.getId(), JobConstants.STATUS_ERROR);
                         }
                     }
 
@@ -82,21 +80,21 @@ public class EnqueueTaskJob implements Job {
     }
 
 
-    public void validateEntities(TaskServer taskServer, JobVO job, QueueInfoRetriever queueInfoRetriever, JobStore jobStore) {
-        if(taskServer == null) {
-            throw new IllegalArgumentException("Scheduled job have no TaskServer job data entity!");
+    public void validateEntities(TaskServer taskServer, JobVO job, QueueInfoRetriever queueInfoRetriever, JobManager jobManager) {
+        if (taskServer == null) {
+            throw new IllegalArgumentException("Scheduled job have no TaskServer data entity!");
         }
-        if(job == null) {
-            throw new IllegalArgumentException("Scheduled job have no JobVO job data entity!");
+        if (job == null) {
+            throw new IllegalArgumentException("Scheduled job have no JobVO data entity!");
         }
-        if(job.getTask() == null) {
-            throw new IllegalArgumentException("Scheduled job have no TaskContainer job data entity!");
+        if (jobManager == null) {
+            throw new IllegalArgumentException("Scheduled job have no JobManager data entity!");
         }
-        if(job.getQueueLimit()>0 && queueInfoRetriever==null) {
-            throw new IllegalArgumentException("Scheduled job have no QueueInfoRetriever job data entity!");
+        if (job.getTask() == null) {
+            throw new IllegalArgumentException("Scheduled job have no TaskContainer data entity!");
         }
-        if (jobStore == null) {
-            throw new IllegalArgumentException("Scheduled job have no JobStore job data entity!");
+        if (job.getQueueLimit()>0 && queueInfoRetriever==null) {
+            throw new IllegalArgumentException("Scheduled job have no QueueInfoRetriever data entity!");
         }
     }
 

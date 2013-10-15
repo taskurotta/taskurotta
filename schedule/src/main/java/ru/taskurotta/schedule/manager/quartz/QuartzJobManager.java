@@ -1,4 +1,4 @@
-package ru.taskurotta.schedule.manager;
+package ru.taskurotta.schedule.manager.quartz;
 
 import org.quartz.CronExpression;
 import org.quartz.CronScheduleBuilder;
@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
+import ru.taskurotta.schedule.manager.EnqueueTaskJob;
+import ru.taskurotta.schedule.manager.JobManager;
 import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.server.TaskServer;
 
@@ -124,13 +126,49 @@ public class QuartzJobManager implements JobManager {
         return result;
     }
 
+    @Override
+    public long addJob(JobVO job) {
+        return jobStore.addJob(job);
+    }
+
+    @Override
+    public void removeJob(long id) {
+        stopJob(id);
+        jobStore.removeJob(id);
+    }
+
+    @Override
+    public Collection<Long> getJobIds() {
+        return jobStore.getJobIds();
+    }
+
+    @Override
+    public JobVO getJob(long id) {
+        return jobStore.getJob(id);
+    }
+
+    @Override
+    public void updateJobStatus(long id, int status) {
+        jobStore.updateJobStatus(id, status);
+    }
+
+    @Override
+    public void updateJob(JobVO jobVO) {
+       stopJob(jobVO.getId());
+       jobStore.updateJob(jobVO);
+    }
+
+    @Override
+    public void updateErrorCount(long jobId, int count, String message) {
+        jobStore.updateErrorCount(jobId, count, message);
+    }
+
     private void runJob(JobVO job) throws SchedulerException {
         JobDataMap jdm = new JobDataMap();
-        jdm.put("job", job);
-        jdm.put("queueInfoRetriever", queueInfoRetriever);
-        jdm.put("taskServer", taskServer);
-        jdm.put("jobStore", jobStore);
-        jdm.put("jobManager", this);
+        jdm.put(JobConstants.DATA_KEY_JOB, job);
+        jdm.put(JobConstants.DATA_KEY_QUEUE_INFO_RETRIEVER, queueInfoRetriever);
+        jdm.put(JobConstants.DATA_KEY_TASK_SERVER, taskServer);
+        jdm.put(JobConstants.DATA_KEY_JOB_MANAGER, this);
 
 
         JobDetail jobDetail = JobBuilder
@@ -206,6 +244,22 @@ public class QuartzJobManager implements JobManager {
         }
 
         return result;
+    }
+
+    @Override
+    public void synchronizeScheduledTasksWithStore() {
+        Collection<Long> jobIds = jobStore.getJobIds();
+        List<Long> resumedJobs = new ArrayList();
+        if (jobIds!=null && !jobIds.isEmpty()) {
+            for (Long jobId : jobIds) {
+                JobVO sTask = jobStore.getJob(jobId);
+                if (sTask!=null && JobConstants.STATUS_ACTIVE == sTask.getStatus()) {
+                    startJob(jobId);
+                    resumedJobs.add(jobId);
+                }
+            }
+        }
+        logger.info("Resumed jobs on schedule after sync are [{}]", resumedJobs);
     }
 
     @Required
