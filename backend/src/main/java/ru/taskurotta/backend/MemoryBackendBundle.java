@@ -5,6 +5,8 @@ import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
 import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
+import ru.taskurotta.backend.process.MemoryBrokenProcessBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
@@ -26,6 +28,7 @@ public class MemoryBackendBundle implements BackendBundle {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
     private MemoryGraphDao memoryGraphDao;
+    private BrokenProcessBackend brokenProcessBackend;
 
 
     public MemoryBackendBundle(int pollDelay, TaskDao taskDao) {
@@ -35,6 +38,7 @@ public class MemoryBackendBundle implements BackendBundle {
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao);
         this.configBackend = new MemoryConfigBackend();
+        this.brokenProcessBackend = new MemoryBrokenProcessBackend();
     }
 
     @Override
@@ -60,6 +64,11 @@ public class MemoryBackendBundle implements BackendBundle {
     @Override
     public ConfigBackend getConfigBackend() {
         return configBackend;
+    }
+
+    @Override
+    public BrokenProcessBackend getBrokenProcessBackend() {
+        return brokenProcessBackend;
     }
 
     public MemoryGraphDao getMemoryGraphDao() {

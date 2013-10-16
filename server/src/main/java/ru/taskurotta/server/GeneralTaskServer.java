@@ -6,6 +6,8 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
+import ru.taskurotta.backend.process.BrokenProcessVO;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.snapshot.SnapshotService;
@@ -13,6 +15,7 @@ import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.transport.model.TaskType;
@@ -36,6 +39,7 @@ public class GeneralTaskServer implements TaskServer {
     protected QueueBackend queueBackend;
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
+    protected BrokenProcessBackend brokenProcessBackend;
     protected SnapshotService snapshotService;
 
     /*
@@ -59,14 +63,17 @@ public class GeneralTaskServer implements TaskServer {
         this.queueBackend = backendBundle.getQueueBackend();
         this.dependencyBackend = backendBundle.getDependencyBackend();
         this.configBackend = backendBundle.getConfigBackend();
+        this.brokenProcessBackend = backendBundle.getBrokenProcessBackend();
     }
 
-    public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+    public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend,
+                             DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
         this.processBackend = processBackend;
         this.taskBackend = taskBackend;
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.configBackend = configBackend;
+        this.brokenProcessBackend = brokenProcessBackend;
     }
 
     @Override
@@ -154,6 +161,24 @@ public class GeneralTaskServer implements TaskServer {
 			enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
 
             return;
+        } else {
+            BrokenProcessVO brokenProcess = new BrokenProcessVO();
+            brokenProcess.setTime(taskDecision.getRestartTime());
+            brokenProcess.setProcessId(processId.toString());
+            brokenProcess.setBrokenActorId(taskDecision.getActorId());
+
+            TaskContainer startTask = processBackend.getStartTask(processId);
+            if (null != startTask) {
+                brokenProcess.setStartActorId(startTask.getActorId());
+            }
+
+            ErrorContainer errorContainer = taskDecision.getErrorContainer();
+            if (null != errorContainer) {
+                brokenProcess.setErrorClassName(errorContainer.getClassName());
+                brokenProcess.setErrorMessage(errorContainer.getMessage());
+                brokenProcess.setStackTrace(errorContainer.getStackTrace());
+            }
+            brokenProcessBackend.save(brokenProcess);
         }
 
         // idempotent statement
