@@ -1,7 +1,5 @@
 package ru.taskurotta.recipes.stress;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -11,24 +9,30 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * User: greg
  */
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
-    private final static Logger log = LoggerFactory.getLogger(LifetimeProfiler.class);
 
     public static AtomicLong taskCount = new AtomicLong(0);
     public static AtomicLong startTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
-    public static int tasksForStat = 200;
+
+    public static int tasksForStat = 500;
+    public static double totalDelta = 0;
+
     private int deltaShot = 3000;
     private double deltaRate = 0;
     private double previousRate = 0;
-    public static double totalDelta = 0;
-    private static AtomicBoolean timeIsZero = new AtomicBoolean(true);
+    private boolean timeIsZero = true;
+
+
+    private double previousCountTotalRate = 0;
+    public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
+    private double targetTolerance = 0.5;
 
     public LifetimeProfiler() {
     }
@@ -53,7 +57,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
 
                 if (null != task) {
-                    StressTaskCreator.GLOBAL_LATCH.countDown();
                     long count = taskCount.incrementAndGet();
                     if (count % (StressTaskCreator.getInitialSize() - deltaShot) == 0) {
                         if (StressTaskCreator.LATCH != null) {
@@ -62,11 +65,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         }
                     }
                     if (!StressTaskCreator.isWarmingUp()) {
-                        if (timeIsZero.get()) {
+                        if (timeIsZero) {
                             long current = System.currentTimeMillis();
                             lastTime.set(current);
                             startTime.set(current);
-                            timeIsZero.set(false);
+                            timeIsZero = false;
                         }
                         long curTime = System.currentTimeMillis();
                         if (count % tasksForStat == 0) {
@@ -76,7 +79,14 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                                 deltaRate = Math.abs(rate - previousRate);
                                 totalDelta += deltaRate;
                             }
-                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f\n", count, time, rate, deltaRate);
+                            double totalRate = 1000.0 * count / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
+                            double currentCountTotalRate = count / totalRate;
+                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f\n", count, time, rate, deltaRate, currentCountTotalRate);
+                            double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
+                            if (currentTolerance < targetTolerance) {
+                                stabilizationCounter.incrementAndGet();
+                            }
+                            previousCountTotalRate = currentCountTotalRate;
                             previousRate = rate;
                             lastTime.set(curTime);
                         }
@@ -93,7 +103,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     }
 
     public void setTasksForStat(int tasksForStat) {
-        this.tasksForStat = tasksForStat;
+        LifetimeProfiler.tasksForStat = tasksForStat;
     }
 
     @Override
