@@ -32,7 +32,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     private double previousCountTotalRate = 0;
     public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
-    private double targetTolerance = 0.5;
+    private double targetTolerance = 0.7;
 
     public LifetimeProfiler() {
     }
@@ -81,14 +81,14 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             }
                             double totalRate = 1000.0 * count / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
                             double currentCountTotalRate = count / totalRate;
-                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f\n", count, time, rate, deltaRate, currentCountTotalRate);
                             double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
-                            if (currentTolerance < targetTolerance) {
-                                stabilizationCounter.incrementAndGet();
-                            }
+                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, currentCountTotalRate, currentTolerance);
                             previousCountTotalRate = currentCountTotalRate;
                             previousRate = rate;
                             lastTime.set(curTime);
+                            if (currentTolerance < targetTolerance) {
+                                stabilizationCounter.incrementAndGet();
+                            }
                         }
                     }
                 }
