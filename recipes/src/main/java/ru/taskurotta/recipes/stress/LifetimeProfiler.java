@@ -29,7 +29,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double previousRate = 0;
     private boolean timeIsZero = true;
 
-
     private double previousCountTotalRate = 0;
     public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
     private double targetTolerance = 0.7;
@@ -51,11 +50,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new TaskSpreader() {
             @Override
             public Task poll() {
-
-
                 Task task = taskSpreader.poll();
-
-
                 if (null != task) {
                     long count = taskCount.incrementAndGet();
                     if (count % (StressTaskCreator.getInitialSize() - deltaShot) == 0) {
@@ -82,13 +77,15 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             double totalRate = 1000.0 * count / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
                             double currentCountTotalRate = count / totalRate;
                             double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
-                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, currentCountTotalRate, currentTolerance);
                             previousCountTotalRate = currentCountTotalRate;
                             previousRate = rate;
                             lastTime.set(curTime);
                             if (currentTolerance < targetTolerance) {
                                 stabilizationCounter.incrementAndGet();
+                            } else if (stabilizationCounter.get() > 0 && currentTolerance > targetTolerance ){
+                                stabilizationCounter.set(0);
                             }
+                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, currentCountTotalRate, currentTolerance);
                         }
                     }
                 }

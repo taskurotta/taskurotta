@@ -34,6 +34,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private final static int warmingUpCycles = 10;
     private static AtomicInteger currentCycle = new AtomicInteger(0);
 
+    private static boolean warming = true;
+
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("onApplicationEvent");
@@ -83,7 +85,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
 
     public static boolean isWarmingUp() {
-        return currentCycle.get() < warmingUpCycles;
+        return warming;
     }
 
     @Override
@@ -103,6 +105,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                     e.printStackTrace();
                 }
             }
+            warming = false;
             while (LifetimeProfiler.stabilizationCounter.get() < 10) {
                 LATCH = new CountDownLatch(1);
                 createStartTask(deciderClient);
