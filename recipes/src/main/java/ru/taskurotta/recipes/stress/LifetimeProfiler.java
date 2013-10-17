@@ -59,36 +59,36 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             StressTaskCreator.LATCH.countDown();
                         }
                     }
-                    if (!StressTaskCreator.isWarmingUp()) {
-                        if (timeIsZero) {
-                            long current = System.currentTimeMillis();
-                            lastTime.set(current);
-                            startTime.set(current);
-                            timeIsZero = false;
+//                    if (!StressTaskCreator.isWarmingUp()) {
+                    if (timeIsZero) {
+                        long current = System.currentTimeMillis();
+                        lastTime.set(current);
+                        startTime.set(current);
+                        timeIsZero = false;
+                    }
+                    long curTime = System.currentTimeMillis();
+                    if (count % tasksForStat == 0) {
+                        double time = 0.001 * (curTime - lastTime.get());
+                        double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
+                        if (previousRate != 0) {
+                            deltaRate = Math.abs(rate - previousRate);
+                            totalDelta += deltaRate;
                         }
-                        long curTime = System.currentTimeMillis();
-                        if (count % tasksForStat == 0) {
-                            double time = 0.001 * (curTime - lastTime.get());
-                            double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
-                            if (previousRate != 0) {
-                                deltaRate = Math.abs(rate - previousRate);
-                                totalDelta += deltaRate;
-                            }
-                            double totalRate = 1000.0 * count / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
-                            double currentCountTotalRate = count / totalRate;
-                            double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
-                            previousCountTotalRate = currentCountTotalRate;
-                            previousRate = rate;
-                            lastTime.set(curTime);
-                            if (currentTolerance < targetTolerance) {
-                                stabilizationCounter.incrementAndGet();
-                            } else if (stabilizationCounter.get() > 0 && currentTolerance > targetTolerance ){
-                                stabilizationCounter.set(0);
-                            }
-                            System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, currentCountTotalRate, currentTolerance);
+                        double totalRate = 1000.0 * count / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
+                        double currentCountTotalRate = count / totalRate;
+                        double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
+                        previousCountTotalRate = currentCountTotalRate;
+                        previousRate = rate;
+                        lastTime.set(curTime);
+                        if (currentTolerance < targetTolerance) {
+                            stabilizationCounter.incrementAndGet();
+                        } else if (stabilizationCounter.get() > 0 && currentTolerance > targetTolerance) {
+                            stabilizationCounter.set(0);
                         }
+                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, currentCountTotalRate, currentTolerance);
                     }
                 }
+//                }
                 return task;
             }
 
