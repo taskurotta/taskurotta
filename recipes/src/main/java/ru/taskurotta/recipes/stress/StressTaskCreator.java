@@ -115,10 +115,16 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                     e.printStackTrace();
                 }
             }
-            double time = 1.0 * (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get()) / 1000.0;
-            long realTaskCount = LifetimeProfiler.taskCount.get() - (initialSize * warmingUpCycles);
-            double rate = 1000.0 * realTaskCount / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
-            System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", realTaskCount, time, rate, LifetimeProfiler.totalDelta / (realTaskCount / LifetimeProfiler.tasksForStat));
+            long deltaTime = LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get();
+            double time = 1.0 * deltaTime / 1000.0;
+            long warmingUpTasks = initialSize * warmingUpCycles;
+            long meanTaskCount = LifetimeProfiler.taskCount.get() - warmingUpTasks;
+            double rate = 1000.0 * meanTaskCount / deltaTime;
+            double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / LifetimeProfiler.tasksForStat);
+            System.out.println("Total task count: " + LifetimeProfiler.taskCount);
+            System.out.println("Warming tasks count: " + warmingUpTasks);
+            System.out.println("Delta time: " + deltaTime);
+            System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta);
             System.out.println("End");
             System.exit(0);
         } else {
