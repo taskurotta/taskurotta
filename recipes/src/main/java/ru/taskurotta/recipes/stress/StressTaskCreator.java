@@ -31,7 +31,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static CountDownLatch LATCH;
     private ExecutorService executorService;
     private static int initialSize = 5000;
-    private final static int warmingUpCycles = 10;
+    private final static int warmingUpCycles = 5;
     private static AtomicInteger currentCycle = new AtomicInteger(0);
 
     private static boolean warming = true;
