@@ -1,0 +1,110 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:10px;">
+                <h4>Broken processes</h4>
+            </td>
+            <td style="text-align:right;">
+                <a class="btn btn-link" ng-click="back()">Back</a>
+            </td>
+        </tr>
+    </table>
+
+    <div ng-if="feedback.status>=500">
+        <tsk-err-message model="feedback"></tsk-err-message>
+    </div>
+
+    <div tabset>
+        <div tab heading="List process groups" style="cursor:pointer;">
+            <div class="well">
+
+                <div class="well">
+                    date filter here
+                </div>
+
+                <div ng-if="!initialized" style="width:100%;text-align: center;">
+                    <img src="/img/ajax-loader.gif" />
+                </div>
+
+                <div ng-if="initialized">
+
+                    <div style="width:100%">
+                        <small>
+                            <span ng-if="viewType != 'list'" style="margin-right:30px;">
+                                <span class="muted"><b>Grouped by:</b></span>
+                                <span style="margin-left:5px;font-weight: bold;">{{getGroupLabel(groupCommand.group)}}</span>
+                            </span>
+                            <span tsk-broken-filter-view filter="filter" update-action="syncFilter()"></span>
+
+                        </small>
+                    </div>
+
+                    <div style="width:100%">
+                        <div style="float: right;">
+                            <!--<img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>-->
+                            <button class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- GROUPS VIEW -->
+                    <table ng-if="viewType != 'list'" class="table table-striped" style="margin-right: 30px;">
+                        <tbody>
+                            <tr ng-repeat="bg in brokenGroups">
+                                <td style="width: 25px;">
+                                    <small>{{ $index+1 }}</small>
+                                </td>
+                                <td>
+                                    <!--<small>-->
+                                        <a ng-click="applyGroup(bg.name)" class="btn-link"><b>{{bg.name}}</b></a>
+                                    <!--</small>-->
+                                </td>
+                                <td ng-if="hasStartersColumn()" style="width: 200px;">
+                                    <!--<small>-->
+                                        <a ng-click="regroup('starter')" popover="Regroup by process starter type" popover-trigger="mouseenter" class="btn-link"><i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>Process</a> types in group:
+                                        <a ng-click="applyWithRegroup(bg.name, 'starter')" class="btn-link" popover="List all group's processes" popover-trigger="mouseenter"><b>{{bg.startersCount}}</b></a>
+                                    <!--</small>-->
+                                </td>
+                                <td ng-if="hasActorsColumn()" style="width: 200px;">
+                                    <!--<small>-->
+                                        <a ng-click="regroup('actor')" popover="Regroup by broken actor type" popover-trigger="mouseenter" class="btn-link"><i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>Actor IDs</a> in group:
+                                        <a ng-click="applyWithRegroup(bg.name, 'actor')" class="btn-link" popover="List all group's processes" popover-trigger="mouseenter"><b>{{bg.actorsCount}}</b></a>
+                                    <!--</small>-->
+                                </td>
+                                <td ng-if="hasExceptionsColumn()" style="width: 200px;">
+                                    <!--<small>-->
+                                        <a ng-click="regroup('exception')" popover="Regroup by broke cause exception class" popover-trigger="mouseenter" class="btn-link"><i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>Exceptions</a> in group:
+                                        <a ng-click="applyWithRegroup(bg.name, 'exception')" class="btn-link" popover="List all group's processes" popover-trigger="mouseenter"><b>{{bg.exceptionsCount}}</b></a>
+                                    <!--</small>-->
+                                </td>
+                                <td style="width: 100px;">
+                                    <!--<small>-->
+                                        Total: <a class="btn-link" ng-click="showProcessListView(bg.name)" popover="List all processes in the group" popover-trigger="mouseenter"><b>{{bg.total}}</b></a>
+                                    <!--</small>-->
+                                </td>
+                                <td style="width: 100px;">
+                                    <span class="muted">Actions here</span>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- /GROUPS VIEW -->
+
+                    <div tsk-broken-process-list ng-if="viewType == 'list'" model = "brokenProcesses">
+                        <!-- PROCESSES VIEW -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div tab heading="Find processes" style="cursor:pointer;">
+
+            Content 2
+
+
+
+        </div>
+    </div>
+
+</div>

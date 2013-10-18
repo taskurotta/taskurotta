@@ -57,6 +57,11 @@
         </property>
     </bean>
 
+    <bean id="brokenProcessListResource" class="ru.taskurotta.dropwizard.resources.console.broken.BrokenProcessListResource" >
+        <property name="brokenProcessBackend" ref="brokenProcessBackend" />
+    </bean>
+
+
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="queueBackend"/>
         <!--<property name="profileInfo" ref="profilingAspect"/>-->

@@ -1,0 +1,58 @@
+<div>
+
+    <table class="table table-striped table-condensed table-bordered">
+        <thead>
+            <th>
+                <small>Process GUID</small>
+            </th>
+            <th>
+                <small>Starter ActorID</small>
+            </th>
+            <th>
+                <small>Failed ActorID</small>
+            </th>
+            <th style="width:100px">
+                <small>Fail time</small>
+            </th>
+            <th>
+                <small>Error description</small>
+            </th>
+            <th>
+                <small>Actions</small>
+            </th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="bp in processes">
+                <td>
+                    <small>
+                        <a class="btn-link" ng-href="#/processes/process?processId={{bp.processId}}"><b>{{ bp.processId }}</b></a>
+                    </small>
+                </td>
+                <td>
+                    <small>{{ bp.startActorId }}</small>
+                </td>
+                <td>
+                    <small>{{ bp.brokenActorId }}</small>
+                </td>
+                <td>
+                    <small>{{ bp.time | date:'dd-MM-yyyy HH:mm:ss' }}</small>
+                </td>
+                <td>
+                    <small>
+                        <span class="muted"><b>Class: </b></span><b>{{ bp.errorClassName }}</b>
+                            <br />
+                        <span class="muted"><b>Message: </b></span><b>{{ bp.errorMessage}}</b>
+                            <br />
+                        <span class="muted"><b>Stack trace: </b></span>
+                        <br />
+                        <div style="width:100%; height: 60px; overflow: auto;">
+                            {{ bp.stackTrace }}
+                        </div>
+                    </small>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

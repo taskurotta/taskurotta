@@ -1,4 +1,4 @@
-var consoleActorControllers = angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.modal']);
+var consoleActorControllers = angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.modal', 'ngRoute']);
 
 consoleActorControllers.controller("actorListController", ['$scope', '$$data', 'tskActors', '$log', '$modal', '$location', '$cookieStore', function ($scope, $$data, tskActors, $log, $modal, $location, $cookieStore) {
     $scope.feedback = "";

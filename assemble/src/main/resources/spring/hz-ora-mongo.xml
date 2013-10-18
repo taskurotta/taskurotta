@@ -318,7 +318,7 @@
 
     <!-- Broken process backend -->
     <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
-        <property name="dataSource" ref="dataSource" /><!-- Or jist original here? JDBC dao support class should support this -->
+        <property name="dataSource" ref="dataSource" /><!-- Or just original here? JDBC dao support class should support this -->
         <property name="lobHandler" ref="lobHandler" />
     </bean>
 

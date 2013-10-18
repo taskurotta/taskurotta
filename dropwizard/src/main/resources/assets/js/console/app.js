@@ -1,4 +1,4 @@
-var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap']);
+var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap', 'ngRoute']);
 
 consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
 
@@ -61,6 +61,11 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
     //create
     $routeProvider.when('/processes/create', {
         templateUrl: '/partials/view/create/process_create.html'
+    });
+    //broken
+    $routeProvider.when('/processes/broken', {
+        templateUrl: '/partials/view/list/process_broken.html',
+        controller: "brokenProcessListController"
     });
 
     //MONITORING
