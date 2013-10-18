@@ -25,7 +25,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public static double totalDelta = 0;
 
     private int deltaShot = 3000;
-    private long nextShot = 6000;
+    private long nextShot = 0;
     private double deltaRate = 0;
     private double previousRate = 0;
     private boolean timeIsZero = true;
@@ -53,10 +53,13 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             public Task poll() {
                 Task task = taskSpreader.poll();
                 if (null != task) {
+                    if (nextShot == 0) {
+                        nextShot = StressTaskCreator.getShotSize() + StressTaskCreator.getInitialCount();
+                    }
                     long count = taskCount.incrementAndGet();
-                    if (count == nextShot) {
+                    if (count == nextShot - deltaShot) {
                         if (StressTaskCreator.LATCH != null) {
-                            nextShot = count + 2000;
+                            nextShot = count + StressTaskCreator.getShotSize();
                             System.out.println("Shot on " + count);
                             StressTaskCreator.LATCH.countDown();
                         }

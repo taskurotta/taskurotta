@@ -25,13 +25,12 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
 
     private static int THREADS_COUNT = 50;
-
-    private int countOfCycles = 100;
+    private static int initialCount = 6;
     private boolean needRun = true;
     public static CountDownLatch LATCH;
     private ExecutorService executorService;
     private static int shotSize = 2000;
-    private static AtomicInteger currentCycle = new AtomicInteger(0);
+
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -64,12 +63,12 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     }
 
-    public int getCountOfCycles() {
-        return countOfCycles;
+    public static int getInitialCount() {
+        return initialCount;
     }
 
-    public void setCountOfCycles(int countOfCycles) {
-        this.countOfCycles = countOfCycles;
+    public static void setInitialCount(int initialCount) {
+        StressTaskCreator.initialCount = initialCount;
     }
 
     public static int getShotSize() {
@@ -83,7 +82,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
             MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
             executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < initialCount; i++) {
                 createStartTask(deciderClient);
             }
             while (LifetimeProfiler.stabilizationCounter.get() < 10) {
