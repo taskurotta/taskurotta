@@ -31,7 +31,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     private double previousCountTotalRate = 0;
     public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
-    private double targetTolerance = 0.7;
+    private double targetTolerance = 0.5;
 
     public LifetimeProfiler() {
     }
@@ -53,7 +53,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 Task task = taskSpreader.poll();
                 if (null != task) {
                     long count = taskCount.incrementAndGet();
-                    if (count % (StressTaskCreator.getInitialSize() - deltaShot) == 0) {
+                    if (count % (StressTaskCreator.getShotSize() - deltaShot) == 0) {
                         if (StressTaskCreator.LATCH != null) {
                             System.out.println("Shot on " + count);
                             StressTaskCreator.LATCH.countDown();

@@ -31,6 +31,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static CountDownLatch LATCH;
     private ExecutorService executorService;
     private static int initialSize = 5000;
+    private static int shotSize = 1500;
     private final static int warmingUpCycles = 5;
     private static AtomicInteger currentCycle = new AtomicInteger(0);
 
@@ -77,6 +78,10 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     public static int getInitialSize() {
         return initialSize;
+    }
+
+    public static int getShotSize() {
+        return shotSize;
     }
 
     public static void setInitialSize(int initialSize) {
