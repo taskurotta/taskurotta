@@ -30,12 +30,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private boolean needRun = true;
     public static CountDownLatch LATCH;
     private ExecutorService executorService;
-    private static int initialSize = 5000;
-    private static int shotSize = 1500;
-    private final static int warmingUpCycles = 5;
+    private static int shotSize = 2000;
     private static AtomicInteger currentCycle = new AtomicInteger(0);
-
-    private static boolean warming = true;
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -55,7 +51,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
 
-        for (int i = 0; i < initialSize; i++) {
+        for (int i = 0; i < shotSize; i++) {
             final int a = (int) (Math.random() * 100);
             final int b = (int) (Math.random() * 100);
             executorService.execute(new Runnable() {
@@ -76,21 +72,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         this.countOfCycles = countOfCycles;
     }
 
-    public static int getInitialSize() {
-        return initialSize;
-    }
-
     public static int getShotSize() {
         return shotSize;
-    }
-
-    public static void setInitialSize(int initialSize) {
-        StressTaskCreator.initialSize = initialSize;
-    }
-
-
-    public static boolean isWarmingUp() {
-        return warming;
     }
 
     @Override
@@ -100,17 +83,9 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
             MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
             executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-            for (int i = 0; i < warmingUpCycles; i++) {
-                LATCH = new CountDownLatch(1);
+            for (int i = 0; i < 3; i++) {
                 createStartTask(deciderClient);
-                try {
-                    LATCH.await();
-                    currentCycle.incrementAndGet();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
-            warming = false;
             while (LifetimeProfiler.stabilizationCounter.get() < 10) {
                 LATCH = new CountDownLatch(1);
                 createStartTask(deciderClient);
@@ -122,13 +97,10 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             }
             long deltaTime = LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get();
             double time = 1.0 * deltaTime / 1000.0;
-//            long warmingUpTasks = initialSize * warmingUpCycles;
-//            long meanTaskCount = LifetimeProfiler.taskCount.get() - warmingUpTasks;
             long meanTaskCount = LifetimeProfiler.taskCount.get();
             double rate = 1000.0 * meanTaskCount / deltaTime;
             double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / LifetimeProfiler.tasksForStat);
             System.out.println("Total task count: " + LifetimeProfiler.taskCount);
-//            System.out.println("Warming tasks count: " + warmingUpTasks);
             System.out.println("Delta time: " + deltaTime);
             System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta);
             System.out.println("End");
