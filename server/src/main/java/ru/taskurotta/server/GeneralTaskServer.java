@@ -152,33 +152,36 @@ public class GeneralTaskServer implements TaskServer {
         UUID processId = taskDecision.getProcessId();
 
         // if Error
-        if (taskDecision.containsError() && taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
-            // enqueue task immediately if needed
+        if (taskDecision.containsError()) {
 
-			// WARNING: This is not optimal code. We are getting whole task only for name and version values.
-			TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
-			logger.debug("Error task enqueued again, taskId [{}]", taskId);
-			enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
+            if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
+                // enqueue task immediately if needed
+
+                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
+                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
+                logger.debug("Error task enqueued again, taskId [{}]", taskId);
+                enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
+            } else {
+                BrokenProcessVO brokenProcess = new BrokenProcessVO();
+                brokenProcess.setTime(taskDecision.getRestartTime());
+                brokenProcess.setProcessId(processId.toString());
+                brokenProcess.setBrokenActorId(taskDecision.getActorId());
+
+                TaskContainer startTask = processBackend.getStartTask(processId);
+                if (null != startTask) {
+                    brokenProcess.setStartActorId(startTask.getActorId());
+                }
+
+                ErrorContainer errorContainer = taskDecision.getErrorContainer();
+                if (null != errorContainer) {
+                    brokenProcess.setErrorClassName(errorContainer.getClassName());
+                    brokenProcess.setErrorMessage(errorContainer.getMessage());
+                    brokenProcess.setStackTrace(errorContainer.getStackTrace());
+                }
+                brokenProcessBackend.save(brokenProcess);
+            }
 
             return;
-        } else {
-            BrokenProcessVO brokenProcess = new BrokenProcessVO();
-            brokenProcess.setTime(taskDecision.getRestartTime());
-            brokenProcess.setProcessId(processId.toString());
-            brokenProcess.setBrokenActorId(taskDecision.getActorId());
-
-            TaskContainer startTask = processBackend.getStartTask(processId);
-            if (null != startTask) {
-                brokenProcess.setStartActorId(startTask.getActorId());
-            }
-
-            ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            if (null != errorContainer) {
-                brokenProcess.setErrorClassName(errorContainer.getClassName());
-                brokenProcess.setErrorMessage(errorContainer.getMessage());
-                brokenProcess.setStackTrace(errorContainer.getStackTrace());
-            }
-            brokenProcessBackend.save(brokenProcess);
         }
 
         // idempotent statement
