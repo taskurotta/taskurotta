@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created with IntelliJ IDEA.
  * User: dimadin
  * Date: 26.09.13 16:18
  */

@@ -212,7 +212,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
 
         // set it to current time for precisely repeat
-        if (startTime == 0L) {
+        if (startTime <= 0L) {
             startTime = System.currentTimeMillis();
         }
 

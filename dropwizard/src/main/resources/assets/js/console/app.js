@@ -1,6 +1,6 @@
 var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap', 'ngRoute']);
 
-consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider, $log) {
+consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
 
     //show loader on every ajax call
     $httpProvider.defaults.transformRequest.push(function (data, headersGetter) {

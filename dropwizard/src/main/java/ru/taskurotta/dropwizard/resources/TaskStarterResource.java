@@ -1,6 +1,12 @@
 package ru.taskurotta.dropwizard.resources;
 
-import java.util.UUID;
+import com.google.common.base.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.transport.model.TaskContainer;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -8,14 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import com.google.common.base.Optional;
-import com.yammer.metrics.annotation.Timed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.transport.model.TaskContainer;
+import java.util.UUID;
 
 @Path("/tasks/start")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -26,7 +25,6 @@ public class TaskStarterResource {
     private TaskServer taskServer;
 
     @POST
-    @Timed
     public Response startProcess(TaskContainer taskContainer, @QueryParam("generateId") Optional<Boolean> generateId) {
         logger.debug("startProcess resource called with entity[{}], generateId[{}]", taskContainer, generateId);
 

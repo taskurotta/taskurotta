@@ -10,7 +10,7 @@
     <context:annotation-config />
 
     <!-- Jersey client with embedded apache HTTP client for connection pooling -->
-    <bean id = "taskServer" class="ru.taskurotta.dropwizard.client.jersey.JerseyHttpTaskServerProxy" >
+    <bean id = "taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy" >
         <property name="connectTimeout" value="${connectTimeout}" />
         <property name="readTimeout" value = "${readTimeout}" />
         <property name="threadPoolSize" value = "${threadPoolSize}" />

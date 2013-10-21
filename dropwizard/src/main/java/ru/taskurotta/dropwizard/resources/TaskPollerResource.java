@@ -1,6 +1,5 @@
 package ru.taskurotta.dropwizard.resources;
 
-import com.yammer.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.jersey.TaskurottaResource;
@@ -23,7 +22,6 @@ public class TaskPollerResource {
     private TaskServer taskServer;
 
     @POST
-    @Timed
     public Response poll(ActorDefinitionWrapper actorDefinitionWrapper) throws Exception {
         logger.debug("poll called with entity[{}]", actorDefinitionWrapper);
 
