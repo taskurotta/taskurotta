@@ -67,7 +67,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         Task workerTask = workerTask(workerTaskId, TaskType.WORKER, "A", new Object[]{});
 
         // release start process task and add worker task
-        release(startTaskId, null, new Task[] {workerTask});
+        release(startTaskId, null, workerTask);
 
         // check worker task in queue
         assertTrue(isTaskPresent(workerTaskId, processId));
@@ -101,7 +101,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         Task workerTask = workerTask(workerTaskId, TaskType.WORKER, "A", new Object[]{});
 
         // release start process task and add worker task
-        release(startTaskId, null, new Task[] {workerTask});
+        release(startTaskId, null, workerTask);
 
         // check worker task in queue
         assertTrue(isTaskPresent(workerTaskId, processId));
