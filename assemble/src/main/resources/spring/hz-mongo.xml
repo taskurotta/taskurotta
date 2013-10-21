@@ -204,8 +204,8 @@
         <constructor-arg name="hzInstance" ref="hzInstance"/>
     </bean>
 
-    <!--<bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend">-->
-    <!--</bean>-->
+    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend">
+    </bean>
 
     <!-- /Backends -->
 
