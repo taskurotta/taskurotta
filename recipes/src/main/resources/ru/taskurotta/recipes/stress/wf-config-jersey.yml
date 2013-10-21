@@ -15,7 +15,8 @@ spreader:
           readTimeout: 0
           connectTimeout: 3000
           cycles: 10
-          initialSize: 5000
+          initialCount: 8
+          shotSize: 4000
           needRun: true
 
 profiler:
