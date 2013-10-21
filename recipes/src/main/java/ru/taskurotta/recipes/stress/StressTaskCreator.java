@@ -67,12 +67,16 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         return initialCount;
     }
 
-    public static void setInitialCount(int initialCount) {
+    public void setInitialCount(int initialCount) {
         StressTaskCreator.initialCount = initialCount;
     }
 
     public static int getShotSize() {
         return shotSize;
+    }
+
+    public void setShotSize(int shotSize) {
+        StressTaskCreator.shotSize = shotSize;
     }
 
     @Override

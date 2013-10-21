@@ -28,6 +28,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double deltaRate = 0;
     private double previousRate = 0;
     private boolean timeIsZero = true;
+    private int deltaShot = 2000;
 
     private double previousCountTotalRate = 0;
     public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
@@ -40,9 +41,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         if (properties.containsKey("tasksForStat")) {
             tasksForStat = (Integer) properties.get("tasksForStat");
         }
-//        if (properties.containsKey("deltaShot")) {
-//            deltaShot = (Integer) properties.get("deltaShot");
-//        }
+        if (properties.containsKey("deltaShot")) {
+            deltaShot = (Integer) properties.get("deltaShot");
+        }
     }
 
     @Override
@@ -53,7 +54,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 Task task = taskSpreader.poll();
                 if (null != task) {
                     if (nextShot == 0) {
-                        nextShot = 6000;
+                        nextShot = (StressTaskCreator.getShotSize() * StressTaskCreator.getInitialCount()) - deltaShot;
                     }
                     long count = taskCount.incrementAndGet();
                     if (count == nextShot) {
