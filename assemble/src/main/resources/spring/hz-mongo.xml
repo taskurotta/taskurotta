@@ -200,10 +200,12 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
     </bean>
 
-
     <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
     </bean>
+
+    <!--<bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend">-->
+    <!--</bean>-->
 
     <!-- /Backends -->
 
@@ -222,6 +224,7 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="brokenProcessBackend"><null/></constructor-arg>
 
         <property name="hzInstance" ref="hzInstance"/>
         <property name="nodeCustomName" value="${node.custom.name}"/>

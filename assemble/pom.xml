@@ -228,6 +228,7 @@
                                 <!--<argument>-Dcom.sun.management.jmxremote.port=9999</argument>-->
                                 <!--<argument>-Dcom.sun.management.jmxremote.authenticate=false</argument>-->
                                 <!--<argument>-Dcom.sun.management.jmxremote.ssl=false</argument>-->
+                                <!--<argument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</argument>-->
                                 <argument>-Dts.node.custom.name="node1"</argument>
                                 <argument>-DassetsMode=dev</argument>
                                 <argument>-Ddw.http.port=8811</argument>

@@ -10,6 +10,8 @@ import ru.taskurotta.backend.hz.config.HzConfigBackend;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.hz.storage.HzProcessBackend;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
+import ru.taskurotta.backend.process.MemoryBrokenProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
@@ -31,7 +33,7 @@ public class HzBackendBundle implements BackendBundle {
     private DependencyBackend dependencyBackend;
     private ConfigBackend configBackend;
     private GraphDao graphDao;
-
+    private BrokenProcessBackend brokenProcessBackend;
 
     public HzBackendBundle(int pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
 
@@ -44,6 +46,7 @@ public class HzBackendBundle implements BackendBundle {
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao);
         this.configBackend = new HzConfigBackend(hazelcastInstance, "actorPreferencesMap");
+        this.brokenProcessBackend = new MemoryBrokenProcessBackend();
     }
 
     @Override
@@ -69,5 +72,10 @@ public class HzBackendBundle implements BackendBundle {
     @Override
     public ConfigBackend getConfigBackend() {
         return configBackend;
+    }
+
+    @Override
+    public BrokenProcessBackend getBrokenProcessBackend() {
+        return brokenProcessBackend;
     }
 }

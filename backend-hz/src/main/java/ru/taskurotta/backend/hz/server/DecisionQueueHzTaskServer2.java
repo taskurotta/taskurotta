@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
@@ -48,8 +49,8 @@ public class DecisionQueueHzTaskServer2 extends HazelcastTaskServer {
         super(backendBundle);
     }
 
-    public DecisionQueueHzTaskServer2(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
-        super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
+    public DecisionQueueHzTaskServer2(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
+        super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend, brokenProcessBackend);
     }
 
     public void setDecisionThreads(int decisionThreads) {
@@ -106,10 +107,10 @@ public class DecisionQueueHzTaskServer2 extends HazelcastTaskServer {
         return instance;
     }
 
-    public static DecisionQueueHzTaskServer2 createInstance(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend) {
+    public static DecisionQueueHzTaskServer2 createInstance(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
         synchronized (instanceMonitor) {
             if (null == instance) {
-                instance = new DecisionQueueHzTaskServer2(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend);
+                instance = new DecisionQueueHzTaskServer2(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend, brokenProcessBackend);
                 instanceMonitor.notifyAll();
             }
         }

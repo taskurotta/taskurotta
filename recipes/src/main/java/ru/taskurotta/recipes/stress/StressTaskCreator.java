@@ -25,16 +25,12 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
 
     private static int THREADS_COUNT = 50;
-
-    private int countOfCycles = 100;
+    private static int initialCount = 6;
     private boolean needRun = true;
     public static CountDownLatch LATCH;
-    public static CountDownLatch GLOBAL_LATCH;
-
     private ExecutorService executorService;
-    private static int initialSize = 5000;
-    private final static int warmingUpCycles = 10;
-    private static AtomicInteger currentCycle = new AtomicInteger(0);
+    private static int shotSize = 2000;
+
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -54,7 +50,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
 
-        for (int i = 0; i < initialSize; i++) {
+        for (int i = 0; i < shotSize; i++) {
             final int a = (int) (Math.random() * 100);
             final int b = (int) (Math.random() * 100);
             executorService.execute(new Runnable() {
@@ -67,56 +63,45 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     }
 
-    public int getCountOfCycles() {
-        return countOfCycles;
+    public static int getInitialCount() {
+        return initialCount;
     }
 
-    public void setCountOfCycles(int countOfCycles) {
-        this.countOfCycles = countOfCycles;
+    public static void setInitialCount(int initialCount) {
+        StressTaskCreator.initialCount = initialCount;
     }
 
-    public static int getInitialSize() {
-        return initialSize;
-    }
-
-    public static void setInitialSize(int initialSize) {
-        StressTaskCreator.initialSize = initialSize;
-    }
-
-
-    public static boolean isWarmingUp() {
-        return currentCycle.get() < warmingUpCycles;
+    public static int getShotSize() {
+        return shotSize;
     }
 
     @Override
     public void run() {
         Console console = System.console();
-        GLOBAL_LATCH = new CountDownLatch((countOfCycles + warmingUpCycles) * initialSize);
         if (console != null) {
             DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
             MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
             executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-            System.out.println("Test with " + countOfCycles + " cycles");
-            for (int i = 0; i < (warmingUpCycles + countOfCycles); i++) {
-
+            for (int i = 0; i < initialCount; i++) {
+                createStartTask(deciderClient);
+            }
+            while (LifetimeProfiler.stabilizationCounter.get() < 10) {
                 LATCH = new CountDownLatch(1);
                 createStartTask(deciderClient);
                 try {
                     LATCH.await();
-                    currentCycle.incrementAndGet();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-            try {
-                GLOBAL_LATCH.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            double time = 1.0 * (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get()) / 1000.0;
-            long realTaskCount = LifetimeProfiler.taskCount.get() - (initialSize * warmingUpCycles);
-            double rate = 1000.0 * realTaskCount / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
-            System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", realTaskCount, time, rate, LifetimeProfiler.totalDelta / (realTaskCount / LifetimeProfiler.tasksForStat));
+            long deltaTime = LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get();
+            double time = 1.0 * deltaTime / 1000.0;
+            long meanTaskCount = LifetimeProfiler.taskCount.get();
+            double rate = 1000.0 * meanTaskCount / deltaTime;
+            double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / LifetimeProfiler.tasksForStat);
+            System.out.println("Total task count: " + LifetimeProfiler.taskCount);
+            System.out.println("Delta time: " + deltaTime);
+            System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta);
             System.out.println("End");
             System.exit(0);
         } else {

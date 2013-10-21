@@ -2,6 +2,7 @@ package ru.taskurotta.backend;
 
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
@@ -23,4 +24,5 @@ public interface BackendBundle {
 
     public ConfigBackend getConfigBackend();
 
+    public BrokenProcessBackend getBrokenProcessBackend();
 }
