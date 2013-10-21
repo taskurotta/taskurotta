@@ -11,7 +11,7 @@
     </table>
 
     <div ng-if="feedback.status>=500">
-        <tsk-err-message model="feedback"></tsk-err-message>
+        <div tsk-err-message model="feedback"></div>
     </div>
 
     <div tabset>
@@ -19,7 +19,7 @@
             <div class="well">
 
                 <div class="well">
-                    date filter here
+                    <div tsk-period-select model="period" ></div>
                 </div>
 
                 <div ng-if="!initialized" style="width:100%;text-align: center;">
@@ -100,7 +100,7 @@
 
         <div tab heading="Find processes" style="cursor:pointer;">
 
-            Content 2
+            In progress ...
 
 
 

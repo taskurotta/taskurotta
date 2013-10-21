@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created with IntelliJ IDEA.
  * User: dimadin
  * Date: 16.10.13 11:39
  */
@@ -42,6 +41,8 @@ public class BrokenProcessListResource {
 
     private static final Logger logger = LoggerFactory.getLogger(BrokenProcessListResource.class);
     private static final String DATE_TEMPLATE = "dd.MM.yyyy";
+    private static final String DATETIME_TEMPLATE = "dd.MM.yyyy HH:ss";
+
 
     private BrokenProcessBackend brokenProcessBackend;
 
@@ -70,7 +71,6 @@ public class BrokenProcessListResource {
 
     }
 
-
     public static GroupCommand convertToCommand(Optional<String> starterIdOpt, Optional<String> actorIdOpt, Optional<String> exceptionOpt,
                                          Optional<String> dateFromOpt, Optional<String> dateToOpt, Optional<String> groupOpt) {
         String dateFrom = dateFromOpt.or("");
@@ -78,7 +78,14 @@ public class BrokenProcessListResource {
         GroupCommand result = new GroupCommand();
 
         if (StringUtils.hasText(dateFrom) || StringUtils.hasText(dateTo)) {
-            SimpleDateFormat sdf = new SimpleDateFormat(DATE_TEMPLATE);
+            SimpleDateFormat sdf = null;
+            if (dateFrom.length()>10 || dateTo.length()>10) {
+                sdf = new SimpleDateFormat(DATETIME_TEMPLATE);
+            } else {
+                sdf = new SimpleDateFormat(DATE_TEMPLATE);
+            }
+            sdf.setLenient(false);
+
             try {
                 if (StringUtils.hasText(dateFrom)) {
                     Date dateFromDate = sdf.parse(dateFrom);
@@ -98,6 +105,8 @@ public class BrokenProcessListResource {
         result.setBrokenActorId(actorIdOpt.or(""));
         result.setErrorClassName(exceptionOpt.or(""));
         result.setGroup(groupOpt.or(GroupCommand.GROUP_STARTER));//default group processes by starter task
+
+        logger.debug("Converted GroupCommand is [{}]", result);
 
         return result;
     }

@@ -47,6 +47,38 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
             replace: true
         };
 
+    }])
+
+    .directive('tskPeriodSelect', ['$log', function($log) {
+
+        return {
+            restrict: 'ECA',//Element, Class, Attribute
+            terminal: true,
+            scope: {
+                period: "=model"
+            },
+            controller: ['$scope', '$element', '$attrs', '$transclude', '$log', '$timeout',  function ($scope, $element, $attrs, $transclude, $log, $timeout) {
+                $scope.fromOpened = false;
+                $scope.toOpened = false;
+                $scope.maxPossibleDate = $scope.period.maxDate;
+
+                $scope.toggleOpenFrom = function() {
+                    $timeout(function() {
+                        $scope.fromOpened = !$scope.fromOpened;
+                    });
+                };
+
+                $scope.toggleOpenTo = function() {
+                    $timeout(function() {
+                        $scope.toOpened = !$scope.toOpened;
+                    });
+                };
+
+            }],
+            templateUrl: "/partials/widget/broken/period_filter.html",
+            replace: true
+        };
+
     }]);
 
 

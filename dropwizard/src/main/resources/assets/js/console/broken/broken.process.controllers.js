@@ -15,6 +15,19 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
         dateTo: ''
     };
 
+    var yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    $scope.period = {
+        dateFrom: yesterday,
+        dateTo: new Date(),
+        timeFrom: new Date(),
+        timeTo: new Date(),
+        withTime: false,
+        maxDate: new Date(),
+        minDate: null
+    };
+
     $scope.feedback = {};
     $scope.viewType = 'group';//or 'list'
 
@@ -60,14 +73,51 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
         }
     };
 
+    var withLeadingZero = function(number) {
+        if (number<10) {
+            return "0"+number;
+        } else {
+            return number;
+        }
+    };
+
+    var getDateAsString = function (dateObj) {
+        if (dateObj) {
+            return withLeadingZero(dateObj.getDate()) + "." + withLeadingZero(dateObj.getMonth()+1)+"." + dateObj.getFullYear();
+        }
+    };
+
+    var getTimeAsString = function (dateObj) {
+        if (dateObj) {
+            return withLeadingZero(dateObj.getHours()) + ":" + withLeadingZero(dateObj.getMinutes());
+        }
+    };
+
+    var setDatesToCommand = function() {
+        var result = "";
+        if ($scope.period.dateFrom && $scope.period.dateTo) {
+            var fromDateStr = getDateAsString($scope.period.dateFrom);
+            var toDateStr = getDateAsString($scope.period.dateTo);
+            if ($scope.period.withTime) {
+                fromDateStr = fromDateStr + " " + getTimeAsString($scope.period.timeFrom);
+                toDateStr = toDateStr + " " + getTimeAsString($scope.period.timeTo);
+            }
+            $scope.groupCommand.dateFrom = fromDateStr;
+            $scope.groupCommand.dateTo = toDateStr;
+        }
+        return result;
+    };
+
     var getCommandAsParamLine = function() {
         var result = "";
+        setDatesToCommand();
         for (var key in $scope.groupCommand) {
             if (result.length>0) {
                 result = result + "&";
             }
             result = result + key + "=" + encodeURIComponent($scope.groupCommand[key]);
         }
+        $log.log("Command line is " + result);
         return result;
     };
 
@@ -100,7 +150,7 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
             $scope.brokenGroups = success.data;
             $scope.initialized = true;
         }, function(error) {
-            $scope.feedback = error.data;
+            $scope.feedback = error;
             $scope.initialized = true;
         });
     };
