@@ -238,6 +238,23 @@
     <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
+
+    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
+        <property name="dataSource" ref="dataSource" /><!-- Or just original here? JDBC dao support class should support this -->
+        <property name="lobHandler" ref="lobHandler" />
+    </bean>
+
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" />
+
+    <bean id="recoveryProcessBackend" class="ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend">
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="queueBackendStatistics" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
+    </bean>
     <!-- /Backends -->
 
 
@@ -252,14 +269,8 @@
     <!-- Recovery -->
     <bean id="processRecoveryService" class="ru.taskurotta.recovery.ProcessRecoveryService" init-method="init">
         <property name="dataSource" ref="dataSource"/>
-        <property name="dependencyBackend" ref="dependencyBackend"/>
         <property name="hazelcastInstance" ref="hzInstance"/>
-        <property name="processBackend" ref="processBackend"/>
-        <property name="queueBackend" ref="queueBackend"/>
-        <property name="queueBackendStatistics" ref="queueBackend"/>
-        <property name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
-        <property name="taskBackend" ref="taskBackend"/>
-        <property name="taskDao" ref="taskDao"/>
+        <property name="recoveryProcessBackend" ref="recoveryProcessBackend"/>
         <property name="threadCount" value="${recovery.process.thread.count}"/>
         <property name="useDaemonThreads" value="true"/>
         <property name="processBatchSize" value="${recovery.process.batch.size}"/>
@@ -316,16 +327,6 @@
 
     <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
     <!-- /Metrics -->
-
-    <!-- Broken process backend -->
-    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
-        <property name="dataSource" ref="dataSource" /><!-- Or just original here? JDBC dao support class should support this -->
-        <property name="lobHandler" ref="lobHandler" />
-    </bean>
-
-    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" />
-    <!-- /Broken process backend -->
-
 
     <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">

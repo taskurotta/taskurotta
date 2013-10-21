@@ -5,13 +5,8 @@ import com.hazelcast.core.Partition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.dependency.DependencyBackend;
-import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.recovery.QueueBackendStatistics;
+import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
 import ru.taskurotta.backend.recovery.RecoveryTask;
-import ru.taskurotta.backend.storage.ProcessBackend;
-import ru.taskurotta.backend.storage.TaskBackend;
-import ru.taskurotta.backend.storage.TaskDao;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -41,14 +36,8 @@ public class ProcessRecoveryService {
     private DataSource dataSource;
     private HazelcastInstance hazelcastInstance;
 
-    private QueueBackend queueBackend;
-    private QueueBackendStatistics queueBackendStatistics;
-    private DependencyBackend dependencyBackend;
-    private TaskDao taskDao;
-    private ProcessBackend processBackend;
-    private TaskBackend taskBackend;
+    private RecoveryProcessBackend recoveryProcessBackend;
 
-    private long recoveryProcessTimeOut = 180000l;
     private int threadCount = 8;
     private boolean useDaemonThreads = true;
     private boolean startupRecovery = true;
@@ -88,7 +77,7 @@ public class ProcessRecoveryService {
 
             for(UUID processId: processIds) {
                 if (isLocalItem(processId)) {//filter only local processes for recovery. Every node recovers its own processes
-                    executorService.submit(new RecoveryTask(queueBackend, queueBackendStatistics, dependencyBackend, taskDao, processBackend, taskBackend, recoveryProcessTimeOut, processId));
+                    executorService.submit(new RecoveryTask(recoveryProcessBackend, processId));
                     result++;
                 }
             }
@@ -160,37 +149,8 @@ public class ProcessRecoveryService {
     }
 
     @Required
-    public void setQueueBackend(QueueBackend queueBackend) {
-        this.queueBackend = queueBackend;
-    }
-
-    @Required
-    public void setQueueBackendStatistics(QueueBackendStatistics queueBackendStatistics) {
-        this.queueBackendStatistics = queueBackendStatistics;
-    }
-
-    @Required
-    public void setDependencyBackend(DependencyBackend dependencyBackend) {
-        this.dependencyBackend = dependencyBackend;
-    }
-
-    @Required
-    public void setTaskDao(TaskDao taskDao) {
-        this.taskDao = taskDao;
-    }
-
-    @Required
-    public void setProcessBackend(ProcessBackend processBackend) {
-        this.processBackend = processBackend;
-    }
-
-    @Required
-    public void setTaskBackend(TaskBackend taskBackend) {
-        this.taskBackend = taskBackend;
-    }
-
-    public void setRecoveryProcessTimeOut(long recoveryProcessTimeOut) {
-        this.recoveryProcessTimeOut = recoveryProcessTimeOut;
+    public void setRecoveryProcessBackend(RecoveryProcessBackend recoveryProcessBackend) {
+        this.recoveryProcessBackend = recoveryProcessBackend;
     }
 
     public void setUseDaemonThreads(boolean useDaemonThreads) {
