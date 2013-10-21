@@ -24,7 +24,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public static int tasksForStat = 500;
     public static double totalDelta = 0;
 
-    private int deltaShot = 3000;
     private long nextShot = 0;
     private double deltaRate = 0;
     private double previousRate = 0;
@@ -41,9 +40,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         if (properties.containsKey("tasksForStat")) {
             tasksForStat = (Integer) properties.get("tasksForStat");
         }
-        if (properties.containsKey("deltaShot")) {
-            deltaShot = (Integer) properties.get("deltaShot");
-        }
+//        if (properties.containsKey("deltaShot")) {
+//            deltaShot = (Integer) properties.get("deltaShot");
+//        }
     }
 
     @Override
@@ -54,12 +53,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 Task task = taskSpreader.poll();
                 if (null != task) {
                     if (nextShot == 0) {
-                        nextShot = StressTaskCreator.getShotSize() + StressTaskCreator.getInitialCount();
+                        nextShot = 6000;
                     }
                     long count = taskCount.incrementAndGet();
-                    if (count == nextShot - deltaShot) {
+                    if (count == nextShot) {
                         if (StressTaskCreator.LATCH != null) {
-                            nextShot = count + StressTaskCreator.getShotSize();
+                            nextShot += StressTaskCreator.getShotSize();
                             System.out.println("Shot on " + count);
                             StressTaskCreator.LATCH.countDown();
                         }
