@@ -23,7 +23,7 @@ profiler:
       instance:
         class: ru.taskurotta.recipes.stress.LifetimeProfiler
         properties:
-          exitAfterAll: true
+          targetTolerance: 0.5
 
 actor:
   - FibonacciDecider:

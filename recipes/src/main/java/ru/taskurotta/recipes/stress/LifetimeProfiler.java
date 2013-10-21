@@ -44,6 +44,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         if (properties.containsKey("deltaShot")) {
             deltaShot = (Integer) properties.get("deltaShot");
         }
+        if (properties.containsKey("targetTolerance")){
+            targetTolerance = Double.parseDouble(properties.getProperty("targetTolerance"));
+        }
     }
 
     @Override
@@ -100,6 +103,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 taskSpreader.release(taskDecision);
             }
         };
+    }
+
+    public void setTargetTolerance(double targetTolerance) {
+        this.targetTolerance = targetTolerance;
     }
 
     public void setTasksForStat(int tasksForStat) {
