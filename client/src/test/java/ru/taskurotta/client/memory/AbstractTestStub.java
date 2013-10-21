@@ -7,7 +7,9 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
+import ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend;
 import ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics;
+import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -45,6 +47,7 @@ public class AbstractTestStub {
     protected MemoryQueueBackendStatistics memoryQueueBackendStatistics;
     protected GeneralTaskBackend memoryStorageBackend;
     protected DependencyBackend dependencyBackend;
+    protected GeneralRecoveryProcessBackend recoveryProcessBackend;
     protected BackendBundle backendBundle;
 
     protected TaskDao taskDao;
@@ -89,8 +92,10 @@ public class AbstractTestStub {
         taskDao = new MemoryTaskDao();
         backendBundle = new MemoryBackendBundle(0, taskDao);
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
+        memoryQueueBackendStatistics = new MemoryQueueBackendStatistics(memoryQueueBackend);
         memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
         dependencyBackend = backendBundle.getDependencyBackend();
+        recoveryProcessBackend = new GeneralRecoveryProcessBackend(memoryQueueBackend, memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l);
 
         taskServer = new GeneralTaskServer(backendBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);

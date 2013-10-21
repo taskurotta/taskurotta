@@ -16,7 +16,7 @@ public class MemoryQueueBackendStatistics extends AbstractQueueBackendStatistics
 
     private MemoryQueueBackend queueBackend;
 
-    protected MemoryQueueBackendStatistics(MemoryQueueBackend queueBackend) {
+    public MemoryQueueBackendStatistics(MemoryQueueBackend queueBackend) {
         super(queueBackend);
 
         this.queueBackend = queueBackend;

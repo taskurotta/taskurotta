@@ -138,18 +138,21 @@ public class MemoryGraphDao implements GraphDao {
 
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
-        DecisionRow decisionRow = new DecisionRow();
-
         Modification modification = modifiedGraph.getModification();
-        decisionRow.itemId = modifiedGraph.getModification().getCompletedItem();
-        decisionRow.modification = modification;
-        decisionRow.readyItems = modifiedGraph.getReadyItems();
 
-        decisions.put(decisionRow.itemId, decisionRow);
+        if (modification != null) {
+            DecisionRow decisionRow = new DecisionRow();
+
+            decisionRow.itemId = modification.getCompletedItem();
+            decisionRow.modification = modification;
+            decisionRow.readyItems = modifiedGraph.getReadyItems();
+
+            decisions.put(decisionRow.itemId, decisionRow);
+        }
 
         GraphRow graphRow = graphs.get(modifiedGraph.getGraphId());
-        return graphRow.updateGraph(modifiedGraph);
 
+        return graphRow.updateGraph(modifiedGraph);
     }
 
 
@@ -184,6 +187,4 @@ public class MemoryGraphDao implements GraphDao {
 
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
-
-
 }
