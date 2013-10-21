@@ -89,6 +89,7 @@ public class AbstractTestStub {
         taskDao = new MemoryTaskDao();
         backendBundle = new MemoryBackendBundle(0, taskDao);
         memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
+        memoryQueueBackendStatistics = new MemoryQueueBackendStatistics(memoryQueueBackend);
         memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
         dependencyBackend = backendBundle.getDependencyBackend();
 

@@ -30,6 +30,7 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
         process.setStartTime(System.currentTimeMillis());
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
+        process.setStartTask(task);
         processesStorage.put(task.getProcessId(), process);
     }
 
