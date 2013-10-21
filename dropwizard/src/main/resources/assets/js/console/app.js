@@ -1,6 +1,6 @@
-var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap']);
+var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap', 'ngRoute']);
 
-consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
+consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider, $log) {
 
     //show loader on every ajax call
     $httpProvider.defaults.transformRequest.push(function (data, headersGetter) {
@@ -11,6 +11,11 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
     //hide loader on every ajax response
     $httpProvider.defaults.transformResponse.push(function (data, headersGetter) {
         $('#loading').hide();
+
+//        if (data.status === 404 && data.config.url.indexOf(".html")) {
+//            $log.log("Not found html page");
+//        }
+
         return data;
     });
 
@@ -61,6 +66,11 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
     //create
     $routeProvider.when('/processes/create', {
         templateUrl: '/partials/view/create/process_create.html'
+    });
+    //broken
+    $routeProvider.when('/processes/broken', {
+        templateUrl: '/partials/view/list/process_broken.html',
+        controller: "brokenProcessListController"
     });
 
     //MONITORING

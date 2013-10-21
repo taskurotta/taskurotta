@@ -7,7 +7,9 @@ package ru.taskurotta.dropwizard.resources;
  */
 public enum Action {
 
-    LIST("list"), CARD("card"), CREATE("create"), COMPARE("compare"), BLOCK("block"), UNBLOCK("unblock"), DELETE("delete"), EDIT("edit"), UPDATE("update"), ACTIVATE("activate"), DEACTIVATE("deactivate");
+    LIST("list"), CARD("card"), CREATE("create"), COMPARE("compare"), BLOCK("block"), UNBLOCK("unblock"),
+    DELETE("delete"), EDIT("edit"), UPDATE("update"), ACTIVATE("activate"), DEACTIVATE("deactivate"),
+    GROUP("group");
 
     private String value;
 

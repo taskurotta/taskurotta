@@ -31,6 +31,7 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
     </bean>
 
     <bean id="queueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
@@ -47,6 +48,8 @@
         class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
+
+    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend" />
 
     <bean id="graphDao"
         class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />

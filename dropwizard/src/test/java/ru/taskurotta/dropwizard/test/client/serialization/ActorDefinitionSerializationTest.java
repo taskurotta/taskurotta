@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.dropwizard.client.serialization.wrapper.ActorDefinitionWrapper;
+import ru.taskurotta.client.jersey.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.io.File;

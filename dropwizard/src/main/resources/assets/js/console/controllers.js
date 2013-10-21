@@ -1,4 +1,4 @@
-var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers']);
+var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute']);
 
 consoleControllers.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
 

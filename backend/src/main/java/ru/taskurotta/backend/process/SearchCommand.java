@@ -7,13 +7,13 @@ package ru.taskurotta.backend.process;
  */
 public class SearchCommand {
 
-    private String processId;
-    private String startActorId;
-    private String brokenActorId;
-    private long startPeriod = -1;
-    private long endPeriod = -1;
-    private String errorMessage;
-    private String errorClassName;
+    protected String processId;
+    protected String startActorId;
+    protected String brokenActorId;
+    protected long startPeriod = -1;
+    protected long endPeriod = -1;
+    protected String errorMessage;
+    protected String errorClassName;
 
     public String getProcessId() {
         return processId;
@@ -69,5 +69,18 @@ public class SearchCommand {
 
     public void setErrorClassName(String errorClassName) {
         this.errorClassName = errorClassName;
+    }
+
+    @Override
+    public String toString() {
+        return "SearchCommand{" +
+                "processId='" + processId + '\'' +
+                ", startActorId='" + startActorId + '\'' +
+                ", brokenActorId='" + brokenActorId + '\'' +
+                ", startPeriod=" + startPeriod +
+                ", endPeriod=" + endPeriod +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", errorClassName='" + errorClassName + '\'' +
+                "} ";
     }
 }
