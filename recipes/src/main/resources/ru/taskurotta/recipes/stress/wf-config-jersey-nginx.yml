@@ -10,14 +10,12 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/stress/SpreaderBeans-jersey.xml
         properties:
-          count: 2000
-          startTasks: true
-          startTasksInBackground: false
           endpoint: "http://tsks-ora.fccland.ru:80"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
-          cycles: 100
+          shotSize: 4000
+          initialCount: 8
 
 profiler:
   - MainProfilerConfig:
@@ -25,7 +23,7 @@ profiler:
       instance:
         class: ru.taskurotta.recipes.stress.LifetimeProfiler
         properties:
-          exitAfterAll: true
+          targetTolerance: 0.5
 
 actor:
   - FibonacciDecider:

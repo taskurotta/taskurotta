@@ -25,11 +25,11 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
 
     private static int THREADS_COUNT = 50;
-    private static int initialCount = 6;
+    private static int initialCount = 4;
     private boolean needRun = true;
     public static CountDownLatch LATCH;
     private ExecutorService executorService;
-    private static int shotSize = 2000;
+    private static int shotSize = 4000;
 
 
     @Override
@@ -67,12 +67,16 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         return initialCount;
     }
 
-    public static void setInitialCount(int initialCount) {
+    public void setInitialCount(int initialCount) {
         StressTaskCreator.initialCount = initialCount;
     }
 
     public static int getShotSize() {
         return shotSize;
+    }
+
+    public void setShotSize(int shotSize) {
+        StressTaskCreator.shotSize = shotSize;
     }
 
     @Override
