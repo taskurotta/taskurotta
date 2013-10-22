@@ -92,7 +92,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         } else if (stabilizationCounter.get() > 0 && currentTolerance > targetTolerance) {
                             stabilizationCounter.set(0);
                         }
-                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalCount/totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, currentCountTotalRate, currentTolerance);
+                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, totalRate, currentTolerance);
                     }
                 }
                 return task;

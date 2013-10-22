@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spring-2.5</artifactId>
+    <name>Taskurotta :: Spring 2.5</name>
 
     <dependencies>
 
