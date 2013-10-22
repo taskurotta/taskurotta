@@ -10,8 +10,19 @@ import org.junit.Ignore;
 
 @Ignore
 public class TestActorImpl implements TestActor {
+
+    private String testProperty;
+
     @Override
     public int sum(int a, int b) {
         return a + b;
+    }
+
+    public void setTestProperty(String testProperty) {
+        this.testProperty = testProperty;
+    }
+
+    public String getTestProperty() {
+        return testProperty;
     }
 }
