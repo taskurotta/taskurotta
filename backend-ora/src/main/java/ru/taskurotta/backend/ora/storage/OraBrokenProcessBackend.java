@@ -101,40 +101,47 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
     @Override
     public Collection<BrokenProcessVO> find(SearchCommand searchCommand) {
         List<Object> parameters = new ArrayList<>();//order does matter
-        StringBuilder sb = new StringBuilder(SQL_LIST_ALL + " WHERE 1=1 ");
-
+        StringBuilder sb = new StringBuilder(SQL_LIST_ALL);
+        boolean first = true;
         if (StringUtils.hasText(searchCommand.getStartActorId())) {
-            sb.append("AND START_ACTOR_ID LIKE ? ");
-            parameters.add("%" + searchCommand.getStartActorId());
+            sb.append((first? " WHERE ":" AND ")).append("START_ACTOR_ID LIKE ? ");
+            parameters.add(searchCommand.getStartActorId() + "%");
+            first = false;
         }
 
         if (StringUtils.hasText(searchCommand.getBrokenActorId())) {
-            sb.append("AND BROKEN_ACTOR_ID LIKE ? ");
-            parameters.add("%" + searchCommand.getBrokenActorId());
+            sb.append((first? " WHERE ":" AND ")).append("BROKEN_ACTOR_ID LIKE ? ");
+            parameters.add(searchCommand.getBrokenActorId() + "%");
+            first = false;
         }
 
         if (StringUtils.hasText(searchCommand.getErrorClassName())) {
-            sb.append("AND ERROR_CLASS_NAME LIKE ? ");
-            parameters.add("%" + searchCommand.getErrorClassName());
+            sb.append((first? " WHERE ":" AND ")).append("ERROR_CLASS_NAME LIKE ? ");
+            parameters.add(searchCommand.getErrorClassName() + "%");
+            first = false;
         }
 
         if (StringUtils.hasText(searchCommand.getErrorMessage())) {
-            sb.append("AND ERROR_MESSAGE LIKE ? ");
-            parameters.add("%" + searchCommand.getErrorMessage());
+            sb.append((first? " WHERE ":" AND ")).append("ERROR_MESSAGE LIKE ? ");
+            parameters.add(searchCommand.getErrorMessage() + "%");
+            first = false;
         }
 
         if (searchCommand.getEndPeriod()>0) {
-            sb.append("AND TIME < ? ");
+            sb.append((first? " WHERE ":" AND ")).append("TIME < ? ");
             parameters.add(searchCommand.getEndPeriod());
+            first = false;
         }
 
         if (searchCommand.getStartPeriod()>0) {
-            sb.append("AND TIME > ? ");
+            sb.append((first? " WHERE ":" AND ")).append("TIME > ? ");
             parameters.add(searchCommand.getStartPeriod());
+            first = false;
         }
 
         Collection<BrokenProcessVO> result = null;
         String searchSql = sb.toString();
+        long startTime = System.currentTimeMillis();
         try {
             result = getJdbcTemplate().query(searchSql, parameters.toArray(), brokenProcessRowMapper);
         } catch(EmptyResultDataAccessException e) {
@@ -142,7 +149,7 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
         }
 
         logger.trace("SearchSQL getted[{}], params are[{}]", searchSql, parameters);
-        logger.debug("Found [{}] result by command[{}]", result.size(), searchCommand);
+        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), searchCommand, (System.currentTimeMillis()-startTime));
 
         return result;
     }

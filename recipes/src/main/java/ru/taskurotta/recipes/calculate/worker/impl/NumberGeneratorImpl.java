@@ -21,7 +21,7 @@ public class NumberGeneratorImpl implements NumberGenerator {
 
         if (RandomException.isEventHappened(errPossibility)) {
             logger.error("NumberGenerator: RANDOMLY FAILED!");
-            throw new RandomException("Its exception time");
+            throw new RandomException("Its number generator exception time");
         }
 
         if (sleep > 0) {

@@ -1,6 +1,6 @@
-var consoleActorControllers = angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.modal', 'ngRoute']);
+angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.modal', 'ngRoute'])
 
-consoleActorControllers.controller("actorListController", ['$scope', '$$data', 'tskActors', '$log', '$modal', '$location', '$cookieStore', function ($scope, $$data, tskActors, $log, $modal, $location, $cookieStore) {
+.controller("actorListController", ['$scope', '$$data', 'tskActors', '$log', '$modal', '$location', '$cookieStore', function ($scope, $$data, tskActors, $log, $modal, $location, $cookieStore) {
     $scope.feedback = "";
     $scope.initialized = false;
 
@@ -134,10 +134,10 @@ consoleActorControllers.controller("actorListController", ['$scope', '$$data', '
     $scope.initSelection();
     $scope.update();
 
-}]);
+}])
 
 
-consoleActorControllers.controller("actorCompareController", function ($scope, $location, $log, $cookieStore, tskActors) {
+.controller("actorCompareController", function ($scope, $location, $log, $cookieStore, tskActors) {
 
     $scope.actorIds = $cookieStore.get('actors.compare.actorIds');
 

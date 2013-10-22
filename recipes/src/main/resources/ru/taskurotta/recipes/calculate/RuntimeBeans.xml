@@ -27,7 +27,7 @@
     </bean>
 
     <bean id="mathActionDecider" class="ru.taskurotta.recipes.calculate.decider.MathActionDeciderImpl">
-        <property name="errPossibility" value="${failChance}" />
+        <property name="errPossibility" value="${deciderFailChance}" />
         <property name="multiplierClient">
             <bean class="ru.taskurotta.ProxyFactory" factory-method="getWorkerClient">
                 <constructor-arg value="ru.taskurotta.recipes.calculate.worker.client.MultiplierClient"/>

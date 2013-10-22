@@ -11,7 +11,7 @@
             <td>
                 <div class="form-horizontal">
                     <input class="input input-small" type="text" datepicker-popup="dd.MM.yyyy" ng-model="period.dateFrom" is-open="fromOpened"
-                       max="period.maxDate" min="period.minDate"/>
+                       max="period.maxDate" min="period.minDate" required/>
                     <button class="btn" ng-click="toggleOpenFrom()"><i class="icon-calendar"></i></button>
                 </div>
             </td>
@@ -21,7 +21,7 @@
             <td>
                 <div class="form-horizontal">
                     <input class="input input-small" type="text" datepicker-popup="dd.MM.yyyy" ng-model="period.dateTo" is-open="toOpened"
-                        max="maxPossibleDate" />
+                        max="maxPossibleDate" required />
                     <button class="btn" ng-click="toggleOpenTo()"><i class="icon-calendar"></i></button>
                 </div>
             </td>

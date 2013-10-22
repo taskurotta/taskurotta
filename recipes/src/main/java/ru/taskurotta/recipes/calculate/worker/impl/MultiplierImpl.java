@@ -18,7 +18,7 @@ public class MultiplierImpl implements Multiplier {
         logger.trace("multiply() called");
         if (RandomException.isEventHappened(errPossibility)) {
             logger.error("Multiplier: RANDOMLY FAILED!");
-            throw new RandomException("Its exception time");
+            throw new RandomException("Its multiply exception time");
         }
 
         if (sleep > 0) {

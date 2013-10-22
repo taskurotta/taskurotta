@@ -1,6 +1,6 @@
-var consoleApp = angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap', 'ngRoute']);
+angular.module("consoleApp", ['console.services', 'console.controllers', 'console.animation', 'console.directives', 'ui.bootstrap', 'ngRoute'])
 
-consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
+.config(function ($routeProvider, $locationProvider, $httpProvider) {
 
     //show loader on every ajax call
     $httpProvider.defaults.transformRequest.push(function (data, headersGetter) {
@@ -120,13 +120,12 @@ consoleApp.config(function ($routeProvider, $locationProvider, $httpProvider) {
         redirectTo: '/home'
     });
 
-    // configure html5 to get links working on jsfiddle
     //TODO: causes troubles on page refresh
 //    $locationProvider.html5Mode(true);
 
-});
+})
 
-consoleApp.run(function ($rootScope, $log) {
+.run(function ($rootScope, $log) {
     $rootScope.getStartIndex = function (pageNum, pageSize) {
         return (pageNum - 1) * pageSize + 1;
     };

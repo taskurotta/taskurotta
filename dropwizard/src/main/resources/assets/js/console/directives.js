@@ -1,6 +1,6 @@
-var consoleDirectives = angular.module("console.directives", []);
+angular.module("console.directives", [])
 
-consoleDirectives.directive('tskPaginator', ['$http', function ($http) {
+.directive('tskPaginator', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -76,9 +76,9 @@ consoleDirectives.directive('tskPaginator', ['$http', function ($http) {
         templateUrl: "/partials/widget/paginator_bar.html",
         replace: true
     };
-}]);
+}])
 
-consoleDirectives.directive('tskAutorefresh', ['$http', function ($http) {
+.directive('tskAutorefresh', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -105,14 +105,14 @@ consoleDirectives.directive('tskAutorefresh', ['$http', function ($http) {
         templateUrl: "/partials/widget/auto_refresher.html",
         replace: true
     };
-}]);
+}])
 // <ol>
 //     <li ng-repeat="child in data.children" tree>
 //       <div>{{child.name}}</div>
 //       <ol><branch></ol>
 // </ol>
 //https://gist.github.com/furf/4331090
-consoleDirectives.directive('tskTree', ['$compile', function ($compile) {
+.directive('tskTree', ['$compile', function ($compile) {
     'use strict';
     return {
         restrict: 'A',
@@ -147,10 +147,10 @@ consoleDirectives.directive('tskTree', ['$compile', function ($compile) {
             };
         }
     };
-}]);
+}])
 
 
-consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
+.directive('tskCreateProcessForm', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -175,9 +175,9 @@ consoleDirectives.directive('tskCreateProcessForm', ['$http', function ($http) {
         templateUrl: "/partials/widget/start_process.html",
         replace: true
     };
-}]);
+}])
 
-consoleDirectives.directive('tskTaskForm', ['$http', function ($http) {
+.directive('tskTaskForm', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -201,9 +201,9 @@ consoleDirectives.directive('tskTaskForm', ['$http', function ($http) {
         templateUrl: "/partials/widget/task_container_form.html",
         replace: true
     };
-}]);
+}])
 
-consoleDirectives.directive('tskArgForm', ['$http', '$compile', function ($http, $compile) {
+.directive('tskArgForm', ['$http', '$compile', function ($http, $compile) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -219,9 +219,9 @@ consoleDirectives.directive('tskArgForm', ['$http', '$compile', function ($http,
         },
         replace: true
     };
-}]);
+}])
 
-consoleDirectives.directive('tskArgListForm', ['$http', function ($http) {
+.directive('tskArgListForm', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -231,9 +231,9 @@ consoleDirectives.directive('tskArgListForm', ['$http', function ($http) {
         template: "<ul><tsk-arg-form ng-repeat='arg in args' arg='arg'></tsk-arg-form></ul>",
         replace: true
     };
-}]);
+}])
 
-consoleDirectives.directive('tskPlot', ['$http', function ($http) {
+.directive('tskPlot', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
@@ -274,46 +274,7 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
                 }
             };
 
-//            var getFilteredDataset = function(targetDataset, xMin, xMax, yMin, yMax) {
-//                var result = [];
-//                if(targetDataset && targetDataset.length>0) {
-//                    for(var i = 0; i<targetDataset.length; i++) {
-//                        var dot = targetDataset[i];
-//                        if((dot[0]>=xMin) && (dot[0]<=xMax) && (dot[1]>=yMin) && (dot[1]<=yMax)) {
-//                            result.push(dot);
-//                        }
-//                    }
-//                }
-//                return result;
-//            };
-
             var plotElem = $.plot(jPlot, [], options);
-//            jPlot.bind("plotselected", function (event, ranges) {
-//
-//                // clamp the zooming to prevent eternal zoom
-//
-//                if (ranges.xaxis.to - ranges.xaxis.from < 0.00001) {
-//                    ranges.xaxis.to = ranges.xaxis.from + 0.00001;
-//                }
-//
-//                if (ranges.yaxis.to - ranges.yaxis.from < 0.00001) {
-//                    ranges.yaxis.to = ranges.yaxis.from + 0.00001;
-//                }
-//
-//                // do the zooming
-//                var originalData = plotElem.getData();
-//                for(var i = 0; i < originalData.length; i++ ) {
-//                    originalData[i].data = getFilteredDataset(originalData[i].data, ranges.xaxis.from, ranges.xaxis.to, ranges.yaxis.from, ranges.yaxis.to);
-//                }
-//                plotElem = $.plot(jPlot, originalData,
-//                    $.extend(true, {}, options, {
-//                        xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to },
-//                        yaxis: { min: ranges.yaxis.from, max: ranges.yaxis.to }
-//                    })
-//                );
-//
-//            });
-
 
             var refreshTriggerId = -1;
             var updatePlotData = function(newData) {
@@ -349,9 +310,9 @@ consoleDirectives.directive('tskPlot', ['$http', function ($http) {
         }],
         replace: true
     };
-}]);
+}])
 
-consoleDirectives.directive('tskErrMessage', ['$http', function ($http) {
+.directive('tskErrMessage', ['$http', function ($http) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,

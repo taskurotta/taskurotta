@@ -52,9 +52,11 @@ public class BrokenProcessListResource {
                                  @QueryParam("group")Optional<String> groupOpt) {
 
         if (Action.GROUP.getValue().equals(action)) {
+            long startTime = System.currentTimeMillis();
             GroupCommand command = convertToCommand(starterIdOpt, actorIdOpt, exceptionOpt, dateFromOpt, dateToOpt, groupOpt);
+            validateCommand(command);
             Collection <ProcessGroupVO> groups =  getGroupList(command);
-            logger.debug("Process groups got by command [{}] are [{}]", command, groups);
+            logger.debug("Process groups count got by command [{}] are [{}], total time [{}]", command, (groups!=null?groups.size(): null), System.currentTimeMillis()-startTime);
             return Response.ok(groups, MediaType.APPLICATION_JSON).build();
 
         } else if (Action.LIST.getValue().equals(action)) {
@@ -71,6 +73,15 @@ public class BrokenProcessListResource {
 
     }
 
+    private void validateCommand(GroupCommand command) {
+        if (!StringUtils.hasText(command.getStartActorId())
+                && !StringUtils.hasText(command.getBrokenActorId())
+                && !StringUtils.hasText(command.getErrorClassName())
+                && !StringUtils.hasText(command.getGroup())) {
+            throw new WebApplicationException(new IllegalArgumentException("Command cannot be empty"));
+        }
+    }
+
     public static GroupCommand convertToCommand(Optional<String> starterIdOpt, Optional<String> actorIdOpt, Optional<String> exceptionOpt,
                                          Optional<String> dateFromOpt, Optional<String> dateToOpt, Optional<String> groupOpt) {
         String dateFrom = dateFromOpt.or("");
@@ -79,8 +90,10 @@ public class BrokenProcessListResource {
 
         if (StringUtils.hasText(dateFrom) || StringUtils.hasText(dateTo)) {
             SimpleDateFormat sdf = null;
+            boolean withTime = false;
             if (dateFrom.length()>10 || dateTo.length()>10) {
                 sdf = new SimpleDateFormat(DATETIME_TEMPLATE);
+                withTime = true;
             } else {
                 sdf = new SimpleDateFormat(DATE_TEMPLATE);
             }
@@ -91,8 +104,11 @@ public class BrokenProcessListResource {
                     Date dateFromDate = sdf.parse(dateFrom);
                     result.setStartPeriod(dateFromDate.getTime());
                 }
-                if (StringUtils.hasText(dateFrom)) {
+                if (StringUtils.hasText(dateTo)) {
                     Date dateToDate = sdf.parse(dateTo);
+                    if (!withTime) {
+                        dateToDate.setTime(dateToDate.getTime() + 24*60*60*1000);//+one day, cause default time 00:00 cuts off current day
+                    }
                     result.setEndPeriod(dateToDate.getTime());
                 }
             } catch (Exception e) {

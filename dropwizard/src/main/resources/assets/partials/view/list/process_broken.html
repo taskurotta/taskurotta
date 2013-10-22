@@ -14,13 +14,13 @@
         <div tsk-err-message model="feedback"></div>
     </div>
 
+    <div class="well">
+        <div tsk-period-select model="period" ></div>
+    </div>
+
     <div tabset>
         <div tab heading="List process groups" style="cursor:pointer;">
             <div class="well">
-
-                <div class="well">
-                    <div tsk-period-select model="period" ></div>
-                </div>
 
                 <div ng-if="!initialized" style="width:100%;text-align: center;">
                     <img src="/img/ajax-loader.gif" />
@@ -46,9 +46,13 @@
                         </div>
                     </div>
 
+
                     <!-- GROUPS VIEW -->
                     <table ng-if="viewType != 'list'" class="table table-striped" style="margin-right: 30px;">
                         <tbody>
+                            <tr ng-if="brokenGroups.length==0">
+                                <td colspan="7"><div class="alert alert-warning" style="margin: 10px;">Not found any broken processes</div></td>
+                            </tr>
                             <tr ng-repeat="bg in brokenGroups">
                                 <td style="width: 25px;">
                                     <small>{{ $index+1 }}</small>
@@ -99,12 +103,59 @@
         </div>
 
         <div tab heading="Find processes" style="cursor:pointer;">
+            <div class="well">
+                <div style="margin: 10px 10px 30px 10px;">
+                    <b>Search form:</b><br />
+                    <span class="muted">
+                        <small>Every search field is a "starts with" condition. When selecting multiple conditions, "AND" operator would be applied.</small>
+                    </span>
 
-            In progress ...
+                </div>
+
+                <form class="form-horizontal">
+                    <div class="control-group">
+                        <label class="control-label" for="starter"><small><b>{{getGroupLabel('starter')}}:</b></small></label>
+                        <div class="controls">
+                            <input class="input search-query" type="text" id="starter" placeholder="ru.taskurotta.Example#1.0" ng-model="searchCommand.starterId">
+                            <span style="cursor:pointer;" popover="ActorID of the decider (or the scheduler) task which started the process."
+                                popover-placement="right" class="badge badge-info">?</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="actor"><small><b>{{getGroupLabel('actor')}}:</b></small></label>
+                        <div class="controls">
+                            <input class="input search-query" type="text" id="actor" placeholder="ru.taskurotta.Example#1.0" ng-model="searchCommand.actorId">
+                            <span style="cursor:pointer;" popover="ActorID of the task which cause the process fail."
+                                popover-placement="right" class="badge badge-info">?</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="exception"><small><b>{{getGroupLabel('exception')}}:</b></small></label>
+                        <div class="controls">
+                            <input class="input search-query" type="text" id="exception" placeholder="ru.taskurotta.ExampleException" ng-model="searchCommand.exception">
+                            <span style="cursor:pointer;" popover="Exception class for the error causing process fail."
+                                  popover-placement="right" class="badge badge-info">?</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button class="btn" ng-click="findProcesses()" ng-disabled="!isSearchFormCorrect()">Search</button>
+                        </div>
+                    </div>
+                </form>
 
 
+                <div class="well">
+                    <div ng-if="!searchInitialized" style="width:100%;text-align: center;">
+                        <img src="/img/ajax-loader.gif" />
+                    </div>
 
+                    <div ng-if = "foundBrokenProcesses.length == 0" class="alert alert-warning" style="margin: 10px;">Not found any broken processes</div>
+
+                    <div ng-if="foundBrokenProcesses.length>0" tsk-broken-process-list model = "foundBrokenProcesses"></div>
+                </div>
+
+            </div>
         </div>
     </div>
-
 </div>

@@ -163,7 +163,7 @@ public class GeneralTaskServer implements TaskServer {
                 enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
             } else {
                 BrokenProcessVO brokenProcess = new BrokenProcessVO();
-                brokenProcess.setTime(taskDecision.getRestartTime());
+                brokenProcess.setTime(System.currentTimeMillis());
                 brokenProcess.setProcessId(processId.toString());
                 brokenProcess.setBrokenActorId(taskDecision.getActorId());
 

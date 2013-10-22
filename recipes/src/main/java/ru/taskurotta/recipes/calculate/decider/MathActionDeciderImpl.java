@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.core.Promise;
+import ru.taskurotta.recipes.calculate.RandomDeciderException;
 import ru.taskurotta.recipes.calculate.RandomException;
 import ru.taskurotta.recipes.calculate.worker.client.MultiplierClient;
 import ru.taskurotta.recipes.calculate.worker.client.NumberGeneratorClient;
@@ -39,7 +40,7 @@ public class MathActionDeciderImpl implements MathActionDecider {
         logger.trace("callExecutor started");
 
         if (RandomException.isEventHappened(errPossibility)) {
-            throw new RandomException("Its exception time");
+            throw new RandomDeciderException("Its decider exception time");
         }
 
         int oddOrEven = a.get()%2;//=0 чётное либо =1 нечётное.

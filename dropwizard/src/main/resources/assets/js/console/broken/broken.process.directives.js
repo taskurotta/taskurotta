@@ -1,6 +1,6 @@
-angular.module("console.broken.process.directives", ['console.broken.process.services'])
+angular.module("console.broken.process.directives", ['console.broken.process.services', 'console.util.services', 'ui.bootstrap.modal'])
 
-    .directive('tskBrokenProcessList', ['$http', function($http) {
+    .directive('tskBrokenProcessList', ['tskUtil', '$log', '$modal',  function(tskUtil, $log, $modal) {
 
         return {
             restrict: 'ECA',//Element, Class, Attribute
@@ -9,6 +9,27 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
                 processes: "=model"
             },
             controller: ['$scope', '$element', '$attrs', '$transclude', function ($scope, $element, $attrs, $transclude) {
+
+                $scope.enableNewLine = function (word) {
+                    return tskUtil.injectNewLineDelimiter(word, 25, '.');
+                };
+
+                $scope.showStackTrace = function (stackTrace) {
+                    //$log.log("Showing stacktrace : " + stackTrace);
+                    var modalInstance = $modal.open({
+                        templateUrl: '/partials/view/modal/stacktrace_msg.html',
+                        windowClass: 'stack-trace',
+                        controller: function ($scope) {
+                            $scope.stackTrace = stackTrace;
+                        }
+                    });
+
+                    modalInstance.result.then(function(okMess) {
+                        //do nothing
+                    }, function(cancelMsg) {
+                        //do nothing
+                    });
+                };
 
             }],
             templateUrl: "/partials/widget/broken/broken_process_list.html",

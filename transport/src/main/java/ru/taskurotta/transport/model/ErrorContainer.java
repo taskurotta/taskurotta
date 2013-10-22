@@ -3,6 +3,7 @@ package ru.taskurotta.transport.model;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * User: romario
@@ -19,9 +20,16 @@ public class ErrorContainer implements Serializable {
     }
 
     public ErrorContainer(Throwable throwable) {
-        this.className = throwable.getClass().getName();
-        this.message = throwable.getMessage();
-        this.stackTrace = stackTraceToString(throwable);
+
+        if (throwable instanceof InvocationTargetException) {//Throwable is always InvocationTargetException when actor failure happen. Interested in the cause
+            this.className = throwable.getCause().getClass().getName();
+            this.message = throwable.getCause().getMessage();
+            this.stackTrace = stackTraceToString(throwable.getCause());
+        } else {
+            this.className = throwable.getClass().getName();
+            this.message = throwable.getMessage();
+            this.stackTrace = stackTraceToString(throwable);
+        }
     }
 
     public static String stackTraceToString(Throwable throwable) {

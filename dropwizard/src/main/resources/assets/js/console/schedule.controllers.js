@@ -1,6 +1,6 @@
-var consoleScheduleControllers = angular.module("console.schedule.controllers", ['console.services', 'ui.bootstrap.modal']);
+angular.module("console.schedule.controllers", ['console.services', 'ui.bootstrap.modal'])
 
-consoleScheduleControllers.controller("scheduleCardController", function ($scope, $log, $http, $location, $routeParams) {
+.controller("scheduleCardController", function ($scope, $log, $http, $location, $routeParams) {
     $scope.feedback = "";
 
     $scope.job = {
@@ -89,9 +89,9 @@ consoleScheduleControllers.controller("scheduleCardController", function ($scope
 
     $scope.update();
 
-});
+})
 
-consoleScheduleControllers.controller("scheduleListController", function ($scope, $http, $log, $modal) {
+.controller("scheduleListController", function ($scope, $http, $log, $modal) {
 
     $scope.scheduledTasks = [];
     $scope.feedback = {};

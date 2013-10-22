@@ -240,7 +240,7 @@
     </bean>
 
     <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
-        <property name="dataSource" ref="dataSource" /><!-- Or just original here? JDBC dao support class should support this -->
+        <property name="dataSource" ref="originalDataSource" />
         <property name="lobHandler" ref="lobHandler" />
     </bean>
 
@@ -364,11 +364,11 @@
     <aop:config>
         <aop:pointcut id="serviceOperation"
                       expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))"/>
-        <aop:pointcut id="brokenProcessOperation"
-                      expression="execution(* ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend.*(..))"/>
+        <!--<aop:pointcut id="brokenProcessOperation"-->
+                      <!--expression="execution(* ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend.*(..))"/>-->
 
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
-        <aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>
+        <!--<aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>-->
     </aop:config>
     <!-- /Transactions -->
 

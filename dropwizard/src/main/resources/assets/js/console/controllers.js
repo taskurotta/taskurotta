@@ -1,6 +1,6 @@
-var consoleControllers = angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute']);
+angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute'])
 
-consoleControllers.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
+.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
 
     $scope.isActiveTab = function (rootPath) {
         var result = "";
@@ -15,9 +15,9 @@ consoleControllers.controller("rootController", function ($rootScope, $scope, $l
     $scope.back = function () {
         $window.history.back();
     };
-});
+})
 
-consoleControllers.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
 
     $scope.feedback = "";
     $scope.initialized = false;
@@ -58,9 +58,9 @@ consoleControllers.controller("queueListController", function ($scope, $$data, $
     //Initialization:
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
+.controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
 
     $scope.feedback = "";
 
@@ -89,9 +89,9 @@ consoleControllers.controller("queueCardController", function ($scope, $$data, $
     //Initialization:
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("processListController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("processListController", function ($scope, $$data, $$timeUtil, $log) {
     //Init paging object
     $scope.processesPage = {
         pageSize: 5,
@@ -119,9 +119,9 @@ consoleControllers.controller("processListController", function ($scope, $$data,
 
     //Initialization:
     $scope.update();
-});
+})
 
-consoleControllers.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {//id=
+.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {//id=
     $scope.process = {};
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
@@ -151,9 +151,9 @@ consoleControllers.controller("processCardController", function ($scope, $$data,
     };
 
     $scope.update();
-});
+})
 
-consoleControllers.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams, $location) {//params: customId, processId
+.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams, $location) {//params: customId, processId
     $scope.customId = $routeParams.customId || '';
     $scope.processId = $routeParams.processId || '';
     $scope.processes = [];
@@ -172,9 +172,9 @@ consoleControllers.controller("processSearchController", function ($scope, $$dat
 
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("taskListController", function ($scope, $$data, $log) {
+.controller("taskListController", function ($scope, $$data, $log) {
 
     $scope.feedback = "";
     $scope.initialized = false;
@@ -205,9 +205,9 @@ consoleControllers.controller("taskListController", function ($scope, $$data, $l
     //Initialization:
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("taskCardController", function ($scope, $$data, $routeParams, $log) {
+.controller("taskCardController", function ($scope, $$data, $routeParams, $log) {
     $scope.task = {};
     $scope.taskTree = {};
     $scope.taskDecision = {};
@@ -253,9 +253,9 @@ consoleControllers.controller("taskCardController", function ($scope, $$data, $r
 
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("taskSearchController", function ($scope, $routeParams, $$data, $log, $location) {
+.controller("taskSearchController", function ($scope, $routeParams, $$data, $log, $location) {
     $scope.taskId = $routeParams.taskId || '';
     $scope.processId = $routeParams.processId || '';
     $scope.tasks = [];
@@ -280,9 +280,9 @@ consoleControllers.controller("taskSearchController", function ($scope, $routePa
 
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("hoveringQueuesController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("hoveringQueuesController", function ($scope, $$data, $$timeUtil, $log) {
 
     $scope.feedback = "";
 
@@ -315,9 +315,9 @@ consoleControllers.controller("hoveringQueuesController", function ($scope, $$da
     //Initialization:
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("repeatedTasksController", function ($scope, $routeParams, $$data, $log) {
+.controller("repeatedTasksController", function ($scope, $routeParams, $$data, $log) {
     $scope.iterationCount = 5;
     $scope.tasks = [];
 
@@ -333,9 +333,9 @@ consoleControllers.controller("repeatedTasksController", function ($scope, $rout
 
     $scope.update();
 
-});
+})
 
-consoleControllers.controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
+.controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
     $scope.dataHolder = [];
     $scope.smoothRates = ["", 3, 7, 20, 30];
 
@@ -481,14 +481,13 @@ consoleControllers.controller("metricsController", function ($scope, $$data, $lo
     });
 
 
-});
+})
 
-consoleControllers.controller("homeController", function ($scope) {
+.controller("homeController", function ($scope) {
 
-});
+})
 
-
-consoleControllers.controller("aboutController", function ($scope) {
+.controller("aboutController", function ($scope) {
 
 });
 

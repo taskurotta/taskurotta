@@ -1,7 +1,27 @@
-var consoleUtilServices = angular.module("console.util.services", []);
+angular.module("console.util.services", [])
 
-consoleUtilServices.factory("tskUtil", function () {
+.factory("tskUtil", function ($log) {
     var resultService = {
+        skippingIndexOf: function(word, skip, char) {
+            var result = -1;
+            if (word && word.length>skip) {
+                var subResult = word.substr(skip).indexOf(char);
+                if (subResult != -1) {
+                    result = subResult + skip;
+                }
+            }
+            //$log.log("skipping index for [" + word + "] is [" + result + "]");
+            return result;
+        },
+        injectNewLineDelimiter: function (word, skip, delimiter) {
+            var result = word;
+            var skippingIndex = this.skippingIndexOf(word, skip, delimiter);
+            if (skippingIndex != -1) {
+                //$log.log("skippingIndex["+skippingIndex+"] for["+word+"], sub1["+word.substr(0, skippingIndex+1)+"], sub 2["+word.substr(skippingIndex+1)+"]");
+                result = word.substr(0, skippingIndex+1) + " " + word.substr(skippingIndex+1);
+            }
+            return result;
+        },
         convertArrayToLine: function(array) {
             var result = "";
             if (array && array.length>0) {
@@ -18,9 +38,10 @@ consoleUtilServices.factory("tskUtil", function () {
 
         }
     };
-});
+    return resultService;
+})
 
-consoleUtilServices.factory('tskDataStore', function () {
+.factory('tskDataStore', function () {
         var holder = {};
 
         return {
@@ -36,9 +57,9 @@ consoleUtilServices.factory('tskDataStore', function () {
             }
         }
     }
-);
+)
 
-consoleUtilServices.factory('$$timeUtil', ["$timeout",
+.factory('$$timeUtil', ["$timeout",
     function ($timeout) {
         var _intervals = {}, _intervalUID = 1;
 

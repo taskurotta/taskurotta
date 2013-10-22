@@ -1,6 +1,6 @@
-var consoleServices = angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.services']);
+angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.services'])
 
-consoleServices.factory("tskActors", function ($resource, $http) {
+.factory("tskActors", function ($resource, $http) {
     var resultService = {
         setActorBlocked: function(actorId, isBlocked) {
             var url = '/rest/console/actor/unblock/';
@@ -24,9 +24,9 @@ consoleServices.factory("tskActors", function ($resource, $http) {
     };
 
     return resultService;
-});
+})
 
-consoleServices.factory("$$data", function ($resource, $http) {
+.factory("$$data", function ($resource, $http) {
 
     var resultService = {
         getQueueContent: function (queueName, pageNumber, pageSize) {

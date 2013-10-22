@@ -1,9 +1,12 @@
-var consoleBrokenProcessesControllers = angular.module("console.broken.process.controllers", ['console.broken.process.directives', 'console.broken.process.services']);
+angular.module("console.broken.process.controllers", ['console.broken.process.directives', 'console.broken.process.services', 'console.util.services'])
 
-consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$scope', '$log', '$http', 'tskBpTextProvider', function($scope, $log, $http, tskBpTextProvider) {
+.controller("brokenProcessListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskUtil', function($scope, $log, $http, tskBpTextProvider, tskUtil) {
 
     $scope.brokenGroups = [];
     $scope.brokenProcesses = [];
+    $scope.foundBrokenProcesses = [];
+
+    $scope.searchInitialized = true;
 
     $scope.initialized = false;
     $scope.groupCommand = {
@@ -14,6 +17,16 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
         dateFrom: '',
         dateTo: ''
     };
+
+    $scope.searchCommand = {
+        starterId: '',
+        actorId: '',
+        exception: '',
+        dateFrom: '',
+        dateTo: ''
+    };
+
+
 
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -104,9 +117,13 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
             }
             $scope.groupCommand.dateFrom = fromDateStr;
             $scope.groupCommand.dateTo = toDateStr;
+            $scope.searchCommand.dateFrom = fromDateStr;
+            $scope.searchCommand.dateTo = toDateStr;
+
         }
         return result;
     };
+
 
     var getCommandAsParamLine = function() {
         var result = "";
@@ -117,7 +134,20 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
             }
             result = result + key + "=" + encodeURIComponent($scope.groupCommand[key]);
         }
-        $log.log("Command line is " + result);
+        $log.log("group command line is " + result);
+        return result;
+    };
+
+    var getSearchCommandAsParamLine = function() {
+        var result = "";
+        setDatesToCommand();
+        for (var key in $scope.searchCommand) {
+            if (result.length>0) {
+                result = result + "&";
+            }
+            result = result + key + "=" + encodeURIComponent($scope.searchCommand[key]);
+        }
+        $log.log("Search command line is " + result);
         return result;
     };
 
@@ -220,6 +250,25 @@ consoleBrokenProcessesControllers.controller("brokenProcessListController", ['$s
             updateProcessesList();
         } else {
             updateGroupsList();
+        }
+    };
+
+    $scope.isSearchFormCorrect = function() {
+        return ($scope.searchCommand.starterId && $scope.searchCommand.starterId.length > 0)
+            || ($scope.searchCommand.actorId && $scope.searchCommand.actorId.length > 0)
+            || ($scope.searchCommand.exception && $scope.searchCommand.exception.length > 0);
+    };
+
+    $scope.findProcesses = function() {
+        if ($scope.isSearchFormCorrect()) {
+            $scope.searchInitialized = false;
+            $http.get('/rest/console/process/broken/list?' + getSearchCommandAsParamLine()).then(function(success) {
+                $scope.foundBrokenProcesses = success.data;
+                $scope.searchInitialized = true;
+            }, function(error) {
+                $scope.feedback = error.data;
+                $scope.searchInitialized = true;
+            });
         }
     };
 

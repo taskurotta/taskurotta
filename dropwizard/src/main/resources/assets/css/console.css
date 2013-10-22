@@ -157,6 +157,11 @@ div.tree {
     height: 40px;
 }
 
+.stack-trace {
+    width: 650px;
+    overflow: auto;
+}
+
 .checkbox-group-table {
     width: 400px;
     margin-top: 10px;

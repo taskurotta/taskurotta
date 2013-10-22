@@ -29,10 +29,10 @@
                     </small>
                 </td>
                 <td>
-                    <small>{{ bp.startActorId }}</small>
+                    <small>{{ enableNewLine(bp.startActorId) }}</small>
                 </td>
                 <td>
-                    <small>{{ bp.brokenActorId }}</small>
+                    <small>{{ enableNewLine(bp.brokenActorId) }}</small>
                 </td>
                 <td>
                     <small>{{ bp.time | date:'dd-MM-yyyy HH:mm:ss' }}</small>
@@ -43,11 +43,11 @@
                             <br />
                         <span class="muted"><b>Message: </b></span><b>{{ bp.errorMessage}}</b>
                             <br />
-                        <span class="muted"><b>Stack trace: </b></span>
+                        <a class="btn-link" ng-click="showStackTrace(bp.stackTrace)"><i class="icon-list"></i><b>Stack trace</b></a>
                         <br />
-                        <div style="width:100%; height: 60px; overflow: auto;">
-                            {{ bp.stackTrace }}
-                        </div>
+                        <!--<div style="width:250px; height: 100px; overflow: auto;">-->
+                            <!--{{ bp.stackTrace }}-->
+                        <!--</div>-->
                     </small>
                 </td>
                 <td></td>

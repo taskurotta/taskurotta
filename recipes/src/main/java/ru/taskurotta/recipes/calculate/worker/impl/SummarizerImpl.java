@@ -16,7 +16,7 @@ public class SummarizerImpl implements Summarizer {
         logger.trace("summarize() called");
         if (RandomException.isEventHappened(errPossibility)) {
             logger.error("Summarizer: RANDOMLY FAILED!");
-            throw new RandomException("Its exception time");
+            throw new RandomException("Its summarize exception time");
         }
 
         if (sleep > 0) {
