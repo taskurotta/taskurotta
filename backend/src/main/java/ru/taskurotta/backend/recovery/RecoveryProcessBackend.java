@@ -1,5 +1,6 @@
 package ru.taskurotta.backend.recovery;
 
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -9,5 +10,7 @@ import java.util.UUID;
  */
 public interface RecoveryProcessBackend {
     void restartProcess(UUID processId);
+
+    void restartBrokenGroup(Collection<UUID> processIds);
 
 }

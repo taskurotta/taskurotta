@@ -34,10 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * User: dimadin
@@ -122,8 +120,8 @@ public class BrokenProcessListResource {
                     processIds.add(UUID.fromString(processId));
                 }
             }
-            int restarted = initiateRestart(processIds);
-            logger.debug("Process group restarted [{}] of [{}]", restarted, (processIds!=null?processIds.size(): null));
+            initiateRestart(processIds);
+            logger.debug("Process group restarted [{}] of [{}]", (processIds!=null?processIds.size(): null));
             return Response.ok().build();
 
         } else {
@@ -133,37 +131,36 @@ public class BrokenProcessListResource {
         }
     }
 
-    private int initiateRestart(final Collection<UUID> processIds) {
-        int result = 0;
+    private void initiateRestart(final Collection<UUID> processIds) {
         if (processIds!=null && !processIds.isEmpty()) {
-            Future<Integer> futureResult = executorService.submit(new Callable<Integer>() {
+
+            executorService.submit(new Runnable() {
+
                 @Override
-                public Integer call() {
-                    int localResult = 0;
-                    for (UUID processId : processIds) {
-                        try {
-                            //TODO: should some transactions be applied here?
-                            recoveryProcessBackend.restartProcess(processId);
-                            brokenProcessBackend.delete(processId.toString());
-                            localResult++;
-                            logger.debug("Processed processId [{}]", processId);
-                        } catch (Throwable e) {
-                            logger.error("Error executing restart task for processes group", e);
-                        }
-                    }
-                    return localResult;
+                public void run() {
+                    recoveryProcessBackend.restartBrokenGroup(processIds);
+
                 }
             });
-
-            try {
-                result = futureResult.get();
-            } catch (Throwable e) {
-                logger.error("Error executing restart for processes group", e);
-            }
-
+//            Future<Integer> futureResult = executorService.submit(new Callable<Integer>() {
+//                @Override
+//                public Integer call() {
+//                    int localResult = 0;
+//                    for (UUID processId : processIds) {
+//                        try {
+//                            //TODO: should some transactions be applied here?
+//                            recoveryProcessBackend.restartProcess(processId);
+//                            brokenProcessBackend.delete(processId.toString());
+//                            localResult++;
+//                            logger.debug("Processed processId [{}]", processId);
+//                        } catch (Throwable e) {
+//                            logger.error("Error executing restart task for processes group", e);
+//                        }
+//                    }
+//                    return localResult;
+//                }
+//            });
         }
-
-        return result;
     }
 
     private String getRequiredOptionalString(Optional<String> target, String errMessage) {

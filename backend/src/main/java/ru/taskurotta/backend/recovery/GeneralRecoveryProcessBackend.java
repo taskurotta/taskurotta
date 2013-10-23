@@ -116,6 +116,12 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         logger.info("Process [{}] complete restart", processId);
     }
 
+    @Override
+    public void restartBrokenGroup(Collection<UUID> processIds) {
+        //TODO: implement it
+
+    }
+
     private void restartTasks(Collection<TaskContainer> taskContainers) {
 
         if (taskContainers == null || taskContainers.isEmpty()) {
