@@ -54,7 +54,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
     @Override
     public void restartProcess(final UUID processId) {
-        logger.debug("Try to recovery process [{}]", processId);
+        logger.info("Try to recovery process [{}]", processId);
 
         Graph graph = dependencyBackend.getGraph(processId);
         if (graph == null) {
