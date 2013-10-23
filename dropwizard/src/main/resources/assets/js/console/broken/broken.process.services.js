@@ -1,5 +1,5 @@
 angular.module("console.broken.process.services", [])
-.service("tskBpTextProvider", function(){
+.service("tskBpTextProvider", ['$http', function($http){
     return {
         getGroupLabel: function(name) {
             var result = name;
@@ -24,4 +24,15 @@ angular.module("console.broken.process.services", [])
             return result;
         }
     };
-});
+}])
+.service ("tskBrokenProcessesActions", ['$http', function ($http) {
+    return {
+        restartProcesses: function(restartCommand) {
+            return $http.post("/rest/console/process/broken/restart", restartCommand);
+        }
+//        restartBrokenGroup: function(groupCommand) {
+//            return $http.post("/rest/console/process/broken/group_restart", groupCommand);
+//        }
+    };
+
+}]);

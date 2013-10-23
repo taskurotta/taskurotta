@@ -9,10 +9,13 @@ import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.process.BrokenProcessVO;
 import ru.taskurotta.backend.process.GroupCommand;
 import ru.taskurotta.backend.process.ProcessGroupVO;
+import ru.taskurotta.backend.process.SearchCommand;
+import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
 import ru.taskurotta.dropwizard.resources.Action;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -22,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +33,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * User: dimadin
@@ -45,16 +54,24 @@ public class BrokenProcessListResource {
 
 
     private BrokenProcessBackend brokenProcessBackend;
+    private RecoveryProcessBackend recoveryProcessBackend;
+
+    private ExecutorService executorService = null;
+
+
+    public BrokenProcessListResource(int recoveryThreads) {
+        executorService = Executors.newFixedThreadPool(recoveryThreads);
+    }
 
     @GET
     public Response getProcesses(@PathParam("action") String action, @QueryParam("dateFrom")Optional<String> dateFromOpt, @QueryParam("dateTo")Optional<String> dateToOpt,
                                  @QueryParam("starterId")Optional<String> starterIdOpt, @QueryParam("actorId")Optional<String> actorIdOpt, @QueryParam("exception")Optional<String> exceptionOpt,
                                  @QueryParam("group")Optional<String> groupOpt) {
-
+        logger.debug("Getting processes by [{}]", action);
         if (Action.GROUP.getValue().equals(action)) {
             long startTime = System.currentTimeMillis();
             GroupCommand command = convertToCommand(starterIdOpt, actorIdOpt, exceptionOpt, dateFromOpt, dateToOpt, groupOpt);
-            validateCommand(command);
+            validateGroupCommand(command);
             Collection <ProcessGroupVO> groups =  getGroupList(command);
             logger.debug("Process groups count got by command [{}] are [{}], total time [{}]", command, (groups!=null?groups.size(): null), System.currentTimeMillis()-startTime);
             return Response.ok(groups, MediaType.APPLICATION_JSON).build();
@@ -66,19 +83,113 @@ public class BrokenProcessListResource {
             return Response.ok(processes, MediaType.APPLICATION_JSON).build();
 
         } else {
-            logger.error("Unsupported action["+action+"]");
+            logger.error("Unsupported action["+action+"] for GET method");
             return Response.serverError().build();
 
         }
-
     }
 
-    private void validateCommand(GroupCommand command) {
+    public static class ActionCommand {
+        protected String[] restartIds;
+
+        public String[] getRestartIds() {
+            return restartIds;
+        }
+
+        public void setRestartIds(String[] restartIds) {
+            this.restartIds = restartIds;
+        }
+
+        @Override
+        public String toString() {
+            return "ActionCommand{" +
+                    "restartIds=" + Arrays.toString(restartIds) +
+                    "} ";
+        }
+    }
+
+    @POST
+    //TODO: action command should contain searchCommand to be passed as is to a recovery backend. Backend itself should delete recovered values from broken processes store
+    public Response executeAction(@PathParam("action") String action, ActionCommand command) {
+        logger.debug("Executing action [{}] with command [{}]", action, command);
+
+        if (Action.RESTART.getValue().equals(action)) {
+            Collection<UUID> processIds = null;
+
+            if (command.getRestartIds()!=null && command.getRestartIds().length>0) {
+                processIds = new ArrayList<>();
+                for (String processId : command.getRestartIds()) {
+                    processIds.add(UUID.fromString(processId));
+                }
+            }
+            int restarted = initiateRestart(processIds);
+            logger.debug("Process group restarted [{}] of [{}]", restarted, (processIds!=null?processIds.size(): null));
+            return Response.ok().build();
+
+        } else {
+            logger.error("Unsupported action["+action+"] for POST method");
+            return Response.serverError().build();
+
+        }
+    }
+
+    private int initiateRestart(final Collection<UUID> processIds) {
+        int result = 0;
+        if (processIds!=null && !processIds.isEmpty()) {
+            Future<Integer> futureResult = executorService.submit(new Callable<Integer>() {
+                @Override
+                public Integer call() {
+                    int localResult = 0;
+                    for (UUID processId : processIds) {
+                        try {
+                            //TODO: should some transactions be applied here?
+                            recoveryProcessBackend.restartProcess(processId);
+                            brokenProcessBackend.delete(processId.toString());
+                            localResult++;
+                            logger.debug("Processed processId [{}]", processId);
+                        } catch (Throwable e) {
+                            logger.error("Error executing restart task for processes group", e);
+                        }
+                    }
+                    return localResult;
+                }
+            });
+
+            try {
+                result = futureResult.get();
+            } catch (Throwable e) {
+                logger.error("Error executing restart for processes group", e);
+            }
+
+        }
+
+        return result;
+    }
+
+    private String getRequiredOptionalString(Optional<String> target, String errMessage) {
+        String result = target.or("");
+        if (!StringUtils.hasText(result)) {
+            throw new WebApplicationException(new IllegalArgumentException(errMessage));
+        }
+        return result;
+    }
+
+    private void validateGroupCommand(GroupCommand command) {
+        if (!StringUtils.hasText(command.getGroup())) {
+            logger.error("Invalid group command got ["+command+"]");
+            throw new WebApplicationException(new IllegalArgumentException("Group command cannot be empty"));
+        }
+        validateSearchCommand(command);
+    }
+
+    private void validateSearchCommand(SearchCommand command) {
         if (!StringUtils.hasText(command.getStartActorId())
                 && !StringUtils.hasText(command.getBrokenActorId())
                 && !StringUtils.hasText(command.getErrorClassName())
-                && !StringUtils.hasText(command.getGroup())) {
-            throw new WebApplicationException(new IllegalArgumentException("Command cannot be empty"));
+                && command.getStartPeriod() < 0
+                && command.getEndPeriod() < 0) {
+            logger.error("Invalid search command got ["+command+"]");
+            throw new WebApplicationException(new IllegalArgumentException("Search command cannot be empty"));
         }
     }
 
@@ -223,4 +334,8 @@ public class BrokenProcessListResource {
         this.brokenProcessBackend = brokenProcessBackend;
     }
 
+    @Required
+    public void setRecoveryProcessBackend(RecoveryProcessBackend recoveryProcessBackend) {
+        this.recoveryProcessBackend = recoveryProcessBackend;
+    }
 }

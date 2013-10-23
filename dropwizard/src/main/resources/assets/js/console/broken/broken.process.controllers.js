@@ -1,6 +1,6 @@
 angular.module("console.broken.process.controllers", ['console.broken.process.directives', 'console.broken.process.services', 'console.util.services'])
 
-.controller("brokenProcessListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskUtil', function($scope, $log, $http, tskBpTextProvider, tskUtil) {
+.controller("brokenProcessListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions) {
 
     $scope.brokenGroups = [];
     $scope.brokenProcesses = [];
@@ -25,8 +25,6 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
         dateFrom: '',
         dateTo: ''
     };
-
-
 
     var yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -106,7 +104,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
         }
     };
 
-    var setDatesToCommand = function() {
+    var setDatesToCommand = function(command) {
         var result = "";
         if ($scope.period.dateFrom && $scope.period.dateTo) {
             var fromDateStr = getDateAsString($scope.period.dateFrom);
@@ -115,11 +113,8 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
                 fromDateStr = fromDateStr + " " + getTimeAsString($scope.period.timeFrom);
                 toDateStr = toDateStr + " " + getTimeAsString($scope.period.timeTo);
             }
-            $scope.groupCommand.dateFrom = fromDateStr;
-            $scope.groupCommand.dateTo = toDateStr;
-            $scope.searchCommand.dateFrom = fromDateStr;
-            $scope.searchCommand.dateTo = toDateStr;
-
+            command.dateFrom = fromDateStr;
+            command.dateTo = toDateStr;
         }
         return result;
     };
@@ -127,7 +122,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
 
     var getCommandAsParamLine = function() {
         var result = "";
-        setDatesToCommand();
+        setDatesToCommand($scope.groupCommand);
         for (var key in $scope.groupCommand) {
             if (result.length>0) {
                 result = result + "&";
@@ -140,7 +135,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
 
     var getSearchCommandAsParamLine = function() {
         var result = "";
-        setDatesToCommand();
+        setDatesToCommand($scope.searchCommand);
         for (var key in $scope.searchCommand) {
             if (result.length>0) {
                 result = result + "&";
@@ -151,14 +146,19 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
         return result;
     };
 
-    var setCommandFilterCondition = function(condition) {
-        if ('starter' == $scope.groupCommand.group) {
-            $scope.groupCommand.starterId = condition;
-        } else if ('actor' == $scope.groupCommand.group) {
-            $scope.groupCommand.actorId = condition;
-        } else if ('exception' == $scope.groupCommand.group) {
-            $scope.groupCommand.exception = condition;
+
+    var setFilterFieldCondition = function(command, condition){
+        if ('starter' == command.group) {
+            command.starterId = condition;
+        } else if ('actor' == command.group) {
+            command.actorId = condition;
+        } else if ('exception' == command.group) {
+            command.exception = condition;
         }
+    };
+
+    var setCommandConditions = function(condition) {
+        setFilterFieldCondition($scope.groupCommand, condition);
         setFilterCondition($scope.groupCommand.group, condition);
     };
 
@@ -202,14 +202,14 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
     };
 
     $scope.applyWithRegroup = function(groupName, groupType) {
-        setCommandFilterCondition(groupName);
+        setCommandConditions(groupName);
         $scope.groupCommand.group = groupType;
         $scope.update();
     };
 
     $scope.applyGroup = function(name) {
 
-        setCommandFilterCondition(name);
+        setCommandConditions(name);
         var nextGroupingName = getFirstAvailableGroupMode();
         if (nextGroupingName) {
             $scope.groupCommand.group = nextGroupingName;
@@ -222,7 +222,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
 
     $scope.showProcessListView = function(groupName) {
         $scope.viewType = 'list';
-        setCommandFilterCondition(groupName);
+        setCommandConditions(groupName);
         $scope.update();
     };
 
@@ -270,6 +270,19 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
                 $scope.searchInitialized = true;
             });
         }
+    };
+
+    $scope.restartGroup = function (bpg) {
+        bpg["disabled"] = true;
+        tskBrokenProcessesActions.restartProcesses({restartIds: bpg.processIds}).then(function(okResp) {
+            bpg["disabled"] = false;
+            $scope.update();
+        }, function(errResp){
+            $scope.feedback = errResp;
+            bpg["disabled"] = false;
+        });
+
+
     };
 
     $scope.update();

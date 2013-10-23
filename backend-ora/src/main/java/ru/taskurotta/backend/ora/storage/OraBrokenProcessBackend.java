@@ -176,7 +176,8 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
             return;
         }
 
-        getJdbcTemplate().update(SQL_DELETE_BROKEN_PROCESS, processId);
+        int result = getJdbcTemplate().update(SQL_DELETE_BROKEN_PROCESS, processId);
+        logger.debug("Successfully deleted [{}] broken process with id [{}]", result, processId);
     }
 
     @Required

@@ -1,6 +1,6 @@
 angular.module("console.broken.process.directives", ['console.broken.process.services', 'console.util.services', 'ui.bootstrap.modal'])
 
-    .directive('tskBrokenProcessList', ['tskUtil', '$log', '$modal',  function(tskUtil, $log, $modal) {
+    .directive('tskBrokenProcessList', ['tskUtil', '$log', '$modal', 'tskBrokenProcessesActions',  function(tskUtil, $log, $modal, tskBrokenProcessesActions) {
 
         return {
             restrict: 'ECA',//Element, Class, Attribute
@@ -29,6 +29,17 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
                     }, function(cancelMsg) {
                         //do nothing
                     });
+                };
+
+                $scope.restartProcess = function (processId) {
+                    tskBrokenProcessesActions.restartProcesses({restartIds: [processId]}).then(function(okResp) {
+
+                        //Update scope ???
+
+                    }, function(errResp){
+                        $scope.feedback = errResp;
+                    });
+
                 };
 
             }],

@@ -45,12 +45,11 @@
                             <br />
                         <a class="btn-link" ng-click="showStackTrace(bp.stackTrace)"><i class="icon-list"></i><b>Stack trace</b></a>
                         <br />
-                        <!--<div style="width:250px; height: 100px; overflow: auto;">-->
-                            <!--{{ bp.stackTrace }}-->
-                        <!--</div>-->
                     </small>
                 </td>
-                <td></td>
+                <td>
+                    <button ng-click="restartProcess(bp.processId)" popover="try to restart processes" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
+                </td>
             </tr>
         </tbody>
     </table>

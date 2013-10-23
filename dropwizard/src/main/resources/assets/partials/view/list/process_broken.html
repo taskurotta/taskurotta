@@ -85,8 +85,8 @@
                                         Total: <a class="btn-link" ng-click="showProcessListView(bg.name)" popover="List all processes in the group" popover-trigger="mouseenter"><b>{{bg.total}}</b></a>
                                     <!--</small>-->
                                 </td>
-                                <td style="width: 100px;">
-                                    <span class="muted">Actions here</span>
+                                <td style="width: 100px; text-align:center;">
+                                    <button ng-click="restartGroup(bg)" popover="try to restart all processes in the group" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
                                 </td>
 
                             </tr>

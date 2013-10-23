@@ -364,11 +364,11 @@
     <aop:config>
         <aop:pointcut id="serviceOperation"
                       expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))"/>
-        <!--<aop:pointcut id="brokenProcessOperation"-->
-                      <!--expression="execution(* ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend.*(..))"/>-->
+        <aop:pointcut id="brokenProcessOperation"
+                      expression="execution(* ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend.*(..))"/>
 
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
-        <!--<aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>-->
+        <aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>
     </aop:config>
     <!-- /Transactions -->
 

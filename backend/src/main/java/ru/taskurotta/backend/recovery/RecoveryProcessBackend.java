@@ -9,4 +9,5 @@ import java.util.UUID;
  */
 public interface RecoveryProcessBackend {
     void restartProcess(UUID processId);
+
 }
