@@ -66,15 +66,11 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         }
 
         long lastChange = Math.max(graph.getLastApplyTimeMillis(), graph.getTouchTimeMillis());
-        if (logger.isDebugEnabled()) {
-            logger.debug("Graph for process [{}] last changes at [{} ({})]", processId, lastChange, new Date(lastChange));
-        }
-
         long changeTimeout = System.currentTimeMillis() - lastChange;
         logger.debug("For process [{}] change timeout = [{}]", processId, changeTimeout);
 
         if ((changeTimeout) < recoveryProcessTimeOut) {
-            logger.debug("Graph for process [{}] recently apply or recovery, skip recovery", processId);
+            logger.info("Graph for process [{}] recently apply or recovery, skip recovery", processId);
 
             return;
         }
@@ -96,8 +92,10 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             // ToDo (stukushin): if after replay process taskContainers is empty, than finish process
         }
 
+        logger.debug("For process [{}] try to restart [{}] tasks");
         restartTasks(taskContainers);
 
+        logger.trace("For process [{}] try to update graph", processId);
         dependencyBackend.changeGraph(new GraphDao.Updater() {
             @Override
             public UUID getProcessId() {
@@ -119,9 +117,23 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
     }
 
     private void restartTasks(Collection<TaskContainer> taskContainers) {
+
+        if (taskContainers == null || taskContainers.isEmpty()) {
+            logger.warn("Collection task containers for restart in null or is empty");
+            return;
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Try to restart [{}] task containers", taskContainers);
+        }
+
+        UUID processId = null;
+
         for (TaskContainer taskContainer : taskContainers) {
 
             String actorId = taskContainer.getActorId();
+            processId = taskContainer.getProcessId();
+            UUID taskId = taskContainer.getTaskId();
 
             String taskList = null;
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
@@ -132,13 +144,22 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 }
             }
 
-            if (queueBackend.isTaskInQueue(actorId, taskList, taskContainer.getTaskId(), taskContainer.getProcessId())) {
+            if (queueBackend.isTaskInQueue(actorId, taskList, taskId, processId)) {
                 // task already in queue, never recovery
+
+                logger.trace("Task [{}] from process [{}] already in queue", taskId, processId);
+
                 continue;
             }
 
-            if (taskContainer.getStartTime() > System.currentTimeMillis()) {
+            long now = System.currentTimeMillis();
+            if (taskContainer.getStartTime() > now) {
                 // this task must start in future, ignore it
+
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Task [{}] from process [{}] must started later at [{}], but now is [{}]", taskId, processId, new Date(taskContainer.getStartTime()), new Date(now));
+                }
+
                 continue;
             }
 
@@ -146,20 +167,29 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
             if (lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
+
+                logger.trace("Skip restart task [{}] for process [{}], because early tasks in queue isn't polled", taskId, processId, queueName);
+
                 continue;
             }
 
-            queueBackend.enqueueItem(taskContainer.getActorId(), taskContainer.getTaskId(), taskContainer.getProcessId(), taskContainer.getStartTime(), taskList);
+            queueBackend.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("For process [{}] add task container [{}] to queue backend", taskContainer.getProcessId(), taskContainer);
-            }
+            logger.debug("For process [{}] add task container [{}] to queue backend", processId, taskContainer);
         }
+
+        logger.info("For process [{}] complete restart [{}] tasks", processId, taskContainers.size());
     }
 
     private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
 
+        if (graph == null) {
+            return null;
+        }
+
         UUID processId = graph.getGraphId();
+
+        logger.trace("For process [{}] try to find incomplete tasks", processId);
 
         Map<UUID, Long> notFinishedItems = graph.getNotFinishedItems();
         if (logger.isDebugEnabled()) {
@@ -190,6 +220,11 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
     }
 
     private void restartProcessFromBeginning(UUID processId) {
+
+        if (processId == null) {
+            return;
+        }
+
         TaskContainer startTaskContainer = processBackend.getStartTask(processId);
         logger.debug("For process [{}] get start task [{}]", processId, startTaskContainer);
 
@@ -203,14 +238,18 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
     }
 
     private Collection<TaskContainer> replayProcess(final TaskContainer taskContainer) {
-        if (logger.isTraceEnabled()) {
-            logger.trace("For process [{}] try to replay task [{}]", taskContainer.getProcessId(), taskContainer);
+
+        if (taskContainer == null) {
+            return null;
         }
 
-        DecisionContainer decisionContainer = taskBackend.getDecision(taskContainer.getTaskId(), taskContainer.getProcessId());
-        if (logger.isTraceEnabled()) {
-            logger.trace("For process [{}], task [{}] get decision container [{}]", taskContainer.getProcessId(), taskContainer.getTaskId(), decisionContainer);
-        }
+        UUID processId = taskContainer.getProcessId();
+        UUID taskId = taskContainer.getTaskId();
+
+        logger.trace("For process [{}] try to replay task [{}]", processId, taskContainer);
+
+        DecisionContainer decisionContainer = taskBackend.getDecision(taskId, processId);
+        logger.trace("For process [{}], task [{}] get decision container [{}]", processId, taskId, decisionContainer);
 
         if (decisionContainer == null) {
             return new ArrayList<TaskContainer>() {{
@@ -220,7 +259,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
         TaskContainer[] arrTaskContainers = decisionContainer.getTasks();
         if (logger.isTraceEnabled()) {
-            logger.trace("For process [{}], decision [{}] get new [{}] tasks", taskContainer.getProcessId(), decisionContainer.getTaskId(), arrTaskContainers.length);
+            logger.trace("For process [{}], decision [{}] get new [{}] tasks", processId, taskId, arrTaskContainers.length);
         }
 
         Collection<TaskContainer> taskContainers = new ArrayList<>();
@@ -228,9 +267,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             taskContainers.addAll(replayProcess(tc));
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("For process [{}], task [{}] found [{}] child tasks", taskContainer.getProcessId(), taskContainer.getTaskId(), taskContainers.size());
-        }
+        logger.info("For process [{}] finish replay. For task [{}] found [{}] child tasks", processId, taskId, taskContainers.size());
 
         return taskContainers;
     }
