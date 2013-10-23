@@ -43,6 +43,8 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
 
     protected static final String SQL_LIST_ALL = "SELECT * FROM TSK_BROKEN_PROCESSES ";
 
+    protected static final String SQL_DELETE_BROKEN_PROCESS = "DELETE FROM TSK_BROKEN_PROCESSES WHERE PROCESS_ID = ?";
+
     protected LobHandler lobHandler;
 
     protected RowMapper<BrokenProcessVO> brokenProcessRowMapper = new RowMapper<BrokenProcessVO>() {
@@ -139,7 +141,7 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
             first = false;
         }
 
-        Collection<BrokenProcessVO> result = null;
+        Collection<BrokenProcessVO> result;
         String searchSql = sb.toString();
         long startTime = System.currentTimeMillis();
         try {
@@ -156,7 +158,7 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
 
     @Override
     public Collection<BrokenProcessVO> findAll() {
-        Collection<BrokenProcessVO> result = null;
+        Collection<BrokenProcessVO> result;
         try {
             result = getJdbcTemplate().query(SQL_LIST_ALL, brokenProcessRowMapper);
         } catch(EmptyResultDataAccessException e) {
@@ -165,6 +167,16 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
 
         logger.debug("Found [{}] broken processes", result.size());
         return result;
+    }
+
+    @Override
+    public void delete(final String processId) {
+
+        if (processId == null || StringUtils.isEmpty(processId)) {
+            return;
+        }
+
+        getJdbcTemplate().update(SQL_DELETE_BROKEN_PROCESS, processId);
     }
 
     @Required

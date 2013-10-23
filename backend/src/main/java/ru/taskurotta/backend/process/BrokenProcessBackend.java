@@ -15,4 +15,6 @@ public interface BrokenProcessBackend {
     public Collection<BrokenProcessVO> find(SearchCommand searchCommand);
 
     public Collection<BrokenProcessVO> findAll();
+
+    public void delete(String processId);
 }
