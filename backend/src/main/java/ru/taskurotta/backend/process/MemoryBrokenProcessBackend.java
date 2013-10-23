@@ -108,6 +108,23 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         return brokenProcess.values();
     }
 
+    @Override
+    public void delete(String processId) {
+
+        if (processId == null) {
+            return;
+        }
+
+        deleteProcessId(deciderActorIds, processId);
+        deleteProcessId(brokenActorIds, processId);
+        deleteProcessId(times, processId);
+        deleteProcessId(errorMessages, processId);
+        deleteProcessId(errorClassNames, processId);
+        deleteProcessId(stackTraces, processId);
+
+        brokenProcess.remove(processId);
+    }
+
     private void addProcessId(Map<String, Set<String>> map, String key, String processId) {
         Set<String> processIds = map.get(key);
 
@@ -153,5 +170,17 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         }
 
         return to;
+    }
+
+    private void deleteProcessId(Map<?, Set<String>> map, String processId) {
+
+        if (processId == null) {
+            return;
+        }
+
+        Collection<Set<String>> values = map.values();
+        for (Set<String> processIds : values) {
+            processIds.remove(processId);
+        }
     }
 }
