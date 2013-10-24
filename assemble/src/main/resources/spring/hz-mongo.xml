@@ -163,7 +163,7 @@
     </bean>
     <!-- /REST resources -->
     <!-- Backends -->
-    <bean id="queueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+    <bean id="originalQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}"/>
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
 
@@ -171,6 +171,21 @@
 
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+    </bean>
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
+        <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mergePeriod" value="${hz.recovery.merge.period}"/>
+        <constructor-arg name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
+
+        <property name="metricsFactory" ref="metricsFactory"/>
+    </bean>
+
+    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
+        <constructor-arg name="dumpPeriod" value="1"/>
+        <constructor-arg name="dumpingThreads" value="3"/>
+        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>
 
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
@@ -205,6 +220,16 @@
     </bean>
 
     <bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend">
+    </bean>
+
+    <bean id="recoveryProcessBackend" class="ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend">
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="queueBackend"/>
+        <constructor-arg name="queueBackendStatistics" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
 
     <!-- /Backends -->
