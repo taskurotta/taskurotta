@@ -251,6 +251,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     }
 
+    /**
+     * Always return false, ignore this method's result.
+     */
     @Override
     public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
         String queueName = createQueueName(actorId, taskList);
