@@ -25,9 +25,9 @@ public abstract class AbstractQueueBackendStatistics implements QueueBackendStat
     public long getLastPolledTaskEnqueueTime(String queueName) {
         Long time = lastPolledTaskEnqueueTimes.get(queueName);
 
-        // if no tasks in queue, than return current time
+        // if no tasks in queue, than return -1
         if (time == null) {
-            return System.currentTimeMillis();
+            return -1;
         }
 
         return time;
