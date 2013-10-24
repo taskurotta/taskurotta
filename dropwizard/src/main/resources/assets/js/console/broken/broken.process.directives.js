@@ -31,15 +31,14 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
                     });
                 };
 
-                $scope.restartProcess = function (processId) {
+                $scope.submitRestart = function (processId, $index) {
+                    $log.log("Submitting restart for id["+processId+"], index ["+$index+"]");
                     tskBrokenProcessesActions.restartProcesses({restartIds: [processId]}).then(function(okResp) {
-
-                        //Update scope ???
+                        $scope.processes.splice($index, 1);
 
                     }, function(errResp){
                         $scope.feedback = errResp;
                     });
-
                 };
 
             }],

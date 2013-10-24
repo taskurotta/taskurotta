@@ -1,5 +1,4 @@
 <div>
-
     <table class="table table-striped table-condensed table-bordered">
         <thead>
             <th>
@@ -48,7 +47,7 @@
                     </small>
                 </td>
                 <td>
-                    <button ng-click="restartProcess(bp.processId)" popover="try to restart processes" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
+                    <button ng-click="submitRestart(bp.processId, $index)" popover="Submit process restart task" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
                 </td>
             </tr>
         </tbody>
