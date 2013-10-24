@@ -76,7 +76,7 @@ public class ObjectFactory {
             }
 
         } catch(Exception e) {
-            throw new SerializationException("Cannot deserialize arg["+argContainer+"]", e);
+            throw new SerializationException("Cannot deserialize arg["+ argContainer +"]", e);
         }
 
     }
@@ -84,7 +84,9 @@ public class ObjectFactory {
 
     private Object extractValue(ArgContainer arg) throws Exception {
         Object result = null;
-        if (arg.isPlain()) { //simple object or primitive value
+        if (arg.isNull()) { //null object
+            // just do nothing
+        } else if (arg.isPlain()) { //simple object or primitive value
             result = getSimpleValue(arg.getJSONValue(), arg.getClassName());
 
         } else if (arg.isArray()) {//array of custom POJO objects or primitives
@@ -128,9 +130,6 @@ public class ObjectFactory {
     }
 
     public ArgContainer dumpArg(Object arg) {
-        if(arg == null) {
-            return null;
-        }
 
         ArgContainer result = new ArgContainer();
 
@@ -151,7 +150,7 @@ public class ObjectFactory {
                 setArgContainerValue(result, arg);
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new SerializationException("Cannot dump arg [" + arg+ "]", e);
         }
 
@@ -162,7 +161,9 @@ public class ObjectFactory {
     private void setArgContainerValue(ArgContainer target, Object value) throws Exception {
 
         if (value == null) {
-            value = String.valueOf("null");
+            target.setJSONValue(getPlainJson(value));
+            target.setClassName(Object.class.getName());
+            return;
         }
 
         ValueType type = SerializationUtils.extractValueType(value.getClass());
