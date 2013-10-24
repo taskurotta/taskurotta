@@ -117,8 +117,9 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
     @Override
     public void restartBrokenGroup(Collection<UUID> processIds) {
-        //TODO: implement it
-
+        for (UUID processId : processIds) {
+            restartProcess(processId);
+        }
     }
 
     private void restartTasks(Collection<TaskContainer> taskContainers) {
