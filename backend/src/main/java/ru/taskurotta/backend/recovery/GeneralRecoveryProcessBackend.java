@@ -89,7 +89,9 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             // ToDo (stukushin): if after replay process taskContainers is empty, than finish process
         }
 
-        logger.debug("For process [{}] try to restart [{}] tasks");
+        if (logger.isDebugEnabled()) {
+            logger.debug("For process [{}] try to restart [{}] tasks", processId, taskContainers.size());
+        }
         restartTasks(taskContainers);
 
         logger.trace("For process [{}] try to update graph", processId);
@@ -166,7 +168,9 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
                 continue;
             } else {
-                logger.trace("Task [{}] from process [{}] must started at [{}]", new Date(taskContainer.getStartTime()));
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Task [{}] from process [{}] must started at [{}]", new Date(taskContainer.getStartTime()));
+                }
             }
 
             String queueName = queueBackendStatistics.createQueueName(taskContainer.getActorId(), taskList);
