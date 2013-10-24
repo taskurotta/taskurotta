@@ -62,6 +62,10 @@ public class MathActionDeciderImpl implements MathActionDecider {
 
     }
 
+    public void init() {
+        logger.info("MathActionDeciderImpl initialized with errPossibility[{}]", errPossibility);
+    }
+
     @Asynchronous
     public void logResult(Promise<Integer> result, String action, long startTime) {
         logger.trace("logResult started");
