@@ -36,6 +36,16 @@ angular.module("console.util.services", [])
             }
             return result;
 
+        },
+        hasValueInArray: function(val, arr) {
+            var result = false;
+            for (var i = 0; i<arr.length; i++) {
+                if (val == arr[i]) {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
         }
     };
     return resultService;

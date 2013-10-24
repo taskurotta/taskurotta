@@ -272,17 +272,12 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
         }
     };
 
-    $scope.restartGroup = function (bpg) {
-        bpg["disabled"] = true;
+    $scope.restartGroup = function (bpg, index) {
         tskBrokenProcessesActions.restartProcesses({restartIds: bpg.processIds}).then(function(okResp) {
-            bpg["disabled"] = false;
-            $scope.update();
+            $scope.brokenGroups.splice(index, 1);
         }, function(errResp){
             $scope.feedback = errResp;
-            bpg["disabled"] = false;
         });
-
-
     };
 
     $scope.update();

@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
-import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -31,7 +30,6 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralRecoveryProcessBackend.class);
 
-    private QueueBackend queueBackend;
     private QueueBackendStatistics queueBackendStatistics;
     private DependencyBackend dependencyBackend;
     private TaskDao taskDao;
@@ -42,8 +40,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
     public GeneralRecoveryProcessBackend() {}
 
-    public GeneralRecoveryProcessBackend(QueueBackend queueBackend, QueueBackendStatistics queueBackendStatistics, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut) {
-        this.queueBackend = queueBackend;
+    public GeneralRecoveryProcessBackend(QueueBackendStatistics queueBackendStatistics, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut) {
         this.queueBackendStatistics = queueBackendStatistics;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
@@ -151,7 +148,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             }
 
             // TODO (stukushin): remove unnecessary logs after debug
-            if (queueBackend.isTaskInQueue(actorId, taskList, taskId, processId)) {
+            if (queueBackendStatistics.isTaskInQueue(actorId, taskList, taskId, processId)) {
                 // task already in queue, never recovery
 
                 logger.warn("Task [{}] from process [{}] already in queue", taskId, processId);
@@ -172,7 +169,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 logger.trace("Task [{}] from process [{}] must started at [{}]", new Date(taskContainer.getStartTime()));
             }
 
-            String queueName = queueBackend.createQueueName(taskContainer.getActorId(), taskList);
+            String queueName = queueBackendStatistics.createQueueName(taskContainer.getActorId(), taskList);
             Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
             if (lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
@@ -184,7 +181,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 logger.trace("Task [{}] from process [{}] must restart, because early tasks already pooled", taskId, processId);
             }
 
-            queueBackend.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
+            queueBackendStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
 
             logger.debug("For process [{}] add task container [{}] to queue backend", processId, taskContainer);
         }
@@ -281,10 +278,6 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         logger.info("For process [{}] finish replay. For task [{}] found [{}] child tasks", processId, taskId, taskContainers.size());
 
         return taskContainers;
-    }
-
-    public void setQueueBackend(QueueBackend queueBackend) {
-        this.queueBackend = queueBackend;
     }
 
     public void setQueueBackendStatistics(QueueBackendStatistics queueBackendStatistics) {
