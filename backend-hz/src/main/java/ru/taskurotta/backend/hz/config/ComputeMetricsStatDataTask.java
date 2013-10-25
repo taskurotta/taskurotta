@@ -1,8 +1,8 @@
 package ru.taskurotta.backend.hz.config;
 
 import ru.taskurotta.backend.console.model.MetricsStatDataVO;
-import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
-import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.backend.statistics.MetricsDataHandler;
 import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.backend.statistics.metrics.RateUtils;
@@ -30,7 +30,7 @@ public class ComputeMetricsStatDataTask implements Callable<Collection<MetricsSt
     @Override
     public Collection<MetricsStatDataVO> call() throws Exception {
 
-        MetricsDataRetriever metricsDataRetriever = MetricsDataHandler.getDataRetrieverInstance();
+        MetricsMethodDataRetriever metricsDataRetriever = MetricsDataHandler.getDataRetrieverInstance();
         if (metricsDataRetriever == null) {
             return null;
         }

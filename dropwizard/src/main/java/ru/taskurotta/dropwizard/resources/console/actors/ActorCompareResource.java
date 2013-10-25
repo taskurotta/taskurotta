@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.manager.ActorConfigManager;
 import ru.taskurotta.backend.console.model.MetricsStatDataVO;
-import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
+import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -30,7 +30,7 @@ import java.util.Map;
 public class ActorCompareResource {
 
     private static final Logger logger = LoggerFactory.getLogger(ActorCompareResource.class);
-    private MetricsDataRetriever metricsDataRetriever;
+    private MetricsMethodDataRetriever metricsDataRetriever;
     private ActorConfigManager actorConfigManager;
 
     @POST
@@ -92,7 +92,7 @@ public class ActorCompareResource {
 
 
     @Required
-    public void setMetricsDataRetriever(MetricsDataRetriever metricsDataRetriever) {
+    public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {
         this.metricsDataRetriever = metricsDataRetriever;
     }
 

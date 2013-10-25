@@ -127,7 +127,7 @@
 
     <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
 
-    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener"/>-->
+    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalistenerLoggerDataListener"/>-->
 
     <!--<bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">-->
         <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->

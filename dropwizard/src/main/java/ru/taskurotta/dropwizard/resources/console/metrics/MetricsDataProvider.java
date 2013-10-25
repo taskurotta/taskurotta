@@ -3,9 +3,12 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
-import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
+import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
+import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
+import ru.taskurotta.dropwizard.resources.console.metrics.vo.DatasetVO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +22,7 @@ public class MetricsDataProvider implements MetricsConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataProvider.class);
 
-    private MetricsDataRetriever dataRetriever;
+    private MetricsMethodDataRetriever dataRetriever;
 
     public List<DatasetVO> getDataResponse(String metricName, List<String> dataSetNames, String scope, String dataType, String period) {
         List<DatasetVO> result = new ArrayList<>();
@@ -34,8 +37,8 @@ public class MetricsDataProvider implements MetricsConstants {
         DatasetVO ds = new DatasetVO();
         //ds.setLabel(constructLabel(dataSetName, dataType, period));
         ds.setLabel(dataSetName);
-        ds.setxLabel(getXLabel(dataType, period));
-        ds.setyLabel(getYLabel(dataType, period));
+        ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
+        ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
 
         boolean useTimeline = true;
         if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
@@ -61,50 +64,8 @@ public class MetricsDataProvider implements MetricsConstants {
         return ds;
     }
 
-    private String constructLabel(String label, String dataType, String period) {
-        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            return "X: time, min; Y: count. " + label;
-        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            return "X: time, s; Y: count. " + label;
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            return "X: time, min; Y: mean, ms. " + label;
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            return "X: time, s; Y: mean, ms. " + label;
-        } else {
-            return label;
-        }
-    }
-
-    private String getXLabel(String dataType, String period) {
-        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            return "Timeline: minutes ago";
-        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            return "Timeline: seconds ago";
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            return "Timeline: minutes ago";
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            return "Timeline: seconds ago";
-        } else {
-            return "";
-        }
-    }
-
-    private String getYLabel(String dataType, String period) {
-        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            return "Measured, times";
-        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            return "Measured, times";
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            return "Mean time, ms";
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            return "Mean time, ms";
-        } else {
-            return "";
-        }
-    }
-
     @Required
-    public void setDataRetriever(MetricsDataRetriever dataRetriever) {
+    public void setDataRetriever(MetricsMethodDataRetriever dataRetriever) {
         this.dataRetriever = dataRetriever;
     }
 

@@ -202,10 +202,13 @@
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
         <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="mergePeriod" value="${hz.recovery.merge.period}"/>
-        <constructor-arg name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
 
         <property name="metricsFactory" ref="metricsFactory"/>
+        <property name="mergePeriod" value = "${hz.recovery.merge.period}" />
+        <property name="mergePeriodTimeUnit" value = "${hz.recovery.merge.timeunit}" />
+        <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
+        <property name="queueSizeMetricPeriodSeconds" value = "${metric.queue.size.data.period.seconds}" />
+        <property name="numberDataListener" ref="metricsNumberDataHandler" />
     </bean>
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
@@ -324,7 +327,8 @@
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
+    <bean id = "metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init" />
+    <bean id = "metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init" />
     <!-- /Metrics -->
 
     <!-- Data source -->

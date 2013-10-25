@@ -4,6 +4,10 @@ import com.google.common.base.Optional;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
+import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
+import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
+import ru.taskurotta.dropwizard.resources.console.metrics.vo.DatasetVO;
+import ru.taskurotta.dropwizard.resources.console.metrics.vo.MetricsOptionsVO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -11,7 +15,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +38,7 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
         boolean zeroes = zeroesOpt.or(Boolean.TRUE);
         Integer smooth = smoothOpt.or(-1);
 
-        List<String> dataSetNames = extractDatasets(dataSetOpt.or(""));
+        List<String> dataSetNames = MetricsConsoleUtils.extractDatasets(dataSetOpt.or(""));
         try {
 
             if(ACTION_METRICS_DATA.equals(action)) {
@@ -52,7 +55,8 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
                 }
                 return Response.ok(dataSets, MediaType.APPLICATION_JSON).build();
             } else if(ACTION_METRICS_OPTIONS.equals(action)) {
-                return metricsOptionsHandler.getMetricsTypes();
+                MetricsOptionsVO options = metricsOptionsHandler.getMethodMetricsTypes();
+                return Response.ok(options, MediaType.APPLICATION_JSON).build();
 
             } else {
                 throw new IllegalArgumentException("Unsupported action ["+action+"] for metrics getted");
@@ -64,20 +68,6 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
         }
 
     }
-
-    private List<String> extractDatasets(String datasetStr) {
-        logger.debug("Extracting dataset names from string[{}]", datasetStr);
-        List<String> result = new ArrayList<>();
-        if(datasetStr!=null && datasetStr.trim().length() > 0) {
-            for(String dataset: datasetStr.split(",")) {
-                if(dataset!=null) {
-                    result.add(dataset.trim());
-                }
-            }
-        }
-        return result;
-    }
-
 
     @Required
     public void setMetricsDataHandler(MetricsDataProvider metricsDataHandler) {

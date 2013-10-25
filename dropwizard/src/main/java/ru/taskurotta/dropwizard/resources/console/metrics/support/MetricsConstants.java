@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.resources.console.metrics;
+package ru.taskurotta.dropwizard.resources.console.metrics.support;
 
 /**
  * Constant values used by metrics visualizer

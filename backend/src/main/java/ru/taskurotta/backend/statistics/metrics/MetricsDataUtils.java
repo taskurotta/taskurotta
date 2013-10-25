@@ -2,7 +2,7 @@ package ru.taskurotta.backend.statistics.metrics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.backend.statistics.MetricsDataHandler;
 
 import java.util.ArrayList;
@@ -18,6 +18,10 @@ import java.util.List;
 public class MetricsDataUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataUtils.class);
+
+    public static String getKey(String metricName, String datasetName) {
+        return metricName + "#" + datasetName;
+    }
 
     public static List<Number[]> getNonZeroValuesDataSet(List<Number[]> target) {
         List<Number[]> result = new ArrayList<>();

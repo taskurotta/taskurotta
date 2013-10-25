@@ -1,7 +1,7 @@
 package ru.taskurotta.backend.hz.config;
 
-import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
-import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.backend.statistics.MetricsDataHandler;
 import ru.taskurotta.backend.statistics.QueueBalanceVO;
 import ru.taskurotta.server.MetricName;
@@ -24,7 +24,7 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
 
     @Override
     public QueueBalanceVO call() throws Exception {
-        MetricsDataRetriever metricsDataRetriever = MetricsDataHandler.getDataRetrieverInstance();
+        MetricsMethodDataRetriever metricsDataRetriever = MetricsDataHandler.getDataRetrieverInstance();
         if (metricsDataRetriever == null) {
             return null;
         }

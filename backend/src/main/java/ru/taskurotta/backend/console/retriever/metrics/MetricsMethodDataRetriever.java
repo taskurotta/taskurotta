@@ -1,16 +1,16 @@
-package ru.taskurotta.backend.console.retriever;
+package ru.taskurotta.backend.console.retriever.metrics;
 
-import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 
 import java.util.Collection;
 import java.util.Date;
 
 /**
- * Interface for retrieving data on metrics
+ * Interface for retrieving metrics data for method invocation: cumber if times method been invoked and mean invocation time
  * User: dimadin
  * Date: 12.09.13 14:17
  */
-public interface MetricsDataRetriever {
+public interface MetricsMethodDataRetriever {
 
     /**
      * Retrieves collection of available metric names
