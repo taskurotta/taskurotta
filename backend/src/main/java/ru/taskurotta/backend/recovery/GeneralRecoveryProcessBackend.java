@@ -150,28 +150,13 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 }
             }
 
-            // TODO (stukushin): remove unnecessary logs after debug
-            if (queueBackendStatistics.isTaskInQueue(actorId, taskList, taskId, processId)) {
-                // task already in queue, never recovery
-
-                logger.warn("Task [{}] from process [{}] already in queue", taskId, processId);
-
-                continue;
-            } else {
-                logger.trace("Task [{}] from process [{}] for actorId [{}] and taskList [{}] not in queue", taskId, processId, actorId, taskList);
-            }
-
             long now = System.currentTimeMillis();
             if (taskContainer.getStartTime() > now) {
                 // this task must start in future, ignore it
 
-                logger.warn("Task [{}] from process [{}] must started later at [{}], but now is [{}]", taskId, processId, new Date(taskContainer.getStartTime()), new Date(now));
+                logger.trace("Task [{}] from process [{}] must started later at [{}], but now is [{}]", taskId, processId, new Date(taskContainer.getStartTime()), new Date(now));
 
                 continue;
-            } else {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Task [{}] from process [{}] must started at [{}]", new Date(taskContainer.getStartTime()));
-                }
             }
 
             String queueName = queueBackendStatistics.createQueueName(taskContainer.getActorId(), taskList);
@@ -182,8 +167,6 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 logger.trace("Skip restart task [{}] for process [{}], because early tasks in queue isn't polled", taskId, processId, queueName);
 
                 continue;
-            } else {
-                logger.trace("Task [{}] from process [{}] must restart, because early tasks already pooled", taskId, processId);
             }
 
             queueBackendStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);

@@ -105,6 +105,10 @@ public class AbstractTestStub {
         return dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId);
     }
 
+    public void assertTaskInProgress(UUID taskId) {
+        assertTrue(dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId));
+    }
+
     public boolean isTaskReleased(UUID taskId, UUID processId) {
         return memoryStorageBackend.isTaskReleased(taskId, processId);
     }
@@ -128,7 +132,7 @@ public class AbstractTestStub {
         return deciderTask(id, type, methodName, null, null);
     }
 
-    public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
+    public static Task deciderTask(UUID id, TaskType type, String methodName, Object... args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
         Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
         return task;
@@ -180,9 +184,9 @@ public class AbstractTestStub {
     }
 
     public void release(UUID taskAId, Object value, Task... newTasks) {
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
-        deciderTaskSpreader.release(taskADecision);
+        deciderTaskSpreader.release(taskDecision);
     }
 }
