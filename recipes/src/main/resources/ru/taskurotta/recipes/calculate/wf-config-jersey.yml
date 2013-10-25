@@ -4,9 +4,9 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: -1
-          workerFailChance: 0.3
-          deciderFailChance: 0.3
+          sleep: 1500
+          workerFailChance: -1
+          deciderFailChance: -1
 
 
 spreader:

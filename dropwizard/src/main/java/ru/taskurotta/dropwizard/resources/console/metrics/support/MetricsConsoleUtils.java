@@ -96,6 +96,8 @@ public class MetricsConsoleUtils implements MetricsConstants {
             return "Timeline: minutes ago";
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             return "Timeline: seconds ago";
+        } else if (OPT_DATATYPE_ITEMS.equals(dataType)) {
+            return "Timeline";
         } else {
             return "";
         }
@@ -110,6 +112,8 @@ public class MetricsConsoleUtils implements MetricsConstants {
             return "Mean time, ms";
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             return "Mean time, ms";
+        } else if (OPT_DATATYPE_ITEMS.equals(dataType)) {
+            return "Size, items";
         } else {
             return "";
         }

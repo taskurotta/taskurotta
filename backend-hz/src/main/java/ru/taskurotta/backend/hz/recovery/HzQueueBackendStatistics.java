@@ -12,7 +12,6 @@ import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.recovery.AbstractQueueBackendStatistics;
 import ru.taskurotta.backend.statistics.MetricFactory;
-import ru.taskurotta.backend.statistics.datalistener.DataListener;
 import ru.taskurotta.backend.statistics.datalistener.NumberDataListener;
 import ru.taskurotta.backend.statistics.metrics.Metric;
 import ru.taskurotta.backend.statistics.metrics.TimeConstants;
@@ -104,11 +103,15 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
         public void run() {
             try {
                 int count = 0;
+                int totalSize = 0;
                 if (numberDataListener != null) {
                     for (String queue : getQueueNames()) {
-                        numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(), queue, getQueueTaskCount(queue), System.currentTimeMillis(), dataSize);
+                        int queueSize = getQueueTaskCount(queue);
+                        numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(), queue, queueSize, System.currentTimeMillis(), dataSize);
                         count++;
+                        totalSize+=queueSize;
                     }
+                    numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(), MetricName.QUEUE_SIZE.getValue(), totalSize, System.currentTimeMillis(), dataSize);
                 }
                 logger.debug("Queue size data items [{}] successfully flushed", count);
 

@@ -4,9 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
+import ru.taskurotta.backend.console.retriever.metrics.MetricsNumberDataRetriever;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
-import ru.taskurotta.dropwizard.resources.console.metrics.vo.MetricsOptionsVO;
+import ru.taskurotta.dropwizard.resources.console.metrics.support.OptionsSupportBean;
+import ru.taskurotta.dropwizard.resources.console.metrics.vo.AvailableOptionsVO;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.OptionVO;
 
 import java.util.Collection;
@@ -23,35 +25,54 @@ public class MetricsOptionsProvider implements MetricsConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsOptionsProvider.class);
 
-    private MetricsMethodDataRetriever dataRetriever;
+    private MetricsMethodDataRetriever methodDataRetriever;
+    private MetricsNumberDataRetriever numberDataRetriever;
+    private OptionsSupportBean optionsSupportBean;
 
-    private Map<String, String> dataTypes;
-    private Map<String, String> scopes;
-    private Map<String, String> periods;
+    public AvailableOptionsVO getAvailableOptions() {
+        Collection<String> methodMetricNames = methodDataRetriever.getMetricNames();
+        Collection<String> numberMetricsNames = numberDataRetriever.getNumberMetricNames();
 
-    public MetricsOptionsVO getMethodMetricsTypes() {
-        MetricsOptionsVO result = new MetricsOptionsVO();
-        List<OptionVO> metricsDesc = MetricsConsoleUtils.getAsOptions(dataRetriever.getMetricNames());
-        result.setMetricDesc(metricsDesc);
-        result.setDataSetDesc(getMethodDataSetDescOptions(metricsDesc));
-        result.setDataTypes( MetricsConsoleUtils.getOptionsFromMap(dataTypes));
-        result.setPeriods(MetricsConsoleUtils.getOptionsFromMap(periods));
-        result.setScopes(MetricsConsoleUtils.getOptionsFromMap(scopes));
+        AvailableOptionsVO result = new AvailableOptionsVO();
 
-        logger.debug("Metrics options getted [{}]", result);
+        List<OptionVO> metrics = optionsSupportBean.getFullMetricsNameList(numberMetricsNames, methodMetricNames);
+        result.setMetrics(metrics);
 
+        Map<String, List<OptionVO>> datasets = optionsSupportBean.getFullDatasetList(getNumberDatasetOptions(numberMetricsNames), getMethodDatasetOptions(methodMetricNames));
+        result.setDataSets(datasets);
+
+        result.setDataTypes(optionsSupportBean.getAvailableDataTypes(metrics, true));
+        result.setPeriods(optionsSupportBean.getAvailablePeriods(metrics, true));
+        result.setScopes(optionsSupportBean.getAvailableScopes(metrics, true));
+
+        logger.debug("Available metrics options found are [{}]", result);
         return result;
     }
 
-    public Map<String, List<OptionVO>> getMethodDataSetDescOptions(List<OptionVO> metrics) {
+    public Map<String, List<OptionVO>> getMethodDatasetOptions(Collection<String> metrics) {
         Map<String, List<OptionVO>> result = null;
 
         if (metrics!=null && !metrics.isEmpty()) {
             result = new HashMap();
-            for (OptionVO metric : metrics) {
-                Collection<String> dataSetNames = dataRetriever.getDataSetsNames(metric.getValue());
-                List<OptionVO> dataSetDescs = MetricsConsoleUtils.setIsGeneralFlag(MetricsConsoleUtils.getAsOptions(dataSetNames), metric.getValue());
-                result.put(metric.getValue(), dataSetDescs);
+            for (String metric : metrics) {
+                Collection<String> dataSetNames = methodDataRetriever.getDataSetsNames(metric);
+                List<OptionVO> dataSetDescs = MetricsConsoleUtils.setIsGeneralFlag(MetricsConsoleUtils.getAsOptions(dataSetNames), metric);
+                result.put(metric, dataSetDescs);
+            }
+        }
+
+        return result;
+    }
+
+    public Map<String, List<OptionVO>> getNumberDatasetOptions(Collection<String> metrics) {
+        Map<String, List<OptionVO>> result = null;
+
+        if (metrics!=null && !metrics.isEmpty()) {
+            result = new HashMap();
+            for (String metric : metrics) {
+                Collection<String> dataSetNames = numberDataRetriever.getNumberDataSets(metric);
+                List<OptionVO> dataSetDescs = MetricsConsoleUtils.setIsGeneralFlag(MetricsConsoleUtils.getAsOptions(dataSetNames), metric);
+                result.put(metric, dataSetDescs);
             }
         }
 
@@ -59,22 +80,17 @@ public class MetricsOptionsProvider implements MetricsConstants {
     }
 
     @Required
-    public void setDataTypes(Map<String, String> dataTypes) {
-        this.dataTypes = dataTypes;
+    public void setMethodDataRetriever(MetricsMethodDataRetriever dataRetriever) {
+        this.methodDataRetriever = dataRetriever;
     }
 
     @Required
-    public void setScopes(Map<String, String> scopes) {
-        this.scopes = scopes;
+    public void setNumberDataRetriever(MetricsNumberDataRetriever numberDataRetriever) {
+        this.numberDataRetriever = numberDataRetriever;
     }
 
     @Required
-    public void setPeriods(Map<String, String> periods) {
-        this.periods = periods;
-    }
-
-    @Required
-    public void setDataRetriever(MetricsMethodDataRetriever dataRetriever) {
-        this.dataRetriever = dataRetriever;
+    public void setOptionsSupportBean(OptionsSupportBean optionsSupportBean) {
+        this.optionsSupportBean = optionsSupportBean;
     }
 }

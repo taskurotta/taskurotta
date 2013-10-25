@@ -15,9 +15,12 @@ public interface MetricsConstants {
 
     public static final String OPT_PERIOD_HOUR = "hour";
     public static final String OPT_PERIOD_DAY = "day";
+    public static final String OPT_PERIOD_5MINUTES = "5minutes";
 
     public static final String OPT_DATATYPE_RATE = "rate";
     public static final String OPT_DATATYPE_MEAN = "mean";
+    public static final String OPT_DATATYPE_ITEMS = "items";
+
 
     public static final String OPT_UNDEFINED = "-1";
 

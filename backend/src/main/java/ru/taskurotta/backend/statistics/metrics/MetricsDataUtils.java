@@ -170,6 +170,19 @@ public class MetricsDataUtils {
 
     }
 
+//    public static List<Number[]> convertToLimitedDataRow(DataPointVO<? extends Number>[] target, long limit) {
+//        List<Number[]> result = new ArrayList<>();
+//        if(target!=null && target.length> 0) {
+//            for (int i = 0; i < target.length; i++) {
+//                Number value = target[i]!=null? target[i].getValue(): null;
+//
+//                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length): i, value};
+//                result.add(item);
+//            }
+//        }
+//        return result;
+//    }
+
     public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline) {
         List<Number[]> result = new ArrayList<>();
         if(target!=null && target.length> 0) {

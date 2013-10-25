@@ -28,33 +28,79 @@
     </bean>
 
     <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider">
-        <property name="dataRetriever" ref="metricsDataHandler" />
+        <property name="methodDataRetriever" ref="metricsDataHandler" />
+        <property name="numberDataRetriever" ref="metricsNumberDataHandler" />
     </bean>
 
     <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsProvider" >
+        <property name="methodDataRetriever" ref="metricsDataHandler" />
+        <property name="numberDataRetriever" ref="metricsNumberDataHandler" />
+        <property name="optionsSupportBean" ref="optionsSupportBean" />
+    </bean>
 
-        <property name="dataRetriever" ref="metricsDataHandler" />
+    <bean id="optionsSupportBean" class="ru.taskurotta.dropwizard.resources.console.metrics.support.OptionsSupportBean" >
 
-        <property name="dataTypes">
+        <property name="metricsDescription">
             <map>
-                <entry key="rate" value="Counts (times)" />
-                <entry key="mean" value="Mean time (ms)" />
+                <entry key="startProcess" value="TaskServer#startProcess method invocations" />
+                <entry key="poll" value="TaskServer#poll method invocations" />
+                <entry key="successfulPoll" value="TaskServer#poll method invocations (with not empty polled task)" />
+                <entry key="release" value="TaskServer#release method invocations" />
+                <entry key="executionTime" value="Actor mean execution time (ms)" />
+                <entry key="errorDecision" value="Actor with error decision mean execution time (ms)" />
+                <entry key="enqueue" value="QueueBackend#enqueueTask method invocation" />
+                <entry key="queueSize" value="Number of tasks in the queue" />
             </map>
         </property>
 
-        <property name="periods">
+        <property name="datasetDescription">
             <map>
-                <entry key="hour" value="Last hour" />
+                <entry key="startProcess#startProcess" value="Mean value for method invocation by all actors" />
+                <entry key="poll#poll" value="Mean value for method invocation by all actors" />
+                <entry key="successfulPoll#successfulPoll" value="Mean value for method invocation by all actors" />
+                <entry key="release#release" value="Mean value for method invocation by all actors" />
+                <entry key="executionTime#executionTime" value="Mean value for all actors" />
+                <entry key="errorDecision#errorDecision" value="Mean value for all actors" />
+                <entry key="enqueue#enqueue" value="QueueBackend#enqueueTask method invocation" />
+                <entry key="queueSize#queueSize" value="Total number of task for all queues" />
+            </map>
+        </property>
+
+        <property name="defaultDataTypes" value = "rate, mean" />
+
+        <property name="defaultPeriods" value = "hour, day" />
+
+        <property name="defaultScopes" value = "local" />
+
+        <property name="metricDataTypes">
+            <map>
+                <entry key="queueSize" value="items" />
+            </map>
+        </property>
+        <property name="metricPeriods">
+            <map>
+                <entry key="queueSize" value="day, hour, 5minutes" />
+            </map>
+        </property>
+        <property name="metricScopes">
+            <map>
+                <entry key="queueSize" value = "cluster" />
+            </map>
+        </property>
+
+        <property name="optionDescriptions">
+            <map>
                 <entry key="day" value="Last 24 hours" />
+                <entry key="hour" value="Last hour" />
+                <entry key="cluster" value="All nodes (cluster)" />
+                <entry key="local" value="Current node" />
+                <entry key="5minutes" value="Last 5 minutes" />
+                <entry key="rate" value="Hits (times)" />
+                <entry key="mean" value="Mean time (ms)" />
+                <entry key="items" value="Number of items" />
             </map>
         </property>
 
-        <property name="scopes">
-            <map>
-                <entry key="cluster" value="Cluster (all nodes)" />
-                <entry key="local" value="Local node" />
-            </map>
-        </property>
     </bean>
 
     <bean id="brokenProcessListResource" class="ru.taskurotta.dropwizard.resources.console.broken.BrokenProcessListResource" >

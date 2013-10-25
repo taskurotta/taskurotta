@@ -6,8 +6,8 @@ import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
+import ru.taskurotta.dropwizard.resources.console.metrics.vo.AvailableOptionsVO;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.DatasetVO;
-import ru.taskurotta.dropwizard.resources.console.metrics.vo.MetricsOptionsVO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -41,7 +41,7 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
         List<String> dataSetNames = MetricsConsoleUtils.extractDatasets(dataSetOpt.or(""));
         try {
 
-            if(ACTION_METRICS_DATA.equals(action)) {
+            if (ACTION_METRICS_DATA.equals(action)) {
                 List<DatasetVO> dataSets = metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period);
                 if (smooth > 0) {
                     for(DatasetVO ds: dataSets) {
@@ -55,7 +55,7 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
                 }
                 return Response.ok(dataSets, MediaType.APPLICATION_JSON).build();
             } else if(ACTION_METRICS_OPTIONS.equals(action)) {
-                MetricsOptionsVO options = metricsOptionsHandler.getMethodMetricsTypes();
+                AvailableOptionsVO options = metricsOptionsHandler.getAvailableOptions();
                 return Response.ok(options, MediaType.APPLICATION_JSON).build();
 
             } else {
