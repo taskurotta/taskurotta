@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -36,17 +37,19 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
     private TaskDao taskDao;
     private ProcessBackend processBackend;
     private TaskBackend taskBackend;
+    private BrokenProcessBackend brokenProcessBackend;
     // time out between recovery process in milliseconds
     private long recoveryProcessTimeOut = 60000l;
 
     public GeneralRecoveryProcessBackend() {}
 
-    public GeneralRecoveryProcessBackend(QueueBackendStatistics queueBackendStatistics, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, long recoveryProcessTimeOut) {
+    public GeneralRecoveryProcessBackend(QueueBackendStatistics queueBackendStatistics, DependencyBackend dependencyBackend, TaskDao taskDao, ProcessBackend processBackend, TaskBackend taskBackend, BrokenProcessBackend brokenProcessBackend, long recoveryProcessTimeOut) {
         this.queueBackendStatistics = queueBackendStatistics;
         this.dependencyBackend = dependencyBackend;
         this.taskDao = taskDao;
         this.processBackend = processBackend;
         this.taskBackend = taskBackend;
+        this.brokenProcessBackend = brokenProcessBackend;
         this.recoveryProcessTimeOut = recoveryProcessTimeOut;
     }
 
@@ -116,11 +119,15 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
         logger.info("Process [{}] complete restart with result [{}]", processId, result);
 
+        if (result) {
+            brokenProcessBackend.delete(processId);
+        }
+
         return result;
     }
 
     @Override
-    public Collection<UUID> restartBrokenGroup(Collection<UUID> processIds) {
+    public Collection<UUID> restartProcessCollection(Collection<UUID> processIds) {
 
         Set<UUID> successfullyRestartedProcesses = new TreeSet<>();
 
@@ -129,6 +136,8 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 successfullyRestartedProcesses.add(processId);
             }
         }
+
+        brokenProcessBackend.deleteCollection(successfullyRestartedProcesses);
 
         return successfullyRestartedProcesses;
     }
@@ -302,6 +311,10 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
     public void setTaskBackend(TaskBackend taskBackend) {
         this.taskBackend = taskBackend;
+    }
+
+    public void setBrokenProcessBackend(BrokenProcessBackend brokenProcessBackend) {
+        this.brokenProcessBackend = brokenProcessBackend;
     }
 
     public void setRecoveryProcessTimeOut(long recoveryProcessTimeOut) {

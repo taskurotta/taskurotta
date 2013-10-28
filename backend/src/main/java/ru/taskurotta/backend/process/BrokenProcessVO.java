@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.process;
 
+import java.util.UUID;
+
 /**
  * User: stukushin
  * Date: 11.10.13
@@ -7,7 +9,7 @@ package ru.taskurotta.backend.process;
  */
 public class BrokenProcessVO {
 
-    private String processId;
+    private UUID processId;
     private String startActorId;
     private String brokenActorId;
     private long time;
@@ -15,11 +17,11 @@ public class BrokenProcessVO {
     private String errorClassName;
     private String stackTrace;
 
-    public String getProcessId() {
+    public UUID getProcessId() {
         return processId;
     }
 
-    public void setProcessId(String processId) {
+    public void setProcessId(UUID processId) {
         this.processId = processId;
     }
 
@@ -74,7 +76,7 @@ public class BrokenProcessVO {
     @Override
     public String toString() {
         return "BrokenProcessVO{" +
-                "processId='" + processId + '\'' +
+                "processId=" + processId +
                 ", startActorId='" + startActorId + '\'' +
                 ", brokenActorId='" + brokenActorId + '\'' +
                 ", time=" + time +

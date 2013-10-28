@@ -30,7 +30,7 @@ angular.module("console.broken.process.services", [])
         restartProcesses: function(restartCommand) {
             return $http.post("/rest/console/process/broken/restart", restartCommand);
         }
-//        restartBrokenGroup: function(groupCommand) {
+//        restartProcessCollection: function(groupCommand) {
 //            return $http.post("/rest/console/process/broken/group_restart", groupCommand);
 //        }
     };

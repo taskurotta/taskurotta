@@ -164,7 +164,7 @@ public class GeneralTaskServer implements TaskServer {
             } else {
                 BrokenProcessVO brokenProcess = new BrokenProcessVO();
                 brokenProcess.setTime(System.currentTimeMillis());
-                brokenProcess.setProcessId(processId.toString());
+                brokenProcess.setProcessId(processId);
                 brokenProcess.setBrokenActorId(taskDecision.getActorId());
 
                 TaskContainer startTask = processBackend.getStartTask(processId);

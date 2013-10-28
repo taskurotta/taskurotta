@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
@@ -17,6 +18,7 @@ import ru.taskurotta.backend.process.SearchCommand;
 import ru.taskurotta.exception.BackendCriticalException;
 
 import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -26,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,7 +57,7 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
             BrokenProcessVO result = new BrokenProcessVO();
             result.setBrokenActorId(rs.getString("BROKEN_ACTOR_ID"));
             result.setErrorClassName(rs.getString("ERROR_CLASS_NAME"));
-            result.setProcessId(rs.getString("PROCESS_ID"));
+            result.setProcessId(UUID.fromString(rs.getString("PROCESS_ID")));
             result.setStackTrace(lobHandler.getClobAsString(rs, "STACK_TRACE"));
             result.setErrorMessage(rs.getString("ERROR_MESSAGE"));
             result.setStartActorId(rs.getString("START_ACTOR_ID"));
@@ -73,7 +76,7 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
 
                         public Long doInCallableStatement(CallableStatement ps) throws SQLException, DataAccessException {
                             LobCreator lobCreator = lobHandler.getLobCreator();
-                            ps.setString(1, brokenProcessVO.getProcessId());
+                            ps.setString(1, brokenProcessVO.getProcessId().toString());
                             ps.setString(2, brokenProcessVO.getStartActorId());
                             ps.setString(3, brokenProcessVO.getBrokenActorId());
                             ps.setTimestamp(4, new Timestamp(new Date().getTime()));
@@ -170,14 +173,57 @@ public class OraBrokenProcessBackend extends JdbcDaoSupport implements BrokenPro
     }
 
     @Override
-    public void delete(final String processId) {
+    public void delete(final UUID processId) {
 
-        if (processId == null || StringUtils.isEmpty(processId)) {
+        if (processId == null) {
             return;
         }
 
-        int result = getJdbcTemplate().update(SQL_DELETE_BROKEN_PROCESS, processId);
+        int result = getJdbcTemplate().update(SQL_DELETE_BROKEN_PROCESS, processId.toString());
         logger.debug("Successfully deleted [{}] broken process with id [{}]", result, processId);
+    }
+
+    @Override
+    public void deleteCollection(Collection<UUID> processIds) {
+
+        if (processIds == null || processIds.isEmpty()) {
+            return;
+        }
+
+        List<UUID> tempList = new ArrayList<>();
+        final List<UUID> pIds = new ArrayList<>(processIds);
+        int size = pIds.size();
+        int batchSize = 500;
+
+        for (int i = 0; i < size; i++) {
+            tempList.add(pIds.get(i));
+
+            if (i % batchSize == 0 || i == size - 1) {
+                deleteCollection(tempList);
+                tempList.clear();
+            }
+        }
+
+        logger.debug("Successfully delete [{}] ids from broken processes", processIds);
+    }
+
+    private void deleteCollection(final List<UUID> processIds) {
+
+        if (processIds == null || processIds.isEmpty()) {
+            return;
+        }
+
+        getJdbcTemplate().batchUpdate(SQL_DELETE_BROKEN_PROCESS, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setString(1, processIds.get(i).toString());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return processIds.size();
+            }
+        });
     }
 
     @Required

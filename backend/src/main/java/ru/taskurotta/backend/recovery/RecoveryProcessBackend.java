@@ -17,6 +17,6 @@ public interface RecoveryProcessBackend {
     /**
      * @return UUID's collection of successfully restarted processes
      */
-    Collection<UUID> restartBrokenGroup(Collection<UUID> processIds);
+    Collection<UUID> restartProcessCollection(Collection<UUID> processIds);
 
 }

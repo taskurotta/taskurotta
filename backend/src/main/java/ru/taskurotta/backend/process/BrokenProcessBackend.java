@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.process;
 
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * User: stukushin
@@ -16,5 +17,7 @@ public interface BrokenProcessBackend {
 
     public Collection<BrokenProcessVO> findAll();
 
-    public void delete(String processId);
+    public void delete(UUID processId);
+
+    public void deleteCollection(Collection<UUID> processIds);
 }
