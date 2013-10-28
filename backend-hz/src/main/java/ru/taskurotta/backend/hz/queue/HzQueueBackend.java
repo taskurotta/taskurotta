@@ -6,6 +6,9 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport;
@@ -20,6 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -28,18 +32,23 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(HzQueueBackend.class);
 
+    private final static String DELAYED_TASKS_LOCK = "DELAYED_TASKS_LOCK";
+
     private int pollDelay = 60;
     private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
     private String queueNamePrefix;
 
     //Hazelcast specific
     private HazelcastInstance hazelcastInstance;
+    private Lock delayedTasksLock;
 
     private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
     private Map<String, IMap<UUID, TaskQueueItem>> hzDelayedQueues = new ConcurrentHashMap<>();
 
     private HzQueueSpringConfigSupport hzQueueConfigSupport;
     private HzMapConfigSpringSupport hzMapConfigSpringSupport;
+
+    private MongoTemplate mongoTemplate;
 
     public void setHzQueueConfigSupport(HzQueueSpringConfigSupport hzQueueConfigSupport) {
         this.hzQueueConfigSupport = hzQueueConfigSupport;
@@ -49,6 +58,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
+
+        delayedTasksLock = hazelcastInstance.getLock(DELAYED_TASKS_LOCK);
     }
 
     @Override
@@ -195,7 +206,9 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+    public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+
+        boolean result = false;
 
         // set it to current time for precisely repeat
         if (startTime <= 0L) {
@@ -213,7 +226,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
             IQueue<TaskQueueItem> queue = getHzQueue(createQueueName(actorId, taskList));
             try {
-                queue.add(item);
+                result = queue.add(item);
             } catch (Exception ex) {
                 logger.error("", ex);
                 logger.warn(queue.getLocalQueueStats().toString());
@@ -233,8 +246,10 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
                 logger.debug("Add to waiting set item [actorId [{}], taskId [{}], startTime [{}]; Set.size: {}]", actorId, taskId, startTime, map.size());
             }
 
+            result = true;
         }
 
+        return result;
     }
 
     /**
@@ -280,7 +295,55 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.queueNamePrefix = queueNamePrefix;
     }
 
+    public void updateDelayedTasks() {
+        if (!delayedTasksLock.tryLock()) {
+            logger.debug("Can't get lock for delayed tasks. Other member will do this");
+            return;
+        }
+        long startTime = System.nanoTime();
+        try {
+            List<String> queueNamesList = getTaskQueueNamesByPrefix();
+            if (logger.isDebugEnabled()) {
+                logger.debug("Start update delayed tasks for queues: {}", queueNamesList);
+            }
+
+            for (String queueName : queueNamesList) {
+                String mapName = getDelayedTasksMapName(queueName);
+                IMap<UUID, TaskQueueItem> waitingItems = getHzDelayedMap(mapName);
+                IQueue<TaskQueueItem> queue = getHzQueue(queueName);
+
+                List<TaskQueueItem> readyItemList = mongoTemplate.find(Query.query(Criteria.where("startTime").lt(System.currentTimeMillis())), TaskQueueItem.class, mapName);
+
+                if (logger.isDebugEnabled()) {
+                    long endTime = System.nanoTime();
+                    logger.debug("search time (in mongo): {}s; {} ready items for queue [{}], mapSize [{}]", String.format("%8.3f", (endTime - startTime) / 1e9), readyItemList.size(), queueName, waitingItems.size());
+                }
+
+                for (TaskQueueItem next : readyItemList) {
+                    queue.add(next);
+                    waitingItems.remove(next.getTaskId());
+                }
+
+            }
+            long endTime = System.nanoTime();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("spent time (total): {}s", String.format("%8.3f", (endTime - startTime) / 1e9));
+            }
+        } finally {
+            delayedTasksLock.unlock();
+        }
+    }
+
+    public HzMapConfigSpringSupport getHzMapConfigSpringSupport() {
+        return hzMapConfigSpringSupport;
+    }
+
     public void setHzMapConfigSpringSupport(HzMapConfigSpringSupport hzMapConfigSpringSupport) {
         this.hzMapConfigSpringSupport = hzMapConfigSpringSupport;
+    }
+
+    public HzQueueSpringConfigSupport getHzQueueConfigSupport() {
+        return hzQueueConfigSupport;
     }
 }

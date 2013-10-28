@@ -11,7 +11,7 @@ public interface QueueBackend {
 
     public TaskQueueItem poll(String actorId, String taskList);
 
-    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
+    public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
 
     public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId);
 
