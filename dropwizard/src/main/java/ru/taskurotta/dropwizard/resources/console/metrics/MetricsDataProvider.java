@@ -65,9 +65,38 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         DataPointVO<Number>[] rawData = numberDataRetriever.getData(metricName, dataSetName);
         MetricsDataUtils.sortDataSet(rawData);
 
-        ds.setData(MetricsDataUtils.convertToDataRow(getSubset(rawData, getSubsetSizeForPeriod(rawData.length, numberMetricsPeriodSeconds, period)), true, numberMetricsPeriodSeconds));
+        DataPointVO<Number>[] timeLimitedSubset = getSubset(rawData, getSubsetSizeForPeriod(rawData.length, numberMetricsPeriodSeconds, period));
+        float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
+        List<Number[]> dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("DataPoint for period[{}], multiplier[{}] are [{}]", period, multiplier, getDatapointAsString(dataPoints));
+        }
+
+        ds.setData(dataPoints);
 
         return ds;
+    }
+
+    private static String getDatapointAsString(List<Number[]> dataPoints) {
+        StringBuilder result = new StringBuilder();
+        if (dataPoints!=null) {
+            for (Number[] point : dataPoints) {
+                if (result.length()>0) {
+                    result.append(", ");
+                }
+                result.append("[").append(point[0]).append("("+point[0].getClass().getName()+")").append(", ").append(point[1]).append("]");
+            }
+        }
+        return result.toString();
+    }
+
+    private static float getTimestepMultiplier(String period) {
+        float result = 1;
+        if (OPT_PERIOD_HOUR.equals(period) || OPT_PERIOD_DAY.equals(period)) {//minutes in timeline
+            result = 1f/60f;
+        }
+        return result;
     }
 
     private static int getSubsetSizeForPeriod (int totalSize, int timeStep, String period) {

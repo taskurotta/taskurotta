@@ -182,7 +182,7 @@ public class MetricsDataUtils {
 //        return result;
 //    }
 
-    public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline, int timeStep) {
+    public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline, float timeStep) {
         List<Number[]> result = new ArrayList<>();
         if(target!=null && target.length> 0) {
             for (int i = 0; i < target.length; i++) {
@@ -195,8 +195,8 @@ public class MetricsDataUtils {
         return result;
     }
 
-    public static Number convertToTime(int value, long time, int size, int timeStep) {
-        return timeStep * (value - size);
+    public static Number convertToTime(int value, long time, int size, float timeStep) {
+        return timeStep * Float.valueOf(value - size);
     }
 
     public static void sortDataSet(DataPointVO<? extends Number>[] target) {
