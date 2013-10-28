@@ -37,6 +37,7 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
+#        ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider: DEBUG
 #        ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend: TRACE
 #        ru.taskurotta.dropwizard.resources.console.broken: DEBUG
 #        ru.taskurotta.backend.hz: DEBUG

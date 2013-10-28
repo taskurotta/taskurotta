@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.backend.console.retriever.metrics.MetricsNumberDataRetriever;
 import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
+import ru.taskurotta.backend.statistics.metrics.TimeConstants;
 import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
@@ -20,7 +21,7 @@ import java.util.List;
  * User: dimadin
  * Date: 09.09.13 16:27
  */
-public class MetricsDataProvider implements MetricsConstants {
+public class MetricsDataProvider implements MetricsConstants, TimeConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataProvider.class);
 
@@ -63,9 +64,70 @@ public class MetricsDataProvider implements MetricsConstants {
 
         DataPointVO<Number>[] rawData = numberDataRetriever.getData(metricName, dataSetName);
         MetricsDataUtils.sortDataSet(rawData);
-        ds.setData(MetricsDataUtils.convertToDataRow(rawData, true, numberMetricsPeriodSeconds));
+
+        DataPointVO<Number>[] timeLimitedSubset = getSubset(rawData, getSubsetSizeForPeriod(rawData.length, numberMetricsPeriodSeconds, period));
+        float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
+        List<Number[]> dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("DataPoint for period[{}], multiplier[{}] are [{}]", period, multiplier, getDatapointAsString(dataPoints));
+        }
+
+        ds.setData(dataPoints);
 
         return ds;
+    }
+
+    private static String getDatapointAsString(List<Number[]> dataPoints) {
+        StringBuilder result = new StringBuilder();
+        if (dataPoints!=null) {
+            for (Number[] point : dataPoints) {
+                if (result.length()>0) {
+                    result.append(", ");
+                }
+                result.append("[").append(point[0]).append("("+point[0].getClass().getName()+")").append(", ").append(point[1]).append("]");
+            }
+        }
+        return result.toString();
+    }
+
+    private static float getTimestepMultiplier(String period) {
+        float result = 1;
+        if (OPT_PERIOD_HOUR.equals(period) || OPT_PERIOD_DAY.equals(period)) {//minutes in timeline
+            result = 1f/60f;
+        }
+        return result;
+    }
+
+    private static int getSubsetSizeForPeriod (int totalSize, int timeStep, String period) {
+        int result = totalSize;
+        if (OPT_PERIOD_HOUR.equals(period)) {
+            result = SECONDS_IN_HOUR/timeStep;
+
+        } else if (OPT_PERIOD_DAY.equals(period)) {
+            result = SECONDS_IN_24_HOURS/timeStep;
+
+        } else if (OPT_PERIOD_5MINUTES.equals(period)) {
+            result = SECONDS_IN_MINUTE*5/timeStep;
+        }
+        return result;
+    }
+
+    private DataPointVO<Number>[] getSubset(DataPointVO<Number>[] rawData, int size) {
+        DataPointVO<Number>[] result = null;
+        if (rawData != null) {
+            if (size >= rawData.length) {
+                result = rawData;
+
+            } else {
+                result = new DataPointVO[size];
+                int offset = rawData.length - size;
+                for (int i = 0; i < size; i++) {
+                    result[i] = rawData[offset+i];
+                }
+            }
+        }
+        return result;
     }
 
     private DatasetVO getMethodDataset(String metricName, String dataSetName, String dataType, String period) {

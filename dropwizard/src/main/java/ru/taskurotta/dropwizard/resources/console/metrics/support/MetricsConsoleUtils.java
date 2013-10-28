@@ -96,7 +96,9 @@ public class MetricsConsoleUtils implements MetricsConstants {
             return "Timeline: minutes ago";
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             return "Timeline: seconds ago";
-        } else if (OPT_DATATYPE_ITEMS.equals(dataType)) {
+        } else if (OPT_DATATYPE_ITEMS.equals(dataType) && (OPT_PERIOD_HOUR.equals(period) || OPT_PERIOD_DAY.equals(period)) ) {
+            return "Timeline: minutes ago";
+        } else if (OPT_DATATYPE_ITEMS.equals(dataType) && OPT_PERIOD_5MINUTES.equals(period)) {
             return "Timeline: seconds ago";
         } else {
             return "";
