@@ -171,14 +171,16 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+    public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
         long start = System.currentTimeMillis();
-        queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
+        boolean result = queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
         long invocationTime = System.currentTimeMillis() - start;
 
         Metric enqueueMetric = metricsFactory.getInstance(MetricName.ENQUEUE.getValue());
         enqueueMetric.mark(MetricName.ENQUEUE.getValue(), invocationTime);
         enqueueMetric.mark(actorId, invocationTime);
+
+        return result;
     }
 
     @Override

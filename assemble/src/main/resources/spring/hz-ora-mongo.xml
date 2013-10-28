@@ -322,7 +322,7 @@
     </bean>
 
     <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
-        <constructor-arg name="dumpPeriod" value="1"/>
+        <constructor-arg name="dumpPeriod" value="${metric.method.data.period.seconds}"/>
         <constructor-arg name="dumpingThreads" value="3"/>
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>

@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 /**
@@ -50,16 +51,14 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
     }
 
     @Override
-    public void restartProcess(final UUID processId) {
+    public boolean restartProcess(final UUID processId) {
         logger.info("Try to recovery process [{}]", processId);
 
         Graph graph = dependencyBackend.getGraph(processId);
         if (graph == null) {
             logger.warn("For process [{}] not found graph, restart process", processId);
 
-            restartProcessFromBeginning(processId);
-
-            return;
+            return restartProcessFromBeginning(processId);
         }
 
         long lastChange = Math.max(graph.getLastApplyTimeMillis(), graph.getTouchTimeMillis());
@@ -69,16 +68,14 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         if ((changeTimeout) < recoveryProcessTimeOut) {
             logger.info("Graph for process [{}] recently apply or recovery, skip recovery", processId);
 
-            return;
+            return false;
         }
 
         Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
         if (taskContainers == null) {
             logger.warn("For process [{}] not found task containers, restart process", processId);
 
-            restartProcessFromBeginning(processId);
-
-            return;
+            return restartProcessFromBeginning(processId);
         }
 
         if (taskContainers.isEmpty()) {
@@ -89,10 +86,15 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             // ToDo (stukushin): if after replay process taskContainers is empty, than finish process
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("For process [{}] try to restart [{}] tasks", processId, taskContainers.size());
+        boolean result;
+        if (taskContainers == null || taskContainers.isEmpty()) {
+            result = false;
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("For process [{}] try to restart [{}] tasks", processId, taskContainers.size());
+            }
+            result = restartTasks(taskContainers);
         }
-        restartTasks(taskContainers);
 
         logger.trace("For process [{}] try to update graph", processId);
         dependencyBackend.changeGraph(new GraphDao.Updater() {
@@ -112,21 +114,30 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             }
         });
 
-        logger.info("Process [{}] complete restart", processId);
+        logger.info("Process [{}] complete restart with result [{}]", processId, result);
+
+        return result;
     }
 
     @Override
-    public void restartBrokenGroup(Collection<UUID> processIds) {
+    public Collection<UUID> restartBrokenGroup(Collection<UUID> processIds) {
+
+        Set<UUID> successfullyRestartedProcesses = new TreeSet<>();
+
         for (UUID processId : processIds) {
-            restartProcess(processId);
+            if (restartProcess(processId)) {
+                successfullyRestartedProcesses.add(processId);
+            }
         }
+
+        return successfullyRestartedProcesses;
     }
 
-    private void restartTasks(Collection<TaskContainer> taskContainers) {
+    private boolean restartTasks(Collection<TaskContainer> taskContainers) {
 
         if (taskContainers == null || taskContainers.isEmpty()) {
             logger.warn("Collection task containers for restart in null or is empty");
-            return;
+            return false;
         }
 
         if (logger.isTraceEnabled()) {
@@ -134,6 +145,7 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         }
 
         UUID processId = null;
+        boolean result = true;
 
         for (TaskContainer taskContainer : taskContainers) {
 
@@ -169,12 +181,14 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
                 continue;
             }
 
-            queueBackendStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
+            result = result & queueBackendStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
 
             logger.debug("For process [{}] add task container [{}] to queue backend", processId, taskContainer);
         }
 
         logger.info("For process [{}] complete restart [{}] tasks", processId, taskContainers.size());
+
+        return result;
     }
 
     private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
@@ -215,10 +229,10 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         return taskContainers;
     }
 
-    private void restartProcessFromBeginning(UUID processId) {
+    private boolean restartProcessFromBeginning(UUID processId) {
 
         if (processId == null) {
-            return;
+            return false;
         }
 
         TaskContainer startTaskContainer = processBackend.getStartTask(processId);
@@ -228,9 +242,11 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
         taskDao.addTask(startTaskContainer);
         dependencyBackend.startProcess(startTaskContainer);
 
-        restartTasks(Arrays.asList(startTaskContainer));
+        boolean result = restartTasks(Arrays.asList(startTaskContainer));
 
         logger.info("Restart process [{}] from start task [{}]", processId, startTaskContainer);
+
+        return result;
     }
 
     private Collection<TaskContainer> replayProcess(final TaskContainer taskContainer) {

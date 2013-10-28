@@ -30,6 +30,8 @@
     <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider">
         <property name="methodDataRetriever" ref="metricsDataHandler" />
         <property name="numberDataRetriever" ref="metricsNumberDataHandler" />
+        <property name="methodMetricsPeriodSeconds" value = "${metric.method.data.period.seconds}" />
+        <property name="numberMetricsPeriodSeconds" value = "${metric.queue.size.data.period.seconds}" />
     </bean>
 
     <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsProvider" >
