@@ -90,7 +90,8 @@
     </bean>
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
-        <constructor-arg ref="hzInstance"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="actorPreferencesMapName" value="actorPreferencesMap" />
     </bean>
 
     <bean id="processBackend" class="ru.taskurotta.backend.hz.storage.HzProcessBackend">
@@ -114,16 +115,19 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
 
         <property name="hzInstance" ref="hzInstance"/>
         <property name="nodeCustomName" value="${node.custom.name}"/>
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandlerOld" />
+    <bean id = "brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend" />
+
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" />
 
     <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
 
-    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalisteners.LoggerDataListener"/>-->
+    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalistenerLoggerDataListener"/>-->
 
     <!--<bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">-->
         <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->

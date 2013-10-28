@@ -39,7 +39,7 @@ public class DeepTaskTree extends AbstractTestStub {
 
         // release task A
         Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
-        Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C", new Object[]{promise(taskB)});
+        Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C", promise(taskB));
 
         release(taskIdA, null, taskB, taskC);
 
@@ -107,7 +107,7 @@ public class DeepTaskTree extends AbstractTestStub {
 		// release task A
 		Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
 		Task taskC = deciderTask(taskIdC, TaskType.DECIDER_ASYNCHRONOUS, "C");
-		Task taskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E", new Object[]{promise(taskB), promise(taskC)});
+		Task taskE = deciderTask(taskIdE, TaskType.DECIDER_ASYNCHRONOUS, "E", promise(taskB), promise(taskC));
 		// release decision with taskB and taskС and taskE
 		release(taskIdA, null, taskB, taskC, taskE);
 

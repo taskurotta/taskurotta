@@ -33,6 +33,10 @@ public class SummarizerImpl implements Summarizer {
         return result;
     }
 
+    public void init() {
+        logger.info("SummarizerImpl initialized with errPossibility[{}], sleep[{}] ", errPossibility, sleep);
+    }
+
     public void setSleep(long sleep) {
         this.sleep = sleep;
     }

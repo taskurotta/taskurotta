@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.statistics.datalisteners;
+package ru.taskurotta.backend.statistics.datalistener;
 
 /**
  * User: stukushin

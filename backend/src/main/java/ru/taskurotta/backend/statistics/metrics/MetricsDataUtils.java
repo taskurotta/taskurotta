@@ -2,7 +2,7 @@ package ru.taskurotta.backend.statistics.metrics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.statistics.DataPointVO;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.backend.statistics.MetricsDataHandler;
 
 import java.util.ArrayList;
@@ -18,6 +18,10 @@ import java.util.List;
 public class MetricsDataUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataUtils.class);
+
+    public static String getKey(String metricName, String datasetName) {
+        return metricName + "#" + datasetName;
+    }
 
     public static List<Number[]> getNonZeroValuesDataSet(List<Number[]> target) {
         List<Number[]> result = new ArrayList<>();
@@ -165,6 +169,19 @@ public class MetricsDataUtils {
         return result;
 
     }
+
+//    public static List<Number[]> convertToLimitedDataRow(DataPointVO<? extends Number>[] target, long limit) {
+//        List<Number[]> result = new ArrayList<>();
+//        if(target!=null && target.length> 0) {
+//            for (int i = 0; i < target.length; i++) {
+//                Number value = target[i]!=null? target[i].getValue(): null;
+//
+//                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length): i, value};
+//                result.add(item);
+//            }
+//        }
+//        return result;
+//    }
 
     public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline) {
         List<Number[]> result = new ArrayList<>();

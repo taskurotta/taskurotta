@@ -9,7 +9,6 @@ import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend;
 import ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics;
-import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
 import ru.taskurotta.backend.storage.GeneralTaskBackend;
 import ru.taskurotta.backend.storage.MemoryTaskDao;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -95,7 +94,7 @@ public class AbstractTestStub {
         memoryQueueBackendStatistics = new MemoryQueueBackendStatistics(memoryQueueBackend);
         memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
         dependencyBackend = backendBundle.getDependencyBackend();
-        recoveryProcessBackend = new GeneralRecoveryProcessBackend(memoryQueueBackend, memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l);
+        recoveryProcessBackend = new GeneralRecoveryProcessBackend(memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l);
 
         taskServer = new GeneralTaskServer(backendBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
@@ -104,6 +103,10 @@ public class AbstractTestStub {
 
     public boolean isTaskInProgress(UUID taskId, UUID processId) {
         return dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId);
+    }
+
+    public void assertTaskInProgress(UUID taskId) {
+        assertTrue(dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId));
     }
 
     public boolean isTaskReleased(UUID taskId, UUID processId) {
@@ -129,7 +132,7 @@ public class AbstractTestStub {
         return deciderTask(id, type, methodName, null, null);
     }
 
-    public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args) {
+    public static Task deciderTask(UUID id, TaskType type, String methodName, Object... args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
         Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
         return task;
@@ -181,9 +184,9 @@ public class AbstractTestStub {
     }
 
     public void release(UUID taskAId, Object value, Task... newTasks) {
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
 
         TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
-        deciderTaskSpreader.release(taskADecision);
+        deciderTaskSpreader.release(taskDecision);
     }
 }

@@ -1,6 +1,6 @@
 package ru.taskurotta.backend.statistics.metrics;
 
-import ru.taskurotta.backend.statistics.datalisteners.DataListener;
+import ru.taskurotta.backend.statistics.datalistener.DataListener;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

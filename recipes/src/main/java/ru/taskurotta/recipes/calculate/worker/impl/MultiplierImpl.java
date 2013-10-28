@@ -35,6 +35,10 @@ public class MultiplierImpl implements Multiplier {
         return result;
     }
 
+    public void init() {
+        logger.info("MultiplierImpl initialized with errPossibility[{}], sleep[{}] ", errPossibility, sleep);
+    }
+
     public void setSleep(long sleep) {
         this.sleep = sleep;
     }

@@ -4,9 +4,9 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: -1
-          failChance: 0.1
-          deciderFailChance: 0.1
+          sleep: 1500
+          workerFailChance: -1
+          deciderFailChance: -1
 
 
 spreader:
@@ -15,10 +15,10 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 10
+          count: 50
           startTasks: true
           startTasksInBackground: true
-          startTaskPeriodSeconds: 10
+          startTaskPeriodSeconds: 5
           endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0

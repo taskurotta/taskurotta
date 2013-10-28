@@ -41,6 +41,10 @@ public class NumberGeneratorImpl implements NumberGenerator {
         return result;
     }
 
+    public void init() {
+        logger.info("NumberGeneratorImpl initialized with errPossibility[{}], sleep[{}] ", errPossibility, sleep);
+    }
+
     public void setMaxNumber(int maxNumber) {
         this.maxNumber = maxNumber;
     }

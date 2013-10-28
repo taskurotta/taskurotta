@@ -14,7 +14,7 @@ import ru.taskurotta.backend.console.manager.ActorConfigManager;
 import ru.taskurotta.backend.console.model.ActorVO;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.MetricsStatDataVO;
-import ru.taskurotta.backend.console.retriever.MetricsDataRetriever;
+import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.backend.statistics.QueueBalanceVO;
 import ru.taskurotta.server.MetricName;
 
@@ -40,7 +40,7 @@ public class HzActorConfigManager implements ActorConfigManager {
     private MongoTemplate mongoTemplate;
     private String actorConfigName;
     private HazelcastInstance hzInstance;
-    private MetricsDataRetriever metricsDataRetriever;
+    private MetricsMethodDataRetriever metricsDataRetriever;
 
     public HzActorConfigManager(HazelcastInstance hzInstance, MongoTemplate mongoTemplate, String actorConfigName) {
         this.actorConfigName = actorConfigName;
@@ -130,7 +130,7 @@ public class HzActorConfigManager implements ActorConfigManager {
     }
 
     @Required
-    public void setMetricsDataRetriever(MetricsDataRetriever metricsDataRetriever) {
+    public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {
         this.metricsDataRetriever = metricsDataRetriever;
     }
 

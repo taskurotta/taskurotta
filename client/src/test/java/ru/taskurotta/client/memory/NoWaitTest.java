@@ -1,21 +1,12 @@
 package ru.taskurotta.client.memory;
 
 import org.junit.Test;
-import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskOptionsImpl;
 import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.transport.model.TaskType;
-import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * User: romario
@@ -35,102 +26,52 @@ public class NoWaitTest extends AbstractTestStub {
     public void testNoWait() {
 
         UUID taskAId = UUID.randomUUID();
-        Task deciderTaskA = deciderTask(taskAId, TaskType.DECIDER_START, "start");
-        taskServer.startProcess(objectFactory.dumpTask(deciderTaskA));
+        UUID taskBId = UUID.randomUUID();
+        UUID taskCId = UUID.randomUUID();
+        UUID taskDId = UUID.randomUUID();
+        UUID taskEId = UUID.randomUUID();
 
-        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(TestDecider.class));
-
-        Task taskAFromQueue = deciderTaskSpreader.poll();
+        startProcess(deciderTask(taskAId, TaskType.DECIDER_START, "start"));
 
         // should be task A
-        assertEquals(taskAId, taskAFromQueue.getId());
+        pollDeciderTask(taskAId);
 
         // task should be in "process" state
-        assertTrue(isTaskInProgress(taskAId, deciderTaskA.getProcessId()));
+        assertTaskInProgress(taskAId);
 
         // create B, C, D tasks
-        UUID taskBId = UUID.randomUUID();
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_START, "startB");
-
-        UUID taskCId = UUID.randomUUID();
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_START, "startC");
-
-        UUID taskDId = UUID.randomUUID();
-        Task deciderTaskD = deciderTask(taskDId, TaskType.DECIDER_START, "startD",
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB");
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC");
+        Task deciderTaskD = deciderTask(taskDId, TaskType.DECIDER_ASYNCHRONOUS, "startD",
                 new Object[]{promise(deciderTaskB), promise(deciderTaskC)},
                 new TaskOptionsImpl(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
-        TaskDecision taskADecision = new TaskDecisionImpl(taskAId, processId, null, new Task[]{deciderTaskB,
-                deciderTaskC, deciderTaskD});
-        deciderTaskSpreader.release(taskADecision);
+        release(taskAId, null, deciderTaskB, deciderTaskC, deciderTaskD);
 
         // taskC and taskB may be pooled in different order
-
-        Task taskCFromQueue = null;
-        Task taskBFromQueue = null;
-
-        Task task1 = deciderTaskSpreader.poll();
-        Task task2 = deciderTaskSpreader.poll();
-        if (task1.getId().equals(taskCId)) {
-            taskCFromQueue = task1;
-        }
-        if (task1.getId().equals(taskBId)) {
-            taskBFromQueue = task1;
-        }
-        if (task2.getId().equals(taskCId)) {
-            taskCFromQueue = task2;
-        }
-        if (task2.getId().equals(taskBId)) {
-            taskBFromQueue = task2;
-        }
-
-        assertEquals(taskCId, taskCFromQueue.getId());
-        assertEquals(taskBId, taskBFromQueue.getId());
-
-        Task taskDFromQueue = deciderTaskSpreader.poll();
-
-        assertNull(taskDFromQueue);
+        // poll task (B or C)
+        pollDeciderTask(taskBId, taskCId);
+        // poll task (C or B)
+        pollDeciderTask(taskBId, taskCId);
+        assertEmptyQueue();
 
         // release task C and task D should be queued
+        release(taskCId, null);
 
-        TaskDecision taskCDecision = new TaskDecisionImpl(taskCId, processId, null, null);
-        deciderTaskSpreader.release(taskCDecision);
-
-        taskDFromQueue = deciderTaskSpreader.poll();
-
-        assertNotNull(taskDFromQueue);
+        // should be task D
+        pollDeciderTask(taskDId);
 
         // release task D = create task E(B)
-
-        UUID taskEId = UUID.randomUUID();
-        Task deciderTaskE = deciderTask(taskEId, TaskType.DECIDER_START, "startE",
-                new Object[]{promise(deciderTaskB)},
-                null);
-
-        TaskDecision taskDDecision = new TaskDecisionImpl(taskDId, processId, null, new Task[]{deciderTaskE});
-        deciderTaskSpreader.release(taskDDecision);
-
-        // should be empty queue. we are still waiting task B
-
-        Task taskEFromQueue = deciderTaskSpreader.poll();
-
-        assertNull(taskEFromQueue);
+        Task taskE = deciderTask(taskEId, TaskType.DECIDER_ASYNCHRONOUS, "startE", promise(deciderTaskB));
+        release(taskDId, null, taskE);
+        assertEmptyQueue();
 
         // release task B
-
-        TaskDecision taskBDecision = new TaskDecisionImpl(taskBId, processId, null, null);
-        deciderTaskSpreader.release(taskBDecision);
-
-        taskEFromQueue = deciderTaskSpreader.poll();
+        release(taskBId, null);
 
         // should be task E
-        assertEquals(taskEId, taskEFromQueue.getId());
-
-        // should be empty queue
-
-        Task task = deciderTaskSpreader.poll();
-
-        assertNull(task);
+        pollDeciderTask(taskEId);
+        assertEmptyQueue();
     }
 
 }

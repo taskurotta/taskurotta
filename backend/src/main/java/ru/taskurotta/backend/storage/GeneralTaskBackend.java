@@ -6,6 +6,7 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: romario
@@ -64,14 +66,17 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                     continue;
                 }
 
-                if (args[i].isPromise()) {
-                    args[i] = processPromiseArgValue(args[i], processId, task.getType());
+                ArgType[] argTypes = task.getOptions().getArgTypes();
+                ArgType argType = argTypes == null? null : argTypes[i];
+
+                if (arg.isPromise()) {
+                    args[i] = processPromiseArgValue(arg, processId, task, argType);
                 } else if (arg.isCollection()) {//can be collection of promises, case should be checked
                     ArgContainer[] compositeValue = arg.getCompositeValue();
                     for (int j = 0; j < compositeValue.length; j++) {
                         ArgContainer innerArg = compositeValue[j];
                         if (innerArg.isPromise()) {
-                            compositeValue[j] = processPromiseArgValue(innerArg, processId, task.getType());
+                            compositeValue[j] = processPromiseArgValue(innerArg, processId, task, argType);
                         }
                     }
                 }
@@ -86,23 +91,27 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
     }
 
 
-    private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskType taskType) {
+    private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskContainer task, ArgType argType) {
 
-        if (pArg.isReady() && !TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {//Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
+        boolean isDeciderAsyncTask = TaskType.DECIDER_ASYNCHRONOUS.equals(task.getType());
+        if (pArg.isReady() && !isDeciderAsyncTask) {    // Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
             logger.debug("Got initialized promise, switch it to value");
-            return pArg.updateType(false);//simply strip of promise wrapper
+            return pArg.updateType(false);              // simply strip of promise wrapper
         }
 
         ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
 
-        if (taskValue == null) {
-            // value may be null for NoWait promises
-            // leave it in peace...
-            return pArg;
+        if (!taskDao.isTaskReleased(pArg.getTaskId(), processId)) {
+            if (ArgType.NO_WAIT.equals(argType)) {
+                // value may be null for NoWait promises
+                // leave it in peace...
+                return pArg;
+            }
+            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
         }
 
         ArgContainer newArg = new ArgContainer(taskValue);
-        if (TaskType.DECIDER_ASYNCHRONOUS.equals(taskType)) {
+        if (isDeciderAsyncTask) {
 
             // set real value into promise for Decider tasks
             newArg.setPromise(true);

@@ -101,6 +101,11 @@ public class ArgContainer implements Cloneable, Serializable {
         return ValueType.PLAIN.equals(type);
     }
 
+    @JsonIgnore
+    public boolean isNull() {
+        return null == type;
+    }
+
     public ValueType getType() {
         return type;
     }

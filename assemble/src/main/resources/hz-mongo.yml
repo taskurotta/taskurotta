@@ -27,6 +27,8 @@ logging:
     level: WARN
     loggers:
         com.hazelcast: INFO
+        ru.taskurotta: INFO
+#        ru.taskurotta.backend.statistics.datalistener TRACE
 #        ru.taskurotta: INFO
 #        ru.taskurotta.backend.statistics.datalisteners: TRACE
 #        ru.taskurotta.backend.statistics.metrics: TRACE
@@ -55,7 +57,7 @@ http:
     requestLog:
         file:
             enabled: false
-            archive: false
+            archive: true
             currentLogFilename: ./target/logs/requests.log
             archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
         console:

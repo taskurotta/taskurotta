@@ -1,6 +1,7 @@
-package ru.taskurotta.backend.statistics.datalisteners;
+package ru.taskurotta.backend.statistics.datalistener.impl;
 
 import com.google.common.util.concurrent.AtomicDoubleArray;
+import ru.taskurotta.backend.statistics.datalistener.DataListener;
 
 import java.util.concurrent.atomic.AtomicLongArray;
 
@@ -25,6 +26,10 @@ public abstract class AbstractDataListener implements DataListener {
 
     private final AtomicDoubleArray hourMeans = new AtomicDoubleArray(SECONDS_IN_HOUR);
     private final AtomicDoubleArray dayMeans = new AtomicDoubleArray(MINUTES_IN_23_HOURS);
+
+    public void handleIntData(String metricName, String datasetName, int value, long currentTime){
+        //do nothing
+    }
 
     @Override
     public void handle(String metricName, String datasetName, long count, double mean, long time) {

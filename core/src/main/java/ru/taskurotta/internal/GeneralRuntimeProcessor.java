@@ -12,7 +12,6 @@ import ru.taskurotta.exception.test.TestException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -83,9 +82,9 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 }
             }
 
-            if (e instanceof InvocationTargetException && e.getCause()!=null) {
-                e = e.getCause();//to send real error to the server
-            }
+//            if (e instanceof InvocationTargetException && e.getCause()!=null) {
+//                e = e.getCause();//to send real error to the server
+//            }
             taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), e, RuntimeContext.getCurrent().getTasks(), restartTime);
         } finally {
             RuntimeContext.finish();

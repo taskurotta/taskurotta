@@ -13,7 +13,8 @@ public enum MetricName {
     RELEASE("release"),
     EXECUTION_TIME("executionTime"),
     ERROR_DECISION("errorDecision"),
-    ENQUEUE("enqueue");
+    ENQUEUE("enqueue"),
+    QUEUE_SIZE("queueSize");
 
 
     private String value;

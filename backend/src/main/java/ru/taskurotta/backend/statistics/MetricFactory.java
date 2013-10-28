@@ -2,7 +2,7 @@ package ru.taskurotta.backend.statistics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.statistics.datalisteners.DataListener;
+import ru.taskurotta.backend.statistics.datalistener.DataListener;
 import ru.taskurotta.backend.statistics.metrics.Metric;
 
 import java.util.Map;
@@ -40,12 +40,12 @@ public class MetricFactory {
         this.dataListener = dataListener;
     }
 
-    public Metric getInstance(String name) {
 
+    public Metric getInstance(String name, int dumpPeriodMs, DataListener dataListener) {
         if(!metricsCache.containsKey(name)) {
             synchronized (metricsCache) {
                 if(!metricsCache.containsKey(name)) {
-                    metricsCache.put(name, instantiate(name, dumpPeriod));
+                    metricsCache.put(name, instantiate(name, dumpPeriodMs, dataListener));
                 }
             }
         }
@@ -53,8 +53,13 @@ public class MetricFactory {
         return metricsCache.get(name);
     }
 
+    public Metric getInstance(String name) {
 
-    private Metric instantiate(String name, int periodDelay) {
+        return getInstance(name, dumpPeriod, dataListener);
+    }
+
+
+    private Metric instantiate(String name, int periodDelay, final DataListener dataListener) {
         final Metric result = new Metric(name);
 
         this.executorService.scheduleWithFixedDelay(new Runnable() {
@@ -72,8 +77,16 @@ public class MetricFactory {
         return result;
     }
 
+    public void scheduleMetricsTask() {
+
+    }
+
     public void shutdown() {
         executorService.shutdown();
+    }
+
+    public DataListener getDataListener() {
+        return dataListener;
     }
 
 }

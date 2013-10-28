@@ -38,7 +38,6 @@ public class TestRecoveryProcess extends AbstractTestStub {
         // clean tasks and graph
         memoryQueueBackend = new MemoryQueueBackend(0);
         dependencyBackend = new GeneralDependencyBackend(new MemoryGraphDao());
-        recoveryProcessBackend.setQueueBackend(memoryQueueBackend);
         recoveryProcessBackend.setDependencyBackend(dependencyBackend);
 
         // check no tasks in queue
@@ -76,7 +75,6 @@ public class TestRecoveryProcess extends AbstractTestStub {
 
         // clean tasks from queues
         memoryQueueBackend = new MemoryQueueBackend(0);
-        recoveryProcessBackend.setQueueBackend(memoryQueueBackend);
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
@@ -111,7 +109,6 @@ public class TestRecoveryProcess extends AbstractTestStub {
 
         // clean tasks from queues
         memoryQueueBackend = new MemoryQueueBackend(0);
-        recoveryProcessBackend.setQueueBackend(memoryQueueBackend);
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 

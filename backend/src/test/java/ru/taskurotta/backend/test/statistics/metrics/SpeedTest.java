@@ -2,7 +2,6 @@ package ru.taskurotta.backend.test.statistics.metrics;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import ru.taskurotta.backend.statistics.metrics.CheckPoint;
 
 import java.util.concurrent.ExecutionException;
 
@@ -71,7 +70,7 @@ public class SpeedTest {
 //        }
     }
 
-    private void test(CheckPoint checkPoint, int[] testData) throws InterruptedException, ExecutionException {
+//    private void test(CheckPoint checkPoint, int[] testData) throws InterruptedException, ExecutionException {
 //
 //        List<MarkTask> tasks = new ArrayList<>(size);
 //
@@ -96,5 +95,5 @@ public class SpeedTest {
 //        }
 //
 //        System.out.println("For [" + checkPoint.getClass().getSimpleName() + "] mean speed = " + sum / size);
-    }
+//    }
 }

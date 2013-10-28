@@ -1,258 +1,268 @@
 <div>
 
-    <div style="width:100%;" class="well" collapse="collapse.filter">
-        <div>
-            <table cellspacing="0" cellpadding="0" width="100%">
-                <tr>
-                    <td style="text-align: left;">
-                        <h4>Metrics options:</h4>
-                    </td>
-                    <td style="text-align: right;">
-                        <span ng-click="collapse.filter = !collapse.filter" style="cursor:pointer;">
-                            <i class="icon-chevron-up" ng-hide="collapse.filter" popover="Hide filter" popover-trigger="mouseenter" popover-placement="left"></i>
-                            <i class="icon-chevron-down" ng-show="collapse.filter" popover="Show filter" popover-trigger="mouseenter" popover-placement="left"></i>
-                        </span>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-
-        <div collapse = "collapse.filter">
-            <table style="width:100%; margin:0px;padding:0px;">
-                <tr>
-                    <td style="width:20px;"></td>
-                    <td>
-                        <table width="100%">
-                            <tr>
-                                <td style="vertical-align: top;padding:10px; width:400px;">
-
-                                    <div class="well">
-                                        <table>
-
-                                            <tr>
-                                                <td>
-                                                <span style="cursor:pointer;" popover="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."
-                                                      popover-placement="right" class="badge badge-info">?</span>
-                                                    <b>Metric:</b>
-                                                </td>
-                                                <td>
-                                                    <label class="checkbox small">
-                                                        <small>
-                                                            With subsets <input type="checkbox" ng-model="selection.showDatasets" />
-                                                        </small>
-                                                    </label>
-
-                                                    <select ng-model="selection.metric" ng-options="m.name for m in metricsOptions.metricDesc"></select>
-                                                    <br /><small><span ng-hide="metricsOptions.metricDesc.length>0" class="alert alert-warning">No available metrics to show</span></small>
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                <span style="cursor:pointer;" popover="Specify if metrics data should convey cluster data (for all nodes) or local node only."
-                                                      popover-placement="right" class="badge badge-info">?</span>
-                                                    <b>Scope:</b>
-                                                </td>
-                                                <td>
-                                                    <select ng-model="selection.scopeMode" ng-options = "sm.name for sm in metricsOptions.scopes" disabled/>
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                <span style="cursor:pointer;" popover="Select the type of metrics data to show. Rate indicates mean number of calls per second, Time indicates mean time of method invocations."
-                                                      popover-placement="right" class="badge badge-info">?</span>
-                                                    <b>Data type:</b>
-                                                </td>
-                                                <td>
-                                                    <select ng-model="selection.dataMode" ng-options = "dm.name for dm in metricsOptions.dataTypes" />
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                <span style="cursor:pointer;" popover="Select the target time period."
-                                                      popover-placement="right" class="badge badge-info">?</span>
-                                                    <b>Period:</b>
-                                                </td>
-                                                <td>
-                                                    <select ng-model="selection.periodMode" ng-options = "pm.name for pm in metricsOptions.periods" />
-                                                </td>
-                                            </tr>
-
-                                        </table>
-                                    </div>
-
-                                </td>
-                                <td style="vertical-align:top;padding:10px;">
-
-                                    <div class="well">
-                                        <table>
-                                            <tr>
-                                                <td>
-                                                <span style="cursor:pointer;" popover="Enable to update plot data at real time (new data would be requested every second)."
-                                                      popover-placement="right" class="badge badge-info">?</span>
-                                                </td>
-                                                <td>
-                                                    <label style="margin-left:25px;" class="checkbox small"><b>Follow the plot</b><input type="checkbox" ng-model="followMetric" ng-true-value="1" ng-false-value="0"/></label>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span style="cursor:pointer;" popover="Enable to remove all dots with zero values from the plot."
-                                                          popover-placement="right" class="badge badge-info">?</span>
-                                                </td>
-                                                <td>
-                                                    <label style="margin-left:25px;" class="checkbox small"><b>Remove zero values</b><input type="checkbox" ng-model="selection.omitZeroes" /></label>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span style="cursor:pointer;" popover="Enable to perform smoothing of the plot data. The larger smoothing rate the more average values (with less points on the plot) are."
-                                                          popover-placement="right" class="badge badge-info">?</span>
-                                                </td>
-                                                <td>
-                                                    <b style="margin-left:25px;">Smooth rate:</b>
-                                                    <select class="input-small" ng-model="selection.smoothRate" ng-options = "rate for rate in smoothRates" ></select>
-
-                                                </td>
-                                            </tr>
-
-                                        </table>
-                                    </div>
-
-                                </td>
-                            </tr>
-                        </table>
-
-                    </td>
-                    <td style="width:20px;"></td>
-                </tr>
-            </table>
-        </div>
-
+<div style="width:100%;" class="well" collapse="collapse.filter">
+    <div>
+        <table cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td style="text-align: left;">
+                    <h4>Metrics options:</h4>
+                </td>
+                <td style="text-align: right;">
+                    <span ng-click="collapse.filter = !collapse.filter" style="cursor:pointer;">
+                        <i class="icon-chevron-up" ng-hide="collapse.filter" popover="Hide filter" popover-trigger="mouseenter" popover-placement="left"></i>
+                        <i class="icon-chevron-down" ng-show="collapse.filter" popover="Show filter" popover-trigger="mouseenter" popover-placement="left"></i>
+                    </span>
+                </td>
+            </tr>
+        </table>
     </div>
 
 
-
-    <div style="width:100%;" class="well">
-
-        <div>
-            <table cellspacing="0" cellpadding="0" width="100%">
+    <div collapse = "collapse.filter">
+        <div class="well">
+            <table width="100%">
                 <tr>
-                    <td style="text-align: left;">
-                        <h4>Plot:</h4>
+                    <td style="width: 450px;">
+                        <span style="cursor:pointer;" popover="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."
+                            popover-placement="right" class="badge badge-info">?</span>
+                        <b>Metric:</b>
+                        <select ng-model="selection.metric" ng-options="m.value for m in metricsOptions.metrics"></select>
+
+                        <br />
+
+                        <label ng-if="metricsOptions.metrics.length>0" class="checkbox small">
+                            <small>
+                                Show all datasets <input type="checkbox" ng-model="selection.showDatasets" />
+                            </small>
+                        </label>
+
+                        <small><span ng-hide="metricsOptions.metrics.length>0" class="alert alert-warning">No available metrics to show</span></small>
                     </td>
-                    <td style="text-align: right;">
+
+                    <td>
+                        <div class="well">{{ selection.metric.name || "select a metric"}}</div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+        <table style="width:100%; margin:0px;padding:0px;">
+            <tr>
+                <td style="width:20px;"></td>
+                <td>
+                    <table width="100%">
+                        <tr>
+                            <td style="vertical-align: top;padding:10px; width:400px;">
+                                <div class="well">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <span style="cursor:pointer;" popover="Specify if metrics data should convey cluster data (for all nodes) or local node only."
+                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <b>Scope:</b>
+                                            </td>
+                                            <td>
+                                                <select ng-model="selection.scopeMode" ng-options = "sm.name for sm in getAvailableTypes(metricsOptions.scopes)" />
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span style="cursor:pointer;" popover="Select the type of metrics data to show. Rate indicates mean number of calls per second, Time indicates mean time of method invocations."
+                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <b>Data type:</b>
+                                            </td>
+                                            <td>
+                                                <select ng-model="selection.dataMode" ng-options = "dm.name for dm in getAvailableTypes(metricsOptions.dataTypes)" />
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <span style="cursor:pointer;" popover="Select the target time period."
+                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <b>Period:</b>
+                                            </td>
+                                            <td>
+                                                <select ng-model="selection.periodMode" ng-options = "pm.name for pm in getAvailableTypes(metricsOptions.periods)" />
+                                            </td>
+                                        </tr>
+
+                                    </table>
+                                </div>
+
+                            </td>
+                            <td style="vertical-align:top;padding:10px;">
+
+                                <div class="well">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <span style="cursor:pointer;" popover="Enable to update plot data at real time (new data would be requested every second)."
+                                                      popover-placement="right" class="badge badge-info">?</span>
+                                            </td>
+                                            <td>
+                                                <label style="margin-left:25px;" class="checkbox small"><b>Follow the plot</b><input type="checkbox" ng-model="followMetric" ng-true-value="1" ng-false-value="0"/></label>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                    <span style="cursor:pointer;" popover="Enable to remove all dots with zero values from the plot."
+                                                          popover-placement="right" class="badge badge-info">?</span>
+                                            </td>
+                                            <td>
+                                                <label style="margin-left:25px;" class="checkbox small"><b>Remove zero values</b><input type="checkbox" ng-model="selection.omitZeroes" /></label>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                    <span style="cursor:pointer;" popover="Enable to perform smoothing of the plot data. The larger smoothing rate the more average values (with less points on the plot) are."
+                                                          popover-placement="right" class="badge badge-info">?</span>
+                                            </td>
+                                            <td>
+                                                <b style="margin-left:25px;">Smooth rate:</b>
+                                                <select class="input-small" ng-model="selection.smoothRate" ng-options = "rate for rate in smoothRates" ></select>
+
+                                            </td>
+                                        </tr>
+
+                                    </table>
+                                </div>
+
+                            </td>
+                        </tr>
+                    </table>
+
+                </td>
+                <td style="width:20px;"></td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+
+
+
+<div style="width:100%;" class="well">
+
+    <div>
+        <table cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td style="text-align: left;">
+                    <h4>Plot:</h4>
+                </td>
+                <td style="text-align: right;">
                         <span ng-click="collapse.plot = !collapse.plot" style="cursor:pointer;">
                             <i class="icon-chevron-up" ng-hide="collapse.plot" popover="Hide plot" popover-trigger="mouseenter" popover-placement="left"></i>
                             <i class="icon-chevron-down"  ng-show="collapse.plot" popover="Show plot" popover-trigger="mouseenter" popover-placement="left"></i>
                         </span>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <div collapse = "collapse.plot">
-            <table style="width:100%;height:100%;">
-                <tr>
-                    <td style="vertical-align: top;width: 700px;">
-                        <table cellspacing="0" cellpadding="0" width="100%">
-                            <tr>
-                                <td style="width: 40px;"><span class="axis-label">{{getYLabel()}}</span></td>
-                                <td>
-                                    <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric" holder="dataHolder" overview="plot-overview"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td style="height: 30px;text-align: center;"><span class="axis-label">{{getXLabel()}}</span></td>
-                            </tr>
-                        </table>
-
-                    </td>
-                    <td style = "vertical-align:top;text-align:left;">
-                        <div class="well" style="height: 400px;overflow:auto;">
-                            <span class="badge badge-info" style="cursor:pointer;" popover="Select datasets to show on the diagram" popover-placement="right">?</span>
-                            <b>Datasets:</b>
-
-                            <div ng-hide = "getDatasetList().length>0" class="alert alert-warning">No selected datasets to show</div>
-
-                            <ul>
-                                <li ng-repeat="ds in getDatasetList()">
-                                    <label class="checkbox">
-                                        <input type="checkbox" ng-model="selection.datasets[ds.value]"/><small>{{ ds.name }}</small>
-                                    </label>
-                                </li>
-                            </ul>
-                        </div>
-
-                    </td>
-                </tr>
-            </table>
-        </div>
-
+                </td>
+            </tr>
+        </table>
     </div>
 
+    <div collapse = "collapse.plot">
+        <table style="width:100%;height:100%;">
+            <tr>
+                <td style="vertical-align: top;width: 700px;">
+                    <table cellspacing="0" cellpadding="0" width="100%">
+                        <tr>
+                            <td style="width: 40px;"><span class="axis-label">{{getYLabel()}}</span></td>
+                            <td>
+                                <div tsk-plot style="width:640px;height:480px;" dataset-url="getDataSetUrl()" update-period="followMetric" holder="dataHolder" overview="plot-overview"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td style="height: 30px;text-align: center;"><span class="axis-label">{{getXLabel()}}</span></td>
+                        </tr>
+                    </table>
+
+                </td>
+                <td style = "vertical-align:top;text-align:left;">
+                    <div class="well" style="height: 400px;overflow:auto;">
+                        <span class="badge badge-info" style="cursor:pointer;" popover="Select datasets to show on the diagram" popover-placement="right">?</span>
+                        <b>Datasets:</b>
+
+                        <div ng-hide = "getDatasetList().length>0" class="alert alert-warning">No selected datasets to show</div>
+
+                        <ul>
+                            <li ng-repeat="ds in getDatasetList()">
+                                <label class="checkbox">
+                                    <input type="checkbox" ng-model="selection.datasets[ds.value]"/>
+                                    <small>
+                                        {{ ds.value }}<span ng-if="ds.general" popover="{{ds.name}}" popover-trigger="mouseenter" popover-placement="left" style="cursor:help;"><i class="icon-question-sign"></i></span>
+                                    </small>
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
 
 
-    <div style="width:100%;" class="well">
 
-        <div>
-            <table cellspacing="0" cellpadding="0" width="100%">
-                <tr>
-                    <td style="text-align: left;">
-                        <h4>Data table: <small><span class="alert alert-info">Hide to increase UI performance on multiple datasets</span></small></h4>
-                    </td>
-                    <td style="text-align: right;">
+<div style="width:100%;" class="well">
+
+    <div>
+        <table cellspacing="0" cellpadding="0" width="100%">
+            <tr>
+                <td style="text-align: left;">
+                    <h4>Data table: <small><span class="alert alert-info">Hide to increase UI performance on multiple datasets</span></small></h4>
+                </td>
+                <td style="text-align: right;">
                         <span ng-click="collapse.table = !collapse.table" style="cursor:pointer;">
                             <i class="icon-chevron-up" ng-hide="collapse.table" popover="Hide data table" popover-trigger="mouseenter" popover-placement="left"></i>
                             <i class="icon-chevron-down"  ng-show="collapse.table" popover="Show data table" popover-trigger="mouseenter" popover-placement="left"></i>
                         </span>
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <div collapse = "collapse.table">
-            <table class="table table-condensed table-striped" ng-hide="collapse.table">
-                <thead>
-                    <tr>
-                        <th style="width:30%;">Dataset</th>
-                        <th>Values</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="dataset in getTableData()">
-                        <td>
-                            <b>{{ dataset.label }}</b>
-                        </td>
-                        <td>
-                            <div style="height: 300px; overflow: auto;">
-                                <table class="table table-condensed table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th><b>X:</b></th>
-                                            <th><b>Y:</b></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr ng-repeat="dot in dataset.data">
-                                            <td><small>{{ dot[0] }} {{dataset.xLabel}}</small></td>
-                                            <td><small>{{ dot[1] }} {{dataset.yLabel}}</small></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div ng-hide = "getTableData().length>0" class="alert alert-warning">No selected datasets to show</div>
-        </div>
-
+                </td>
+            </tr>
+        </table>
     </div>
+
+    <div collapse = "collapse.table">
+        <table class="table table-condensed table-striped" ng-hide="collapse.table">
+            <thead>
+            <tr>
+                <th style="width:30%;">Dataset</th>
+                <th>Values</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="dataset in getTableData()">
+                <td>
+                    <b>{{ dataset.label }}</b>
+                </td>
+                <td>
+                    <div style="height: 300px; overflow: auto;">
+                        <table class="table table-condensed table-bordered">
+                            <thead>
+                            <tr>
+                                <th><b>X:</b></th>
+                                <th><b>Y:</b></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="dot in dataset.data">
+                                <td><small>{{ dot[0] }} {{dataset.xLabel}}</small></td>
+                                <td><small>{{ dot[1] }} {{dataset.yLabel}}</small></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div ng-hide = "getTableData().length>0" class="alert alert-warning">No selected datasets to show</div>
+    </div>
+
+</div>
 
 
 </div>

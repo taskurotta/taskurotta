@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.resources.console.metrics;
+package ru.taskurotta.dropwizard.resources.console.metrics.vo;
 
 import java.io.Serializable;
 import java.util.List;
