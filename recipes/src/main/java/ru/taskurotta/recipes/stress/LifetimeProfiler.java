@@ -54,7 +54,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             deltaShot = (Integer) properties.get("deltaShot");
         }
         if (properties.containsKey("targetTolerance")) {
-            targetTolerance = Double.parseDouble(properties.getProperty("targetTolerance"));
+            targetTolerance = Double.parseDouble((String) properties.get("targetTolerance"));
         }
     }
 
