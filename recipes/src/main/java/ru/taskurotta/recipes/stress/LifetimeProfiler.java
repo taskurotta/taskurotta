@@ -8,7 +8,11 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,7 +36,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     private double previousCountTotalRate = 0;
     public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
-    private double targetTolerance = 0.5;
+    private double targetTolerance = 4.0;
+
+    private AtomicLong startTimeOfTask = new AtomicLong(0);
+    public static AtomicBoolean stopDecorating = new AtomicBoolean(false);
+
+    public static List<Long> arrayOfDuration = new CopyOnWriteArrayList<>();
 
     public LifetimeProfiler() {
     }
@@ -44,7 +53,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         if (properties.containsKey("deltaShot")) {
             deltaShot = (Integer) properties.get("deltaShot");
         }
-        if (properties.containsKey("targetTolerance")){
+        if (properties.containsKey("targetTolerance")) {
             targetTolerance = Double.parseDouble(properties.getProperty("targetTolerance"));
         }
     }
@@ -54,8 +63,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new TaskSpreader() {
             @Override
             public Task poll() {
+                if (stopDecorating.get()){
+                    return taskSpreader.poll();
+                }
                 Task task = taskSpreader.poll();
                 if (null != task) {
+
                     if (nextShot == 0) {
                         nextShot = (StressTaskCreator.getShotSize() * StressTaskCreator.getInitialCount()) - deltaShot;
                     }
@@ -95,6 +108,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, totalRate, currentTolerance);
                     }
                 }
+                collectDataOfEveryTask();
                 return task;
             }
 
@@ -103,6 +117,16 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 taskSpreader.release(taskDecision);
             }
         };
+    }
+
+    private void collectDataOfEveryTask() {
+        if (startTimeOfTask.get() == 0) {
+            startTimeOfTask.set(System.currentTimeMillis());
+        } else {
+            long val = System.currentTimeMillis() - startTimeOfTask.get();
+            arrayOfDuration.add(val);
+            startTimeOfTask.set(System.currentTimeMillis());
+        }
     }
 
     public void setTargetTolerance(double targetTolerance) {
