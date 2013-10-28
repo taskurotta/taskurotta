@@ -9,8 +9,14 @@ import java.util.UUID;
  * Time: 18:24
  */
 public interface RecoveryProcessBackend {
-    void restartProcess(UUID processId);
+    /**
+     * @return result of restart process
+     */
+    boolean restartProcess(UUID processId);
 
-    void restartBrokenGroup(Collection<UUID> processIds);
+    /**
+     * @return UUID's collection of successfully restarted processes
+     */
+    Collection<UUID> restartBrokenGroup(Collection<UUID> processIds);
 
 }

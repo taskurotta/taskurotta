@@ -61,8 +61,8 @@ public abstract class AbstractQueueBackendStatistics implements QueueBackendStat
     }
 
     @Override
-    public void enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
-        queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
+    public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+        return queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
     }
 
     @Override
