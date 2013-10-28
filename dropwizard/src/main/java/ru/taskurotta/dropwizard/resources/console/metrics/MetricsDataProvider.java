@@ -26,6 +26,8 @@ public class MetricsDataProvider implements MetricsConstants {
 
     private MetricsMethodDataRetriever methodDataRetriever;
     private MetricsNumberDataRetriever numberDataRetriever;
+    private int methodMetricsPeriodSeconds = 0;
+    private int numberMetricsPeriodSeconds = 0;
 
     public List<DatasetVO> getDataResponse(String metricName, List<String> dataSetNames, String scope, String dataType, String period) {
         List<DatasetVO> result = new ArrayList<>();
@@ -61,7 +63,7 @@ public class MetricsDataProvider implements MetricsConstants {
 
         DataPointVO<Number>[] rawData = numberDataRetriever.getData(metricName, dataSetName);
         MetricsDataUtils.sortDataSet(rawData);
-        ds.setData(MetricsDataUtils.convertToDataRow(rawData, false));
+        ds.setData(MetricsDataUtils.convertToDataRow(rawData, true, numberMetricsPeriodSeconds));
 
         return ds;
     }
@@ -76,19 +78,19 @@ public class MetricsDataProvider implements MetricsConstants {
         if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
             DataPointVO<Long>[] rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
         } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             DataPointVO<Long>[] rawData = methodDataRetriever.getCountsForLastHour(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
             DataPointVO<Double>[] rawData = methodDataRetriever.getMeansForLastDay(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             DataPointVO<Double>[] rawData = methodDataRetriever.getMeansForLastHour(metricName, dataSetName);
             MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline));
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
         } else {
             throw new IllegalArgumentException("Unsupported dataType["+dataType+"] and period["+period+"] combination");
         }
@@ -104,5 +106,15 @@ public class MetricsDataProvider implements MetricsConstants {
     @Required
     public void setNumberDataRetriever(MetricsNumberDataRetriever numberDataRetriever) {
         this.numberDataRetriever = numberDataRetriever;
+    }
+
+    @Required
+    public void setMethodMetricsPeriodSeconds(int methodMetricsPeriodSeconds) {
+        this.methodMetricsPeriodSeconds = methodMetricsPeriodSeconds;
+    }
+
+    @Required
+    public void setNumberMetricsPeriodSeconds(int numberMetricsPeriodSeconds) {
+        this.numberMetricsPeriodSeconds = numberMetricsPeriodSeconds;
     }
 }

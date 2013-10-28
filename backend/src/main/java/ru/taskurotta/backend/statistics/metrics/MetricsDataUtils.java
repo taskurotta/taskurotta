@@ -3,7 +3,6 @@ package ru.taskurotta.backend.statistics.metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
-import ru.taskurotta.backend.statistics.MetricsDataHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -183,30 +182,22 @@ public class MetricsDataUtils {
 //        return result;
 //    }
 
-    public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline) {
+    public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline, int timeStep) {
         List<Number[]> result = new ArrayList<>();
         if(target!=null && target.length> 0) {
             for (int i = 0; i < target.length; i++) {
                 Number value = target[i]!=null? target[i].getValue(): null;
 
-                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length): i, value};
+                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length, timeStep): i, value};
                 result.add(item);
             }
         }
         return result;
     }
 
-    public static Number convertToTime(int value, long time, int size) {
-        Number result = null;
-        if (size == MetricsDataHandler.MINUTES_IN_24_HOURS) {//data for a day per minute
-            result = -(MetricsDataHandler.MINUTES_IN_24_HOURS - value);
-
-        } else if (size == MetricsDataHandler.SECONDS_IN_HOUR) {//data for a hour per second
-            result = -(MetricsDataHandler.SECONDS_IN_HOUR - value);
-        }
-        return result;
+    public static Number convertToTime(int value, long time, int size, int timeStep) {
+        return timeStep * (value - size);
     }
-
 
     public static void sortDataSet(DataPointVO<? extends Number>[] target) {
         if(target!=null && target.length>0) {

@@ -97,7 +97,7 @@ public class MetricsConsoleUtils implements MetricsConstants {
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             return "Timeline: seconds ago";
         } else if (OPT_DATATYPE_ITEMS.equals(dataType)) {
-            return "Timeline";
+            return "Timeline: seconds ago";
         } else {
             return "";
         }
