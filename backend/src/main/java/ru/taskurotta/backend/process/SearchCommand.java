@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.process;
 
+import java.util.UUID;
+
 /**
  * User: stukushin
  * Date: 11.10.13
@@ -7,7 +9,7 @@ package ru.taskurotta.backend.process;
  */
 public class SearchCommand {
 
-    protected String processId;
+    protected UUID processId;
     protected String startActorId;
     protected String brokenActorId;
     protected long startPeriod = -1;
@@ -15,11 +17,11 @@ public class SearchCommand {
     protected String errorMessage;
     protected String errorClassName;
 
-    public String getProcessId() {
+    public UUID getProcessId() {
         return processId;
     }
 
-    public void setProcessId(String processId) {
+    public void setProcessId(UUID processId) {
         this.processId = processId;
     }
 
@@ -74,13 +76,13 @@ public class SearchCommand {
     @Override
     public String toString() {
         return "SearchCommand{" +
-                "processId='" + processId + '\'' +
+                "processId=" + processId +
                 ", startActorId='" + startActorId + '\'' +
                 ", brokenActorId='" + brokenActorId + '\'' +
                 ", startPeriod=" + startPeriod +
                 ", endPeriod=" + endPeriod +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", errorClassName='" + errorClassName + '\'' +
-                "} ";
+                "} " + super.toString();
     }
 }

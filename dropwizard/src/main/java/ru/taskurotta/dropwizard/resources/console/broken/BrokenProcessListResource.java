@@ -138,7 +138,7 @@ public class BrokenProcessListResource {
 
                 @Override
                 public void run() {
-                    recoveryProcessBackend.restartBrokenGroup(processIds);
+                    recoveryProcessBackend.restartProcessCollection(processIds);
 
                 }
             });
@@ -313,7 +313,7 @@ public class BrokenProcessListResource {
                 actorsDiffs.add(bp.getBrokenActorId());
                 startersDiffs.add(bp.getStartActorId());
                 exceptionsDiffs.add(bp.getErrorClassName());
-                processIds.add(bp.getProcessId());
+                processIds.add(bp.getProcessId().toString());
             }
         }
         group.setName(name);

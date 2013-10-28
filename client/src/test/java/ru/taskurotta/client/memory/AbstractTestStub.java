@@ -6,6 +6,8 @@ import ru.taskurotta.annotation.Worker;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.MemoryBackendBundle;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.process.BrokenProcessBackend;
+import ru.taskurotta.backend.process.MemoryBrokenProcessBackend;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend;
 import ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics;
@@ -47,6 +49,7 @@ public class AbstractTestStub {
     protected GeneralTaskBackend memoryStorageBackend;
     protected DependencyBackend dependencyBackend;
     protected GeneralRecoveryProcessBackend recoveryProcessBackend;
+    protected BrokenProcessBackend brokenProcessBackend;
     protected BackendBundle backendBundle;
 
     protected TaskDao taskDao;
@@ -94,7 +97,8 @@ public class AbstractTestStub {
         memoryQueueBackendStatistics = new MemoryQueueBackendStatistics(memoryQueueBackend);
         memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
         dependencyBackend = backendBundle.getDependencyBackend();
-        recoveryProcessBackend = new GeneralRecoveryProcessBackend(memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), 1l);
+        brokenProcessBackend = new MemoryBrokenProcessBackend();
+        recoveryProcessBackend = new GeneralRecoveryProcessBackend(memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), brokenProcessBackend, 1l);
 
         taskServer = new GeneralTaskServer(backendBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
