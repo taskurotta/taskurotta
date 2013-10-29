@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Actor execution thread pool abstraction.
@@ -24,7 +25,7 @@ public class ActorThreadPool {
     private Class actorClass;//actor class served by this pool
     private int size = 0;//pool size
     private ActorExecutor actorExecutor;//ActorExecutor task instance for the pool
-    private volatile int activeActorExecutorThreadCount;
+    private AtomicInteger activeActorExecutorThreadCount = new AtomicInteger();
 
     private Thread[] actorExecutorThreads;
 
@@ -32,7 +33,8 @@ public class ActorThreadPool {
         this.actorClass = actorClass;
         this.size = size;
 
-        actorExecutorThreads = new Thread[size];
+        this.actorExecutorThreads = new Thread[size];
+        this.activeActorExecutorThreadCount.set(size);
     }
 
     public void start(ActorExecutor actorExecutor) {
@@ -41,8 +43,6 @@ public class ActorThreadPool {
         for (int i = 0; i < size; i++) {
             createActorExecutorThread(i);
         }
-
-        activeActorExecutorThreadCount = size;
     }
 
     /**
@@ -58,7 +58,7 @@ public class ActorThreadPool {
             logger.trace("Try to stop actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
         }
 
-        if (activeActorExecutorThreadCount == 1) {
+        if (activeActorExecutorThreadCount.get() == 1) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Only one active actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
             }
@@ -71,10 +71,10 @@ public class ActorThreadPool {
         }
 
         actorExecutor.stopThread();
-        activeActorExecutorThreadCount--;
+        activeActorExecutorThreadCount.decrementAndGet();
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount);
+            logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount.get());
         }
 
         return true;
@@ -84,9 +84,9 @@ public class ActorThreadPool {
      * Submits new task to the pool, expanding it to max size. (meaning task server is now active and actors ready for full scale execution).
      */
     public synchronized void wake() {
-        if (activeActorExecutorThreadCount == size) {
+        if (activeActorExecutorThreadCount.get() == size) {
             if (logger.isTraceEnabled()) {
-                logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount);
+                logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount.get());
             }
 
             return;
@@ -106,10 +106,10 @@ public class ActorThreadPool {
             count++;
         }
 
-        activeActorExecutorThreadCount = size;
+        activeActorExecutorThreadCount.set(size);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount);
+            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount.get());
         }
     }
 
@@ -172,7 +172,7 @@ public class ActorThreadPool {
     }
 
     public int getCurrentSize() {
-        return activeActorExecutorThreadCount;
+        return activeActorExecutorThreadCount.get();
     }
 
     private void createActorExecutorThread(int i) {
