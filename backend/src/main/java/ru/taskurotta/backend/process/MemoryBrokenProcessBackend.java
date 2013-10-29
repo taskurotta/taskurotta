@@ -145,7 +145,11 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
 
             processIds = new CopyOnWriteArraySet<>();
             processIds.add(processId);
-            map.put(key, processIds);
+
+            CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, processIds);
+            if (previous != null) {
+                map.get(key).add(processId);
+            }
 
             lock.unlock();
         } else {
@@ -159,9 +163,10 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         if (processIds == null) {
             lock.lock();
 
-            processIds = new CopyOnWriteArraySet<>();
-            processIds.add(processId);
-            map.put(key, processIds);
+            CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, processIds);
+            if (previous != null) {
+                map.get(key).add(processId);
+            }
 
             lock.unlock();
         } else {
