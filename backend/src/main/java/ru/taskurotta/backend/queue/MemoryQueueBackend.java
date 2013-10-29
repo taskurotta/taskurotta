@@ -241,4 +241,11 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         }
         return result;
     }
+
+    /**
+     * Drps and recreate queeu map
+     */
+    public void simulateDataLoss() {
+        queues.clear();
+    }
 }

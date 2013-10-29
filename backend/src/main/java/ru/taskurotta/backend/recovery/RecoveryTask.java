@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
  * Date: 15.08.13
  * Time: 14:32
  */
-public class RecoveryTask implements Callable {
+public class RecoveryTask implements Callable<Boolean> {
 
     private RecoveryProcessBackend recoveryProcessBackend;
     private UUID processId;
@@ -19,9 +19,9 @@ public class RecoveryTask implements Callable {
     }
 
     @Override
-    public Object call() throws Exception {
-        recoveryProcessBackend.restartProcess(processId);
+    public Boolean call() throws Exception {
+        return recoveryProcessBackend.restartProcess(processId);
 
-        return null;
+        //return null;
     }
 }

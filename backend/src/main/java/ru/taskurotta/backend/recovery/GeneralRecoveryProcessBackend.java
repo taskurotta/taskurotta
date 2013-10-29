@@ -173,19 +173,21 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
 
             long now = System.currentTimeMillis();
             if (taskContainer.getStartTime() > now) {
+                System.out.println("MARKER: taskContainer.getStartTime() is" + taskContainer.getStartTime());
                 // this task must start in future, ignore it
 
-                logger.trace("Task [{}] from process [{}] must started later at [{}], but now is [{}]", taskId, processId, new Date(taskContainer.getStartTime()), new Date(now));
+                logger.debug("Task [{}] from process [{}] must started later at [{}], but now is [{}]", taskId, processId, new Date(taskContainer.getStartTime()), new Date(now));
 
                 continue;
             }
 
             String queueName = queueBackendStatistics.createQueueName(taskContainer.getActorId(), taskList);
             Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
-            if (lastEnqueueTime < taskContainer.getStartTime()) {
+            if (lastEnqueueTime > 0 && lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
 
-                logger.trace("Skip restart task [{}] for process [{}], because early tasks in queue isn't polled", taskId, processId, queueName);
+                logger.debug("Skip restart task [{}] for process [{}], because early tasks in queue isn't polled. " +
+                        "Queue[{}], last enqueue time[{}], taskTime [{}]", taskId, processId, queueName, lastEnqueueTime, taskContainer.getStartTime());
 
                 continue;
             }
