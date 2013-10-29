@@ -9,6 +9,7 @@ import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.multiplier.MultiplierDeciderClient;
 
 import java.io.Console;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -117,22 +118,17 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             arrayOfDuration.toArray(array);
             Arrays.sort(array);
             System.out.println("Results already sorted");
-            List<Long> cleanedData = new ArrayList<>();
-            for (long it : array) {
-                if (it > 0) {
-                    cleanedData.add(it);
-                }
-            }
+            List<Long> cleanedData = Arrays.asList(array);
             int size = cleanedData.size();
             int limit = size / 10;
             List<Long> meaningData = cleanedData.subList(limit, size - limit);
-            long sum = 0;
+            BigInteger rs = BigInteger.valueOf(0);
             for (long z : meaningData) {
-                sum += z;
+                rs = rs.add(BigInteger.valueOf(z));
             }
-            System.out.println("Sum: " + sum);
+            System.out.println("Sum: " + rs.toString());
             System.out.println("Meaning data size: " + meaningData.size());
-            System.out.println("Average is: " + (sum / meaningData.size()) + " ms");
+            System.out.println("Average is: " + rs.divide(BigInteger.valueOf(meaningData.size())) + " in nanos");
             System.out.println("End");
             System.exit(0);
         } else {

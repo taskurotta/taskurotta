@@ -121,11 +121,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     private void collectDataOfEveryTask() {
         if (startTimeOfTask.get() == 0) {
-            startTimeOfTask.set(System.currentTimeMillis());
+            startTimeOfTask.set(System.nanoTime());
         } else {
-            long val = System.currentTimeMillis() - startTimeOfTask.get();
+            long val = System.nanoTime() - startTimeOfTask.get();
             arrayOfDuration.add(val);
-            startTimeOfTask.set(System.currentTimeMillis());
+            startTimeOfTask.set(System.nanoTime());
         }
     }
 
