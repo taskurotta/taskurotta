@@ -2,12 +2,14 @@ package ru.taskurotta.backend.process;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: stukushin
@@ -16,14 +18,16 @@ import java.util.UUID;
  */
 public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
 
-    private Map<String, Set<UUID>> deciderActorIds = new HashMap<>();
-    private Map<String, Set<UUID>> brokenActorIds = new HashMap<>();
-    private Map<Long, Set<UUID>> times = new HashMap<>();
-    private Map<String, Set<UUID>> errorMessages = new HashMap<>();
-    private Map<String, Set<UUID>> errorClassNames = new HashMap<>();
-    private Map<String, Set<UUID>> stackTraces = new HashMap<>();
+    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> deciderActorIds = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> brokenActorIds = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> times = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorMessages = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorClassNames = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> stackTraces = new ConcurrentHashMap<>();
 
-    private Map<UUID, BrokenProcessVO> brokenProcess = new HashMap<>();
+    private ConcurrentHashMap<UUID, BrokenProcessVO> brokenProcess = new ConcurrentHashMap<>();
+
+    private static final Lock lock = new ReentrantLock();
 
     @Override
     public void save(BrokenProcessVO brokenProcessVO) {
@@ -64,22 +68,22 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         }
 
         if (searchCommand.getStartPeriod() > 0 && searchCommand.getEndPeriod() > 0) {
-            Set<Map.Entry<Long, Set<UUID>>> entries = times.entrySet();
-            for (Map.Entry<Long, Set<UUID>> entry: entries) {
+            Set<Map.Entry<Long, CopyOnWriteArraySet<UUID>>> entries = times.entrySet();
+            for (Map.Entry<Long, CopyOnWriteArraySet<UUID>> entry: entries) {
                 if (entry.getKey() > searchCommand.getStartPeriod() && entry.getKey() < searchCommand.getEndPeriod()) {
                     merge(entry.getValue(), processIds);
                 }
             }
         } else if (searchCommand.getStartPeriod() > 0 && searchCommand.getEndPeriod() < 0) {
-            Set<Map.Entry<Long, Set<UUID>>> entries = times.entrySet();
-            for (Map.Entry<Long, Set<UUID>> entry: entries) {
+            Set<Map.Entry<Long, CopyOnWriteArraySet<UUID>>> entries = times.entrySet();
+            for (Map.Entry<Long, CopyOnWriteArraySet<UUID>> entry: entries) {
                 if (entry.getKey() > searchCommand.getStartPeriod()) {
                     merge(entry.getValue(), processIds);
                 }
             }
         } else if (searchCommand.getStartPeriod() < 0 && searchCommand.getEndPeriod() > 0) {
-            Set<Map.Entry<Long, Set<UUID>>> entries = times.entrySet();
-            for (Map.Entry<Long, Set<UUID>> entry: entries) {
+            Set<Map.Entry<Long, CopyOnWriteArraySet<UUID>>> entries = times.entrySet();
+            for (Map.Entry<Long, CopyOnWriteArraySet<UUID>> entry: entries) {
                 if (entry.getKey() < searchCommand.getEndPeriod()) {
                     merge(entry.getValue(), processIds);
                 }
@@ -133,34 +137,42 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         }
     }
 
-    private void addProcessId(Map<String, Set<UUID>> map, String key, UUID processId) {
-        Set<UUID> processIds = map.get(key);
+    private void addProcessId(ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, String key, UUID processId) {
+        CopyOnWriteArraySet<UUID> processIds = map.get(key);
 
         if (processIds == null) {
-            processIds = new HashSet<>();
+            lock.lock();
+
+            processIds = new CopyOnWriteArraySet<>();
             processIds.add(processId);
             map.put(key, processIds);
+
+            lock.unlock();
         } else {
             processIds.add(processId);
         }
     }
 
-    private void addProcessId(Map<Long, Set<UUID>> map, Long key, UUID processId) {
-        Set<UUID> processIds = map.get(key);
+    private void addProcessId(ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> map, Long key, UUID processId) {
+        CopyOnWriteArraySet<UUID> processIds = map.get(key);
 
         if (processIds == null) {
-            processIds = new HashSet<>();
+            lock.lock();
+
+            processIds = new CopyOnWriteArraySet<>();
             processIds.add(processId);
             map.put(key, processIds);
+
+            lock.unlock();
         } else {
             processIds.add(processId);
         }
     }
 
-    private void searchByStartString(String prefix, Map<String, Set<UUID>> map, Collection<UUID> result) {
-        Set<Map.Entry<String, Set<UUID>>> entries = map.entrySet();
+    private void searchByStartString(String prefix, ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, Collection<UUID> result) {
+        Set<Map.Entry<String, CopyOnWriteArraySet<UUID>>> entries = map.entrySet();
 
-        for (Map.Entry<String, Set<UUID>> entry : entries) {
+        for (Map.Entry<String, CopyOnWriteArraySet<UUID>> entry : entries) {
             if (entry.getKey().startsWith(prefix)) {
                 merge(entry.getValue(), result);
             }
@@ -180,13 +192,13 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         return to;
     }
 
-    private void deleteProcessId(Map<?, Set<UUID>> map, UUID processId) {
+    private void deleteProcessId(ConcurrentHashMap<?, CopyOnWriteArraySet<UUID>> map, UUID processId) {
 
         if (processId == null) {
             return;
         }
 
-        Collection<Set<UUID>> values = map.values();
+        Collection<CopyOnWriteArraySet<UUID>> values = map.values();
         for (Set<UUID> processIds : values) {
             processIds.remove(processId);
         }
