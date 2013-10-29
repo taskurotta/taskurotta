@@ -231,6 +231,7 @@
         <constructor-arg name="queueBackendStatistics" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend"/>
         <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
 
