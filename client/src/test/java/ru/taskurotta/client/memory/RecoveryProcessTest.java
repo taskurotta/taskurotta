@@ -5,10 +5,10 @@ import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
-import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.recovery.RecoveryTask;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.util.ActorUtils;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -23,7 +23,7 @@ import static junit.framework.Assert.assertTrue;
  * Date: 16.08.13
  * Time: 16:43
  */
-public class TestRecoveryProcess extends AbstractTestStub {
+public class RecoveryProcessTest extends AbstractTestStub {
 
     @Test
     public void testRecoveryProcessFromStartTask() throws Exception {
@@ -36,7 +36,7 @@ public class TestRecoveryProcess extends AbstractTestStub {
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
 
         // clean tasks and graph
-        memoryQueueBackend = new MemoryQueueBackend(0);
+        memoryQueueBackend.simulateDataLoss();// = new MemoryQueueBackend(0);
         dependencyBackend = new GeneralDependencyBackend(new MemoryGraphDao());
         recoveryProcessBackend.setDependencyBackend(dependencyBackend);
 
@@ -74,7 +74,8 @@ public class TestRecoveryProcess extends AbstractTestStub {
         assertTrue(isTaskPresent(workerTaskId, processId));
 
         // clean tasks from queues
-        memoryQueueBackend = new MemoryQueueBackend(0);
+        memoryQueueBackend.simulateDataLoss();
+        //memoryQueueBackend = new MemoryQueueBackend(0);
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
@@ -108,7 +109,8 @@ public class TestRecoveryProcess extends AbstractTestStub {
         assertTrue(isTaskPresent(workerTaskId, processId));
 
         // clean tasks from queues
-        memoryQueueBackend = new MemoryQueueBackend(0);
+        memoryQueueBackend.simulateDataLoss();
+
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
@@ -126,6 +128,8 @@ public class TestRecoveryProcess extends AbstractTestStub {
                 return true;
             }
         });
+
+        memoryQueueBackendStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
         new RecoveryTask(recoveryProcessBackend, processId).call();
