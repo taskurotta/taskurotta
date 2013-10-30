@@ -5,7 +5,6 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.client.jersey.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.exception.server.InvalidServerRequestException;
 import ru.taskurotta.exception.server.ServerConnectionException;
@@ -57,7 +56,7 @@ public class BaseTaskProxy implements TaskServer {
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
         logger.trace("Polling task thread name[{}]", Thread.currentThread().getName());
-        TaskContainer result = null;
+        TaskContainer result;
         try {
             WebResource.Builder rb = pullResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
@@ -116,9 +115,7 @@ public class BaseTaskProxy implements TaskServer {
         this.readTimeout = readTimeout;
     }
 
-    @Required
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
-
 }

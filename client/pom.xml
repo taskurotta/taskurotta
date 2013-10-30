@@ -24,11 +24,6 @@
             <artifactId>server</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>backend-hz</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>com.sun.jersey</groupId>
