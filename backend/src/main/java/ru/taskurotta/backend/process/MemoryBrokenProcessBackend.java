@@ -141,17 +141,19 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         CopyOnWriteArraySet<UUID> processIds = map.get(key);
 
         if (processIds == null) {
-            lock.lock();
+            try {
+                lock.lock();
 
-            processIds = new CopyOnWriteArraySet<>();
-            processIds.add(processId);
+                processIds = new CopyOnWriteArraySet<>();
+                processIds.add(processId);
 
-            CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, processIds);
-            if (previous != null) {
-                map.get(key).add(processId);
+                CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, processIds);
+                if (previous != null) {
+                    map.get(key).add(processId);
+                }
+            } finally {
+                lock.unlock();
             }
-
-            lock.unlock();
         } else {
             processIds.add(processId);
         }
@@ -161,14 +163,16 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         CopyOnWriteArraySet<UUID> processIds = map.get(key);
 
         if (processIds == null) {
-            lock.lock();
+            try {
+                lock.lock();
 
-            CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, processIds);
-            if (previous != null) {
-                map.get(key).add(processId);
+                CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, processIds);
+                if (previous != null) {
+                    map.get(key).add(processId);
+                }
+            } finally {
+                lock.unlock();
             }
-
-            lock.unlock();
         } else {
             processIds.add(processId);
         }
@@ -204,7 +208,7 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
         }
 
         Collection<CopyOnWriteArraySet<UUID>> values = map.values();
-        for (Set<UUID> processIds : values) {
+        for (CopyOnWriteArraySet<UUID> processIds : values) {
             processIds.remove(processId);
         }
     }
