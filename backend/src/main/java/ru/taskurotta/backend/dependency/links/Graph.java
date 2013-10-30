@@ -263,7 +263,7 @@ public class Graph implements Serializable {
                         continue;
                     }
 
-                    Set<UUID> itemLinks = entry.getValue();
+                    Set<UUID> itemLinks = links.get(entry.getKey());
 
                     if (itemLinks == null) {
                         itemLinks = new HashSet<>();
