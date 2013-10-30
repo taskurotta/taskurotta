@@ -293,9 +293,9 @@ public class BrokenProcessListResource {
         List<ProcessGroupVO> result = null;
         if (groupedProcesses!=null && !groupedProcesses.isEmpty()) {
             result = new ArrayList<>();
-            for (String name: groupedProcesses.keySet()) {
-                Collection<BrokenProcessVO> groupItems = groupedProcesses.get(name);
-                ProcessGroupVO group = convertToGroup(groupItems, name);
+            for (Map.Entry<String, Collection<BrokenProcessVO>> entry: groupedProcesses.entrySet()) {
+                Collection<BrokenProcessVO> groupItems = entry.getValue();
+                ProcessGroupVO group = convertToGroup(groupItems, entry.getKey());
                 result.add(group);
             }
         }

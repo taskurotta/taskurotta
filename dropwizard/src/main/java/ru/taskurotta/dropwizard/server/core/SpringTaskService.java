@@ -34,7 +34,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
         bootstrap.setName("task-queue-service");
 
-        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME)!=null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
+        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
             bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
         } else {
             bootstrap.addBundle(new AssetsBundle("/assets", "/"));
@@ -63,12 +63,13 @@ public class SpringTaskService extends Service<TaskServerConfig> {
                         public Object postProcessBeforeInitialization(Object bean, String beanName)
                                 throws BeansException {
                             if (bean instanceof MemoryConfigBackend) {
-                                MemoryConfigBackend cfgBean = (MemoryConfigBackend)bean;
+                                MemoryConfigBackend cfgBean = (MemoryConfigBackend) bean;
                                 cfgBean.setActorPreferencesCollection(configuration.getActorConfig().getAllActorPreferences());
                                 cfgBean.setExpirationPoliciesCollection(configuration.getActorConfig().getAllExpirationPolicies());
                             }
                             return bean;
                         }
+
                         @Override
                         public Object postProcessAfterInitialization(Object bean, String beanName)
                                 throws BeansException {
@@ -82,11 +83,11 @@ public class SpringTaskService extends Service<TaskServerConfig> {
 
         //-----Register resources-----------------
         int resourcesCount = 0;
-        if (configuration.getResourceBeans()==null
-                || (configuration.getResourceBeans().length==1 && "auto".equalsIgnoreCase(configuration.getResourceBeans()[0]))) {//find automatically
+        if (configuration.getResourceBeans() == null
+                || (configuration.getResourceBeans().length == 1 && "auto".equalsIgnoreCase(configuration.getResourceBeans()[0]))) {//find automatically
             Map<String, Object> resources = appContext.getBeansWithAnnotation(Path.class);
-            if (resources!=null && !resources.isEmpty()) {
-                for(String resourceBeanName: resources.keySet()) {
+            if (resources != null && !resources.isEmpty()) {
+                for (String resourceBeanName : resources.keySet()) {
                     Object resourceSingleton = appContext.getBean(resourceBeanName);
                     environment.addResource(resourceSingleton);
                     resourcesCount++;
@@ -95,7 +96,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
             }
 
         } else {//configured in external file
-            for(String beanName: configuration.getResourceBeans()) {
+            for (String beanName : configuration.getResourceBeans()) {
                 Object resourceSingleton = appContext.getBean(beanName);
                 environment.addResource(resourceSingleton);
                 resourcesCount++;
@@ -106,18 +107,18 @@ public class SpringTaskService extends Service<TaskServerConfig> {
 
         //----- Register healthchecks ------------------
         int healthChecksCount = 0;
-        if (configuration.getHealthCheckBeans()==null
-                || (configuration.getHealthCheckBeans().length==1 && "auto".equalsIgnoreCase(configuration.getHealthCheckBeans()[0]))) {
+        if (configuration.getHealthCheckBeans() == null
+                || (configuration.getHealthCheckBeans().length == 1 && "auto".equalsIgnoreCase(configuration.getHealthCheckBeans()[0]))) {
             Map<String, HealthCheck> healthChecks = appContext.getBeansOfType(HealthCheck.class);
-            if (healthChecks!=null && !healthChecks.isEmpty()) {
-                for(String hcBeanName: healthChecks.keySet()) {
+            if (healthChecks != null && !healthChecks.isEmpty()) {
+                for (String hcBeanName : healthChecks.keySet()) {
                     HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
                     environment.addHealthCheck(healthCheck);
                     healthChecksCount++;
                 }
             }
         } else {
-            for(String hcBeanName:  configuration.getHealthCheckBeans()) {
+            for (String hcBeanName : configuration.getHealthCheckBeans()) {
                 HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
                 environment.addHealthCheck(healthCheck);
                 healthChecksCount++;
@@ -147,7 +148,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
         result = extendProps(result, System.getProperties(), SYSTEM_PROP_PREFIX);
 
         //4. Internal pool feature props (if present)
-        if (configuration.getInternalPoolConfig()!=null) {
+        if (configuration.getInternalPoolConfig() != null) {
             result = extendProps(result, configuration.getInternalPoolConfig().asProperties(), null);
         }
 
@@ -158,15 +159,15 @@ public class SpringTaskService extends Service<TaskServerConfig> {
         if (mergeTo == null) {
             return mergeFrom;
         }
-        if (mergeFrom!=null) {
-            for(Object key: mergeFrom.keySet()) {
-                if (prefix!=null) {//filter only prefixed properties
-                    String stringKey = key.toString();
+        if (mergeFrom != null) {
+            for (Map.Entry<Object, Object> entry : mergeFrom.entrySet()) {
+                if (prefix != null) {//filter only prefixed properties
+                    String stringKey = entry.getKey().toString();
                     if (stringKey.startsWith(prefix)) {
-                        mergeTo.put(stringKey.substring(prefix.length()), mergeFrom.get(key));
+                        mergeTo.put(stringKey.substring(prefix.length()), entry.getValue());
                     }
                 } else {
-                    mergeTo.put(key, mergeFrom.get(key));
+                    mergeTo.put(entry.getKey(), entry.getValue());
                 }
             }
         }

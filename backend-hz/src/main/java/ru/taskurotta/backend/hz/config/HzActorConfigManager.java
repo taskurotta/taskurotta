@@ -116,10 +116,10 @@ public class HzActorConfigManager implements ActorConfigManager {
 
         Map <Member, Future <Collection<MetricsStatDataVO>>> futures = executorService.submitToMembers(new ComputeMetricsStatDataTask(metrics, actorIds), hzInstance.getCluster().getMembers());
         if (futures!=null && !futures.isEmpty()) {
-            for (Member member : futures.keySet()) {
+            for (Map.Entry<Member, Future <Collection<MetricsStatDataVO>>> entry : futures.entrySet()) {
                 try {
-                    Future <Collection<MetricsStatDataVO>> future = futures.get(member);
-                    result.put(member.toString(), future.get(5, TimeUnit.SECONDS));
+                    Future <Collection<MetricsStatDataVO>> future = entry.getValue();
+                    result.put(entry.getKey().toString(), future.get(5, TimeUnit.SECONDS));
                 } catch (Exception e) {
                     logger.error("Cannot get metrics stat data for actorIds["+actorIds+"], metrics["+metrics+"]", e);
                 }

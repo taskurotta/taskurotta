@@ -27,19 +27,19 @@ public class EnqueueTaskJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         JobDataMap jdm = context.getJobDetail().getJobDataMap();
-        JobVO job = (JobVO)jdm.get(JobConstants.DATA_KEY_JOB);
-        JobManager jobManager = (JobManager)jdm.get(JobConstants.DATA_KEY_JOB_MANAGER);
-        TaskContainer taskContainer = job!=null? job.getTask(): null;
-        TaskServer taskServer = (TaskServer)jdm.get(JobConstants.DATA_KEY_TASK_SERVER);
-        QueueInfoRetriever queueInfoRetriever = (QueueInfoRetriever)jdm.get(JobConstants.DATA_KEY_QUEUE_INFO_RETRIEVER);
+        JobVO job = (JobVO) jdm.get(JobConstants.DATA_KEY_JOB);
+        JobManager jobManager = (JobManager) jdm.get(JobConstants.DATA_KEY_JOB_MANAGER);
+        TaskContainer taskContainer = job != null ? job.getTask() : null;
+        TaskServer taskServer = (TaskServer) jdm.get(JobConstants.DATA_KEY_TASK_SERVER);
+        QueueInfoRetriever queueInfoRetriever = (QueueInfoRetriever) jdm.get(JobConstants.DATA_KEY_QUEUE_INFO_RETRIEVER);
 
         try {
 
             validateEntities(taskServer, job, queueInfoRetriever, jobManager);
 
-            if (job.getQueueLimit()>0) {
+            if (job.getQueueLimit() > 0) {
                 int size = queueInfoRetriever.getQueueTaskCount(taskContainer.getActorId());
-                if (size >= job.getQueueLimit() ) {
+                if (size >= job.getQueueLimit()) {
                     logger.debug("Queue [{}] contains [{}] elements. Skip task due to limit[{}].", taskContainer.getActorId(), size, job.getQueueLimit());
                     return;
                 }
@@ -50,29 +50,29 @@ public class EnqueueTaskJob implements Job {
 
             taskServer.startProcess(taskContainer);
 
-            if (job.getErrorCount()>0) {
+            if (job.getErrorCount() > 0) {
                 job.setErrorCount(0);
                 job.setLastError("");
                 jobManager.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());//reset error counter
             }
 
         } catch (Throwable e) {
-            logger.error("Cannot execute scheduled job for task ["+taskContainer+"]", e);
+            logger.error("Cannot execute scheduled job for task [" + taskContainer + "]", e);
 
-            if (jobManager != null && job!=null && job.getId()>0) {
-                job.setErrorCount(job.getErrorCount()+1);
+            if (jobManager != null && job != null && job.getId() > 0) {
+                job.setErrorCount(job.getErrorCount() + 1);
                 job.setLastError(e.getClass().getName() + ": " + e.getMessage());
                 try {
                     jobManager.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());
 
-                    if (job.getErrorCount()+1>=MAX_CONSEQUENTIAL_ERRORS) {
+                    if (job.getErrorCount() + 1 >= MAX_CONSEQUENTIAL_ERRORS) {
                         if (jobManager.stopJob(job.getId())) {
                             jobManager.updateJobStatus(job.getId(), JobConstants.STATUS_ERROR);
                         }
                     }
 
-                } catch(Throwable err) {
-                    logger.error("Error at error handling for job ["+job+"]", e);
+                } catch (Throwable err) {
+                    logger.error("Error at error handling for job [" + job + "]", e);
                 }
 
             }
@@ -93,13 +93,13 @@ public class EnqueueTaskJob implements Job {
         if (job.getTask() == null) {
             throw new IllegalArgumentException("Scheduled job have no TaskContainer data entity!");
         }
-        if (job.getQueueLimit()>0 && queueInfoRetriever==null) {
+        if (job.getQueueLimit() > 0 && queueInfoRetriever == null) {
             throw new IllegalArgumentException("Scheduled job have no QueueInfoRetriever data entity!");
         }
     }
 
     public static TaskContainer renewTaskGuids(TaskContainer target) {
-        UUID newGuid= UUID.randomUUID();
+        UUID newGuid = UUID.randomUUID();
         return new TaskContainer(newGuid, newGuid, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions());
     }
 

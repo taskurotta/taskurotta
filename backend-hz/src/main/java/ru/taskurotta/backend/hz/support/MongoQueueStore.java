@@ -63,8 +63,8 @@ public class MongoQueueStore implements QueueStore<TaskQueueItem> {
 
     @Override
     public void storeAll(Map<Long, TaskQueueItem> longTaskQueueItemMap) {
-        for (Long key : longTaskQueueItemMap.keySet()) {
-            store(key, longTaskQueueItemMap.get(key));
+        for (Map.Entry<Long, TaskQueueItem> entry : longTaskQueueItemMap.entrySet()) {
+            store(entry.getKey(), entry.getValue());
         }
     }
 

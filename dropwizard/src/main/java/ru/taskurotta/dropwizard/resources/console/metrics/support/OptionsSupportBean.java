@@ -82,10 +82,10 @@ public class OptionsSupportBean {
 
         for (Map<String, List<OptionVO>> datasets : mergeable) {
             if(datasets!=null && !datasets.isEmpty()) {
-                for (String metricName: datasets.keySet()) {
-                    List<OptionVO> metricDatasets = datasets.get(metricName);
-                    injectDatasetDescriptionIfAny(metricName, metricDatasets);
-                    result.put(metricName, metricDatasets);
+                for (Map.Entry<String, List<OptionVO>> entry : datasets.entrySet()) {
+                    List<OptionVO> metricDatasets = entry.getValue();
+                    injectDatasetDescriptionIfAny(entry.getKey(), metricDatasets);
+                    result.put(entry.getKey(), metricDatasets);
                 }
             }
         }

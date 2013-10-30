@@ -192,10 +192,10 @@ public class ConsoleManagerImpl implements ConsoleManager {
         Map<String, Integer> queues = queueInfo.getHoveringCount(periodSize);
         if (queues != null) {
             tmpResult = new ArrayList<>();
-            for (String queueName : queues.keySet()) {
+            for (Map.Entry<String, Integer> entry : queues.entrySet()) {
                 QueueVO queueVO = new QueueVO();
-                queueVO.setName(queueName);
-                queueVO.setCount(queues.get(queueName));
+                queueVO.setName(entry.getKey());
+                queueVO.setCount(entry.getValue());
                 tmpResult.add(queueVO);
             }
         }

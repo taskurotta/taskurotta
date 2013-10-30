@@ -1,5 +1,9 @@
 package ru.taskurotta.backend.dependency.links;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,10 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is not thread safe object. It should be synchronized with backend by version value.
@@ -104,17 +104,15 @@ public class Graph implements Serializable {
         if (links.isEmpty()) {
             return reverseResult;
         }
-
-        for (UUID fromItem : links.keySet()) {
-            for (UUID toItem : links.get(fromItem)) {
-
+        for (Map.Entry<UUID, Set<UUID>> entry : links.entrySet()) {
+            for (UUID toItem : entry.getValue()) {
                 Set<UUID> fromItems = reverseResult.get(toItem);
                 if (fromItems == null) {
                     fromItems = new HashSet<>();
                     reverseResult.put(toItem, fromItems);
                 }
 
-                fromItems.add(fromItem);
+                fromItems.add(entry.getKey());
             }
         }
 
@@ -242,6 +240,7 @@ public class Graph implements Serializable {
 
     /**
      * add all new links to "links" map. update reverseLinks
+     *
      * @return set of items dependent from finished one
      */
     private Set<UUID> updateLinks() {
@@ -253,8 +252,8 @@ public class Graph implements Serializable {
 
         if (newLinks != null) {
 
-            for (UUID item : newLinks.keySet()) {
-                Set<UUID> newItemLinks = newLinks.get(item);
+            for (Map.Entry<UUID, Set<UUID>> entry : newLinks.entrySet()) {
+                Set<UUID> newItemLinks = entry.getValue();
 
                 for (UUID newItemLink : newItemLinks) {
 
@@ -264,11 +263,11 @@ public class Graph implements Serializable {
                         continue;
                     }
 
-                    Set<UUID> itemLinks = links.get(item);
+                    Set<UUID> itemLinks = entry.getValue();
 
                     if (itemLinks == null) {
                         itemLinks = new HashSet<>();
-                        links.put(item, itemLinks);
+                        links.put(entry.getKey(), itemLinks);
                     }
 
                     itemLinks.add(newItemLink);
@@ -277,7 +276,7 @@ public class Graph implements Serializable {
                 // update reverse map
                 for (UUID thatItem : newItemLinks) {
                     Set<UUID> reverseItemLinks = getOrCreateReverseItemLinks(reverseLinks, thatItem);
-                    reverseItemLinks.add(item);
+                    reverseItemLinks.add(entry.getKey());
                 }
             }
         }
@@ -287,7 +286,8 @@ public class Graph implements Serializable {
     /**
      * remove finished item from all set.
      * find items without dependencies.
-     * @param readyItemsList - collection for ready items found
+     *
+     * @param readyItemsList   - collection for ready items found
      * @param reverseItemLinks - collection of release candidates
      */
     private void findReadyItems(List<UUID> readyItemsList, Set<UUID> reverseItemLinks) {
@@ -434,12 +434,14 @@ public class Graph implements Serializable {
         if (lastApplyTimeMillis != graph.lastApplyTimeMillis) return false;
         if (touchTimeMillis != graph.touchTimeMillis) return false;
         if (version != graph.version) return false;
-        if (finishedItems != null ? !finishedItems.equals(graph.finishedItems) : graph.finishedItems != null)
+        if (finishedItems != null ? !finishedItems.equals(graph.finishedItems) : graph.finishedItems != null) {
             return false;
+        }
         if (graphId != null ? !graphId.equals(graph.graphId) : graph.graphId != null) return false;
         if (links != null ? !links.equals(graph.links) : graph.links != null) return false;
-        if (notFinishedItems != null ? !notFinishedItems.equals(graph.notFinishedItems) : graph.notFinishedItems != null)
+        if (notFinishedItems != null ? !notFinishedItems.equals(graph.notFinishedItems) : graph.notFinishedItems != null) {
             return false;
+        }
 
         return true;
     }

@@ -77,10 +77,10 @@ public class MetricsConsoleUtils implements MetricsConstants {
     public static List<OptionVO> getOptionsFromMap(Map<String, String> target) {
         List<OptionVO> result = new ArrayList<>();
         if (target != null && !target.isEmpty()) {
-            for (String key: target.keySet()) {
+            for (Map.Entry<String, String> entry: target.entrySet()) {
                 OptionVO option= new OptionVO();
-                option.setName(target.get(key));
-                option.setValue(key);
+                option.setName(entry.getValue());
+                option.setValue(entry.getKey());
                 result.add(option);
             }
         }
