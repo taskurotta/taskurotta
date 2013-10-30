@@ -212,9 +212,9 @@ public class QuartzJobManager implements JobManager {
             } catch (Throwable e) {
                 logger.error("Error stopping scheduler for id["+id+"]", e);
             }
+            logger.debug("Job [{}] stop result is[{}]. JobVO is[{}]", job.getName(), result, job);
         }
 
-        logger.debug("Job [{}] stop result is[{}]. JobVO is[{}]", job.getName(), result, job);
 
         return result;
     }
