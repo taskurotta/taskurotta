@@ -45,7 +45,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         if (queueInfo == null) {
             return null;
         }
-        List<QueueVO> tmpResult = null;
+        List<QueueVO> tmpResult;
         GenericPage<String> queuesPage = queueInfo.getQueueList(pageNumber, pageSize);
         if (queuesPage != null && queuesPage.getItems() != null) {
             tmpResult = new ArrayList<>();
@@ -55,8 +55,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
                 queueVO.setCount(queueInfo.getQueueTaskCount(queueName));
                 tmpResult.add(queueVO);
             }
+            return new GenericPage<>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
         }
-        return new GenericPage<>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
+        return null;
     }
 
     @Override
@@ -148,9 +149,9 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     private int getTaskTreeStatus(DecisionContainer dc) {
-        if(dc == null) {
+        if (dc == null) {
             return TaskTreeVO.STATE_NOT_ANSWERED;
-        } else if(dc.getErrorContainer()!=null) {
+        } else if (dc.getErrorContainer() != null) {
             return TaskTreeVO.STATE_ERROR;
         } else {
             return TaskTreeVO.STATE_SUCCESS;
@@ -177,7 +178,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
 
     @Override
     public List<TaskContainer> findTasks(String processId, String taskId) {
-        if(taskInfo == null) {
+        if (taskInfo == null) {
             return null;
         }
         return taskInfo.findTasks(new TaskSearchCommand(processId, taskId));

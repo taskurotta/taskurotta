@@ -59,7 +59,6 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
                 logger.debug("Skip creating queue[{}] config: it already exists...", queueName);
                 return;
             }
-            String mapName = queueName + BACKING_MAP_NAME_SUFFIX;
 
             QueueConfig qc = new QueueConfig();
             qc.setName(queueName);
