@@ -11,7 +11,7 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 public class HzDependencyBackend extends GeneralDependencyBackend {
 
     private static HzDependencyBackend instance;
-    private static final Object instanceMonitor = 0;
+    private static final Object instanceMonitor = new Object();
 
     public HzDependencyBackend(GraphDao graphDao) {
         super(graphDao);
