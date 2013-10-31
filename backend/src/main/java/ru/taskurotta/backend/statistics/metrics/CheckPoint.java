@@ -13,7 +13,7 @@ public class CheckPoint {
 
     private AtomicReference<State> stateRef = new AtomicReference<>();
 
-    private class State {
+    private static class State {
         protected volatile long counter = 0;
         protected volatile double sum = 0;
     }

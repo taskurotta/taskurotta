@@ -27,7 +27,7 @@ public class Graph implements Serializable {
 
     private final static Logger logger = LoggerFactory.getLogger(Graph.class);
 
-    public static UUID[] EMPTY_ARRAY = new UUID[0];
+    public final static UUID[] EMPTY_ARRAY = new UUID[0];
 
     private int version = 0;
     private UUID graphId;       //should be equal to process ID

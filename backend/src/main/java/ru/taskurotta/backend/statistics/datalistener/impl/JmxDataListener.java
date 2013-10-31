@@ -41,7 +41,7 @@ public class JmxDataListener extends AbstractDataListener {
         public double[] getDayMeans();
     }
 
-    public class Metrics implements MetricsMBean {
+    public static class Metrics implements MetricsMBean {
 
         private String name;
         private AbstractDataListener dataListener;

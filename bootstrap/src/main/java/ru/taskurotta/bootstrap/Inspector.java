@@ -24,7 +24,7 @@ public class Inspector {
     private int failoverCheckTime = 60; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
     private TimeUnit failoverCheckTimeUnit = TimeUnit.SECONDS;
 
-    protected class PolicyCounters {
+    protected static  class PolicyCounters {
         long firstAttempt;
         int numberOfTries;
 

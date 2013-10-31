@@ -12,14 +12,14 @@ import java.util.concurrent.atomic.AtomicLongArray;
  */
 public abstract class AbstractDataListener implements DataListener {
 
-    private final int SECONDS_IN_MINUTE = 60;
-    private final int MINUTES_IN_HOUR = 60;
-    private final int SECONDS_IN_HOUR = MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
-    private final int MINUTES_IN_23_HOURS = 23 * MINUTES_IN_HOUR;
+    private static final int SECONDS_IN_MINUTE = 60;
+    private static final int MINUTES_IN_HOUR = 60;
+    private static final int SECONDS_IN_HOUR = MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
+    private static final int MINUTES_IN_23_HOURS = 23 * MINUTES_IN_HOUR;
 
-    private final int MILLISECONDS_IN_SECONDS = 1000;
-    private final int MILLISECONDS_IN_HOUR = SECONDS_IN_HOUR * MILLISECONDS_IN_SECONDS;
-    private final int MILLISECONDS_IN_DAY = MILLISECONDS_IN_HOUR * 24;
+    private static final int MILLISECONDS_IN_SECONDS = 1000;
+    private static final int MILLISECONDS_IN_HOUR = SECONDS_IN_HOUR * MILLISECONDS_IN_SECONDS;
+    private static final int MILLISECONDS_IN_DAY = MILLISECONDS_IN_HOUR * 24;
 
     private final AtomicLongArray hourCounts = new AtomicLongArray(SECONDS_IN_HOUR);
     private final AtomicLongArray dayCounts = new AtomicLongArray(MINUTES_IN_23_HOURS);
