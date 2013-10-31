@@ -16,7 +16,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: romario
@@ -93,10 +92,12 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     private ArgContainer processPromiseArgValue(ArgContainer pArg, UUID processId, TaskContainer task, ArgType argType) {
 
-        boolean isDeciderAsyncTask = TaskType.DECIDER_ASYNCHRONOUS.equals(task.getType());
-        if (pArg.isReady() && !isDeciderAsyncTask) {    // Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
+        // Only decider asynchronous methods can use Promise args, NOT start method
+        boolean isDeciderAsynchronousTaskType = isDeciderAsynchronousTaskType(task.getType());
+
+        if (pArg.isReady()) {    // Promise.asPromise() was used as an argument, so there is no taskValue, it is simply Promise wrapper for a worker
             logger.debug("Got initialized promise, switch it to value");
-            return pArg.updateType(false);              // simply strip of promise wrapper
+            return isDeciderAsynchronousTaskType ? pArg : pArg.updateType(false);              // simply strip of promise wrapper
         }
 
         ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
@@ -111,7 +112,7 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         }
 
         ArgContainer newArg = new ArgContainer(taskValue);
-        if (isDeciderAsyncTask) {
+        if (isDeciderAsynchronousTaskType) {
 
             // set real value into promise for Decider tasks
             newArg.setPromise(true);
@@ -123,11 +124,10 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
         }
 
         return newArg;
-
     }
 
-    private static boolean isDeciderTaskType(TaskType taskType) {
-        return TaskType.DECIDER_ASYNCHRONOUS.equals(taskType) || TaskType.DECIDER_START.equals(taskType);
+    private static boolean isDeciderAsynchronousTaskType(TaskType taskType) {
+        return TaskType.DECIDER_ASYNCHRONOUS.equals(taskType);
     }
 
     private ArgContainer getTaskValue(UUID taskId, UUID processId) {
