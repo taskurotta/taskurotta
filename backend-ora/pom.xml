@@ -40,12 +40,6 @@
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>server</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
             <artifactId>backend</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
