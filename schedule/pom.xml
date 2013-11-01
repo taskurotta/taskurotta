@@ -16,31 +16,31 @@
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>transport</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>backend-hz</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>backend-ora</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>dropwizard</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>core</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

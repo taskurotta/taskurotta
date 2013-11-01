@@ -16,12 +16,12 @@
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>backend</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>dropwizard</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.yammer.dropwizard</groupId>
