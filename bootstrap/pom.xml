@@ -20,11 +20,6 @@
     <dependencies>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
             <artifactId>client</artifactId>
             <version>${project.version}</version>
         </dependency>
