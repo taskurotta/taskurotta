@@ -138,6 +138,11 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
     }
 
     private void addProcessId(ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, String key, UUID processId) {
+
+        if (key == null) {
+            return;
+        }
+
         CopyOnWriteArraySet<UUID> processIds = map.get(key);
 
         if (processIds == null) {
@@ -160,6 +165,11 @@ public class MemoryBrokenProcessBackend implements BrokenProcessBackend {
     }
 
     private void addProcessId(ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> map, Long key, UUID processId) {
+
+        if (key == null) {
+            return;
+        }
+
         CopyOnWriteArraySet<UUID> processIds = map.get(key);
 
         if (processIds == null) {
