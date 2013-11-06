@@ -10,7 +10,6 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -67,7 +66,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                if (stopDecorating.get()){
+                if (stopDecorating.get()) {
                     return taskSpreader.poll();
                 }
                 Task task = taskSpreader.poll();
@@ -109,7 +108,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         } else if (stabilizationCounter.get() > 0 && currentTolerance > targetTolerance) {
                             stabilizationCounter.set(0);
                         }
-                        log.info("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, totalRate, currentTolerance);
+                        log.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, totalRate, currentTolerance));
                     }
                 }
                 collectDataOfEveryTask();

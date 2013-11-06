@@ -107,7 +107,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / tasksForStat);
         log.info("Total task count: " + taskCount);
         log.info("Delta time: " + deltaTime);
-        log.info("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta);
+        log.info(String.format("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta));
         stopDecorating.set(true);
         log.info("Decoration stopped");
         log.info("Sorting results");
