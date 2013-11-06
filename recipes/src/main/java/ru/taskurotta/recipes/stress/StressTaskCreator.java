@@ -8,9 +8,7 @@ import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.multiplier.MultiplierDeciderClient;
 
-import java.io.Console;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -86,53 +84,49 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     @Override
     public void run() {
-        Console console = System.console();
-        if (console != null) {
-            DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
-            MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
-            executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-            for (int i = 0; i < initialCount; i++) {
-                createStartTask(deciderClient);
-            }
-            while (stabilizationCounter.get() < 10) {
-                LATCH = new CountDownLatch(1);
-                createStartTask(deciderClient);
-                try {
-                    LATCH.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            long deltaTime = lastTime.get() - startTime.get();
-            double time = 1.0 * deltaTime / 1000.0;
-            long meanTaskCount = taskCount.get();
-            double rate = 1000.0 * meanTaskCount / deltaTime;
-            double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / tasksForStat);
-            System.out.println("Total task count: " + taskCount);
-            System.out.println("Delta time: " + deltaTime);
-            System.out.printf("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta);
-            stopDecorating.set(true);
-            System.out.println("Decoration stopped");
-            System.out.println("Sorting results");
-            Long[] array = new Long[arrayOfDuration.size()];
-            arrayOfDuration.toArray(array);
-            Arrays.sort(array);
-            System.out.println("Results already sorted");
-            List<Long> cleanedData = Arrays.asList(array);
-            int size = cleanedData.size();
-            int limit = size / 10;
-            List<Long> meaningData = cleanedData.subList(limit, size - limit);
-            BigInteger rs = BigInteger.valueOf(0);
-            for (long z : meaningData) {
-                rs = rs.add(BigInteger.valueOf(z));
-            }
-            System.out.println("Sum: " + rs.toString());
-            System.out.println("Meaning data size: " + meaningData.size());
-            System.out.println("Average is: " + rs.divide(BigInteger.valueOf(meaningData.size())) + " in nanos");
-            System.out.println("End");
-            System.exit(0);
-        } else {
-            System.out.println("No console available!!");
+
+        DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
+        MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
+        executorService = Executors.newFixedThreadPool(THREADS_COUNT);
+        for (int i = 0; i < initialCount; i++) {
+            createStartTask(deciderClient);
         }
+        while (stabilizationCounter.get() < 10) {
+            LATCH = new CountDownLatch(1);
+            createStartTask(deciderClient);
+            try {
+                LATCH.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        long deltaTime = lastTime.get() - startTime.get();
+        double time = 1.0 * deltaTime / 1000.0;
+        long meanTaskCount = taskCount.get();
+        double rate = 1000.0 * meanTaskCount / deltaTime;
+        double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / tasksForStat);
+        log.info("Total task count: " + taskCount);
+        log.info("Delta time: " + deltaTime);
+        log.info("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta);
+        stopDecorating.set(true);
+        log.info("Decoration stopped");
+        log.info("Sorting results");
+        Long[] array = new Long[arrayOfDuration.size()];
+        arrayOfDuration.toArray(array);
+        Arrays.sort(array);
+        log.info("Results already sorted");
+        List<Long> cleanedData = Arrays.asList(array);
+        int size = cleanedData.size();
+        int limit = size / 10;
+        List<Long> meaningData = cleanedData.subList(limit, size - limit);
+        BigInteger rs = BigInteger.valueOf(0);
+        for (long z : meaningData) {
+            rs = rs.add(BigInteger.valueOf(z));
+        }
+        log.info("Sum: " + rs.toString());
+        log.info("Meaning data size: " + meaningData.size());
+        log.info("Average is: " + rs.divide(BigInteger.valueOf(meaningData.size())) + " in nanos");
+        log.info("End");
+        System.exit(0);
     }
 }

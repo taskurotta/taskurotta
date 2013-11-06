@@ -1,5 +1,7 @@
 package ru.taskurotta.recipes.stress;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -20,6 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * User: greg
  */
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
+
+    private final static Logger log = LoggerFactory.getLogger(LifetimeProfiler.class);
 
     public static AtomicLong taskCount = new AtomicLong(0);
     public static AtomicLong startTime = new AtomicLong(0);
@@ -76,7 +80,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     if (count == nextShot) {
                         if (StressTaskCreator.LATCH != null) {
                             nextShot += StressTaskCreator.getShotSize();
-                            System.out.println("Shot on " + count);
+                            log.info("Shot on " + count);
                             StressTaskCreator.LATCH.countDown();
                         }
                     }
@@ -105,7 +109,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         } else if (stabilizationCounter.get() > 0 && currentTolerance > targetTolerance) {
                             stabilizationCounter.set(0);
                         }
-                        System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, totalRate, currentTolerance);
+                        log.info("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; totalRate: %8.3f; tolerance: %8.3f;\n", count, time, rate, deltaRate, totalRate, currentTolerance);
                     }
                 }
                 collectDataOfEveryTask();
