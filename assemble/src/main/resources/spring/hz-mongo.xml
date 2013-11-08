@@ -6,7 +6,7 @@
        xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.0.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
             http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 
     <context:property-placeholder/>
@@ -177,12 +177,12 @@
         <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
 
-        <property name="mergePeriod" value = "${hz.recovery.merge.period}" />
-        <property name="mergePeriodTimeUnit" value = "${hz.recovery.merge.timeunit}" />
-        <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
-        <property name="queueSizeMetricPeriodSeconds" value = "${metric.queue.size.data.period.seconds}" />
+        <property name="mergePeriod" value="${hz.recovery.merge.period}"/>
+        <property name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="queueSizeMetricPeriodSeconds" value="${metric.queue.size.data.period.seconds}"/>
         <property name="metricsFactory" ref="metricsFactory"/>
-        <property name="numberDataListener" ref="metricsNumberDataHandler" />
+        <property name="numberDataListener" ref="metricsNumberDataHandler"/>
     </bean>
 
     <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
@@ -252,15 +252,17 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-        <constructor-arg name="brokenProcessBackend"><null/></constructor-arg>
+        <constructor-arg name="brokenProcessBackend">
+            <null/>
+        </constructor-arg>
 
         <property name="hzInstance" ref="hzInstance"/>
         <property name="nodeCustomName" value="${node.custom.name}"/>
     </bean>
 
     <!-- Metrics -->
-    <bean id = "metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler"/>
-    <bean id = "metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init"/>
     <!-- /Metrics -->
 
     <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->

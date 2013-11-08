@@ -1,3 +1,10 @@
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+
+import static junit.framework.Assert.assertEquals;
+
 import com.hazelcast.config.Config;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
@@ -8,13 +15,6 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapStore;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * Created with IntelliJ IDEA.
@@ -90,7 +90,6 @@ public class HZ3_Test {
             mapConfig.setMapStoreConfig(mapStoreConfig);
             mapConfig.setEvictionPercentage(80);
             mapConfig.setEvictionPolicy(MapConfig.EvictionPolicy.LFU);
-            //mapConfig.setStorageType(MapConfig.StorageType.HEAP);
 
             MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
             maxSizeConfig.setSize(100);
