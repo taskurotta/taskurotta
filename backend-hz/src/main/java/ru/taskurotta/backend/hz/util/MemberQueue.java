@@ -33,6 +33,8 @@ public class MemberQueue<E> implements IQueue<E> {
     private HazelcastInstance hzInstance;
     private com.hazelcast.core.PartitionService partitionService;
 
+    private String partiotionKey;
+
     private class MemberState {
 
         Set<Integer> allMemberPartitions;
@@ -338,5 +340,14 @@ public class MemberQueue<E> implements IQueue<E> {
     @Override
     public Object getId() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public String getPartitionKey() {
+        return partiotionKey;
+    }
+
+    public void setPartiotionKey(String partiotionKey) {
+        this.partiotionKey = partiotionKey;
     }
 }

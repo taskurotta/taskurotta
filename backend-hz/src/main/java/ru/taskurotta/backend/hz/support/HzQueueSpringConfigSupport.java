@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.hz.support;
 
+import java.util.Properties;
+
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.DistributedObject;
@@ -12,8 +14,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mongodb.core.MongoTemplate;
-
-import java.util.Properties;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -75,7 +75,8 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     }
 
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
-        QueueStoreConfig result = new QueueStoreConfig(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
+        QueueStoreConfig result = new QueueStoreConfig();
+        result.setStoreImplementation(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
         result.setEnabled(true);
         Properties properties = new Properties();
         properties.put("binary", this.binary);
