@@ -18,6 +18,12 @@
             <groupId>ru.taskurotta</groupId>
             <artifactId>bootstrap</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
