@@ -27,6 +27,7 @@
         <aspectj.version>1.7.3</aspectj.version>
         <hazelcast.version>3.0.3</hazelcast.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
+        <yammer.metrics.version>2.2.0</yammer.metrics.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
@@ -112,6 +113,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-mongodb</artifactId>
+                <version>${spring-data-mongodb.version}</version>
             </dependency>
             <!-- /spring -->
 

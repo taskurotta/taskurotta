@@ -13,10 +13,6 @@
 
     <name>Taskurotta :: Bootstrap</name>
 
-    <properties>
-        <yammer.metrics.version>2.2.0</yammer.metrics.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>ru.taskurotta</groupId>
