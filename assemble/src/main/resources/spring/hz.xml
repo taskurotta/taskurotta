@@ -67,6 +67,8 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
 
     <bean id="queueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
