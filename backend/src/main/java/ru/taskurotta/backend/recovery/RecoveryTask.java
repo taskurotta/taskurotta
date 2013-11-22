@@ -21,7 +21,5 @@ public class RecoveryTask implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         return recoveryProcessBackend.restartProcess(processId);
-
-        //return null;
     }
 }

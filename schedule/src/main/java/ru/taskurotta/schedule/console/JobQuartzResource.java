@@ -210,7 +210,8 @@ public class JobQuartzResource implements JobConstants {
         UUID taskId = target.getTaskId()!=null? target.getTaskId(): UUID.randomUUID();
         UUID processId = target.getProcessId()!=null? target.getProcessId(): UUID.randomUUID();
         TaskType type = target.getType()!=null? target.getType(): TaskType.DECIDER_START;
-        long startTime = target.getStartTime()!=0? target.getStartTime(): System.currentTimeMillis();
+//        long startTime = target.getStartTime() != 0 ? target.getStartTime(): System.currentTimeMillis();
+        long startTime = -1; // for scheduled task start time must be -1
         int numberOfAttempts = target.getNumberOfAttempts()!=0? target.getNumberOfAttempts(): 5;
 
         return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), type, startTime, numberOfAttempts, target.getArgs(), target.getOptions());
