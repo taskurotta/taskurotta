@@ -161,6 +161,9 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             String actorId = taskContainer.getActorId();
             processId = taskContainer.getProcessId();
             UUID taskId = taskContainer.getTaskId();
+            long startTime = taskContainer.getStartTime();
+
+            logger.trace("#[{}]/[{}]: try to restart", processId, taskId);
 
             String taskList = null;
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
@@ -172,29 +175,35 @@ public class GeneralRecoveryProcessBackend implements RecoveryProcessBackend {
             }
 
             long now = System.currentTimeMillis();
-            if (taskContainer.getStartTime() > now) {
-                System.out.println("MARKER: taskContainer.getStartTime() is" + taskContainer.getStartTime());
+            if (startTime > now) {
                 // this task must start in future, ignore it
 
-                logger.debug("Task [{}] from process [{}] must started later at [{}], but now is [{}]", taskId, processId, new Date(taskContainer.getStartTime()), new Date(now));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("#[{}]/[{}]: must started later at [{}], but now is [{}]", processId, taskId, new Date(startTime), new Date(now));
+                }
 
                 continue;
             }
 
             String queueName = queueBackendStatistics.createQueueName(taskContainer.getActorId(), taskList);
             Long lastEnqueueTime = queueBackendStatistics.getLastPolledTaskEnqueueTime(queueName);
+            if (logger.isTraceEnabled()) {
+                logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
+            }
+
             if (lastEnqueueTime > 0 && lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
 
-                logger.debug("Skip restart task [{}] for process [{}], because early tasks in queue isn't polled. " +
-                        "Queue[{}], last enqueue time[{}], taskTime [{}]", taskId, processId, queueName, lastEnqueueTime, taskContainer.getStartTime());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("#[{}]/[{}]: (startTime = [{}]) skip restart, because early tasks in queue [{}] (last enqueue time = [{}]) isn't polled.", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
+                }
 
                 continue;
             }
 
             result = result & queueBackendStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
 
-            logger.debug("For process [{}] add task container [{}] to queue backend", processId, taskContainer);
+            logger.debug("#[{}]/[{}]: add task container [{}] to queue backend", processId, taskId, taskContainer);
         }
 
         logger.info("For process [{}] complete restart [{}] tasks", processId, taskContainers.size());
