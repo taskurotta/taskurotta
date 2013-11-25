@@ -44,7 +44,6 @@
         <module>backend</module>
         <module>backend-ora</module>
         <module>backend-hz</module>
-        <module>util</module>
         <module>transport</module>
         <module>snapshot</module>
         <module>test</module>
