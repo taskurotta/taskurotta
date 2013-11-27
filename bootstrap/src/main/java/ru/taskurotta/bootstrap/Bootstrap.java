@@ -66,13 +66,13 @@ public class Bootstrap implements BootstrapMBean {
         String configFileName = namespace.getString("file");
 
         if (configFileName != null) {
-			logger.debug("Config file is [{}]", configFileName);
 
             File configFile = new File(configFileName);
+
             if (configFile.exists()) {
                 config = Config.valueOf(configFile);
             } else {
-				System.out.println("Configuration file doesn't exist: " + configFileName);
+                logger.error("Configuration file doesn't exist: [{}]", configFileName);
                 parser.printHelp();
                 return null;
             }
@@ -84,12 +84,11 @@ public class Bootstrap implements BootstrapMBean {
         if (resourceFileName != null) {
 
             URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
-            logger.debug("Config file URL is [{}]", configPath);
 
             if (configPath != null) {
                 config = Config.valueOf(configPath);
             } else {
-                System.out.println("Resource file (in classpath) doesn't exist: " + resourceFileName);
+                logger.error("Resource file (in classpath) doesn't exist: [{}]", resourceFileName);
                 parser.printHelp();
                 return null;
             }
