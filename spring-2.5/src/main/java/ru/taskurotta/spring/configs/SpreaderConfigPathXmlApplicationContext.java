@@ -75,9 +75,13 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
 
     public void setContext(String context) {
         this.context = context;
+
+        logger.debug("Set context [{}]", context);
     }
 
     public void setProperties(Properties properties) {
         this.properties = properties;
+
+        logger.debug("Set properties [{}]", properties);
     }
 }
