@@ -160,17 +160,11 @@
             <artifactId>schedule</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>oracle-jdbc15</artifactId>
-            <version>11.1.0.7.0</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <profiles>
         <profile>
-            <id>hz-mongo-oracle-env</id>
+            <id>oracle-env</id>
             <build>
                 <plugins>
                     <plugin>
@@ -204,6 +198,14 @@
                     </plugin>
                 </plugins>
             </build>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle</groupId>
+                    <artifactId>oracle-jdbc15</artifactId>
+                    <version>11.1.0.7.0</version>
+                    <scope>compile</scope>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>memory-env</id>
