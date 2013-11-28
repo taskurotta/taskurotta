@@ -46,7 +46,6 @@
         <module>backend-ora</module>
         <module>backend-hz</module>
         <module>transport</module>
-        <module>snapshot</module>
         <module>test</module>
         <module>schedule</module>
         <module>spring-2.5</module>
