@@ -43,6 +43,11 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     }
 
     @Override
+    public void deleteProcess(UUID processId) {
+        processesStorage.remove(processId);
+    }
+
+    @Override
     public ProcessVO getProcess(UUID processUUID) {
         return processesStorage.get(processUUID);
     }

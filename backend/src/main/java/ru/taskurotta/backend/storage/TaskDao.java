@@ -30,7 +30,9 @@ public interface TaskDao {
 
     List<TaskContainer> getRepeatedTasks(int iterationCount);
 
-    TaskContainer removeTask(UUID taskId, UUID processId);
+    void deleteTask(UUID taskId, UUID processId);
+
+    void deleteDecision(UUID taskId, UUID processId);
 
     void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds);
 

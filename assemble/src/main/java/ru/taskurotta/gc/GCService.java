@@ -5,9 +5,8 @@ import com.hazelcast.core.Partition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.gc.GarbageCollectorTask;
-import ru.taskurotta.backend.gc.GeneralGarbageCollectorBackend;
-import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
+import ru.taskurotta.backend.gc.GCTask;
+import ru.taskurotta.backend.gc.GeneralGCBackend;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -30,7 +29,7 @@ public class GCService {
     private DataSource dataSource;
     private HazelcastInstance hazelcastInstance;
 
-    private GeneralGarbageCollectorBackend generalGarbageCollectorBackend;
+    private GeneralGCBackend generalGCBackend;
 
     private int threadCount = 8;
     private boolean useDaemonThreads = true;
@@ -72,7 +71,7 @@ public class GCService {
 
             for(UUID processId: processIds) {
                 if (isLocalItem(processId)) {//filter only local processes for recovery. Every node recovers its own processes
-                    executorService.submit(new GarbageCollectorTask(generalGarbageCollectorBackend, processId));
+                    executorService.submit(new GCTask(generalGCBackend, processId));
                     result++;
                 }
             }
@@ -144,8 +143,8 @@ public class GCService {
     }
 
     @Required
-    public void setRecoveryProcessBackend(RecoveryProcessBackend recoveryProcessBackend) {
-        this.recoveryProcessBackend = recoveryProcessBackend;
+    public void setGeneralGCBackend(GeneralGCBackend generalGCBackend) {
+        this.generalGCBackend = generalGCBackend;
     }
 
     public void setUseDaemonThreads(boolean useDaemonThreads) {

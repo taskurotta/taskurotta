@@ -92,8 +92,13 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer removeTask(UUID taskId, UUID processId) {
-        return id2TaskMap.remove(new TaskKey(processId, taskId));
+    public void deleteTask(UUID taskId, UUID processId) {
+        id2TaskMap.remove(new TaskKey(processId, taskId));
+    }
+
+    @Override
+    public void deleteDecision(UUID taskId, UUID processId) {
+        id2TaskDecisionMap.remove(new TaskKey(processId, taskId));
     }
 
     @Override
