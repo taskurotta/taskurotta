@@ -1,0 +1,71 @@
+#Location of Spring application context:
+#Hazelcast without mongo mapstore
+contextLocation: "classpath*:spring/hz-ora-mongo.xml, classpath*:context/console-context.xml, classpath*:spring/hz-ora-schedule.xml"
+
+#Used for static resource serving in development mode
+assets:
+  overrides:
+    /: ../dropwizard/src/main/resources/assets/
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default"
+
+#Task server common properties (will be available as placeholders in spring context):
+properties:
+  pollDelay: 10
+  pollDelayUnit: "SECONDS"
+  hz.mancenter.enabled: true
+  hz.mancenter.url: "http://localhost:8080/mancenter-3.0.2"
+  hz.nodes: localhost:7777 #, localhost:7778
+  mongo.host: localhost
+  mongo.port: 27017
+#  oradb.url: "jdbc:oracle:thin:@172.16.4.240:1521:pgudb"
+#  oradb.user: "rip_rr"
+#  oradb.password: "rip_rr"
+  oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
+  oradb.user: "taskurotta"
+  oradb.password: "taskurotta"
+  recovery.startup.run: false
+  hz.queue.restore: true
+  recovery.process.cron: "0 0 0/8 * * ?"
+
+#Http server configuration:
+logging:
+    level: WARN
+    loggers:
+        com.hazelcast: INFO
+        ru.taskurotta: INFO
+#        ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider: DEBUG
+#        ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend: TRACE
+#        ru.taskurotta.dropwizard.resources.console.broken: DEBUG
+#        ru.taskurotta.backend.hz: DEBUG
+#        ru.taskurotta.backend.hz.config: DEBUG
+#        ru.taskurotta.dropwizard.resources.console: DEBUG
+#        ru.taskurotta.backend.statistics.datalistener DEBUG
+#        ru.taskurotta.schedule: DEBUG
+#        ru.taskurotta.backend.statistics: DEBUG
+#        ru.taskurotta.backend.recovery: DEBUG
+        com.yammer: INFO
+    file:
+        enabled: true
+        archive: true
+        currentLogFilename: ./target/logs/service.log
+        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+        logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
+http:
+    rootPath: "/rest/*"
+    gzip:
+        enabled: false
+    requestLog:
+        file:
+            enabled: false
+            archive: true
+            currentLogFilename: ./target/logs/requests.log
+            archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+
+
+#config can be extended here
+#http://dropwizard.codahale.com/manual/core/#configuration-defaults

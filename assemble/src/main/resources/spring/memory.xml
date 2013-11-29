@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config/>
+
+    <!-- REST resources -->
+    <bean id="taskPullerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <!-- /REST resources -->
+
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
+    </bean>
+
+    <!-- Backends -->
+    <bean id="originalQueueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
+        <constructor-arg name="pollDelay" value="${pollDelay}" />
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+    </bean>
+
+    <bean id="queueBackend" class="ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics">
+        <constructor-arg ref="originalQueueBackend"/>
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+
+    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+        <constructor-arg name="taskDao" ref="taskDao" />
+    </bean>
+    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+        <constructor-arg name="graphDao" ref="graphDao" />
+    </bean>
+
+    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend" />
+
+    <bean id="graphDao" class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+
+    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
+
+    <bean id="configBackend" class="ru.taskurotta.backend.config.impl.MemoryConfigBackend" />
+
+    <bean id="recoveryProcessBackend" class="ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend">
+        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="queueBackendStatistics" ref="queueBackend"/>
+        <constructor-arg name="taskBackend" ref="taskBackend"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend"/>
+        <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
+    </bean>
+    <!-- /Backends -->
+
+    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+        <constructor-arg name="name" value="check task server" />
+        <property name="taskServer" ref="taskServer" />
+    </bean>
+
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init" />
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init" />
+
+</beans>

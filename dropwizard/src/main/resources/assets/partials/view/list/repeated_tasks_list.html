@@ -1,0 +1,51 @@
+<div>
+    <table width="100%">
+        <tr>
+            <td style="text-align: left;"><h3>Tasks repeated {{iterationCount}} and more times</h3></td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <div>
+
+        <form class="form-search">
+            <span class="muted">
+                Tasks with: <input type="text" ng-model="iterationCount" class="input-medium search-query" style="width: 300px"/> and more attempts
+            </span>
+            <button class="btn" ng-click="update()">Refresh</button>
+            <br/><br/>
+            <span ng-show="tasks.length >= 200" style="text-align: center;" class="error-box">
+                Search result contains more than 200 lines. Please, refine your search.
+            </span>
+        </form>
+
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+            <tr>
+                <td>№</td>
+                <td>GUID</td>
+                <td>Type</td>
+                <td>ActorId</td>
+                <td>Method</td>
+                <td>Process ID</td>
+                <td>Args</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="task in tasks">
+                <td>{{$index+1}}</td>
+                <td><a class="btn btn-link" style="cursor: pointer;" ng-href="#/processes/task?taskId={{task.taskId}}">{{task.taskId}}</a></td>
+                <td>{{task.type}}</td>
+                <td>{{task.actorId}}</td>
+                <td>{{task.method}}</td>
+                <td>
+                    <a clas="btn btn-link" style="cursor: pointer;" ng-href="#/processes/process?processId={{encodeURI(task.processId)}}">{{task.processId}}</a>
+                </td>
+                <td>{{task.args}}</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>

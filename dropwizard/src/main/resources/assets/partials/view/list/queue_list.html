@@ -1,0 +1,52 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:10px;">
+                <h4>Task queues</h4>
+            </td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+
+    <div ng-hide="!angular.isDefined(feedback)" class="err-message">Error at updating: <span>{{feedback}}</span></div>
+
+    <div class="well" style="margin:5px;">
+        <div style="float:left">
+            <div tsk-autorefresh update-action="update()"></div>
+        </div>
+
+        <div style="float: right;">
+            <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
+            <button class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></button>
+        </div>
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <th style="width: 10%">№</th>
+                <th>Queue name</th>
+                <th style="width: 15%">Tasks count</th>
+            </thead>
+
+            <tfoot>
+                <td colspan="3">
+                    <tsk-paginator generic-page="queuesPage" update-action="update()"></tsk-paginator>
+                </td>
+            </tfoot>
+
+            <tbody>
+            <tr ng-if="!initialized">
+                <td colspan="3" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+            </tr>
+            <tr ng-repeat="queue in queuesPage.items">
+                <td>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</td>
+                <td>
+                    <a clas="btn btn-link" style="cursor: pointer;"
+                       ng-href="#/queues/queue/{{encodeURI(queue.name)}}">{{queue.name}}</a>
+                </td>
+                <td>{{queue.count}}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div>Total: <b>{{totalTasks()}}</b> tasks in <b>{{queuesPage.items.length}}</b> queues</div>
+    </div>
+</div>

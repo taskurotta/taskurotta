@@ -1,0 +1,69 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/stress/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/stress/SpreaderBeans-jersey.xml
+        properties:
+          endpoint: "http://tsks-ora.fccland.ru:80"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+          shotSize: 4000
+          initialCount: 8
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.recipes.stress.LifetimeProfiler
+        properties:
+          targetTolerance: 0.5
+
+actor:
+  - FibonacciDecider:
+      actorInterface: ru.taskurotta.recipes.multiplier.MultiplierDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-multiply.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: !!!str OFF
+        - ru.taskurotta.recipes.multiplier:
+             key: name
+             \@level: DEBUG
+        - org:
+             key: name
+             \@level: !!!str OFF
+        - httpclient:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

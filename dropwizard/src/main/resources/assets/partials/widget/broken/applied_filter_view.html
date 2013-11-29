@@ -1,0 +1,15 @@
+<div>
+    <table ng-if="filter.length>0">
+        <tr ng-repeat="f in filter">
+            <td>
+                <span ng-if="$index==0" class="muted" style="font-weight:bold;">Filtered by:</span>
+            </td>
+            <td>
+                <span class="alert-info" style="margin:5px;padding:5px;">
+                    <small popover="{{getGroupLabel(f[0])}}" popover-trigger="mouseenter" style="cursor:help;">(<b>{{getGroupShortLabel(f[0])}}</b>)</small>
+                    <b>{{ f[1] }}</b><i style="cursor: pointer;" ng-click="remove($index, f[0])" class="icon-remove" popover="Remove condition" popover-trigger="mouseenter"></i>
+                </span>
+            </td>
+        </tr>
+    </table>
+</div>

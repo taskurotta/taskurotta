@@ -1,0 +1,59 @@
+<div>
+    <div class="muted">Specify target date period:</div><br />
+    <table cellspacing="0" cellpadding="0">
+        <tr>
+            <td style="width: 100px; text-align:left;">
+                <span class="muted" style="font-weight: bold;">Date</span>
+            </td>
+            <td style="font-weight:bold;padding:3px;">
+                From:
+            </td>
+            <td>
+                <div class="form-horizontal">
+                    <input class="input input-small" type="text" datepicker-popup="dd.MM.yyyy" ng-model="period.dateFrom" is-open="fromOpened"
+                       max="period.maxDate" min="period.minDate" required/>
+                    <button class="btn" ng-click="toggleOpenFrom()"><i class="icon-calendar"></i></button>
+                </div>
+            </td>
+            <td style="font-weight: bold; text-align: right; width: 50px;padding: 3px;">
+                to:
+            </td>
+            <td>
+                <div class="form-horizontal">
+                    <input class="input input-small" type="text" datepicker-popup="dd.MM.yyyy" ng-model="period.dateTo" is-open="toOpened"
+                        max="maxPossibleDate" required />
+                    <button class="btn" ng-click="toggleOpenTo()"><i class="icon-calendar"></i></button>
+                </div>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="text-align:left;vertical-align: top;">
+                <label class="checkbox muted">
+                    <input type="checkbox" ng-model="period.withTime"/><b>With time</b>
+                </label>
+            </td>
+            <td style="font-weight:bold;padding:3px;">
+                <span ng-if="period.withTime">
+                   From:
+                </span>
+            </td>
+            <td>
+                <div ng-if="period.withTime" ng-model="period.timeFrom" class="well well-small" style="display:inline-block; margin:3px;">
+                   <div timepicker show-meridian="false"></div>
+                </div>
+            </td>
+            <td style="font-weight: bold; text-align: right; width: 50px;padding: 3px;">
+                <span ng-if="period.withTime">
+                    to:
+                </span>
+            </td>
+            <td>
+                <div ng-if="period.withTime" ng-model="period.timeTo" class="well well-small" style="display:inline-block; margin:3px;">
+                    <div timepicker show-meridian="false"></div>
+                </div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+</div>

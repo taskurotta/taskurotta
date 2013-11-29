@@ -4,10 +4,10 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <packaging>pom</packaging>
 
-    <name>Taskurotta :: WF-seda parent module</name>
+    <name>Taskurotta :: Parent module</name>
 
     <scm>
         <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
@@ -22,32 +22,33 @@
         <spring.version>3.2.3.RELEASE</spring.version>
         <spring-data-mongodb.version>1.2.3.RELEASE</spring-data-mongodb.version>
         <jackson.version>2.1.1</jackson.version>
+        <jersey.version>1.15</jersey.version>
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
-        <aspectj.version>1.7.2</aspectj.version>
-        <hazelcast.version>2.6</hazelcast.version>
+        <aspectj.version>1.7.3</aspectj.version>
+        <hazelcast.version>3.1.2</hazelcast.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
+        <yammer.metrics.version>2.2.0</yammer.metrics.version>
 
         <skip.integration.tests>true</skip.integration.tests>
     </properties>
 
     <modules>
-        <module>wf-core</module>
-        <module>wf-bootstrap</module>
-        <module>wf-client</module>
-        <module>wf-example</module>
-        <module>wf-spring</module>
-        <module>wf-server</module>
-        <module>wf-recipes</module>
-        <module>wf-dropwizard</module>
-        <module>wf-dropwizard-assemble</module>
-        <module>wf-backend</module>
-        <module>wf-backend-ora</module>
-        <module>wf-backend-hz</module>
-        <module>wf-util</module>
-        <module>wf-transport</module>
-        <module>wf-snapshot</module>
-        <module>wf-test</module>
+        <module>core</module>
+        <module>bootstrap</module>
+        <module>client</module>
+        <module>spring</module>
+        <module>server</module>
+        <module>recipes</module>
+        <module>dropwizard</module>
+        <module>assemble</module>
+        <module>backend</module>
+        <module>backend-ora</module>
+        <module>backend-hz</module>
+        <module>transport</module>
+        <module>test</module>
+        <module>schedule</module>
+        <module>spring-2.5</module>
     </modules>
 
     <profiles>
@@ -111,6 +112,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-mongodb</artifactId>
+                <version>${spring-data-mongodb.version}</version>
             </dependency>
             <!-- /spring -->
 
@@ -255,7 +261,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -268,7 +274,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -282,6 +288,7 @@
                     <configuration>
                         <skip>true</skip>
                         <trimStackTrace>false</trimStackTrace>
+                        <argLine>-Dtaskurotta.env=TEST</argLine>
                     </configuration>
                     <executions>
                         <execution>
