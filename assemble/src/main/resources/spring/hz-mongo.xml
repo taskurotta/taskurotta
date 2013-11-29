@@ -34,22 +34,22 @@
             <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
             <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
 
-            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="5" eviction-policy="LRU"
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
             </hz:map>
@@ -95,7 +95,7 @@
         <property name="evictionPercentage" value="25"/>
         <property name="evictionPolicy" value="LRU"/>
         <property name="mapStoreBeanName" value="mongoMapStore"/>
-        <property name="timeToLive" value="5"/>
+        <property name="timeToLive" value="0"/>
         <property name="maxSize" value="1000"/>
     </bean>
 
