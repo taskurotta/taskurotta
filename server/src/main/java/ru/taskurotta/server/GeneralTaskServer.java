@@ -10,7 +10,6 @@ import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.process.BrokenProcessVO;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
-import ru.taskurotta.backend.snapshot.SnapshotService;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
@@ -40,22 +39,11 @@ public class GeneralTaskServer implements TaskServer {
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
     protected BrokenProcessBackend brokenProcessBackend;
-    protected SnapshotService snapshotService;
 
     /*
      *  For tests ONLY
      */
-    public GeneralTaskServer() {
-
-    }
-
-    public SnapshotService getSnapshotService() {
-        return snapshotService;
-    }
-
-    public void setSnapshotService(SnapshotService snapshotService) {
-        this.snapshotService = snapshotService;
-    }
+    public GeneralTaskServer() {}
 
     public GeneralTaskServer(BackendBundle backendBundle) {
         this.processBackend = backendBundle.getProcessBackend();
