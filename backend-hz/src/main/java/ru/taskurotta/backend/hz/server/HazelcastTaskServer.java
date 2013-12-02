@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.hz.server;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.PartitionAware;
 import org.slf4j.Logger;
@@ -134,21 +135,29 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
             HazelcastInstance taskHzInstance = taskServer.getHzInstance();
 
-            ILock lock = taskHzInstance.getLock(processId);
             try {
-                lock.lock();
-                DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
-                if (taskDecision == null) {
-                    String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
-                    logger.error(error);
-                    //TODO: this exception disappears for some reason
-                    throw new IllegalStateException(error);
+
+                ILock lock = taskHzInstance.getLock(processId);
+
+                try {
+                    lock.lock();
+                    DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
+                    if (taskDecision == null) {
+                        String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
+                        logger.error(error);
+                        //TODO: this exception disappears for some reason
+                        throw new IllegalStateException(error);
+                    }
+
+                    taskServer.processDecision(taskDecision);
+
+                } finally {
+                    lock.unlock();
                 }
 
-                taskServer.processDecision(taskDecision);
-
-            } finally {
-                lock.unlock();
+            } catch (HazelcastInstanceNotActiveException e) {
+                // reduce exception rain
+                logger.warn(e.getMessage());
             }
 
             return null;

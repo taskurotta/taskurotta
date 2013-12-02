@@ -14,8 +14,8 @@ import java.util.List;
  */
 public class SerializationTools {
 
-    private static ArgContainerSerializer argContainerSerializer = new ArgContainerSerializer();
-    private static TaskContainerSerializer taskContainerSerializer = new TaskContainerSerializer();
+    private static ArgContainerStreamSerializer argContainerStreamSerializer = new ArgContainerStreamSerializer();
+    private static TaskContainerStreamSerializer taskContainerSerializer = new TaskContainerStreamSerializer();
 
     public static void writeString(ObjectDataOutput out, String str) throws IOException {
         if (str != null && !str.equals("")) {
@@ -53,7 +53,7 @@ public class SerializationTools {
         if (argContainers != null && argContainersCount > 0) {
             out.writeInt(argContainersCount);
             for (int i = 0; i < argContainersCount; i++) {
-                argContainerSerializer.write(out, argContainers[i]);
+                argContainerStreamSerializer.write(out, argContainers[i]);
             }
         } else {
             out.writeInt(-1);
@@ -65,7 +65,7 @@ public class SerializationTools {
         List<ArgContainer> argContainerList = new ArrayList<>();
         if (argContainersCount != -1) {
             for (int i = 0; i < argContainersCount; i++) {
-                argContainerList.add(argContainerSerializer.read(in));
+                argContainerList.add(argContainerStreamSerializer.read(in));
             }
         }
         ArgContainer[] argContainersArray = new ArgContainer[argContainerList.size()];

@@ -16,7 +16,7 @@ import static ru.taskurotta.backend.hz.serialization.SerializationTools.writeStr
 /**
  * User: greg
  */
-public class ArgContainerSerializer implements StreamSerializer<ArgContainer> {
+public class ArgContainerStreamSerializer implements StreamSerializer<ArgContainer> {
 
     @Override
     public void write(ObjectDataOutput out, ArgContainer argContainer) throws IOException {

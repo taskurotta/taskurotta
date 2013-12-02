@@ -13,7 +13,7 @@ import static ru.taskurotta.backend.hz.serialization.SerializationTools.writeStr
 /**
  * User: greg
  */
-public class ErrorContainerSerializer implements StreamSerializer<ErrorContainer> {
+public class ErrorContainerStreamSerializer implements StreamSerializer<ErrorContainer> {
 
     @Override
     public void write(ObjectDataOutput out, ErrorContainer object) throws IOException {
