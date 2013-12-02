@@ -61,7 +61,7 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
-             \@level: !!!str OFF
+             \@level: INFO
         - ru.taskurotta.recipes.stress:
              key: name
              \@level: DEBUG

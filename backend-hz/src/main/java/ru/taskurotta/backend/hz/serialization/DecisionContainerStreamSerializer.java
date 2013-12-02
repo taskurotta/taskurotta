@@ -28,8 +28,6 @@ public class DecisionContainerStreamSerializer implements StreamSerializer<Decis
     @Override
     public void write(ObjectDataOutput out, DecisionContainer object) throws IOException {
 
-//        System.err.println("!!!!!!!!!!!!!!!!!!! " + out.toByteArray().length);
-
         try {
             UUIDSerializer.write(out, object.getTaskId());
             UUIDSerializer.write(out, object.getProcessId());
@@ -52,7 +50,7 @@ public class DecisionContainerStreamSerializer implements StreamSerializer<Decis
     @Override
     public DecisionContainer read(ObjectDataInput in) throws IOException {
 
-//        try {
+        try {
             UUID taskId = UUIDSerializer.read(in);
             UUID processId = UUIDSerializer.read(in);
             ArgContainer value = argContainerStreamSerializer.read(in);
@@ -62,15 +60,15 @@ public class DecisionContainerStreamSerializer implements StreamSerializer<Decis
             String actorId = readString(in);
             TaskContainer[] taskContainers = readTaskContainerArray(in);
             return new DecisionContainer(taskId, processId, value, errorContainer, reTime, taskContainers, actorId, exTime);
-//        } catch (RuntimeException e) {
-//            logger.error("Cannot read data", e);
-//            e.printStackTrace();
-//            throw e;
-//        } catch (IOException e) {
-//            logger.error("Cannot read data", e);
-//            e.printStackTrace();
-//            throw e;
-//        }
+        } catch (RuntimeException e) {
+            logger.error("Cannot read data", e);
+            e.printStackTrace();
+            throw e;
+        } catch (IOException e) {
+            logger.error("Cannot read data", e);
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override

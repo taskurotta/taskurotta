@@ -40,14 +40,6 @@ public class HzTaskDao implements TaskDao {
     @Override
     public void addDecision(DecisionContainer taskDecision) {
         id2TaskDecisionMap.set(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
-
-        IMap map = (IMap)id2TaskDecisionMap;
-
-        map.set(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), "10", 0,
-                TimeUnit.NANOSECONDS);
-
-        map.set("21221", taskDecision, 0,
-                TimeUnit.NANOSECONDS);
     }
 
     @Override
