@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.gc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.storage.ProcessBackend;
@@ -15,6 +17,8 @@ import java.util.UUID;
  */
 public class GeneralGCBackend {
 
+    private static final Logger logger = LoggerFactory.getLogger(GeneralGCBackend.class);
+
     private ProcessBackend processBackend;
     private GraphDao graphDao;
     private TaskDao taskDao;
@@ -27,6 +31,8 @@ public class GeneralGCBackend {
 
     public void delete(UUID processId) {
 
+        logger.trace("Try to garbage collector for process [{}]", processId);
+
         Graph graph = graphDao.getGraph(processId);
         if (graph != null) {
 
@@ -34,27 +40,17 @@ public class GeneralGCBackend {
 
             if (!graph.isFinished()) {
                 Set<UUID> notFinishedTaskIds = graph.getNotFinishedItems().keySet();
-                deleteTasks(notFinishedTaskIds, processId);
+                taskDao.deleteTasks(notFinishedTaskIds, processId);
             }
 
-            deleteDecisions(finishedTaskIds, processId);
-            deleteTasks(finishedTaskIds, processId);
+            taskDao.deleteDecisions(finishedTaskIds, processId);
+            taskDao.deleteTasks(finishedTaskIds, processId);
 
             graphDao.deleteGraph(processId);
         }
 
         processBackend.deleteProcess(processId);
-    }
 
-    private void deleteDecisions(Set<UUID> taskIds, UUID processId) {
-        for (UUID taskId : taskIds) {
-            taskDao.deleteDecision(taskId, processId);
-        }
-    }
-
-    private void deleteTasks(Set<UUID> taskIds, UUID processId) {
-        for (UUID taskId : taskIds) {
-            taskDao.deleteTask(taskId, processId);
-        }
+        logger.debug("Done garbage collector for [{}]", processId);
     }
 }

@@ -39,19 +39,28 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public void finishProcess(UUID processId, String returnValue) {
+    public long finishProcess(UUID processId, String returnValue) {
+
+        ProcessVO processVO = getProcess(processId);
+
+        long keepTime = processVO.getKeepTime();
+        long now = System.currentTimeMillis();
+
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ? WHERE process_id = ?")
+             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ?, delete_time = ? WHERE process_id = ?")
         ) {
-            ps.setLong(1, (new Date()).getTime());
+            ps.setLong(1, now);
             ps.setInt(2, 1);
             ps.setString(3, returnValue);
-            ps.setString(4, processId.toString());
+            ps.setLong(4, now + keepTime);
+            ps.setString(5, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
         }
+
+        return keepTime;
     }
 
     @Override

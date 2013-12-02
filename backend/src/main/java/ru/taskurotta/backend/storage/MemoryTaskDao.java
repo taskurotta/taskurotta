@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -96,13 +97,17 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public void deleteTask(UUID taskId, UUID processId) {
-        id2TaskMap.remove(taskId);
+    public void deleteTasks(Set<UUID> taskIds, UUID processId) {
+        for (UUID taskId : taskIds) {
+            id2TaskMap.remove(taskId);
+        }
     }
 
     @Override
-    public void deleteDecision(UUID taskId, UUID processId) {
-        id2TaskDecisionMap.remove(taskId);
+    public void deleteDecisions(Set<UUID> taskIds, UUID processId) {
+        for (UUID taskId : taskIds) {
+            id2TaskDecisionMap.remove(taskId);
+        }
     }
 
     @Override
