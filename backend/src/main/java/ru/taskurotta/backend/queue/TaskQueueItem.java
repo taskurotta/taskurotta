@@ -22,10 +22,6 @@ public class TaskQueueItem implements Serializable {
         return queueName;
     }
 
-    public void setQueueName(String queueName) {
-        this.queueName = queueName;
-    }
-
     public UUID getTaskId() {
         return taskId;
     }

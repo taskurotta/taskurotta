@@ -42,20 +42,9 @@ public abstract class AbstractQueueBackendStatistics implements QueueBackendStat
             return taskQueueItem;
         }
 
-        Long current = taskQueueItem.getEnqueueTime();
-
         String queueName = createQueueName(actorId, taskList);
 
-        synchronized (lastPolledTaskEnqueueTimes) {
-            Long previous = lastPolledTaskEnqueueTimes.get(queueName);
-            if (previous == null) {
-                lastPolledTaskEnqueueTimes.put(queueName, current);
-            } else {
-                if (previous < current) {
-                    lastPolledTaskEnqueueTimes.put(queueName, current);
-                }
-            }
-        }
+        lastPolledTaskEnqueueTimes.put(queueName, taskQueueItem.getEnqueueTime());
 
         return taskQueueItem;
     }

@@ -69,15 +69,15 @@
                     <hz:serializer type-class="ru.taskurotta.backend.hz.dependency.HzGraphDao.DecisionRow"
                                    class-name="ru.taskurotta.backend.hz.serialization.DecisionRowStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
-                                   class-name="ru.taskurotta.backend.hz.serialization.ArgContainerSerializer"/>
+                                   class-name="ru.taskurotta.backend.hz.serialization.ArgContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
                                    class-name="ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ActorSchedulingOptionsContainer"
-                                   class-name="ru.taskurotta.backend.hz.serialization.ActorSchedulingOptionsContainerSerializer"/>
+                                   class-name="ru.taskurotta.backend.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
-                                   class-name="ru.taskurotta.backend.hz.serialization.ErrorContainerSerializer"/>
+                                   class-name="ru.taskurotta.backend.hz.serialization.ErrorContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
-                                   class-name="ru.taskurotta.backend.hz.serialization.TaskContainerSerializer"/>
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskContainerStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
         </hz:config>

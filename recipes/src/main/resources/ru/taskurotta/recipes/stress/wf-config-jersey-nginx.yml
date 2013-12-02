@@ -26,7 +26,7 @@ profiler:
           targetTolerance: 0.5
 
 actor:
-  - FibonacciDecider:
+  - MultiplierDecider:
       actorInterface: ru.taskurotta.recipes.multiplier.MultiplierDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig

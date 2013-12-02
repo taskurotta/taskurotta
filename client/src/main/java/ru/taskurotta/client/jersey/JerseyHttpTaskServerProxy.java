@@ -21,6 +21,7 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
         if (connectTimeout>0) {
             connectionManager.getParams().setConnectionTimeout(connectTimeout);
         }
+
         if (readTimeout>0) {
             connectionManager.getParams().setSoTimeout(readTimeout);
         }
@@ -40,6 +41,7 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
         };
         contentServerClient.setConnectTimeout(connectTimeout);
         contentServerClient.setReadTimeout(readTimeout);
+
 
         startResource = contentServerClient.resource(getContextUrl(TaskurottaResource.START));
         pullResource = contentServerClient.resource(getContextUrl(TaskurottaResource.POLL));

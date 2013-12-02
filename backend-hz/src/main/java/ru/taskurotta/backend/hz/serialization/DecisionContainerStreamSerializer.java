@@ -16,16 +16,16 @@ import static ru.taskurotta.backend.hz.serialization.SerializationTools.*;
 /**
  * User: greg
  */
-public class DecisionContainerSerializer implements StreamSerializer<DecisionContainer> {
+public class DecisionContainerStreamSerializer implements StreamSerializer<DecisionContainer> {
 
-    private ArgContainerSerializer argContainerSerializer = new ArgContainerSerializer();
-    private ErrorContainerSerializer errorContainerSerializer = new ErrorContainerSerializer();
+    private ArgContainerStreamSerializer argContainerStreamSerializer = new ArgContainerStreamSerializer();
+    private ErrorContainerStreamSerializer errorContainerSerializer = new ErrorContainerStreamSerializer();
 
     @Override
     public void write(ObjectDataOutput out, DecisionContainer object) throws IOException {
         UUIDSerializer.write(out, object.getTaskId());
         UUIDSerializer.write(out, object.getProcessId());
-        argContainerSerializer.write(out, object.getValue());
+        argContainerStreamSerializer.write(out, object.getValue());
         errorContainerSerializer.write(out, object.getErrorContainer());
         out.writeLong(object.getExecutionTime());
         out.writeLong(object.getRestartTime());
@@ -37,7 +37,7 @@ public class DecisionContainerSerializer implements StreamSerializer<DecisionCon
     public DecisionContainer read(ObjectDataInput in) throws IOException {
         UUID taskId = UUIDSerializer.read(in);
         UUID processId = UUIDSerializer.read(in);
-        ArgContainer value = argContainerSerializer.read(in);
+        ArgContainer value = argContainerStreamSerializer.read(in);
         ErrorContainer errorContainer = errorContainerSerializer.read(in);
         long exTime = in.readLong();
         long reTime = in.readLong();

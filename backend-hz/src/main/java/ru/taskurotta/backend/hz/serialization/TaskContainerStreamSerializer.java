@@ -16,7 +16,7 @@ import static ru.taskurotta.backend.hz.serialization.SerializationTools.*;
 /**
  * User: greg
  */
-public class TaskContainerSerializer implements StreamSerializer<TaskContainer> {
+public class TaskContainerStreamSerializer implements StreamSerializer<TaskContainer> {
 
 
     private TaskOptionsContainerSerializer taskOptionsContainerSerializer = new TaskOptionsContainerSerializer();
