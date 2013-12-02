@@ -51,15 +51,15 @@ public class SerializationTest {
                 setTypeClass(Graph.class).
                 setImplementation(new DecisionRowStreamSerializer()).
                 setTypeClass(HzGraphDao.DecisionRow.class).
-                setImplementation(new ArgContainerSerializer()).
+                setImplementation(new ArgContainerStreamSerializer()).
                 setTypeClass(ArgContainer.class).
                 setImplementation(new TaskOptionsContainerSerializer()).
                 setTypeClass(TaskOptionsContainer.class).
-                setImplementation(new ActorSchedulingOptionsContainerSerializer()).
+                setImplementation(new ActorSchedulingOptionsContainerStreamSerializer()).
                 setTypeClass(ActorSchedulingOptionsContainer.class).
-                setImplementation(new ErrorContainerSerializer()).
+                setImplementation(new ErrorContainerStreamSerializer()).
                 setTypeClass(ErrorContainer.class).
-                setImplementation(new TaskContainerSerializer()).
+                setImplementation(new TaskContainerStreamSerializer()).
                 setTypeClass(TaskContainer.class);
 
 

@@ -13,6 +13,14 @@ public interface QueueBackend {
 
     public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
 
+    /**
+     * TODO: remove this method. Should be implemented only in MemoryQueueBackend for testing purpose.
+     * @param actorId
+     * @param taskList
+     * @param taskId
+     * @param processId
+     * @return
+     */
     public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId);
 
     public String createQueueName(String actorId, String taskList);

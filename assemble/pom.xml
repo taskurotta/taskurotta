@@ -20,7 +20,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>1.6</version>
+                <version>2.1</version>
                 <configuration>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
                     <filters>
@@ -131,6 +131,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>patches</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
             <version>${spring.version}</version>
@@ -158,6 +163,11 @@
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>schedule</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>recipes</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

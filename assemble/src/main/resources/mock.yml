@@ -1,6 +1,5 @@
 #Location of Spring application context:
-#Hazelcast without mongo mapstore
-contextLocation: "classpath*:spring/hz.xml"
+contextLocation: "classpath*:spring/mock.xml"
 
 #Used for static resource serving in development mode
 assets:
@@ -16,20 +15,15 @@ actorConfig:
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
-  hz.mancenter.enabled: true
-  hz.mancenter.url: "http://localhost:8080/mancenter-3.0.3"
-  hz.jmx.detailed: true
-  hz.jmx: true
-  mongo.host: localhost
-  mongo.port: 27017
 
 #Http server configuration:
 logging:
     level: WARN
     loggers:
-        com.hazelcast: INFO
         ru.taskurotta: INFO
 #        ru.taskurotta.backend.statistics.datalistener TRACE
+#        ru.taskurotta: INFO
+#        ru.taskurotta.backend.statistics.datalisteners: TRACE
 #        ru.taskurotta.backend.statistics.metrics: TRACE
 #        ru.taskurotta.recovery: DEBUG
 #        ru.taskurotta.backend.recovery: DEBUG
@@ -42,6 +36,7 @@ logging:
 #        ru.taskurotta.backend.hz.server: INFO
 #        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
         com.yammer: INFO
+        ru.taskurotta.dropwizard.server.core: DEBUG
     file:
         enabled: true
         archive: true
@@ -59,6 +54,8 @@ http:
             archive: true
             currentLogFilename: ./target/logs/requests.log
             archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+        console:
+            enabled: false
 
 
 #config can be extended here

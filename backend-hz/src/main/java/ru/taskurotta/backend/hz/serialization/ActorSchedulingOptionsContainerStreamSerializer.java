@@ -13,7 +13,7 @@ import static ru.taskurotta.backend.hz.serialization.SerializationTools.writeStr
 /**
  * User: greg
  */
-public class ActorSchedulingOptionsContainerSerializer implements StreamSerializer<ActorSchedulingOptionsContainer> {
+public class ActorSchedulingOptionsContainerStreamSerializer implements StreamSerializer<ActorSchedulingOptionsContainer> {
 
     @Override
     public void write(ObjectDataOutput out, ActorSchedulingOptionsContainer object) throws IOException {

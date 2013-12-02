@@ -38,6 +38,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setStartTime(System.currentTimeMillis());
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
+        process.setStartTask(task);
         hzInstance.getMap(processesStorageMapName).set(task.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
     }
 

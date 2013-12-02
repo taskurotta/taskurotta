@@ -10,13 +10,13 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/stress/SpreaderBeans-jersey.xml
         properties:
-          endpoint: "http://localhost:8811"
-          threadPoolSize: 100
-          readTimeout: 0
+          endpoint: "http://localhost:8081"
+          threadPoolSize: 70
+          readTimeout: 70000
           connectTimeout: 3000
           cycles: 10
-          initialCount: 8
-          shotSize: 4000
+          initialCount: 1 
+          shotSize: 100000
           needRun: true
 
 profiler:
@@ -26,7 +26,8 @@ profiler:
         class: ru.taskurotta.recipes.stress.LifetimeProfiler
         properties:
           exitAfterAll: false
-          tasksForStat: 500
+          tasksForStat: 5000
+          maxTaskQuantity: 10000000
 
 actor:
   - MultiplierDecider:

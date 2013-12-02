@@ -103,7 +103,7 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
 
     @Override
     public int getTypeId() {
-        return ObjectTypes.GRAPH_DECISION_ROW;
+        return ObjectTypes.DECISION_ROW_STREAM;
     }
 
     @Override
