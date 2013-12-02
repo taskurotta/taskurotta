@@ -1,0 +1,18 @@
+# Actor + Http + Mock Server
+
+server:
+        java -Xmx45m -Xms45m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/romario/tmp -DassetsMode=dev -Dts.node.custom.name="node1" -Ddw.http.port=8081 -Ddw.http.adminPort=9081 -Ddw.logging.file.currentLogFilename="assemble/target/server1.log" -jar assemble/target/assemble-0.4.0-SNAPSHOT.jar server assemble/src/main/resources/mock.yml
+
+actor:
+        java -Xmx45m -Xms45m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/romario/tmp -cp assemble/target/assemble-0.4.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f /home/romario/dev/taskurotta/stress-tests/b-localhost-8081.yml
+
+
+# Actor + Direct + Mock Server
+
+actor:
+        java -Xmx45m -Xms45m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/romario/tmp -cp assemble/target/assemble-0.4.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem-mock.yml
+
+# Actor + Direct + HZ + Mongo
+
+actor:
+        java -Xmx45m -Xms45m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/romario/tmp -cp assemble/target/assemble-0.4.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem.yml
