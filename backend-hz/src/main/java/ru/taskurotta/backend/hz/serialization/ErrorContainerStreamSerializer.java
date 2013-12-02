@@ -17,6 +17,14 @@ public class ErrorContainerStreamSerializer implements StreamSerializer<ErrorCon
 
     @Override
     public void write(ObjectDataOutput out, ErrorContainer object) throws IOException {
+
+        if (object == null) {
+            out.writeBoolean(false);
+            return;
+        }
+
+        out.writeBoolean(true);
+
         writeString(out, object.getClassName());
         writeString(out, object.getMessage());
         writeString(out, object.getStackTrace());
@@ -24,6 +32,11 @@ public class ErrorContainerStreamSerializer implements StreamSerializer<ErrorCon
 
     @Override
     public ErrorContainer read(ObjectDataInput in) throws IOException {
+
+        if (!in.readBoolean()) {
+            return null;
+        }
+
         ErrorContainer errorContainer = new ErrorContainer();
         errorContainer.setClassName(readString(in));
         errorContainer.setMessage(readString(in));

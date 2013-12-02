@@ -27,23 +27,27 @@ public class HzTaskDao implements TaskDao {
 
     private HazelcastInstance hzInstance;
 
-    private String id2TaskMapName = "id2TaskMap";
-    private String id2TaskDecisionMapName = "id2TaskDecisionMap";
     private IMap<TaskKey, TaskContainer> id2TaskMap;
     private IMap<TaskKey, DecisionContainer> id2TaskDecisionMap;
 
-    public HzTaskDao(HazelcastInstance hzInstance) {
+    public HzTaskDao(HazelcastInstance hzInstance, String id2TaskMapName, String id2TaskDecisionMapName) {
         this.hzInstance = hzInstance;
-    }
 
-    public void init() {
         id2TaskMap = hzInstance.getMap(id2TaskMapName);
         id2TaskDecisionMap = hzInstance.getMap(id2TaskDecisionMapName);
     }
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision, 0, TimeUnit.NANOSECONDS);
+        id2TaskDecisionMap.set(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
+
+        IMap map = (IMap)id2TaskDecisionMap;
+
+        map.set(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), "10", 0,
+                TimeUnit.NANOSECONDS);
+
+        map.set("21221", taskDecision, 0,
+                TimeUnit.NANOSECONDS);
     }
 
     @Override
@@ -130,14 +134,6 @@ public class HzTaskDao implements TaskDao {
             }));
         }
         return result;
-    }
-
-    public void setId2TaskMapName(String id2TaskMapName) {
-        this.id2TaskMapName = id2TaskMapName;
-    }
-
-    public void setId2TaskDecisionMapName(String id2TaskDecisionMapName) {
-        this.id2TaskDecisionMapName = id2TaskDecisionMapName;
     }
 
 }

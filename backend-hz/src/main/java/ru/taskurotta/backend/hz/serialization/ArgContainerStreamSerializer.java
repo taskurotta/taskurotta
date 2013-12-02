@@ -20,6 +20,13 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
 
     @Override
     public void write(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
+
+        if (argContainer == null) {
+            out.writeBoolean(false);
+            return;
+        }
+
+        out.writeBoolean(true);
         serializePlain(out, argContainer);
         if (argContainer.getCompositeValue() != null && argContainer.getCompositeValue().length > 0) {
             out.writeInt(argContainer.getCompositeValue().length);
@@ -29,6 +36,18 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
         } else {
             out.writeInt(-1);
         }
+    }
+
+    @Override
+    public ArgContainer read(ObjectDataInput in) throws IOException {
+
+        if (!in.readBoolean()) {
+            return null;
+        }
+
+        ArgContainer arg;
+        arg = deserializePlain(in);
+        return arg;
     }
 
     private void serializePlain(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
@@ -84,13 +103,6 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
         arg.setJSONValue(jsonValue);
         arg.setType(valueType);
         arg.setPromise(promise);
-        return arg;
-    }
-
-    @Override
-    public ArgContainer read(ObjectDataInput in) throws IOException {
-        ArgContainer arg;
-        arg = deserializePlain(in);
         return arg;
     }
 

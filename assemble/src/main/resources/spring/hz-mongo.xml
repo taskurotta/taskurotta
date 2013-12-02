@@ -160,7 +160,7 @@
         <constructor-arg name="j" value="true"/>
     </bean>
 
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongoMapStore" scope="prototype">
+    <bean class="ru.taskurotta.spring.mongodb.MongoMapStore" id="mongoMapStore" scope="prototype">
         <property name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
     <!-- /Mongo -->
@@ -206,11 +206,10 @@
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="id2TaskMapName" value="${hz.task.map.name}"/>
-        <property name="id2TaskDecisionMapName" value="${hz.decision.map.name}"/>
+        <constructor-arg name="id2TaskMapName" value="${hz.task.map.name}"/>
+        <constructor-arg name="id2TaskDecisionMapName" value="${hz.decision.map.name}"/>
     </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">

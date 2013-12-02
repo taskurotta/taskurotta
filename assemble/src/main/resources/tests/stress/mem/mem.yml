@@ -65,6 +65,12 @@ logback:
         - ru.taskurotta.recipes.stress:
              key: name
              \@level: DEBUG
+        - ru.taskurotta.spring.mongodb:
+             key: name
+             \@level: DEBUG
+        - com.hazelcast.nio.serialization.SerializationServiceImpl:
+             key: name
+             \@level: DEBUG
         - org:
              key: name
              \@level: !!!str OFF
