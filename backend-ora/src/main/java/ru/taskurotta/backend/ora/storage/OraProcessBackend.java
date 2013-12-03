@@ -43,8 +43,8 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
 
         ProcessVO processVO = getProcess(processId);
 
-        long keepTime = processVO.getKeepTime();
         long now = System.currentTimeMillis();
+        long deleteTime = now + processVO.getKeepTime();
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ?, delete_time = ? WHERE process_id = ?")
@@ -52,7 +52,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             ps.setLong(1, now);
             ps.setInt(2, 1);
             ps.setString(3, returnValue);
-            ps.setLong(4, now + keepTime);
+            ps.setLong(4, deleteTime);
             ps.setString(5, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
@@ -60,7 +60,7 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
             throw new BackendCriticalException("Database error", ex);
         }
 
-        return keepTime;
+        return deleteTime;
     }
 
     @Override

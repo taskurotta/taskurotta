@@ -38,16 +38,16 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     public long finishProcess(UUID processId, String returnValue) {
         ProcessVO process = processesStorage.get(processId);
 
-        long keepTime = process.getKeepTime();
         long now = System.currentTimeMillis();
+        long deleteTime = now + process.getKeepTime();
 
         process.setEndTime(now);
-        process.setDeleteTime(now + keepTime);
+        process.setDeleteTime(deleteTime);
         process.setReturnValueJson(returnValue);
 
         processesStorage.put(processId, process);
 
-        return keepTime;
+        return deleteTime;
     }
 
     @Override

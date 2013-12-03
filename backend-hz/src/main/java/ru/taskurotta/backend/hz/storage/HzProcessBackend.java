@@ -49,15 +49,15 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         IMap<UUID, ProcessVO> processMap = hzInstance.getMap(processesStorageMapName);
         ProcessVO process = processMap.get(processId);
 
-        long keepTime = process.getKeepTime();
         long now = System.currentTimeMillis();
+        long deleteTime = process.getKeepTime() + now;
 
         process.setEndTime(now);
-        process.setDeleteTime(now + keepTime);
+        process.setDeleteTime(deleteTime);
         process.setReturnValueJson(returnValue);
         processMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
 
-        return keepTime;
+        return deleteTime;
     }
 
     @Override

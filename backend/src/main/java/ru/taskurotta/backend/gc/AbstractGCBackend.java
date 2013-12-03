@@ -7,6 +7,7 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,15 +16,15 @@ import java.util.UUID;
  * Date: 29.11.13
  * Time: 12:22
  */
-public class GeneralGCBackend {
+public abstract class AbstractGCBackend {
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneralGCBackend.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractGCBackend.class);
 
     private ProcessBackend processBackend;
     private GraphDao graphDao;
     private TaskDao taskDao;
 
-    public GeneralGCBackend(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
+    public AbstractGCBackend(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
         this.processBackend = processBackend;
         this.graphDao = graphDao;
         this.taskDao = taskDao;
@@ -53,4 +54,8 @@ public class GeneralGCBackend {
 
         logger.debug("Done garbage collector for [{}]", processId);
     }
+
+    public abstract void addProcessToGC(UUID processId, long deleteTime);
+
+    public abstract Collection<UUID> getProcessesForGC();
 }

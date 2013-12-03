@@ -10,17 +10,17 @@ import java.util.concurrent.Callable;
  */
 public class GCTask implements Callable<Boolean> {
 
-    private GeneralGCBackend generalGCBackend;
+    private AbstractGCBackend abstractGCBackend;
     private UUID processId;
 
-    public GCTask(GeneralGCBackend generalGCBackend, UUID processId) {
-        this.generalGCBackend = generalGCBackend;
+    public GCTask(AbstractGCBackend abstractGCBackend, UUID processId) {
+        this.abstractGCBackend = abstractGCBackend;
         this.processId = processId;
     }
 
     @Override
     public Boolean call() throws Exception {
-        generalGCBackend.delete(processId);
+        abstractGCBackend.delete(processId);
         return true;
     }
 }
