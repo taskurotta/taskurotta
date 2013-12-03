@@ -17,81 +17,86 @@
     <context:annotation-config/>
 
     <hz:hazelcast id="hzInstance">
-         <hz:config>
-             <hz:management-center enabled="${hz.mancenter.enabled}" url="${hz.mancenter.url}"/>
+        <hz:config>
+            <hz:management-center enabled="${hz.mancenter.enabled}" url="${hz.mancenter.url}"/>
 
-             <hz:properties>
-                 <hz:property name="hazelcast.logging.type">${hz.logging.type}</hz:property>
-                 <hz:property name="hazelcast.jmx">${hz.jmx}</hz:property>
-                 <hz:property name="hazelcast.jmx.detailed">${hz.jmx.detailed}</hz:property>
-             </hz:properties>
+            <hz:properties>
+                <hz:property name="hazelcast.logging.type">${hz.logging.type}</hz:property>
+                <hz:property name="hazelcast.jmx">${hz.jmx}</hz:property>
+                <hz:property name="hazelcast.jmx.detailed">${hz.jmx.detailed}</hz:property>
+            </hz:properties>
 
-             <hz:network port="${hz.port}" port-auto-increment="true">
-                 <hz:join>
-                     <hz:multicast enabled="false"/>
-                     <hz:tcp-ip enabled="true">
-                         <hz:members>${hz.nodes}</hz:members>
-                     </hz:tcp-ip>
-                 </hz:join>
-             </hz:network>
+            <hz:network port="${hz.port}" port-auto-increment="true">
+                <hz:join>
+                    <hz:multicast enabled="false"/>
+                    <hz:tcp-ip enabled="true">
+                        <hz:members>${hz.nodes}</hz:members>
+                    </hz:tcp-ip>
+                </hz:join>
+            </hz:network>
 
-             <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
-             <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
+            <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
+            <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
 
-             <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
-                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
-             </hz:map>
+            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+                    max-idle-seconds="0"
+                    max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
+            </hz:map>
 
-             <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
-                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
-             </hz:map>
+            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+                    max-idle-seconds="0"
+                    max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
+            </hz:map>
 
-             <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
-                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
-             </hz:map>
+            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+                    max-idle-seconds="0"
+                    max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
+            </hz:map>
 
-             <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
-                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
-             </hz:map>
+            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+                    max-idle-seconds="0"
+                    max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
+            </hz:map>
 
-             <hz:map name="${hz.process.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
-                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
-             </hz:map>
+            <hz:map name="${hz.process.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+                    max-idle-seconds="0"
+                    max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
+            </hz:map>
 
 
-             <hz:serialization>
-                 <hz:serializers>
-                     <hz:serializer type-class="ru.taskurotta.transport.model.ActorSchedulingOptionsContainer"
-                                    class-name="ru.taskurotta.backend.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
-                                    class-name="ru.taskurotta.backend.hz.serialization.ArgContainerStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
-                                    class-name="ru.taskurotta.backend.hz.serialization.DecisionContainerStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.backend.hz.dependency.HzGraphDao.DecisionRow"
-                                    class-name="ru.taskurotta.backend.hz.serialization.DecisionRowStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
-                                    class-name="ru.taskurotta.backend.hz.serialization.ErrorContainerStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.backend.dependency.links.Graph"
-                                    class-name="ru.taskurotta.backend.hz.serialization.GraphStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.backend.console.model.ProcessVO"
-                                    class-name="ru.taskurotta.backend.hz.serialization.ProcessVOStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
-                                    class-name="ru.taskurotta.backend.hz.serialization.TaskContainerStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.backend.hz.TaskKey"
-                                    class-name="ru.taskurotta.backend.hz.serialization.TaskKeyStreamSerializer"/>
-                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
-                                    class-name="ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer"/>
-                     <hz:serializer type-class="java.util.UUID"
-                                    class-name="ru.taskurotta.backend.hz.serialization.UUIDStreamSerializer"/>
-                 </hz:serializers>
-             </hz:serialization>
-         </hz:config>
-     </hz:hazelcast>
+            <hz:serialization>
+                <hz:serializers>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ActorSchedulingOptionsContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ArgContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.DecisionContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.backend.hz.dependency.HzGraphDao.DecisionRow"
+                                   class-name="ru.taskurotta.backend.hz.serialization.DecisionRowStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ErrorContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.backend.dependency.links.Graph"
+                                   class-name="ru.taskurotta.backend.hz.serialization.GraphStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.backend.console.model.ProcessVO"
+                                   class-name="ru.taskurotta.backend.hz.serialization.ProcessVOStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.backend.hz.TaskKey"
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskKeyStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer"/>
+                    <hz:serializer type-class="java.util.UUID"
+                                   class-name="ru.taskurotta.backend.hz.serialization.UUIDStreamSerializer"/>
+                </hz:serializers>
+            </hz:serialization>
+        </hz:config>
+    </hz:hazelcast>
 
     <!-- Queues persistence support -->
     <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
@@ -141,9 +146,9 @@
         <property name="configBackend" ref="configBackend"/>
     </bean>
 
-    <bean id = "actorCompareResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorCompareResource">
-        <property name="metricsDataRetriever" ref="metricsDataHandler" />
-        <property name="actorConfigManager" ref="actorConfigManager" />
+    <bean id="actorCompareResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorCompareResource">
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+        <property name="actorConfigManager" ref="actorConfigManager"/>
     </bean>
 
     <!-- /Config support -->
@@ -213,11 +218,11 @@
         <constructor-arg name="hzInstance" ref="hzInstance"/>
 
         <property name="metricsFactory" ref="metricsFactory"/>
-        <property name="mergePeriod" value = "${hz.recovery.merge.period}" />
-        <property name="mergePeriodTimeUnit" value = "${hz.recovery.merge.timeunit}" />
-        <property name="queueNamePrefix" value = "${hz.task.queue.prefix}" />
-        <property name="queueSizeMetricPeriodSeconds" value = "${metric.queue.size.data.period.seconds}" />
-        <property name="numberDataListener" ref="metricsNumberDataHandler" />
+        <property name="mergePeriod" value="${hz.recovery.merge.period}"/>
+        <property name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="queueSizeMetricPeriodSeconds" value="${metric.queue.size.data.period.seconds}"/>
+        <property name="numberDataListener" ref="metricsNumberDataHandler"/>
     </bean>
 
     <bean id="configBackend" class="ru.taskurotta.backend.hz.config.HzConfigBackend">
@@ -252,11 +257,11 @@
     </bean>
 
     <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
-        <property name="dataSource" ref="originalDataSource" />
-        <property name="lobHandler" ref="lobHandler" />
+        <property name="dataSource" ref="originalDataSource"/>
+        <property name="lobHandler" ref="lobHandler"/>
     </bean>
 
-    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" />
+    <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"/>
 
     <bean id="recoveryProcessBackend" class="ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend">
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
@@ -311,17 +316,19 @@
 
 
     <!-- Task server -->
-    <bean id="originalTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer"
-          factory-method="createInstance">
+    <bean id="originalTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
+        <constructor-arg name="brokenProcessBackend">
+            <null/>
+        </constructor-arg>
 
-        <property name="hzInstance" ref="hzInstance"/>
-        <property name="nodeCustomName" value="${node.custom.name}"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nodeCustomName" value="${node.custom.name}"/>
+        <constructor-arg name="decisionProcessingExecutorService" value="${hz.decisions.service.name}"/>
     </bean>
     <!-- /Task server -->
 
@@ -337,8 +344,8 @@
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>
 
-    <bean id = "metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init" />
-    <bean id = "metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init"/>
     <!-- /Metrics -->
 
     <!-- Data source -->
