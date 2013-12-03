@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
@@ -13,12 +12,23 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <context:property-placeholder/>
-    <context:annotation-config/>
+    <bean id="metricsTaskServer" class="ru.taskurotta.server.MetricsTaskServer">
+        <constructor-arg name="taskServer" ref="realTaskServer"/>
+        <property name="metricsFactory" ref="metricsFactory"/>
+    </bean>
+
+    <bean id="taskServer" class="ru.taskurotta.assemple.ProxyTaskServer">
+        <constructor-arg name="target" ref="metricsTaskServer" />
+    </bean>
 
 
-    <!-- base config -->
-    <import resource="hz-mongo.xml"/>
-    <import resource="backend/process-to-oracle.xml"/>
+    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
+        <constructor-arg name="dumpPeriod" value="${metric.method.data.period.seconds}"/>
+        <constructor-arg name="dumpingThreads" value="3"/>
+        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
+    </bean>
+
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init"/>
 
 </beans>
