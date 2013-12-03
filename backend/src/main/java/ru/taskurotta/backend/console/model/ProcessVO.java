@@ -22,9 +22,6 @@ public class ProcessVO implements Serializable {
     long startTime = -1l;
     long endTime = -1l;
 
-    long keepTime = 0l;
-    long deleteTime = -1l;
-
     private String returnValueJson;
 
     public UUID getProcessUuid() {
@@ -81,21 +78,5 @@ public class ProcessVO implements Serializable {
 
     public void setStartTask(TaskContainer startTask) {
         this.startTask = startTask;
-    }
-
-    public long getKeepTime() {
-        return keepTime;
-    }
-
-    public void setKeepTime(long keepTime) {
-        this.keepTime = keepTime;
-    }
-
-    public long getDeleteTime() {
-        return deleteTime;
-    }
-
-    public void setDeleteTime(long deleteTime) {
-        this.deleteTime = deleteTime;
     }
 }

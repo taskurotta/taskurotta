@@ -6,7 +6,6 @@ import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
 import ru.taskurotta.backend.dependency.links.GraphDao;
-import ru.taskurotta.backend.gc.AbstractGCBackend;
 import ru.taskurotta.backend.hz.config.HzConfigBackend;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;
@@ -78,10 +77,5 @@ public class HzBackendBundle implements BackendBundle {
     @Override
     public BrokenProcessBackend getBrokenProcessBackend() {
         return brokenProcessBackend;
-    }
-
-    @Override
-    public AbstractGCBackend getGCBackend() {
-        return null;
     }
 }

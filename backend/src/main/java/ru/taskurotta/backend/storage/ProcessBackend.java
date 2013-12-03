@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.storage;
 
-import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.UUID;
@@ -14,11 +13,7 @@ public interface ProcessBackend {
 
     public void startProcess(TaskContainer task);
 
-    public ProcessVO getProcess(UUID processId);
-
-    public long finishProcess(UUID processId, String returnValue);
-
-    public void deleteProcess(UUID processId);
+    public void finishProcess(UUID processId, String returnValue);
 
     /**
      * Get start task for process by it's id
