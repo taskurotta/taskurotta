@@ -4,6 +4,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.backend.hz.TaskKey;
@@ -25,6 +27,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class HzTaskDao implements TaskDao {
 
+    private static final Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
+
     private HazelcastInstance hzInstance;
 
     private IMap<TaskKey, TaskContainer> id2TaskMap;
@@ -39,6 +43,7 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
+        logger.debug("Storing decision [{}]", taskDecision);
         id2TaskDecisionMap.set(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
     }
 
@@ -54,7 +59,9 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.get(new TaskKey(processId, taskId));
+        DecisionContainer result =  id2TaskDecisionMap.get(new TaskKey(processId, taskId));
+        logger.debug("Getting decision [{}]", result);
+        return result;
     }
 
     @Override
