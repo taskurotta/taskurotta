@@ -13,11 +13,7 @@ import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -95,8 +91,8 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer removeTask(UUID taskId, UUID processId) {
-        return id2TaskMap.remove(new TaskKey(processId, taskId));
+    public void deleteTasks(Set<UUID> taskIds, UUID processId) {
+        return id2TaskMap.remove(new TaskKey(processId, taskIds));
     }
 
     @Override

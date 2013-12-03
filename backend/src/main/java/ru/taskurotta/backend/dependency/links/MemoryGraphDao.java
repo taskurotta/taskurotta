@@ -123,6 +123,11 @@ public class MemoryGraphDao implements GraphDao {
     }
 
     @Override
+    public void deleteGraph(UUID graphId) {
+        graphs.remove(graphId);
+    }
+
+    @Override
     public Graph getGraph(UUID graphId) {
 
         GraphRow graphRow = graphs.get(graphId);
