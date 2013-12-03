@@ -16,6 +16,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -69,7 +70,18 @@ public class MemoryGCBackend extends AbstractGCBackend {
     public MemoryGCBackend(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
         super(processBackend, graphDao, taskDao);
 
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(poolSize);
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
+
+            private int counter = 0;
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("GC-" + counter++);
+                return thread;
+            }
+
+        });
         scheduledExecutorService.scheduleAtFixedRate(new ScheduledGCTask(), initialDelay, period, periodTimeUnit);
 
         executorService = Executors.newFixedThreadPool(poolSize);
