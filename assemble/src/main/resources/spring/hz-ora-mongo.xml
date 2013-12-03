@@ -39,27 +39,27 @@
              <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
 
              <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                     max-size="${hz.map.eviction.size}" eviction-percentage="${hz.map.eviction.percentage.size}">
                  <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
              </hz:map>
 
              <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                     max-size="${hz.map.eviction.size}" eviction-percentage="${hz.map.eviction.percentage.size}">
                  <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
              </hz:map>
 
              <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                     max-size="${hz.map.eviction.size}" eviction-percentage="${hz.map.eviction.percentage.size}">
                  <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
              </hz:map>
 
              <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                     max-size="${hz.map.eviction.size}" eviction-percentage="${hz.map.eviction.percentage.size}">
                  <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
              </hz:map>
 
              <hz:map name="${hz.process.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU" max-idle-seconds="0"
-                     max-size="${hz.map.eviction.size}" eviction-percentage="25">
+                     max-size="${hz.map.eviction.size}" eviction-percentage="${hz.map.eviction.percentage.size}">
                  <hz:map-store enabled="true" write-delay-seconds="0" implementation="mongoMapStore"/>
              </hz:map>
 
@@ -111,11 +111,11 @@
 
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
-        <property name="evictionPercentage" value="25"/>
+        <property name="evictionPercentage" value="${hz.map.eviction.percentage.size}"/>
         <property name="evictionPolicy" value="LRU"/>
         <property name="mapStoreBeanName" value="mongoMapStore"/>
         <property name="timeToLive" value="5"/>
-        <property name="maxSize" value="1000"/>
+        <property name="maxSize" value="${hz.map.eviction.size}"/>
     </bean>
 
     <bean id="restoreQueueSupport" class="ru.taskurotta.backend.hz.support.HzQueueRestoreSupport" init-method="init">
