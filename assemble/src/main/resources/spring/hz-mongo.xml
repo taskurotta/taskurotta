@@ -261,7 +261,7 @@
 
 
     <!-- Task server -->
-    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
+    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
@@ -271,8 +271,9 @@
             <null/>
         </constructor-arg>
 
-        <property name="hzInstance" ref="hzInstance"/>
-        <property name="nodeCustomName" value="${node.custom.name}"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nodeCustomName" value="${node.custom.name}"/>
+        <constructor-arg name="decisionProcessingExecutorService" value="${hz.decisions.service.name}"/>
     </bean>
 
     <!-- Metrics -->

@@ -55,7 +55,7 @@ logback:
              key: name
              \@class: ch.qos.logback.core.FileAppender
              file: ./target/logs/recipes-multiply.log
-             append: true
+             append: false
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:
