@@ -21,8 +21,8 @@ public class MemoryGraphDao implements GraphDao {
     private final static Logger logger = LoggerFactory.getLogger(MemoryGraphDao.class);
 
     // TODO: garbage collection policy for real database
-    private Map<UUID, GraphRow> graphs = new ConcurrentHashMap<UUID, GraphRow>();
-    private Map<UUID, DecisionRow> decisions = new ConcurrentHashMap<UUID, DecisionRow>();
+    private Map<UUID, GraphRow> graphs = new ConcurrentHashMap<>();
+    private Map<UUID, DecisionRow> decisions = new ConcurrentHashMap<>();
 
     private Object newGraphLock = new Object();
 
@@ -186,5 +186,10 @@ public class MemoryGraphDao implements GraphDao {
         }
 
         return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void deleteGraph(UUID graphId) {
+        graphs.remove(graphId);
     }
 }

@@ -168,4 +168,9 @@ public class HzGraphDao implements GraphDao {
         return false;
     }
 
+    @Override
+    public void deleteGraph(UUID graphId) {
+        graphs.delete(graphId);
+    }
+
 }

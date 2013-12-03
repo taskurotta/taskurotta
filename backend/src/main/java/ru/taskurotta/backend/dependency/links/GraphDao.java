@@ -42,6 +42,12 @@ public interface GraphDao {
      */
     boolean changeGraph(Updater updater);
 
+    /**
+     * Delete graph
+     *
+     * @param graphId
+     */
+    void deleteGraph(UUID graphId);
 
     /**
      * This class delegates synchronization solution to the DAO level.
