@@ -55,14 +55,20 @@ logback:
              key: name
              \@class: ch.qos.logback.core.FileAppender
              file: ./target/logs/recipes-multiply.log
-             append: true
+             append: false
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: !!!str OFF
+             \@level: INFO
         - ru.taskurotta.recipes.stress:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.spring.mongodb:
+             key: name
+             \@level: DEBUG
+        - com.hazelcast.nio.serialization.SerializationServiceImpl:
              key: name
              \@level: DEBUG
         - org:

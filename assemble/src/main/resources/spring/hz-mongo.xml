@@ -160,7 +160,7 @@
         <constructor-arg name="j" value="true"/>
     </bean>
 
-    <bean class="com.hazelcast.spring.mongodb.MongoMapStore" id="mongoMapStore" scope="prototype">
+    <bean class="ru.taskurotta.spring.mongodb.MongoMapStore" id="mongoMapStore" scope="prototype">
         <property name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
     <!-- /Mongo -->
@@ -201,17 +201,10 @@
         <property name="numberDataListener" ref="metricsNumberDataHandler"/>
     </bean>
 
-    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
-        <constructor-arg name="dumpPeriod" value="1"/>
-        <constructor-arg name="dumpingThreads" value="3"/>
-        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
-    </bean>
-
-    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="id2TaskMapName" value="${hz.task.map.name}"/>
-        <property name="id2TaskDecisionMapName" value="${hz.decision.map.name}"/>
+        <constructor-arg name="id2TaskMapName" value="${hz.task.map.name}"/>
+        <constructor-arg name="id2TaskDecisionMapName" value="${hz.decision.map.name}"/>
     </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
@@ -268,7 +261,7 @@
 
 
     <!-- Task server -->
-    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer" factory-method="createInstance">
+    <bean id="originalTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
@@ -278,25 +271,26 @@
             <null/>
         </constructor-arg>
 
-        <property name="hzInstance" ref="hzInstance"/>
-        <property name="nodeCustomName" value="${node.custom.name}"/>
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nodeCustomName" value="${node.custom.name}"/>
+        <constructor-arg name="decisionProcessingExecutorService" value="${hz.decisions.service.name}"/>
     </bean>
 
     <!-- Metrics -->
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler"/>
+    <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer">
+        <constructor-arg name="taskServer" ref="originalTaskServer"/>
+        <property name="metricsFactory" ref="metricsFactory"/>
+    </bean>
+
+    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
+        <constructor-arg name="dumpPeriod" value="${metric.method.data.period.seconds}"/>
+        <constructor-arg name="dumpingThreads" value="3"/>
+        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
+    </bean>
+
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
     <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init"/>
     <!-- /Metrics -->
-
-    <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
-
-    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalistenerLoggerDataListener"/>-->
-
-    <!--<bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">-->
-    <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->
-    <!--<constructor-arg name="metricsManager" ref="metricsManager"/>-->
-    <!--<constructor-arg name="dataListener" ref="dataListener"/>-->
-    <!--</bean>-->
-    <!-- /Task server -->
 
 
 </beans>

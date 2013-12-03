@@ -74,6 +74,11 @@ public class SerializationTools {
     }
 
     public static void writeTaskContainerArray(ObjectDataOutput out, TaskContainer[] taskContainers) throws IOException {
+        if (taskContainers == null) {
+            out.writeBoolean(false);
+            return;
+        }
+
         int taskContainersCount = taskContainers.length;
         if (taskContainers != null && taskContainersCount > 0) {
             out.writeInt(taskContainersCount);
@@ -86,6 +91,10 @@ public class SerializationTools {
     }
 
     public static TaskContainer[] readTaskContainerArray(ObjectDataInput in) throws IOException {
+        if (!in.readBoolean()) {
+            return null;
+        }
+
         int taskContainersCount = in.readInt();
         List<TaskContainer> taskContainerList = new ArrayList<>();
         if (taskContainersCount != -1) {
