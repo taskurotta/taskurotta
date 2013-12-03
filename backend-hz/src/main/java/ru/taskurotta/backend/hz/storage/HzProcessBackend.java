@@ -43,26 +43,14 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public long finishProcess(UUID processId, String returnValue) {
+    public void finishProcess(UUID processId, String returnValue) {
 
         // TODO: get map reference only one time
         IMap<UUID, ProcessVO> processMap = hzInstance.getMap(processesStorageMapName);
         ProcessVO process = processMap.get(processId);
-
-        long now = System.currentTimeMillis();
-        long deleteTime = process.getKeepTime() + now;
-
-        process.setEndTime(now);
-        process.setDeleteTime(deleteTime);
+        process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
         processMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
-
-        return deleteTime;
-    }
-
-    @Override
-    public void deleteProcess(UUID processId) {
-        hzInstance.getMap(processesStorageMapName).remove(processId);
     }
 
     @Override

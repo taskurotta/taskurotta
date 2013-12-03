@@ -39,46 +39,19 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
-    public long finishProcess(UUID processId, String returnValue) {
-
-        ProcessVO processVO = getProcess(processId);
-
-        long now = System.currentTimeMillis();
-        long deleteTime = now + processVO.getKeepTime();
-
+    public void finishProcess(UUID processId, String returnValue) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ?, delete_time = ? WHERE process_id = ?")
+             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ? WHERE process_id = ?")
         ) {
-            ps.setLong(1, now);
+            ps.setLong(1, (new Date()).getTime());
             ps.setInt(2, 1);
             ps.setString(3, returnValue);
-            ps.setLong(4, deleteTime);
-            ps.setString(5, processId.toString());
+            ps.setString(4, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
             throw new BackendCriticalException("Database error", ex);
         }
-
-        return deleteTime;
-    }
-
-    @Override
-    public void deleteProcess(UUID processId) {
-
-        log.trace("Try to delete process [{}]", processId);
-
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("DELETE FROM PROCESS WHERE process_id = ?")
-        ) {
-            ps.setString(1, processId.toString());
-            ps.executeUpdate();
-        } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
-        }
-
-        log.debug("Successfully delete process [{}]", processId);
     }
 
     @Override
