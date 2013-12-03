@@ -230,11 +230,10 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao" init-method="init">
+    <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="id2TaskMapName" value="${hz.task.map.name}"/>
-        <property name="id2TaskDecisionMapName" value="${hz.decision.map.name}"/>
+        <constructor-arg name="id2TaskMapName" value="${hz.task.map.name}"/>
+        <constructor-arg name="id2TaskDecisionMapName" value="${hz.decision.map.name}"/>
     </bean>
 
     <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">

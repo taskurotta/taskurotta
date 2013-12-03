@@ -200,12 +200,6 @@
         <property name="numberDataListener" ref="metricsNumberDataHandler"/>
     </bean>
 
-    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
-        <constructor-arg name="dumpPeriod" value="1"/>
-        <constructor-arg name="dumpingThreads" value="3"/>
-        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
-    </bean>
-
     <bean id="taskDao" class="ru.taskurotta.backend.hz.storage.HzTaskDao">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="id2TaskMapName" value="${hz.task.map.name}"/>
@@ -261,7 +255,7 @@
 
 
     <!-- Task server -->
-    <bean id="taskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
+    <bean id="originalTaskServer" class="ru.taskurotta.backend.hz.server.HazelcastTaskServer">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
@@ -277,20 +271,20 @@
     </bean>
 
     <!-- Metrics -->
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler"/>
+    <bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer">
+        <constructor-arg name="taskServer" ref="originalTaskServer"/>
+        <property name="metricsFactory" ref="metricsFactory"/>
+    </bean>
+
+    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
+        <constructor-arg name="dumpPeriod" value="${metric.method.data.period.seconds}"/>
+        <constructor-arg name="dumpingThreads" value="3"/>
+        <constructor-arg name="dataListener" ref="metricsDataHandler"/>
+    </bean>
+
+    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
     <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init"/>
     <!-- /Metrics -->
-
-    <!--<bean id="metricsManager" class="ru.taskurotta.backend.statistics.MetricsManager" />-->
-
-    <!--<bean id="dataListener" class="ru.taskurotta.backend.statistics.datalistenerLoggerDataListener"/>-->
-
-    <!--<bean id="taskServer" class="ru.taskurotta.server.MetricsTaskServer" destroy-method="shutdown">-->
-    <!--<constructor-arg name="taskServer" ref="hzTaskServer"/>-->
-    <!--<constructor-arg name="metricsManager" ref="metricsManager"/>-->
-    <!--<constructor-arg name="dataListener" ref="dataListener"/>-->
-    <!--</bean>-->
-    <!-- /Task server -->
 
 
 </beans>
