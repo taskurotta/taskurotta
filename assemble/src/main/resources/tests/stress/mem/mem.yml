@@ -22,7 +22,8 @@ spreader:
           hz.mancenter.enabled: false
           hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
           hz.nodes: localhost:7777
-          hz.map.eviction.size: 1000
+          hz.map.eviction.size: 10
+          hz.map.eviction.percentage.size: 25
           mongo.host: localhost
           mongo.port: 27017
 
