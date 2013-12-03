@@ -35,11 +35,24 @@ public class MemoryProcessBackend implements ProcessBackend, ProcessInfoRetrieve
     }
 
     @Override
-    public void finishProcess(UUID processId, String returnValue) {
+    public long finishProcess(UUID processId, String returnValue) {
         ProcessVO process = processesStorage.get(processId);
-        process.setEndTime(System.currentTimeMillis());
+
+        long now = System.currentTimeMillis();
+        long deleteTime = now + process.getKeepTime();
+
+        process.setEndTime(now);
+        process.setDeleteTime(deleteTime);
         process.setReturnValueJson(returnValue);
+
         processesStorage.put(processId, process);
+
+        return deleteTime;
+    }
+
+    @Override
+    public void deleteProcess(UUID processId) {
+        processesStorage.remove(processId);
     }
 
     @Override

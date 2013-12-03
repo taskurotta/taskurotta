@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.gc.AbstractGCBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
@@ -87,6 +88,11 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             @Override
             public BrokenProcessBackend getBrokenProcessBackend() {
                 return brokenProcessBackend;
+            }
+
+            @Override
+            public AbstractGCBackend getGCBackend() {
+                return null;
             }
         },  hzInstance, nodeCustomName, decisionProcessingExecutorService);
     }

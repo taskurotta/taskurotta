@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -88,8 +89,35 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer removeTask(UUID taskId, UUID processId) {
-        return id2TaskMap.remove(new TaskKey(processId, taskId));
+    public void deleteTasks(Set<UUID> taskIds, UUID processId) {
+
+        if (taskIds == null || taskIds.isEmpty()) {
+            return;
+        }
+
+        if (processId == null) {
+            return;
+        }
+
+        for (UUID taskId : taskIds) {
+            id2TaskMap.remove(new TaskKey(processId, taskId));
+        }
+    }
+
+    @Override
+    public void deleteDecisions(Set<UUID> taskIds, UUID processId) {
+
+        if (taskIds == null || taskIds.isEmpty()) {
+            return;
+        }
+
+        if (processId == null) {
+            return;
+        }
+
+        for (UUID taskId : taskIds) {
+            id2TaskMap.remove(new TaskKey(processId, taskId));
+        }
     }
 
     @Override
@@ -110,7 +138,7 @@ public class HzTaskDao implements TaskDao {
                 private boolean isValid (TaskContainer taskContainer) {
                     boolean isValid = true;
                     if (hasText(command.getTaskId())) {
-                        isValid = isValid && taskContainer.getTaskId().toString().startsWith(command.getTaskId());
+                        isValid = taskContainer.getTaskId().toString().startsWith(command.getTaskId());
                     }
                     if (hasText(command.getProcessId())) {
                         isValid = isValid && taskContainer.getProcessId().toString().startsWith(command.getProcessId());

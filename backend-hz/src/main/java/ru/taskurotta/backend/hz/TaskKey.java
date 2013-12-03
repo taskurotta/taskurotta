@@ -14,12 +14,11 @@ import com.hazelcast.nio.serialization.DataSerializable;
  * User: dimadin
  * Date: 08.07.13 10:08
  */
-public class TaskKey extends HashMap implements DataSerializable, PartitionAware {
+public class TaskKey extends HashMap<String, UUID> implements DataSerializable, PartitionAware {
     protected static final String TASK_ID = "taskId";
     protected static final String PROCESS_ID = "processId";
 
-    public TaskKey() {
-    }
+    public TaskKey() {}
 
     public TaskKey(UUID processId, UUID taskId) {
         put(TASK_ID, taskId);
@@ -33,11 +32,11 @@ public class TaskKey extends HashMap implements DataSerializable, PartitionAware
 
     @Override
     public void writeData(ObjectDataOutput dataOutput) throws java.io.IOException {
-        UUID processId = (UUID) get(PROCESS_ID);
+        UUID processId = get(PROCESS_ID);
         dataOutput.writeLong(processId.getMostSignificantBits());
         dataOutput.writeLong(processId.getLeastSignificantBits());
 
-        UUID taskId = (UUID) get(TASK_ID);
+        UUID taskId = get(TASK_ID);
         dataOutput.writeLong(taskId.getMostSignificantBits());
         dataOutput.writeLong(taskId.getLeastSignificantBits());
     }
@@ -51,7 +50,7 @@ public class TaskKey extends HashMap implements DataSerializable, PartitionAware
     }
 
     public UUID getProcessId() {
-        return (UUID) get(PROCESS_ID);
+        return get(PROCESS_ID);
     }
 
     public void setProcessId(UUID processId) {
@@ -59,7 +58,7 @@ public class TaskKey extends HashMap implements DataSerializable, PartitionAware
     }
 
     public UUID getTaskId() {
-        return (UUID) get(TASK_ID);
+        return get(TASK_ID);
     }
 
     public void setTaskId(UUID taskId) {

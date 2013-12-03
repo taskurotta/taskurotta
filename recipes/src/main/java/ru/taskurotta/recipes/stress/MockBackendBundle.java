@@ -4,10 +4,12 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.gc.AbstractGCBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.process.BrokenProcessVO;
 import ru.taskurotta.backend.process.SearchCommand;
@@ -16,7 +18,6 @@ import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.recipes.multiplier.MultiplierDecider;
-import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -65,8 +66,18 @@ public class MockBackendBundle implements BackendBundle {
             }
 
             @Override
-            public void finishProcess(UUID processId, String returnValue) {
-                // ignore
+            public ProcessVO getProcess(UUID processId) {
+                return null;
+            }
+
+            @Override
+            public long finishProcess(UUID processId, String returnValue) {
+                return 0l;
+            }
+
+            @Override
+            public void deleteProcess(UUID processId) {
+
             }
 
             @Override
@@ -269,5 +280,10 @@ public class MockBackendBundle implements BackendBundle {
                 // ignore
             }
         };
+    }
+
+    @Override
+    public AbstractGCBackend getGCBackend() {
+        return null;
     }
 }

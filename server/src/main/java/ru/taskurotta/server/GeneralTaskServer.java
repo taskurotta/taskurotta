@@ -6,6 +6,7 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.gc.AbstractGCBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.process.BrokenProcessVO;
 import ru.taskurotta.backend.queue.QueueBackend;
@@ -39,6 +40,7 @@ public class GeneralTaskServer implements TaskServer {
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
     protected BrokenProcessBackend brokenProcessBackend;
+    protected AbstractGCBackend gcBackend;
 
     /*
      *  For tests ONLY
@@ -52,6 +54,7 @@ public class GeneralTaskServer implements TaskServer {
         this.dependencyBackend = backendBundle.getDependencyBackend();
         this.configBackend = backendBundle.getConfigBackend();
         this.brokenProcessBackend = backendBundle.getBrokenProcessBackend();
+        this.gcBackend = backendBundle.getGCBackend();
     }
 
     public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend,
@@ -200,9 +203,10 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         if (dependencyDecision.isProcessFinished()) {
-            processBackend.finishProcess(processId,
-                    dependencyDecision.getFinishedProcessValue());
+            long deleteTime = processBackend.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
+
+            gcBackend.addProcessToGC(processId, deleteTime);
         }
 
         processSnapshot(taskDecision, dependencyDecision);
