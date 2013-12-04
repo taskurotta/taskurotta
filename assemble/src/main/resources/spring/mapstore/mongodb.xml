@@ -13,12 +13,26 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <context:property-placeholder/>
-    <context:annotation-config/>
 
+    <!-- Mongo -->
+    <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}"/>
 
-    <!-- base config -->
-    <import resource="hz-mongo.xml"/>
-    <import resource="backend/process-to-oracle.xml"/>
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
+        <property name="writeConcern" ref="writeConcern"/>
+    </bean>
+
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="1"/>
+        <constructor-arg name="wtimeout" value="0"/>
+        <constructor-arg name="fsync" value="true"/>
+        <constructor-arg name="j" value="true"/>
+    </bean>
+
+    <bean id="mapStore" class="ru.taskurotta.spring.mongodb.MongoMapStore" scope="prototype">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <!-- /Mongo -->
 
 </beans>

@@ -114,7 +114,7 @@
 
 
     <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
-        <property name="queueInfo" ref="queueBackend"/>
+        <property name="queueInfo" ref="realQueueBackend"/>
         <!--<property name="profileInfo" ref="profilingAspect"/>-->
         <property name="taskInfo" ref="taskBackend"/>
         <property name="processInfo" ref="processBackend"/>

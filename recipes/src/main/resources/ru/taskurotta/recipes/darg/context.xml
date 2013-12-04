@@ -36,12 +36,6 @@
         <property name="arbiter" ref="arbiter" />
     </bean>
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory"/>
-
-    <bean id="taskCreator" class="ru.taskurotta.recipes.darg.Launcher" init-method="launch">
-        <property name="clientServiceManager" ref="clientServiceManager" />
-    </bean>
-
     <bean id="arbiter" class="ru.taskurotta.recipes.darg.DArgArbiter" factory-method="createArbiter" init-method="init">
         <constructor-arg name="stages">
             <list>

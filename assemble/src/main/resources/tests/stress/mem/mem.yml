@@ -10,11 +10,11 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:tests/stress/mem/SpreaderBeans-mem.xml
+          - classpath:spring/actor.xml
         defaultPropertiesLocation: default.properties
         properties:
           cycles: 10
-          initialCount: 8
+          initialCount: 2
           shotSize: 4000
           needRun: true
           pollDelay: 10

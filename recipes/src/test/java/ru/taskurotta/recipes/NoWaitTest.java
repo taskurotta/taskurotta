@@ -9,6 +9,7 @@ import ru.taskurotta.test.flow.FlowArbiterFactory;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
+import static ru.taskurotta.recipes.RecipesRunner.run;
 
 /**
  * Created by void 02.04.13 13:22
@@ -18,8 +19,7 @@ public class NoWaitTest {
 	//@org.junit.Ignore
 	@Test
 	public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
-		new Bootstrap("ru/taskurotta/recipes/nowait/wf-config.yml").start();
-
+        run("ru/taskurotta/recipes/nowait/");
 		BasicFlowArbiter arbiter = (BasicFlowArbiter) new FlowArbiterFactory().getInstance(); // created in spring context
 		assertTrue(arbiter.waitForFinish(10000));
 	}

@@ -10,6 +10,7 @@ import ru.taskurotta.recipes.darg.DArgArbiter;
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
+import static ru.taskurotta.recipes.RecipesRunner.run;
 
 /**
  * User: dimadin
@@ -21,8 +22,7 @@ public class DArgTest {
 
     @Test
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
-        new Bootstrap("ru/taskurotta/recipes/darg/conf.yml").start();
-
+        run("ru/taskurotta/recipes/darg/");
         DArgArbiter arbiter = DArgArbiter.getInstance();
         logger.info("waiting for arbiter [{}]", arbiter.uuid);
         assertTrue(arbiter.waitForFinish(5000));
