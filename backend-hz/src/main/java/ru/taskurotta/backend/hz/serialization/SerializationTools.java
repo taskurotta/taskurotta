@@ -78,7 +78,7 @@ public class SerializationTools {
             out.writeBoolean(false);
             return;
         }
-
+        out.writeBoolean(true);
         out.writeInt(taskContainers.length);
         for (TaskContainer taskContainer : taskContainers) {
             taskContainerSerializer.write(out, taskContainer);
@@ -89,13 +89,11 @@ public class SerializationTools {
         if (!in.readBoolean()) {
             return null;
         }
-
         int taskContainersCount = in.readInt();
         List<TaskContainer> taskContainerList = new ArrayList<>();
         for (int i = 0; i < taskContainersCount; i++) {
             taskContainerList.add(taskContainerSerializer.read(in));
         }
-
         TaskContainer[] taskContainersArray = new TaskContainer[taskContainerList.size()];
         taskContainerList.toArray(taskContainersArray);
         return taskContainersArray;
