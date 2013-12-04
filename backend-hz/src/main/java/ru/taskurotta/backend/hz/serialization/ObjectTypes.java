@@ -18,6 +18,7 @@ public class ObjectTypes {
     public static final int TASK_KEY = 10;
     public static final int TASK_OPTIONS_CONTAINER = 5;
     public static final int UUID = 9;
+    public static final int TASK_QUEUE_ITEM = 12;
 
 
 }
