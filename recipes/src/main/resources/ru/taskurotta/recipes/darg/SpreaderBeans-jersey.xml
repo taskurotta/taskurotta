@@ -27,4 +27,8 @@
         <constructor-arg name="taskServer" ref="taskServer"/>
     </bean>
 
+    <bean id="taskCreator" class="ru.taskurotta.recipes.darg.Launcher" init-method="launch">
+        <property name="clientServiceManager" ref="clientServiceManager"/>
+    </bean>
+
 </beans>

@@ -21,18 +21,24 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
+      properties:
+        failover: "1 SECONDS"
 
   - worker:
       actorInterface: ru.taskurotta.recipes.darg.worker.DArgWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
+      properties:
+        failover: "1 SECONDS"
 
   - subdecider:
       actorInterface: ru.taskurotta.recipes.darg.decider.DArgSubprocessDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
+      properties:
+        failover: "1 SECONDS"
 
 
 logback:
