@@ -24,18 +24,17 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private DelayQueue<DelayFinishedProcess> finishedProcesses = new DelayQueue<>();
 
-    private int poolSize = 8;
-    private long initialDelay = 0;
-    private long period = 5000;
-    private TimeUnit periodTimeUnit = TimeUnit.MILLISECONDS;
-
     public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
+        this(configBackend, processBackend, graphDao, taskDao, 1);
+    }
+
+    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, int poolSize) {
         this.configBackend = configBackend;
         this.processBackend = processBackend;
         this.graphDao = graphDao;
         this.taskDao = taskDao;
 
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
+        ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -47,7 +46,7 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
         });
 
         for (int i = 0; i < poolSize; i++) {
-            scheduledExecutorService.scheduleAtFixedRate(new GCTask(), initialDelay, period, periodTimeUnit);
+            executorService.submit(new GCTask());
         }
     }
 
@@ -55,37 +54,49 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
         @Override
         public void run() {
-            DelayFinishedProcess delayFinishedProcess = finishedProcesses.poll();
 
-            if (delayFinishedProcess == null) {
-                return;
+            while(true) {
+
+                logger.trace("Try to get process for garbage collector");
+
+                DelayFinishedProcess delayFinishedProcess = null;
+                try {
+                    delayFinishedProcess = finishedProcesses.take();
+                } catch (InterruptedException e) {
+                    logger.error("Catch exception while find process for garbage collector", e);
+                }
+
+                if (delayFinishedProcess == null) {
+                    return;
+                }
+
+                UUID processId = delayFinishedProcess.processId;
+
+                logger.trace("Start garbage collector for process [{}]", processId);
+
+                Graph graph = graphDao.getGraph(processId);
+
+                if (graph == null) {
+                    logger.error("Not found graph fro process [{}], stop garbage collector for this process", processId);
+                    return;
+                }
+
+                if (!graph.isFinished()) {
+                    logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
+                    return;
+                }
+
+                Set<UUID> finishedItems = graph.getFinishedItems();
+                taskDao.deleteDecisions(finishedItems, processId);
+                taskDao.deleteTasks(finishedItems, processId);
+
+                graphDao.deleteGraph(processId);
+
+                processBackend.deleteProcess(processId);
+
+                logger.debug("Finish garbage collector for process [{}]", processId);
+
             }
-
-            UUID processId = delayFinishedProcess.processId;
-
-            logger.trace("Start gc for process [{}]", processId);
-
-            Graph graph = graphDao.getGraph(processId);
-
-            if (graph == null) {
-                logger.error("Not found graph fro process [{}], stop garbage collector for this process", processId);
-                return;
-            }
-
-            if (!graph.isFinished()) {
-                logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
-                return;
-            }
-
-            Set<UUID> finishedItems = graph.getFinishedItems();
-            taskDao.deleteDecisions(finishedItems, processId);
-            taskDao.deleteTasks(finishedItems, processId);
-
-            graphDao.deleteGraph(processId);
-
-            processBackend.deleteProcess(processId);
-
-            logger.debug("Finish gc for process [{}]", processId);
         }
     }
 
@@ -120,21 +131,5 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
         }
 
         finishedProcesses.add(new DelayFinishedProcess(processId, keepTime));
-    }
-
-    public void setPoolSize(int poolSize) {
-        this.poolSize = poolSize;
-    }
-
-    public void setSchedule(String schedule) {
-        String[] params = schedule.split("\\_");
-
-        if (params.length != 2) {
-            logger.warn("Error schedule [{}], use default period [{}] and TimeUnit [{}]", schedule, period, periodTimeUnit);
-            return;
-        }
-
-        this.period = Long.valueOf(params[0]);
-        this.periodTimeUnit = TimeUnit.valueOf(params[1].toUpperCase());
     }
 }

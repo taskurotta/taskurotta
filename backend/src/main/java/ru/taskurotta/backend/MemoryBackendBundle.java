@@ -41,10 +41,7 @@ public class MemoryBackendBundle implements BackendBundle {
         this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao);
         this.configBackend = new MemoryConfigBackend();
         this.brokenProcessBackend = new MemoryBrokenProcessBackend();
-
         this.garbageCollectorBackend = new MemoryGarbageCollectorBackend(configBackend, processBackend, memoryGraphDao, taskDao);
-        this.garbageCollectorBackend.setPoolSize(4);
-        this.garbageCollectorBackend.setSchedule("5_seconds");
     }
 
     @Override
