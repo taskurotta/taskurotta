@@ -12,5 +12,4 @@ public interface Storage<E> {
 
     public boolean add(E e, int delayTime, TimeUnit unit);
 
-    public Collection<E> getReadyItems();
 }

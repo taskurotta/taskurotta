@@ -4,8 +4,8 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicates;
 
-import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonStorageFactory implements StorageFactory {
 
-    private final IMap<String, StorageItem> iMap;
+    private final IMap<UUID, StorageItem> iMap;
 
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
@@ -28,13 +28,14 @@ public class CommonStorageFactory implements StorageFactory {
             @Override
             public void run() {
                 while (true) {
-                    Set<String> keys = iMap.keySet(new Predicates.BetweenPredicate("keepTime", 0l, System.currentTimeMillis()));
+                    Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("keepTime", 0l,
+                            System.currentTimeMillis()));
 
                     if (keys == null || keys.isEmpty()) {
                         continue;
                     }
 
-                    for (String key : keys) {
+                    for (UUID key : keys) {
                         StorageItem storageItem = iMap.remove(key);
                         String queueName = storageItem.getQueueName();
                         hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
@@ -49,17 +50,17 @@ public class CommonStorageFactory implements StorageFactory {
         return new Storage() {
             @Override
             public boolean add(Object o, int delayTime, TimeUnit unit) {
-                StorageItem storageItem = new StorageItem(o, queueName, System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit));
 
-                String key = queueName + "." + storageItem.hashCode() + "." + System.currentTimeMillis();
+                long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
+                StorageItem storageItem = new StorageItem(o, queueName,  enqueueTime);
 
-                return iMap.tryPut(key, storageItem, 1, TimeUnit.SECONDS);
+                while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
+                    // Better safe than sorry! :)
+                }
+
+                return true;
             }
 
-            @Override
-            public Collection getReadyItems() {
-                return null;
-            }
         };
     }
 

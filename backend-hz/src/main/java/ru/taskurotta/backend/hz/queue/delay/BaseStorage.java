@@ -2,7 +2,6 @@ package ru.taskurotta.backend.hz.queue.delay;
 
 import com.hazelcast.core.IMap;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,8 +22,4 @@ public class BaseStorage implements Storage {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public Collection getReadyItems() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 }
