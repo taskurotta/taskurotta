@@ -83,6 +83,8 @@
                                    class-name="ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer"/>
                     <hz:serializer type-class="java.util.UUID"
                                    class-name="ru.taskurotta.backend.hz.serialization.UUIDStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.backend.queue.TaskQueueItem"
+                                   class-name="ru.taskurotta.backend.hz.serialization.TaskQueueItemSteamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
         </hz:config>
