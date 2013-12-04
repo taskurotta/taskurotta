@@ -36,6 +36,7 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
     private int asyncBackupsCount;
     private String evictionPolicy;
     private int maxSize;
+    private String maxSizePolicy;
 
     public HzMapConfigSpringSupport(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;
@@ -67,11 +68,11 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
 
             MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
             maxSizeConfig.setSize(maxSize);
-            maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.USED_HEAP_SIZE);
+            maxSizeConfig.setMaxSizePolicy(MaxSizeConfig.MaxSizePolicy.valueOf(maxSizePolicy));
             mc.setMaxSizeConfig(maxSizeConfig);
 
             hzInstance.getConfig().addMapConfig(mc);
-            logger.debug("Config for map name[{}] with mapstore bean [{}] added...", mapName, mapStoreBeanName);
+            logger.debug("Config for map name[{}] with map store bean [{}] added...", mapName, mapStoreBeanName);
 
         } finally {
             mapConfigLock.unlock();
@@ -176,5 +177,9 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
 
     public void setTimeToLive(int timeToLive) {
         this.timeToLive = timeToLive;
+    }
+
+    public void setMaxSizePolicy(String maxSizePolicy) {
+        this.maxSizePolicy = maxSizePolicy;
     }
 }

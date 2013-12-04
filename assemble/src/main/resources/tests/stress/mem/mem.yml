@@ -10,11 +10,11 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:tests/stress/mem/SpreaderBeans-mem.xml
+          - classpath:spring/actor.xml
         defaultPropertiesLocation: default.properties
         properties:
           cycles: 10
-          initialCount: 8
+          initialCount: 2
           shotSize: 4000
           needRun: true
           pollDelay: 10
@@ -22,7 +22,8 @@ spreader:
           hz.mancenter.enabled: false
           hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
           hz.nodes: localhost:7777
-          hz.map.eviction.size: 1000
+          hz.map.eviction.size: 10
+          hz.map.eviction.percentage.size: 25
           mongo.host: localhost
           mongo.port: 27017
 
@@ -55,7 +56,7 @@ logback:
              key: name
              \@class: ch.qos.logback.core.FileAppender
              file: ./target/logs/recipes-multiply.log
-             append: true
+             append: false
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:

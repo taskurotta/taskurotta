@@ -220,9 +220,23 @@ public class SerializationTest {
         argContainer1.setPromise(false);
         argContainer1.setReady(true);
         argContainer1.setType(ArgContainer.ValueType.COLLECTION);
+
+        ArgContainer argContainer2 = new ArgContainer();
+        argContainer2.setTaskId(UUID.randomUUID());
+        argContainer2.setClassName("simple1");
+        argContainer2.setJSONValue("jsonData1");
+        argContainer2.setPromise(false);
+        argContainer2.setReady(true);
+        argContainer2.setType(ArgContainer.ValueType.COLLECTION);
+
+        argContainer2.setCompositeValue(new ArgContainer[]{argContainer1});
+
         containerList.add(argContainer1);
+        containerList.add(argContainer2);
+
         ArgContainer[] args = new ArgContainer[containerList.size()];
         containerList.toArray(args);
+
         TaskOptionsContainer taskOptionsContainer = getTaskOptionsContainer();
         UUID processId = UUID.randomUUID();
         TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer);
@@ -231,6 +245,7 @@ public class SerializationTest {
         TaskContainer actual = (TaskContainer) hzMap.get("taskContainer");
 
         assertEquals(taskContainer.getArgs()[0].getClassName(), actual.getArgs()[0].getClassName());
+        assertEquals(taskContainer.getArgs()[1].getCompositeValue()[0].getClassName(), actual.getArgs()[0].getClassName());
         assertEquals(taskContainer.getMethod(), actual.getMethod());
     }
 

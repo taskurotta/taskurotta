@@ -1,0 +1,84 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/darg/context.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/darg/SpreaderBeans-jersey.xml
+        properties:
+          endpoint: "http://10.129.0.51:8090"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+
+actor:
+  - decider:
+      actorInterface: ru.taskurotta.recipes.darg.decider.DArgDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+      properties:
+        failover: "1 SECONDS"
+
+  - worker:
+      actorInterface: ru.taskurotta.recipes.darg.worker.DArgWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+      properties:
+        failover: "1 SECONDS"
+
+  - subdecider:
+      actorInterface: ru.taskurotta.recipes.darg.decider.DArgSubprocessDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+      properties:
+        failover: "1 SECONDS"
+
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-multiply.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: ERROR
+        - ru.taskurotta.recipes.darg:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.server.json:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.backend:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.bootstrap.config:
+             key: name
+             \@level: INFO
+
+
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref

@@ -35,7 +35,11 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
         if (argTypesCount > 0) {
             out.writeInt(argTypesCount);
             for (ArgType i : object.getArgTypes()) {
-                out.writeInt(i.getValue());
+                if (i == null) {
+                    out.writeInt(-1);
+                } else {
+                    out.writeInt(i.getValue());
+                }
             }
         } else {
             out.writeInt(-1);
@@ -55,7 +59,12 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
         ArgType[] argTypeArray = null;
         if (argTypesCount != -1) {
             for (int i = 0; i < argTypesCount; i++) {
-                argTypeList.add(ArgType.fromInt(in.readInt()));
+                int rd = in.readInt();
+                if (rd == -1) {
+                    argTypeList.add(null);
+                } else {
+                    argTypeList.add(ArgType.fromInt(rd));
+                }
             }
             argTypeArray = new ArgType[argTypeList.size()];
             argTypeList.toArray(argTypeArray);

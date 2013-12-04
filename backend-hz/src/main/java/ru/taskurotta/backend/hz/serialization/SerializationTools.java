@@ -78,15 +78,10 @@ public class SerializationTools {
             out.writeBoolean(false);
             return;
         }
-
-        int taskContainersCount = taskContainers.length;
-        if (taskContainers != null && taskContainersCount > 0) {
-            out.writeInt(taskContainersCount);
-            for (TaskContainer taskContainer : taskContainers) {
-                taskContainerSerializer.write(out, taskContainer);
-            }
-        } else {
-            out.writeInt(-1);
+        out.writeBoolean(true);
+        out.writeInt(taskContainers.length);
+        for (TaskContainer taskContainer : taskContainers) {
+            taskContainerSerializer.write(out, taskContainer);
         }
     }
 
@@ -94,13 +89,10 @@ public class SerializationTools {
         if (!in.readBoolean()) {
             return null;
         }
-
         int taskContainersCount = in.readInt();
         List<TaskContainer> taskContainerList = new ArrayList<>();
-        if (taskContainersCount != -1) {
-            for (int i = 0; i < taskContainersCount; i++) {
-                taskContainerList.add(taskContainerSerializer.read(in));
-            }
+        for (int i = 0; i < taskContainersCount; i++) {
+            taskContainerList.add(taskContainerSerializer.read(in));
         }
         TaskContainer[] taskContainersArray = new TaskContainer[taskContainerList.size()];
         taskContainerList.toArray(taskContainersArray);

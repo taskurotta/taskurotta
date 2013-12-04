@@ -8,7 +8,7 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/darg/context.xml
+        context: ru/taskurotta/recipes/darg/SpreaderBeans.xml
 
 actor:
   - decider:
