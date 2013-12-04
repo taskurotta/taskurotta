@@ -22,7 +22,7 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
     private GraphDao graphDao;
     private TaskDao taskDao;
 
-    private DelayQueue<DelayFinishedProcess> finishedProcesses = new DelayQueue<>();
+    private DelayQueue<DelayFinishedProcess> garbageCollectorQueue = new DelayQueue<>();
 
     public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
         this(configBackend, processBackend, graphDao, taskDao, 1);
@@ -61,7 +61,7 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
                 DelayFinishedProcess delayFinishedProcess = null;
                 try {
-                    delayFinishedProcess = finishedProcesses.take();
+                    delayFinishedProcess = garbageCollectorQueue.take();
                 } catch (InterruptedException e) {
                     logger.error("Catch exception while find process for garbage collector", e);
                 }
@@ -130,6 +130,6 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
             keepTime = actorPreferences.getKeepTime();
         }
 
-        finishedProcesses.add(new DelayFinishedProcess(processId, keepTime));
+        garbageCollectorQueue.add(new DelayFinishedProcess(processId, keepTime));
     }
 }
