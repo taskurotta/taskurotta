@@ -37,6 +37,7 @@ public class HZ3_Test {
         } finally {
             lock.unlock();
         }
+
     }
 
     @Ignore
