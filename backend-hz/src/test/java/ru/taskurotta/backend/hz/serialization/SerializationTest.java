@@ -191,7 +191,7 @@ public class SerializationTest {
     @Test
     public void errorContainerTest() {
         ErrorContainer errorContainer = new ErrorContainer();
-        errorContainer.setClassName("className");
+        errorContainer.setClassNames(new String[]{"className"});
         errorContainer.setMessage("message");
         errorContainer.setStackTrace("stack");
         hzMap.put("errorContainer", errorContainer);
@@ -225,7 +225,7 @@ public class SerializationTest {
         containerList.toArray(args);
         TaskOptionsContainer taskOptionsContainer = getTaskOptionsContainer();
         UUID processId = UUID.randomUUID();
-        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer);
+        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer, false);
         hzMap.put("taskContainer", taskContainer);
 
         TaskContainer actual = (TaskContainer) hzMap.get("taskContainer");

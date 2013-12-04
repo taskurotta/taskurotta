@@ -133,18 +133,18 @@ public class AbstractTestStub {
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName) {
-        return deciderTask(id, type, methodName, null, null);
+        return deciderTask(id, type, methodName, null, null, false);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object... args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null, true);
         return task;
     }
 
-    public static Task deciderTask(UUID id, TaskType type, String methodName, Object[] args, TaskOptions taskOptions) {
+    public static Task deciderTask(UUID id, TaskType type, String methodName, boolean unsafe, Object[] args, TaskOptions taskOptions) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions, unsafe);
         return task;
     }
 
@@ -189,8 +189,17 @@ public class AbstractTestStub {
 
     public void release(UUID taskAId, Object value, Task... newTasks) {
         TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
-
-        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
-        deciderTaskSpreader.release(taskDecision);
+        release(taskDecision);
     }
+
+    public void release(UUID taskAId, Throwable error) {
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, error, null);
+        release(taskDecision);
+    }
+
+    public void release(TaskDecision decision) {
+        TaskSpreader deciderTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestDecider.class));
+        deciderTaskSpreader.release(decision);
+    }
+
 }

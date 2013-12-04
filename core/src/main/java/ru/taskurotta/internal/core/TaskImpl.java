@@ -21,6 +21,7 @@ public class TaskImpl implements Task {
     private int numberOfAttempts = 0;
     private Object[] args;
 	private TaskOptions taskOptions;
+    private boolean unsafe;
 
     public TaskImpl(){
 
@@ -28,8 +29,7 @@ public class TaskImpl implements Task {
 
 
     public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
-                    Object[] args,
-                    TaskOptions taskOptions) {
+                    Object[] args, TaskOptions taskOptions, boolean unsafe) {
         this.processId = processId;
 
         if (uuid == null) {
@@ -53,6 +53,7 @@ public class TaskImpl implements Task {
 		} else {
 			this.taskOptions = taskOptions;
 		}
+        this.unsafe = unsafe;
     }
 
 
@@ -91,6 +92,10 @@ public class TaskImpl implements Task {
 		return taskOptions;
 	}
 
+    public boolean isUnsafe() {
+        return unsafe;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -106,6 +111,7 @@ public class TaskImpl implements Task {
         if (taskOptions != null ? !taskOptions.equals(task.taskOptions) : task.taskOptions != null) return false;
         if (!target.equals(task.target)) return false;
         if (!id.equals(task.id)) return false;
+        if (unsafe != task.unsafe) return false;
 
         return true;
     }
@@ -119,6 +125,7 @@ public class TaskImpl implements Task {
         result = 31 * result + numberOfAttempts;
         result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
         result = 31 * result + (taskOptions != null ? taskOptions.hashCode() : 0);
+        result = 31 * result + (unsafe ? 1 : 0);
         return result;
     }
 
@@ -132,6 +139,7 @@ public class TaskImpl implements Task {
                 ", numberOfAttempts=" + numberOfAttempts +
                 ", args=" + (args == null ? null : Arrays.asList(args)) +
                 ", taskOptions=" + taskOptions +
+                ", unsafe=" + unsafe +
                 '}';
     }
 }

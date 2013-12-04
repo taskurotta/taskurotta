@@ -41,7 +41,7 @@ public abstract class ProfilerTest {
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, TestWorker.class.getName(), "1.0", "sum");
         Task task = new TaskImpl(UUID.randomUUID(), UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1,
-                new Object[]{1, 2}, null);
+                new Object[]{1, 2}, null, false);
         TaskDecision taskDecision = runtimeProcessor.execute(task);
 
         RuntimeProcessor decorateRuntimeProcessor = profiler.decorate(runtimeProcessor);

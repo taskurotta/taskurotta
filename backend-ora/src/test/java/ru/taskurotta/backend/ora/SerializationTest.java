@@ -48,7 +48,7 @@ public class SerializationTest {
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actorSchedulingOptions, null);
 
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError, UUID taskId) {
@@ -66,11 +66,7 @@ public class SerializationTest {
     }
 
     public static ErrorContainer createErrorContainer() {
-        ErrorContainer result = new ErrorContainer();
-        result.setClassName(Throwable.class.getName());
-        result.setMessage("Test exception");
-        result.setStackTrace("Test stack trace");
-        return result;
+        return new ErrorContainer(new Throwable("Test exception"));
     }
 
     public static ArgContainer createArgSimpleValue(UUID taskId) {

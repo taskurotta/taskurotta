@@ -42,6 +42,7 @@ public class ArgContainer implements Cloneable, Serializable {
     private ValueType type;
     private ArgContainer[] compositeValue;
     private boolean promise = false;
+    private ErrorContainer errorContainer;
 
     public ArgContainer() {
     }
@@ -72,6 +73,7 @@ public class ArgContainer implements Cloneable, Serializable {
         this.JSONValue = source.JSONValue;
         this.compositeValue = source.compositeValue;
         this.promise = source.promise;
+        this.errorContainer = source.errorContainer;
     }
 
     public String getClassName() {
@@ -202,6 +204,18 @@ public class ArgContainer implements Cloneable, Serializable {
         this.compositeValue = compositeValue;
     }
 
+    public ErrorContainer getErrorContainer() {
+        return errorContainer;
+    }
+
+    public void setErrorContainer(ErrorContainer errorContainer) {
+        this.errorContainer = errorContainer;
+    }
+
+    public boolean containsError() {
+        return null != errorContainer;
+    }
+
     @Override
     public String toString() {
         return "ArgContainer{" +
@@ -212,6 +226,7 @@ public class ArgContainer implements Cloneable, Serializable {
                 ", type=" + type +
                 ", compositeValue=" + Arrays.toString(compositeValue) +
                 ", promise=" + promise +
+                ", errorContainer=" + errorContainer +
                 "} ";
     }
 }

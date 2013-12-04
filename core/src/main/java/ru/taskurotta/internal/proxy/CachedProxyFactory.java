@@ -21,14 +21,14 @@ abstract public class CachedProxyFactory implements ProxyFactory {
 
     private Map<Class, Object> clientToProxy = new HashMap<>();
 
-    abstract public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext);
+    abstract public <TargetInterface> TargetInterface createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext);
 
     @Override
     public <TargetInterface> TargetInterface create(Class<TargetInterface> targetInterface, RuntimeContext injectedRuntimeContext) {
 
         // should be not cached
         if (injectedRuntimeContext != null) {
-            return (TargetInterface) createProxy(targetInterface, injectedRuntimeContext);
+            return createProxy(targetInterface, injectedRuntimeContext);
         }
 
         Object proxyClient = clientToProxy.get(targetInterface);

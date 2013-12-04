@@ -20,6 +20,7 @@ public class TaskContainer implements Serializable {
     private ArgContainer[] args;
     private TaskOptionsContainer options;
     private UUID processId;
+    private boolean unsafe;
 
     public UUID getProcessId() {
         return processId;
@@ -30,7 +31,7 @@ public class TaskContainer implements Serializable {
 
     public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
                          TaskType type, long startTime, int numberOfAttempts,
-                         ArgContainer[] args, TaskOptionsContainer options) {
+                         ArgContainer[] args, TaskOptionsContainer options, boolean unsafe) {
         super();
         this.taskId = taskId;
         this.method = method;
@@ -41,6 +42,7 @@ public class TaskContainer implements Serializable {
         this.args = args;
         this.options = options;
         this.processId = processId;
+        this.unsafe = unsafe;
     }
 
     public UUID getTaskId() {
@@ -75,6 +77,10 @@ public class TaskContainer implements Serializable {
         return type;
     }
 
+    public boolean isUnsafe() {
+        return unsafe;
+    }
+
     public void incrementNumberOfAttempts() {
         numberOfAttempts++;
     }
@@ -85,6 +91,6 @@ public class TaskContainer implements Serializable {
                 + ", actorId=" + actorId + ", method=" + method + ", type=" + type
                 + ", startTime=" + startTime + ", numberOfAttempts="
                 + numberOfAttempts + ", args=" + Arrays.toString(args)
-                + ", options=" + options + "]";
+                + ", options=" + options + ", isUnsafe="+ unsafe +"]";
     }
 }

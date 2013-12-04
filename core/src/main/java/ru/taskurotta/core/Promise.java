@@ -12,6 +12,7 @@ public class Promise<T> {
 	private T value;
 
     private boolean isReady = false;
+    private Fail fail;
 
 	public Promise() {
 		id = UUID.randomUUID();
@@ -30,7 +31,19 @@ public class Promise<T> {
 		return isReady;
 	}
 
-	public T get() {
+    public boolean containsFail() {
+        return fail != null;
+    }
+
+    public Fail getFail() {
+        return fail;
+    }
+
+    public void setFail(Fail fail) {
+        this.fail = fail;
+    }
+
+    public T get() {
 		if (!isReady()) {
 			throw new IllegalStateException("Promise (" + id + ") isn't ready");
 		}

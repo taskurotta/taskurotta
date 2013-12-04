@@ -424,6 +424,7 @@ public class Graph implements Serializable {
         this.lastApplyTimeMillis = lastApplyTimeMillis;
     }
 
+    @SuppressWarnings("RedundantIfStatement")
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

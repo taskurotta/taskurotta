@@ -58,6 +58,8 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                 logger.debug("Task id[{}], type[{}], method[{}] args before swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
             }
 
+            ArgType[] argTypes = task.getOptions().getArgTypes();
+
             for (int i = 0; i < args.length; i++) {
                 ArgContainer arg = args[i];
 
@@ -65,7 +67,6 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
                     continue;
                 }
 
-                ArgType[] argTypes = task.getOptions().getArgTypes();
                 ArgType argType = argTypes == null? null : argTypes[i];
 
                 if (arg.isPromise()) {
@@ -137,19 +138,23 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
             throw new IllegalStateException("Cannot find value for NULL taskId");
         }
         DecisionContainer taskDecision = taskDao.getDecision(taskId, processId);
-
         logger.debug("taskDecision getted for[{}] is [{}]", taskId, taskDecision);
-
 
         if (taskDecision == null) {
             logger.debug("getTaskValue() taskDecision == null");
             return null;
         }
 
-        ArgContainer result = taskDecision.getValue();
-        if (result != null && result.isPromise() && !result.isReady()) {
-            logger.debug("getTaskValue([{}]) argContainer.isPromise() && !argContainer.isReady(). arg[{}]", taskId, result);
-            result = getTaskValue(result.getTaskId(), processId);
+        ArgContainer result;
+        if (taskDecision.containsError()) {
+            result = taskDecision.getValue();
+            result.setErrorContainer(taskDecision.getErrorContainer());
+        } else {
+            result = taskDecision.getValue();
+            if (result != null && result.isPromise() && !result.isReady()) {
+                logger.debug("getTaskValue([{}]) argContainer.isPromise() && !argContainer.isReady(). arg[{}]", taskId, result);
+                result = getTaskValue(result.getTaskId(), processId);
+            }
         }
 
         logger.debug("getTaskValue({}) returns argContainer = [{}]", taskId, result);
@@ -192,17 +197,14 @@ public class GeneralTaskBackend implements TaskBackend, TaskInfoRetriever {
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-
         logger.debug("addDecision() taskDecision [{}]", taskDecision);
-
-        TaskContainer task;
 
         taskDao.addDecision(taskDecision);
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
 
-            task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
+            TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
 
             // TODO: should be optimized
             task.incrementNumberOfAttempts();

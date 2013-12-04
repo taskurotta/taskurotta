@@ -5,6 +5,7 @@ import net.sf.cglib.proxy.CallbackFilter;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
@@ -29,7 +30,7 @@ import java.util.Map;
 public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
     @Override
-    public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType,
+    public <TargetInterface> TargetInterface createProxy(Class<TargetInterface> proxyType,
                                                 RuntimeContext injectedRuntimeContext) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(proxyType);
@@ -61,7 +62,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
         enhancer.setCallbackFilter(callbackFilter);
 
-        return enhancer.create();
+        return (TargetInterface)enhancer.create();
     }
 
     private Callback[] createCallbacks(final ProxyInvocationHandler proxyInvocationHandler) {
@@ -111,7 +112,8 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
                 int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
 */
-                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1);
+                boolean unsafe = null != method.getAnnotation(AcceptFail.class);
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1, unsafe);
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -137,7 +139,9 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
                         int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), ActorSchedulingOptions.class);
                         int positionPromisesWaitFor = positionOfWaitList(method.getParameterTypes(), positionActorSchedulingOptions);
-                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
+                        boolean unsafe = null != method.getAnnotation(AcceptFail.class);
+
+                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor, unsafe);
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }

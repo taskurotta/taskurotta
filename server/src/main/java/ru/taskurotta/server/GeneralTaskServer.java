@@ -53,6 +53,7 @@ public class GeneralTaskServer implements TaskServer {
         return snapshotService;
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public void setSnapshotService(SnapshotService snapshotService) {
         this.snapshotService = snapshotService;
     }
@@ -109,18 +110,18 @@ public class GeneralTaskServer implements TaskServer {
         String actorId = ActorUtils.getActorId(actorDefinition);
 
         if (configBackend.isActorBlocked(actorId)) {
-            logger.warn("Rejected  blocked actor [{}] poll request", actorId);
+            logger.warn("Rejected poll request from blocked actor {}", actorDefinition);
             return null;
         }
 
         // atomic statement
-        TaskQueueItem tqi = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
-        if (tqi == null) {
+        TaskQueueItem item = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        if (item == null) {
             return null;
         }
 
         // idempotent statement
-        return taskBackend.getTaskToExecute(tqi.getTaskId(), tqi.getProcessId());
+        return taskBackend.getTaskToExecute(item.getTaskId(), item.getProcessId());
     }
 
 
@@ -151,74 +152,75 @@ public class GeneralTaskServer implements TaskServer {
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
 
-        // if Error
         if (taskDecision.containsError()) {
+
+            TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
 
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
                 // enqueue task immediately if needed
-
-                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
                 enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
+                return;
             } else {
-                BrokenProcessVO brokenProcess = new BrokenProcessVO();
-                brokenProcess.setTime(System.currentTimeMillis());
-                brokenProcess.setProcessId(processId);
-                brokenProcess.setBrokenActorId(taskDecision.getActorId());
 
-                TaskContainer startTask = processBackend.getStartTask(processId);
-                if (null != startTask) {
-                    brokenProcess.setStartActorId(startTask.getActorId());
-                }
+                if (!asyncTask.isUnsafe()){
+                    /*
+                      ToDo: задача_воркера зависит от этой задачи
+                      ToDo: ИЛИ зависящая задача не принимает фэйлы
+                    */
 
-                ErrorContainer errorContainer = taskDecision.getErrorContainer();
-                if (null != errorContainer) {
-                    brokenProcess.setErrorClassName(errorContainer.getClassName());
-                    brokenProcess.setErrorMessage(errorContainer.getMessage());
-                    brokenProcess.setStackTrace(errorContainer.getStackTrace());
+                    saveBrokenProcess(taskDecision);
+                    return;
                 }
-                brokenProcessBackend.save(brokenProcess);
             }
-
-            return;
         }
 
         // idempotent statement
         DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
-
         logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
 
         if (dependencyDecision.isFail()) {
-
             logger.debug("release() failed dependencyDecision. release() should be retried after RELEASE_TIMEOUT");
-
-            // leave release() method.
-            // RELEASE_TIMEOUT should be automatically fired
             return;
         }
 
         Set<UUID> readyTasks = dependencyDecision.getReadyTasks();
-
         if (readyTasks != null) {
-
-            for (UUID taskId2Queue : readyTasks) {
-
+            for (UUID readyTaskId : readyTasks) {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer asyncTask = taskBackend.getTask(taskId2Queue, processId);
-                enqueueTask(taskId2Queue, asyncTask.getProcessId(), asyncTask.getActorId(), asyncTask.getStartTime(), getTaskList(asyncTask));
+                TaskContainer task = taskBackend.getTask(readyTaskId, processId);
+                enqueueTask(readyTaskId, task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
             }
-
         }
 
         if (dependencyDecision.isProcessFinished()) {
-            processBackend.finishProcess(processId,
-                    dependencyDecision.getFinishedProcessValue());
+            processBackend.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
         }
 
         processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);
+    }
+
+    private void saveBrokenProcess(DecisionContainer taskDecision) {
+        UUID processId = taskDecision.getProcessId();
+        BrokenProcessVO brokenProcess = new BrokenProcessVO();
+        brokenProcess.setTime(System.currentTimeMillis());
+        brokenProcess.setProcessId(processId);
+        brokenProcess.setBrokenActorId(taskDecision.getActorId());
+
+        TaskContainer startTask = processBackend.getStartTask(processId);
+        if (null != startTask) {
+            brokenProcess.setStartActorId(startTask.getActorId());
+        }
+
+        ErrorContainer errorContainer = taskDecision.getErrorContainer();
+        if (null != errorContainer) {
+            brokenProcess.setErrorClassName(errorContainer.getClassName());
+            brokenProcess.setErrorMessage(errorContainer.getMessage());
+            brokenProcess.setStackTrace(errorContainer.getStackTrace());
+        }
+        brokenProcessBackend.save(brokenProcess);
     }
 
     protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
