@@ -16,6 +16,7 @@ import ru.taskurotta.client.memory.ClientServiceManagerMemory;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -101,6 +102,12 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     }
 
     public void setProperties(Properties properties) {
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            final Object obj = System.getenv(entry.getKey().toString());
+            if (obj != null) {
+                entry.setValue(obj);
+            }
+        }
         this.properties = properties;
     }
 

@@ -10,7 +10,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/nowait/SpreaderBeans-jersey.xml
         properties:
-          endpoint: "http://10.129.0.51:8090"
+          endpoint: "http://localhost:8090"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
