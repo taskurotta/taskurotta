@@ -62,6 +62,18 @@ public class TaskQueueItem implements Serializable {
         this.taskList = taskList;
     }
 
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
