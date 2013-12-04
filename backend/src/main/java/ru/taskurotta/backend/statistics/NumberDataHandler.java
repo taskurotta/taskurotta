@@ -41,15 +41,17 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
     public void handleNumberData(String metricName, String datasetName, Number value, long currentTime, int maxPoints) {
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
-        if(!dataHolder.containsKey(holderKey)) {
+        NumberDataRowVO dataRow = dataHolder.get(holderKey);
+        if(dataRow == null) {
             synchronized (dataHolder) {
-                if(!dataHolder.containsKey(holderKey)) {
-                    dataHolder.put(holderKey, new NumberDataRowVO(maxPoints, metricName, datasetName));
+                dataRow = dataHolder.get(holderKey);
+                if(dataRow == null) {
+                    dataRow = new NumberDataRowVO(maxPoints, metricName, datasetName);
+                    dataHolder.put(holderKey, dataRow);
                 }
             }
         }
 
-        NumberDataRowVO dataRow = dataHolder.get(holderKey);
         int position = dataRow.populate(value, currentTime);
 
         logger.debug("Handled [{}] data for position [{}], metric[{}], dataset[{}], value[{}], measurementTime[{}]", value.getClass(), position, metricName, datasetName, value, currentTime);

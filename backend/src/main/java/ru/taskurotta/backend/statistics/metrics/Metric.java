@@ -2,8 +2,8 @@ package ru.taskurotta.backend.statistics.metrics;
 
 import ru.taskurotta.backend.statistics.datalistener.DataListener;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * User: dimadin
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Metric {
 
-    private final Map<String, CheckPoint> dataSets = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, CheckPoint> dataSets = new ConcurrentHashMap<>();
     private String name;
 
     public Metric(String name) {
@@ -20,15 +20,19 @@ public class Metric {
 
     public void mark(String dataSetName, long period) {
 
-        if (!dataSets.containsKey(dataSetName)) {
+        CheckPoint dataSetCheckpoint = dataSets.get(dataSetName);
+        if (dataSetCheckpoint == null) {
+
             synchronized (dataSets) {
-                if (!dataSets.containsKey(dataSetName)) {
-                    dataSets.put(dataSetName, new CheckPoint());
+
+                dataSetCheckpoint = dataSets.get(dataSetName);
+                if (dataSetCheckpoint == null) {
+                    dataSetCheckpoint = new CheckPoint();
+                    dataSets.put(dataSetName, dataSetCheckpoint);
                 }
             }
         }
 
-        CheckPoint dataSetCheckpoint = dataSets.get(dataSetName);
         dataSetCheckpoint.mark(period);
 
     }
