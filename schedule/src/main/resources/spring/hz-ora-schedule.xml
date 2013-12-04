@@ -21,7 +21,7 @@
     <!-- SCHEDULING -->
     <bean id = "jobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
         <property name="jobStore" ref="scheduleStore" />
-        <property name="queueInfoRetriever" ref="queueBackend" />
+        <property name="queueInfoRetriever" ref="realQueueBackend" />
         <property name="taskServer" ref="taskServer" />
     </bean>
 

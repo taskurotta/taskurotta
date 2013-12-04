@@ -2,29 +2,34 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/darg/context.xml
+        context: ru/taskurotta/recipes/pcollection/context.xml
 
 spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/darg/SpreaderBeans.xml
+        context: ru/taskurotta/recipes/pcollection/SpreaderBeans-jersey.xml
+        properties:
+          endpoint: "http://10.129.0.51:8090"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
 
 actor:
   - decider:
-      actorInterface: ru.taskurotta.recipes.darg.decider.DArgDecider
+      actorInterface: ru.taskurotta.recipes.pcollection.decider.CollectionOfPromiseDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
 
-  - worker:
-      actorInterface: ru.taskurotta.recipes.darg.worker.DArgWorker
+  - producer:
+      actorInterface: ru.taskurotta.recipes.pcollection.worker.CollectionProducer
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
 
-  - subdecider:
-      actorInterface: ru.taskurotta.recipes.darg.decider.DArgSubprocessDecider
+  - consumer:
+      actorInterface: ru.taskurotta.recipes.pcollection.worker.CollectionConsumer
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
@@ -51,13 +56,13 @@ logback:
         - org.springframework:
              key: name
              \@level: ERROR
-        - ru.taskurotta.recipes.darg:
+        - ru.taskurotta.recipes.pcollection:
              key: name
              \@level: DEBUG
         - ru.taskurotta.server.json:
              key: name
              \@level: DEBUG
-        - ru.taskurotta.backend:
+        - ru.taskurotta.backend.storage:
              key: name
              \@level: DEBUG
         - ru.taskurotta.bootstrap.config:

@@ -8,7 +8,12 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/darg/SpreaderBeans.xml
+        context: ru/taskurotta/recipes/darg/SpreaderBeans-jersey.xml
+        properties:
+          endpoint: "http://10.129.0.51:8090"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
 
 actor:
   - decider:
@@ -16,18 +21,24 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
+      properties:
+        failover: "1 SECONDS"
 
   - worker:
       actorInterface: ru.taskurotta.recipes.darg.worker.DArgWorker
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
+      properties:
+        failover: "1 SECONDS"
 
   - subdecider:
       actorInterface: ru.taskurotta.recipes.darg.decider.DArgSubprocessDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       count: 1
+      properties:
+        failover: "1 SECONDS"
 
 
 logback:

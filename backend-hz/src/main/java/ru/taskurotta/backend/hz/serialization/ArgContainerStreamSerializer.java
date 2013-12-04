@@ -28,10 +28,14 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
 
         out.writeBoolean(true);
         serializePlain(out, argContainer);
+        compositeWrite(out, argContainer);
+    }
+
+    private void compositeWrite(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
         if (argContainer.getCompositeValue() != null && argContainer.getCompositeValue().length > 0) {
             out.writeInt(argContainer.getCompositeValue().length);
             for (ArgContainer arg : argContainer.getCompositeValue()) {
-                write(out, arg);
+                serializePlain(out, arg);
             }
         } else {
             out.writeInt(-1);
@@ -47,7 +51,7 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
 
         ArgContainer arg;
         arg = deserializePlain(in);
-        return arg;
+        return compositeRead(in, arg);
     }
 
     private void serializePlain(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
@@ -84,7 +88,16 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
             valueType = ArgContainer.ValueType.fromInt(type);
         }
         boolean promise = in.readBoolean();
+        arg.setClassName(className);
+        arg.setTaskId(taskId);
+        arg.setReady(ready);
+        arg.setJSONValue(jsonValue);
+        arg.setType(valueType);
+        arg.setPromise(promise);
+        return arg;
+    }
 
+    private ArgContainer compositeRead(ObjectDataInput in, ArgContainer arg) throws IOException {
         int compositeSize = in.readInt();
         if (compositeSize != -1) {
             List<ArgContainer> containerList = new ArrayList<>();
@@ -96,13 +109,6 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
             containerList.toArray(compositeValues);
             arg.setCompositeValue(compositeValues);
         }
-
-        arg.setClassName(className);
-        arg.setTaskId(taskId);
-        arg.setReady(ready);
-        arg.setJSONValue(jsonValue);
-        arg.setType(valueType);
-        arg.setPromise(promise);
         return arg;
     }
 
