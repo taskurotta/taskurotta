@@ -58,13 +58,15 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend,
-                             DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
+                             DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend,
+                             GarbageCollectorBackend garbageCollectorBackend) {
         this.processBackend = processBackend;
         this.taskBackend = taskBackend;
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.configBackend = configBackend;
         this.brokenProcessBackend = brokenProcessBackend;
+        this.garbageCollectorBackend = garbageCollectorBackend;
     }
 
     @Override
