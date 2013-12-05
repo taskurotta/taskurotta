@@ -32,6 +32,8 @@
 
             <hz:map name="${hz.graph.decision.map.name}" backup-count="1"/>
 
+            <hz:map name="${hz.actor.preferences.map.name}" backup-count="1"/>
+
             <hz:serialization>
                 <hz:serializers>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ActorSchedulingOptionsContainer"
