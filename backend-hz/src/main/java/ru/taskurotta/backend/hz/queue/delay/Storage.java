@@ -9,6 +9,6 @@ import java.util.concurrent.TimeUnit;
  */
 public interface Storage<E> {
 
-    public boolean add(E e, int delayTime, TimeUnit unit);
+    public boolean add(E e, long delayTime, TimeUnit unit);
 
 }

@@ -49,7 +49,7 @@ public class CommonStorageFactory implements StorageFactory {
     public Storage createStorage(final String queueName) {
         return new Storage() {
             @Override
-            public boolean add(Object o, int delayTime, TimeUnit unit) {
+            public boolean add(Object o, long delayTime, TimeUnit unit) {
 
                 long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
                 CommonStorageItem storageItem = new CommonStorageItem(o, enqueueTime, queueName);

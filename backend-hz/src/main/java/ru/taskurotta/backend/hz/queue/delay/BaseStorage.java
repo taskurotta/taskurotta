@@ -19,7 +19,7 @@ public class BaseStorage implements Storage {
     }
 
     @Override
-    public boolean add(Object o, int delayTime, TimeUnit unit) {
+    public boolean add(Object o, long delayTime, TimeUnit unit) {
         long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
         BaseStorageItem storageItem = new BaseStorageItem(o, enqueueTime);
 
