@@ -98,4 +98,19 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
         }
         return result;
     }
+
+    @Override
+    public Number getLastValue(String metricName, String datasetName) {
+        Number result = null;
+        NumberDataRowVO value = dataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
+        if (value != null) {
+            DataPointVO<Number>[] data = value.getCurrentData();
+            if (data!=null && data.length>0) {
+                MetricsDataUtils.sortDataSet(data);
+                result = data[data.length-1].getValue();
+            }
+        }
+        logger.debug("Last value for metric[{}], dataset[{}] is [{}]", metricName, datasetName, result);
+        return result;
+    }
 }

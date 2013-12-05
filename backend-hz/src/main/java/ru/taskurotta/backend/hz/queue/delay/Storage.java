@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.hz.queue.delay;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -10,7 +9,6 @@ import java.util.concurrent.TimeUnit;
  */
 public interface Storage<E> {
 
-    public boolean add(E e, int delayTime, TimeUnit unit);
+    public boolean add(E e, long delayTime, TimeUnit unit);
 
-    public Collection<E> getReadyItems();
 }

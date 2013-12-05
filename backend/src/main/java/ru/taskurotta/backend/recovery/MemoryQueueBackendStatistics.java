@@ -1,6 +1,7 @@
 package ru.taskurotta.backend.recovery;
 
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.queue.MemoryQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 
@@ -40,6 +41,11 @@ public class MemoryQueueBackendStatistics extends AbstractQueueBackendStatistics
     @Override
     public Map<String, Integer> getHoveringCount(float periodSize) {
         return queueBackend.getHoveringCount(periodSize);
+    }
+
+    @Override
+    public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
+        return queueBackend.getQueuesStatsPage(pageNum, pageSize, filter);
     }
 
     @Override

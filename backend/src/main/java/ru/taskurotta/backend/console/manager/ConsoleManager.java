@@ -3,6 +3,7 @@ package ru.taskurotta.backend.console.manager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.queue.TaskQueueItem;
@@ -23,7 +24,7 @@ public interface ConsoleManager {
     /**
      * @return paginated view for current state of task queues
      */
-    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSise);
+    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize);
 
     /**
      * @return list of all existing TaskContainers for a given process
@@ -70,5 +71,7 @@ public interface ConsoleManager {
     public List<QueueVO> getQueuesHovering(float periodSize);
 
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
+
+    public GenericPage<QueueStatVO> getQueuesStatInfo(int pageNumber, int pageSize, String filter);
 
 }

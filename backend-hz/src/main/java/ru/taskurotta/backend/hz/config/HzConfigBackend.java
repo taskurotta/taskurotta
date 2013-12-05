@@ -105,7 +105,7 @@ public class HzConfigBackend implements ConfigBackend, ConfigInfoRetriever {
     @Override
     public boolean isActorBlocked(String actorId) {
         ActorPreferences actorPreferences = localActorPreferences.get(actorId);
-        logger.debug("actorPreferences getted in isActorBlocked[{]] are [{}] ", actorId, actorPreferences);
+        logger.debug("actorPreferences getted in isActorBlocked[{}] are [{}] ", actorId, actorPreferences);
         return actorPreferences != null && actorPreferences.isBlocked();
     }
 

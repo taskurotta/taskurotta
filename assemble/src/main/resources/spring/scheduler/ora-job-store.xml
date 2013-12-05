@@ -8,16 +8,6 @@
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
 
-    <!-- CONSOLE -->
-    <bean id = "consoleScheduleResource" class="ru.taskurotta.schedule.console.JobQuartzResource">
-        <property name="jobManager" ref="jobManager" />
-        <property name="hzScheduleEventDispatcher" ref="hzScheduleMessageDispatcher" />
-    </bean>
-
-    <bean id="consoleScheduleValidator" class="ru.taskurotta.schedule.console.JobValidationResource" />
-    <!-- /CONSOLE -->
-
-
     <!-- SCHEDULING -->
     <bean id = "jobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
         <property name="jobStore" ref="scheduleStore" />
