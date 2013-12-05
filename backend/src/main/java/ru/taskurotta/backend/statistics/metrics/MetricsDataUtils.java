@@ -256,5 +256,21 @@ public class MetricsDataUtils {
         return result;
     }
 
+    public static long sumUpDataPointsArray(DataPointVO<Long>[] target) {
+        long result = -1;
+
+        if (target != null && target.length > 0) {
+            result = 0l;
+            for (DataPointVO<Long> dp: target) {
+                if (dp!=null && dp.getValue()>0) {
+                    result += dp.getValue();
+                }
+            }
+        }
+
+        return result;
+    }
+
+
 
 }

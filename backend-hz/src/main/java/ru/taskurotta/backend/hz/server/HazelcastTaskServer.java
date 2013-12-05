@@ -128,7 +128,6 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public ProcessDecisionUnitOfWork(UUID processId, UUID taskId) {
             this.processId = processId;
             this.taskId = taskId;
-
         }
 
         @Autowired
@@ -145,6 +144,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
                 try {
                     DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
+                    logger.debug("ProcessDecisionUnitOfWork decision is[{}], taskId[{}], processId[{]]", taskDecision, taskId, processId);
                     if (taskDecision == null) {
                         String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
                         logger.error(error);
