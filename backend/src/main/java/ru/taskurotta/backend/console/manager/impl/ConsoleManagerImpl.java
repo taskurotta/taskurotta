@@ -4,6 +4,7 @@ import ru.taskurotta.backend.console.manager.ConsoleManager;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.ProcessVO;
 import ru.taskurotta.backend.console.model.ProfileVO;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.model.QueueVO;
 import ru.taskurotta.backend.console.model.TaskTreeVO;
 import ru.taskurotta.backend.console.retriever.ConfigInfoRetriever;
@@ -206,6 +207,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
     @Override
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {
         return taskInfo.getRepeatedTasks(iterationCount);
+    }
+
+    @Override
+    public GenericPage<QueueStatVO> getQueuesStatInfo(int pageNumber, int pageSize, String filter) {
+        return queueInfo.getQueuesStatsPage(pageNumber, pageSize, filter);
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

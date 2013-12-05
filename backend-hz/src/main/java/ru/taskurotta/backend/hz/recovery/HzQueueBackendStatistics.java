@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.recovery.AbstractQueueBackendStatistics;
@@ -16,7 +17,7 @@ import ru.taskurotta.backend.statistics.MetricFactory;
 import ru.taskurotta.backend.statistics.datalistener.NumberDataListener;
 import ru.taskurotta.backend.statistics.metrics.Metric;
 import ru.taskurotta.backend.statistics.metrics.TimeConstants;
-import ru.taskurotta.server.MetricName;
+import ru.taskurotta.backend.statistics.MetricName;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
@@ -202,6 +203,11 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
     @Override
     public Map<String, Integer> getHoveringCount(float periodSize) {
         return queueBackend.getHoveringCount(periodSize);
+    }
+
+    @Override
+    public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
+        return queueBackend.getQueuesStatsPage(pageNum, pageSize, filter);
     }
 
     @Required

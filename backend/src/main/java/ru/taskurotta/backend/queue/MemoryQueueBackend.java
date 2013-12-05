@@ -5,8 +5,15 @@ import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.backend.statistics.MetricName;
+import ru.taskurotta.backend.statistics.MetricsDataHandler;
+import ru.taskurotta.backend.statistics.NumberDataHandler;
+import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
+import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -78,6 +85,19 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
         }
         return new GenericPage<>(result, pageNum, pageSize, queues.size());
     }
+
+
+    private List<String> getTaskQueueNames(String filter) {
+        List<String> result = new ArrayList<>();
+        for (String name: queues.keySet()) {
+            if (StringUtils.isBlank(filter)
+                    || name.startsWith(filter)) {
+                result.add(name);
+            }
+        }
+        return result;
+    }
+
 
     @Override
     public int getQueueTaskCount(String queueName) {
@@ -239,6 +259,58 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
                 result.put(queueName, count);
             }
         }
+        return result;
+    }
+
+    @Override
+    public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
+        GenericPage<QueueStatVO> result = null;
+        List<String> allQueues = getTaskQueueNames(filter);
+        if (allQueues!=null && !allQueues.isEmpty()) {
+            int pageStart = (pageNum - 1) * pageSize;
+            int pageEnd = Math.min(pageSize * pageNum, allQueues.size());
+
+            List<String> queueNamesPage = allQueues.subList(pageStart, pageEnd);
+            if (queueNamesPage!=null && !queueNamesPage.isEmpty()) {
+                MetricsDataHandler mdh = MetricsDataHandler.getInstance();
+                NumberDataHandler ndh = NumberDataHandler.getInstance();
+                if (mdh != null && ndh != null) {
+                    List<QueueStatVO> resultItems = new ArrayList<>();
+                    for (String queueName: queueNamesPage) {
+                        QueueStatVO item = new QueueStatVO();
+                        item.setName(queueName);
+                        Number count = ndh.getLastValue(MetricName.QUEUE_SIZE.getValue(), queueName);
+                        item.setCount(count!=null? (Integer)count: 0);
+                        item.setLastActivity(mdh.getLastActivityTime(MetricName.POLL.getValue(), queueName));
+
+                        DataPointVO<Long>[] outHour = mdh.getCountsForLastHour(MetricName.SUCCESSFUL_POLL.getValue(), queueName);
+                        DataPointVO<Long>[] outDay = mdh.getCountsForLastDay(MetricName.SUCCESSFUL_POLL.getValue(), queueName);
+
+                        DataPointVO<Long>[] inHour = mdh.getCountsForLastHour(MetricName.ENQUEUE.getValue(), queueName);
+                        DataPointVO<Long>[] inDay = mdh.getCountsForLastDay(MetricName.ENQUEUE.getValue(), queueName);
+
+                        item.setInDay(MetricsDataUtils.sumUpDataPointsArray(inDay));
+                        item.setInHour(MetricsDataUtils.sumUpDataPointsArray(inHour));
+
+                        item.setOutDay(MetricsDataUtils.sumUpDataPointsArray(outDay));
+                        item.setOutHour(MetricsDataUtils.sumUpDataPointsArray(outHour));
+
+                        resultItems.add(item);
+                    }
+
+                    if (resultItems!=null && !resultItems.isEmpty()) {
+                        result = new GenericPage<QueueStatVO>(resultItems, pageNum, pageSize, allQueues.size());
+                    }
+
+                } else {
+                    logger.error("Cannot extract dataHandlers, methodDataHandler["+mdh+"], numberDataHandler["+ndh+"]");
+                }
+
+            }
+
+        }
+
+        logger.debug("Result list of QueueStatVO is [{}]", result);
         return result;
     }
 

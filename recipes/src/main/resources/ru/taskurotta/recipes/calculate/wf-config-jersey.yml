@@ -15,12 +15,12 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 50
-          startTasks: false
+          count: 100
+          startTasks: true
           startTasksInBackground: true
-          startTaskPeriodSeconds: -1
+          startTaskPeriodSeconds: 10
           endpoint: "http://localhost:8811"
-          threadPoolSize: 20
+          threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
 
@@ -50,7 +50,7 @@ actor:
       policyConfig: MainPolicyConfig
       count: 4
       properties:
-        failover: "25 SECONDS"
+        failover: "5 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Multiplier
@@ -70,7 +70,7 @@ actor:
       policyConfig: MainPolicyConfig
       count: 4
       properties:
-        failover: "25 SECONDS"
+        failover: "5 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Summarizer
@@ -80,4 +80,4 @@ actor:
       policyConfig: MainPolicyConfig
       count: 2
       properties:
-        failover: "25 SECONDS"
+        failover: "5 SECONDS"

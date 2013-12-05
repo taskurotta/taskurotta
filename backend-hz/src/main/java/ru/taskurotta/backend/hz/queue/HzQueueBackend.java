@@ -2,19 +2,25 @@ package ru.taskurotta.backend.hz.queue;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
+import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport;
 import ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport;
+import ru.taskurotta.backend.hz.support.console.HzQueueStatTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
+import ru.taskurotta.util.ActorUtils;
+import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
@@ -50,6 +57,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private MongoTemplate mongoTemplate;
 
+    private static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
+
     public void setHzQueueConfigSupport(HzQueueSpringConfigSupport hzQueueConfigSupport) {
         this.hzQueueConfigSupport = hzQueueConfigSupport;
     }
@@ -64,7 +73,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public GenericPage<String> getQueueList(int pageNum, int pageSize) {
-        List<String> queueNamesList = getTaskQueueNamesByPrefix();
+        List<String> queueNamesList = getTaskQueueNamesByPrefix(queueNamePrefix, null, false);
 
         logger.debug("Stored queue names for queue backend are [{}]", queueNamesList);
 
@@ -78,13 +87,17 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         return new GenericPage<>(prefixStrip(result), pageNum, pageSize, queueNames.length);
     }
 
-    private List<String> getTaskQueueNamesByPrefix() {
+    private List<String> getTaskQueueNamesByPrefix(String prefix, String filter, boolean prefixStrip) {
         List<String> result = new ArrayList<>();
         for (DistributedObject inst : hazelcastInstance.getDistributedObjects()) {
             if (inst instanceof IQueue) {
                 String name = inst.getName();
-                if (name.startsWith(queueNamePrefix)) {
-                    result.add(name);
+                if (name.startsWith(prefix)) {
+                    String item = prefixStrip? name.substring(prefix.length()): name;
+                    if (StringUtils.isBlank(filter)
+                            || item.startsWith(filter)) {
+                        result.add(item);
+                    }
                 }
             }
         }
@@ -107,19 +120,13 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     @Override
     public int getQueueTaskCount(String queueName) {
-        if (queueNamePrefix != null && !queueName.startsWith(queueNamePrefix)) {
-            queueName = queueNamePrefix + queueName;
-        }
-        return getHzQueue(queueName).size();
+        return getHzQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix)).size();
     }
 
     @Override
     public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
-        if (queueNamePrefix != null && !queueName.startsWith(queueNamePrefix)) {
-            queueName = queueNamePrefix + queueName;
-        }
         List<TaskQueueItem> result = new ArrayList<>();
-        IQueue<TaskQueueItem> queue = getHzQueue(queueName);
+        IQueue<TaskQueueItem> queue = getHzQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix));
         TaskQueueItem[] queueItems = queue.toArray(new TaskQueueItem[queue.size()]);
 
         if (queueItems.length > 0) {
@@ -266,6 +273,71 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
     @Override
+    public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
+        GenericPage<QueueStatVO> result = null;
+        List<String> fullFilteredQueueNamesList = getTaskQueueNamesByPrefix(queueNamePrefix, filter, true);
+
+        if (fullFilteredQueueNamesList!=null && !fullFilteredQueueNamesList.isEmpty()) {
+            int pageStart = (pageNum - 1) * pageSize;
+            int pageEnd = Math.min(pageSize * pageNum, fullFilteredQueueNamesList.size());
+
+            List<String> queueNames = fullFilteredQueueNamesList.subList(pageStart, pageEnd);
+            if (queueNames != null && !queueNames.isEmpty()) {
+                IExecutorService es = hazelcastInstance.getExecutorService(HZ_QUEUE_INFO_EXECUTOR_SERVICE);
+                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(queueNames, queueNamePrefix));
+                List<QueueStatVO> resultItems = new ArrayList<>();
+                int nodes = 0;
+                for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {
+                    try {
+                        mergeByQueueName(resultItems, nodeResultFuture.get(5, TimeUnit.SECONDS));
+                        nodes++;
+                    } catch (Exception e) {
+                        logger.warn("Cannot obtain QueueStatVO data from node", e);
+                    }
+                }
+
+                if (!resultItems.isEmpty()) {
+                    for (QueueStatVO item: resultItems) {
+                        item.setNodes(nodes);
+                    }
+                    result = new GenericPage<QueueStatVO>(resultItems, pageNum, pageSize, fullFilteredQueueNamesList.size());
+                }
+
+            }
+
+        }
+
+        return result;
+    }
+
+
+    private void mergeByQueueName(List<QueueStatVO> mergeTo, List<QueueStatVO> mergeFrom) {
+        if (mergeFrom!=null && !mergeFrom.isEmpty()) {
+            for (QueueStatVO mergeFromItem: mergeFrom) {
+                QueueStatVO mergeTarget = getItemByName(mergeTo, mergeFromItem.getName());
+                if (mergeTarget!=null) {
+                    mergeTarget.sumValuesWith(mergeFromItem);
+                } else {
+                    mergeTo.add(mergeFromItem);
+                }
+            }
+        }
+    }
+
+    private static QueueStatVO getItemByName(List<QueueStatVO> list, String name) {
+        QueueStatVO result = null;
+        if (list!=null && !list.isEmpty() && !StringUtils.isBlank(name)) {
+            for (QueueStatVO qs: list) {
+                if (name.equals(qs.getName())) {
+                    result = qs;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public String createQueueName(String actorId, String taskList) {
         StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
 
@@ -292,7 +364,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         }
         long startTime = System.nanoTime();
         try {
-            List<String> queueNamesList = getTaskQueueNamesByPrefix();
+            List<String> queueNamesList = getTaskQueueNamesByPrefix(queueNamePrefix, null, false);
             if (logger.isDebugEnabled()) {
                 logger.debug("Start update delayed tasks for queues: {}", queueNamesList);
             }
@@ -324,6 +396,8 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             delayedTasksLock.unlock();
         }
     }
+
+
 
     public HzMapConfigSpringSupport getHzMapConfigSpringSupport() {
         return hzMapConfigSpringSupport;

@@ -11,19 +11,14 @@
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
             http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+            ">
 
-    <context:property-placeholder/>
-    <context:annotation-config/>
+    <bean id = "consoleScheduleResource" class="ru.taskurotta.schedule.console.JobQuartzResource">
+        <property name="jobManager" ref="jobManager" />
+        <property name="hzScheduleEventDispatcher" ref="hzScheduleMessageDispatcher" />
+    </bean>
 
-
-    <!-- base config -->
-    <import resource="hz-mongo.xml"/>
-    <import resource="backend/process-to-oracle.xml"/>
-
-    <!-- console -->
-    <import resource="rest/console-scheduler.xml" />
-    <import resource="scheduler/ora-job-store.xml" />
-    <import resource="rest/task-server.xml" />
+    <bean id="consoleScheduleValidator" class="ru.taskurotta.schedule.console.JobValidationResource" />
 
 </beans>

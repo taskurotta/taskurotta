@@ -4,7 +4,7 @@ import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetrieve
 import ru.taskurotta.backend.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.backend.statistics.MetricsDataHandler;
 import ru.taskurotta.backend.statistics.QueueBalanceVO;
-import ru.taskurotta.server.MetricName;
+import ru.taskurotta.backend.statistics.MetricName;
 
 import java.io.Serializable;
 import java.util.concurrent.Callable;
@@ -24,7 +24,7 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
 
     @Override
     public QueueBalanceVO call() throws Exception {
-        MetricsMethodDataRetriever metricsDataRetriever = MetricsDataHandler.getDataRetrieverInstance();
+        MetricsMethodDataRetriever metricsDataRetriever = MetricsDataHandler.getInstance();
         if (metricsDataRetriever == null) {
             return null;
         }

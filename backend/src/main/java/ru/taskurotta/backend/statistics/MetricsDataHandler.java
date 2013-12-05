@@ -23,13 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date: 19.09.13 10:30
  */
 public class MetricsDataHandler implements DataListener, MetricsMethodDataRetriever, TimeConstants {
-    private static MetricsMethodDataRetriever singleton;
+    private static MetricsDataHandler singleton;
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataHandler.class);
     private Map<String, DataRowVO> lastHourDataHolder = new ConcurrentHashMap<>();
     private Map<String, DataRowVO> lastDayDataHolder = new ConcurrentHashMap<>();
 
-    public static MetricsMethodDataRetriever getDataRetrieverInstance() {
+    public static MetricsDataHandler getInstance() {
         return singleton;
     }
 

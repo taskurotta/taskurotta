@@ -1,5 +1,7 @@
 package ru.taskurotta.client.internal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -15,6 +17,8 @@ import ru.taskurotta.util.ActorDefinition;
  * Time: 13:27
  */
 public class TaskSpreaderCommon implements TaskSpreader {
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskSpreaderCommon.class);
 
     private TaskServer taskServer;
     private ActorDefinition actorDefinition;
@@ -35,7 +39,9 @@ public class TaskSpreaderCommon implements TaskSpreader {
 
     @Override
     public void release(TaskDecision taskDecision) {
+        logger.debug("TaskSpreaderCommon#release decision[{}]",taskDecision);
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, actorDefinition.getFullName());
+        logger.debug("TaskSpreaderCommon#release decisionContainer[{}]", decisionContainer);
         taskServer.release(decisionContainer);
     }
 
