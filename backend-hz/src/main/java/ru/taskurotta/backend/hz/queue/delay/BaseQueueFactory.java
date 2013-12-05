@@ -3,8 +3,6 @@ package ru.taskurotta.backend.hz.queue.delay;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 
-import java.util.Collection;
-
 /**
  * User: romario
  * Date: 12/4/13

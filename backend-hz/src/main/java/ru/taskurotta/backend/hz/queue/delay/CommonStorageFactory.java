@@ -17,18 +17,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonStorageFactory implements StorageFactory {
 
-    private final IMap<UUID, StorageItem> iMap;
+    private final IMap<UUID, CommonStorageItem> iMap;
 
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
-        this.iMap.addIndex("keepTime", true);
+        this.iMap.addIndex("enqueueTime", true);
 
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.submit(new Runnable() {
             @Override
             public void run() {
                 while (true) {
-                    Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("keepTime", 0l,
+                    Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
                             System.currentTimeMillis()));
 
                     if (keys == null || keys.isEmpty()) {
@@ -36,7 +36,7 @@ public class CommonStorageFactory implements StorageFactory {
                     }
 
                     for (UUID key : keys) {
-                        StorageItem storageItem = iMap.remove(key);
+                        CommonStorageItem storageItem = iMap.remove(key);
                         String queueName = storageItem.getQueueName();
                         hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
                     }
@@ -52,7 +52,7 @@ public class CommonStorageFactory implements StorageFactory {
             public boolean add(Object o, int delayTime, TimeUnit unit) {
 
                 long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
-                StorageItem storageItem = new StorageItem(o, queueName,  enqueueTime);
+                CommonStorageItem storageItem = new CommonStorageItem(o, enqueueTime, queueName);
 
                 while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
                     // Better safe than sorry! :)
