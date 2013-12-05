@@ -96,6 +96,7 @@
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
         <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
+        <constructor-arg name="garbageCollectorBackend" ref="garbageCollectorBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nodeCustomName" value="${node.custom.name}"/>
         <constructor-arg name="decisionProcessingExecutorService" value="${hz.decisions.service.name}"/>
