@@ -26,6 +26,8 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
+    private long keepTime = 0l;
+
     public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
         this(configBackend, processBackend, graphDao, taskDao, hazelcastInstance, "garbageCollectorQueue");
     }
@@ -61,7 +63,7 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
     public void delete(UUID processId, String actorId) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
 
-        long keepTime = 0;
+        long keepTime = this.keepTime;
         if (actorPreferences != null) {
             keepTime = actorPreferences.getKeepTime();
         }
@@ -95,5 +97,9 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
                 gc(processId);
             }
         }
+    }
+
+    public void setKeepTime(long keepTime) {
+        this.keepTime = keepTime;
     }
 }

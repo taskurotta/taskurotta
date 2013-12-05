@@ -20,6 +20,8 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private DelayQueue<DelayFinishedProcess> garbageCollectorQueue = new DelayQueue<>();
 
+    private long keepTime = 0l;
+
     public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
         this(configBackend, processBackend, graphDao, taskDao, 1);
     }
@@ -97,11 +99,15 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
     public void delete(UUID processId, String actorId) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
 
-        long keepTime = 10000;
+        long keepTime = this.keepTime;
         if (actorPreferences != null) {
             keepTime = actorPreferences.getKeepTime();
         }
 
         garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + keepTime));
+    }
+
+    public void setKeepTime(long keepTime) {
+        this.keepTime = keepTime;
     }
 }

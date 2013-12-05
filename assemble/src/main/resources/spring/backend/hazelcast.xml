@@ -85,6 +85,8 @@
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+
+        <property name="keepTime" value="${gc.process.keepTime}"/>
     </bean>
     <!-- /Backends -->
 
