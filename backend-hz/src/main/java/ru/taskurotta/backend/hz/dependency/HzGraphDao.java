@@ -10,6 +10,7 @@ import ru.taskurotta.backend.dependency.links.Modification;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -107,12 +108,24 @@ public class HzGraphDao implements GraphDao {
         } finally {
             graphs.unlock(graphId);
         }
+    }
 
+    @Override
+    public void deleteGraph(UUID graphId) {
+
+        Graph graph = graphs.get(graphId);
+
+        Set<UUID> finishedItems = graph.getFinishedItems();
+
+        for (UUID itemId : finishedItems) {
+            decisions.delete(itemId);
+        }
+
+        graphs.delete(graphId);
     }
 
     @Override
     public Graph getGraph(UUID graphId) {
-
         return graphs.get(graphId);
     }
 

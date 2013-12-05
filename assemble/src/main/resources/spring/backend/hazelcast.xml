@@ -79,6 +79,15 @@
         <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
 
+    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.hz.gc.HzGarbageCollectorBackend">
+        <constructor-arg name="configBackend" ref="configBackend"/>
+        <constructor-arg name="processBackend" ref="processBackend"/>
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+
+        <property name="keepTime" value="${gc.process.keepTime}"/>
+    </bean>
     <!-- /Backends -->
 
     <!-- Task server -->
@@ -89,6 +98,7 @@
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
         <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
+        <constructor-arg name="garbageCollectorBackend" ref="garbageCollectorBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nodeCustomName" value="${node.custom.name}"/>
         <constructor-arg name="decisionProcessingExecutorService" value="${hz.decisions.service.name}"/>

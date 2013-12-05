@@ -54,6 +54,11 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
+    public void deleteProcess(UUID processId) {
+        hzInstance.getMap(processesStorageMapName).delete(processId);
+    }
+
+    @Override
     public ProcessVO getProcess(UUID processUUID) {
         IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
         return processesStorage.get(processUUID);

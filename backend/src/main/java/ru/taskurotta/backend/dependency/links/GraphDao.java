@@ -24,7 +24,8 @@ public interface GraphDao {
      */
     public void createGraph(UUID graphId, UUID taskId);
 
-
+    public void deleteGraph(UUID graphId);
+    
     /**
      * Returns array of ready tasks by finishedTaskId from history for replay case.
      *

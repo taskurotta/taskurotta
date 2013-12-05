@@ -6,6 +6,7 @@ import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
 import ru.taskurotta.backend.dependency.model.DependencyDecision;
+import ru.taskurotta.backend.gc.GarbageCollectorBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.process.BrokenProcessVO;
 import ru.taskurotta.backend.queue.QueueBackend;
@@ -39,6 +40,7 @@ public class GeneralTaskServer implements TaskServer {
     protected DependencyBackend dependencyBackend;
     protected ConfigBackend configBackend;
     protected BrokenProcessBackend brokenProcessBackend;
+    protected GarbageCollectorBackend garbageCollectorBackend;
 
     /*
      *  For tests ONLY
@@ -52,16 +54,19 @@ public class GeneralTaskServer implements TaskServer {
         this.dependencyBackend = backendBundle.getDependencyBackend();
         this.configBackend = backendBundle.getConfigBackend();
         this.brokenProcessBackend = backendBundle.getBrokenProcessBackend();
+        this.garbageCollectorBackend = backendBundle.getGarbageCollectorBackend();
     }
 
     public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend,
-                             DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
+                             DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend,
+                             GarbageCollectorBackend garbageCollectorBackend) {
         this.processBackend = processBackend;
         this.taskBackend = taskBackend;
         this.queueBackend = queueBackend;
         this.dependencyBackend = dependencyBackend;
         this.configBackend = configBackend;
         this.brokenProcessBackend = brokenProcessBackend;
+        this.garbageCollectorBackend = garbageCollectorBackend;
     }
 
     @Override
@@ -200,9 +205,9 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         if (dependencyDecision.isProcessFinished()) {
-            processBackend.finishProcess(processId,
-                    dependencyDecision.getFinishedProcessValue());
+            processBackend.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
+            garbageCollectorBackend.delete(processId, taskDecision.getActorId());
         }
 
         processSnapshot(taskDecision, dependencyDecision);

@@ -55,6 +55,19 @@ public class OraProcessBackend implements ProcessBackend, ProcessInfoRetriever {
     }
 
     @Override
+    public void deleteProcess(UUID processId) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("DELETE FROM PROCESS WHERE process_id = ?")
+        ) {
+            ps.setString(1, processId.toString());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            log.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new BackendCriticalException("Database error", ex);
+        }
+    }
+
+    @Override
     public void startProcess(TaskContainer task) {
 
         log.debug("Starting process with TaskContainer [{}]", task);
