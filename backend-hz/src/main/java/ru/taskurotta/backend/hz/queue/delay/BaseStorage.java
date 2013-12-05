@@ -2,6 +2,7 @@ package ru.taskurotta.backend.hz.queue.delay;
 
 import com.hazelcast.core.IMap;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -11,15 +12,22 @@ import java.util.concurrent.TimeUnit;
  */
 public class BaseStorage implements Storage {
 
-    private IMap storage;
+    private IMap<UUID, BaseStorageItem> storage;
 
-    public BaseStorage(IMap storage) {
+    public BaseStorage(IMap<UUID, BaseStorageItem> storage) {
         this.storage = storage;
     }
 
     @Override
     public boolean add(Object o, int delayTime, TimeUnit unit) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
+        BaseStorageItem storageItem = new BaseStorageItem(o, enqueueTime);
+
+        while (storage.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
+            // Better safe than sorry! :)
+        }
+
+        return true;
     }
 
 }

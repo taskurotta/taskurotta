@@ -2,7 +2,6 @@ package ru.taskurotta.ru.taskurotta.backend.hz.queue.delay;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory;
 import ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory;
@@ -53,7 +52,6 @@ public class DelayIQueueTest {
     }
 
     @Test
-    @Ignore
     public void BaseDelayIQueueTest() throws InterruptedException {
 
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance();
@@ -63,17 +61,23 @@ public class DelayIQueueTest {
             StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance, "dqs#");
             QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
 
-            DelayIQueue delayIQueue = queueFactory.create("testQueue");
+            DelayIQueue<String> delayIQueue = queueFactory.create("testQueue");
 
-            delayIQueue.add(new Object(), 500, TimeUnit.MICROSECONDS);
+            assertTrue(delayIQueue.add("test", 2, TimeUnit.SECONDS));
 
             Object retrievedObject = delayIQueue.poll(0, TimeUnit.SECONDS);
             assertNull(retrievedObject);
 
-            Thread.sleep(1000);
+            TimeUnit.SECONDS.sleep(1);
 
             retrievedObject = delayIQueue.poll(0, TimeUnit.SECONDS);
+            assertNull(retrievedObject);
+
+            retrievedObject = delayIQueue.poll(1, TimeUnit.SECONDS);
             assertNotNull(retrievedObject);
+
+            retrievedObject = delayIQueue.poll(1, TimeUnit.SECONDS);
+            assertNull(retrievedObject);
 
         } finally {
             hazelcastInstance.shutdown();

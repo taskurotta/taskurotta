@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.hz.queue.delay;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
