@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MongoStorage implements Storage {
     @Override
-    public boolean add(Object o, int delayTime, TimeUnit unit) {
+    public boolean add(Object o, long delayTime, TimeUnit unit) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

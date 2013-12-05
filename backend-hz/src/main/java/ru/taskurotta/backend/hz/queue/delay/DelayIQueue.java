@@ -26,7 +26,7 @@ public class DelayIQueue<E> implements IQueue<E> {
         return queue.add(e);
     }
 
-    public boolean add(E e, int delayTime, TimeUnit unit) {
+    public boolean add(E e, long delayTime, TimeUnit unit) {
         if (delayTime == 0) {
             return add(e);
         }

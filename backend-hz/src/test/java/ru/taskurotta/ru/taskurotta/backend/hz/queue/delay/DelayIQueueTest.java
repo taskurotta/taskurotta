@@ -63,7 +63,7 @@ public class DelayIQueueTest {
 
             DelayIQueue<String> delayIQueue = queueFactory.create("testQueue");
 
-            assertTrue(delayIQueue.add("test", 2, TimeUnit.SECONDS));
+            assertTrue(delayIQueue.add("test", 4, TimeUnit.SECONDS));
 
             Object retrievedObject = delayIQueue.poll(0, TimeUnit.SECONDS);
             assertNull(retrievedObject);
@@ -73,7 +73,7 @@ public class DelayIQueueTest {
             retrievedObject = delayIQueue.poll(0, TimeUnit.SECONDS);
             assertNull(retrievedObject);
 
-            retrievedObject = delayIQueue.poll(1, TimeUnit.SECONDS);
+            retrievedObject = delayIQueue.poll(4, TimeUnit.SECONDS);
             assertNotNull(retrievedObject);
 
             retrievedObject = delayIQueue.poll(1, TimeUnit.SECONDS);
