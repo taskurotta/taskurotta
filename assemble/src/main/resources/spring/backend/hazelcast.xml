@@ -79,7 +79,7 @@
         <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
 
-    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.hz.gc.MockGarbageCollectorBackend">
+    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.hz.gc.HzGarbageCollectorBackend">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
