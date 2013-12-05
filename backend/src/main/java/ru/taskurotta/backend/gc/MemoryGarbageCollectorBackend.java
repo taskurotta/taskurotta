@@ -1,26 +1,22 @@
 package ru.taskurotta.backend.gc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
-import ru.taskurotta.backend.dependency.links.Graph;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.Delayed;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
-    private static final Logger logger = LoggerFactory.getLogger(MemoryGarbageCollectorBackend.class);
-
     private ConfigBackend configBackend;
-    private ProcessBackend processBackend;
-    private GraphDao graphDao;
-    private TaskDao taskDao;
 
     private DelayQueue<DelayFinishedProcess> garbageCollectorQueue = new DelayQueue<>();
 
@@ -30,9 +26,6 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
     public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, int poolSize) {
         this.configBackend = configBackend;
-        this.processBackend = processBackend;
-        this.graphDao = graphDao;
-        this.taskDao = taskDao;
 
         ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
@@ -46,11 +39,36 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
         });
 
         for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new GCTask());
+            executorService.submit(new MemoryGCTask(processBackend, graphDao, taskDao));
         }
     }
 
-    class GCTask implements Runnable {
+    class DelayFinishedProcess implements Delayed {
+
+        private UUID processId;
+        private long enqueueTime;
+
+        DelayFinishedProcess(UUID processId, long enqueueTime) {
+            this.processId = processId;
+            this.enqueueTime = enqueueTime;
+        }
+
+        @Override
+        public long getDelay(TimeUnit unit) {
+            return unit.convert(enqueueTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+        }
+
+        @Override
+        public int compareTo(Delayed o) {
+            return Long.valueOf(((DelayFinishedProcess) o).enqueueTime).compareTo(enqueueTime);
+        }
+    }
+
+    class MemoryGCTask extends AbstractGCTask {
+
+        protected MemoryGCTask(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
+            super(processBackend, graphDao, taskDao);
+        }
 
         @Override
         public void run() {
@@ -67,57 +85,11 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
                 }
 
                 if (delayFinishedProcess == null) {
-                    return;
+                    continue;
                 }
 
-                UUID processId = delayFinishedProcess.processId;
-
-                logger.trace("Start garbage collector for process [{}]", processId);
-
-                Graph graph = graphDao.getGraph(processId);
-
-                if (graph == null) {
-                    logger.error("Not found graph fro process [{}], stop garbage collector for this process", processId);
-                    return;
-                }
-
-                if (!graph.isFinished()) {
-                    logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
-                    return;
-                }
-
-                Set<UUID> finishedItems = graph.getFinishedItems();
-                taskDao.deleteDecisions(finishedItems, processId);
-                taskDao.deleteTasks(finishedItems, processId);
-
-                graphDao.deleteGraph(processId);
-
-                processBackend.deleteProcess(processId);
-
-                logger.debug("Finish garbage collector for process [{}]", processId);
-
+                gc(delayFinishedProcess.processId);
             }
-        }
-    }
-
-    class DelayFinishedProcess implements Delayed {
-
-        private UUID processId;
-        private long keepTime;
-
-        DelayFinishedProcess(UUID processId, long keepTime) {
-            this.processId = processId;
-            this.keepTime = keepTime;
-        }
-
-        @Override
-        public long getDelay(TimeUnit unit) {
-            return unit.convert(keepTime, TimeUnit.MILLISECONDS);
-        }
-
-        @Override
-        public int compareTo(Delayed o) {
-            return Long.valueOf(((DelayFinishedProcess) o).keepTime).compareTo(keepTime);
         }
     }
 
@@ -125,11 +97,11 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
     public void delete(UUID processId, String actorId) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
 
-        long keepTime = 0;
+        long keepTime = 10000;
         if (actorPreferences != null) {
             keepTime = actorPreferences.getKeepTime();
         }
 
-        garbageCollectorQueue.add(new DelayFinishedProcess(processId, keepTime));
+        garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + keepTime));
     }
 }
