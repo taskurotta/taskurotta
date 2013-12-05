@@ -1,4 +1,4 @@
-angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute', 'console.metrics.controllers'])
+angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute', 'console.metrics.controllers'])
 
 .controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
 
@@ -17,48 +17,48 @@ angular.module("console.controllers", ['console.services', 'ui.bootstrap.modal',
     };
 })
 
-.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
-
-    $scope.feedback = "";
-    $scope.initialized = false;
-
-    //Init paging object
-    $scope.queuesPage = {
-        pageSize: 5,
-        pageNumber: 1,
-        totalCount: 0,
-        items: []
-    };
-
-    $scope.totalTasks = function () {
-        var result = 0;
-        if($scope.queuesPage.items) {
-            for (var i = 0; i < $scope.queuesPage.items.length; i++) {
-                result = result + $scope.queuesPage.items[i].count;
-            }
-        }
-        return result;
-    };
-
-    //Updates queues states  by polling REST resource
-    $scope.update = function () {
-
-        $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize).then(function (value) {
-            $scope.queuesPage = angular.fromJson(value.data || {});
-            $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
-            $scope.initialized = true;
-        }, function (errReason) {
-            $scope.feedback = angular.toJson(errReason);
-            $log.error("queueListController: queue state update failed: " + $scope.feedback);
-            $scope.initialized = true;
-        });
-
-    };
-
-    //Initialization:
-    $scope.update();
-
-})
+//.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
+//
+//    $scope.feedback = "";
+//    $scope.initialized = false;
+//
+//    //Init paging object
+//    $scope.queuesPage = {
+//        pageSize: 5,
+//        pageNumber: 1,
+//        totalCount: 0,
+//        items: []
+//    };
+//
+//    $scope.totalTasks = function () {
+//        var result = 0;
+//        if($scope.queuesPage.items) {
+//            for (var i = 0; i < $scope.queuesPage.items.length; i++) {
+//                result = result + $scope.queuesPage.items[i].count;
+//            }
+//        }
+//        return result;
+//    };
+//
+//    //Updates queues states  by polling REST resource
+//    $scope.update = function () {
+//
+//        $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize).then(function (value) {
+//            $scope.queuesPage = angular.fromJson(value.data || {});
+//            $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
+//            $scope.initialized = true;
+//        }, function (errReason) {
+//            $scope.feedback = angular.toJson(errReason);
+//            $log.error("queueListController: queue state update failed: " + $scope.feedback);
+//            $scope.initialized = true;
+//        });
+//
+//    };
+//
+//    //Initialization:
+//    $scope.update();
+//
+//})
 
 .controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
 

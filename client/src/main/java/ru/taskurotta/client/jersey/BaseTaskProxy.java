@@ -79,7 +79,7 @@ public class BaseTaskProxy implements TaskServer {
 
     @Override
     public void release(DecisionContainer taskResult) {
-        logger.trace("Releasing task thread name[{}]", Thread.currentThread().getName());
+        logger.trace("Releasing task thread name[{}], taskResult[{}]", Thread.currentThread().getName(), taskResult);
         try {
             WebResource.Builder rb = releaseResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);

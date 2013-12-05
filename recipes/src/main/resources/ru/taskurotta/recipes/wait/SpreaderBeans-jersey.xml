@@ -22,4 +22,8 @@
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
         <constructor-arg name="taskServer" ref="taskServer"/>
     </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.recipes.wait.TaskCreator" init-method="createStartTask">
+        <property name="clientServiceManager" ref="clientServiceManager"/>
+    </bean>
 </beans>

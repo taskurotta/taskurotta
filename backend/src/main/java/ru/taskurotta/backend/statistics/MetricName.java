@@ -1,4 +1,4 @@
-package ru.taskurotta.server;
+package ru.taskurotta.backend.statistics;
 
 /**
  * Supported metrics

@@ -16,7 +16,7 @@ import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.MetricsStatDataVO;
 import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.backend.statistics.QueueBalanceVO;
-import ru.taskurotta.server.MetricName;
+import ru.taskurotta.backend.statistics.MetricName;
 
 import java.util.ArrayList;
 import java.util.Collection;

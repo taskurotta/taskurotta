@@ -23,13 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Date: 19.09.13 10:30
  */
 public class MetricsDataHandler implements DataListener, MetricsMethodDataRetriever, TimeConstants {
-    private static MetricsMethodDataRetriever singleton;
+    private static MetricsDataHandler singleton;
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsDataHandler.class);
     private Map<String, DataRowVO> lastHourDataHolder = new ConcurrentHashMap<>();
     private Map<String, DataRowVO> lastDayDataHolder = new ConcurrentHashMap<>();
 
-    public static MetricsMethodDataRetriever getDataRetrieverInstance() {
+    public static MetricsDataHandler getInstance() {
         return singleton;
     }
 
@@ -43,15 +43,17 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     public void handle(String metricName, String datasetName, long count, double mean, long measurementTime) {
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
-        if(!lastHourDataHolder.containsKey(holderKey)) {
+        DataRowVO dataRow = lastHourDataHolder.get(holderKey);
+        if(dataRow == null) {
             synchronized (lastHourDataHolder) {
-                if(!lastHourDataHolder.containsKey(holderKey)) {
-                    lastHourDataHolder.put(holderKey, new DataRowVO(SECONDS_IN_HOUR, metricName, datasetName));
+                dataRow = lastHourDataHolder.get(holderKey);
+                if(dataRow == null) {
+                    dataRow = new DataRowVO(SECONDS_IN_HOUR, metricName, datasetName);
+                    lastHourDataHolder.put(holderKey, dataRow);
                 }
             }
         }
 
-        DataRowVO dataRow = lastHourDataHolder.get(holderKey);
         int position = dataRow.populate(count, mean, measurementTime);
         if (position!=0 && position%SECONDS_IN_MINUTE == 0) {//new minute started
             handleMinute(metricName, datasetName, dataRow.getTotalCount(position-SECONDS_IN_MINUTE, position), dataRow.getAverageMean(), measurementTime);
@@ -63,13 +65,14 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
         DataRowVO dataRow = lastDayDataHolder.get(holderKey);
-        if(dataRow == null) {
+        if (dataRow == null) {
             synchronized (lastDayDataHolder) {
-                if (!lastDayDataHolder.containsKey(holderKey)) {
-                    lastDayDataHolder.put(holderKey, new DataRowVO(MINUTES_IN_24_HOURS, metricName, datasetName));
+                dataRow = lastDayDataHolder.get(holderKey);
+                if (dataRow == null) {
+                    dataRow = new DataRowVO(MINUTES_IN_24_HOURS, metricName, datasetName);
+                    lastDayDataHolder.put(holderKey, dataRow);
                 }
             }
-            dataRow = lastDayDataHolder.get(holderKey);
         }
 
         int position = dataRow.populate(count, mean, measurementTime);

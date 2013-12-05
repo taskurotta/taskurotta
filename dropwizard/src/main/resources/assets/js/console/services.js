@@ -32,8 +32,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         getQueueContent: function (queueName, pageNumber, pageSize) {
             return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
-        getQueueList: function (pageNumber, pageSize) {
-            return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        getQueueList: function (pageNumber, pageSize, filter) {
+            return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + encodeURIComponent(filter));
         },
         getTask: function (taskId, processId) {
             return $http.get('/rest/console/task?processId=' + encodeURIComponent(processId) + '&taskId=' + encodeURIComponent(taskId));
@@ -73,6 +73,9 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         },
         getMetricsOptions: function() {
             return $http.get('/rest/console/metrics/options/');
+        },
+        getQueueRealSize: function(queueName) {
+            return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
         }
 
     };

@@ -1,6 +1,5 @@
 package ru.taskurotta.backend.hz.queue.delay;
 
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -14,8 +13,4 @@ public class MongoStorage implements Storage {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public Collection getReadyItems() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 }

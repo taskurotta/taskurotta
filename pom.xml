@@ -38,6 +38,7 @@
         <module>bootstrap</module>
         <module>client</module>
         <module>spring</module>
+        <module>spring-2.5</module>
         <module>server</module>
         <module>recipes</module>
         <module>dropwizard</module>
@@ -49,7 +50,6 @@
         <module>patches</module>
         <module>test</module>
         <module>schedule</module>
-        <module>spring-2.5</module>
     </modules>
 
     <profiles>

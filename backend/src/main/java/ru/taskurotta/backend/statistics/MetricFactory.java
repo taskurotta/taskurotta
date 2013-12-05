@@ -42,16 +42,22 @@ public class MetricFactory {
 
 
     public Metric getInstance(String name, int dumpPeriodMs, DataListener dataListener) {
-        if(!metricsCache.containsKey(name)) {
+
+        Metric metric = metricsCache.get(name);
+        if (metric == null) {
             synchronized (metricsCache) {
-                if(!metricsCache.containsKey(name)) {
-                    metricsCache.put(name, instantiate(name, dumpPeriodMs, dataListener));
+                metric = metricsCache.get(name);
+                if(metric == null) {
+                    metric = instantiate(name, dumpPeriodMs, dataListener);
+                    metricsCache.put(name, metric);
                 }
             }
         }
 
-        return metricsCache.get(name);
+        return metric;
+
     }
+
 
     public Metric getInstance(String name) {
 

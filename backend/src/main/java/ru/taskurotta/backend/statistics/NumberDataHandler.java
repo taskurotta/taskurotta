@@ -41,15 +41,17 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
     public void handleNumberData(String metricName, String datasetName, Number value, long currentTime, int maxPoints) {
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
-        if(!dataHolder.containsKey(holderKey)) {
+        NumberDataRowVO dataRow = dataHolder.get(holderKey);
+        if(dataRow == null) {
             synchronized (dataHolder) {
-                if(!dataHolder.containsKey(holderKey)) {
-                    dataHolder.put(holderKey, new NumberDataRowVO(maxPoints, metricName, datasetName));
+                dataRow = dataHolder.get(holderKey);
+                if(dataRow == null) {
+                    dataRow = new NumberDataRowVO(maxPoints, metricName, datasetName);
+                    dataHolder.put(holderKey, dataRow);
                 }
             }
         }
 
-        NumberDataRowVO dataRow = dataHolder.get(holderKey);
         int position = dataRow.populate(value, currentTime);
 
         logger.debug("Handled [{}] data for position [{}], metric[{}], dataset[{}], value[{}], measurementTime[{}]", value.getClass(), position, metricName, datasetName, value, currentTime);
@@ -94,6 +96,21 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
         if (value != null) {
             result = new Date(value.getLatestActivity());
         }
+        return result;
+    }
+
+    @Override
+    public Number getLastValue(String metricName, String datasetName) {
+        Number result = null;
+        NumberDataRowVO value = dataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
+        if (value != null) {
+            DataPointVO<Number>[] data = value.getCurrentData();
+            if (data!=null && data.length>0) {
+                MetricsDataUtils.sortDataSet(data);
+                result = data[data.length-1].getValue();
+            }
+        }
+        logger.debug("Last value for metric[{}], dataset[{}] is [{}]", metricName, datasetName, result);
         return result;
     }
 }

@@ -1,5 +1,5 @@
 #Location of Spring application context:
-contextLocation: "classpath*:spring/memory.xml, classpath*:context/console-context.xml"
+contextLocation: "classpath*:spring/memory.xml"
 
 #Used for static resource serving in development mode
 assets:

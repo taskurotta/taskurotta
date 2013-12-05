@@ -25,7 +25,6 @@ public class AssertFlowComparator {
     public static void assertEquals(Task[] expectedTasks, Task[] interceptedTasks,
                                     Promise expectedPromise, Promise interceptedPromise) {
 
-        // There are two distinguished map, but please notice: Better safe than sorry!
         Map<UUID, Integer> expectedTaskUuidToSequenceMap = new HashMap<UUID, Integer>();
         Map<UUID, Integer> interceptedTaskUuidToSequenceMap = new HashMap<UUID, Integer>();
 

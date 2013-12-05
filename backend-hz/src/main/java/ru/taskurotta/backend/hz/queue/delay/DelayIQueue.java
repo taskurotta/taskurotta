@@ -13,17 +13,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class DelayIQueue<E> implements IQueue<E> {
 
-    private final Storage storage;
-    private IQueue queue;
+    private final Storage<E> storage;
+    private IQueue<E> queue;
 
-    protected DelayIQueue(IQueue queue, Storage storage) {
+    protected DelayIQueue(IQueue<E> queue, Storage<E> storage) {
         this.queue = queue;
         this.storage = storage;
     }
 
     @Override
     public boolean add(E e) {
-        return false;
+        return queue.add(e);
     }
 
     public boolean add(E e, int delayTime, TimeUnit unit) {
@@ -56,7 +56,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public E poll(long timeout, TimeUnit unit) throws InterruptedException {
-        return null;
+        return queue.poll(timeout, unit);
     }
 
     @Override
