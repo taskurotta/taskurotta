@@ -27,7 +27,7 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
     private DelayIQueue<UUID> garbageCollectorQueue;
 
     public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
-        this(configBackend, processBackend, graphDao, taskDao, hazelcastInstance, "garbageCollectorQueue", 1);
+        this(configBackend, processBackend, graphDao, taskDao, hazelcastInstance, "garbageCollectorQueue");
     }
 
     public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName) {
@@ -37,7 +37,7 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
     public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName, int poolSize) {
         this.configBackend = configBackend;
 
-        StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance, "dqs#");
+        StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance);
         QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 

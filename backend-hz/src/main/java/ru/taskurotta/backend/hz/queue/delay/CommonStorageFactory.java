@@ -19,6 +19,10 @@ public class CommonStorageFactory implements StorageFactory {
 
     private final IMap<UUID, CommonStorageItem> iMap;
 
+    public CommonStorageFactory(HazelcastInstance hazelcastInstance) {
+        this(hazelcastInstance, "dqs#commonStorage");
+    }
+
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex("enqueueTime", true);
