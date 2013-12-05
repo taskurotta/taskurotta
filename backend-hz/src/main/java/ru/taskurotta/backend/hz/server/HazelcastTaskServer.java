@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.gc.GarbageCollectorBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
@@ -56,7 +57,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     protected HazelcastTaskServer(final ProcessBackend processBackend, final TaskBackend taskBackend,
                                   final QueueBackend queueBackend,
                                   final DependencyBackend dependencyBackend, final ConfigBackend configBackend,
-                                  final BrokenProcessBackend brokenProcessBackend, HazelcastInstance hzInstance,
+                                  final BrokenProcessBackend brokenProcessBackend, final GarbageCollectorBackend garbageCollectorBackend,
+                                  HazelcastInstance hzInstance,
                                   String nodeCustomName, String decisionProcessingExecutorService) {
         this(new BackendBundle() {
             @Override
@@ -87,6 +89,11 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             @Override
             public BrokenProcessBackend getBrokenProcessBackend() {
                 return brokenProcessBackend;
+            }
+
+            @Override
+            public GarbageCollectorBackend getGarbageCollectorBackend() {
+                return garbageCollectorBackend;
             }
         },  hzInstance, nodeCustomName, decisionProcessingExecutorService);
     }

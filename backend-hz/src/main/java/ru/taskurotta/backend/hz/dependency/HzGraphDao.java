@@ -107,12 +107,15 @@ public class HzGraphDao implements GraphDao {
         } finally {
             graphs.unlock(graphId);
         }
+    }
 
+    @Override
+    public void deleteGraph(UUID graphId) {
+        graphs.delete(graphId);
     }
 
     @Override
     public Graph getGraph(UUID graphId) {
-
         return graphs.get(graphId);
     }
 

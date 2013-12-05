@@ -92,7 +92,16 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void deleteTasks(Set<UUID> taskIds, UUID processId) {
-        return id2TaskMap.remove(new TaskKey(processId, taskIds));
+        for (UUID taskId : taskIds) {
+            id2TaskMap.delete(new TaskKey(processId, taskId));
+        }
+    }
+
+    @Override
+    public void deleteDecisions(Set<UUID> decisionsIds, UUID processId) {
+        for (UUID decisionId : decisionsIds) {
+            id2TaskDecisionMap.delete(new TaskKey(processId, decisionId));
+        }
     }
 
     @Override
