@@ -105,9 +105,10 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!--
-                                        <argLine>-javaagent:${project.build.directory}/dependency/aspectjweaver-1.6.7.jar</argLine>
-                    -->
+                    <environmentVariables>
+                        <recipesEnv>${recipesEnv}</recipesEnv>
+                        <endpoint>${endpoint}</endpoint>
+                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>
