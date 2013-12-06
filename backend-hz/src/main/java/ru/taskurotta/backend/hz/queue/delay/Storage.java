@@ -11,4 +11,11 @@ public interface Storage<E> {
 
     public boolean add(E e, long delayTime, TimeUnit unit);
 
+    public boolean remove(E e);
+
+    public boolean contains(E e);
+
+    public void clear();
+
+    public void destroy();
 }

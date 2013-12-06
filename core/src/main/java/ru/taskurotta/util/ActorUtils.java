@@ -54,7 +54,7 @@ public class ActorUtils {
 //    }
 
     public static String toPrefixed(String target, String prefix) {
-        if (target!=null && !target.startsWith(prefix)) {
+        if (target != null && !target.startsWith(prefix)) {
             return prefix + target;
         } else {
             return target;
@@ -63,12 +63,14 @@ public class ActorUtils {
 
     public static List<String> toPrefixed(List<String> target, String prefix) {
         List<String> result = null;
-        if (target!=null && !target.isEmpty()) {
+
+        if (target != null && !target.isEmpty()) {
             result = new ArrayList<>();
             for (String item: target) {
                 result.add(toPrefixed(item, prefix));
             }
         }
+
         return result;
     }
 

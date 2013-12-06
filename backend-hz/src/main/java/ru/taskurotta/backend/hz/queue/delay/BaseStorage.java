@@ -2,6 +2,8 @@ package ru.taskurotta.backend.hz.queue.delay;
 
 import com.hazelcast.core.IMap;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -30,4 +32,32 @@ public class BaseStorage implements Storage {
         return true;
     }
 
+    @Override
+    public boolean remove(Object o) {
+        UUID key = null;
+
+        for (Map.Entry<UUID, BaseStorageItem> entry : storage.entrySet()) {
+            if (entry.getValue().equals(o)) {
+                key = entry.getKey();
+                break;
+            }
+        }
+
+        return key != null && storage.remove(key, o);
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return storage.containsValue(o);
+    }
+
+    @Override
+    public void clear() {
+        storage.clear();
+    }
+
+    @Override
+    public void destroy() {
+        storage.destroy();
+    }
 }

@@ -9,7 +9,7 @@ import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
 import ru.taskurotta.backend.hz.config.HzConfigBackend;
 import ru.taskurotta.backend.hz.dependency.HzGraphDao;
-import ru.taskurotta.backend.hz.queue.HzQueueBackend;
+import ru.taskurotta.backend.hz.queue.HzMongoQueueBackend;
 import ru.taskurotta.backend.hz.storage.HzProcessBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.process.MemoryBrokenProcessBackend;
@@ -43,7 +43,7 @@ public class HzBackendBundle implements BackendBundle {
 
         this.taskBackend = new GeneralTaskBackend(taskDao);
 
-        this.queueBackend = new HzQueueBackend(pollDelay, TimeUnit.SECONDS, hazelcastInstance);
+        this.queueBackend = new HzMongoQueueBackend(pollDelay, TimeUnit.SECONDS, hazelcastInstance);
 
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyBackend = new GeneralDependencyBackend(graphDao);

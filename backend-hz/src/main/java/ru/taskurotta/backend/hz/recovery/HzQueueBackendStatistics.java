@@ -14,10 +14,10 @@ import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.recovery.AbstractQueueBackendStatistics;
 import ru.taskurotta.backend.statistics.MetricFactory;
+import ru.taskurotta.backend.statistics.MetricName;
 import ru.taskurotta.backend.statistics.datalistener.NumberDataListener;
 import ru.taskurotta.backend.statistics.metrics.Metric;
 import ru.taskurotta.backend.statistics.metrics.TimeConstants;
-import ru.taskurotta.backend.statistics.MetricName;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;

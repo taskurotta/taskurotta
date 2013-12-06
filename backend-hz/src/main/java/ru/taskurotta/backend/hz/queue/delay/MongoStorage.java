@@ -13,4 +13,24 @@ public class MongoStorage implements Storage {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public boolean remove(Object o) {
+        return false;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return false;
+    }
+
+    @Override
+    public void clear() {
+
+    }
+
+    @Override
+    public void destroy() {
+
+    }
+
 }
