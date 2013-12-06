@@ -26,7 +26,7 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
-    private long keepTime = 0l;
+    private long keepTime;
 
     public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName, int poolSize, long keepTime) {
         this.configBackend = configBackend;
