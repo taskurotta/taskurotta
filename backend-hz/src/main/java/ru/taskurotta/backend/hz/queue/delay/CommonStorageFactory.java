@@ -32,6 +32,11 @@ public class CommonStorageFactory implements StorageFactory {
             @Override
             public void run() {
                 while (true) {
+
+                    if (iMap.isEmpty()) {
+                        continue;
+                    }
+
                     Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
                             System.currentTimeMillis()));
 

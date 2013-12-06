@@ -42,6 +42,10 @@ public class BaseStorageFactory implements StorageFactory {
 
                         IMap<UUID, BaseStorageItem> iMap = hazelcastInstance.getMap(mapName);
 
+                        if (iMap.isEmpty()) {
+                            continue;
+                        }
+
                         Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
                                 System.currentTimeMillis()));
 
