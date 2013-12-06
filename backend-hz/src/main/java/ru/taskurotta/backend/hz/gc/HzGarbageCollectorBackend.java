@@ -28,16 +28,9 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private long keepTime = 0l;
 
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
-        this(configBackend, processBackend, graphDao, taskDao, hazelcastInstance, "garbageCollectorQueue");
-    }
-
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName) {
-        this(configBackend, processBackend, graphDao, taskDao, hazelcastInstance, garbageCollectorQueueName, 1);
-    }
-
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName, int poolSize) {
+    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName, int poolSize, long keepTime) {
         this.configBackend = configBackend;
+        this.keepTime = keepTime;
 
         StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance);
         QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
@@ -97,9 +90,5 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
                 gc(processId);
             }
         }
-    }
-
-    public void setKeepTime(long keepTime) {
-        this.keepTime = keepTime;
     }
 }

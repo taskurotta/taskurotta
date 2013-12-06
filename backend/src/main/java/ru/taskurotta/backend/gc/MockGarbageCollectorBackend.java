@@ -2,7 +2,6 @@ package ru.taskurotta.backend.gc;
 
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.links.GraphDao;
-import ru.taskurotta.backend.gc.GarbageCollectorBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
