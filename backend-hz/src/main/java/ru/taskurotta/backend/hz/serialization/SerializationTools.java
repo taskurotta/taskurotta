@@ -47,54 +47,60 @@ public class SerializationTools {
         }
     }
 
-
     public static void writeArgsContainerArray(ObjectDataOutput out, ArgContainer[] argContainers) throws IOException {
-        int argContainersCount = (argContainers != null) ? argContainers.length : -1;
-        if (argContainers != null && argContainersCount > 0) {
-            out.writeInt(argContainersCount);
+        int argContainersCount = argContainers != null ? argContainers.length : 0;
+        out.writeInt(argContainersCount);
+        if (argContainersCount > 0) {
             for (int i = 0; i < argContainersCount; i++) {
                 argContainerSerializer.write(out, argContainers[i]);
             }
-        } else {
-            out.writeInt(-1);
         }
     }
 
     public static ArgContainer[] readArgsContainerArray(ObjectDataInput in) throws IOException {
         int argContainersCount = in.readInt();
-        List<ArgContainer> argContainerList = new ArrayList<>();
-        if (argContainersCount != -1) {
-            for (int i = 0; i < argContainersCount; i++) {
-                argContainerList.add(argContainerSerializer.read(in));
-            }
+        ArgContainer[] argContainerList = new ArgContainer[argContainersCount];
+        for (int i = 0; i < argContainersCount; i++) {
+            argContainerList[i] = argContainerSerializer.read(in);
         }
-        ArgContainer[] argContainersArray = new ArgContainer[argContainerList.size()];
-        argContainerList.toArray(argContainersArray);
-        return argContainersArray;
+        return argContainerList;
     }
 
     public static void writeTaskContainerArray(ObjectDataOutput out, TaskContainer[] taskContainers) throws IOException {
-        int taskContainersCount = taskContainers.length;
-        if (taskContainers != null && taskContainersCount > 0) {
-            out.writeInt(taskContainersCount);
+        int taskContainersCount = taskContainers == null ? 0 : taskContainers.length;
+        out.writeInt(taskContainersCount);
+        if (taskContainersCount > 0) {
             for (TaskContainer taskContainer : taskContainers) {
                 taskContainerSerializer.write(out, taskContainer);
             }
-        } else {
-            out.writeInt(-1);
         }
     }
 
     public static TaskContainer[] readTaskContainerArray(ObjectDataInput in) throws IOException {
         int taskContainersCount = in.readInt();
-        List<TaskContainer> taskContainerList = new ArrayList<>();
-        if (taskContainersCount != -1) {
-            for (int i = 0; i < taskContainersCount; i++) {
-                taskContainerList.add(taskContainerSerializer.read(in));
+        TaskContainer[] tasks = new TaskContainer[taskContainersCount];
+        for (int i = 0; i < taskContainersCount; i++) {
+            tasks[i] = taskContainerSerializer.read(in);
+        }
+        return tasks;
+    }
+
+    public static void writeStringArray(ObjectDataOutput out, String[] array) throws IOException {
+        int length = array == null ? 0 : array.length;
+        out.writeInt(length);
+        if (length > 0) {
+            for (String string : array) {
+                writeString(out, string);
             }
         }
-        TaskContainer[] taskContainersArray = new TaskContainer[taskContainerList.size()];
-        taskContainerList.toArray(taskContainersArray);
-        return taskContainersArray;
+    }
+
+    public static String[] readStringArray(ObjectDataInput in) throws IOException {
+        int length = in.readInt();
+        String[] strings = new String[length];
+        for (int i = 0; i < strings.length; i++) {
+            strings[i] = readString(in);
+        }
+        return strings;
     }
 }

@@ -22,6 +22,9 @@ import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -154,16 +157,16 @@ public class GeneralTaskServer implements TaskServer {
 
         if (taskDecision.containsError()) {
 
-            TaskContainer asyncTask = taskBackend.getTask(taskId, processId);
+            TaskContainer task = taskBackend.getTask(taskId, processId);
 
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
                 // enqueue task immediately if needed
                 logger.debug("Error task enqueued again, taskId [{}]", taskId);
-                enqueueTask(taskId, asyncTask.getProcessId(), asyncTask.getActorId(), taskDecision.getRestartTime(), getTaskList(asyncTask));
+                enqueueTask(taskId, task.getProcessId(), task.getActorId(), taskDecision.getRestartTime(), getTaskList(task));
                 return;
             } else {
 
-                if (!asyncTask.isUnsafe()){
+                if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
                     /*
                       ToDo: задача_воркера зависит от этой задачи
                       ToDo: ИЛИ зависящая задача не принимает фэйлы
@@ -202,6 +205,21 @@ public class GeneralTaskServer implements TaskServer {
         logger.debug("Finish processing task decision[{}]", taskId);
     }
 
+    private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {
+        if (null == task.getFailTypes()) {
+            return false;
+        }
+
+        Set<String> failTypes = new HashSet<>(Arrays.asList(task.getFailTypes()));
+
+        for (String errorName : error.getClassNames()) {
+            if (failTypes.contains(errorName)){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void saveBrokenProcess(DecisionContainer taskDecision) {
         UUID processId = taskDecision.getProcessId();
         BrokenProcessVO brokenProcess = new BrokenProcessVO();

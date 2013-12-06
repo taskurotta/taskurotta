@@ -44,7 +44,7 @@ public class InspectorTest {
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, TestWorker.class.getName(), "1.0", "sum");
         Task task = new TaskImpl(UUID.randomUUID(), UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1,
-                new Object[]{1, 2}, null, false);
+                new Object[]{1, 2}, null, null);
         TaskDecision taskDecision = runtimeProcessor.execute(task);
 
         RuntimeProcessor decorateRuntimeProcessor = inspector.decorate(runtimeProcessor);

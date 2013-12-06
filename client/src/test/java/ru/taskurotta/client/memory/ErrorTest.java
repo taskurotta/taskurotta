@@ -33,8 +33,9 @@ public class ErrorTest extends AbstractTestStub {
         assertTaskInProgress(taskAId);
 
         // create B, C tasks
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB", true, new Object[]{}, null);
-        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", false,
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB",
+                new String[]{"java.lang.RuntimeException"}, new Object[]{}, null);
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
                 new Object[]{promise(deciderTaskB)},
                 new TaskOptionsImpl(new ArgType[]{ArgType.NONE}));
 

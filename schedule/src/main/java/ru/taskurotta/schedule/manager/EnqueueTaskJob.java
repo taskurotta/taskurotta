@@ -100,7 +100,7 @@ public class EnqueueTaskJob implements Job {
 
     public static TaskContainer renewTaskGuids(TaskContainer target) {
         UUID newGuid = UUID.randomUUID();
-        return new TaskContainer(newGuid, newGuid, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions(), target.isUnsafe());
+        return new TaskContainer(newGuid, newGuid, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions(), target.getFailTypes());
     }
 
 

@@ -15,33 +15,33 @@ import java.util.UUID;
 public class TestTasks {
 
     public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, Object[] args) {
-        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, null, false);
+        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, null, null);
     }
 
     public static Task newInstance(UUID processId, TaskTarget taskTarget, Object[] args) {
-        return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, null, false);
+        return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, null, null);
     }
 
     public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, taskOptions, false);
+        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, taskOptions, null);
     }
 
-    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions, boolean unsafe) {
-        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, taskOptions, unsafe);
+    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions, String[] failTypes) {
+        return new TaskImpl(taskId, processId, taskTarget, 0, 0, args, taskOptions, failTypes);
     }
 
     public static Task newInstance(UUID processId, TaskTarget taskTarget, Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, taskOptions, false);
+        return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, taskOptions, null);
     }
 
     public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
                                    Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions, false);
+        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions, null);
     }
 
     public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
-                                   Object[] args, TaskOptions taskOptions, boolean unsafe) {
-        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions, unsafe);
+                                   Object[] args, TaskOptions taskOptions, String[] failTypes) {
+        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions, failTypes);
     }
 
 }

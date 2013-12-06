@@ -112,8 +112,10 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
                 int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
 */
-                boolean unsafe = null != method.getAnnotation(AcceptFail.class);
-                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1, unsafe);
+                AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
+                String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
+
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1, failTypes);
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -139,9 +141,10 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
                         int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), ActorSchedulingOptions.class);
                         int positionPromisesWaitFor = positionOfWaitList(method.getParameterTypes(), positionActorSchedulingOptions);
-                        boolean unsafe = null != method.getAnnotation(AcceptFail.class);
+                        AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
+                        String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
 
-                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor, unsafe);
+                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor, failTypes);
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }

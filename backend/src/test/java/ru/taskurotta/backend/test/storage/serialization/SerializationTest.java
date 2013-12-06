@@ -39,8 +39,9 @@ public class SerializationTest {
 
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
+        String[] failTypes = {"java.lang.RuntimeException"};
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, failTypes);
     }
 
     @Test

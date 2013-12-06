@@ -133,18 +133,18 @@ public class AbstractTestStub {
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName) {
-        return deciderTask(id, type, methodName, null, null, false);
+        return deciderTask(id, type, methodName, null, null);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object... args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null, true);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
         return task;
     }
 
-    public static Task deciderTask(UUID id, TaskType type, String methodName, boolean unsafe, Object[] args, TaskOptions taskOptions) {
+    public static Task deciderTask(UUID id, TaskType type, String methodName, String[] failTypes, Object[] args, TaskOptions taskOptions) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions, unsafe);
+        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions, failTypes);
         return task;
     }
 

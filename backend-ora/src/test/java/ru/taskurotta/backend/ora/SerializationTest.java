@@ -46,9 +46,9 @@ public class SerializationTest {
         ActorSchedulingOptionsContainer actorSchedulingOptions = new ActorSchedulingOptionsContainer();
         actorSchedulingOptions.setCustomId(null);
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actorSchedulingOptions, null);
+        String[] failTypes = {"java.lang.RuntimeException"};
 
-
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, failTypes);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError, UUID taskId) {

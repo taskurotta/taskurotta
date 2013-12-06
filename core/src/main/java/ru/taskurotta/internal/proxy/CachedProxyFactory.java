@@ -82,4 +82,12 @@ abstract public class CachedProxyFactory implements ProxyFactory {
 
         return -1;
     }
+
+    protected String[] getFailNames(Class[] failTypes) {
+        String[] result = new String[failTypes.length];
+        for (int i=0; i<failTypes.length; i++) {
+            result[i] = failTypes[i].getName();
+        }
+        return result;
+    }
 }

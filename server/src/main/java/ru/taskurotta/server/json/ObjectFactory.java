@@ -217,7 +217,7 @@ public class ObjectFactory {
         }
 
         return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
-                taskContainer.getNumberOfAttempts(), args, null, taskContainer.isUnsafe());
+                taskContainer.getNumberOfAttempts(), args, null, taskContainer.getFailTypes());
     }
 
 
@@ -241,7 +241,7 @@ public class ObjectFactory {
         TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
         return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target), target.getType(),
-                task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer, task.isUnsafe());
+                task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer, task.getFailTypes());
     }
 
 

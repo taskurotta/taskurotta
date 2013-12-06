@@ -14,7 +14,7 @@ public class MethodDescriptor {
 
 	private TaskTarget taskTarget;
 	private ArgType[] argTypes;
-    private boolean unsafe;
+    private String[] failTypes;
 
 	public MethodDescriptor(TaskType type, String name, String version, String method) {
 		this(new TaskTargetImpl(type, name, version, method));
@@ -29,12 +29,12 @@ public class MethodDescriptor {
 		this.argTypes = argTypes;
 	}
 
-    public MethodDescriptor(TaskTarget taskTarget, ArgType[] argTypes, int positionActorSchedulingOptions, int positionPromisesWaitFor, boolean unsafe) {
+    public MethodDescriptor(TaskTarget taskTarget, ArgType[] argTypes, int positionActorSchedulingOptions, int positionPromisesWaitFor, String[] failTypes) {
         this.taskTarget = taskTarget;
         this.argTypes = argTypes;
         this.positionActorSchedulingOptions = positionActorSchedulingOptions;
         this.positionPromisesWaitFor = positionPromisesWaitFor;
-        this.unsafe = unsafe;
+        this.failTypes = failTypes;
     }
 
 	public TaskTarget getTaskTarget() {
@@ -53,7 +53,7 @@ public class MethodDescriptor {
         return positionPromisesWaitFor;
     }
 
-    public boolean isUnsafe() {
-        return unsafe;
+    public String[] getFailTypes() {
+        return failTypes;
     }
 }

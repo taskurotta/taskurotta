@@ -71,4 +71,10 @@ public interface Task {
      * with such tasks.
      */
     public boolean isUnsafe();
+
+    /**
+     *
+     * @return array of class names of exception classes
+     */
+    public String[] getFailTypes();
 }
