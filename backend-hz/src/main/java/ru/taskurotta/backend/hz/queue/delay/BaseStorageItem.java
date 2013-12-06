@@ -7,12 +7,12 @@ import java.io.Serializable;
 * Date: 04.12.13
 * Time: 18:57
 */
-class BaseStorageItem implements Serializable {
+public class BaseStorageItem implements Serializable {
 
     private Object object;
     private long enqueueTime;
 
-    BaseStorageItem(Object object, long enqueueTime) {
+    public BaseStorageItem(Object object, long enqueueTime) {
         this.object = object;
         this.enqueueTime = enqueueTime;
     }

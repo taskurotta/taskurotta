@@ -35,9 +35,9 @@ import java.util.concurrent.locks.Lock;
 /**
  * Created by void, dudin 07.06.13 11:00
  */
-public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
+public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
 
-    private final static Logger logger = LoggerFactory.getLogger(HzQueueBackend.class);
+    private final static Logger logger = LoggerFactory.getLogger(HzMongoQueueBackend.class);
 
     private final static String DELAYED_TASKS_LOCK = "DELAYED_TASKS_LOCK";
 
@@ -63,7 +63,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         this.hzQueueConfigSupport = hzQueueConfigSupport;
     }
 
-    public HzQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
+    public HzMongoQueueBackend(int pollDelay, TimeUnit pollDelayUnit, HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
         this.pollDelay = pollDelay;
         this.pollDelayUnit = pollDelayUnit;
@@ -174,7 +174,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (hzQueueConfigSupport != null) {
                 hzQueueConfigSupport.createQueueConfig(queueName);
             } else {
-                logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzQueueBackend, queues are not persistent!");
+                logger.warn("WARNING: hzQueueConfigSupport implementation is not set to HzMongoQueueBackend, queues are not persistent!");
             }
 
             queue = hazelcastInstance.getQueue(queueName);//never null
@@ -201,7 +201,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (hzMapConfigSpringSupport != null) {
                 hzMapConfigSpringSupport.createMapConfig(queueName);
             } else {
-                logger.warn("WARNING: hzMapConfigSpringSupport implementation is not set to HzQueueBackend, delayed queues are not persistent!");
+                logger.warn("WARNING: hzMapConfigSpringSupport implementation is not set to HzMongoQueueBackend, delayed queues are not persistent!");
             }
 
             map = hazelcastInstance.getMap(queueName);

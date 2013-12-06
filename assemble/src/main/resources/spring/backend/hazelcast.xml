@@ -22,7 +22,7 @@
     </bean>
 
     <!-- Backends -->
-    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzMongoQueueBackend">
         <constructor-arg name="pollDelay" value="${pollDelay}"/>
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
