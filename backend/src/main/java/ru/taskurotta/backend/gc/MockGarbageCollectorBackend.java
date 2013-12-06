@@ -16,7 +16,7 @@ public class MockGarbageCollectorBackend implements GarbageCollectorBackend {
 
     public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {}
 
-    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, Object hazelcastInstance) {}
+    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, Object hazelcastInstance, String garbageCollectorQueueName, int poolSize, long keepTime) {}
 
     @Override
     public void delete(UUID processId, String actorId) {
