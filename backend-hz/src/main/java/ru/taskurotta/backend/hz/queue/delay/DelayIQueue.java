@@ -8,9 +8,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-/**
- * TODO: implement all methods as proxy to call original queue.
- */
 public class DelayIQueue<E> implements IQueue<E> {
 
     private final Storage<E> storage;
@@ -36,22 +33,22 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean offer(E e) {
-        return false;
+        return queue.offer(e);
     }
 
     @Override
     public void put(E e) throws InterruptedException {
-
+        queue.put(e);
     }
 
     @Override
     public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
-        return false;
+        return queue.offer(e, timeout, unit);
     }
 
     @Override
     public E take() throws InterruptedException {
-        return null;
+        return queue.take();
     }
 
     @Override
@@ -61,136 +58,138 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public int remainingCapacity() {
-        return 0;
+        return queue.remainingCapacity();
     }
 
     @Override
     public boolean remove(Object o) {
-        return false;
+        return queue.remove(o) || storage.remove((E) o);
     }
 
     @Override
     public boolean contains(Object o) {
-        return false;
+        return queue.contains(o) || storage.contains((E) o);
     }
 
     @Override
     public int drainTo(Collection<? super E> c) {
-        return 0;
+        return queue.drainTo(c);
     }
 
     @Override
     public int drainTo(Collection<? super E> c, int maxElements) {
-        return 0;
+        return queue.drainTo(c, maxElements);
     }
 
     @Override
     public E remove() {
-        return null;
+        return queue.remove();
     }
 
     @Override
     public E poll() {
-        return null;
+        return queue.poll();
     }
 
     @Override
     public E element() {
-        return null;
+        return queue.element();
     }
 
     @Override
     public E peek() {
-        return null;
+        return queue.peek();
     }
 
     @Override
     public int size() {
-        return 0;
+        return queue.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return queue.isEmpty();
     }
 
     @Override
     public Iterator<E> iterator() {
-        return null;
+        return queue.iterator();
     }
 
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        return queue.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return null;
+        return queue.toArray(a);
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return false;
+        return queue.containsAll(c);
     }
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        return false;
+        return queue.addAll(c);
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return false;
+        return queue.retainAll(c);
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return false;
+        return queue.retainAll(c);
     }
 
     @Override
     public void clear() {
-
+        storage.clear();
+        queue.clear();
     }
 
     @Override
     public LocalQueueStats getLocalQueueStats() {
-        return null;
+        return queue.getLocalQueueStats();
     }
 
     @Override
     public String addItemListener(ItemListener<E> listener, boolean includeValue) {
-        return null;
+        return queue.addItemListener(listener, includeValue);
     }
 
     @Override
     public boolean removeItemListener(String registrationId) {
-        return false;
+        return queue.removeItemListener(registrationId);
     }
 
     @Override
     public Object getId() {
-        return null;
+        return queue.getId();
     }
 
     @Override
     public String getPartitionKey() {
-        return null;
+        return queue.getPartitionKey();
     }
 
     @Override
     public String getName() {
-        return null;
+        return queue.getName();
     }
 
     @Override
     public String getServiceName() {
-        return null;
+        return queue.getServiceName();
     }
 
     @Override
     public void destroy() {
-
+        storage.destroy();
+        queue.destroy();
     }
 }

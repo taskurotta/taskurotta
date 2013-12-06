@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicates;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -70,7 +71,34 @@ public class CommonStorageFactory implements StorageFactory {
                 return true;
             }
 
+            @Override
+            public boolean remove(Object o) {
+                UUID key = null;
+
+                for (Map.Entry<UUID, CommonStorageItem> entry : iMap.entrySet()) {
+                    if (entry.getValue().equals(o)) {
+                        key = entry.getKey();
+                        break;
+                    }
+                }
+
+                return key != null && iMap.remove(key, o);
+            }
+
+            @Override
+            public boolean contains(Object o) {
+                return iMap.containsValue(o);
+            }
+
+            @Override
+            public void clear() {
+                iMap.clear();
+            }
+
+            @Override
+            public void destroy() {
+                iMap.destroy();
+            }
         };
     }
-
 }
