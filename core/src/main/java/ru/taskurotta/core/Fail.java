@@ -1,5 +1,7 @@
 package ru.taskurotta.core;
 
+import java.util.Arrays;
+
 /**
  * Created by void 25.11.13 19:51
  */
@@ -34,5 +36,13 @@ public class Fail {
             }
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Fail{" +
+                "message='" + message + '\'' +
+                ", types=" + Arrays.toString(types) +
+                '}';
     }
 }

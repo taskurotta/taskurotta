@@ -206,7 +206,7 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {
-        if (null == task.getFailTypes()) {
+        if (task.getFailTypes() == null) {
             return false;
         }
 

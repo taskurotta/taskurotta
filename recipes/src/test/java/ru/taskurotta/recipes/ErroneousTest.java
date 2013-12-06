@@ -19,7 +19,7 @@ public class ErroneousTest {
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException, InterruptedException {
         new Bootstrap("ru/taskurotta/recipes/erroneous/conf.yml").start();
 
-        TimeUnit.SECONDS.sleep(3); // ToDo: need arbiter here
+        TimeUnit.SECONDS.sleep(5); // ToDo: need arbiter here
 
         log.info("test finished");
     }

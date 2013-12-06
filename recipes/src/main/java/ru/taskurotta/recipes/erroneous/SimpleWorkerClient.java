@@ -1,5 +1,6 @@
 package ru.taskurotta.recipes.erroneous;
 
+import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.annotation.WorkerClient;
 import ru.taskurotta.core.Promise;
 
@@ -8,6 +9,9 @@ import ru.taskurotta.core.Promise;
  */
 @WorkerClient(worker = SimpleWorker.class)
 public interface SimpleWorkerClient {
+
+    @AcceptFail(type = RuntimeException.class)
     Promise<Integer> createNumber();
+
     Promise<Integer> print(Promise<Integer> number);
 }
