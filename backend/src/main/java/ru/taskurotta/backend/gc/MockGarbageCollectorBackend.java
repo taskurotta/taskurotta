@@ -1,6 +1,5 @@
-package ru.taskurotta.backend.hz.gc;
+package ru.taskurotta.backend.gc;
 
-import com.hazelcast.core.HazelcastInstance;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
@@ -16,7 +15,9 @@ import java.util.UUID;
  */
 public class MockGarbageCollectorBackend implements GarbageCollectorBackend {
 
-    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance) {}
+    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {}
+
+    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, Object hazelcastInstance) {}
 
     @Override
     public void delete(UUID processId, String actorId) {
