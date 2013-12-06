@@ -13,20 +13,30 @@
     <!-- /Config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
     </bean>
 
-    <bean id="queueFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="storageFactory" ref="storageFactory"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
+    </bean>
+
+    <bean id="storageFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="mapStoragePrefix" value="${gc.mapStoragePrefix}"/>
+    </bean>
+
+    <bean id="queueFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
     <!-- /Delay queue support -->
 
     <!-- Backends -->
     <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
-        <constructor-arg name="queueFactory" ref="queueFactory"/>
+        <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
@@ -84,7 +94,7 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="queueFactory" ref="queueFactoryForGC"/>
         <constructor-arg name="garbageCollectorQueueName" value="${gc.queueName}"/>
         <constructor-arg name="poolSize" value="${gc.poolSize}"/>
         <constructor-arg name="keepTime" value="${gc.keepTime}"/>

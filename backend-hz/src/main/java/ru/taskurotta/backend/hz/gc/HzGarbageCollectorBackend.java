@@ -1,16 +1,12 @@
 package ru.taskurotta.backend.hz.gc;
 
-import com.hazelcast.core.HazelcastInstance;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.AbstractGCTask;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
-import ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory;
-import ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory;
 import ru.taskurotta.backend.hz.queue.delay.DelayIQueue;
 import ru.taskurotta.backend.hz.queue.delay.QueueFactory;
-import ru.taskurotta.backend.hz.queue.delay.StorageFactory;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 
@@ -28,12 +24,9 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private long keepTime;
 
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, HazelcastInstance hazelcastInstance, String garbageCollectorQueueName, int poolSize, long keepTime) {
+    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName, int poolSize, long keepTime) {
         this.configBackend = configBackend;
         this.keepTime = keepTime;
-
-        StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance);
-        QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
