@@ -43,7 +43,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private transient final ReentrantLock lock = new ReentrantLock();
     private Map<String, DelayIQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
 
     public HzQueueBackend(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix) {
@@ -198,10 +198,10 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         DelayIQueue<TaskQueueItem> queue = queueMap.get(queueName);
 
         if (queue == null) {
-            final ReentrantLock lock = this.lock;
-            try {
-                lock.lock();
 
+            final ReentrantLock lock = this.lock;
+            lock.lock();
+            try {
                 queue = queueMap.get(queueName);
                 if (queue == null) {
                     queue = queueFactory.create(queueName);
