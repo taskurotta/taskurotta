@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueueStatVO;
+import ru.taskurotta.backend.hz.queue.HzMongoQueueBackend;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.recovery.AbstractQueueBackendStatistics;
@@ -40,7 +41,7 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
 
     private static final String SYNCH_LOCK_NAME = HzQueueBackendStatistics.class.getName().concat("#SINCH_LOCK");
 
-    private HzQueueBackend queueBackend;
+    private HzMongoQueueBackend queueBackend;
     private HazelcastInstance hzInstance;
     private ILock synchLock;
 
@@ -144,7 +145,7 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
     }
 
 
-    public HzQueueBackendStatistics(HzQueueBackend queueBackend, HazelcastInstance hzInstance) {
+    public HzQueueBackendStatistics(HzMongoQueueBackend queueBackend, HazelcastInstance hzInstance) {
         super(queueBackend);
 
         this.queueBackend = queueBackend;
