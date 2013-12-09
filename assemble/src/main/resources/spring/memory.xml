@@ -72,8 +72,8 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
-
-        <property name="keepTime" value="${gc.keepTime}"/>
+        <constructor-arg name="poolSize" value="${gc.poolSize}"/>
+        <constructor-arg name="delayTime" value="${gc.delayTime}"/>
     </bean>
     <!-- /Backends -->
 
