@@ -9,8 +9,8 @@ public class CommonStorageItem extends BaseStorageItem {
 
     private String queueName;
 
-    public CommonStorageItem(Object object, long keepBeforeTime, String queueName) {
-        super(object, keepBeforeTime);
+    public CommonStorageItem(Object object, long enqueueTime, String queueName) {
+        super(object, enqueueTime);
         this.queueName = queueName;
     }
 
