@@ -51,7 +51,7 @@ public class GeneralRuntimeProcessorTest {
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
         TaskDecision taskDecision = runtimeProcessor.execute(task);
-        Assert.assertEquals(true, taskDecision.isError());
+        Assert.assertTrue(taskDecision.isError());
         Assert.assertEquals(UndefinedActorException.class, taskDecision.getException().getClass());
     }
 
@@ -65,8 +65,8 @@ public class GeneralRuntimeProcessorTest {
         Task task = TestTasks.newInstance(UUID.randomUUID(), taskTarget, null);
 
         TaskDecision taskDecision = runtimeProcessor.execute(task);
-        Assert.assertEquals(true, taskDecision.isError());
-        Assert.assertEquals(InvocationTargetException.class, taskDecision.getException().getClass());
+        Assert.assertTrue(taskDecision.isError());
+        Assert.assertEquals(RuntimeException.class, taskDecision.getException().getClass());
     }
 
 }
