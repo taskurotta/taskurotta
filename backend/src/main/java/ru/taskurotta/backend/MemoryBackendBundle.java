@@ -41,7 +41,7 @@ public class MemoryBackendBundle implements BackendBundle {
         this.dependencyBackend = new GeneralDependencyBackend(memoryGraphDao);
         this.configBackend = new MemoryConfigBackend();
         this.brokenProcessBackend = new MemoryBrokenProcessBackend();
-        this.garbageCollectorBackend = new MemoryGarbageCollectorBackend(configBackend, processBackend, memoryGraphDao, taskDao);
+        this.garbageCollectorBackend = new MemoryGarbageCollectorBackend(configBackend, processBackend, memoryGraphDao, taskDao, 1, 0l);
     }
 
     @Override

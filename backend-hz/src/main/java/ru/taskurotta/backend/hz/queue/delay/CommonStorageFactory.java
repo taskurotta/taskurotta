@@ -20,10 +20,6 @@ public class CommonStorageFactory implements StorageFactory {
 
     private final IMap<UUID, CommonStorageItem> iMap;
 
-    public CommonStorageFactory(HazelcastInstance hazelcastInstance) {
-        this(hazelcastInstance, "dqs#commonStorage");
-    }
-
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex("enqueueTime", true);
@@ -92,12 +88,12 @@ public class CommonStorageFactory implements StorageFactory {
 
             @Override
             public void clear() {
-                iMap.clear();
+                // don't clear, because it's common storage for all queues
             }
 
             @Override
             public void destroy() {
-                iMap.destroy();
+                // don't destroy, because it's common storage for all queues
             }
         };
     }

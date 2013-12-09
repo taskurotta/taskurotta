@@ -23,10 +23,6 @@ public class BaseStorageFactory implements StorageFactory {
 
     private Map<String, String> queueMaps = new ConcurrentHashMap<>();
 
-    public BaseStorageFactory(HazelcastInstance hazelcastInstance) {
-        this(hazelcastInstance, "dqs#");
-    }
-
     public BaseStorageFactory(final HazelcastInstance hazelcastInstance, String mapStoragePrefix) {
         this.hazelcastInstance = hazelcastInstance;
         this.mapStoragePrefix = mapStoragePrefix;
