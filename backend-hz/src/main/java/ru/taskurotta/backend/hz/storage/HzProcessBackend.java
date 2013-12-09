@@ -38,6 +38,7 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setStartTime(System.currentTimeMillis());
         process.setProcessUuid(task.getProcessId());
         process.setStartTaskUuid(task.getTaskId());
+        process.setStartTask(task);
         hzInstance.getMap(processesStorageMapName).set(task.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
     }
 
@@ -50,6 +51,11 @@ public class HzProcessBackend implements ProcessBackend, ProcessInfoRetriever {
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValueJson(returnValue);
         processMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
+    }
+
+    @Override
+    public void deleteProcess(UUID processId) {
+        hzInstance.getMap(processesStorageMapName).delete(processId);
     }
 
     @Override

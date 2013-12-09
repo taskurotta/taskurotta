@@ -1,14 +1,31 @@
-angular.module("console.directives", [])
+angular.module("console.directives", ['ngRoute'])
 
-.directive('tskPaginator', ['$http', function ($http) {
+.directive('tskPaginator', ['$cookieStore', function ($cookieStore) {
     return {
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
         scope: {
             genericPage: "=genericPage",
-            updateAction: "&updateAction"
+            updateAction: "&updateAction",
+            store: "@"
         },
         controller: ['$scope', '$element', '$attrs', '$transclude', function ($scope, $element, $attrs, $transclude) {
+
+
+            if ($scope.store && $scope.store.length>0) {
+                $scope.$watch('genericPage.pageNumber', function() {
+                    $cookieStore.put($scope.store, {
+                        pageNumber: $scope.genericPage.pageNumber,
+                        pageSize: $scope.genericPage.pageSize
+                    });
+                });
+                $scope.$watch('genericPage.pageSize', function() {
+                    $cookieStore.put($scope.store, {
+                        pageNumber: $scope.genericPage.pageNumber,
+                        pageSize: $scope.genericPage.pageSize
+                    });
+                });
+            }
 
             $scope.updatePageSize = function () {
 
@@ -22,6 +39,9 @@ angular.module("console.directives", [])
 
             //Show previous page
             $scope.prevPage = function () {
+                if ($scope.isPrevDisabled()) {
+                    return;
+                }
                 if ($scope.genericPage.pageNumber > 1) {
                     $scope.genericPage.pageNumber--;
                 }
@@ -56,6 +76,9 @@ angular.module("console.directives", [])
 
             //Show next page
             $scope.nextPage = function () {
+                if ($scope.isNextDisabled()) {
+                   return;
+                }
                 if ($scope.genericPage.pageNumber < $scope.totalPages()) {
                     $scope.genericPage.pageNumber++;
                 }
@@ -64,14 +87,31 @@ angular.module("console.directives", [])
             };
 
             $scope.firstPage = function () {
+                if ($scope.isPrevDisabled()) {
+                    return;
+                }
                 $scope.genericPage.pageNumber = 1;
                 $scope.updateAction();
             };
 
             $scope.lastPage = function () {
+                if ($scope.isNextDisabled()) {
+                    return;
+                }
                 $scope.genericPage.pageNumber = $scope.totalPages();
                 $scope.updateAction();
             };
+
+            $scope.isNextDisabled = function() {
+                return (
+                    $scope.genericPage.pageNumber >= $scope.totalPages()
+                );
+            };
+
+            $scope.isPrevDisabled = function() {
+                return $scope.genericPage.pageNumber == 1;
+            };
+
         }],
         templateUrl: "/partials/widget/paginator_bar.html",
         replace: true
@@ -83,16 +123,16 @@ angular.module("console.directives", [])
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
         scope: {
-            updateAction: "&updateAction"
+            updateAction: "&",
+            refreshRate: "="
         },
         controller: ['$scope', '$element', '$attrs', '$transclude', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $$timeUtil) {
-            $scope.refreshRate = 0;
+
+            $scope.refreshRates = [0, 1, 3, 5, 10];
 
             //Auto refresh feature. triggers auto refreshing on refresh rate changes
             var currentRefreshIntervalId = -1;
-            $scope.$watch(function () {
-                return $scope.refreshRate;
-            }, function (value) {
+            $scope.$watch('refreshRate', function (value) {
                 if (currentRefreshIntervalId > 0) {
                     $$timeUtil.clearInterval(currentRefreshIntervalId);
                 }

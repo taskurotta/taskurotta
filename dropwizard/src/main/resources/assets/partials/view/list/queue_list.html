@@ -11,42 +11,98 @@
     <div ng-hide="!angular.isDefined(feedback)" class="err-message">Error at updating: <span>{{feedback}}</span></div>
 
     <div class="well" style="margin:5px;">
-        <div style="float:left">
-            <div tsk-autorefresh update-action="update()"></div>
+        <div style="float: left;">
+            <span class="muted"><b>Filter: </b></span>
+            <input ng-model="selection.filter" type="text" class="search-query" />
+            <i class="icon-question-sign" popover="Filter queue list by *starts with* condition" popover-trigger="mouseenter" />
         </div>
-
         <div style="float: right;">
-            <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
-            <button class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></button>
+            <button class="btn btn-small" ng-click="refresh()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></button>
         </div>
         <table class="table table-striped table-bordered table-hover">
             <thead>
-                <th style="width: 10%">№</th>
-                <th>Queue name</th>
-                <th style="width: 15%">Tasks count</th>
+                <th style="width: 25px">
+                    <small>№</small>
+                </th>
+                <th>
+                    <small>Name</small>
+                </th>
+                <th>
+                    <small>Last polled</small>
+                </th>
+                <th>
+                    <small>Balance</small>
+                    <select style="width:90px;" class="btn btn-mini" ng-model="selection.balancePeriod" ng-options = "bp for bp in balancePeriods" /><span class="caret"></span>
+                </th>
+                <th style="width: 50px">
+                    <small>Size <span class="icon-question-sign" popover="Value is measured by metrics handler and could be several seconds delayed from real current size" popover-trigger="mouseenter"/></small>
+                </th>
             </thead>
 
             <tfoot>
-                <td colspan="3">
-                    <tsk-paginator generic-page="queuesPage" update-action="update()"></tsk-paginator>
+                <td colspan="5">
+                    <tsk-paginator generic-page="queuesPage" update-action="update()" store="queue.list.pagination"></tsk-paginator>
                 </td>
             </tfoot>
 
             <tbody>
-            <tr ng-if="!initialized">
-                <td colspan="3" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
-            </tr>
-            <tr ng-repeat="queue in queuesPage.items">
-                <td>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</td>
-                <td>
-                    <a clas="btn btn-link" style="cursor: pointer;"
-                       ng-href="#/queues/queue/{{encodeURI(queue.name)}}">{{queue.name}}</a>
-                </td>
-                <td>{{queue.count}}</td>
-            </tr>
+                <tr ng-if="!initialized">
+                    <td colspan="5" style="text-align: center;"><img src="/img/ajax-loader.gif"/></td>
+                </tr>
+                <tr ng-if="initialized" ng-repeat="queue in queuesPage.items">
+                    <td>
+                        <small>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</small></td>
+                    <td>
+                        <small><a clas="btn btn-link" style="cursor: pointer;"
+                           ng-href="#/queues/queue/{{encodeURI(queue.name)}}"><b>{{queue.name}}</b></a></small>
+                    </td>
+                    <td>
+                        <small>{{queue.lastActivity | date:'dd.MM.yyyy HH:mm:ss'}}</small>
+                    </td>
+                    <td>
+                        <small ng-if="selection.balancePeriod == 'Last hour'">
+                            In: <b ng-if="queue.inHour>=0">{{queue.inHour}}</b>, out: <b ng-if="queue.outHour>=0">{{queue.outHour}}</b>
+                        </small>
+
+                        <small ng-if="selection.balancePeriod == 'Last day'">
+                            In: <b ng-if="queue.inDay>=0">{{queue.inDay}}</b>, out: <b ng-if="queue.outDay>=0">{{queue.outDay}}</b>
+                        </small>
+
+                        <hr style="margin: 1px 5px 1px 5px;padding:0;"/>
+                        <small class="muted">By <b>{{queue.nodes || 0}}</b> nodes</small>
+                    </td>
+                    <td style="width:100px;vertical-align:top;">
+                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                                <td width="80px;" style="font-size: 12px;">
+                                    <b>{{queue.count}}
+                                        <span ng-if="hasCurrentSizeValue($index)" class="muted" style="font-size: 10px;">/{{ realSizes[$index] }}</span>
+                                    </b>
+                                </td>
+                                <td style="text-align:right;vertical-align:top;">
+                                    <button class="btn btn-mini" popover="Show current size" popover-trigger="mouseenter" ng-click="showRealSize(queue.name, $index)"><span class="icon-eye-open" /></button>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
-        <div>Total: <b>{{totalTasks()}}</b> tasks in <b>{{queuesPage.items.length}}</b> queues</div>
+        <div>
+            <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                    <td style="text-align: left;width:50%">
+                        <div>Total: <b>{{totalTasks()}}</b> tasks in <b>{{queuesPage.items.length}}</b> queues</div>
+                    </td>
+                    <td style="text-align: right;">
+                        <div tsk-autorefresh update-action="update()" refresh-rate="selection.initialRefreshRate"></div>
+                    </td>
+                    <td style="text-align: left;width: 30px;">
+                        <img src="/img/loader-arrows.gif" style="margin: 5px;display: none;" id="loading" />
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>

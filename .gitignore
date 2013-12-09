@@ -11,6 +11,7 @@ logs/
 .idea/
 target/
 */target/
+assemble/dependency-reduced-pom.xml
 
 # Eclipse
 *.pydevproject

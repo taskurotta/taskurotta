@@ -7,6 +7,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -30,7 +31,9 @@ public interface TaskDao {
 
     List<TaskContainer> getRepeatedTasks(int iterationCount);
 
-    TaskContainer removeTask(UUID taskId, UUID processId);
+    void deleteTasks(Set<UUID> taskIds, UUID processId);
+
+    void deleteDecisions(Set<UUID> decisionsIds, UUID processId);
 
     void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds);
 

@@ -1,0 +1,62 @@
+#Location of Spring application context:
+contextLocation: "classpath*:spring/mock.xml"
+
+#Used for static resource serving in development mode
+assets:
+  overrides:
+    /: ../../dropwizard/src/main/resources/assets/
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default"
+
+#Task server common properties (will be available as placeholders in spring context):
+properties:
+  pollDelay: 10
+  pollDelayUnit: "SECONDS"
+
+#Http server configuration:
+logging:
+    level: WARN
+    loggers:
+        ru.taskurotta: INFO
+#        ru.taskurotta.backend.statistics.datalistener TRACE
+#        ru.taskurotta: INFO
+#        ru.taskurotta.backend.statistics.datalisteners: TRACE
+#        ru.taskurotta.backend.statistics.metrics: TRACE
+#        ru.taskurotta.recovery: DEBUG
+#        ru.taskurotta.backend.recovery: DEBUG
+#        ru.taskurotta.backend.hz.support: DEBUG
+#        ru.taskurotta.backend.hz.recovery: DEBUG
+#        ru.taskurotta.backend.hz.dependency: DEBUG
+#        ru.taskurotta.dropwizard.server.core: INFO
+#        ru.taskurotta.server: INFO
+#        ru.taskurotta.dropwizard.hz: INFO
+#        ru.taskurotta.backend.hz.server: INFO
+#        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
+        com.yammer: INFO
+        ru.taskurotta.dropwizard.server.core: DEBUG
+    file:
+        enabled: true
+        archive: true
+        currentLogFilename: ./target/logs/service.log
+        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+        logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
+http:
+    rootPath: "/rest/*"
+    gzip:
+        enabled: false
+    requestLog:
+        file:
+            enabled: false
+            archive: true
+            currentLogFilename: ./target/logs/requests.log
+            archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
+        console:
+            enabled: false
+
+
+#config can be extended here
+#http://dropwizard.codahale.com/manual/core/#configuration-defaults

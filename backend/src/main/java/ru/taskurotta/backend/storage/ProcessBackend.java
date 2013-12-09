@@ -15,6 +15,8 @@ public interface ProcessBackend {
 
     public void finishProcess(UUID processId, String returnValue);
 
+    public void deleteProcess(UUID processId);
+
     /**
      * Get start task for process by it's id
      *

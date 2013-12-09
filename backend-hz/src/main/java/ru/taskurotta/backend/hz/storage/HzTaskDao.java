@@ -4,6 +4,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.backend.hz.TaskKey;
@@ -11,11 +13,7 @@ import ru.taskurotta.backend.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,25 +23,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class HzTaskDao implements TaskDao {
 
+    private static final Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
+
     private HazelcastInstance hzInstance;
 
-    private String id2TaskMapName = "id2TaskMap";
-    private String id2TaskDecisionMapName = "id2TaskDecisionMap";
     private IMap<TaskKey, TaskContainer> id2TaskMap;
     private IMap<TaskKey, DecisionContainer> id2TaskDecisionMap;
 
-    public HzTaskDao(HazelcastInstance hzInstance) {
+    public HzTaskDao(HazelcastInstance hzInstance, String id2TaskMapName, String id2TaskDecisionMapName) {
         this.hzInstance = hzInstance;
-    }
 
-    public void init() {
         id2TaskMap = hzInstance.getMap(id2TaskMapName);
         id2TaskDecisionMap = hzInstance.getMap(id2TaskDecisionMapName);
     }
 
     @Override
     public void addDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision, 0, TimeUnit.NANOSECONDS);
+        logger.debug("Storing decision [{}]", taskDecision);
+        id2TaskDecisionMap.set(new TaskKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
     }
 
     @Override
@@ -58,7 +55,9 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.get(new TaskKey(processId, taskId));
+        DecisionContainer result =  id2TaskDecisionMap.get(new TaskKey(processId, taskId));
+        logger.debug("Getting decision [{}]", result);
+        return result;
     }
 
     @Override
@@ -92,8 +91,17 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public TaskContainer removeTask(UUID taskId, UUID processId) {
-        return id2TaskMap.remove(new TaskKey(processId, taskId));
+    public void deleteTasks(Set<UUID> taskIds, UUID processId) {
+        for (UUID taskId : taskIds) {
+            id2TaskMap.delete(new TaskKey(processId, taskId));
+        }
+    }
+
+    @Override
+    public void deleteDecisions(Set<UUID> decisionsIds, UUID processId) {
+        for (UUID decisionId : decisionsIds) {
+            id2TaskDecisionMap.delete(new TaskKey(processId, decisionId));
+        }
     }
 
     @Override
@@ -130,14 +138,6 @@ public class HzTaskDao implements TaskDao {
             }));
         }
         return result;
-    }
-
-    public void setId2TaskMapName(String id2TaskMapName) {
-        this.id2TaskMapName = id2TaskMapName;
-    }
-
-    public void setId2TaskDecisionMapName(String id2TaskDecisionMapName) {
-        this.id2TaskDecisionMapName = id2TaskDecisionMapName;
     }
 
 }

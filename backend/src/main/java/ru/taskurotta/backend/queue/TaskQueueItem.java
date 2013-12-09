@@ -22,10 +22,6 @@ public class TaskQueueItem implements Serializable {
         return queueName;
     }
 
-    public void setQueueName(String queueName) {
-        this.queueName = queueName;
-    }
-
     public UUID getTaskId() {
         return taskId;
     }
@@ -64,6 +60,18 @@ public class TaskQueueItem implements Serializable {
 
     public void setTaskList(String taskList) {
         this.taskList = taskList;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
 
     @Override

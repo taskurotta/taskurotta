@@ -1,13 +1,17 @@
 package ru.taskurotta.backend.hz.server;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.ILock;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.PartitionAware;
+import com.hazelcast.spring.context.SpringAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.taskurotta.backend.BackendBundle;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.dependency.DependencyBackend;
+import ru.taskurotta.backend.gc.GarbageCollectorBackend;
 import ru.taskurotta.backend.process.BrokenProcessBackend;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.storage.ProcessBackend;
@@ -27,68 +31,71 @@ import java.util.concurrent.Callable;
 public class HazelcastTaskServer extends GeneralTaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
+    private static final String LOCK_PROCESS_MAP_NAME = HazelcastTaskServer.class.getName() + "#lockProcessMap";
 
     protected HazelcastInstance hzInstance;
+    protected IMap lockProcessMap;
 
-    protected String executorServiceName = "decisionProcessingExecutorService";
+    protected String decisionProcessingExecutorService;
 
     protected static HazelcastTaskServer instance;
     protected static final Object instanceMonitor = 0;
 
-    private String nodeCustomName = "undefined";
+    private String nodeCustomName;
 
-    protected HazelcastTaskServer(BackendBundle backendBundle) {
+    protected HazelcastTaskServer(BackendBundle backendBundle, HazelcastInstance hzInstance, String nodeCustomName,
+                                  String decisionProcessingExecutorService) {
         super(backendBundle);
-    }
 
-    protected HazelcastTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend,
-                                  DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
-        super(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend, brokenProcessBackend);
-    }
-
-    public static HazelcastTaskServer createInstance(BackendBundle backendBundle) {
-        synchronized (instanceMonitor) {
-            if (null == instance) {
-                instance = new HazelcastTaskServer(backendBundle);
-                instanceMonitor.notifyAll();
-            }
-        }
-        return instance;
-    }
-
-    /*
-    FOR TESTS ONLY
-    * */
-    public static void setInstance(HazelcastTaskServer instance) {
-        HazelcastTaskServer.instance = instance;
-    }
-
-    public static HazelcastTaskServer createInstance(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend, DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend) {
-        synchronized (instanceMonitor) {
-            if (null == instance) {
-                instance = new HazelcastTaskServer(processBackend, taskBackend, queueBackend, dependencyBackend, configBackend, brokenProcessBackend);
-                instanceMonitor.notifyAll();
-            }
-        }
-        return instance;
-    }
-
-    //For obtaining reference to current TaskServer instance when processing async decision
-    public static HazelcastTaskServer getInstance() throws InterruptedException {
-        synchronized (instanceMonitor) {
-            if (null == instance) {
-                instanceMonitor.wait();
-            }
-        }
-        return instance;
-    }
-
-    public HazelcastInstance getHzInstance() {
-        return hzInstance;
-    }
-
-    public void setHzInstance(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;
+        this.nodeCustomName = nodeCustomName;
+        this.decisionProcessingExecutorService = decisionProcessingExecutorService;
+
+        lockProcessMap = hzInstance.getMap(LOCK_PROCESS_MAP_NAME);
+    }
+
+    protected HazelcastTaskServer(final ProcessBackend processBackend, final TaskBackend taskBackend,
+                                  final QueueBackend queueBackend,
+                                  final DependencyBackend dependencyBackend, final ConfigBackend configBackend,
+                                  final BrokenProcessBackend brokenProcessBackend, final GarbageCollectorBackend garbageCollectorBackend,
+                                  HazelcastInstance hzInstance,
+                                  String nodeCustomName, String decisionProcessingExecutorService) {
+        this(new BackendBundle() {
+            @Override
+            public ProcessBackend getProcessBackend() {
+                return processBackend;
+            }
+
+            @Override
+            public TaskBackend getTaskBackend() {
+                return taskBackend;
+            }
+
+            @Override
+            public QueueBackend getQueueBackend() {
+                return queueBackend;
+            }
+
+            @Override
+            public DependencyBackend getDependencyBackend() {
+                return dependencyBackend;
+            }
+
+            @Override
+            public ConfigBackend getConfigBackend() {
+                return configBackend;
+            }
+
+            @Override
+            public BrokenProcessBackend getBrokenProcessBackend() {
+                return brokenProcessBackend;
+            }
+
+            @Override
+            public GarbageCollectorBackend getGarbageCollectorBackend() {
+                return garbageCollectorBackend;
+            }
+        },  hzInstance, nodeCustomName, decisionProcessingExecutorService);
     }
 
     public void init() {
@@ -104,7 +111,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         // send process call
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision.getProcessId(), taskDecision.getTaskId());
-        hzInstance.getExecutorService(executorServiceName).submit(call);
+        hzInstance.getExecutorService(decisionProcessingExecutorService).submit(call);
     }
 
     protected DecisionContainer getDecision(UUID taskId, UUID processId) {
@@ -114,11 +121,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     /**
      * Callable task for processing taskDecisions
      */
+    @SpringAware
     public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
         private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
 
         UUID processId;
         UUID taskId;
+        HazelcastTaskServer taskServer;
 
         public ProcessDecisionUnitOfWork() {
         }
@@ -126,29 +135,39 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         public ProcessDecisionUnitOfWork(UUID processId, UUID taskId) {
             this.processId = processId;
             this.taskId = taskId;
+        }
 
+        @Autowired
+        public void setTaskServer(HazelcastTaskServer taskServer) {
+            this.taskServer = taskServer;
         }
 
         @Override
         public Object call() throws Exception {
-            HazelcastTaskServer taskServer = HazelcastTaskServer.getInstance();
-            HazelcastInstance taskHzInstance = taskServer.getHzInstance();
 
-            ILock lock = taskHzInstance.getLock(processId);
             try {
-                lock.lock();
-                DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
-                if (taskDecision == null) {
-                    String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
-                    logger.error(error);
-                    //TODO: this exception disappears for some reason
-                    throw new IllegalStateException(error);
+
+                taskServer.lockProcessMap.lock(processId);
+
+                try {
+                    DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
+                    logger.debug("ProcessDecisionUnitOfWork decision is[{}], taskId[{}], processId[{]]", taskDecision, taskId, processId);
+                    if (taskDecision == null) {
+                        String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
+                        logger.error(error);
+                        //TODO: this exception disappears for some reason
+                        throw new IllegalStateException(error);
+                    }
+
+                    taskServer.processDecision(taskDecision);
+
+                } finally {
+                    taskServer.lockProcessMap.unlock(processId);
                 }
 
-                taskServer.processDecision(taskDecision);
-
-            } finally {
-                lock.unlock();
+            } catch (HazelcastInstanceNotActiveException e) {
+                // reduce exception rain
+                logger.warn(e.getMessage());
             }
 
             return null;
@@ -160,15 +179,4 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         }
     }
 
-    public void setExecutorServiceName(String executorServiceName) {
-        this.executorServiceName = executorServiceName;
-    }
-
-    public String getNodeCustomName() {
-        return nodeCustomName;
-    }
-
-    public void setNodeCustomName(String nodeCustomName) {
-        this.nodeCustomName = nodeCustomName;
-    }
 }

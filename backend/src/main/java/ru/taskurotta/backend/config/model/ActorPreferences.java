@@ -10,24 +10,38 @@ public class ActorPreferences implements Serializable {
     private String id;
     private boolean blocked = false;
     private String queueName;
+    private long keepTime;
 
     public String getId() {
         return id;
     }
+
     public void setId(String id) {
         this.id = id;
     }
-    public String getQueueName() {
-        return queueName;
-    }
-    public void setQueueName(String queueName) {
-        this.queueName = queueName;
-    }
+
     public boolean isBlocked() {
         return blocked;
     }
+
     public void setBlocked(boolean blocked) {
         this.blocked = blocked;
+    }
+
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
+    public long getKeepTime() {
+        return keepTime;
+    }
+
+    public void setKeepTime(long keepTime) {
+        this.keepTime = keepTime;
     }
 
     @Override
@@ -36,7 +50,7 @@ public class ActorPreferences implements Serializable {
                 "id='" + id + '\'' +
                 ", blocked=" + blocked +
                 ", queueName='" + queueName + '\'' +
-                "} " + super.toString();
+                ", keepTime=" + keepTime +
+                '}';
     }
-
 }

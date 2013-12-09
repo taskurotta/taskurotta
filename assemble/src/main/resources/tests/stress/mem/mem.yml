@@ -1,0 +1,87 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: classpath:ru/taskurotta/recipes/stress/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        contexts:
+          - classpath:spring/hz-mongo.xml
+          - classpath:spring/actor.xml
+        defaultPropertiesLocation: default.properties
+        properties:
+          cycles: 10
+          initialCount: 2
+          shotSize: 4000
+          needRun: true
+          pollDelay: 10
+          pollDelayUnit: "SECONDS"
+          hz.mancenter.enabled: false
+          hz.mancenter.url: "http://localhost:8080/mancenter-2.6"
+          hz.nodes: localhost:7777
+          hz.map.eviction.size: 10
+          hz.map.eviction.percentage.size: 25
+          mongo.host: localhost
+          mongo.port: 27017
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.recipes.stress.LifetimeProfiler
+        properties:
+          exitAfterAll: false
+          tasksForStat: 1000
+          maxTaskQuantity: 1000000
+
+actor:
+  - MultiplierDecider:
+      actorInterface: ru.taskurotta.recipes.multiplier.MultiplierDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 20
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-multiply.log
+             append: false
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.recipes.stress:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.spring.mongodb:
+             key: name
+             \@level: DEBUG
+        - com.hazelcast.nio.serialization.SerializationServiceImpl:
+             key: name
+             \@level: DEBUG
+        - org:
+             key: name
+             \@level: !!!str OFF
+        - httpclient:
+             key: name
+             \@level: !!!str OFF
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="hzMapConfigSpringSupport" class="ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+
+        <property name="asyncBackupsCount" value="0"/>
+        <property name="backupCount" value="0"/>
+        <property name="evictionPercentage" value="25"/>
+        <property name="evictionPolicy" value="LRU"/>
+        <property name="mapStoreBeanName" value="mongoMapStore"/>
+        <property name="timeToLive" value="0"/>
+        <property name="maxSize" value="1000"/>
+        <property name="maxSizePolicy" value="PER_NODE"/>
+    </bean>
+
+    <!-- Queues persistence support -->
+    <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
+
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+
+        <property name="asyncBackupsCount" value="0"/>
+        <property name="backupCount" value="0"/>
+        <property name="maxSize" value="500000"/>
+        <property name="memoryLimit" value="100000"/>
+        <property name="binary" value="true"/>
+        <property name="bulkLoad" value="500"/>
+    </bean>
+
+    <bean id="restoreQueueSupport" class="ru.taskurotta.backend.hz.support.HzQueueRestoreSupport" init-method="init">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+        <property name="hzInstance" ref="hzInstance"/>
+        <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="hzQueueSpringConfigSupport" ref="queueConfigSupport"/>
+        <property name="restore" value="${hz.queue.restore}"/>
+    </bean>
+    <!-- /Queues persistence support -->
+
+
+
+    <!--  Actor config support  -->
+    <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.HzActorConfigManager">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>
+
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+    </bean>
+    <!-- /Actor config support -->
+
+    <!-- Delay queue support -->
+    <bean id="storageFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
+    </bean>
+
+    <bean id="queueFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactory"/>
+    </bean>
+    <!-- /Delay queue support -->
+
+    <!-- Backends -->
+    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+        <constructor-arg name="queueFactory" ref="queueFactory"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+    </bean>
+    <!-- /Backends -->
+</beans>

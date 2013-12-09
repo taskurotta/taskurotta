@@ -4,12 +4,12 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.bootstrap.Bootstrap;
 import ru.taskurotta.recipes.pcollection.PromiseCollectionArbiter;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
+import static ru.taskurotta.recipes.RecipesRunner.run;
 
 /**
  * Test for processing Promise of a collection or an array
@@ -21,8 +21,7 @@ public class PromiseCollectionTest {
 
     @Test
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
-        new Bootstrap("ru/taskurotta/recipes/pcollection/conf.yaml").start();
-
+        run("ru/taskurotta/recipes/pcollection/");
         PromiseCollectionArbiter arbiter = PromiseCollectionArbiter.getInstance();
         logger.info("waiting for arbiter [{}]", arbiter.uuid);
         assertTrue(arbiter.waitForFinish(5000));

@@ -9,8 +9,12 @@
     <context:property-placeholder/>
     <context:annotation-config/>
 
+    <bean id="taskServer" class="ru.taskurotta.recipes.stress.SpeedTestTaskServer">
+        <constructor-arg name="originalTaskServer" ref="jerseyTaskServer"/>
+    </bean>
+
     <!-- Jersey client with embedded apache HTTP client for connection pooling -->
-    <bean id="taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">
+    <bean id="jerseyTaskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">
         <property name="endpoint" value="${endpoint}"/>
         <property name="connectTimeout" value="${connectTimeout}"/>
         <property name="readTimeout" value="${readTimeout}"/>
@@ -30,4 +34,17 @@
         <property name="initialCount" value="${initialCount}"/>
     </bean>
 
+
+    <!--<bean id="jerseyTaskServerForStartProcesses" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">-->
+        <!--<property name="endpoint" value="${endpoint}"/>-->
+        <!--<property name="connectTimeout" value="${connectTimeout}"/>-->
+        <!--<property name="readTimeout" value="${readTimeout}"/>-->
+        <!--<property name="threadPoolSize" value="${threadPoolSize}"/>-->
+        <!--&lt;!&ndash; All connections are for the same host, so value matches threadpool size &ndash;&gt;-->
+        <!--<property name="maxConnectionsPerHost" value="${threadPoolSize}"/>-->
+    <!--</bean>-->
+
+    <!--<bean id="clientServiceManagerForStartProcesses" class="ru.taskurotta.client.internal.CommonClientServiceManager">-->
+        <!--<constructor-arg name="taskServer" ref="taskServer"/>-->
+    <!--</bean>-->
 </beans>

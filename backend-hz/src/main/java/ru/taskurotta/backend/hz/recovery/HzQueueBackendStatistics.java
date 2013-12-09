@@ -2,23 +2,26 @@ package ru.taskurotta.backend.hz.recovery;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.hz.queue.HzQueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.recovery.AbstractQueueBackendStatistics;
 import ru.taskurotta.backend.statistics.MetricFactory;
+import ru.taskurotta.backend.statistics.MetricName;
 import ru.taskurotta.backend.statistics.datalistener.NumberDataListener;
 import ru.taskurotta.backend.statistics.metrics.Metric;
 import ru.taskurotta.backend.statistics.metrics.TimeConstants;
-import ru.taskurotta.server.MetricName;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,11 +34,15 @@ import java.util.concurrent.TimeUnit;
  * User: stukushin
  * Date: 18.09.13 Time: 11:50
  */
-public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics implements TimeConstants {
+public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueBackendStatistics.class);
+
+    private static final String SYNCH_LOCK_NAME = HzQueueBackendStatistics.class.getName().concat("#SINCH_LOCK");
+
     private HzQueueBackend queueBackend;
     private HazelcastInstance hzInstance;
+    private ILock synchLock;
 
     private long mergePeriod;
     private TimeUnit mergePeriodTimeUnit;
@@ -49,45 +56,45 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
     public static final String lastPolledTaskEnqueueTimesName = "lastPolledTaskEnqueueTimes";
 
     class StatisticsMerger implements Runnable {
+
         @Override
         public void run() {
+
+            synchLock.lock();
+
             try { //should always wrap ScheduledExecutorService tasks to try-catch to prevent silent task death
-                IMap<String, Long> iMap = hzInstance.getMap(lastPolledTaskEnqueueTimesName);
 
-                // merge from local map to distributed map
-                Set<Map.Entry<String, Long>> entries = lastPolledTaskEnqueueTimes.entrySet();
-                for (Map.Entry<String, Long> entry : entries) {
-                    String queueName = entry.getKey();
-                    Long lastEnqueueTime = entry.getValue();
+                IMap<String, Long> mutualMap = hzInstance.getMap(lastPolledTaskEnqueueTimesName);
+                Map<String, Long> myMap = lastPolledTaskEnqueueTimes;
 
-                    Long previousEnqueueTime = iMap.get(queueName);
-                    if (previousEnqueueTime == null) {
-                        iMap.put(queueName, lastEnqueueTime);
-                    } else {
-                        if (previousEnqueueTime < lastEnqueueTime) {
-                            iMap.put(queueName, lastEnqueueTime);
-                        }
+                Set<String> keys = new HashSet<>();
+                keys.addAll(mutualMap.keySet());
+                keys.addAll(myMap.keySet());
+
+                for (String key: keys) {
+                    Long mutualValue = mutualMap.get(key);
+                    Long myValue = myMap.get(key);
+
+                    if (mutualValue == null) {
+                        mutualMap.set(key, myValue);
+                        continue;
                     }
-                }
 
-                // merge from distributed map to local
-                entries = iMap.entrySet();
-                for (Map.Entry<String, Long> entry : entries) {
-                    String queueName = entry.getKey();
-                    Long lastEnqueueTime = entry.getValue();
+                    if (myValue == null) {
+                        myMap.put(key, mutualValue);
+                    }
 
-                    Long previousEnqueueTime = lastPolledTaskEnqueueTimes.get(queueName);
-                    if (previousEnqueueTime == null) {
-                        lastPolledTaskEnqueueTimes.put(queueName, lastEnqueueTime);
+                    if (myValue > mutualValue) {
+                        mutualMap.set(key, myValue);
                     } else {
-                        if (previousEnqueueTime < lastEnqueueTime) {
-                            lastPolledTaskEnqueueTimes.put(queueName, lastEnqueueTime);
-                        }
+                        myMap.put(key, mutualValue);
                     }
                 }
 
             } catch (Throwable e) {
                 logger.error("StatisticsMerger iteration failed", e);
+            } finally {
+                synchLock.unlock();
             }
         }
     }
@@ -107,11 +114,13 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
                 if (numberDataListener != null) {
                     for (String queue : getQueueNames()) {
                         int queueSize = getQueueTaskCount(queue);
-                        numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(), queue, queueSize, System.currentTimeMillis(), dataSize);
+                        numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(), queue, queueSize,
+                                System.currentTimeMillis(), dataSize);
                         count++;
                         totalSize+=queueSize;
                     }
-                    numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(), MetricName.QUEUE_SIZE.getValue(), totalSize, System.currentTimeMillis(), dataSize);
+                    numberDataListener.handleNumberData(MetricName.QUEUE_SIZE.getValue(),
+                            MetricName.QUEUE_SIZE.getValue(), totalSize, System.currentTimeMillis(), dataSize);
                 }
                 logger.debug("Queue size data items [{}] successfully flushed", count);
 
@@ -141,6 +150,7 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
         this.queueBackend = queueBackend;
         this.hzInstance = hzInstance;
 
+        this.synchLock = hzInstance.getLock(SYNCH_LOCK_NAME);
     }
 
     @PostConstruct
@@ -151,8 +161,10 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
         scheduledExecutorService.scheduleAtFixedRate(new StatisticsMerger(), 0, mergePeriod, mergePeriodTimeUnit);
 
         //Queue statistics for metrics
-        int dataPointsCount = SECONDS_IN_24_HOURS/Long.valueOf(queueSizeMetricPeriodSeconds).intValue();//number of points to cover 24 hours period.
-        scheduledExecutorService.scheduleAtFixedRate(new QueueSizeDataFlusher(dataPointsCount), 0, queueSizeMetricPeriodSeconds, TimeUnit.SECONDS);
+        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(queueSizeMetricPeriodSeconds).intValue()
+                ;//number of points to cover 24 hours period.
+        scheduledExecutorService.scheduleAtFixedRate(new QueueSizeDataFlusher(dataPointsCount), 0,
+                queueSizeMetricPeriodSeconds, TimeUnit.SECONDS);
     }
 
     @Override
@@ -191,6 +203,11 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics imp
     @Override
     public Map<String, Integer> getHoveringCount(float periodSize) {
         return queueBackend.getHoveringCount(periodSize);
+    }
+
+    @Override
+    public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
+        return queueBackend.getQueuesStatsPage(pageNum, pageSize, filter);
     }
 
     @Required

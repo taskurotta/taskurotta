@@ -53,6 +53,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
 
+        log.info("Sending new " + shotSize + " tasks...");
+
         for (int i = 0; i < shotSize; i++) {
             final int a = (int) (Math.random() * 100);
             final int b = (int) (Math.random() * 100);
@@ -110,22 +112,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         log.info(String.format("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta));
         stopDecorating.set(true);
         log.info("Decoration stopped");
-        log.info("Sorting results");
-        Long[] array = new Long[arrayOfDuration.size()];
-        arrayOfDuration.toArray(array);
-        Arrays.sort(array);
-        log.info("Results already sorted");
-        List<Long> cleanedData = Arrays.asList(array);
-        int size = cleanedData.size();
-        int limit = size / 10;
-        List<Long> meaningData = cleanedData.subList(limit, size - limit);
-        BigInteger rs = BigInteger.valueOf(0);
-        for (long z : meaningData) {
-            rs = rs.add(BigInteger.valueOf(z));
-        }
-        log.info("Sum: " + rs.toString());
-        log.info("Meaning data size: " + meaningData.size());
-        log.info("Average is: " + rs.divide(BigInteger.valueOf(meaningData.size())) + " in nanos");
         log.info("End");
         System.exit(0);
     }

@@ -81,6 +81,8 @@ public class SpringTaskService extends Service<TaskServerConfig> {
         }
         appContext.refresh();
 
+        logger.debug("configuration.getResourceBeans() [{}]", configuration.getResourceBeans());
+
         //-----Register resources-----------------
         int resourcesCount = 0;
         if (configuration.getResourceBeans() == null

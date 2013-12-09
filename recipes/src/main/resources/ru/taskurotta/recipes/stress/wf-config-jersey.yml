@@ -29,7 +29,7 @@ profiler:
           tasksForStat: 500
 
 actor:
-  - FibonacciDecider:
+  - MultiplierDecider:
       actorInterface: ru.taskurotta.recipes.multiplier.MultiplierDecider
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
@@ -42,7 +42,7 @@ logback:
              key: name
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
-                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%c - \%m\%n
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
@@ -54,7 +54,7 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: !!!str OFF
-        - ru.taskurotta.recipes.multiplier:
+        - ru.taskurotta.recipes.stress:
              key: name
              \@level: DEBUG
         - org:

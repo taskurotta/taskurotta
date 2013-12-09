@@ -1,6 +1,6 @@
 #Location of Spring application context:
 #Hazelcast without mongo mapstore
-contextLocation: "classpath*:spring/hz.xml, classpath*:context/console-context.xml"
+contextLocation: "classpath*:spring/hz.xml"
 
 #Used for static resource serving in development mode
 assets:

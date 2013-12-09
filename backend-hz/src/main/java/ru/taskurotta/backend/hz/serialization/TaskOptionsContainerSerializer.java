@@ -20,14 +20,14 @@ import static ru.taskurotta.backend.hz.serialization.SerializationTools.writeArg
  */
 public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOptionsContainer> {
 
-    private ActorSchedulingOptionsContainerSerializer actorSchedulingOptionsContainerSerializer = new ActorSchedulingOptionsContainerSerializer();
+    private ActorSchedulingOptionsContainerStreamSerializer actorSchedulingOptionsContainerStreamSerializer = new ActorSchedulingOptionsContainerStreamSerializer();
 
 
     @Override
     public void write(ObjectDataOutput out, TaskOptionsContainer object) throws IOException {
         if (object.getActorSchedulingOptions() != null) {
             out.writeBoolean(true);
-            actorSchedulingOptionsContainerSerializer.write(out, object.getActorSchedulingOptions());
+            actorSchedulingOptionsContainerStreamSerializer.write(out, object.getActorSchedulingOptions());
         } else {
             out.writeBoolean(false);
         }
@@ -35,7 +35,11 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
         if (argTypesCount > 0) {
             out.writeInt(argTypesCount);
             for (ArgType i : object.getArgTypes()) {
-                out.writeInt(i.getValue());
+                if (i == null) {
+                    out.writeInt(-1);
+                } else {
+                    out.writeInt(i.getValue());
+                }
             }
         } else {
             out.writeInt(-1);
@@ -48,14 +52,19 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
     public TaskOptionsContainer read(ObjectDataInput in) throws IOException {
         ActorSchedulingOptionsContainer actorSchedulingOptionsContainer = null;
         if (in.readBoolean()) {
-            actorSchedulingOptionsContainer = actorSchedulingOptionsContainerSerializer.read(in);
+            actorSchedulingOptionsContainer = actorSchedulingOptionsContainerStreamSerializer.read(in);
         }
         int argTypesCount = in.readInt();
         List<ArgType> argTypeList = new ArrayList<>();
         ArgType[] argTypeArray = null;
         if (argTypesCount != -1) {
             for (int i = 0; i < argTypesCount; i++) {
-                argTypeList.add(ArgType.fromInt(in.readInt()));
+                int rd = in.readInt();
+                if (rd == -1) {
+                    argTypeList.add(null);
+                } else {
+                    argTypeList.add(ArgType.fromInt(rd));
+                }
             }
             argTypeArray = new ArgType[argTypeList.size()];
             argTypeList.toArray(argTypeArray);

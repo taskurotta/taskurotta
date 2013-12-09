@@ -31,4 +31,9 @@ public interface MetricsNumberDataRetriever {
      */
     Date getLastActivityTime(String metricName, String datasetName);
 
+    /**
+     * @return last measured value
+     */
+    Number getLastValue(String metricName, String datasetName);
+
 }

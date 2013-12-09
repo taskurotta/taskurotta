@@ -49,7 +49,7 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
                     ap.setQueueName(obj.getName());
 
                     IMap<String, ActorPreferences> distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
-                    distributedActorPreferences.put(actorId, ap);
+                    distributedActorPreferences.set(actorId, ap);
                     logger.info("New actor [{}] has been registered", actorId);
                 }
             } finally {
