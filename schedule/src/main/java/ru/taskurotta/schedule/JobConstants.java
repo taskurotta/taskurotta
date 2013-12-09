@@ -1,13 +1,9 @@
 package ru.taskurotta.schedule;
 
 /**
- * Created with IntelliJ IDEA.
- * User: dimadin
  * Date: 24.09.13 18:26
  */
 public interface JobConstants {
-
-    String ACTION_NODE_COUNT = "node_count";
 
     int STATUS_ACTIVE = 1;
     int STATUS_INACTIVE = -1;
