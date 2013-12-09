@@ -35,10 +35,12 @@
     <!-- /Delay queue support -->
 
     <!-- Backends -->
-    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
-        <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
+    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzMongoQueueBackend">
+        <constructor-arg name="pollDelay" value="${pollDelay}"/>
+        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+
+        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
 
     <bean id="queueBackend" class="ru.taskurotta.assemple.ProxyQueueBackend">
@@ -89,7 +91,7 @@
         <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
 
-    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.hz.gc.HzGarbageCollectorBackend">
+    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.gc.MockGarbageCollectorBackend">
         <constructor-arg name="configBackend" ref="configBackend"/>
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
