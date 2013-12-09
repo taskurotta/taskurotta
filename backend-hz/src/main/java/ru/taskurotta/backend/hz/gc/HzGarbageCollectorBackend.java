@@ -22,11 +22,13 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
-    private long keepTime;
+    private long delayTime;
 
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName, int poolSize, long keepTime) {
+    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao,
+                                     TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
+                                     int poolSize, long delayTime) {
         this.configBackend = configBackend;
-        this.keepTime = keepTime;
+        this.delayTime = delayTime;
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
         ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
@@ -49,12 +51,12 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
     public void delete(UUID processId, String actorId) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
 
-        long keepTime = this.keepTime;
+        long delayTime = this.delayTime;
         if (actorPreferences != null) {
-            keepTime = actorPreferences.getKeepTime();
+            delayTime = actorPreferences.getKeepTime();
         }
 
-        garbageCollectorQueue.add(processId, keepTime, TimeUnit.MILLISECONDS);
+        garbageCollectorQueue.add(processId, delayTime, TimeUnit.MILLISECONDS);
     }
 
     class HazelcastGCTask extends AbstractGCTask {
