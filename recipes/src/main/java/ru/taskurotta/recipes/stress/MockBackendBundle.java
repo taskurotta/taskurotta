@@ -278,6 +278,11 @@ public class MockBackendBundle implements BackendBundle {
 
     @Override
     public GarbageCollectorBackend getGarbageCollectorBackend() {
-        return null;
+        return new GarbageCollectorBackend() {
+            @Override
+            public void delete(UUID processId, String actorId) {
+                // ignore
+            }
+        };
     }
 }
