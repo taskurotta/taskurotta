@@ -20,14 +20,11 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private DelayQueue<DelayFinishedProcess> garbageCollectorQueue = new DelayQueue<>();
 
-    private long keepTime = 0l;
+    private long delayTime;
 
-    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
-        this(configBackend, processBackend, graphDao, taskDao, 1);
-    }
-
-    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, int poolSize) {
+    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, int poolSize, long delayTime) {
         this.configBackend = configBackend;
+        this.delayTime = delayTime;
 
         ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
@@ -99,15 +96,15 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
     public void delete(UUID processId, String actorId) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
 
-        long keepTime = this.keepTime;
+        long delayTime = this.delayTime;
         if (actorPreferences != null) {
-            keepTime = actorPreferences.getKeepTime();
+            delayTime = actorPreferences.getKeepTime();
         }
 
-        garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + keepTime));
+        garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + delayTime));
     }
 
-    public void setKeepTime(long keepTime) {
-        this.keepTime = keepTime;
+    public void setDelayTime(long delayTime) {
+        this.delayTime = delayTime;
     }
 }
