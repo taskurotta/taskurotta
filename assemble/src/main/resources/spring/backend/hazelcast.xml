@@ -13,7 +13,7 @@
     <!-- /Config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.MockStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
     </bean>
@@ -23,7 +23,7 @@
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
-    <bean id="storageFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
+    <bean id="storageFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.MockStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mapStoragePrefix" value="${gc.mapStoragePrefix}"/>
     </bean>
