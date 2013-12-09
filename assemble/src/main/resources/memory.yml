@@ -24,9 +24,9 @@ properties:
 
 #Http server configuration:
 logging:
-    level: INFO
+    level: WARN
     loggers:
-        ru.taskurotta: DEBUG
+        ru.taskurotta: INFO
 #        ru.taskurotta.dropwizard.resources.console: DEBUG
 #        ru.taskurotta.backend.dependency.graph: DEBUG
 #        ru.taskurotta.backend.queue: DEBUG
