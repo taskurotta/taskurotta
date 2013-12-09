@@ -22,7 +22,8 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private long delayTime;
 
-    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, int poolSize, long delayTime) {
+    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao,
+                                         TaskDao taskDao, int poolSize, long delayTime) {
         this.configBackend = configBackend;
         this.delayTime = delayTime;
 
