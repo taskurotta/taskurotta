@@ -73,7 +73,7 @@
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
 
-        <property name="keepTime" value="${gc.process.keepTime}"/>
+        <property name="keepTime" value="${gc.keepTime}"/>
     </bean>
     <!-- /Backends -->
 
