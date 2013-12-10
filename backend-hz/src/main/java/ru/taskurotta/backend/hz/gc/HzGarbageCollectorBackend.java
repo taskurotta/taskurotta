@@ -1,7 +1,5 @@
 package ru.taskurotta.backend.hz.gc;
 
-import com.hazelcast.core.ItemEvent;
-import com.hazelcast.core.ItemListener;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
@@ -44,22 +42,29 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
             }
         });
 
-        this.garbageCollectorQueue.addItemListener(new ItemListener<UUID>() {
-            @Override
-            public void itemAdded(final ItemEvent<UUID> item) {
-                executorService.submit(new AbstractGCTask(processBackend, graphDao, taskDao) {
-                    @Override
-                    public void run() {
-                        gc(garbageCollectorQueue.poll());
-                    }
-                });
-            }
+        for (int i = 0; i < poolSize; i++) {
+            executorService.submit(new AbstractGCTask(processBackend, graphDao, taskDao) {
+                @Override
+                public void run() {
+                    while (true) {
+                        logger.trace("Try to get process for garbage collector");
 
-            @Override
-            public void itemRemoved(ItemEvent<UUID> item) {
-                // nothing to do
-            }
-        }, false);
+                        UUID processId = null;
+                        try {
+                            processId = garbageCollectorQueue.poll(Integer.MAX_VALUE, TimeUnit.SECONDS);
+                        } catch (InterruptedException e) {
+                            logger.error("Catch exception while find process for garbage collector", e);
+                        }
+
+                        if (processId == null) {
+                            continue;
+                        }
+
+                        gc(processId);
+                    }
+                }
+            });
+        }
     }
 
     @Override
