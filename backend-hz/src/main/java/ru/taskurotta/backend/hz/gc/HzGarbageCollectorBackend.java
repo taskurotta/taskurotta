@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.hz.gc;
 
+import com.hazelcast.core.ItemEvent;
+import com.hazelcast.core.ItemListener;
 import ru.taskurotta.backend.config.ConfigBackend;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
@@ -24,14 +26,14 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private long delayTime;
 
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao,
-                                     TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
+    public HzGarbageCollectorBackend(ConfigBackend configBackend, final ProcessBackend processBackend, final GraphDao graphDao,
+                                     final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long delayTime) {
         this.configBackend = configBackend;
         this.delayTime = delayTime;
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+        final ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -42,9 +44,22 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
             }
         });
 
-        for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new HazelcastGCTask(processBackend, graphDao, taskDao));
-        }
+        this.garbageCollectorQueue.addItemListener(new ItemListener<UUID>() {
+            @Override
+            public void itemAdded(final ItemEvent<UUID> item) {
+                executorService.submit(new AbstractGCTask(processBackend, graphDao, taskDao) {
+                    @Override
+                    public void run() {
+                        gc(garbageCollectorQueue.poll());
+                    }
+                });
+            }
+
+            @Override
+            public void itemRemoved(ItemEvent<UUID> item) {
+                // nothing to do
+            }
+        }, false);
     }
 
     @Override
@@ -57,33 +72,5 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
         }
 
         garbageCollectorQueue.add(processId, delayTime, TimeUnit.MILLISECONDS);
-    }
-
-    class HazelcastGCTask extends AbstractGCTask {
-
-        protected HazelcastGCTask(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
-            super(processBackend, graphDao, taskDao);
-        }
-
-        @Override
-        public void run() {
-            while(true) {
-
-                logger.trace("Try to get process for garbage collector");
-
-                UUID processId = null;
-                try {
-                    processId = garbageCollectorQueue.poll(1, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    logger.error("Catch exception while find process for garbage collector", e);
-                }
-
-                if (processId == null) {
-                    continue;
-                }
-
-                gc(processId);
-            }
-        }
     }
 }
