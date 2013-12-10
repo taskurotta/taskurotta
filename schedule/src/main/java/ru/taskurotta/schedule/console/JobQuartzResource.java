@@ -39,7 +39,7 @@ import java.util.UUID;
  * User: dimadin
  * Date: 23.09.13 14:58
  */
-@Path("/console/schedule/{action}")
+@Path("/console/schedule")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class JobQuartzResource implements JobConstants {
@@ -49,42 +49,46 @@ public class JobQuartzResource implements JobConstants {
     private HzJobMessageHandler hzScheduleEventDispatcher;
 
     @GET
-    public Response processGet(@PathParam("action")String action, @QueryParam("id") Optional<Long> idOpt) {
-        if (Action.LIST.getValue().equals(action)) {
-            Collection<Long> taskIds = jobManager.getJobIds();
-            List<JobUI> result = null;
-            if (taskIds!=null && !taskIds.isEmpty()) {
-                result = new ArrayList<>();
-                for (Long id: taskIds) {
-                    JobVO jobVO = jobManager.getJob(id);
-                    if (jobVO != null) {
-                        JobUI jobUI = new JobUI(jobVO);
-                        if (jobVO.getStatus() == STATUS_ACTIVE) {
-                            jobUI.nextExecutionTime = getNextExecutionTime(jobVO.getCron());
-                            jobUI.local = jobManager.isActive(jobVO);
-                        }
-                        result.add(jobUI);
+    @Path("/list")
+    public List<JobUI> getScheduledJobs() {
+        List<JobUI> result = null;
+
+        Collection<Long> taskIds = jobManager.getJobIds();
+        if (taskIds!=null && !taskIds.isEmpty()) {
+            result = new ArrayList<>();
+            for (Long id: taskIds) {
+                JobVO jobVO = jobManager.getJob(id);
+                if (jobVO != null) {
+                    JobUI jobUI = new JobUI(jobVO);
+                    if (jobVO.getStatus() == STATUS_ACTIVE) {
+                        jobUI.nextExecutionTime = getNextExecutionTime(jobVO.getCron());
+                        jobUI.local = jobManager.isActive(jobVO);
                     }
+                    result.add(jobUI);
                 }
             }
-            return Response.ok(result, MediaType.APPLICATION_JSON).build();
-
-        } else if(ACTION_NODE_COUNT.equals(action)) {
-            Collection<Long> jobIds = jobManager.getScheduledJobIds();
-            int size = jobIds!=null? jobIds.size(): 0;
-            return Response.ok(size, MediaType.APPLICATION_JSON).build();
-
-        } else if(Action.CARD.getValue().equals(action)) {
-            long id = idOpt.or(-1l);
-            JobVO jobVO = jobManager.getJob(id);
-            logger.debug("JobVO getted by id[{}] is [{}]", id, jobVO);
-            return Response.ok(jobVO, MediaType.APPLICATION_JSON).build();
-
-        } else {
-            logger.error("Unsupported combination of method[GET] and action["+action+"].");
-            return Response.serverError().build();
         }
+
+        return result;
     }
+
+    @GET
+    @Path("/node_count")
+    public Integer getNodesCount(){
+        Collection<Long> jobIds = jobManager.getScheduledJobIds();
+        int size = jobIds!=null? jobIds.size(): 0;
+        return size;
+    }
+
+    @GET
+    @Path("/card")
+    public JobVO getJob(@QueryParam("id") Optional<Long> idOpt) {
+        long id = idOpt.or(-1l);
+        JobVO jobVO = jobManager.getJob(id);
+        logger.debug("JobVO getted by id[{}] is [{}]", id, jobVO);
+        return jobVO;
+    }
+
 
     /**
      * POJO wrapper for UI representation of JobVO with additional fields
@@ -112,8 +116,44 @@ public class JobQuartzResource implements JobConstants {
     }
 
     @PUT
-    public Response createOrUpdateScheduledTask(@PathParam("action")String action, @QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
+    @Path("/create")
+    public Long createSchedulerJob(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
                                                 @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
+        JobVO job = null;
+        try {
+            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, jobIdOpt, task);
+            logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt, nameOpt, task);
+            long id = jobManager.addJob(job);
+            logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", nameOpt, cronOpt, id);
+            return id;
+
+        } catch (Exception e) {
+            logger.error("Unexpected error at create for job["+job+"]", e);
+            throw new WebApplicationException(e);
+        }
+
+    }
+
+
+    @PUT
+    @Path("/update")
+    public void updateScheduledTask(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
+                                                @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
+        JobVO job = null;
+        try {
+            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, jobIdOpt, task);
+            jobManager.updateJob(job);
+            logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
+
+        } catch (Exception e) {
+            logger.error("Unexpected error at update for job["+job+"]", e);
+            throw new WebApplicationException(e);
+        }
+
+    }
+
+
+    protected JobVO getValidJob (Optional<String> cronOpt, Optional<String> nameOpt, Optional<Integer> queueLimitOpt, Optional<Long> jobIdOpt, TaskContainer task) {
         String cron = cronOpt.or("");
         String name = nameOpt.or("");
         Integer queueLimit = queueLimitOpt.or(-1);
@@ -128,31 +168,8 @@ public class JobQuartzResource implements JobConstants {
         job.setStatus(STATUS_INACTIVE);//modification should be applied only for inactive tasks
         validateJob(job);
 
-        try {
-
-            if (Action.CREATE.getValue().equals(action)) {
-                logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt.or(""), nameOpt.or(""), task);
-                long id = jobManager.addJob(job);
-                logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", name, cron, id);
-                return Response.ok(id, MediaType.APPLICATION_JSON).build();
-
-            } else if (Action.UPDATE.getValue().equals(action)) {
-                jobManager.updateJob(job);
-                logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
-                return Response.ok().build();
-
-            } else {
-                logger.error("Unsupported combination of method[POST] and action[" + action + "].");
-                return Response.serverError().build();
-            }
-
-        } catch (Exception e) {
-            logger.error("Unexpected error at action["+action+"] for job["+job+"]", e);
-            throw new WebApplicationException(e);
-        }
-
+        return job;
     }
-
 
     public void validateJob(JobVO job) {
         try {
@@ -186,6 +203,7 @@ public class JobQuartzResource implements JobConstants {
     }
 
     @POST
+    @Path("/action/{action}")
     public Response processTask(@PathParam("action")String action, @QueryParam("id") Long id) {
 
         if (isActionSupported(action)) {

@@ -150,7 +150,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
     };
 
     $scope.activate = function(id) {
-        $http.post("/rest/console/schedule/activate/?id=" + id, id).then(function(value) {
+        $http.post("/rest/console/schedule/action/activate/?id=" + id, id).then(function(value) {
             $scope.update();
         }, function(errReason) {
             $scope.feedback = errReason;
@@ -158,7 +158,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
     };
 
     $scope.deactivate = function(id) {
-        $http.post("/rest/console/schedule/deactivate/?id="+id, id).then(function(value) {
+        $http.post("/rest/console/schedule/action/deactivate/?id="+id, id).then(function(value) {
             $scope.update();
         }, function(errReason) {
             $scope.feedback = errReason;
@@ -173,7 +173,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
         });
 
         modalInstance.result.then(function(okMess) {
-            $http.post("/rest/console/schedule/delete/?id="+id, id).then(function(value) {
+            $http.post("/rest/console/schedule/action/delete/?id="+id, id).then(function(value) {
                 $scope.update();
             }, function(errReason) {
                 $scope.feedback = errReason;
