@@ -17,13 +17,12 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import ru.taskurotta.backend.queue.TaskQueueItem;
 
 /**
  * User: moroz
  * Date: 16.08.13
  */
-public class MongoQueueStore implements QueueStore<TaskQueueItem> {
+public class MongoQueueStore implements QueueStore<Object> {
 
     private String storageName;
     private MongoTemplate mongoTemplate;
@@ -55,15 +54,15 @@ public class MongoQueueStore implements QueueStore<TaskQueueItem> {
     }
 
     @Override
-    public void store(Long aLong, TaskQueueItem taskQueueItem) {
+    public void store(Long aLong, Object taskQueueItem) {
         DBObject dbo = converter.toDBObject(taskQueueItem);
         dbo.put("_id", aLong);
         coll.save(dbo);
     }
 
     @Override
-    public void storeAll(Map<Long, TaskQueueItem> longTaskQueueItemMap) {
-        for (Map.Entry<Long, TaskQueueItem> entry : longTaskQueueItemMap.entrySet()) {
+    public void storeAll(Map<Long, Object> longTaskQueueItemMap) {
+        for (Map.Entry<Long, Object> entry : longTaskQueueItemMap.entrySet()) {
             store(entry.getKey(), entry.getValue());
         }
     }
@@ -79,7 +78,7 @@ public class MongoQueueStore implements QueueStore<TaskQueueItem> {
     }
 
     @Override
-    public TaskQueueItem load(Long aLong) {
+    public Object load(Long aLong) {
         DBObject dbo = new BasicDBObject();
         dbo.put("_id", aLong);
         DBObject obj = coll.findOne(dbo);
@@ -88,7 +87,7 @@ public class MongoQueueStore implements QueueStore<TaskQueueItem> {
 
         try {
             Class clazz = Class.forName(obj.get("_class").toString());
-            return (TaskQueueItem) converter.toObject(clazz, obj);
+            return converter.toObject(clazz, obj);
         } catch (ClassNotFoundException e) {
             logger.log(Level.WARNING, e.getMessage(), e);
         }
@@ -96,8 +95,8 @@ public class MongoQueueStore implements QueueStore<TaskQueueItem> {
     }
 
     @Override
-    public Map<Long, TaskQueueItem> loadAll(Collection<Long> longs) {
-        Map<Long, TaskQueueItem> map = new HashMap<Long, TaskQueueItem>();
+    public Map<Long, Object> loadAll(Collection<Long> longs) {
+        Map<Long, Object> map = new HashMap<Long, Object>();
         BasicDBList dbo = new BasicDBList();
         for (Long key : longs) {
             dbo.add(new BasicDBObject("_id", key));
@@ -109,7 +108,7 @@ public class MongoQueueStore implements QueueStore<TaskQueueItem> {
                 DBObject obj = cursor.next();
                 Class clazz = null;
                 clazz = Class.forName(obj.get("_class").toString());
-                map.put((Long) obj.get("_id"), (TaskQueueItem) converter.toObject(clazz, obj));
+                map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
             } catch (ClassNotFoundException e) {
                 logger.log(Level.WARNING, e.getMessage(), e);
             }

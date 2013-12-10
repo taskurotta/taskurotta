@@ -24,11 +24,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.backend.hz.console.HzQueueStatTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.hazelcast.HzMapConfigSpringSupport;
 import ru.taskurotta.hazelcast.HzQueueSpringConfigSupport;
-import ru.taskurotta.hazelcast.console.HzQueueStatTask;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.StringUtils;
 

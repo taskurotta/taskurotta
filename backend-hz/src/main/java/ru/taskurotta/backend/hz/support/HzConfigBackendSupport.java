@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast;
+package ru.taskurotta.backend.hz.support;
 
 
 import javax.annotation.PostConstruct;

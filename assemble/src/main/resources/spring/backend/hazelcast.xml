@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Config support -->
-    <bean id="hzConfigBackendSupport" class="ru.taskurotta.hazelcast.HzConfigBackendSupport"
+    <bean id="hzConfigBackendSupport" class="ru.taskurotta.backend.hz.support.HzConfigBackendSupport"
           init-method="init">
         <property name="hzInstance" ref="hzInstance"/>
         <property name="queuePrefix" value="${hz.task.queue.prefix}"/>

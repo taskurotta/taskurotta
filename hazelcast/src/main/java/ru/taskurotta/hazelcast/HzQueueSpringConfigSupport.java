@@ -38,9 +38,9 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private int backupCount = 0;
     private int asyncBackupsCount = 0;
 
-    private int memoryLimit = 100;
-    private boolean binary = false;
-    private int bulkLoad = 10;
+    private Integer memoryLimit = 100;
+    private Boolean binary = false;
+    private Integer bulkLoad = 10;
 
 
     private ILock queueConfigLock;
@@ -79,9 +79,9 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         result.setStoreImplementation(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
         result.setEnabled(true);
         Properties properties = new Properties();
-        properties.put("binary", this.binary);
-        properties.put("memory-limit", ((Integer) this.memoryLimit).toString());
-        properties.put("bulk-load", ((Integer) this.bulkLoad).toString());
+        properties.setProperty("binary", this.binary.toString());
+        properties.setProperty("memory-limit", this.memoryLimit.toString());
+        properties.setProperty("bulk-load", this.bulkLoad.toString());
         result.setProperties(properties);
         return result;
     }

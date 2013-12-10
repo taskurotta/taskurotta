@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast.console;
+package ru.taskurotta.backend.hz.console;
 
 import java.util.ArrayList;
 import java.util.List;

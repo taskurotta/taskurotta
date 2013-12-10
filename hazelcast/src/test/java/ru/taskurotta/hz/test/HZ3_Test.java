@@ -26,7 +26,6 @@ import com.hazelcast.core.MapStore;
 import com.hazelcast.core.QueueStore;
 import org.junit.Ignore;
 import org.junit.Test;
-import ru.taskurotta.backend.queue.TaskQueueItem;
 
 /**
  * Created with IntelliJ IDEA.
@@ -176,21 +175,16 @@ public class HZ3_Test {
 
             HazelcastInstance hz = Hazelcast.newHazelcastInstance(cfg);
 
-            IQueue<TaskQueueItem> queue = hz.getQueue("TestQueue");
+            IQueue<TestQueueItem> queue = hz.getQueue("TestQueue");
 
 
             System.out.println("Putttt.....");
 
             int size = 200000;
             for (int i = 0; i < size; i++) {
-                TaskQueueItem item = new TaskQueueItem();
-                item.setTaskId(UUID.randomUUID());
-                item.setProcessId(UUID.randomUUID());
-                item.setCreatedDate(new Date());
-                item.setStartTime(new Date().getTime());
-                item.setEnqueueTime(new Date().getTime());
-                item.setQueueName(queue.getName());
-                item.setTaskList("123213123123132212313");
+                TestQueueItem item = new TestQueueItem();
+                item.setTaskId(UUID.randomUUID().toString());
+                item.setProcessId(UUID.randomUUID().toString());
                 queue.add(item);
                 counter++;
                 if (i % 10000 == 0) {
@@ -204,9 +198,9 @@ public class HZ3_Test {
             System.out.println("Getttt.....");
 
             for (int i = 0; i < size; i++) {
-                TaskQueueItem data = queue.poll();
+                TestQueueItem data = queue.poll();
 
-                data.setStartTime(new Date().getTime());
+                data.setStartDate(new Date().getTime());
                 if (data != null) {
                     counter--;
                 }
@@ -286,4 +280,6 @@ public class HZ3_Test {
         result.setProperties(properties);
         return result;
     }
+
+
 }

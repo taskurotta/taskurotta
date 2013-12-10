@@ -47,14 +47,13 @@ public class TaskCreator implements Runnable, ApplicationListener<ContextRefresh
                 final int a = (int) (Math.random() * 100);
                 final int b = (int) (Math.random() * 100);
                 log.info(" Task № " + multiplier * i);
-                deciderClient.multiply(a, b);
-//                executorService.execute(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        deciderClient.multiply(a, b);
-//                        latch.countDown();
-//                    }
-//                });
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        deciderClient.multiply(a, b);
+                        latch.countDown();
+                    }
+                });
             }
             multiplier++;
             try {
