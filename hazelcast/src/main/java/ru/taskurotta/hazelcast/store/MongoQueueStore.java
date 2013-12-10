@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast;
+package ru.taskurotta.hazelcast.store;
 
 import java.util.Collection;
 import java.util.HashMap;

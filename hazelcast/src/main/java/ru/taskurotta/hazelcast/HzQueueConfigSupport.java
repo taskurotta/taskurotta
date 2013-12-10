@@ -8,12 +8,9 @@ import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IQueue;
+import com.hazelcast.core.QueueStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -21,16 +18,16 @@ import org.springframework.data.mongodb.core.MongoTemplate;
  * User: dimadin
  * Date: 13.08.13 18:21
  */
-public class HzQueueSpringConfigSupport implements ApplicationContextAware {
+public class HzQueueConfigSupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(HzQueueSpringConfigSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzQueueConfigSupport.class);
 
-    private static final String BACKING_MAP_NAME_SUFFIX = "backingMap";
+    private static final String BACKING_MAP_NAME_SUFFIX = ".backingMap";
     private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
 
 
-    private ApplicationContext applicationContext;
     private HazelcastInstance hzInstance;
+    private QueueStoreFactory queueStoreFactory;
 
 
     //    private String queueStoreBeanName;
@@ -46,8 +43,9 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
     private ILock queueConfigLock;
 
 
-    public HzQueueSpringConfigSupport(HazelcastInstance hzInstance) {
+    public HzQueueConfigSupport(HazelcastInstance hzInstance, QueueStoreFactory queueStoreFactory) {
         this.hzInstance = hzInstance;
+        this.queueStoreFactory = queueStoreFactory;
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
     }
 
@@ -76,7 +74,7 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
 
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
         QueueStoreConfig result = new QueueStoreConfig();
-        result.setStoreImplementation(new MongoQueueStore(queueName + ".backingMap", (MongoTemplate) applicationContext.getBean("mongoTemplate")));
+        result.setStoreImplementation(queueStoreFactory.newQueueStore(queueName + BACKING_MAP_NAME_SUFFIX, null));
         result.setEnabled(true);
         Properties properties = new Properties();
         properties.setProperty("binary", this.binary.toString());
@@ -97,10 +95,6 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         return result;
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
 
     public void setHzInstance(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;

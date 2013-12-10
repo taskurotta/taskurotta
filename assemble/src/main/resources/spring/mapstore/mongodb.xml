@@ -30,8 +30,12 @@
         <constructor-arg name="j" value="true"/>
     </bean>
 
-    <bean id="mapStore" class="ru.taskurotta.spring.mongodb.MongoMapStore" scope="prototype">
+    <bean id="mapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
         <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+
+    <bean id="queueStoreFactory" class="ru.taskurotta.hazelcast.store.MongoQueueStorageFactory">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
     </bean>
     <!-- /Mongo -->
 

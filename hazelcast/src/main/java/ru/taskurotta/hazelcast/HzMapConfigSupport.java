@@ -7,11 +7,9 @@ import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.MapStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,15 +18,13 @@ import org.springframework.context.ApplicationContextAware;
  * Time: 11:10
  * To change this template use File | Settings | File Templates.
  */
-public class HzMapConfigSpringSupport implements ApplicationContextAware {
+public class HzMapConfigSupport {
 
-    private static final Logger logger = LoggerFactory.getLogger(HzMapConfigSpringSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzMapConfigSupport.class);
 
-    private ApplicationContext applicationContext;
     private HazelcastInstance hzInstance;
     private ILock mapConfigLock;
     private static final String MAP_CONFIG_LOCK = "mapConfigLock";
-    private String mapStoreBeanName;
     private int writeDelaySeconds;
     private int evictionPercentage;
     private int backupCount;
@@ -37,8 +33,9 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
     private String evictionPolicy;
     private int maxSize;
     private String maxSizePolicy;
+    private MapStore mapStore;
 
-    public HzMapConfigSpringSupport(HazelcastInstance hzInstance) {
+    public HzMapConfigSupport(HazelcastInstance hzInstance) {
         this.hzInstance = hzInstance;
         this.mapConfigLock = hzInstance.getLock(MAP_CONFIG_LOCK);
     }
@@ -54,7 +51,7 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
 
             MapStoreConfig msc = new MapStoreConfig();
             msc.setEnabled(true);
-            msc.setImplementation(applicationContext.getBean(mapStoreBeanName));
+            msc.setImplementation(mapStore);
             msc.setWriteDelaySeconds(writeDelaySeconds);
 
             MapConfig mc = new MapConfig();
@@ -72,7 +69,8 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
             mc.setMaxSizeConfig(maxSizeConfig);
 
             hzInstance.getConfig().addMapConfig(mc);
-            logger.debug("Config for map name[{}] with map store bean [{}] added...", mapName, mapStoreBeanName);
+            logger.debug("Config for map name[{}] with map store bean [{}] added...", mapName,
+                    mapStore.getClass().getName());
 
         } finally {
             mapConfigLock.unlock();
@@ -88,11 +86,6 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
             }
         }
         return result;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 
     public HazelcastInstance getHzInstance() {
@@ -111,12 +104,8 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
         this.mapConfigLock = mapConfigLock;
     }
 
-    public String getMapStoreBeanName() {
-        return mapStoreBeanName;
-    }
-
-    public void setMapStoreBeanName(String mapStoreBeanName) {
-        this.mapStoreBeanName = mapStoreBeanName;
+    public void setMapStore(MapStore mapStore) {
+        this.mapStore = mapStore;
     }
 
     public int getAsyncBackupsCount() {

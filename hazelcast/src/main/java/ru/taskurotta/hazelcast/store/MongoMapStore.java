@@ -1,4 +1,4 @@
-package ru.taskurotta.spring.mongodb;
+package ru.taskurotta.hazelcast.store;
 /*
  * Copyright (c) 2008-2013, Hazelcast, Inc. All Rights Reserved.
  *
@@ -54,11 +54,6 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
     }
 
     public void store(Object key, Object value) {
-
-        if (mapName.equals("DecisionMapStorage")) {
-            logger.debug("Store key: " + key);
-        }
-
         DBObject dbo = converter.toDBObject(value);
         dbo.put("_id", key);
         coll.save(dbo);

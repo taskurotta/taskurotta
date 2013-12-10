@@ -1,10 +1,11 @@
-package ru.taskurotta.hazelcast;
+package ru.taskurotta.hazelcast.store;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.mongodb.DBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 
 /**
  * Support for  persisted in mongoDB queues restore.
@@ -20,7 +21,7 @@ public class HzQueueRestoreSupport {
     private MongoTemplate mongoTemplate;
     private HazelcastInstance hzInstance;
     private String queuePrefix;
-    private HzQueueSpringConfigSupport hzQueueSpringConfigSupport;
+    private HzQueueConfigSupport hzQueueConfigSupport;
     private boolean restore = true;
 
     public void init() {
@@ -29,8 +30,8 @@ public class HzQueueRestoreSupport {
             for (String collectionName : mongoTemplate.getCollectionNames()) {
                 if (collectionName.startsWith(queuePrefix)) {//is backing queue
                     String queueName = collectionName.endsWith(BACKING_MAP_SUFFIX) ? collectionName.substring(0, collectionName.lastIndexOf(BACKING_MAP_SUFFIX)) : collectionName;
-                    if (hzQueueSpringConfigSupport != null) {
-                        hzQueueSpringConfigSupport.createQueueConfig(queueName);
+                    if (hzQueueConfigSupport != null) {
+                        hzQueueConfigSupport.createQueueConfig(queueName);
                     } else {
                         logger.warn("Cannot restore queue[{}], mapstore config is not set!", queueName);
                     }
@@ -63,8 +64,8 @@ public class HzQueueRestoreSupport {
         this.queuePrefix = queuePrefix;
     }
 
-    public void setHzQueueSpringConfigSupport(HzQueueSpringConfigSupport hzQueueSpringConfigSupport) {
-        this.hzQueueSpringConfigSupport = hzQueueSpringConfigSupport;
+    public void setHzQueueConfigSupport(HzQueueConfigSupport hzQueueConfigSupport) {
+        this.hzQueueConfigSupport = hzQueueConfigSupport;
     }
 
     public void setRestore(boolean restore) {
