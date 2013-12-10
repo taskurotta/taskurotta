@@ -35,7 +35,7 @@ public abstract class AbstractGCTask implements Runnable {
         Graph graph = graphDao.getGraph(processId);
 
         if (graph == null) {
-            logger.error("Not found graph fro process [{}], stop garbage collector for this process", processId);
+            logger.error("Not found graph for process [{}], stop garbage collector for this process", processId);
             return;
         }
 
