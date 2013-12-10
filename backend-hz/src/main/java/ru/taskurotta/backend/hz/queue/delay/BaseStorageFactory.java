@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * User: romario
@@ -27,7 +28,16 @@ public class BaseStorageFactory implements StorageFactory {
         this.hazelcastInstance = hazelcastInstance;
         this.mapStoragePrefix = mapStoragePrefix;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
+        ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+            private int counter = 0;
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("BaseStorageFactory-" + counter++);
+                return thread;
+            }
+        });
 
         for (int i = 0; i < poolSize; i++) {
             executorService.submit(new Runnable() {
