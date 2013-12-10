@@ -45,7 +45,6 @@ public class BaseStorageFactory implements StorageFactory {
                 public void run() {
                     while (true) {
                         for (Map.Entry<String, String> entry : queueMaps.entrySet()) {
-                            String queueName = entry.getKey();
                             String mapName = entry.getValue();
 
                             IMap<UUID, BaseStorageItem> iMap = hazelcastInstance.getMap(mapName);
@@ -61,6 +60,7 @@ public class BaseStorageFactory implements StorageFactory {
                                 continue;
                             }
 
+                            String queueName = entry.getKey();
                             for (UUID key : keys) {
                                 BaseStorageItem storageItem = iMap.remove(key);
                                 hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
