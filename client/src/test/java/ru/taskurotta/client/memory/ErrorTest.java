@@ -52,7 +52,7 @@ public class ErrorTest extends AbstractTestStub {
         assertEmptyQueue();
 
         Promise promise = (Promise)taskC.getArgs()[0];
-        assertTrue("Promise contains error", promise.containsFail());
+        assertTrue("Promise contains error", promise.hasFail());
 
         Fail fail = promise.getFail();
         assertTrue(fail.instanceOf("java.lang.RuntimeException"));

@@ -22,9 +22,9 @@ import java.text.ParseException;
 @Path("/console/schedule/validate/{type}")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class JobValidationResource {
+public class SchedulerValidationResource {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobValidationResource.class);
+    private static final Logger logger = LoggerFactory.getLogger(SchedulerValidationResource.class);
 
     public static final String TYPE_CRON = "cron";
 

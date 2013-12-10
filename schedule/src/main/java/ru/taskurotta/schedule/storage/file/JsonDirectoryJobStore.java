@@ -1,6 +1,5 @@
 package ru.taskurotta.schedule.storage.file;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,10 +8,7 @@ import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.util.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,9 +20,9 @@ import java.util.Collection;
  *
  * Date: 09.12.13 13:35
  */
-public class JsonFileJobStore implements JobStore {
+public class JsonDirectoryJobStore implements JobStore {
 
-    private static final Logger logger = LoggerFactory.getLogger(JsonFileJobStore.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonDirectoryJobStore.class);
     protected ObjectMapper objectMapper = new ObjectMapper();
     public static final String STORE_FILE_EXTENSION = ".json";
 
@@ -47,7 +43,7 @@ public class JsonFileJobStore implements JobStore {
     }
 
     protected int getAvailableFileNumber() {
-        int result = 0;
+        int result = 1;
         while (new File(storeDir, result + STORE_FILE_EXTENSION).exists()) {
             result++;
         }
@@ -59,6 +55,7 @@ public class JsonFileJobStore implements JobStore {
     public long addJob(JobVO task) {
         int fileNumber = getAvailableFileNumber();
         try {
+            task.setId(fileNumber);
             objectMapper.writeValue(new File(storeDir, fileNumber + STORE_FILE_EXTENSION), task);
             logger.debug("Job added with number [{}]", fileNumber);
         } catch (IOException e) {

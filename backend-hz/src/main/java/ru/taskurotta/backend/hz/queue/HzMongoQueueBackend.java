@@ -284,7 +284,7 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
             List<String> queueNames = fullFilteredQueueNamesList.subList(pageStart, pageEnd);
             if (queueNames != null && !queueNames.isEmpty()) {
                 IExecutorService es = hazelcastInstance.getExecutorService(HZ_QUEUE_INFO_EXECUTOR_SERVICE);
-                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(queueNames, queueNamePrefix));
+                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(new ArrayList<String>(queueNames), queueNamePrefix));
                 List<QueueStatVO> resultItems = new ArrayList<>();
                 int nodes = 0;
                 for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {

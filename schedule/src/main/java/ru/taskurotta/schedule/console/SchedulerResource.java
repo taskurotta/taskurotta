@@ -9,8 +9,6 @@ import org.springframework.util.StringUtils;
 import ru.taskurotta.dropwizard.resources.Action;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
-import ru.taskurotta.schedule.adapter.HzJobMessageHandler;
-import ru.taskurotta.schedule.adapter.HzMessage;
 import ru.taskurotta.schedule.manager.JobManager;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskType;
@@ -26,6 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -42,11 +41,10 @@ import java.util.UUID;
 @Path("/console/schedule")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class JobQuartzResource implements JobConstants {
+public class SchedulerResource implements JobConstants {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobQuartzResource.class);
+    private static final Logger logger = LoggerFactory.getLogger(SchedulerResource.class);
     private JobManager jobManager;
-    private HzJobMessageHandler hzScheduleEventDispatcher;
 
     @GET
     @Path("/list")
@@ -88,7 +86,6 @@ public class JobQuartzResource implements JobConstants {
         logger.debug("JobVO getted by id[{}] is [{}]", id, jobVO);
         return jobVO;
     }
-
 
     /**
      * POJO wrapper for UI representation of JobVO with additional fields
@@ -134,7 +131,6 @@ public class JobQuartzResource implements JobConstants {
 
     }
 
-
     @PUT
     @Path("/update")
     public void updateScheduledTask(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
@@ -151,7 +147,6 @@ public class JobQuartzResource implements JobConstants {
         }
 
     }
-
 
     protected JobVO getValidJob (Optional<String> cronOpt, Optional<String> nameOpt, Optional<Integer> queueLimitOpt, Optional<Long> jobIdOpt, TaskContainer task) {
         String cron = cronOpt.or("");
@@ -204,41 +199,36 @@ public class JobQuartzResource implements JobConstants {
 
     @POST
     @Path("/action/{action}")
-    public Response processTask(@PathParam("action")String action, @QueryParam("id") Long id) {
+    public void processTask(@PathParam("action")String action, @QueryParam("id") Long id) {
+        logger.debug("Sending schedule message for id [{}]", id);
 
-        if (isActionSupported(action)) {
-            logger.debug("Sending schedule message for id [{}]", id);
-            hzScheduleEventDispatcher.dispatch(new HzMessage(id, action));
-            return Response.ok().build();
+        if(Action.ACTIVATE.getValue().equals(action)) {
+            jobManager.startJob(id);
+
+        } else if (Action.DEACTIVATE.getValue().equals(action)) {
+            jobManager.stopJob(id);
+
+        } else if (Action.DELETE.getValue().equals(action)) {
+            jobManager.removeJob(id);
 
         } else {
             logger.error("Unsupported combination of method[POST] and action[" + action + "].");
-            return Response.serverError().build();
+            throw new WebApplicationException(Status.NOT_ACCEPTABLE);
         }
-
-    }
-
-    private boolean isActionSupported(String action) {
-        return Action.DELETE.getValue().equals(action)
-                || Action.ACTIVATE.getValue().equals(action)
-                || Action.DEACTIVATE.getValue().equals(action);
     }
 
     public static TaskContainer extendTask(TaskContainer target) {
         UUID taskId = target.getTaskId()!=null? target.getTaskId(): UUID.randomUUID();
         UUID processId = target.getProcessId()!=null? target.getProcessId(): UUID.randomUUID();
         TaskType type = target.getType()!=null? target.getType(): TaskType.DECIDER_START;
-//        long startTime = target.getStartTime() != 0 ? target.getStartTime(): System.currentTimeMillis();
         long startTime = -1; // for scheduled task start time must be -1
         int numberOfAttempts = target.getNumberOfAttempts()!=0? target.getNumberOfAttempts(): 5;
 
         return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), type, startTime, numberOfAttempts, target.getArgs(), target.getOptions(), target.getFailTypes());
     }
 
-
     public Date getNextExecutionTime(String cron) {
         Date result = null;
-
         try {
             result = new CronExpression(cron).getNextValidTimeAfter(new Date());
         } catch (ParseException e) {
@@ -246,11 +236,6 @@ public class JobQuartzResource implements JobConstants {
         }
 
         return result;
-    }
-
-    @Required
-    public void setHzScheduleEventDispatcher(HzJobMessageHandler hzScheduleEventDispatcher) {
-        this.hzScheduleEventDispatcher = hzScheduleEventDispatcher;
     }
 
     @Required
