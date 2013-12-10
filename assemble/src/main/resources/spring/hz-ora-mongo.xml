@@ -22,8 +22,7 @@
     <import resource="backend/process-to-oracle.xml"/>
 
     <!-- console -->
-    <import resource="rest/console-scheduler.xml" />
-    <import resource="scheduler/ora-job-store.xml" />
+    <import resource="scheduler/ora-stored-hz-scheduler.xml" />
     <import resource="rest/task-server.xml" />
 
 </beans>

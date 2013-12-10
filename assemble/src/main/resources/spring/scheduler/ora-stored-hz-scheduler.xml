@@ -7,25 +7,21 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
+    <bean id = "jobStore" class="ru.taskurotta.schedule.storage.ora.OraJobStore" >
+        <property name="dataSource" ref="dataSource" />
+    </bean>
 
-    <!-- SCHEDULING -->
-    <bean id = "jobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
-        <property name="jobStore" ref="scheduleStore" />
+    <bean id = "realJobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
+        <property name="jobStore" ref="jobStore" />
         <property name="queueInfoRetriever" ref="realQueueBackend" />
         <property name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id = "scheduleStore" class="ru.taskurotta.schedule.storage.ora.OraJobStore" >
-        <property name="dataSource" ref="dataSource" />
-    </bean>
-
-    <bean id = "hzScheduleMessageDispatcher" class="ru.taskurotta.schedule.adapter.HzJobMessageHandler">
+    <bean id="jobManager" class="ru.taskurotta.schedule.adapter.HzJobManagerAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="jobManager" ref="jobManager" />
-        <constructor-arg name="scheduleTopicName" value="${hz.schedule.topic.name}" />
+        <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic.name}" />
+        <constructor-arg name="jobManager" ref="realJobManager" />
     </bean>
-    <!-- /SCHEDULING -->
-
 
     <!-- Scheduler transactions -->
     <tx:advice id="schedulerAdvice" transaction-manager="txManager">
