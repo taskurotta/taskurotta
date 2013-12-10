@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,7 +25,17 @@ public class CommonStorageFactory implements StorageFactory {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex("enqueueTime", true);
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            private int counter = 0;
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("CommonStorageFactory-" + counter++);
+                return thread;
+            }
+        });
+
         executorService.submit(new Runnable() {
             @Override
             public void run() {
