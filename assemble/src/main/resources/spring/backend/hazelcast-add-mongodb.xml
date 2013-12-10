@@ -24,10 +24,10 @@
 
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
-        <property name="maxSize" value="500000"/>
-        <property name="memoryLimit" value="100000"/>
-        <property name="binary" value="true"/>
-        <property name="bulkLoad" value="500"/>
+        <property name="maxSize" value="0"/>
+        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="binary" value="false"/>
+        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
     </bean>
 
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.HzQueueRestoreSupport" init-method="init">
@@ -69,6 +69,8 @@
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
 
+        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <property name="hzMapConfigSpringSupport" ref="hzMapConfigSpringSupport"/>
         <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
     <!-- /Backends -->
