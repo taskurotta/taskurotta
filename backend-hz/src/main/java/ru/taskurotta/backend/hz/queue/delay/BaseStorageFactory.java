@@ -23,40 +23,43 @@ public class BaseStorageFactory implements StorageFactory {
 
     private Map<String, String> queueMaps = new ConcurrentHashMap<>();
 
-    public BaseStorageFactory(final HazelcastInstance hazelcastInstance, String mapStoragePrefix) {
+    public BaseStorageFactory(final HazelcastInstance hazelcastInstance, int poolSize, String mapStoragePrefix) {
         this.hazelcastInstance = hazelcastInstance;
         this.mapStoragePrefix = mapStoragePrefix;
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    for (Map.Entry<String, String> entry : queueMaps.entrySet()) {
-                        String queueName = entry.getKey();
-                        String mapName = entry.getValue();
+        ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
 
-                        IMap<UUID, BaseStorageItem> iMap = hazelcastInstance.getMap(mapName);
+        for (int i = 0; i < poolSize; i++) {
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        for (Map.Entry<String, String> entry : queueMaps.entrySet()) {
+                            String queueName = entry.getKey();
+                            String mapName = entry.getValue();
 
-                        if (iMap.isEmpty()) {
-                            continue;
-                        }
+                            IMap<UUID, BaseStorageItem> iMap = hazelcastInstance.getMap(mapName);
 
-                        Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
-                                System.currentTimeMillis()));
+                            if (iMap.isEmpty()) {
+                                continue;
+                            }
 
-                        if (keys == null || keys.isEmpty()) {
-                            continue;
-                        }
+                            Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
+                                    System.currentTimeMillis()));
 
-                        for (UUID key : keys) {
-                            BaseStorageItem storageItem = iMap.remove(key);
-                            hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
+                            if (keys == null || keys.isEmpty()) {
+                                continue;
+                            }
+
+                            for (UUID key : keys) {
+                                BaseStorageItem storageItem = iMap.remove(key);
+                                hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override

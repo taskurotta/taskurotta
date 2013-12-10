@@ -58,7 +58,7 @@ public class DelayIQueueTest {
 
         try {
 
-            StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance, "testStorage");
+            StorageFactory storageFactory = new BaseStorageFactory(hazelcastInstance, 1, "testStorage");
             QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
 
             DelayIQueue<String> delayIQueue = queueFactory.create("testQueue");
