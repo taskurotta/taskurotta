@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: romario
@@ -22,7 +23,8 @@ public class BaseStorageFactory implements StorageFactory {
     private HazelcastInstance hazelcastInstance;
     private String mapStoragePrefix;
 
-    private Map<String, String> queueMaps = new ConcurrentHashMap<>();
+    private transient final ReentrantLock lock = new ReentrantLock();
+    private ConcurrentHashMap<String, String> queueMaps = new ConcurrentHashMap<>();
 
     public BaseStorageFactory(final HazelcastInstance hazelcastInstance, int poolSize, String mapStoragePrefix) {
         this.hazelcastInstance = hazelcastInstance;
@@ -74,12 +76,32 @@ public class BaseStorageFactory implements StorageFactory {
 
     @Override
     public Storage createStorage(String queueName) {
-        String mapName = mapStoragePrefix + queueName;
 
-        IMap<UUID, BaseStorageItem> iMap = hazelcastInstance.getMap(mapName);
-        iMap.addIndex("enqueueTime", true);
+        IMap<UUID, BaseStorageItem> iMap;
+        String mapName = queueMaps.get(queueName);
 
-        queueMaps.put(queueName, mapName);
+        if (mapName == null) {
+
+            final ReentrantLock lock = this.lock;
+            lock.lock();
+
+            try {
+
+                mapName = queueMaps.get(queueName);
+                if (mapName == null) {
+                    mapName = mapStoragePrefix + queueName;
+                }
+                queueMaps.put(queueName, mapName);
+
+                iMap = hazelcastInstance.getMap(mapName);
+                iMap.addIndex("enqueueTime", true);
+
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        iMap = hazelcastInstance.getMap(mapName);
 
         return new BaseStorage(iMap);
     }
