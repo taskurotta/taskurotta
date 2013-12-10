@@ -8,7 +8,7 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.PartitionService;
-import ru.taskurotta.backend.hz.util.MemberQueue;
+import ru.taskurotta.hazelcast.util.MemberQueue;
 
 /**
  * User: romario

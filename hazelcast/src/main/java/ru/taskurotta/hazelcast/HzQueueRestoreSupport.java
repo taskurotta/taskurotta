@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.support;
+package ru.taskurotta.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.mongodb.DBCollection;
@@ -28,7 +28,7 @@ public class HzQueueRestoreSupport {
             int queueRestored = 0;
             for (String collectionName : mongoTemplate.getCollectionNames()) {
                 if (collectionName.startsWith(queuePrefix)) {//is backing queue
-                    String queueName = collectionName.endsWith(BACKING_MAP_SUFFIX)? collectionName.substring(0, collectionName.lastIndexOf(BACKING_MAP_SUFFIX)): collectionName;
+                    String queueName = collectionName.endsWith(BACKING_MAP_SUFFIX) ? collectionName.substring(0, collectionName.lastIndexOf(BACKING_MAP_SUFFIX)) : collectionName;
                     if (hzQueueSpringConfigSupport != null) {
                         hzQueueSpringConfigSupport.createQueueConfig(queueName);
                     } else {

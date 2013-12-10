@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.util;
+package ru.taskurotta.hazelcast.util;
 
 import java.util.Arrays;
 import java.util.Collection;

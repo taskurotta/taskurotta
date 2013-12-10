@@ -10,11 +10,10 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/multiplier/SpreaderBeans-jersey.xml
         properties:
-          count: 0
+          count: 1000000
           startTasks: true
           startTasksInBackground: false
           endpoint: "http://localhost:8811"
-#          endpoint: "http://tsqs.fccland.ru:8080"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
@@ -34,7 +33,7 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
-      count: 1
+      count: 0
 
 logback:
     appender:

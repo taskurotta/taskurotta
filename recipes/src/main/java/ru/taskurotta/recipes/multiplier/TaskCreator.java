@@ -29,6 +29,7 @@ public class TaskCreator implements Runnable, ApplicationListener<ContextRefresh
 
     public static final Lock Monitor = new ReentrantLock(true);
     public static final AtomicBoolean canWork = new AtomicBoolean(false);
+    private int multiplier = 1;
 
     public void createStartTask(final MultiplierDeciderClient deciderClient) {
         log.info("warming up task launcher(s) [{}]...", threadsCount);
@@ -45,16 +46,17 @@ public class TaskCreator implements Runnable, ApplicationListener<ContextRefresh
             for (int i = 0; i < count; i++) {
                 final int a = (int) (Math.random() * 100);
                 final int b = (int) (Math.random() * 100);
-
-                executorService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        deciderClient.multiply(a, b);
-                        latch.countDown();
-                    }
-                });
+                log.info(" Task № " + multiplier * i);
+                deciderClient.multiply(a, b);
+//                executorService.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        deciderClient.multiply(a, b);
+//                        latch.countDown();
+//                    }
+//                });
             }
-
+            multiplier++;
             try {
                 latch.await();
             } catch (InterruptedException e) {

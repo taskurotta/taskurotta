@@ -1,23 +1,4 @@
-package ru.taskurotta.backend.hz.serialization;
-
-import com.hazelcast.config.Config;
-import com.hazelcast.config.SerializerConfig;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import ru.taskurotta.backend.dependency.links.Graph;
-import ru.taskurotta.backend.dependency.links.Modification;
-import ru.taskurotta.backend.hz.dependency.HzGraphDao;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
-import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.transport.model.TaskType;
+package ru.taskurotta.hz.test.serialization;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +11,32 @@ import java.util.Set;
 import java.util.UUID;
 
 import static junit.framework.Assert.assertEquals;
+
+import com.hazelcast.config.Config;
+import com.hazelcast.config.SerializerConfig;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import ru.taskurotta.backend.dependency.links.Graph;
+import ru.taskurotta.backend.dependency.links.Modification;
+import ru.taskurotta.backend.hz.dependency.HzGraphDao;
+import ru.taskurotta.backend.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer;
+import ru.taskurotta.backend.hz.serialization.ArgContainerStreamSerializer;
+import ru.taskurotta.backend.hz.serialization.DecisionRowStreamSerializer;
+import ru.taskurotta.backend.hz.serialization.ErrorContainerStreamSerializer;
+import ru.taskurotta.backend.hz.serialization.GraphStreamSerializer;
+import ru.taskurotta.backend.hz.serialization.TaskContainerStreamSerializer;
+import ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer;
+import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.transport.model.ErrorContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.TaskType;
 
 /**
  * User: romario
@@ -120,7 +127,7 @@ public class SerializationTest {
 
         HzGraphDao.DecisionRow fromMapDecisionRow = (HzGraphDao.DecisionRow) hzMap.get("dec");
 
-        assertEquals(decisionRow, fromMapDecisionRow);
+        junit.framework.Assert.assertEquals(decisionRow, fromMapDecisionRow);
     }
 
     @Test

@@ -50,6 +50,7 @@
         <module>patches</module>
         <module>test</module>
         <module>schedule</module>
+        <module>hazelcast</module>
     </modules>
 
     <profiles>

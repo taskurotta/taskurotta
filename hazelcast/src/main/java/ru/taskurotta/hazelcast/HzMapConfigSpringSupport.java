@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.support;
+package ru.taskurotta.hazelcast;
 
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
@@ -43,7 +43,7 @@ public class HzMapConfigSpringSupport implements ApplicationContextAware {
         this.mapConfigLock = hzInstance.getLock(MAP_CONFIG_LOCK);
     }
 
-    public void createMapConfig (String mapName) {
+    public void createMapConfig(String mapName) {
         try {
             mapConfigLock.lock();
 

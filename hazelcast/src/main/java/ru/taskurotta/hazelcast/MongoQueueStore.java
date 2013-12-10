@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.support;
+package ru.taskurotta.hazelcast;
 
 import java.util.Collection;
 import java.util.HashMap;

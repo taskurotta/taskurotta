@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Config support -->
-    <bean id="hzConfigBackendSupport" class="ru.taskurotta.backend.hz.support.HzConfigBackendSupport"
+    <bean id="hzConfigBackendSupport" class="ru.taskurotta.hazelcast.HzConfigBackendSupport"
           init-method="init">
         <property name="hzInstance" ref="hzInstance"/>
         <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
@@ -110,7 +110,7 @@
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="queueBackend" ref="queueBackend"/>
         <constructor-arg name="taskBackend" ref="taskBackend"/>
-        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
+        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend"/>
         <constructor-arg name="garbageCollectorBackend" ref="garbageCollectorBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nodeCustomName" value="${node.custom.name}"/>

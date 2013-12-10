@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.support;
+package ru.taskurotta.hazelcast;
 
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.retriever.DecisionInfoRetriever;

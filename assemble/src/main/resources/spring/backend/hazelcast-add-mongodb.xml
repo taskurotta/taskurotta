@@ -4,8 +4,8 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-    <bean id="hzMapConfigSpringSupport" class="ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
+    <bean id="hzMapConfigSpringSupport" class="ru.taskurotta.hazelcast.HzMapConfigSpringSupport">
+    <constructor-arg name="hzInstance" ref="hzInstance"/>
 
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
@@ -18,9 +18,9 @@
     </bean>
 
     <!-- Queues persistence support -->
-    <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
+    <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueSpringConfigSupport">
 
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
+    <constructor-arg name="hzInstance" ref="hzInstance"/>
 
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
@@ -30,8 +30,8 @@
         <property name="bulkLoad" value="500"/>
     </bean>
 
-    <bean id="restoreQueueSupport" class="ru.taskurotta.backend.hz.support.HzQueueRestoreSupport" init-method="init">
-        <property name="mongoTemplate" ref="mongoTemplate"/>
+    <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.HzQueueRestoreSupport" init-method="init">
+    <property name="mongoTemplate" ref="mongoTemplate"/>
         <property name="hzInstance" ref="hzInstance"/>
         <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
         <property name="hzQueueSpringConfigSupport" ref="queueConfigSupport"/>

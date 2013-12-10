@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.support;
+package ru.taskurotta.hazelcast;
 
 import java.util.Properties;
 
@@ -80,8 +80,8 @@ public class HzQueueSpringConfigSupport implements ApplicationContextAware {
         result.setEnabled(true);
         Properties properties = new Properties();
         properties.put("binary", this.binary);
-        properties.put("memory-limit", this.memoryLimit);
-        properties.put("bulk-load", this.bulkLoad);
+        properties.put("memory-limit", ((Integer) this.memoryLimit).toString());
+        properties.put("bulk-load", ((Integer) this.bulkLoad).toString());
         result.setProperties(properties);
         return result;
     }

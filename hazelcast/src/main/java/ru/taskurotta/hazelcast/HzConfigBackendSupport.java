@@ -1,4 +1,7 @@
-package ru.taskurotta.backend.hz.support;
+package ru.taskurotta.hazelcast;
+
+
+import javax.annotation.PostConstruct;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.DistributedObjectEvent;
@@ -11,19 +14,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.config.model.ActorPreferences;
 
-import javax.annotation.PostConstruct;
-
 /**
  * Designed to populate distributed ActorPreferences map at runtime.
  * If a new task queue object created for absent(unregistered) actor config,
  * that config would be automatically appended to configuration
- *
+ * <p/>
  * User: dimadin
  * Date: 05.09.13 11:56
  */
 public class HzConfigBackendSupport implements DistributedObjectListener {
 
-    private static final Logger logger  = LoggerFactory.getLogger(HzConfigBackendSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzConfigBackendSupport.class);
     private String queuePrefix;
     private HazelcastInstance hzInstance;
     private String actorPreferencesMapName;
