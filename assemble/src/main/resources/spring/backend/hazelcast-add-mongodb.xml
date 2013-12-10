@@ -39,8 +39,6 @@
     </bean>
     <!-- /Queues persistence support -->
 
-
-
     <!--  Actor config support  -->
     <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.HzActorConfigManager">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
@@ -50,24 +48,4 @@
         <property name="metricsDataRetriever" ref="metricsDataHandler"/>
     </bean>
     <!-- /Actor config support -->
-
-    <!-- Delay queue support -->
-    <bean id="storageFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
-    </bean>
-
-    <bean id="queueFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="storageFactory" ref="storageFactory"/>
-    </bean>
-    <!-- /Delay queue support -->
-
-    <!-- Backends -->
-    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
-        <constructor-arg name="queueFactory" ref="queueFactory"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
-    </bean>
-    <!-- /Backends -->
 </beans>
