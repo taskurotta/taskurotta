@@ -59,6 +59,7 @@
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
@@ -71,6 +72,7 @@
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>
     <!-- /Delay queue support -->
