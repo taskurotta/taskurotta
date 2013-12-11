@@ -54,16 +54,16 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
-             \@level: !!!str OFF
+             \@level: WARN
         - ru.taskurotta.recipes.stress:
              key: name
              \@level: DEBUG
         - org:
              key: name
-             \@level: !!!str OFF
+             \@level: WARN
         - httpclient:
              key: name
-             \@level: !!!str OFF
+             \@level: WARN
     root:
         appender-ref:
             - STDOUT:
