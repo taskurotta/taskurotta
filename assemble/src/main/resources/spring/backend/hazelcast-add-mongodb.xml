@@ -51,6 +51,7 @@
     <!-- /Actor config support -->
 
     <!-- Delay queue support -->
+    <!-- removed as not needed. BaseStorageFactory should be optimized for CPU usage
     <bean id="storageFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
@@ -60,6 +61,7 @@
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactory"/>
     </bean>
+    -->
     <!-- /Delay queue support -->
 
     <!-- Backends -->
