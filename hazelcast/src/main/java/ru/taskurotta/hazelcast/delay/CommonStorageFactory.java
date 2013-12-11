@@ -3,12 +3,14 @@ package ru.taskurotta.hazelcast.delay;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -19,13 +21,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonStorageFactory implements StorageFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(CommonStorageFactory.class);
+
     private final IMap<UUID, CommonStorageItem> iMap;
 
-    public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName) {
+    public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, String schedule) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex("enqueueTime", true);
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        long delay = 1000l;
+        TimeUnit delayTimeUnit = TimeUnit.MILLISECONDS;
+        String[] params = schedule.split("_");
+        if (params.length == 2) {
+            delay = Long.valueOf(params[0]);
+            delayTimeUnit = TimeUnit.valueOf(params[1].toUpperCase());
+        }
+        logger.info("Set schedule delay = [{}] delayTimeUnit = [{}] for search ready processes for GC", delay, delayTimeUnit);
+
+        ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -36,30 +49,27 @@ public class CommonStorageFactory implements StorageFactory {
             }
         });
 
-        executorService.submit(new Runnable() {
+        singleThreadScheduledExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                while (true) {
+                if (iMap.isEmpty()) {
+                    return;
+                }
 
-                    if (iMap.isEmpty()) {
-                        continue;
-                    }
+                Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
+                        System.currentTimeMillis()));
 
-                    Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
-                            System.currentTimeMillis()));
+                if (keys == null || keys.isEmpty()) {
+                    return;
+                }
 
-                    if (keys == null || keys.isEmpty()) {
-                        continue;
-                    }
-
-                    for (UUID key : keys) {
-                        CommonStorageItem storageItem = iMap.remove(key);
-                        String queueName = storageItem.getQueueName();
-                        hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
-                    }
+                for (UUID key : keys) {
+                    CommonStorageItem storageItem = iMap.remove(key);
+                    String queueName = storageItem.getQueueName();
+                    hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
                 }
             }
-        });
+        }, 0l, delay, delayTimeUnit);
     }
 
     @Override

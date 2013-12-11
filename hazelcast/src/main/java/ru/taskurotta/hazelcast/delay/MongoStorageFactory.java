@@ -6,13 +6,16 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -22,6 +25,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class MongoStorageFactory implements StorageFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
+
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
 
@@ -29,11 +34,20 @@ public class MongoStorageFactory implements StorageFactory {
     private ConcurrentHashMap<String, String> dbCollectionNamesMap = new ConcurrentHashMap<>();
 
     public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final MongoTemplate mongoTemplate,
-                               int poolSize, String storagePrefix) {
+                               String storagePrefix, String schedule) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+        long delay = 1000l;
+        TimeUnit delayTimeUnit = TimeUnit.MILLISECONDS;
+        String[] params = schedule.split("_");
+        if (params.length == 2) {
+            delay = Long.valueOf(params[0]);
+            delayTimeUnit = TimeUnit.valueOf(params[1].toUpperCase());
+        }
+        logger.info("Set schedule delay = [{}] delayTimeUnit = [{}] for search ready processes for GC", delay, delayTimeUnit);
+
+        ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -44,44 +58,40 @@ public class MongoStorageFactory implements StorageFactory {
             }
         });
 
-        for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        for (Map.Entry<String, String> entry : dbCollectionNamesMap.entrySet()) {
-                            String dbCollectionName = entry.getValue();
+        singleThreadScheduledExecutor.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                for (Map.Entry<String, String> entry : dbCollectionNamesMap.entrySet()) {
+                    String dbCollectionName = entry.getValue();
 
-                            DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                    DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
-                            if (dbCollection.count() == 0) {
-                                continue;
-                            }
+                    if (dbCollection.count() == 0) {
+                        continue;
+                    }
 
-                            BasicDBObject query = new BasicDBObject(MongoStorage.ENQUEUE_TIME_NAME,
-                                    new BasicDBObject("$lte", System.currentTimeMillis()));
+                    BasicDBObject query = new BasicDBObject(MongoStorage.ENQUEUE_TIME_NAME,
+                            new BasicDBObject("$lte", System.currentTimeMillis()));
 
-                            try (DBCursor dbCursor = dbCollection.find(query)) {
+                    try (DBCursor dbCursor = dbCollection.find(query)) {
 
-                                if (dbCursor.size() == 0) {
-                                    continue;
-                                }
+                        if (dbCursor.size() == 0) {
+                            continue;
+                        }
 
-                                String queueName = entry.getKey();
-                                IQueue iQueue = hazelcastInstance.getQueue(queueName);
+                        String queueName = entry.getKey();
+                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                                while(dbCursor.hasNext()) {
-                                    DBObject dbObject = dbCursor.next();
-                                    if (iQueue.add(dbObject.get(MongoStorage.OBJECT_NAME))) {
-                                        dbCollection.remove(dbObject);
-                                    }
-                                }
+                        while (dbCursor.hasNext()) {
+                            DBObject dbObject = dbCursor.next();
+                            if (iQueue.add(dbObject.get(MongoStorage.OBJECT_NAME))) {
+                                dbCollection.remove(dbObject);
                             }
                         }
                     }
                 }
-            });
-        }
+            }
+        }, 0l, delay, delayTimeUnit);
     }
 
     @Override
