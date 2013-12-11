@@ -13,8 +13,6 @@ public interface Storage<E> {
 
     public boolean remove(E e);
 
-    public boolean contains(E e);
-
     public void clear();
 
     public void destroy();

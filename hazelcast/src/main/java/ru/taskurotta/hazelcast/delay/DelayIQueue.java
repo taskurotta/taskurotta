@@ -3,6 +3,7 @@ package ru.taskurotta.hazelcast.delay;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ItemListener;
 import com.hazelcast.monitor.LocalQueueStats;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -68,7 +69,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean contains(Object o) {
-        return queue.contains(o) || storage.contains((E) o);
+        throw new NotImplementedException();
     }
 
     @Override

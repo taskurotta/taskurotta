@@ -51,15 +51,6 @@ public class MongoStorage implements Storage {
     }
 
     @Override
-    public boolean contains(Object o) {
-        BasicDBObject query = new BasicDBObject(MongoStorage.OBJECT_NAME, new BasicDBObject("$in", o));
-
-        try (DBCursor dbCursor = dbCollection.find(query)) {
-            return dbCursor.size() != 0;
-        }
-    }
-
-    @Override
     public void clear() {
         dbCollection.drop();
     }

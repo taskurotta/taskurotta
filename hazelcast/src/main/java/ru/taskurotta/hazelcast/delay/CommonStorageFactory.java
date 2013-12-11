@@ -103,11 +103,6 @@ public class CommonStorageFactory implements StorageFactory {
             }
 
             @Override
-            public boolean contains(Object o) {
-                return iMap.containsValue(o);
-            }
-
-            @Override
             public void clear() {
                 // don't clear, because it's common storage for all queues
             }

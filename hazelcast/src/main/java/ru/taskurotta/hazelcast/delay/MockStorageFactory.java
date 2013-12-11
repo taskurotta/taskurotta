@@ -29,11 +29,6 @@ public class MockStorageFactory implements StorageFactory {
             }
 
             @Override
-            public boolean contains(Object o) {
-                return false;
-            }
-
-            @Override
             public void clear() {
 
             }
