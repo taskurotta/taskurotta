@@ -21,7 +21,7 @@ public class BaseStorage implements Storage {
 
     @Override
     public boolean add(Object o, long delayTime, TimeUnit unit) {
-        long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
+        long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
         BaseStorageItem storageItem = new BaseStorageItem(o, enqueueTime);
 
         while (storage.putIfAbsent(UUID.randomUUID(), storageItem) != null) {

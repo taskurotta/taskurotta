@@ -134,7 +134,7 @@ public class MemoryQueueBackend implements QueueBackend, QueueInfoRetriever {
 
         @Override
         public long getDelay(TimeUnit unit) {
-            return unit.toMillis(startTime - System.currentTimeMillis());
+            return unit.convert(startTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         }
 
         @Override

@@ -26,7 +26,7 @@ public class MongoStorage implements Storage {
 
     @Override
     public boolean add(Object o, long delayTime, TimeUnit unit) {
-        long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
+        long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
 
         DBObject dbObject = new BasicDBObject().append(OBJECT_NAME, o).append(ENQUEUE_TIME_NAME, enqueueTime);
 

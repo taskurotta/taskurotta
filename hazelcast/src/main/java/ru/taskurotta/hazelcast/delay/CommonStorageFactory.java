@@ -68,7 +68,7 @@ public class CommonStorageFactory implements StorageFactory {
             @Override
             public boolean add(Object o, long delayTime, TimeUnit unit) {
 
-                long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
+                long enqueueTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(delayTime, unit);
                 CommonStorageItem storageItem = new CommonStorageItem(o, enqueueTime, queueName);
 
                 while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
