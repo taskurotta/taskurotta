@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.queue.delay;
+package ru.taskurotta.hazelcast.delay;
 
 /**
  * User: stukushin
