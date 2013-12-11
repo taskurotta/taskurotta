@@ -39,7 +39,25 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
         });
 
         for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new MemoryGCTask(processBackend, graphDao, taskDao));
+            executorService.submit(new AbstractGCTask(processBackend, graphDao, taskDao) {
+                @Override
+                public void run() {
+                    while(true) {
+                        DelayFinishedProcess delayFinishedProcess = null;
+                        try {
+                            delayFinishedProcess = garbageCollectorQueue.take();
+                        } catch (InterruptedException e) {
+                            logger.error("Catch exception while find process for garbage collector", e);
+                        }
+
+                        if (delayFinishedProcess == null) {
+                            continue;
+                        }
+
+                        gc(delayFinishedProcess.processId);
+                    }
+                }
+            });
         }
     }
 
@@ -64,35 +82,6 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
         }
     }
 
-    class MemoryGCTask extends AbstractGCTask {
-
-        protected MemoryGCTask(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
-            super(processBackend, graphDao, taskDao);
-        }
-
-        @Override
-        public void run() {
-
-            while(true) {
-
-                logger.trace("Try to get process for garbage collector");
-
-                DelayFinishedProcess delayFinishedProcess = null;
-                try {
-                    delayFinishedProcess = garbageCollectorQueue.take();
-                } catch (InterruptedException e) {
-                    logger.error("Catch exception while find process for garbage collector", e);
-                }
-
-                if (delayFinishedProcess == null) {
-                    continue;
-                }
-
-                gc(delayFinishedProcess.processId);
-            }
-        }
-    }
-
     @Override
     public void delete(UUID processId, String actorId) {
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
@@ -103,9 +92,5 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
         }
 
         garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + delayTime));
-    }
-
-    public void setDelayTime(long delayTime) {
-        this.delayTime = delayTime;
     }
 }
