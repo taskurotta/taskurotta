@@ -46,7 +46,7 @@ public class MongoStorage implements Storage {
             }
 
             WriteResult writeResult = dbCollection.remove(dbCursor.next());
-            return writeResult.getError() != null;
+            return writeResult.getError() == null;
         }
     }
 
