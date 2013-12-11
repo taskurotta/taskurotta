@@ -55,7 +55,7 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
         @Override
         public long getDelay(TimeUnit unit) {
-            return unit.convert(enqueueTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+            return unit.toMillis(enqueueTime - System.currentTimeMillis());
         }
 
         @Override
