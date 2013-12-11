@@ -5,8 +5,8 @@ import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.AbstractGCTask;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
-import ru.taskurotta.backend.hz.queue.delay.DelayIQueue;
-import ru.taskurotta.backend.hz.queue.delay.QueueFactory;
+import ru.taskurotta.hazelcast.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.delay.QueueFactory;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
 

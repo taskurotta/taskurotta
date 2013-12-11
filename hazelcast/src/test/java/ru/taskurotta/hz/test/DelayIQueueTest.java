@@ -1,14 +1,14 @@
-package ru.taskurotta.ru.taskurotta.backend.hz.queue.delay;
+package ru.taskurotta.hz.test;
 
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.junit.Test;
-import ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory;
-import ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory;
-import ru.taskurotta.backend.hz.queue.delay.CommonStorageFactory;
-import ru.taskurotta.backend.hz.queue.delay.DelayIQueue;
-import ru.taskurotta.backend.hz.queue.delay.QueueFactory;
-import ru.taskurotta.backend.hz.queue.delay.StorageFactory;
+import ru.taskurotta.hazelcast.delay.BaseQueueFactory;
+import ru.taskurotta.hazelcast.delay.BaseStorageFactory;
+import ru.taskurotta.hazelcast.delay.CommonStorageFactory;
+import ru.taskurotta.hazelcast.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.delay.QueueFactory;
+import ru.taskurotta.hazelcast.delay.StorageFactory;
 
 import java.util.concurrent.TimeUnit;
 
