@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.hz.queue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -10,23 +20,13 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.backend.hz.console.HzQueueStatTask;
 import ru.taskurotta.backend.hz.queue.delay.DelayIQueue;
 import ru.taskurotta.backend.hz.queue.delay.QueueFactory;
-import ru.taskurotta.backend.hz.support.console.HzQueueStatTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * User: stukushin
@@ -168,7 +168,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             List<String> queueNames = fullFilteredQueueNamesList.subList(pageStart, pageEnd);
             if (!queueNames.isEmpty()) {
                 IExecutorService es = hazelcastInstance.getExecutorService(HZ_QUEUE_INFO_EXECUTOR_SERVICE);
-                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(queueNames, queueNamePrefix));
+                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(new ArrayList<String>(queueNames), queueNamePrefix));
                 List<QueueStatVO> resultItems = new ArrayList<>();
                 int nodes = 0;
                 for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {
@@ -181,7 +181,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
                 }
 
                 if (!resultItems.isEmpty()) {
-                    for (QueueStatVO item: resultItems) {
+                    for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);
                     }
 
@@ -222,7 +222,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (inst instanceof IQueue) {
                 String name = inst.getName();
                 if (name.startsWith(prefix)) {
-                    String item = prefixStrip ? name.substring(prefix.length()): name;
+                    String item = prefixStrip ? name.substring(prefix.length()) : name;
                     if (StringUtils.isBlank(filter) || item.startsWith(filter)) {
                         result.add(item);
                     }
@@ -251,7 +251,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private void mergeByQueueName(List<QueueStatVO> mergeTo, List<QueueStatVO> mergeFrom) {
         if (mergeFrom != null && !mergeFrom.isEmpty()) {
-            for (QueueStatVO mergeFromItem: mergeFrom) {
+            for (QueueStatVO mergeFromItem : mergeFrom) {
                 QueueStatVO mergeTarget = getItemByName(mergeTo, mergeFromItem.getName());
                 if (mergeTarget != null) {
                     mergeTarget.sumValuesWith(mergeFromItem);
@@ -266,7 +266,7 @@ public class HzQueueBackend implements QueueBackend, QueueInfoRetriever {
         QueueStatVO result = null;
 
         if (list != null && !list.isEmpty() && !StringUtils.isBlank(name)) {
-            for (QueueStatVO qs: list) {
+            for (QueueStatVO qs : list) {
                 if (name.equals(qs.getName())) {
                     result = qs;
                     break;

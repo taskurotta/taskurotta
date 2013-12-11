@@ -57,7 +57,7 @@ public class QuartzJobManager implements JobManager {
 
         if (job != null) {
             try {
-                if(!isActive(job)) {
+                if (!isActive(job)) {
                     runJob(job);
                     jobStore.updateJobStatus(job.getId(), JobConstants.STATUS_ACTIVE);
                 }

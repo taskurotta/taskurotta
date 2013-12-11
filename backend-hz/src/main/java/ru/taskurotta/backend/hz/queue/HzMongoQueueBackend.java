@@ -1,5 +1,15 @@
 package ru.taskurotta.backend.hz.queue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -14,23 +24,13 @@ import org.springframework.data.mongodb.core.query.Query;
 import ru.taskurotta.backend.console.model.GenericPage;
 import ru.taskurotta.backend.console.model.QueueStatVO;
 import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport;
-import ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport;
-import ru.taskurotta.backend.hz.support.console.HzQueueStatTask;
+import ru.taskurotta.backend.hz.console.HzQueueStatTask;
 import ru.taskurotta.backend.queue.QueueBackend;
 import ru.taskurotta.backend.queue.TaskQueueItem;
+import ru.taskurotta.hazelcast.HzMapConfigSupport;
+import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Created by void, dudin 07.06.13 11:00
@@ -52,14 +52,14 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
     private Map<String, IQueue<TaskQueueItem>> hzQueues = new ConcurrentHashMap<>();
     private Map<String, IMap<UUID, TaskQueueItem>> hzDelayedQueues = new ConcurrentHashMap<>();
 
-    private HzQueueSpringConfigSupport hzQueueConfigSupport;
-    private HzMapConfigSpringSupport hzMapConfigSpringSupport;
+    private HzQueueConfigSupport hzQueueConfigSupport;
+    private HzMapConfigSupport hzMapConfigSupport;
 
     private MongoTemplate mongoTemplate;
 
     private static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
 
-    public void setHzQueueConfigSupport(HzQueueSpringConfigSupport hzQueueConfigSupport) {
+    public void setHzQueueConfigSupport(HzQueueConfigSupport hzQueueConfigSupport) {
         this.hzQueueConfigSupport = hzQueueConfigSupport;
     }
 
@@ -93,7 +93,7 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (inst instanceof IQueue) {
                 String name = inst.getName();
                 if (name.startsWith(prefix)) {
-                    String item = prefixStrip? name.substring(prefix.length()): name;
+                    String item = prefixStrip ? name.substring(prefix.length()) : name;
                     if (StringUtils.isBlank(filter)
                             || item.startsWith(filter)) {
                         result.add(item);
@@ -198,10 +198,10 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
             if (map != null) {
                 return map;
             }
-            if (hzMapConfigSpringSupport != null) {
-                hzMapConfigSpringSupport.createMapConfig(queueName);
+            if (hzMapConfigSupport != null) {
+                hzMapConfigSupport.createMapConfig(queueName);
             } else {
-                logger.warn("WARNING: hzMapConfigSpringSupport implementation is not set to HzMongoQueueBackend, delayed queues are not persistent!");
+                logger.warn("WARNING: hzMapConfigSupport implementation is not set to HzMongoQueueBackend, delayed queues are not persistent!");
             }
 
             map = hazelcastInstance.getMap(queueName);
@@ -277,14 +277,14 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
         GenericPage<QueueStatVO> result = null;
         List<String> fullFilteredQueueNamesList = getTaskQueueNamesByPrefix(queueNamePrefix, filter, true);
 
-        if (fullFilteredQueueNamesList!=null && !fullFilteredQueueNamesList.isEmpty()) {
+        if (fullFilteredQueueNamesList != null && !fullFilteredQueueNamesList.isEmpty()) {
             int pageStart = (pageNum - 1) * pageSize;
             int pageEnd = Math.min(pageSize * pageNum, fullFilteredQueueNamesList.size());
 
             List<String> queueNames = fullFilteredQueueNamesList.subList(pageStart, pageEnd);
             if (queueNames != null && !queueNames.isEmpty()) {
                 IExecutorService es = hazelcastInstance.getExecutorService(HZ_QUEUE_INFO_EXECUTOR_SERVICE);
-                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(queueNames, queueNamePrefix));
+                Map<Member, Future<List<QueueStatVO>>> results = es.submitToAllMembers(new HzQueueStatTask(new ArrayList<String>(queueNames), queueNamePrefix));
                 List<QueueStatVO> resultItems = new ArrayList<>();
                 int nodes = 0;
                 for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {
@@ -297,7 +297,7 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
                 }
 
                 if (!resultItems.isEmpty()) {
-                    for (QueueStatVO item: resultItems) {
+                    for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);
                     }
                     result = new GenericPage<QueueStatVO>(resultItems, pageNum, pageSize, fullFilteredQueueNamesList.size());
@@ -312,10 +312,10 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
 
 
     private void mergeByQueueName(List<QueueStatVO> mergeTo, List<QueueStatVO> mergeFrom) {
-        if (mergeFrom!=null && !mergeFrom.isEmpty()) {
-            for (QueueStatVO mergeFromItem: mergeFrom) {
+        if (mergeFrom != null && !mergeFrom.isEmpty()) {
+            for (QueueStatVO mergeFromItem : mergeFrom) {
                 QueueStatVO mergeTarget = getItemByName(mergeTo, mergeFromItem.getName());
-                if (mergeTarget!=null) {
+                if (mergeTarget != null) {
                     mergeTarget.sumValuesWith(mergeFromItem);
                 } else {
                     mergeTo.add(mergeFromItem);
@@ -326,8 +326,8 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
 
     private static QueueStatVO getItemByName(List<QueueStatVO> list, String name) {
         QueueStatVO result = null;
-        if (list!=null && !list.isEmpty() && !StringUtils.isBlank(name)) {
-            for (QueueStatVO qs: list) {
+        if (list != null && !list.isEmpty() && !StringUtils.isBlank(name)) {
+            for (QueueStatVO qs : list) {
                 if (name.equals(qs.getName())) {
                     result = qs;
                     break;
@@ -398,16 +398,15 @@ public class HzMongoQueueBackend implements QueueBackend, QueueInfoRetriever {
     }
 
 
-
-    public HzMapConfigSpringSupport getHzMapConfigSpringSupport() {
-        return hzMapConfigSpringSupport;
+    public HzMapConfigSupport getHzMapConfigSupport() {
+        return hzMapConfigSupport;
     }
 
-    public void setHzMapConfigSpringSupport(HzMapConfigSpringSupport hzMapConfigSpringSupport) {
-        this.hzMapConfigSpringSupport = hzMapConfigSpringSupport;
+    public void setHzMapConfigSupport(HzMapConfigSupport hzMapConfigSupport) {
+        this.hzMapConfigSupport = hzMapConfigSupport;
     }
 
-    public HzQueueSpringConfigSupport getHzQueueConfigSupport() {
+    public HzQueueConfigSupport getHzQueueConfigSupport() {
         return hzQueueConfigSupport;
     }
 }

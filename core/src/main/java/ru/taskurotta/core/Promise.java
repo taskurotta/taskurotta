@@ -31,7 +31,7 @@ public class Promise<T> {
 		return isReady;
 	}
 
-    public boolean containsFail() {
+    public boolean hasFail() {
         return fail != null;
     }
 
@@ -47,7 +47,12 @@ public class Promise<T> {
 		if (!isReady()) {
 			throw new IllegalStateException("Promise (" + id + ") isn't ready");
 		}
-		return value;
+
+        if (hasFail()) {
+            throw new IllegalStateException("Promise (" + id + ") contains Fail [" + getFail().getMessage() +"]");
+        }
+
+        return value;
 	}
 
 	public Promise<T> set(T value) {

@@ -4,37 +4,37 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-    <bean id="hzMapConfigSpringSupport" class="ru.taskurotta.backend.hz.support.HzMapConfigSpringSupport">
+    <bean id="hzMapConfigSupport" class="ru.taskurotta.hazelcast.HzMapConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
 
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
         <property name="evictionPercentage" value="25"/>
         <property name="evictionPolicy" value="LRU"/>
-        <property name="mapStoreBeanName" value="mongoMapStore"/>
+        <property name="mapStore" ref="mapStore"/>
         <property name="timeToLive" value="0"/>
         <property name="maxSize" value="1000"/>
         <property name="maxSizePolicy" value="PER_NODE"/>
     </bean>
 
     <!-- Queues persistence support -->
-    <bean id="queueConfigSupport" class="ru.taskurotta.backend.hz.support.HzQueueSpringConfigSupport">
-
+    <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
 
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
-        <property name="maxSize" value="500000"/>
-        <property name="memoryLimit" value="100000"/>
-        <property name="binary" value="true"/>
-        <property name="bulkLoad" value="500"/>
+        <property name="maxSize" value="0"/>
+        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="binary" value="false"/>
+        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
     </bean>
 
-    <bean id="restoreQueueSupport" class="ru.taskurotta.backend.hz.support.HzQueueRestoreSupport" init-method="init">
+    <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
         <property name="mongoTemplate" ref="mongoTemplate"/>
         <property name="hzInstance" ref="hzInstance"/>
         <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
-        <property name="hzQueueSpringConfigSupport" ref="queueConfigSupport"/>
+        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
     </bean>
     <!-- /Queues persistence support -->

@@ -14,6 +14,7 @@ import ru.taskurotta.backend.queue.TaskQueueItem;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskBackend;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -23,8 +24,8 @@ import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -148,7 +149,6 @@ public class GeneralTaskServer implements TaskServer {
         UUID processId = taskDecision.getProcessId();
 
         if (taskDecision.containsError()) {
-
             TaskContainer task = taskBackend.getTask(taskId, processId);
 
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
@@ -159,15 +159,15 @@ public class GeneralTaskServer implements TaskServer {
             } else {
 
                 if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
-                    /*
-                      ToDo: задача_воркера зависит от этой задачи
-                      ToDo: ИЛИ зависящая задача не принимает фэйлы
-                    */
-
                     saveBrokenProcess(taskDecision);
                     return;
                 }
             }
+        }
+
+        if (unsafePromiseSentToWorker(taskDecision.getTasks())) {
+            saveBrokenProcess(taskDecision);
+            return;
         }
 
         // idempotent statement
@@ -199,7 +199,7 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {
-        if (task.getFailTypes() == null) {
+        if (null == task.getFailTypes()) {
             return false;
         }
 
@@ -208,6 +208,39 @@ public class GeneralTaskServer implements TaskServer {
         for (String errorName : error.getClassNames()) {
             if (failTypes.contains(errorName)){
                 return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean unsafePromiseSentToWorker(TaskContainer[] tasks) {
+        if (null == tasks) {
+            return false;
+        }
+
+        HashMap<UUID, TaskContainer> tasksMap = new HashMap<>(tasks.length);
+        for (TaskContainer newTask : tasks) {
+            tasksMap.put(newTask.getTaskId(), newTask);
+        }
+
+        for (TaskContainer newTask : tasks) {
+            if (!TaskType.WORKER.equals(newTask.getType())) {
+                continue;
+            }
+
+            ArgContainer[] args = newTask.getArgs();
+            if (null != args) {
+                for (ArgContainer arg : args) {
+                    if (arg.isPromise()) {
+                        TaskContainer argTask = tasksMap.get(arg.getTaskId());
+                        if (argTask == null) {
+                            argTask = taskBackend.getTask(arg.getTaskId(), newTask.getProcessId());
+                        }
+                        if (null != argTask && argTask.isUnsafe()) {
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;

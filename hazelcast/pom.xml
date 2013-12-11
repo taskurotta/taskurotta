@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>backend-hz</artifactId>
-    <name>Taskurotta :: Backend implementation with hazelcast</name>
+    <artifactId>hazelcast</artifactId>
+    <name>Taskurotta :: Hazelcast support</name>
 
     <dependencies>
         <dependency>
@@ -21,24 +21,6 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
             <version>2.11.2</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>server</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>backend</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.hazelcast</groupId>

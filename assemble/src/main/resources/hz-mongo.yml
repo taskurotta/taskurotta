@@ -30,6 +30,7 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
+#        ru.taskurotta.schedule: DEBUG
 #        ru.taskurotta.backend.statistics.datalistener TRACE
 #        ru.taskurotta: INFO
 #        ru.taskurotta.backend.statistics.datalisteners: TRACE

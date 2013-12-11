@@ -25,7 +25,7 @@ public class SimpleDeciderImpl implements SimpleDecider {
 
     @Asynchronous
     public void print(Promise<Integer> p) {
-        if (p.containsFail()) {
+        if (p.hasFail()) {
             log.info("got fail: {}", p.getFail());
         }
 
