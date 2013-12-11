@@ -5,7 +5,7 @@ import java.util.Arrays;
 /**
  * Created by void 25.11.13 19:51
  */
-public class Fail {
+public class Fail extends RuntimeException {
     private String[] types;
     private String message;
 

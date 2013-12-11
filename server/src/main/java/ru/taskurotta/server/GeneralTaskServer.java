@@ -120,11 +120,6 @@ public class GeneralTaskServer implements TaskServer {
         return taskBackend.getTaskToExecute(item.getTaskId(), item.getProcessId());
     }
 
-
-    public DependencyBackend getDependencyBackend() {
-        return dependencyBackend;
-    }
-
     @Override
     public void release(DecisionContainer taskDecision) {
 
@@ -199,11 +194,16 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {
-        if (null == task.getFailTypes()) {
-            return false;
+        if (!task.isUnsafe()) {
+            return false;   // no one error match for safe tasks
         }
 
-        Set<String> failTypes = new HashSet<>(Arrays.asList(task.getFailTypes()));
+        String[] taskFailTypes = task.getFailTypes();
+        if (null == taskFailTypes || taskFailTypes.length == 0) {
+            return true;    // no restrictions defined. all errors matches
+        }
+
+        Set<String> failTypes = new HashSet<>(Arrays.asList(taskFailTypes));
 
         for (String errorName : error.getClassNames()) {
             if (failTypes.contains(errorName)){

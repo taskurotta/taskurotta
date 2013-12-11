@@ -36,6 +36,7 @@ public class TaskContainerStreamSerializer implements StreamSerializer<TaskConta
             out.writeBoolean(true);
             taskOptionsContainerSerializer.write(out, object.getOptions());
         }
+        out.writeBoolean(object.isUnsafe());
         writeStringArray(out, object.getFailTypes());
         UUIDSerializer.write(out, object.getProcessId());
     }
@@ -49,14 +50,14 @@ public class TaskContainerStreamSerializer implements StreamSerializer<TaskConta
         long startTime = in.readLong();
         int attempts = in.readInt();
         ArgContainer[] containers = readArgsContainerArray(in);
-        boolean optionsExists = in.readBoolean();
         TaskOptionsContainer taskOptionsContainer = null;
-        if (optionsExists) {
+        if (in.readBoolean()) {
             taskOptionsContainer = taskOptionsContainerSerializer.read(in);
         }
+        boolean unsafe = in.readBoolean();
         String[] failTypes = readStringArray(in);
         UUID processId = UUIDSerializer.read(in);
-        return new TaskContainer(taskId, processId, method, actorId, taskType, startTime, attempts, containers, taskOptionsContainer, failTypes);
+        return new TaskContainer(taskId, processId, method, actorId, taskType, startTime, attempts, containers, taskOptionsContainer, unsafe, failTypes);
     }
 
     @Override

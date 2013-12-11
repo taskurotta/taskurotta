@@ -3,6 +3,7 @@ package ru.taskurotta.recipes.erroneous;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
+import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
 
 /**
@@ -26,14 +27,17 @@ public class SimpleDeciderImpl implements SimpleDecider {
     @Asynchronous
     public void print(Promise<Integer> p) {
         if (p.hasFail()) {
-            log.info("got fail: {}", p.getFail());
+            log.info("got fail: ["+ p.getFail()+ "]");
+        } else {
+            Integer integer = p.get();
+            log.info("got number: {}", integer);
         }
 
-        //ToDo: for future
+        // another style of Fail-handling
         try {
             Integer integer = p.get();
             log.info("got number: {}", integer);
-        } catch (Exception e) {
+        } catch (Fail e) {
             log.info("got exception: "+ e.getMessage(), e);
         }
     }

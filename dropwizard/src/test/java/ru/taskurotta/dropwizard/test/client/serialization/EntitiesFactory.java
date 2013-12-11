@@ -41,7 +41,7 @@ public class EntitiesFactory {
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, null);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false, null);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError) {

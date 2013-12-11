@@ -21,15 +21,15 @@ public class TaskImpl implements Task {
     private int numberOfAttempts = 0;
     private Object[] args;
 	private TaskOptions taskOptions;
+    private boolean unsafe;
     private String[] failTypes;
 
     public TaskImpl(){
 
     }
 
-
     public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
-                    Object[] args, TaskOptions taskOptions, String[] failTypes) {
+                    Object[] args, TaskOptions taskOptions, boolean unsafe, String[] failTypes) {
         this.processId = processId;
 
         if (uuid == null) {
@@ -53,6 +53,7 @@ public class TaskImpl implements Task {
 		} else {
 			this.taskOptions = taskOptions;
 		}
+        this.unsafe = unsafe;
         this.failTypes = failTypes;
     }
 
@@ -93,7 +94,7 @@ public class TaskImpl implements Task {
 	}
 
     public boolean isUnsafe() {
-        return null != failTypes && failTypes.length > 0;
+        return unsafe;
     }
 
     public String[] getFailTypes() {
@@ -115,6 +116,7 @@ public class TaskImpl implements Task {
         if (taskOptions != null ? !taskOptions.equals(task.taskOptions) : task.taskOptions != null) return false;
         if (!target.equals(task.target)) return false;
         if (!id.equals(task.id)) return false;
+        if (unsafe != task.unsafe) return false;
         return Arrays.equals(failTypes, task.failTypes);
     }
 
@@ -127,7 +129,9 @@ public class TaskImpl implements Task {
         result = 31 * result + numberOfAttempts;
         result = 31 * result + Arrays.hashCode(args);
         result = 31 * result + (taskOptions != null ? taskOptions.hashCode() : 0);
-        result = 31 * result + Arrays.hashCode(failTypes);
+        if (unsafe) {
+            result = 31 * result + Arrays.hashCode(failTypes);
+        }
         return result;
     }
 
@@ -141,6 +145,7 @@ public class TaskImpl implements Task {
                 ", numberOfAttempts=" + numberOfAttempts +
                 ", args=" + Arrays.toString(args) +
                 ", taskOptions=" + taskOptions +
+                ", unsafe=" + unsafe +
                 ", failTypes=" + Arrays.toString(failTypes) +
                 '}';
     }
