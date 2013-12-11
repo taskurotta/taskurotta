@@ -23,7 +23,7 @@ public class CommonStorageFactory implements StorageFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonStorageFactory.class);
 
-    private final IMap<UUID, CommonStorageItem> iMap;
+    private final IMap<UUID, StorageItem> iMap;
 
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, String schedule) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
@@ -64,7 +64,7 @@ public class CommonStorageFactory implements StorageFactory {
                 }
 
                 for (UUID key : keys) {
-                    CommonStorageItem storageItem = iMap.remove(key);
+                    StorageItem storageItem = iMap.remove(key);
                     String queueName = storageItem.getQueueName();
                     hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
                 }
@@ -79,7 +79,7 @@ public class CommonStorageFactory implements StorageFactory {
             public boolean add(Object o, long delayTime, TimeUnit unit) {
 
                 long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
-                CommonStorageItem storageItem = new CommonStorageItem(o, enqueueTime, queueName);
+                StorageItem storageItem = new StorageItem(o, enqueueTime, queueName);
 
                 while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
                     // Better safe than sorry! :)
@@ -92,7 +92,7 @@ public class CommonStorageFactory implements StorageFactory {
             public boolean remove(Object o) {
                 UUID key = null;
 
-                for (Map.Entry<UUID, CommonStorageItem> entry : iMap.entrySet()) {
+                for (Map.Entry<UUID, StorageItem> entry : iMap.entrySet()) {
                     if (entry.getValue().equals(o)) {
                         key = entry.getKey();
                         break;

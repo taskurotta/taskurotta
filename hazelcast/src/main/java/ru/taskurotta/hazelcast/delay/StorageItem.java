@@ -5,13 +5,32 @@ package ru.taskurotta.hazelcast.delay;
  * Date: 05.12.13
  * Time: 11:38
  */
-public class StorageItem extends BaseStorageItem {
+public class StorageItem {
 
+    private Object object;
+    private long enqueueTime;
     private String queueName;
 
     public StorageItem(Object object, long enqueueTime, String queueName) {
-        super(object, enqueueTime);
+        this.object = object;
+        this.enqueueTime = enqueueTime;
         this.queueName = queueName;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    public long getEnqueueTime() {
+        return enqueueTime;
+    }
+
+    public void setEnqueueTime(long enqueueTime) {
+        this.enqueueTime = enqueueTime;
     }
 
     public String getQueueName() {
@@ -26,10 +45,11 @@ public class StorageItem extends BaseStorageItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
 
         StorageItem that = (StorageItem) o;
 
+        if (enqueueTime != that.enqueueTime) return false;
+        if (object != null ? !object.equals(that.object) : that.object != null) return false;
         if (queueName != null ? !queueName.equals(that.queueName) : that.queueName != null) return false;
 
         return true;
@@ -37,7 +57,8 @@ public class StorageItem extends BaseStorageItem {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = object != null ? object.hashCode() : 0;
+        result = 31 * result + (int) (enqueueTime ^ (enqueueTime >>> 32));
         result = 31 * result + (queueName != null ? queueName.hashCode() : 0);
         return result;
     }
@@ -45,7 +66,9 @@ public class StorageItem extends BaseStorageItem {
     @Override
     public String toString() {
         return "StorageItem{" +
-                "queueName='" + queueName + '\'' +
-                "} " + super.toString();
+                "object=" + object +
+                ", enqueueTime=" + enqueueTime +
+                ", queueName='" + queueName + '\'' +
+                '}';
     }
 }
