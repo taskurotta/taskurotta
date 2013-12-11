@@ -51,20 +51,25 @@ public class HzActorConfigManager implements ActorConfigManager {
     public GenericPage<ActorVO> getActorList(int pageNum, int pageSize) {
         GenericPage<ActorVO> result = null;
         IMap<String, ActorPreferences> actorsPrefs = hzInstance.getMap(actorConfigName);
-        List<ActorVO> allActors = new ArrayList(actorsPrefs.values());
+        List<ActorPreferences> allPreferences = new ArrayList(actorsPrefs.values());
 
-        if (allActors!=null && !allActors.isEmpty()) {
+        if (allPreferences!=null && !allPreferences.isEmpty()) {
             int fromIndex = (pageNum - 1) * pageSize;
-            int toIndex = Math.min(pageSize * pageNum, allActors.size());
-            List<ActorVO> subList = allActors.subList(fromIndex, toIndex);
-            if (metricsDataRetriever != null && subList != null && !subList.isEmpty()) {
-                for (ActorVO actorVO : subList) {
-                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorVO.getActorId()));
-                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorVO.getActorId()));
+            int toIndex = Math.min(pageSize * pageNum, allPreferences.size());
+            List<ActorPreferences> subList = allPreferences.subList(fromIndex, toIndex);
+            List<ActorVO> pageItems = new ArrayList<>();
+            for (ActorPreferences ap : subList) {
+                ActorVO actorVO = new ActorVO();
+                actorVO.setActorId(ap.getId());
+                actorVO.setBlocked(ap.isBlocked());
+                actorVO.setQueueName(ap.getQueueName());
+                if (metricsDataRetriever!=null) {
+                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), ap.getId()));
+                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), ap.getId()));
                 }
+                pageItems.add(actorVO);
             }
-
-            result = new GenericPage<ActorVO>(subList, pageNum, pageSize, allActors.size());
+            result = new GenericPage<ActorVO>(pageItems, pageNum, pageSize, allPreferences.size());
         }
 
         return result;
