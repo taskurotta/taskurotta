@@ -50,26 +50,26 @@
     <!-- /Actor config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.MongoStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
         <constructor-arg name="poolSize" value="${dq.poolSize}"/>
         <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
     </bean>
 
-    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
-    <bean id="storageFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.MongoStorageFactory">
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
         <constructor-arg name="poolSize" value="${dq.poolSize}"/>
         <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
     </bean>
 
-    <bean id="queueFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>
