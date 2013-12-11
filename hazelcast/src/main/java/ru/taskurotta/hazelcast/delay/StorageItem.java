@@ -5,11 +5,11 @@ package ru.taskurotta.hazelcast.delay;
  * Date: 05.12.13
  * Time: 11:38
  */
-public class CommonStorageItem extends BaseStorageItem {
+public class StorageItem extends BaseStorageItem {
 
     private String queueName;
 
-    public CommonStorageItem(Object object, long enqueueTime, String queueName) {
+    public StorageItem(Object object, long enqueueTime, String queueName) {
         super(object, enqueueTime);
         this.queueName = queueName;
     }
@@ -28,7 +28,7 @@ public class CommonStorageItem extends BaseStorageItem {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        CommonStorageItem that = (CommonStorageItem) o;
+        StorageItem that = (StorageItem) o;
 
         if (queueName != null ? !queueName.equals(that.queueName) : that.queueName != null) return false;
 
@@ -44,7 +44,7 @@ public class CommonStorageItem extends BaseStorageItem {
 
     @Override
     public String toString() {
-        return "CommonStorageItem{" +
+        return "StorageItem{" +
                 "queueName='" + queueName + '\'' +
                 "} " + super.toString();
     }
