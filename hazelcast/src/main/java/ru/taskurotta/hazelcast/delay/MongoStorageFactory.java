@@ -66,10 +66,6 @@ public class MongoStorageFactory implements StorageFactory {
 
                     DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
-                    if (dbCollection.count() == 0) {
-                        continue;
-                    }
-
                     BasicDBObject query = new BasicDBObject(MongoStorage.ENQUEUE_TIME_NAME,
                             new BasicDBObject("$lte", System.currentTimeMillis()));
 
