@@ -12,6 +12,15 @@
     </bean>
     <!-- /Config support -->
 
+    <!--  Actor config support  -->
+    <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.HzActorConfigManager">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>
+
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+    </bean>
+    <!-- /Actor config support -->
+
     <!-- Delay queue support -->
     <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.MockStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
