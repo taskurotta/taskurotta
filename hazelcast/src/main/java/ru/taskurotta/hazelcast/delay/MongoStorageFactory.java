@@ -73,6 +73,7 @@ public class MongoStorageFactory implements StorageFactory {
                                 while(dbCursor.hasNext()) {
                                     DBObject dbObject = dbCursor.next();
                                     iQueue.add(dbObject.get(MongoStorage.OBJECT_NAME));
+                                    dbCollection.remove(dbObject);
                                 }
                             }
                         }
