@@ -44,7 +44,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
-        return queue.offer(e, timeout, unit);
+        return add(e, timeout, unit);
     }
 
     @Override
