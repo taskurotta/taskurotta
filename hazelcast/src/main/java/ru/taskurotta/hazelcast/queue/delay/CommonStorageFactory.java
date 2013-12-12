@@ -3,8 +3,6 @@ package ru.taskurotta.hazelcast.queue.delay;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicates;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,22 +19,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonStorageFactory implements StorageFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommonStorageFactory.class);
-
     private final IMap<UUID, StorageItem> iMap;
 
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, String schedule) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex("enqueueTime", true);
 
-        long delay = 1000l;
-        TimeUnit delayTimeUnit = TimeUnit.MILLISECONDS;
-        String[] params = schedule.split("_");
-        if (params.length == 2) {
-            delay = Long.valueOf(params[0]);
-            delayTimeUnit = TimeUnit.valueOf(params[1].toUpperCase());
-        }
-        logger.info("Set schedule delay = [{}] delayTimeUnit = [{}] for search ready processes for GC", delay, delayTimeUnit);
+        long delayMillis = ScheduleParser.getScheduleMillis(schedule);
 
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
@@ -69,7 +58,7 @@ public class CommonStorageFactory implements StorageFactory {
                     hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
                 }
             }
-        }, 0l, delay, delayTimeUnit);
+        }, 0l, delayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override

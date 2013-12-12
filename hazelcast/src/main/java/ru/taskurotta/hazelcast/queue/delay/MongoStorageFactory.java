@@ -9,8 +9,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
@@ -27,8 +25,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 16:58
  */
 public class MongoStorageFactory implements StorageFactory {
-
-    private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
 
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
@@ -48,14 +44,7 @@ public class MongoStorageFactory implements StorageFactory {
 
         this.converter = new SpringMongoDBConverter(mongoTemplate);
 
-        long delay = 1000l;
-        TimeUnit delayTimeUnit = TimeUnit.MILLISECONDS;
-        String[] params = schedule.split("_");
-        if (params.length == 2) {
-            delay = Long.valueOf(params[0]);
-            delayTimeUnit = TimeUnit.valueOf(params[1].toUpperCase());
-        }
-        logger.info("Set schedule delay = [{}] delayTimeUnit = [{}] for search ready processes for GC", delay, delayTimeUnit);
+        long delayMillis = ScheduleParser.getScheduleMillis(schedule);
 
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
@@ -98,7 +87,7 @@ public class MongoStorageFactory implements StorageFactory {
                     }
                 }
             }
-        }, 0l, delay, delayTimeUnit);
+        }, 0l, delayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override
