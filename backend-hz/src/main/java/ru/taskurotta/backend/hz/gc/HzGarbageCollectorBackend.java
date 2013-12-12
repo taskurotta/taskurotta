@@ -51,13 +51,9 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
                         UUID processId = null;
                         try {
-                            processId = garbageCollectorQueue.poll(Integer.MAX_VALUE, TimeUnit.SECONDS);
+                            processId = garbageCollectorQueue.take();
                         } catch (InterruptedException e) {
                             logger.error("Catch exception while find process for garbage collector", e);
-                        }
-
-                        if (processId == null) {
-                            continue;
                         }
 
                         gc(processId);
