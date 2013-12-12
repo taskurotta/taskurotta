@@ -1,11 +1,13 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
+import java.io.Serializable;
+
 /**
  * User: stukushin
  * Date: 05.12.13
  * Time: 11:38
  */
-public class StorageItem {
+public class StorageItem implements Serializable {
 
     private Object object;
     private long enqueueTime;
