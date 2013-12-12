@@ -257,7 +257,7 @@ public class MetricsDataUtils {
     }
 
     public static long sumUpDataPointsArray(DataPointVO<Long>[] target) {
-        long result = -1;
+        long result = 0l;
 
         if (target != null && target.length > 0) {
             result = 0l;

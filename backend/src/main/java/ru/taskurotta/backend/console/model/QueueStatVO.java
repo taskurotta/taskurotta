@@ -11,16 +11,16 @@ import java.util.Date;
 public class QueueStatVO implements Serializable {
 
     private String name;
-    private int count;
-    private Date lastActivity;
+    private int count = 0;
+    private Date lastActivity = null;
 
-    private long inHour;
-    private long outHour;
+    private long inHour = 0;
+    private long outHour = 0;
 
-    private long inDay;
-    private long outDay;
+    private long inDay = 0;
+    private long outDay = 0;
 
-    private int nodes;
+    private int nodes = 0;
 
     public String getName() {
         return name;
