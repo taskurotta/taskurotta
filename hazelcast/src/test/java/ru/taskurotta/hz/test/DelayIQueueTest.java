@@ -24,7 +24,7 @@ public class DelayIQueueTest {
 
         try {
 
-            StorageFactory storageFactory = new CommonStorageFactory(hazelcastInstance, "commonStorage", "1_seconds");
+            StorageFactory storageFactory = new CommonStorageFactory(hazelcastInstance, "commonStorage", "500_milliseconds");
             QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
 
             DelayIQueue<String> delayIQueue = queueFactory.create("testQueue");
@@ -39,7 +39,7 @@ public class DelayIQueueTest {
             retrievedObject = delayIQueue.poll(0, TimeUnit.SECONDS);
             assertNull(retrievedObject);
 
-            retrievedObject = delayIQueue.poll(2, TimeUnit.SECONDS);
+            retrievedObject = delayIQueue.poll(3, TimeUnit.SECONDS);
             assertNotNull(retrievedObject);
 
             retrievedObject = delayIQueue.poll(1, TimeUnit.SECONDS);
