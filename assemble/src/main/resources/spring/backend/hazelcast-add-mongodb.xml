@@ -76,12 +76,4 @@
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>
     <!-- /Delay queue support -->
-
-    <!-- Backends -->
-    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
-        <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
-    </bean>
-    <!-- /Backends -->
 </beans>
