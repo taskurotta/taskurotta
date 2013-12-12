@@ -1,14 +1,12 @@
 package ru.taskurotta.backend.hz.gc;
 
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.AbstractGCTask;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
-import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
-import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
+import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -18,13 +16,12 @@ import java.util.concurrent.TimeUnit;
 
 public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
-    private ConfigBackend configBackend;
     private long delayTime;
     private boolean enabled;
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, final ProcessBackend processBackend, final GraphDao graphDao,
+    public HzGarbageCollectorBackend(final ProcessBackend processBackend, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long delayTime, boolean enabled) {
 
@@ -34,7 +31,6 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
             return;
         }
 
-        this.configBackend = configBackend;
         this.delayTime = delayTime;
 
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
@@ -76,13 +72,6 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
         if (!enabled) {
             return;
-        }
-
-        ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
-
-        long delayTime = this.delayTime;
-        if (actorPreferences != null) {
-            delayTime = actorPreferences.getKeepTime();
         }
 
         garbageCollectorQueue.add(processId, delayTime, TimeUnit.MILLISECONDS);
