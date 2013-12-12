@@ -2,10 +2,13 @@ package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
+import com.hazelcast.spring.mongodb.MongoDBConverter;
+import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -30,13 +33,20 @@ public class MongoStorageFactory implements StorageFactory {
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
 
+    private MongoDBConverter converter;
+
     private transient final ReentrantLock lock = new ReentrantLock();
     private ConcurrentHashMap<String, String> dbCollectionNamesMap = new ConcurrentHashMap<>();
+
+    public static final String OBJECT_NAME = "object";
+    public static final String ENQUEUE_TIME_NAME = "enqueueTime";
 
     public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final MongoTemplate mongoTemplate,
                                String storagePrefix, String schedule) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
+
+        this.converter = new SpringMongoDBConverter(mongoTemplate);
 
         long delay = 1000l;
         TimeUnit delayTimeUnit = TimeUnit.MILLISECONDS;
@@ -66,8 +76,7 @@ public class MongoStorageFactory implements StorageFactory {
 
                     DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
-                    BasicDBObject query = new BasicDBObject(MongoStorage.ENQUEUE_TIME_NAME,
-                            new BasicDBObject("$lte", System.currentTimeMillis()));
+                    BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
 
                     try (DBCursor dbCursor = dbCollection.find(query)) {
 
@@ -79,8 +88,18 @@ public class MongoStorageFactory implements StorageFactory {
                         IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
                         while (dbCursor.hasNext()) {
+
+                            Object object = null;
+
                             DBObject dbObject = dbCursor.next();
-                            if (iQueue.add(dbObject.get(MongoStorage.OBJECT_NAME))) {
+                            try {
+                                Class clazz = Class.forName(dbObject.get("_class").toString());
+                                object = converter.toObject(clazz, dbObject);
+                            } catch (ClassNotFoundException e) {
+                                logger.warn(e.getMessage(), e);
+                            }
+
+                            if (iQueue.add(object)) {
                                 dbCollection.remove(dbObject);
                             }
                         }
@@ -101,7 +120,6 @@ public class MongoStorageFactory implements StorageFactory {
             lock.lock();
 
             try {
-
                 dbCollectionName = dbCollectionNamesMap.get(queueName);
                 if (dbCollectionName == null) {
                     dbCollectionName = storagePrefix + queueName;
@@ -109,14 +127,50 @@ public class MongoStorageFactory implements StorageFactory {
                 dbCollectionNamesMap.put(queueName, dbCollectionName);
 
                 DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
-                dbCollection.createIndex(new BasicDBObject(MongoStorage.ENQUEUE_TIME_NAME, 1));
+                dbCollection.createIndex(new BasicDBObject(ENQUEUE_TIME_NAME, 1));
             } finally {
                 lock.unlock();
             }
         }
 
-        DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+        final DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
-        return new MongoStorage(dbCollection);
+        return new Storage() {
+            @Override
+            public boolean add(Object o, long delayTime, TimeUnit unit) {
+                long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
+
+                DBObject dbObject = converter.toDBObject(new StorageItem(o, enqueueTime, queueName));
+
+                WriteResult writeResult = dbCollection.save(dbObject);
+
+                return writeResult.getError() == null;
+            }
+
+            @Override
+            public boolean remove(Object o) {
+                BasicDBObject query = new BasicDBObject(OBJECT_NAME, new BasicDBObject("$in", o));
+
+                try (DBCursor dbCursor = dbCollection.find(query)) {
+
+                    if (dbCursor.size() == 0) {
+                        return false;
+                    }
+
+                    WriteResult writeResult = dbCollection.remove(dbCursor.next());
+                    return writeResult.getError() == null;
+                }
+            }
+
+            @Override
+            public void clear() {
+                dbCollection.drop();
+            }
+
+            @Override
+            public void destroy() {
+                dbCollection.drop();
+            }
+        };
     }
 }
