@@ -81,7 +81,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
             String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
 
             MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method),
-                    positionActorSchedulingOptions, positionPromisesWaitFor, failTypes);
+                    positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, failTypes);
 
             method2TaskTargetCache.put(method, descriptor);
         }

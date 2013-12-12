@@ -53,7 +53,7 @@ public class MockBackendBundle implements BackendBundle {
                 actorId, TaskType.DECIDER_START, 0, 1, new ArgContainer[]{
                     new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, a),
                     new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, b)},
-                new TaskOptionsContainer(new ArgType[] {ArgType.NONE, ArgType.NONE}), null);
+                new TaskOptionsContainer(new ArgType[] {ArgType.NONE, ArgType.NONE}), false, null);
     }
 
     @Override

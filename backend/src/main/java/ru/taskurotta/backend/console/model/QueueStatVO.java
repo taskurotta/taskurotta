@@ -11,16 +11,16 @@ import java.util.Date;
 public class QueueStatVO implements Serializable {
 
     private String name;
-    private int count;
-    private Date lastActivity;
+    private int count = 0;
+    private Date lastActivity = null;
 
-    private long inHour;
-    private long outHour;
+    private long inHour = 0;
+    private long outHour = 0;
 
-    private long inDay;
-    private long outDay;
+    private long inDay = 0;
+    private long outDay = 0;
 
-    private int nodes;
+    private int nodes = 0;
 
     public String getName() {
         return name;
@@ -88,9 +88,9 @@ public class QueueStatVO implements Serializable {
 
     public QueueStatVO sumValuesWith(QueueStatVO qs) {
         if (qs != null) {
-            if (qs.getCount() > 0) {
-                this.count += qs.getCount();
-            }
+
+            this.count = qs.getCount();//counts are same on every node, so the last measured value should be correct
+
             if (this.lastActivity==null
                     || (qs.getLastActivity()!=null && qs.getLastActivity().after(this.lastActivity)) ) {
                 this.lastActivity = qs.getLastActivity();

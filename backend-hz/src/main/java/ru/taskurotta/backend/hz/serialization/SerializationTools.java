@@ -18,33 +18,22 @@ public class SerializationTools {
     private static TaskContainerStreamSerializer taskContainerSerializer = new TaskContainerStreamSerializer();
 
     public static void writeString(ObjectDataOutput out, String str) throws IOException {
-        if (str != null && !str.equals("")) {
-            out.writeBoolean(true);
-            int size = str.length();
-            out.writeInt(size);
-            for (char ch : str.toCharArray()) {
-                out.writeChar(ch);
-            }
-        } else {
+        if (str == null) {
             out.writeBoolean(false);
+            return;
         }
+
+        out.writeBoolean(true);
+
+        out.writeUTF(str);
     }
 
     public static String readString(ObjectDataInput in) throws IOException {
-        boolean strExist = in.readBoolean();
-        if (strExist) {
-            int size = in.readInt();
-            List<Character> chars = new ArrayList<>();
-            for (int i = 0; i < size; i++) {
-                chars.add(in.readChar());
-            }
-            StringBuilder sb = new StringBuilder(chars.size());
-            for (Character c : chars)
-                sb.append(c);
-            return sb.toString();
-        } else {
+        if (!in.readBoolean()) {
             return null;
         }
+
+        return in.readUTF();
     }
 
     public static void writeArgsContainerArray(ObjectDataOutput out, ArgContainer[] argContainers) throws IOException {

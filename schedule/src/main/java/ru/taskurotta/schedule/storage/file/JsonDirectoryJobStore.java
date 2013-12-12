@@ -25,7 +25,7 @@ public class JsonDirectoryJobStore implements JobStore {
     private static final Logger logger = LoggerFactory.getLogger(JsonDirectoryJobStore.class);
     protected ObjectMapper objectMapper = new ObjectMapper();
     public static final String STORE_FILE_EXTENSION = ".json";
-
+    public static final int JSON_FILE_MIN_INDEX = 1;
 
     private String storeLocation = "job_store";
     private File storeDir;
@@ -43,7 +43,7 @@ public class JsonDirectoryJobStore implements JobStore {
     }
 
     protected int getAvailableFileNumber() {
-        int result = 1;
+        int result = JSON_FILE_MIN_INDEX;
         while (new File(storeDir, result + STORE_FILE_EXTENSION).exists()) {
             result++;
         }

@@ -115,7 +115,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
                 String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
 
-                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1, failTypes);
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1, null != acceptFail, failTypes);
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -144,7 +144,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                         AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
                         String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
 
-                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor, failTypes);
+                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, failTypes);
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }

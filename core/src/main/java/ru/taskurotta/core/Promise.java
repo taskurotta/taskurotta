@@ -3,8 +3,9 @@ package ru.taskurotta.core;
 import java.util.UUID;
 
 /**
- * User: jedy
- * Date: 05.12.12 13:08
+ * This class represents result of asynchronous method invocation. It is used for maintain non-blocking links between
+ * method invocations.
+ * Created by jedy 05.12.12 13:08
  */
 public class Promise<T> {
 
@@ -27,10 +28,18 @@ public class Promise<T> {
         return new Promise(uuid, null);
     }
 
-	public boolean isReady() {
+    /**
+     * check if this promise contains result value already
+     * @return true if promise fully initialized
+     */
+    public boolean isReady() {
 		return isReady;
 	}
 
+    /**
+     * check if this promise contains Fail
+     * @return true if this promise contains Fail
+     */
     public boolean hasFail() {
         return fail != null;
     }
@@ -43,13 +52,20 @@ public class Promise<T> {
         this.fail = fail;
     }
 
+    /**
+     *
+     * @return result of asynchronous method invocation
+     * @throws java.lang.IllegalStateException if promise isn't ready yet
+     * @throws Fail if asynchronous method fails with Exception
+     */
     public T get() {
 		if (!isReady()) {
 			throw new IllegalStateException("Promise (" + id + ") isn't ready");
 		}
 
         if (hasFail()) {
-            throw new IllegalStateException("Promise (" + id + ") contains Fail [" + getFail().getMessage() +"]");
+            fail.fillInStackTrace();
+            throw fail;
         }
 
         return value;
@@ -61,7 +77,13 @@ public class Promise<T> {
 		return this;
 	}
 
-	public static <E> Promise<E> asPromise(E value) {
+    /**
+     * construct new and ready Promise object
+     * @param value - value for promise
+     * @param <E> - type of the value
+     * @return new Promise object
+     */
+    public static <E> Promise<E> asPromise(E value) {
 		return new Promise<E>().set(value);
 	}
 
@@ -76,7 +98,7 @@ public class Promise<T> {
 
 		Promise promise = (Promise) o;
 
-        return !(id != null ? !id.equals(promise.id) : promise.id != null);
+        return id == null ? promise.id == null : id.equals(promise.id);
     }
 
 	@Override

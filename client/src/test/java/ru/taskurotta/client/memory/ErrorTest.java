@@ -47,7 +47,7 @@ public class ErrorTest extends AbstractTestStub {
         // release task B                                                               En
         release(taskBId, new NesmoglaException("NeshmoglaException occurred"));
 
-        // should be task B
+        // should be task C
         Task taskC = pollDeciderTask(taskCId);
         assertEmptyQueue();
 
@@ -58,6 +58,81 @@ public class ErrorTest extends AbstractTestStub {
         assertTrue(fail.instanceOf("java.lang.RuntimeException"));
         assertTrue(fail.instanceOf("java.lang.Throwable"));
         assertFalse(fail.instanceOf("java.lang.NullPointerException"));
+    }
+
+    @Test
+    public void testErrorWithoutRestrictionOnFailType() {
+        UUID taskAId = UUID.randomUUID();
+        UUID taskBId = UUID.randomUUID();
+        UUID taskCId = UUID.randomUUID();
+
+        startProcess(deciderTask(taskAId, TaskType.DECIDER_START, "start"));
+
+        // should be task A
+        pollDeciderTask(taskAId);
+
+        // task should be in "process" state
+        assertTaskInProgress(taskAId);
+
+        // create B, C tasks
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB",
+                new String[]{}, new Object[]{}, null);   // empty array of types as restriction!
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+                new Object[]{promise(deciderTaskB)},
+                new TaskOptionsImpl(new ArgType[]{ArgType.NONE}));
+
+        release(taskAId, null, deciderTaskB, deciderTaskC);
+
+        // should be task B
+        pollDeciderTask(taskBId);
+
+        // release task B                                                               En
+        release(taskBId, new NesmoglaException("NeshmoglaException occurred"));
+
+        // should be task C
+        Task taskC = pollDeciderTask(taskCId);
+        assertEmptyQueue();
+
+        Promise promise = (Promise)taskC.getArgs()[0];
+        assertTrue("Promise contains error", promise.hasFail());
+
+        Fail fail = promise.getFail();
+        assertTrue(fail.instanceOf("java.lang.RuntimeException"));
+        assertTrue(fail.instanceOf("java.lang.Throwable"));
+        assertFalse(fail.instanceOf("java.lang.NullPointerException"));
+    }
+
+    @Test
+    public void testErrorWithWrongException() {
+        UUID taskAId = UUID.randomUUID();
+        UUID taskBId = UUID.randomUUID();
+        UUID taskCId = UUID.randomUUID();
+
+        startProcess(deciderTask(taskAId, TaskType.DECIDER_START, "start"));
+
+        // should be task A
+        pollDeciderTask(taskAId);
+
+        // task should be in "process" state
+        assertTaskInProgress(taskAId);
+
+        // create B, C tasks
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB",
+                new String[]{"java.lang.NullPointerException"}, new Object[]{}, null);
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+                new Object[]{promise(deciderTaskB)},
+                new TaskOptionsImpl(new ArgType[]{ArgType.NONE}));
+
+        release(taskAId, null, deciderTaskB, deciderTaskC);
+
+        // should be task B
+        pollDeciderTask(taskBId);
+
+        // release task B                                                               En
+        release(taskBId, new NesmoglaException("NeshmoglaException occurred"));
+
+        // process should be stopped
+        assertEmptyQueue();
     }
 
     public class NesmoglaException extends RuntimeException {

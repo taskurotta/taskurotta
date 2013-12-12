@@ -247,7 +247,7 @@ public class SerializationTest {
         TaskOptionsContainer taskOptionsContainer = getTaskOptionsContainer();
         UUID processId = UUID.randomUUID();
         String[] failTypes = {"java.lang.RuntimeException"};
-        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer, failTypes);
+        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer, true, failTypes);
         hzMap.put("taskContainer", taskContainer);
 
         TaskContainer actual = (TaskContainer) hzMap.get("taskContainer");

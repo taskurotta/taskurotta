@@ -22,6 +22,7 @@ public class TaskContainer implements Serializable {
     private ArgContainer[] args;
     private TaskOptionsContainer options;
     private UUID processId;
+    private boolean unsafe;
     private String[] failTypes;
 
     public UUID getProcessId() {
@@ -34,6 +35,11 @@ public class TaskContainer implements Serializable {
     public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
                          TaskType type, long startTime, int numberOfAttempts,
                          ArgContainer[] args, TaskOptionsContainer options, String[] failTypes) {
+
+    }
+    public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
+                         TaskType type, long startTime, int numberOfAttempts,
+                         ArgContainer[] args, TaskOptionsContainer options, boolean unsafe, String[] failTypes) {
         super();
         this.taskId = taskId;
         this.method = method;
@@ -44,6 +50,7 @@ public class TaskContainer implements Serializable {
         this.args = args;
         this.options = options;
         this.processId = processId;
+        this.unsafe = unsafe;
         this.failTypes = failTypes;
     }
 
@@ -81,7 +88,7 @@ public class TaskContainer implements Serializable {
 
     @JsonIgnore
     public boolean isUnsafe() {
-        return null != failTypes && failTypes.length > 0;
+        return unsafe;
     }
 
     public String[] getFailTypes() {
@@ -96,8 +103,11 @@ public class TaskContainer implements Serializable {
     public String toString() {
         return "TaskContainer [taskId=" + taskId
                 + ", actorId=" + actorId + ", method=" + method + ", type=" + type
-                + ", startTime=" + startTime + ", numberOfAttempts="
-                + numberOfAttempts + ", args=" + Arrays.toString(args)
-                + ", options=" + options + ", failTypes="+ Arrays.toString(failTypes) +"]";
+                + ", startTime=" + startTime
+                + ", numberOfAttempts=" + numberOfAttempts
+                + ", args=" + Arrays.toString(args)
+                + ", options=" + options
+                + ", unsafe=" + unsafe
+                + ", failTypes=" + Arrays.toString(failTypes) +"]";
     }
 }

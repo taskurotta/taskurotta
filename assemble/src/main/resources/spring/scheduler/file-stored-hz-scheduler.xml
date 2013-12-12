@@ -17,6 +17,7 @@
     <bean id="jobStore" class="ru.taskurotta.schedule.adapter.HzJobStoreAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
         <constructor-arg name="jobStore" ref="realJobStore" />
+        <constructor-arg name="isSharedStore" value="${schedule.job.store.shared}" />
     </bean>
 
     <bean id="jobManager" class="ru.taskurotta.schedule.adapter.HzJobManagerAdapter">
