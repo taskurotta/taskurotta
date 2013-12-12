@@ -5,7 +5,7 @@ contextLocation: "classpath*:spring/hz.xml"
 #Used for static resource serving in development mode
 assets:
   overrides:
-    /: ../../dropwizard/src/main/resources/assets/
+    /: ../dropwizard/src/main/resources/assets/
 
 #Configuration of actors served by this server:
 actorConfig:
@@ -22,6 +22,8 @@ properties:
   hz.jmx: true
   mongo.host: localhost
   mongo.port: 27017
+  schedule.job.store.shared: true
+  schedule.job.store.dir: "D:/tmp/job_store"
 
 #Http server configuration:
 logging:
