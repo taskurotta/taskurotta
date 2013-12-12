@@ -94,7 +94,7 @@
                                    class-name="ru.taskurotta.backend.hz.serialization.UUIDStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.backend.queue.TaskQueueItem"
                                    class-name="ru.taskurotta.backend.hz.serialization.TaskQueueItemSteamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.hazelcast.delay.StorageItem"
+                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.StorageItem"
                                    class-name="ru.taskurotta.backend.hz.serialization.StorageItemStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>

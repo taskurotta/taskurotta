@@ -13,24 +13,24 @@
     <!-- /Config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.delay.CommonStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="schedule" value="${dq.schedule}"/>
         <constructor-arg name="commonStorageName" value="commonStorageForQueueBackend"/>
     </bean>
 
-    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
-    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.delay.CommonStorageFactory">
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="schedule" value="${dq.schedule}"/>
         <constructor-arg name="commonStorageName" value="commonStorageForGC"/>
     </bean>
 
-    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.delay.BaseQueueFactory">
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>
