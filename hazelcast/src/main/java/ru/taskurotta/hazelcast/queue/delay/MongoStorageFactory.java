@@ -88,18 +88,10 @@ public class MongoStorageFactory implements StorageFactory {
                         IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
                         while (dbCursor.hasNext()) {
-
-                            Object object = null;
-
                             DBObject dbObject = dbCursor.next();
-                            try {
-                                Class clazz = Class.forName(dbObject.get("_class").toString());
-                                object = converter.toObject(clazz, dbObject);
-                            } catch (ClassNotFoundException e) {
-                                logger.warn(e.getMessage(), e);
-                            }
+                            StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
 
-                            if (iQueue.add(object)) {
+                            if (iQueue.add(storageItem.getObject())) {
                                 dbCollection.remove(dbObject);
                             }
                         }
@@ -151,15 +143,14 @@ public class MongoStorageFactory implements StorageFactory {
             public boolean remove(Object o) {
                 BasicDBObject query = new BasicDBObject(OBJECT_NAME, new BasicDBObject("$in", o));
 
-                try (DBCursor dbCursor = dbCollection.find(query)) {
+                DBObject dbObject = dbCollection.findOne(query);
 
-                    if (dbCursor.size() == 0) {
-                        return false;
-                    }
-
-                    WriteResult writeResult = dbCollection.remove(dbCursor.next());
-                    return writeResult.getError() == null;
+                if (dbObject == null) {
+                    return false;
                 }
+
+                WriteResult writeResult = dbCollection.remove(dbObject);
+                return writeResult.getError() == null;
             }
 
             @Override
