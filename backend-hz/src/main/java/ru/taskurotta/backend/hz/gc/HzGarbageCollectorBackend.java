@@ -19,16 +19,24 @@ import java.util.concurrent.TimeUnit;
 public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     private ConfigBackend configBackend;
+    private long delayTime;
+    private boolean enabled;
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
-    private long delayTime;
-
     public HzGarbageCollectorBackend(ConfigBackend configBackend, final ProcessBackend processBackend, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
-                                     int poolSize, long delayTime) {
+                                     int poolSize, long delayTime, boolean enabled) {
+
+        this.enabled = enabled;
+
+        if (!enabled) {
+            return;
+        }
+
         this.configBackend = configBackend;
         this.delayTime = delayTime;
+
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
         final ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
@@ -65,6 +73,11 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
     @Override
     public void delete(UUID processId, String actorId) {
+
+        if (!enabled) {
+            return;
+        }
+
         ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
 
         long delayTime = this.delayTime;

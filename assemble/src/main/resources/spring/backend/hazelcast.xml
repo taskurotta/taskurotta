@@ -108,6 +108,7 @@
         <constructor-arg name="garbageCollectorQueueName" value="${gc.queueName}"/>
         <constructor-arg name="poolSize" value="${gc.poolSize}"/>
         <constructor-arg name="delayTime" value="${gc.delayTime}"/>
+        <constructor-arg name="enabled" value="${gc.enabled}"/>
     </bean>
     <!-- /Backends -->
 
