@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;

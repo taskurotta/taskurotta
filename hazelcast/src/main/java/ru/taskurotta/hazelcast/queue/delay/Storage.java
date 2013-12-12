@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import java.util.concurrent.TimeUnit;
 

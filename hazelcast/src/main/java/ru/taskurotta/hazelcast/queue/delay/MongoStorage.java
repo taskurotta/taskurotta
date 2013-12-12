@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;

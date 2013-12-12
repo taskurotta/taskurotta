@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ItemListener;
