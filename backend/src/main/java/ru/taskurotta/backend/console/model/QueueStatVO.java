@@ -88,9 +88,9 @@ public class QueueStatVO implements Serializable {
 
     public QueueStatVO sumValuesWith(QueueStatVO qs) {
         if (qs != null) {
-            if (qs.getCount() > 0) {
-                this.count += qs.getCount();
-            }
+
+            this.count = qs.getCount();//counts are same on every node, so the last measured value should be correct
+
             if (this.lastActivity==null
                     || (qs.getLastActivity()!=null && qs.getLastActivity().after(this.lastActivity)) ) {
                 this.lastActivity = qs.getLastActivity();
