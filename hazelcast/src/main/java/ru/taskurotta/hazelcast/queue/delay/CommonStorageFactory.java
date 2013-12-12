@@ -66,29 +66,12 @@ public class CommonStorageFactory implements StorageFactory {
         return new Storage() {
             @Override
             public boolean add(Object o, long delayTime, TimeUnit unit) {
-
-                long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
-                StorageItem storageItem = new StorageItem(o, enqueueTime, queueName);
-
-                while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
-                    // Better safe than sorry! :)
-                }
-
-                return true;
+                return save(o, delayTime, unit, queueName);
             }
 
             @Override
             public boolean remove(Object o) {
-                UUID key = null;
-
-                for (Map.Entry<UUID, StorageItem> entry : iMap.entrySet()) {
-                    if (entry.getValue().equals(o)) {
-                        key = entry.getKey();
-                        break;
-                    }
-                }
-
-                return key != null && iMap.remove(key, o);
+                return delete(o);
             }
 
             @Override
@@ -101,5 +84,29 @@ public class CommonStorageFactory implements StorageFactory {
                 // don't destroy, because it's common storage for all queues
             }
         };
+    }
+
+    private boolean save(Object o, long delayTime, TimeUnit unit, String queueName) {
+        long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
+        StorageItem storageItem = new StorageItem(o, enqueueTime, queueName);
+
+        while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
+            // Better safe than sorry! :)
+        }
+
+        return true;
+    }
+
+    private boolean delete(Object o) {
+        UUID key = null;
+
+        for (Map.Entry<UUID, StorageItem> entry : iMap.entrySet()) {
+            if (entry.getValue().equals(o)) {
+                key = entry.getKey();
+                break;
+            }
+        }
+
+        return key != null && iMap.remove(key, o);
     }
 }

@@ -119,27 +119,12 @@ public class MongoStorageFactory implements StorageFactory {
         return new Storage() {
             @Override
             public boolean add(Object o, long delayTime, TimeUnit unit) {
-                long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
-
-                DBObject dbObject = converter.toDBObject(new StorageItem(o, enqueueTime, queueName));
-
-                WriteResult writeResult = dbCollection.save(dbObject);
-
-                return writeResult.getError() == null;
+                return save(o, delayTime, unit, dbCollection, queueName);
             }
 
             @Override
             public boolean remove(Object o) {
-                BasicDBObject query = new BasicDBObject(OBJECT_NAME, new BasicDBObject("$in", o));
-
-                DBObject dbObject = dbCollection.findOne(query);
-
-                if (dbObject == null) {
-                    return false;
-                }
-
-                WriteResult writeResult = dbCollection.remove(dbObject);
-                return writeResult.getError() == null;
+                return delete(o, dbCollection);
             }
 
             @Override
@@ -152,5 +137,28 @@ public class MongoStorageFactory implements StorageFactory {
                 dbCollection.drop();
             }
         };
+    }
+
+    private boolean save(Object o, long delayTime, TimeUnit unit, DBCollection dbCollection, String queueName) {
+        long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
+
+        DBObject dbObject = converter.toDBObject(new StorageItem(o, enqueueTime, queueName));
+
+        WriteResult writeResult = dbCollection.save(dbObject);
+
+        return writeResult.getError() == null;
+    }
+
+    private boolean delete(Object o, DBCollection dbCollection) {
+        BasicDBObject query = new BasicDBObject(OBJECT_NAME, new BasicDBObject("$in", o));
+
+        DBObject dbObject = dbCollection.findOne(query);
+
+        if (dbObject == null) {
+            return false;
+        }
+
+        WriteResult writeResult = dbCollection.remove(dbObject);
+        return writeResult.getError() == null;
     }
 }
