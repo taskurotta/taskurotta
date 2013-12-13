@@ -19,19 +19,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ActorThreadPool {
     private static final Logger logger = LoggerFactory.getLogger(ActorThreadPool.class);
 
-    public static final int SHUTDOWN_TIMEOUT = 90 * 1000;
-    public static final int SLEEP_TIMEOUT = 1;
-
     private Class actorClass;//actor class served by this pool
     private int size = 0;//pool size
+    private long sleepTimeoutMillis;
+    private long shutdownTimeoutMillis;
+
     private ActorExecutor actorExecutor;//ActorExecutor task instance for the pool
     private AtomicInteger activeActorExecutorThreadCount = new AtomicInteger();
 
     private Thread[] actorExecutorThreads;
 
-    public ActorThreadPool(final Class actorClass, int size) {
+    public ActorThreadPool(Class actorClass, int size, long sleepTimeoutMillis, long shutdownTimeoutMillis) {
         this.actorClass = actorClass;
         this.size = size;
+        this.sleepTimeoutMillis = sleepTimeoutMillis;
+        this.shutdownTimeoutMillis = shutdownTimeoutMillis;
 
         this.actorExecutorThreads = new Thread[size];
         this.activeActorExecutorThreadCount.set(size);
@@ -118,7 +120,7 @@ public class ActorThreadPool {
      */
     public void shutdown() {
         if (logger.isInfoEnabled()) {
-            logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), SHUTDOWN_TIMEOUT / 1000);
+            logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), shutdownTimeoutMillis / 1000);
         }
 
         actorExecutor.stopInstance();
@@ -141,7 +143,7 @@ public class ActorThreadPool {
             while (hasAlive.get()) {
                 for (Thread thread : actorExecutorThreads) {
                     if (thread.isAlive()) {
-                        if (System.currentTimeMillis() - startTime.get() >= SHUTDOWN_TIMEOUT) {
+                        if (System.currentTimeMillis() - startTime.get() >= shutdownTimeoutMillis) {
                             if (logger.isWarnEnabled()) {
                                 logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
                             }
@@ -153,7 +155,7 @@ public class ActorThreadPool {
                             logger.trace("Actor [{}]'s thread [{}] is alive, wait util thread dies", actorClass.getName(), thread.getName());
                         }
 
-                        TimeUnit.SECONDS.sleep(SLEEP_TIMEOUT);
+                        TimeUnit.MILLISECONDS.sleep(sleepTimeoutMillis);
                         hasAlive.set(Boolean.TRUE);
                         break;
                     }
