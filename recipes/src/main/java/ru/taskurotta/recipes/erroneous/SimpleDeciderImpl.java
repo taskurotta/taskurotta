@@ -25,20 +25,20 @@ public class SimpleDeciderImpl implements SimpleDecider {
     }
 
     @Asynchronous
-    public void print(Promise<Integer> p) {
-        if (p.hasFail()) {
-            log.info("got fail: ["+ p.getFail()+ "]");
+    public void print(Promise<Integer> promise) {
+        if (promise.hasFail()) {
+            log.info("got fail: ["+ promise.getFail()+ "]");
         } else {
-            Integer integer = p.get();
+            Integer integer = promise.get();
             log.info("got number: {}", integer);
         }
 
         // another style of Fail-handling
         try {
-            Integer integer = p.get();
+            Integer integer = promise.get();
             log.info("got number: {}", integer);
-        } catch (Fail e) {
-            log.info("got exception: "+ e.getMessage(), e);
+        } catch (Fail fail) {
+            log.info("got exception: "+ fail.getMessage(), fail);
         }
     }
 
