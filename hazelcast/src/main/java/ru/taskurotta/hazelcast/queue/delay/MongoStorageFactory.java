@@ -9,8 +9,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
@@ -28,8 +26,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class MongoStorageFactory implements StorageFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
-
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
 
@@ -42,13 +38,11 @@ public class MongoStorageFactory implements StorageFactory {
     public static final String ENQUEUE_TIME_NAME = "enqueueTime";
 
     public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final MongoTemplate mongoTemplate,
-                               String storagePrefix, String schedule) {
+                               String storagePrefix, long scheduleDelayMillis) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
 
         this.converter = new SpringMongoDBConverter(mongoTemplate);
-
-        long delayMillis = ScheduleParser.getScheduleMillis(schedule);
 
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
@@ -86,7 +80,7 @@ public class MongoStorageFactory implements StorageFactory {
                     }
                 }
             }
-        }, 0l, delayMillis, TimeUnit.MILLISECONDS);
+        }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override

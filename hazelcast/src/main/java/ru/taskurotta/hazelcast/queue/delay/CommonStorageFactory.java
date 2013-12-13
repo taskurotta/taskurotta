@@ -21,11 +21,9 @@ public class CommonStorageFactory implements StorageFactory {
 
     private final IMap<UUID, StorageItem> iMap;
 
-    public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, String schedule) {
+    public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, long scheduleDelayMillis) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex("enqueueTime", true);
-
-        long delayMillis = ScheduleParser.getScheduleMillis(schedule);
 
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
@@ -58,7 +56,7 @@ public class CommonStorageFactory implements StorageFactory {
                     hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
                 }
             }
-        }, 0l, delayMillis, TimeUnit.MILLISECONDS);
+        }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
     }
 
     @Override

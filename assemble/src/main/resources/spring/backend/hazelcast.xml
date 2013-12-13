@@ -24,7 +24,11 @@
     <!-- Delay queue support -->
     <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="schedule" value="${dq.schedule}"/>
+        <constructor-arg name="scheduleDelayMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${dq.schedule}"/>
+            </bean>
+        </constructor-arg>
         <constructor-arg name="commonStorageName" value="commonStorageForQueueBackend"/>
     </bean>
 
@@ -35,7 +39,11 @@
 
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="schedule" value="${dq.schedule}"/>
+        <constructor-arg name="scheduleDelayMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${dq.schedule}"/>
+            </bean>
+        </constructor-arg>
         <constructor-arg name="commonStorageName" value="commonStorageForGC"/>
     </bean>
 
