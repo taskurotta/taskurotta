@@ -1,7 +1,5 @@
 package ru.taskurotta.backend.gc;
 
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
@@ -16,15 +14,12 @@ import java.util.concurrent.TimeUnit;
 
 public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
 
-    private ConfigBackend configBackend;
-
     private DelayQueue<DelayFinishedProcess> garbageCollectorQueue = new DelayQueue<>();
 
     private long delayTime;
 
-    public MemoryGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao,
+    public MemoryGarbageCollectorBackend(ProcessBackend processBackend, GraphDao graphDao,
                                          TaskDao taskDao, int poolSize, long delayTime) {
-        this.configBackend = configBackend;
         this.delayTime = delayTime;
 
         ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
@@ -83,14 +78,7 @@ public class MemoryGarbageCollectorBackend implements GarbageCollectorBackend {
     }
 
     @Override
-    public void delete(UUID processId, String actorId) {
-        ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
-
-        long delayTime = this.delayTime;
-        if (actorPreferences != null) {
-            delayTime = actorPreferences.getKeepTime();
-        }
-
+    public void delete(UUID processId) {
         garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + delayTime));
     }
 }

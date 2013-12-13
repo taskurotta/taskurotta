@@ -68,7 +68,7 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
     }
 
     @Override
-    public void delete(UUID processId, String actorId) {
+    public void delete(UUID processId) {
 
         if (!enabled) {
             return;

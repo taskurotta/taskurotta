@@ -19,7 +19,7 @@ public class MockGarbageCollectorBackend implements GarbageCollectorBackend {
     public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, Object queueFactory, String garbageCollectorQueueName, int poolSize, long delayTime) {}
 
     @Override
-    public void delete(UUID processId, String actorId) {
+    public void delete(UUID processId) {
         // do nothing
     }
 }
