@@ -1,5 +1,7 @@
 package ru.taskurotta.bootstrap.config;
 
+import ru.taskurotta.util.DurationParser;
+
 import java.util.Properties;
 
 /**
@@ -16,6 +18,8 @@ public class ActorConfig {
     private String policyConfig;
     private int count = 1;
     private Properties properties;
+    private long sleepTimeoutMillis = 1000l;
+    private long shutdownTimeoutMillis = 60000l;
 
     public String getActorInterface() {
         return actorInterface;
@@ -75,5 +79,21 @@ public class ActorConfig {
 
     public Object getProperty(String name) {
         return properties!=null? properties.getProperty(name): null;
+    }
+
+    public void setSleepTimeout(String sleepTimeout) {
+        this.sleepTimeoutMillis = DurationParser.toMillis(sleepTimeout);
+    }
+
+    public long getSleepTimeoutMillis() {
+        return sleepTimeoutMillis;
+    }
+
+    public void setShutdownTimeout(String shutdownTimeout) {
+        this.shutdownTimeoutMillis = DurationParser.toMillis(shutdownTimeout);
+    }
+
+    public long getShutdownTimeoutMillis() {
+        return shutdownTimeoutMillis;
     }
 }

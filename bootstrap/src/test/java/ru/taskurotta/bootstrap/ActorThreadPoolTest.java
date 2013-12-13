@@ -59,7 +59,7 @@ public class ActorThreadPoolTest {
 
     @Before
     public void setUp() throws Exception {
-        actorThreadPool = new ActorThreadPool(TestWorker.class, size);
+        actorThreadPool = new ActorThreadPool(TestWorker.class, size, 1000l, 60000l);
 
         Profiler profiler = new SimpleProfiler();
         LinearRetryPolicy retryPolicy = new LinearRetryPolicy(1);

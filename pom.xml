@@ -51,6 +51,7 @@
         <module>test</module>
         <module>schedule</module>
         <module>hazelcast</module>
+        <module>util</module>
     </modules>
 
     <profiles>

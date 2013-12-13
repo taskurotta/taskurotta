@@ -82,6 +82,7 @@ public class HzQueueBackendStatistics extends AbstractQueueBackendStatistics {
 
                     if (myValue == null) {
                         myMap.put(key, mutualValue);
+                        continue;
                     }
 
                     if (myValue > mutualValue) {

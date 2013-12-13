@@ -8,7 +8,7 @@ package ru.taskurotta.bootstrap;
 public class MockActorThreadPool extends ActorThreadPool {
 
     public MockActorThreadPool(Class actorClass, int size) {
-        super(actorClass, size);
+        super(actorClass, size, 1000l, 60000l);
     }
 
     @Override
