@@ -9,6 +9,8 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
@@ -25,6 +27,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 16:58
  */
 public class MongoStorageFactory implements StorageFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
 
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
@@ -68,11 +72,6 @@ public class MongoStorageFactory implements StorageFactory {
                     BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
 
                     try (DBCursor dbCursor = dbCollection.find(query)) {
-
-                        if (dbCursor.size() == 0) {
-                            continue;
-                        }
-
                         String queueName = entry.getKey();
                         IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
@@ -124,6 +123,7 @@ public class MongoStorageFactory implements StorageFactory {
 
             @Override
             public boolean remove(Object o) {
+                // ToDo maybe use full scan
                 return delete(o, dbCollection);
             }
 
@@ -150,15 +150,16 @@ public class MongoStorageFactory implements StorageFactory {
     }
 
     private boolean delete(Object o, DBCollection dbCollection) {
-        BasicDBObject query = new BasicDBObject(OBJECT_NAME, new BasicDBObject("$in", o));
+        DBObject query = new BasicDBObject(OBJECT_NAME, o);
 
-        DBObject dbObject = dbCollection.findOne(query);
-
-        if (dbObject == null) {
-            return false;
+        boolean result = true;
+        try (DBCursor dbCursor = dbCollection.find(query)) {
+            while (dbCursor.hasNext()) {
+                WriteResult writeResult = dbCollection.remove(dbCursor.next());
+                result = result & (writeResult.getError() == null);
+            }
         }
 
-        WriteResult writeResult = dbCollection.remove(dbObject);
-        return writeResult.getError() == null;
+        return result;
     }
 }
