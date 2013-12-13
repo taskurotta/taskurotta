@@ -14,12 +14,12 @@ import java.util.UUID;
  */
 public class MockGarbageCollectorBackend implements GarbageCollectorBackend {
 
-    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {}
+    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, int poolSize, long delayTime) {}
 
-    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, Object queueFactory, String garbageCollectorQueueName, int poolSize, long keepTime) {}
+    public MockGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, Object queueFactory, String garbageCollectorQueueName, int poolSize, long delayTime) {}
 
     @Override
-    public void delete(UUID processId, String actorId) {
+    public void delete(UUID processId) {
         // do nothing
     }
 }

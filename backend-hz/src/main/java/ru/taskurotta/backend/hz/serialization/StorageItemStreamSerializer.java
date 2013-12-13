@@ -3,7 +3,7 @@ package ru.taskurotta.backend.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.backend.hz.queue.delay.CommonStorageItem;
+import ru.taskurotta.hazelcast.queue.delay.StorageItem;
 
 import java.io.IOException;
 
@@ -12,23 +12,23 @@ import java.io.IOException;
  * Date: 06.12.13
  * Time: 14:58
  */
-public class CommonStorageItemStreamSerializer implements StreamSerializer<CommonStorageItem> {
+public class StorageItemStreamSerializer implements StreamSerializer<StorageItem> {
 
     @Override
-    public void write(ObjectDataOutput out, CommonStorageItem object) throws IOException {
+    public void write(ObjectDataOutput out, StorageItem object) throws IOException {
         out.writeObject(object.getObject());
         out.writeLong(object.getEnqueueTime());
         out.writeUTF(object.getQueueName());
     }
 
     @Override
-    public CommonStorageItem read(ObjectDataInput in) throws IOException {
+    public StorageItem read(ObjectDataInput in) throws IOException {
 
         Object object = in.readObject();
         long enqueueTime = in.readLong();
         String queueName = in.readUTF();
 
-        return new CommonStorageItem(object, enqueueTime, queueName);
+        return new StorageItem(object, enqueueTime, queueName);
     }
 
     @Override

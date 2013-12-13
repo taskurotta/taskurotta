@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.queue.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import java.util.concurrent.TimeUnit;
 
@@ -12,8 +12,6 @@ public interface Storage<E> {
     public boolean add(E e, long delayTime, TimeUnit unit);
 
     public boolean remove(E e);
-
-    public boolean contains(E e);
 
     public void clear();
 

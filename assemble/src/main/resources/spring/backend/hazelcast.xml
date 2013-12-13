@@ -22,34 +22,42 @@
     <!-- /Actor config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.MockStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="schedule" value="${dq.schedule}"/>
+        <constructor-arg name="commonStorageName" value="commonStorageForQueueBackend"/>
     </bean>
 
-    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
-    <bean id="storageFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.MockStorageFactory">
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="mapStoragePrefix" value="${gc.mapStoragePrefix}"/>
+        <constructor-arg name="schedule" value="${dq.schedule}"/>
+        <constructor-arg name="commonStorageName" value="commonStorageForGC"/>
     </bean>
 
-    <bean id="queueFactoryForGC" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>
     <!-- /Delay queue support -->
 
     <!-- Backends -->
-    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzMongoQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}"/>
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+    <!--<bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzMongoQueueBackend">-->
+        <!--<constructor-arg name="pollDelay" value="${pollDelay}"/>-->
+        <!--<constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>-->
+        <!--<constructor-arg name="hazelcastInstance" ref="hzInstance"/>-->
 
-        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
+        <!--<property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>-->
+    <!--</bean>-->
+
+    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzQueueBackend">
+        <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
     </bean>
 
     <bean id="queueBackend" class="ru.taskurotta.assemple.ProxyQueueBackend">
@@ -100,15 +108,15 @@
         <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
     </bean>
 
-    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.gc.MockGarbageCollectorBackend">
-        <constructor-arg name="configBackend" ref="configBackend"/>
+    <bean id="garbageCollectorBackend" class="ru.taskurotta.backend.hz.gc.HzGarbageCollectorBackend">
         <constructor-arg name="processBackend" ref="processBackend"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="queueFactory" ref="queueFactoryForGC"/>
         <constructor-arg name="garbageCollectorQueueName" value="${gc.queueName}"/>
         <constructor-arg name="poolSize" value="${gc.poolSize}"/>
-        <constructor-arg name="keepTime" value="${gc.keepTime}"/>
+        <constructor-arg name="delayTime" value="${gc.delayTime}"/>
+        <constructor-arg name="enabled" value="${gc.enabled}"/>
     </bean>
     <!-- /Backends -->
 
@@ -129,5 +137,6 @@
     <bean id="taskServer" class="ru.taskurotta.assemple.ProxyTaskServer">
         <constructor-arg name="target" ref="realTaskServer"/>
     </bean>
+    <!-- /Task server -->
 
 </beans>

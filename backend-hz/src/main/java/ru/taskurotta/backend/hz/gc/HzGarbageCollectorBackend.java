@@ -1,14 +1,12 @@
 package ru.taskurotta.backend.hz.gc;
 
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.config.model.ActorPreferences;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.AbstractGCTask;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
-import ru.taskurotta.backend.hz.queue.delay.DelayIQueue;
-import ru.taskurotta.backend.hz.queue.delay.QueueFactory;
 import ru.taskurotta.backend.storage.ProcessBackend;
 import ru.taskurotta.backend.storage.TaskDao;
+import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -18,18 +16,26 @@ import java.util.concurrent.TimeUnit;
 
 public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
-    private ConfigBackend configBackend;
+    private long delayTime;
+    private boolean enabled;
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
-    private long keepTime;
+    public HzGarbageCollectorBackend(final ProcessBackend processBackend, final GraphDao graphDao,
+                                     final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
+                                     int poolSize, long delayTime, boolean enabled) {
 
-    public HzGarbageCollectorBackend(ConfigBackend configBackend, ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName, int poolSize, long keepTime) {
-        this.configBackend = configBackend;
-        this.keepTime = keepTime;
+        this.enabled = enabled;
+
+        if (!enabled) {
+            return;
+        }
+
+        this.delayTime = delayTime;
+
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+        final ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -41,47 +47,33 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
         });
 
         for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new HazelcastGCTask(processBackend, graphDao, taskDao));
+            executorService.submit(new AbstractGCTask(processBackend, graphDao, taskDao) {
+                @Override
+                public void run() {
+                    while (true) {
+                        logger.trace("Try to get process for garbage collector");
+
+                        UUID processId = null;
+                        try {
+                            processId = garbageCollectorQueue.take();
+                        } catch (InterruptedException e) {
+                            logger.error("Catch exception while find process for garbage collector", e);
+                        }
+
+                        gc(processId);
+                    }
+                }
+            });
         }
     }
 
     @Override
-    public void delete(UUID processId, String actorId) {
-        ActorPreferences actorPreferences = configBackend.getActorPreferences(actorId);
+    public void delete(UUID processId) {
 
-        long keepTime = this.keepTime;
-        if (actorPreferences != null) {
-            keepTime = actorPreferences.getKeepTime();
+        if (!enabled) {
+            return;
         }
 
-        garbageCollectorQueue.add(processId, keepTime, TimeUnit.MILLISECONDS);
-    }
-
-    class HazelcastGCTask extends AbstractGCTask {
-
-        protected HazelcastGCTask(ProcessBackend processBackend, GraphDao graphDao, TaskDao taskDao) {
-            super(processBackend, graphDao, taskDao);
-        }
-
-        @Override
-        public void run() {
-            while(true) {
-
-                logger.trace("Try to get process for garbage collector");
-
-                UUID processId = null;
-                try {
-                    processId = garbageCollectorQueue.poll(1, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    logger.error("Catch exception while find process for garbage collector", e);
-                }
-
-                if (processId == null) {
-                    continue;
-                }
-
-                gc(processId);
-            }
-        }
+        garbageCollectorQueue.add(processId, delayTime, TimeUnit.MILLISECONDS);
     }
 }

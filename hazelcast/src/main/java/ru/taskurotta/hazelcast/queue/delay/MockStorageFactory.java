@@ -1,4 +1,4 @@
-package ru.taskurotta.backend.hz.queue.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
 
@@ -25,11 +25,6 @@ public class MockStorageFactory implements StorageFactory {
 
             @Override
             public boolean remove(Object o) {
-                return false;
-            }
-
-            @Override
-            public boolean contains(Object o) {
                 return false;
             }
 

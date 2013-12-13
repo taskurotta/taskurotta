@@ -1,20 +1,22 @@
-package ru.taskurotta.backend.hz.queue.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import java.io.Serializable;
 
 /**
-* User: stukushin
-* Date: 04.12.13
-* Time: 18:57
-*/
-public class BaseStorageItem implements Serializable {
+ * User: stukushin
+ * Date: 05.12.13
+ * Time: 11:38
+ */
+public class StorageItem implements Serializable {
 
     private Object object;
     private long enqueueTime;
+    private String queueName;
 
-    public BaseStorageItem(Object object, long enqueueTime) {
+    public StorageItem(Object object, long enqueueTime, String queueName) {
         this.object = object;
         this.enqueueTime = enqueueTime;
+        this.queueName = queueName;
     }
 
     public Object getObject() {
@@ -33,15 +35,24 @@ public class BaseStorageItem implements Serializable {
         this.enqueueTime = enqueueTime;
     }
 
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BaseStorageItem that = (BaseStorageItem) o;
+        StorageItem that = (StorageItem) o;
 
         if (enqueueTime != that.enqueueTime) return false;
         if (object != null ? !object.equals(that.object) : that.object != null) return false;
+        if (queueName != null ? !queueName.equals(that.queueName) : that.queueName != null) return false;
 
         return true;
     }
@@ -50,14 +61,16 @@ public class BaseStorageItem implements Serializable {
     public int hashCode() {
         int result = object != null ? object.hashCode() : 0;
         result = 31 * result + (int) (enqueueTime ^ (enqueueTime >>> 32));
+        result = 31 * result + (queueName != null ? queueName.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return "BaseStorageItem{" +
+        return "StorageItem{" +
                 "object=" + object +
                 ", enqueueTime=" + enqueueTime +
+                ", queueName='" + queueName + '\'' +
                 '}';
     }
 }

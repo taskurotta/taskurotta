@@ -39,7 +39,6 @@
     </bean>
     <!-- /Queues persistence support -->
 
-
     <!--  Actor config support  -->
     <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.MongoActorConfigManager">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
@@ -51,28 +50,30 @@
     <!-- /Actor config support -->
 
     <!-- Delay queue support -->
-    <!-- removed as not needed. BaseStorageFactory should be optimized for CPU usage
-    <bean id="storageFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="mapStoragePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="schedule" value="${dq.schedule}"/>
     </bean>
 
-    <bean id="queueFactory" class="ru.taskurotta.backend.hz.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="storageFactory" ref="storageFactory"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
-    -->
+
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="schedule" value="${dq.schedule}"/>
+    </bean>
+
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
+    </bean>
     <!-- /Delay queue support -->
-
-    <!-- Backends -->
-    <bean id="realQueueBackend" class="ru.taskurotta.backend.hz.queue.HzMongoQueueBackend">
-        <constructor-arg name="pollDelay" value="${pollDelay}"/>
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-
-        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
-        <property name="hzMapConfigSupport" ref="hzMapConfigSupport"/>
-        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
-    </bean>
-    <!-- /Backends -->
 </beans>

@@ -60,10 +60,8 @@
                                    class-name="ru.taskurotta.backend.hz.serialization.UUIDStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.backend.queue.TaskQueueItem"
                                    class-name="ru.taskurotta.backend.hz.serialization.TaskQueueItemSteamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.backend.hz.queue.delay.BaseStorageItem"
-                                   class-name="ru.taskurotta.backend.hz.serialization.BaseStorageItemStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.backend.hz.queue.delay.CommonStorageItem"
-                                   class-name="ru.taskurotta.backend.hz.serialization.CommonStorageItemStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.StorageItem"
+                                   class-name="ru.taskurotta.backend.hz.serialization.StorageItemStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
 

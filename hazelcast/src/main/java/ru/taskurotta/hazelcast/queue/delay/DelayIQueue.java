@@ -1,8 +1,9 @@
-package ru.taskurotta.backend.hz.queue.delay;
+package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.ItemListener;
 import com.hazelcast.monitor.LocalQueueStats;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -43,7 +44,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
-        return queue.offer(e, timeout, unit);
+        return add(e, timeout, unit);
     }
 
     @Override
@@ -68,7 +69,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean contains(Object o) {
-        return queue.contains(o) || storage.contains((E) o);
+        throw new NotImplementedException();
     }
 
     @Override
