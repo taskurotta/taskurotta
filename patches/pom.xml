@@ -19,13 +19,17 @@
             <artifactId>hazelcast-all</artifactId>
             <version>${hazelcast.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

@@ -4,10 +4,12 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static junit.framework.Assert.assertEquals;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.PartitionService;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.hazelcast.util.MemberQueue;
 
 /**
@@ -31,7 +33,7 @@ public class MemberQueueIntegrationTest {
         TestServer(int number, boolean useMemberQueue) {
 
             this.number = number;
-            this.hzInstance = Hazelcast.newHazelcastInstance();
+            this.hzInstance = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(new Config()));
             this.partitionService = hzInstance.getPartitionService();
             this.memberId = hzInstance.getCluster().getLocalMember().getUuid();
 

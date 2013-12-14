@@ -1,5 +1,9 @@
 package ru.taskurotta.hz.test;
 
+import com.hazelcast.config.Config;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import org.junit.Test;
@@ -8,6 +12,7 @@ import ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory;
 import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 import ru.taskurotta.hazelcast.queue.delay.StorageFactory;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,7 +25,7 @@ public class DelayIQueueTest {
     @Test
     public void CommonDelayIQueueTest() throws InterruptedException {
 
-        HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance();
+        HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(new Config()));
 
         try {
 

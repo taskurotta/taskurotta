@@ -1,11 +1,13 @@
 package com.hazelcast.nio.serialization;
 
+import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import org.junit.Test;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 
 import java.io.IOException;
 import java.util.TreeSet;
@@ -50,7 +52,7 @@ public class SerializationServiceImplTest {
 
     //@Test
     public void registeredStreamSerializerTest() {
-        HazelcastInstance hzInstance = Hazelcast.newHazelcastInstance();
+       HazelcastInstance hzInstance = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(new Config()));
 
         try {
             IMap map = hzInstance.getMap("test");

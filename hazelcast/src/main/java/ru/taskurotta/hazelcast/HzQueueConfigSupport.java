@@ -22,7 +22,6 @@ public class HzQueueConfigSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueConfigSupport.class);
 
-    private static final String BACKING_MAP_NAME_SUFFIX = ".backingMap";
     private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
 
 
@@ -74,7 +73,7 @@ public class HzQueueConfigSupport {
 
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
         QueueStoreConfig result = new QueueStoreConfig();
-        result.setStoreImplementation(queueStoreFactory.newQueueStore(queueName + BACKING_MAP_NAME_SUFFIX, null));
+        result.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
         result.setEnabled(true);
         Properties properties = new Properties();
         properties.setProperty("binary", this.binary.toString());
