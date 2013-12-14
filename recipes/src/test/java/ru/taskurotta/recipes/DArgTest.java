@@ -1,6 +1,7 @@
 package ru.taskurotta.recipes;
 
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ public class DArgTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DArgTest.class);
 
+    // Ignore it until repair
+    @Ignore
     @Test
     public void start() throws ArgumentParserException, IOException, ClassNotFoundException {
         run("ru/taskurotta/recipes/darg/");

@@ -26,6 +26,7 @@ import com.hazelcast.core.MapStore;
 import com.hazelcast.core.QueueStore;
 import org.junit.Ignore;
 import org.junit.Test;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,7 +40,8 @@ public class HZ3_Test {
     @Test
     public void test() {
         Config cfg = new Config();
-        HazelcastInstance hz = Hazelcast.newHazelcastInstance(cfg);
+
+        HazelcastInstance hz = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(cfg));
         Map<String, Object> myLockedObject = hz.getMap("test");
         Lock lock = hz.getLock("test");
         lock.lock();
@@ -113,7 +115,7 @@ public class HZ3_Test {
             Config cfg = new Config();
             cfg.addMapConfig(mapConfig);
 
-            HazelcastInstance hz = Hazelcast.newHazelcastInstance(cfg);
+            HazelcastInstance hz = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(cfg));
 
             IMap<Integer, int[]> map = hz.getMap("test");
 
@@ -173,7 +175,7 @@ public class HZ3_Test {
             cfg.addQueueConfig(qc);
             SerializationConfig serCfg = new SerializationConfig();
 
-            HazelcastInstance hz = Hazelcast.newHazelcastInstance(cfg);
+            HazelcastInstance hz = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(cfg));
 
             IQueue<TestQueueItem> queue = hz.getQueue("TestQueue");
 

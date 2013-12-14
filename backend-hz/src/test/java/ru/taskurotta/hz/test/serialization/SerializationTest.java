@@ -30,6 +30,7 @@ import ru.taskurotta.backend.hz.serialization.ErrorContainerStreamSerializer;
 import ru.taskurotta.backend.hz.serialization.GraphStreamSerializer;
 import ru.taskurotta.backend.hz.serialization.TaskContainerStreamSerializer;
 import ru.taskurotta.backend.hz.serialization.TaskOptionsContainerSerializer;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ArgType;
@@ -72,7 +73,8 @@ public class SerializationTest {
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
-        HazelcastInstance hz = Hazelcast.newHazelcastInstance(config);
+        HazelcastInstance hz = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(config));
+
         hzMap = hz.getMap("testMap");
 
     }
