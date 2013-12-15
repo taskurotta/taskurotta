@@ -32,6 +32,8 @@
 
             <hz:map name="${hz.graph.decision.map.name}" backup-count="1"/>
 
+            <hz:map name="${hz.process.map.name}" backup-count="1"/>
+
             <hz:map name="${hz.actor.preferences.map.name}" backup-count="1"/>
 
             <hz:serialization>

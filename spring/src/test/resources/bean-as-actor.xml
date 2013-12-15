@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!--<ts:taskurotta id="tsInstance">-->
+
+        <!--<ts:network>-->
+            <!--<ts:server uri="http://www.example.com"/>-->
+        <!--</ts:network>-->
+
+        <!--<ts:actor ref="beanActor">-->
+            <!--<ts:pool size="20" min="2">-->
+                <!--<ts:frequency-delay-->
+                        <!--empty-pool="1 seconds"-->
+                        <!--server-fail="1 seconds"-->
+                        <!--actor-error="5 seconds"-->
+                        <!--park-after="10"/>-->
+            <!--</ts:pool>-->
+        <!--</ts:actor>-->
+
+    <!--</ts:taskurotta>-->
+
+
+    <!--<bean name="beanActor" class="com.example.taskurotta.ProxyBean">-->
+        <!--<constructor-arg name="service" ref="service"/>-->
+    <!--</bean>-->
+
+
+    <!--<bean name="service" class="com.example.Service">-->
+    <!--</bean>-->
+
+
+</beans>

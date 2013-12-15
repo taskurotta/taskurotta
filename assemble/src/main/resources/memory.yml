@@ -15,7 +15,6 @@ actorConfig:
 properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
-  retryTimes: 10
   recovery.schedule: "*/35 * * * * ?"
   recovery.period: 2
   recovery.period.unit: "DAYS"

@@ -17,13 +17,12 @@ properties:
   pollDelay: 10
   pollDelayUnit: "SECONDS"
   hz.mancenter.enabled: true
-  hz.mancenter.url: "http://localhost:8080/mancenter-3.0.3"
   hz.jmx.detailed: true
   hz.jmx: true
   mongo.host: localhost
   mongo.port: 27017
   schedule.job.store.shared: true
-  schedule.job.store.dir: "D:/tmp/job_store"
+  schedule.job.store.dir: "./job_store"
 
 #Http server configuration:
 logging:

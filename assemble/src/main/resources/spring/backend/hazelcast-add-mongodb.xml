@@ -30,6 +30,12 @@
         <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
     </bean>
 
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+    </bean>
+
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
         <property name="mongoTemplate" ref="mongoTemplate"/>
         <property name="hzInstance" ref="hzInstance"/>
@@ -37,7 +43,27 @@
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
     </bean>
+
+    <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
+
+        <property name="asyncBackupsCount" value="0"/>
+        <property name="backupCount" value="0"/>
+        <property name="maxSize" value="0"/>
+        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="binary" value="false"/>
+        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+    </bean>
+
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="gcQueueConfigSupport"/>
+    </bean>
+
     <!-- /Queues persistence support -->
+
 
     <!--  Actor config support  -->
     <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.MongoActorConfigManager">

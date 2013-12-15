@@ -1,5 +1,7 @@
 package ru.taskurotta.backend.hz.gc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.backend.dependency.links.GraphDao;
 import ru.taskurotta.backend.gc.AbstractGCTask;
 import ru.taskurotta.backend.gc.GarbageCollectorBackend;
@@ -16,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
 
+    private static final Logger logger = LoggerFactory.getLogger(HzGarbageCollectorBackend.class);
+
     private long delayTime;
     private boolean enabled;
 
@@ -24,6 +28,8 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
     public HzGarbageCollectorBackend(final ProcessBackend processBackend, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long delayTime, boolean enabled) {
+
+        logger.debug("Garbage Collector initialization {}", enabled);
 
         this.enabled = enabled;
 
@@ -75,5 +81,6 @@ public class HzGarbageCollectorBackend implements GarbageCollectorBackend {
         }
 
         garbageCollectorQueue.add(processId, delayTime, TimeUnit.MILLISECONDS);
+
     }
 }

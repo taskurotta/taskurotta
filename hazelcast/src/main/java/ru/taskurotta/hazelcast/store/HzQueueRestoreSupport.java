@@ -16,7 +16,6 @@ import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 public class HzQueueRestoreSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueRestoreSupport.class);
-    private static final String BACKING_MAP_SUFFIX = ".backingMap";
 
     private MongoTemplate mongoTemplate;
     private HazelcastInstance hzInstance;
@@ -29,17 +28,16 @@ public class HzQueueRestoreSupport {
             int queueRestored = 0;
             for (String collectionName : mongoTemplate.getCollectionNames()) {
                 if (collectionName.startsWith(queuePrefix)) {//is backing queue
-                    String queueName = collectionName.endsWith(BACKING_MAP_SUFFIX) ? collectionName.substring(0, collectionName.lastIndexOf(BACKING_MAP_SUFFIX)) : collectionName;
                     if (hzQueueConfigSupport != null) {
-                        hzQueueConfigSupport.createQueueConfig(queueName);
+                        hzQueueConfigSupport.createQueueConfig(collectionName);
                     } else {
-                        logger.warn("Cannot restore queue[{}], mapstore config is not set!", queueName);
+                        logger.warn("Cannot restore queue[{}], mapstore config is not set!", collectionName);
                     }
-                    int size = hzInstance.getQueue(queueName).size();//initializes queue
+                    int size = hzInstance.getQueue(collectionName).size();//initializes queue
 
                     if (logger.isDebugEnabled()) {
                         DBCollection coll = mongoTemplate.getCollection(collectionName);
-                        logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", queueName, size, coll.getCount());
+                        logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", collectionName, size, coll.getCount());
                     }
 
                     queueRestored++;
