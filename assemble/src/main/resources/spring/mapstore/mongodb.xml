@@ -15,7 +15,20 @@
 
 
     <!-- Mongo -->
-    <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}"/>
+    <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
+        <mongo:options connections-per-host="${mongo.options.connections-per-host}"
+                       threads-allowed-to-block-for-connection-multiplier="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"
+                       max-wait-time="${mongo.options.max-wait-time}"
+                       connect-timeout="${mongo.options.connect-timeout}"
+                       socket-timeout="${mongo.options.socket-timeout}"
+                       socket-keep-alive="${mongo.options.socket-keep-alive}"
+                       auto-connect-retry="${mongo.options.auto-connect-retry}"
+                       max-auto-connect-retry-time="0"
+                       write-number="${mongo.options.write-number}"
+                       write-timeout="${mongo.options.write-timeout}"
+                       write-fsync="${mongo.options.write-fsync}"
+                       slave-ok="${mongo.options.slave-ok}"/>
+    </mongo:mongo>
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongo"/>
@@ -35,7 +48,7 @@
     </bean>
 
     <bean id="queueStoreFactory" class="ru.taskurotta.hazelcast.store.MongoQueueStorageFactory">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
     <!-- /Mongo -->
 

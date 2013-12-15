@@ -22,7 +22,7 @@ spreader:
           hz.nodes: localhost:7777
           mongo.host: localhost
           mongo.port: 27017
-          gc.enabled: false
+          gc.enabled: true
 
 profiler:
   - MainProfilerConfig:
