@@ -152,12 +152,12 @@
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>backend-hz</artifactId>
+            <artifactId>services-hz</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>backend-ora</artifactId>
+            <artifactId>services-ora</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

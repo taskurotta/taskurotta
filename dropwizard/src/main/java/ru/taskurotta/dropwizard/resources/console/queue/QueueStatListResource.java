@@ -4,9 +4,9 @@ import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueueStatVO;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.model.GenericPage;
+import ru.taskurotta.service.console.model.QueueStatVO;
+import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 
 import javax.ws.rs.GET;

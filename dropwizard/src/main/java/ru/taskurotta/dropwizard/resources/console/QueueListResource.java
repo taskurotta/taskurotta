@@ -1,8 +1,8 @@
 package ru.taskurotta.dropwizard.resources.console;
 
 import com.google.common.base.Optional;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.console.model.QueueVO;
+import ru.taskurotta.service.console.model.GenericPage;
+import ru.taskurotta.service.console.model.QueueVO;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

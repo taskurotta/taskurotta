@@ -66,7 +66,7 @@
 
 
     <!--  Actor config support  -->
-    <bean id="actorConfigManager" class="ru.taskurotta.backend.hz.config.MongoActorConfigManager">
+    <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.MongoActorConfigManager">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
         <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>

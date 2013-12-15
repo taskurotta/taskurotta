@@ -2,7 +2,7 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
 
 import com.google.common.base.Optional;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.statistics.metrics.MetricsDataUtils;
+import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;

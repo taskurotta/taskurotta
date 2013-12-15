@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>backend</artifactId>
+            <artifactId>services</artifactId>
             <version>${project.version}</version>
         </dependency>
 

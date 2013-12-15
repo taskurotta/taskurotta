@@ -43,9 +43,9 @@
         <module>recipes</module>
         <module>dropwizard</module>
         <module>assemble</module>
-        <module>backend</module>
-        <module>backend-ora</module>
-        <module>backend-hz</module>
+        <module>services</module>
+        <module>services-ora</module>
+        <module>services-hz</module>
         <module>transport</module>
         <module>patches</module>
         <module>test</module>

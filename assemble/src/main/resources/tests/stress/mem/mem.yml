@@ -22,6 +22,7 @@ spreader:
           hz.nodes: localhost:7777
           mongo.host: localhost
           mongo.port: 27017
+          gc.enabled: false
 
 profiler:
   - MainProfilerConfig:
@@ -52,7 +53,7 @@ logback:
              key: name
              \@class: ch.qos.logback.core.FileAppender
              file: ./target/logs/recipes-multiply.log
-             append: true
+             append: false
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:
@@ -62,7 +63,7 @@ logback:
         - ru.taskurotta.recipes.stress:
              key: name
              \@level: DEBUG
-        - ru.taskurotta.backend.hz.gc:
+        - ru.taskurotta.service.hz.gc:
              key: name
              \@level: DEBUG
         - org:

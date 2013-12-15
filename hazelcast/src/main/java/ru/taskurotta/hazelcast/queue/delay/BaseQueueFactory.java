@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -56,6 +57,13 @@ public class BaseQueueFactory implements QueueFactory {
                 Storage storage = storageFactory.createStorage(queueName);
 
                 delayIQueue = new DelayIQueue(iQueue, storage);
+
+                // Do not remove commented code! This is example of deadlock for future analyze
+//                try {
+//                    delayIQueue.put(UUID.randomUUID());
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//                }
 
                 queueMap.put(queueName, delayIQueue);
             } finally {

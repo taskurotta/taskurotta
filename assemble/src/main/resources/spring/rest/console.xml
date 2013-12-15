@@ -16,7 +16,7 @@
 
     <bean id = "actorListResource" class = "ru.taskurotta.dropwizard.resources.console.actors.ActorListResource">
         <property name="actorConfigManager" ref="actorConfigManager"/>
-        <property name="configBackend" ref="configBackend"/>
+        <property name="configService" ref="configService"/>
     </bean>
 
     <bean id="actorCompareResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorCompareResource">
@@ -131,15 +131,15 @@
     <bean id="brokenProcessListResource" class="ru.taskurotta.dropwizard.resources.console.broken.BrokenProcessListResource" >
         <constructor-arg name="recoveryThreads" value="${broken.process.recovery.threads}" />
 
-        <property name="brokenProcessBackend" ref="brokenProcessBackend" />
-        <property name="recoveryProcessBackend" ref="recoveryProcessBackend" />
+        <property name="brokenProcessService" ref="brokenProcessService" />
+        <property name="recoveryProcessService" ref="recoveryProcessService" />
     </bean>
 
-    <bean id="consoleManager" class="ru.taskurotta.backend.console.manager.impl.ConsoleManagerImpl">
+    <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">
         <property name="queueInfo" ref="realQueueBackend"/>
-        <property name="taskInfo" ref="taskBackend"/>
-        <property name="processInfo" ref="processBackend"/>
-        <property name="graphInfo" ref="dependencyBackend"/>
+        <property name="taskInfo" ref="taskService"/>
+        <property name="processInfo" ref="processService"/>
+        <property name="graphInfo" ref="dependencyService"/>
     </bean>
 
 </beans>

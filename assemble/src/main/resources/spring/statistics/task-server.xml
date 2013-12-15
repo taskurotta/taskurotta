@@ -22,13 +22,13 @@
     </bean>
 
 
-    <bean id="metricsFactory" class="ru.taskurotta.backend.statistics.MetricFactory" destroy-method="shutdown">
+    <bean id="metricsFactory" class="ru.taskurotta.service.statistics.MetricFactory" destroy-method="shutdown">
         <constructor-arg name="dumpPeriod" value="${metric.method.data.period.seconds}"/>
         <constructor-arg name="dumpingThreads" value="3"/>
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init"/>
-    <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init"/>
+    <bean id="metricsDataHandler" class="ru.taskurotta.service.statistics.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.statistics.NumberDataHandler" init-method="init"/>
 
 </beans>

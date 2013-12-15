@@ -4,7 +4,7 @@
         <concrete-aspect name="ru.taskurotta.ru.taskurotta.test.monkey.MonkeyAspect"
                          extends="ru.taskurotta.ru.taskurotta.test.monkey.AbstractMonkeyAspect">
             <pointcut name="pointCut"
-                      expression="execution(* ru.taskurotta.backend.queue.MemoryQueueBackend.pollCommit(..))"/>
+                      expression="execution(* ru.taskurotta.service.queue.MemoryQueueService.pollCommit(..))"/>
 
         </concrete-aspect>
 
@@ -12,7 +12,7 @@
     </aspects>
 
     <weaver options="-verbose -showWeaveInfo">
-        <include within="ru.taskurotta.backend.queue.MemoryQueueBackend"/>
+        <include within="ru.taskurotta.service.queue.MemoryQueueService"/>
     </weaver>
 
 </aspectj>

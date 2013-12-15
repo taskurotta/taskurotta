@@ -27,9 +27,9 @@ logging:
     loggers:
         ru.taskurotta: INFO
 #        ru.taskurotta.dropwizard.resources.console: DEBUG
-#        ru.taskurotta.backend.dependency.graph: DEBUG
-#        ru.taskurotta.backend.queue: DEBUG
-#        ru.taskurotta.backend: INFO
+#        ru.taskurotta.service.dependency.graph: DEBUG
+#        ru.taskurotta.service.queue: DEBUG
+#        ru.taskurotta.service: INFO
 #        ru.taskurotta.server.recovery: DEBUG
         com.yammer: INFO
     file:

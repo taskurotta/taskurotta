@@ -75,7 +75,7 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.backend.gc:
+        - ru.taskurotta.service.gc:
              key: name
              \@level: TRACE
         - org.springframework:

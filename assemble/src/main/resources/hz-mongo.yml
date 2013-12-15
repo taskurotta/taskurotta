@@ -29,20 +29,20 @@ logging:
         com.hazelcast: INFO
         ru.taskurotta: INFO
 #        ru.taskurotta.schedule: DEBUG
-#        ru.taskurotta.backend.statistics.datalistener TRACE
+#        ru.taskurotta.service.statistics.datalistener TRACE
 #        ru.taskurotta: INFO
-#        ru.taskurotta.backend.statistics.datalisteners: TRACE
-#        ru.taskurotta.backend.statistics.metrics: TRACE
+#        ru.taskurotta.service.statistics.datalisteners: TRACE
+#        ru.taskurotta.service.statistics.metrics: TRACE
 #        ru.taskurotta.recovery: DEBUG
-#        ru.taskurotta.backend.recovery: DEBUG
-#        ru.taskurotta.backend.hz.support: DEBUG
-#        ru.taskurotta.backend.hz.recovery: DEBUG
-#        ru.taskurotta.backend.hz.dependency: DEBUG
+#        ru.taskurotta.service.recovery: DEBUG
+#        ru.taskurotta.service.hz.support: DEBUG
+#        ru.taskurotta.service.hz.recovery: DEBUG
+#        ru.taskurotta.service.hz.dependency: DEBUG
 #        ru.taskurotta.dropwizard.server.core: INFO
 #        ru.taskurotta.server: INFO
 #        ru.taskurotta.dropwizard.hz: INFO
-#        ru.taskurotta.backend.hz.server: INFO
-#        ru.taskurotta.backend.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
+#        ru.taskurotta.service.hz.server: INFO
+#        ru.taskurotta.service.hz.server.HazelcastTaskServer$ProcessDecisionUnitOfWork: INFO
         com.yammer: INFO
     file:
         enabled: true

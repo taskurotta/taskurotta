@@ -138,22 +138,20 @@ public class MongoStorageFactory implements StorageFactory {
 
         DBObject dbObject = converter.toDBObject(new StorageItem(o, enqueueTime, queueName));
 
-        WriteResult writeResult = dbCollection.save(dbObject);
+        dbCollection.save(dbObject);
 
-        return writeResult.getError() == null;
+        return true;
     }
 
     private boolean delete(Object o, DBCollection dbCollection) {
         DBObject query = new BasicDBObject(OBJECT_NAME, o);
 
-        boolean result = true;
         try (DBCursor dbCursor = dbCollection.find(query)) {
             while (dbCursor.hasNext()) {
-                WriteResult writeResult = dbCollection.remove(dbCursor.next());
-                result = result & (writeResult.getError() == null);
+                dbCollection.remove(dbCursor.next());
             }
         }
 
-        return result;
+        return true;
     }
 }

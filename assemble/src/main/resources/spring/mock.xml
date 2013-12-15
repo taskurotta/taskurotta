@@ -34,10 +34,10 @@
 
     <!-- Task server -->
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
-        <constructor-arg name="backendBundle" ref="backendBundle"/>
+        <constructor-arg name="serviceBundle" ref="serviceBundle"/>
     </bean>
 
-    <bean id="backendBundle" class="ru.taskurotta.recipes.stress.MockBackendBundle">
+    <bean id="serviceBundle" class="ru.taskurotta.recipes.stress.MockServiceBundle">
     </bean>
 
 </beans>

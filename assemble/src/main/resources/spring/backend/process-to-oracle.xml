@@ -18,11 +18,11 @@
 
 
 
-    <bean id="processBackend" class="ru.taskurotta.backend.ora.storage.OraProcessBackend">
+    <bean id="processService" class="ru.taskurotta.service.ora.storage.OraProcessService">
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend">
+    <bean id="brokenProcessService" class="ru.taskurotta.service.ora.storage.OraBrokenProcessService">
         <property name="dataSource" ref="originalDataSource"/>
         <property name="lobHandler" ref="lobHandler"/>
     </bean>
@@ -34,7 +34,7 @@
     <bean id="processRecoveryService" class="ru.taskurotta.recovery.ProcessRecoveryService" init-method="init">
         <property name="dataSource" ref="dataSource"/>
         <property name="hazelcastInstance" ref="hzInstance"/>
-        <property name="recoveryProcessBackend" ref="recoveryProcessBackend"/>
+        <property name="recoveryProcessService" ref="recoveryProcessService"/>
         <property name="threadCount" value="${recovery.process.thread.count}"/>
         <property name="useDaemonThreads" value="true"/>
         <property name="processBatchSize" value="${recovery.process.batch.size}"/>
@@ -98,9 +98,9 @@
 
     <aop:config>
         <aop:pointcut id="serviceOperation"
-                      expression="execution(* ru.taskurotta.backend.ora.storage.OraProcessBackend.*(..))"/>
+                      expression="execution(* ru.taskurotta.service.ora.storage.OraProcessService.*(..))"/>
         <aop:pointcut id="brokenProcessOperation"
-                      expression="execution(* ru.taskurotta.backend.ora.storage.OraBrokenProcessBackend.*(..))"/>
+                      expression="execution(* ru.taskurotta.service.ora.storage.OraBrokenProcessService.*(..))"/>
 
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
         <aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>

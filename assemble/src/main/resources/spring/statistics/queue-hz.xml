@@ -12,8 +12,8 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <bean id="metricsQueueBackend" class="ru.taskurotta.backend.hz.recovery.HzQueueBackendStatistics">
-        <constructor-arg name="queueBackend" ref="realQueueBackend"/>
+    <bean id="metricsQueueBackend" class="ru.taskurotta.service.hz.recovery.HzQueueServiceStatistics">
+        <constructor-arg name="queueService" ref="realQueueBackend"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
 
         <property name="mergePeriod" value="${hz.recovery.merge.period}"/>
@@ -24,7 +24,7 @@
         <property name="numberDataListener" ref="metricsNumberDataHandler"/>
     </bean>
 
-    <bean id="queueBackend" class="ru.taskurotta.assemple.ProxyQueueBackend">
+    <bean id="queueService" class="ru.taskurotta.assemple.ProxyQueueService">
         <constructor-arg name="target" ref="metricsQueueBackend"/>
     </bean>
 

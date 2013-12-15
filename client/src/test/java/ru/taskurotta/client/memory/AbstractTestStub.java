@@ -3,17 +3,17 @@ package ru.taskurotta.client.memory;
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
-import ru.taskurotta.backend.BackendBundle;
-import ru.taskurotta.backend.MemoryBackendBundle;
-import ru.taskurotta.backend.dependency.DependencyBackend;
-import ru.taskurotta.backend.process.BrokenProcessBackend;
-import ru.taskurotta.backend.process.MemoryBrokenProcessBackend;
-import ru.taskurotta.backend.queue.MemoryQueueBackend;
-import ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend;
-import ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics;
-import ru.taskurotta.backend.storage.GeneralTaskBackend;
-import ru.taskurotta.backend.storage.MemoryTaskDao;
-import ru.taskurotta.backend.storage.TaskDao;
+import ru.taskurotta.service.MemoryServiceBundle;
+import ru.taskurotta.service.ServiceBundle;
+import ru.taskurotta.service.dependency.DependencyService;
+import ru.taskurotta.service.process.BrokenProcessService;
+import ru.taskurotta.service.process.MemoryBrokenProcessService;
+import ru.taskurotta.service.queue.MemoryQueueService;
+import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.service.recovery.MemoryQueueServiceStatistics;
+import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.MemoryTaskDao;
+import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
@@ -44,13 +44,13 @@ import static junit.framework.Assert.assertTrue;
  */
 public class AbstractTestStub {
 
-    protected MemoryQueueBackend memoryQueueBackend;
-    protected MemoryQueueBackendStatistics memoryQueueBackendStatistics;
-    protected GeneralTaskBackend memoryStorageBackend;
-    protected DependencyBackend dependencyBackend;
-    protected GeneralRecoveryProcessBackend recoveryProcessBackend;
-    protected BrokenProcessBackend brokenProcessBackend;
-    protected BackendBundle backendBundle;
+    protected MemoryQueueService memoryQueueService;
+    protected MemoryQueueServiceStatistics memoryQueueServiceStatistics;
+    protected GeneralTaskService memoryStorageService;
+    protected DependencyService dependencyService;
+    protected GeneralRecoveryProcessService recoveryProcessService;
+    protected BrokenProcessService brokenProcessService;
+    protected ServiceBundle serviceBundle;
 
     protected TaskDao taskDao;
 
@@ -92,38 +92,38 @@ public class AbstractTestStub {
     @Before
     public void setUp() throws Exception {
         taskDao = new MemoryTaskDao();
-        backendBundle = new MemoryBackendBundle(0, taskDao);
-        memoryQueueBackend = (MemoryQueueBackend) backendBundle.getQueueBackend();
-        memoryQueueBackendStatistics = new MemoryQueueBackendStatistics(memoryQueueBackend);
-        memoryStorageBackend = (GeneralTaskBackend) backendBundle.getTaskBackend();
-        dependencyBackend = backendBundle.getDependencyBackend();
-        brokenProcessBackend = new MemoryBrokenProcessBackend();
-        recoveryProcessBackend = new GeneralRecoveryProcessBackend(memoryQueueBackendStatistics, dependencyBackend, taskDao, backendBundle.getProcessBackend(), backendBundle.getTaskBackend(), brokenProcessBackend, 1l);
+        serviceBundle = new MemoryServiceBundle(0, taskDao);
+        memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
+        memoryQueueServiceStatistics = new MemoryQueueServiceStatistics(memoryQueueService);
+        memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
+        dependencyService = serviceBundle.getDependencyService();
+        brokenProcessService = new MemoryBrokenProcessService();
+        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueServiceStatistics, dependencyService, taskDao, serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, 1l);
 
-        taskServer = new GeneralTaskServer(backendBundle);
+        taskServer = new GeneralTaskServer(serviceBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
         objectFactory = new ObjectFactory();
     }
 
     public boolean isTaskInProgress(UUID taskId, UUID processId) {
-        return dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId);
+        return dependencyService.getGraph(processId).hasNotFinishedItem(taskId);
     }
 
     public void assertTaskInProgress(UUID taskId) {
-        assertTrue(dependencyBackend.getGraph(processId).hasNotFinishedItem(taskId));
+        assertTrue(dependencyService.getGraph(processId).hasNotFinishedItem(taskId));
     }
 
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        return memoryStorageBackend.isTaskReleased(taskId, processId);
+        return memoryStorageService.isTaskReleased(taskId, processId);
     }
 
     public boolean isTaskPresent(UUID taskId, UUID processId) {
-        return null != memoryStorageBackend.getTask(taskId, processId);
+        return null != memoryStorageService.getTask(taskId, processId);
     }
 
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        return memoryQueueBackend.isTaskInQueue(actorDefinition.getFullName(), actorDefinition.getTaskList(), taskId, processId);
+        return memoryQueueService.isTaskInQueue(actorDefinition.getFullName(), actorDefinition.getTaskList(), taskId, processId);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {

@@ -2,17 +2,17 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.BackendBundle;
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.dependency.DependencyBackend;
-import ru.taskurotta.backend.dependency.model.DependencyDecision;
-import ru.taskurotta.backend.gc.GarbageCollectorBackend;
-import ru.taskurotta.backend.process.BrokenProcessBackend;
-import ru.taskurotta.backend.process.BrokenProcessVO;
-import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.queue.TaskQueueItem;
-import ru.taskurotta.backend.storage.ProcessBackend;
-import ru.taskurotta.backend.storage.TaskBackend;
+import ru.taskurotta.service.ServiceBundle;
+import ru.taskurotta.service.config.ConfigService;
+import ru.taskurotta.service.dependency.DependencyService;
+import ru.taskurotta.service.dependency.model.DependencyDecision;
+import ru.taskurotta.service.gc.GarbageCollectorService;
+import ru.taskurotta.service.process.BrokenProcessService;
+import ru.taskurotta.service.process.BrokenProcessVO;
+import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.queue.TaskQueueItem;
+import ru.taskurotta.service.storage.ProcessService;
+import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -38,39 +38,39 @@ public class GeneralTaskServer implements TaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
 
-    protected ProcessBackend processBackend;
-    protected TaskBackend taskBackend;
-    protected QueueBackend queueBackend;
-    protected DependencyBackend dependencyBackend;
-    protected ConfigBackend configBackend;
-    protected BrokenProcessBackend brokenProcessBackend;
-    protected GarbageCollectorBackend garbageCollectorBackend;
+    protected ProcessService processService;
+    protected TaskService taskService;
+    protected QueueService queueService;
+    protected DependencyService dependencyService;
+    protected ConfigService configService;
+    protected BrokenProcessService brokenProcessService;
+    protected GarbageCollectorService garbageCollectorService;
 
     /*
      *  For tests ONLY
      */
     public GeneralTaskServer() {}
 
-    public GeneralTaskServer(BackendBundle backendBundle) {
-        this.processBackend = backendBundle.getProcessBackend();
-        this.taskBackend = backendBundle.getTaskBackend();
-        this.queueBackend = backendBundle.getQueueBackend();
-        this.dependencyBackend = backendBundle.getDependencyBackend();
-        this.configBackend = backendBundle.getConfigBackend();
-        this.brokenProcessBackend = backendBundle.getBrokenProcessBackend();
-        this.garbageCollectorBackend = backendBundle.getGarbageCollectorBackend();
+    public GeneralTaskServer(ServiceBundle serviceBundle) {
+        this.processService = serviceBundle.getProcessService();
+        this.taskService = serviceBundle.getTaskService();
+        this.queueService = serviceBundle.getQueueService();
+        this.dependencyService = serviceBundle.getDependencyService();
+        this.configService = serviceBundle.getConfigService();
+        this.brokenProcessService = serviceBundle.getBrokenProcessService();
+        this.garbageCollectorService = serviceBundle.getGarbageCollectorService();
     }
 
-    public GeneralTaskServer(ProcessBackend processBackend, TaskBackend taskBackend, QueueBackend queueBackend,
-                             DependencyBackend dependencyBackend, ConfigBackend configBackend, BrokenProcessBackend brokenProcessBackend,
-                             GarbageCollectorBackend garbageCollectorBackend) {
-        this.processBackend = processBackend;
-        this.taskBackend = taskBackend;
-        this.queueBackend = queueBackend;
-        this.dependencyBackend = dependencyBackend;
-        this.configBackend = configBackend;
-        this.brokenProcessBackend = brokenProcessBackend;
-        this.garbageCollectorBackend = garbageCollectorBackend;
+    public GeneralTaskServer(ProcessService processService, TaskService taskService, QueueService queueService,
+                             DependencyService dependencyService, ConfigService configService, BrokenProcessService brokenProcessService,
+                             GarbageCollectorService garbageCollectorService) {
+        this.processService = processService;
+        this.taskService = taskService;
+        this.queueService = queueService;
+        this.dependencyService = dependencyService;
+        this.configService = configService;
+        this.brokenProcessService = brokenProcessService;
+        this.garbageCollectorService = garbageCollectorService;
     }
 
     @Override
@@ -84,15 +84,15 @@ public class GeneralTaskServer implements TaskServer {
 
         // registration of new process
         // atomic statement
-        processBackend.startProcess(task);
+        processService.startProcess(task);
 
-        // inform taskBackend about new process
+        // inform taskService about new process
         // idempotent statement
-        taskBackend.startProcess(task);
+        taskService.startProcess(task);
 
-        // inform dependencyBackend about new process
+        // inform dependencyService about new process
         // idempotent statement
-        dependencyBackend.startProcess(task);
+        dependencyService.startProcess(task);
 
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
@@ -105,31 +105,31 @@ public class GeneralTaskServer implements TaskServer {
 
         String actorId = ActorUtils.getActorId(actorDefinition);
 
-        if (configBackend.isActorBlocked(actorId)) {
+        if (configService.isActorBlocked(actorId)) {
             logger.warn("Rejected poll request from blocked actor {}", actorDefinition);
             return null;
         }
 
         // atomic statement
-        TaskQueueItem item = queueBackend.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        TaskQueueItem item = queueService.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
         if (item == null) {
             return null;
         }
 
         // idempotent statement
-        return taskBackend.getTaskToExecute(item.getTaskId(), item.getProcessId());
+        return taskService.getTaskToExecute(item.getTaskId(), item.getProcessId());
     }
 
     @Override
     public void release(DecisionContainer taskDecision) {
 
-        if (configBackend.isActorBlocked(taskDecision.getActorId())) {
+        if (configService.isActorBlocked(taskDecision.getActorId())) {
             logger.warn("Rejected  blocked actor [{}] release request", taskDecision.getActorId());
             return;
         }
 
         // save it firstly
-        taskBackend.addDecision(taskDecision);
+        taskService.addDecision(taskDecision);
         processDecision(taskDecision);
     }
 
@@ -144,7 +144,7 @@ public class GeneralTaskServer implements TaskServer {
         UUID processId = taskDecision.getProcessId();
 
         if (taskDecision.containsError()) {
-            TaskContainer task = taskBackend.getTask(taskId, processId);
+            TaskContainer task = taskService.getTask(taskId, processId);
 
             if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
                 // enqueue task immediately if needed
@@ -166,7 +166,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // idempotent statement
-        DependencyDecision dependencyDecision = dependencyBackend.applyDecision(taskDecision);
+        DependencyDecision dependencyDecision = dependencyService.applyDecision(taskDecision);
         logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
 
         if (dependencyDecision.isFail()) {
@@ -178,15 +178,15 @@ public class GeneralTaskServer implements TaskServer {
         if (readyTasks != null) {
             for (UUID readyTaskId : readyTasks) {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
-                TaskContainer task = taskBackend.getTask(readyTaskId, processId);
+                TaskContainer task = taskService.getTask(readyTaskId, processId);
                 enqueueTask(readyTaskId, task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
             }
         }
 
         if (dependencyDecision.isProcessFinished()) {
-            processBackend.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
-            taskBackend.finishProcess(processId, dependencyBackend.getGraph(processId).getProcessTasks());
-            garbageCollectorBackend.delete(processId);
+            processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
+            taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
+            garbageCollectorService.delete(processId);
         }
 
         processSnapshot(taskDecision, dependencyDecision);
@@ -234,7 +234,7 @@ public class GeneralTaskServer implements TaskServer {
                     if (arg.isPromise()) {
                         TaskContainer argTask = tasksMap.get(arg.getTaskId());
                         if (argTask == null) {
-                            argTask = taskBackend.getTask(arg.getTaskId(), newTask.getProcessId());
+                            argTask = taskService.getTask(arg.getTaskId(), newTask.getProcessId());
                         }
                         if (null != argTask && argTask.isUnsafe()) {
                             return true;
@@ -253,7 +253,7 @@ public class GeneralTaskServer implements TaskServer {
         brokenProcess.setProcessId(processId);
         brokenProcess.setBrokenActorId(taskDecision.getActorId());
 
-        TaskContainer startTask = processBackend.getStartTask(processId);
+        TaskContainer startTask = processService.getStartTask(processId);
         if (null != startTask) {
             brokenProcess.setStartActorId(startTask.getActorId());
         }
@@ -264,7 +264,7 @@ public class GeneralTaskServer implements TaskServer {
             brokenProcess.setErrorMessage(errorContainer.getMessage());
             brokenProcess.setStackTrace(errorContainer.getStackTrace());
         }
-        brokenProcessBackend.save(brokenProcess);
+        brokenProcessService.save(brokenProcess);
     }
 
     protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
@@ -280,7 +280,7 @@ public class GeneralTaskServer implements TaskServer {
      */
     protected void enqueueTask(UUID taskId, UUID processId, String actorId, long startTime, String taskList) {
 
-        queueBackend.enqueueItem(actorId, taskId, processId, startTime, taskList);
+        queueService.enqueueItem(actorId, taskId, processId, startTime, taskList);
 
     }
 
