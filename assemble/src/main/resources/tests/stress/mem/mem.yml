@@ -56,9 +56,6 @@ logback:
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
     logger:
-        - ru.taskurotta.backend.gc:
-             key: name
-             \@level: TRACE
         - ru.taskurotta:
              key: name
              \@level: INFO

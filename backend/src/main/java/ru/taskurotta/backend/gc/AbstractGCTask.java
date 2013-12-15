@@ -42,6 +42,9 @@ public abstract class AbstractGCTask implements Runnable {
 
         if (graph == null) {
             logger.error("Not found graph for process [{}], stop garbage collector for this process", processId);
+            if (processBackend.getStartTask(processId) == null) {
+                logger.error("And processBackend has no start task for it [{}]", processId);
+            }
             return;
         }
 

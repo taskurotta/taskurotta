@@ -33,11 +33,10 @@ public class HzQueueRestoreSupport {
                     } else {
                         logger.warn("Cannot restore queue[{}], mapstore config is not set!", collectionName);
                     }
-                    int size = hzInstance.getQueue(collectionName).size();//initializes queue
 
                     if (logger.isDebugEnabled()) {
                         DBCollection coll = mongoTemplate.getCollection(collectionName);
-                        logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", collectionName, size, coll.getCount());
+                        logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", collectionName, coll.getCount());
                     }
 
                     queueRestored++;

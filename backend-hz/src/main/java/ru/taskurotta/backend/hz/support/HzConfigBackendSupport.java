@@ -28,10 +28,12 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
     private String queuePrefix;
     private HazelcastInstance hzInstance;
     private String actorPreferencesMapName;
+    private IMap<String, ActorPreferences> distributedActorPreferences;
 
     @PostConstruct
     private void init() {
         hzInstance.addDistributedObjectListener(this);
+        distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
     }
 
     @Override
@@ -39,29 +41,16 @@ public class HzConfigBackendSupport implements DistributedObjectListener {
         DistributedObject obj = event.getDistributedObject();
 
         if ((obj instanceof IQueue) && (obj.getName().startsWith(queuePrefix))) {//created new task queue object
-            ILock lock = hzInstance.getLock(actorPreferencesMapName);
-            try {
-                lock.lock();
-                String actorId = obj.getName().substring(queuePrefix.length());
-                if (!isActorConfigExists(actorId)) {//has no distributed config for this actor -> create it
-                    ActorPreferences ap = new ActorPreferences();
-                    ap.setId(actorId);
-                    ap.setBlocked(false);
-                    ap.setQueueName(obj.getName());
+            String actorId = obj.getName().substring(queuePrefix.length());
+            ActorPreferences ap = new ActorPreferences();
+            ap.setId(actorId);
+            ap.setBlocked(false);
+            ap.setQueueName(obj.getName());
 
-                    IMap<String, ActorPreferences> distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
-                    distributedActorPreferences.set(actorId, ap);
-                    logger.info("New actor [{}] has been registered", actorId);
-                }
-            } finally {
-                lock.unlock();
+            if (distributedActorPreferences.putIfAbsent(actorId, ap) == null) {
+                logger.info("New actor [{}] has been registered", actorId);
             }
         }
-    }
-
-    private boolean isActorConfigExists(String actorId) {
-        IMap<String, ActorPreferences> actorPrefs = hzInstance.getMap(actorPreferencesMapName);
-        return actorPrefs.containsKey(actorId);
     }
 
     @Override
