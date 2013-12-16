@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.recipes.calculate.RandomException;
 import ru.taskurotta.recipes.calculate.worker.Multiplier;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
+
 public class MultiplierImpl implements Multiplier {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiplierImpl.class);
@@ -13,12 +17,18 @@ public class MultiplierImpl implements Multiplier {
 
     private double errPossibility = 0.0d;
 
+    private boolean varyExceptions = false;
+
     @Override
-    public Integer multiply(Integer a, Integer b) {
+    public Integer multiply (Integer a, Integer b) throws Exception {
         logger.trace("multiply() called");
         if (RandomException.isEventHappened(errPossibility)) {
             logger.error("Multiplier: RANDOMLY FAILED!");
-            throw new RandomException("Its multiply exception time");
+            if (varyExceptions) {
+                throw RandomException.getRandomException();
+            } else {
+                throw new RandomException("Its multiply exception time");
+            }
         }
 
         if (sleep > 0) {
@@ -47,4 +57,7 @@ public class MultiplierImpl implements Multiplier {
         this.errPossibility = errPossibility;
     }
 
+    public void setVaryExceptions(boolean varyExceptions) {
+        this.varyExceptions = varyExceptions;
+    }
 }

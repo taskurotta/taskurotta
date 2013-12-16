@@ -6,5 +6,5 @@ import ru.taskurotta.annotation.Worker;
 public interface Summarizer {
 
     //@LinearRetry(initialRetryIntervalSeconds=5)
-    public Integer summarize(Integer a, Integer b);
+    public Integer summarize(Integer a, Integer b) throws Exception;
 }

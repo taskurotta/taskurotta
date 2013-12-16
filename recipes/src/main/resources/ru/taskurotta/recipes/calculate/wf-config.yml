@@ -6,6 +6,7 @@ runtime:
         properties:
           sleep: -1
           failChance: 0.3
+          varyExceptions: true
 
 spreader:
   - MainTaskSpreaderConfig:

@@ -10,13 +10,18 @@ public class SummarizerImpl implements Summarizer {
     private static final Logger logger = LoggerFactory.getLogger(SummarizerImpl.class);
     private long sleep = -1l;
     private double errPossibility = 0.0d;
+    private boolean varyExceptions = false;
 
     @Override
-    public Integer summarize(Integer a, Integer b) {
+    public Integer summarize(Integer a, Integer b) throws Exception {
         logger.trace("summarize() called");
         if (RandomException.isEventHappened(errPossibility)) {
             logger.error("Summarizer: RANDOMLY FAILED!");
-            throw new RandomException("Its summarize exception time");
+            if (varyExceptions) {
+                throw RandomException.getRandomException();
+            } else {
+                throw new RandomException("Its multiply exception time");
+            }
         }
 
         if (sleep > 0) {
@@ -45,4 +50,7 @@ public class SummarizerImpl implements Summarizer {
         this.errPossibility = errPossibility;
     }
 
+    public void setVaryExceptions(boolean varyExceptions) {
+        this.varyExceptions = varyExceptions;
+    }
 }

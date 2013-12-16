@@ -4,9 +4,10 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: 100 #-1 = disabled
-          workerFailChance: -1 #-1 = disabled
+          sleep: 200 #-1 = disabled
+          workerFailChance: 0.1 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
+          varyExceptions: true
 
 
 spreader:
@@ -18,7 +19,7 @@ spreader:
           count: 80
           startTasks: true
           startTasksInBackground: true
-          startTaskPeriodSeconds: -1 #-1 = disabled
+          startTaskPeriodSeconds: 3 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0

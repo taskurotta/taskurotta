@@ -6,6 +6,6 @@ import ru.taskurotta.annotation.Worker;
 public interface Multiplier {
 
     //@LinearRetry(initialRetryIntervalSeconds=5)
-    public Integer multiply(Integer a, Integer b);
+    public Integer multiply(Integer a, Integer b) throws Exception;
 
 }

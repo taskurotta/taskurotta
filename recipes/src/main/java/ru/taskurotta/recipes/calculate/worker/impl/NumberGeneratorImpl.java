@@ -15,13 +15,19 @@ public class NumberGeneratorImpl implements NumberGenerator {
 
     private double errPossibility = 0.0d;
 
+    private boolean varyExceptions = false;
+
     @Override
-    public Integer getNumber() {
+    public Integer getNumber() throws Exception {
         logger.trace("getNumber() called");
 
         if (RandomException.isEventHappened(errPossibility)) {
             logger.error("NumberGenerator: RANDOMLY FAILED!");
-            throw new RandomException("Its number generator exception time");
+            if (varyExceptions) {
+                throw RandomException.getRandomException();
+            } else {
+                throw new RandomException("Its multiply exception time");
+            }
         }
 
         if (sleep > 0) {
@@ -57,4 +63,7 @@ public class NumberGeneratorImpl implements NumberGenerator {
         this.errPossibility = errPossibility;
     }
 
+    public void setVaryExceptions(boolean varyExceptions) {
+        this.varyExceptions = varyExceptions;
+    }
 }

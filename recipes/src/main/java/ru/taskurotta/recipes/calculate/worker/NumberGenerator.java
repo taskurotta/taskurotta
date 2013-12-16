@@ -6,6 +6,6 @@ import ru.taskurotta.annotation.Worker;
 public interface NumberGenerator {
 
     //@LinearRetry(initialRetryIntervalSeconds=5)
-    public Integer getNumber();
+    public Integer getNumber() throws Exception;
 
 }
