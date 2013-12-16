@@ -19,8 +19,8 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
     private long delayTime;
 
     public MemoryGarbageCollectorService(ProcessService processService, GraphDao graphDao,
-                                         TaskDao taskDao, int poolSize, long delayTime) {
-        this.delayTime = delayTime;
+                                         TaskDao taskDao, int poolSize, long timeBeforeDelete) {
+        this.delayTime = timeBeforeDelete;
 
         ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;

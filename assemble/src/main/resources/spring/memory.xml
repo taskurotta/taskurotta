@@ -68,7 +68,6 @@
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.gc.MemoryGarbageCollectorService">
-        <constructor-arg name="configService" ref="configService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
