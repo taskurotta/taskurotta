@@ -1,7 +1,7 @@
 package ru.taskurotta.dropwizard.resources.console.process;
 
 import com.google.common.base.Optional;
-import ru.taskurotta.backend.console.model.GenericPage;
+import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.transport.model.TaskContainer;
 

@@ -4,12 +4,12 @@ import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.console.manager.ActorConfigManager;
-import ru.taskurotta.backend.console.model.ActorVO;
-import ru.taskurotta.backend.console.model.GenericPage;
-import ru.taskurotta.backend.statistics.QueueBalanceVO;
-import ru.taskurotta.backend.statistics.metrics.RateUtils;
+import ru.taskurotta.service.config.ConfigService;
+import ru.taskurotta.service.console.manager.ActorConfigManager;
+import ru.taskurotta.service.console.model.ActorVO;
+import ru.taskurotta.service.console.model.GenericPage;
+import ru.taskurotta.service.statistics.QueueBalanceVO;
+import ru.taskurotta.service.statistics.metrics.RateUtils;
 import ru.taskurotta.dropwizard.resources.Action;
 
 import javax.ws.rs.Consumes;
@@ -38,18 +38,18 @@ public class ActorListResource {
 
     private ActorConfigManager actorConfigManager;
 
-    private ConfigBackend configBackend;
+    private ConfigService configService;
 
     @POST
     public Response blockActor(String actorId, @PathParam("action") String action) {
         try {
             if (Action.BLOCK.getValue().equals(action)) {
                 logger.debug("Blocking actor [{}]", actorId);
-                configBackend.blockActor(actorId);
+                configService.blockActor(actorId);
 
             } else if (Action.UNBLOCK.getValue().equals(action)) {
                 logger.debug("Unblocking actor [{}]", actorId);
-                configBackend.unblockActor(actorId);
+                configService.unblockActor(actorId);
 
             } else {
                 logger.error("Unknown actor action["+action+"] getted");
@@ -149,7 +149,7 @@ public class ActorListResource {
     }
 
     @Required
-    public void setConfigBackend(ConfigBackend configBackend) {
-        this.configBackend = configBackend;
+    public void setConfigService(ConfigService configService) {
+        this.configService = configService;
     }
 }

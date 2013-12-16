@@ -5,8 +5,8 @@ import com.hazelcast.core.Partition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
-import ru.taskurotta.backend.recovery.RecoveryTask;
+import ru.taskurotta.service.recovery.RecoveryProcessService;
+import ru.taskurotta.service.recovery.RecoveryTask;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
@@ -23,7 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Scans process backend for incomplete processes and tries to recover them.
+ * Scans process service for incomplete processes and tries to recover them.
  * Only processes belonging to local member node are exposed to this service
  * User: stukushin, dudin
  * Date: 15.08.13
@@ -36,7 +36,7 @@ public class ProcessRecoveryService {
     private DataSource dataSource;
     private HazelcastInstance hazelcastInstance;
 
-    private RecoveryProcessBackend recoveryProcessBackend;
+    private RecoveryProcessService recoveryProcessService;
 
     private int threadCount = 8;
     private boolean useDaemonThreads = true;
@@ -77,7 +77,7 @@ public class ProcessRecoveryService {
 
             for(UUID processId: processIds) {
                 if (isLocalItem(processId)) {//filter only local processes for recovery. Every node recovers its own processes
-                    executorService.submit(new RecoveryTask(recoveryProcessBackend, processId));
+                    executorService.submit(new RecoveryTask(recoveryProcessService, processId));
                     result++;
                 }
             }
@@ -149,8 +149,8 @@ public class ProcessRecoveryService {
     }
 
     @Required
-    public void setRecoveryProcessBackend(RecoveryProcessBackend recoveryProcessBackend) {
-        this.recoveryProcessBackend = recoveryProcessBackend;
+    public void setRecoveryProcessService(RecoveryProcessService recoveryProcessService) {
+        this.recoveryProcessService = recoveryProcessService;
     }
 
     public void setUseDaemonThreads(boolean useDaemonThreads) {

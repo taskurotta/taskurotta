@@ -147,7 +147,7 @@ public class Bootstrap implements BootstrapMBean {
             poolSize = actorConfig.getCount();
         }
 
-        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, poolSize);
+        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, poolSize, actorConfig.getSleepTimeoutMillis(), actorConfig.getShutdownTimeoutMillis());
         final String actorPoolId = saveActorPool(actorId, actorThreadPool);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 

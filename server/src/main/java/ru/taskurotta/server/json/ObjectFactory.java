@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -63,6 +64,10 @@ public class ObjectFactory {
 
             if (argContainer.isPromise()) {
                 Promise promise = Promise.createInstance(argContainer.getTaskId());
+                if (argContainer.containsError()) {
+                    ErrorContainer errorContainer = argContainer.getErrorContainer();
+                    promise.setFail(new Fail(errorContainer.getClassNames(), errorContainer.getMessage()));
+                }
                 if (argContainer.isReady()) {
                     promise.set(extractValue(argContainer));
                 }
@@ -75,7 +80,7 @@ public class ObjectFactory {
                 return result;
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new SerializationException("Cannot deserialize arg["+ argContainer +"]", e);
         }
 
@@ -211,7 +216,8 @@ public class ObjectFactory {
             }
         }
 
-        return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(), taskContainer.getNumberOfAttempts(), args, null);
+        return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
+                taskContainer.getNumberOfAttempts(), args, null, taskContainer.isUnsafe(), taskContainer.getFailTypes());
     }
 
 
@@ -234,8 +240,8 @@ public class ObjectFactory {
 
         TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
-        return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target),
-                target.getType(), task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer);
+        return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target), target.getType(),
+                task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer, task.isUnsafe(), task.getFailTypes());
     }
 
 

@@ -15,10 +15,10 @@
         <property name="clientServiceManager" ref="clientServiceManager" />
     </bean>
 
-    <bean id="queueBackend" factory-bean="clientServiceManager"
-        factory-method="getQueueBackend" />
-    <bean id="taskBackend" factory-bean="clientServiceManager"
-        factory-method="getTaskBackend" />
-    <bean id="configBackend" factory-bean="clientServiceManager"
-        factory-method="getConfigBackend" />
+    <bean id="queueService" factory-bean="clientServiceManager"
+        factory-method="getQueueService" />
+    <bean id="taskService" factory-bean="clientServiceManager"
+        factory-method="getTaskService" />
+    <bean id="configService" factory-bean="clientServiceManager"
+        factory-method="getConfigService" />
 </beans>

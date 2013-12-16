@@ -13,17 +13,21 @@
 
     <bean id="multiplierWorker" class="ru.taskurotta.recipes.calculate.worker.impl.MultiplierImpl" init-method="init">
         <property name="sleep" value="${sleep}"/>
+        <property name="varyExceptions" value = "${varyExceptions}" />
+        <property name="errPossibility" value = "${workerFailChance}" />
     </bean>
 
     <bean id="numberGenerator" class="ru.taskurotta.recipes.calculate.worker.impl.NumberGeneratorImpl" init-method="init">
         <property name="maxNumber" value="20"/>
         <property name="sleep" value="${sleep}"/>
         <property name="errPossibility" value = "${workerFailChance}" />
+        <property name="varyExceptions" value="${varyExceptions}" />
     </bean>
 
     <bean id="summarizer" class="ru.taskurotta.recipes.calculate.worker.impl.SummarizerImpl" init-method="init">
         <property name="sleep" value="${sleep}"/>
         <property name="errPossibility" value = "${workerFailChance}"/>
+        <property name="varyExceptions" value="${varyExceptions}" />
     </bean>
 
     <bean id="mathActionDecider" class="ru.taskurotta.recipes.calculate.decider.MathActionDeciderImpl" init-method="init">

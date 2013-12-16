@@ -1,6 +1,6 @@
 package ru.taskurotta.dropwizard.resources.console.process;
 
-import ru.taskurotta.backend.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.ProcessVO;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 
 import javax.ws.rs.GET;

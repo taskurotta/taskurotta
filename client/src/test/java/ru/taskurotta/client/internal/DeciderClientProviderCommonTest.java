@@ -5,9 +5,9 @@ import ru.taskurotta.ProxyFactory;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.backend.BackendBundle;
-import ru.taskurotta.backend.MemoryBackendBundle;
-import ru.taskurotta.backend.storage.MemoryTaskDao;
+import ru.taskurotta.service.MemoryServiceBundle;
+import ru.taskurotta.service.ServiceBundle;
+import ru.taskurotta.service.storage.MemoryTaskDao;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
@@ -40,8 +40,8 @@ public class DeciderClientProviderCommonTest {
         TestDeciderClient testDeciderClientOrig = ProxyFactory.getDeciderClient(TestDeciderClient.class,
                 new RuntimeContext(UUID.randomUUID()));
 
-        BackendBundle backendBundle = new MemoryBackendBundle(0, new MemoryTaskDao());
-        TaskServer taskServer = new GeneralTaskServer(backendBundle);
+        ServiceBundle serviceBundle = new MemoryServiceBundle(0, new MemoryTaskDao());
+        TaskServer taskServer = new GeneralTaskServer(serviceBundle);
         DeciderClientProviderCommon deciderClientProviderCommon = new DeciderClientProviderCommon(taskServer);
         TestDeciderClient testDeciderClient = deciderClientProviderCommon.getDeciderClient(TestDeciderClient.class);
 

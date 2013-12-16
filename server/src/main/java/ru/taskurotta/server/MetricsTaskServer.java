@@ -1,7 +1,8 @@
 package ru.taskurotta.server;
 
-import ru.taskurotta.backend.statistics.MetricFactory;
-import ru.taskurotta.backend.statistics.metrics.Metric;
+import ru.taskurotta.service.statistics.MetricFactory;
+import ru.taskurotta.service.statistics.MetricName;
+import ru.taskurotta.service.statistics.metrics.Metric;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;

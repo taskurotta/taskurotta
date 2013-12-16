@@ -1,5 +1,6 @@
 package ru.taskurotta.internal.proxy;
 
+import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.RuntimeContext;
@@ -31,7 +32,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
     }
 
     @Override
-    public <TargetInterface> Object createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext) {
+    public <TargetInterface> TargetInterface createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext) {
         Class clientInterface = ClientCheckerUtil.checkClientDefinition(proxyType, clientAnnotationClass);
         Class actorInterface = ClientCheckerUtil.checkActorDefinition(clientInterface, actorAnnotationClass,
                 clientAnnotationClass, annotationExplorer);
@@ -76,7 +77,12 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
             Class<?>[] parameterTypes = method.getParameterTypes();
             int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
             int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
-            MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor);
+            AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
+            String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
+
+            MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method),
+                    positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, failTypes);
+
             method2TaskTargetCache.put(method, descriptor);
         }
         return method2TaskTargetCache;

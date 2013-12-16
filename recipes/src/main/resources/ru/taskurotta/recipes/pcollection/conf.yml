@@ -1,0 +1,73 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/pcollection/context.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/pcollection/SpreaderBeans.xml
+
+actor:
+  - decider:
+      actorInterface: ru.taskurotta.recipes.pcollection.decider.CollectionOfPromiseDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+
+  - producer:
+      actorInterface: ru.taskurotta.recipes.pcollection.worker.CollectionProducer
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+
+  - consumer:
+      actorInterface: ru.taskurotta.recipes.pcollection.worker.CollectionConsumer
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      count: 1
+
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-multiply.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: ERROR
+        - ru.taskurotta.recipes.pcollection:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.server.json:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.storage:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.bootstrap.config:
+             key: name
+             \@level: INFO
+
+
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref

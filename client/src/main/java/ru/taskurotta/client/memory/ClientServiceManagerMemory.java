@@ -1,10 +1,10 @@
 package ru.taskurotta.client.memory;
 
-import ru.taskurotta.backend.MemoryBackendBundle;
-import ru.taskurotta.backend.config.ConfigBackend;
-import ru.taskurotta.backend.queue.QueueBackend;
-import ru.taskurotta.backend.storage.MemoryTaskDao;
-import ru.taskurotta.backend.storage.TaskBackend;
+import ru.taskurotta.service.MemoryServiceBundle;
+import ru.taskurotta.service.config.ConfigService;
+import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.storage.MemoryTaskDao;
+import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.client.TaskSpreaderProvider;
@@ -21,15 +21,15 @@ import ru.taskurotta.server.TaskServer;
 public class ClientServiceManagerMemory implements ClientServiceManager {
 
     private TaskServer taskServer;
-    private MemoryBackendBundle memoryBackendBundle;
+    private MemoryServiceBundle memoryServiceBundle;
 
     public ClientServiceManagerMemory() {
         this(60);
     }
 
     public ClientServiceManagerMemory(int pollDelay) {
-        memoryBackendBundle = new MemoryBackendBundle(pollDelay, new MemoryTaskDao());
-        taskServer = new GeneralTaskServer(memoryBackendBundle);
+        memoryServiceBundle = new MemoryServiceBundle(pollDelay, new MemoryTaskDao());
+        taskServer = new GeneralTaskServer(memoryServiceBundle);
     }
 
     public ClientServiceManagerMemory(TaskServer taskServer) {
@@ -46,16 +46,16 @@ public class ClientServiceManagerMemory implements ClientServiceManager {
         return new TaskSpreaderProviderCommon(taskServer);
     }
 
-    public QueueBackend getQueueBackend() {
-        return memoryBackendBundle.getQueueBackend();
+    public QueueService getQueueService() {
+        return memoryServiceBundle.getQueueService();
     }
 
-    public TaskBackend getTaskBackend() {
-        return memoryBackendBundle.getTaskBackend();
+    public TaskService getTaskService() {
+        return memoryServiceBundle.getTaskService();
     }
 
-    public ConfigBackend getConfigBackend() {
-        return memoryBackendBundle.getConfigBackend();
+    public ConfigService getConfigService() {
+        return memoryServiceBundle.getConfigService();
     }
 
 

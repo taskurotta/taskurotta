@@ -1,8 +1,12 @@
 package ru.taskurotta.transport.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * User: romario
@@ -11,7 +15,7 @@ import java.io.StringWriter;
  */
 public class ErrorContainer implements Serializable {
 
-    private String className;
+    private String[] classNames;
     private String message;
     private String stackTrace;
 
@@ -19,7 +23,13 @@ public class ErrorContainer implements Serializable {
     }
 
     public ErrorContainer(Throwable throwable) {
-        this.className = throwable.getClass().getName();
+        ArrayList<String> namesList = new ArrayList<>();
+        Class parent = throwable.getClass();
+        do {
+            namesList.add(parent.getName());
+            parent = parent.getSuperclass();
+        } while (Object.class != parent);
+        classNames = namesList.toArray(new String[namesList.size()]);
         this.message = throwable.getMessage();
         this.stackTrace = stackTraceToString(throwable);
     }
@@ -35,16 +45,21 @@ public class ErrorContainer implements Serializable {
         return writer.toString();
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setClassNames(String[] classNames) {
+        this.classNames = classNames;
+    }
+
+    public String[] getClassNames() {
+        return classNames;
+    }
+
+    @JsonIgnore
+    public String getClassName() {
+        return classNames == null || classNames.length == 0 ? "null" : classNames[0];
     }
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public String getClassName() {
-        return className;
     }
 
     public String getMessage() {
@@ -66,16 +81,18 @@ public class ErrorContainer implements Serializable {
 
         ErrorContainer that = (ErrorContainer) o;
 
-        if (className != null ? !className.equals(that.className) : that.className != null) return false;
         if (message != null ? !message.equals(that.message) : that.message != null) return false;
         if (stackTrace != null ? !stackTrace.equals(that.stackTrace) : that.stackTrace != null) return false;
-
-        return true;
+        if (classNames == null){
+            return that.classNames == null;
+        } else {
+            return Arrays.equals(classNames, that.classNames);
+        }
     }
 
     @Override
     public int hashCode() {
-        int result = className != null ? className.hashCode() : 0;
+        int result = classNames != null ? Arrays.hashCode(classNames) : 0;
         result = 31 * result + (message != null ? message.hashCode() : 0);
         result = 31 * result + (stackTrace != null ? stackTrace.hashCode() : 0);
         return result;
@@ -84,7 +101,7 @@ public class ErrorContainer implements Serializable {
     @Override
     public String toString() {
         return "ErrorContainer{" +
-                "className='" + className + '\'' +
+                "classNames='" + Arrays.toString(classNames) + '\'' +
                 ", message='" + message + '\'' +
                 ", stackTrace='" + stackTrace + '\'' +
                 "} ";

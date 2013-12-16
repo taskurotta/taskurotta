@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="hzMapConfigSupport" class="ru.taskurotta.hazelcast.HzMapConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+
+        <property name="asyncBackupsCount" value="0"/>
+        <property name="backupCount" value="0"/>
+        <property name="evictionPercentage" value="25"/>
+        <property name="evictionPolicy" value="LRU"/>
+        <property name="mapStore" ref="mapStore"/>
+        <property name="timeToLive" value="0"/>
+        <property name="maxSize" value="1000"/>
+        <property name="maxSizePolicy" value="PER_NODE"/>
+    </bean>
+
+    <!-- Queues persistence support -->
+    <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
+
+        <property name="asyncBackupsCount" value="0"/>
+        <property name="backupCount" value="0"/>
+        <property name="maxSize" value="0"/>
+        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="binary" value="false"/>
+        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+    </bean>
+
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+    </bean>
+
+    <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+        <property name="hzInstance" ref="hzInstance"/>
+        <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <property name="restore" value="${hz.queue.restore}"/>
+    </bean>
+
+    <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
+
+        <property name="asyncBackupsCount" value="0"/>
+        <property name="backupCount" value="0"/>
+        <property name="maxSize" value="0"/>
+        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="binary" value="false"/>
+        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+    </bean>
+
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="gcQueueConfigSupport"/>
+    </bean>
+
+    <!-- /Queues persistence support -->
+
+
+    <!--  Actor config support  -->
+    <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.MongoActorConfigManager">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>
+
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+    </bean>
+    <!-- /Actor config support -->
+
+    <!-- Delay queue support -->
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="scheduleDelayMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${dq.schedule}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="scheduleDelayMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${dq.schedule}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+    <!-- /Delay queue support -->
+</beans>

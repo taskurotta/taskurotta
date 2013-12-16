@@ -2,7 +2,7 @@ package ru.taskurotta.schedule.storage.ora;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.exception.BackendCriticalException;
+import ru.taskurotta.exception.ServiceCriticalException;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.storage.JobStore;
 import ru.taskurotta.schedule.JobVO;
@@ -53,7 +53,7 @@ public class OraJobStore implements JobStore {
             return resultId;
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         }
     }
 
@@ -66,7 +66,7 @@ public class OraJobStore implements JobStore {
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         }
     }
 
@@ -84,7 +84,7 @@ public class OraJobStore implements JobStore {
             return result;
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
         }
@@ -113,7 +113,7 @@ public class OraJobStore implements JobStore {
             return result;
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
         }
@@ -129,7 +129,7 @@ public class OraJobStore implements JobStore {
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         }
     }
 
@@ -149,7 +149,7 @@ public class OraJobStore implements JobStore {
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         }
     }
 
@@ -168,7 +168,7 @@ public class OraJobStore implements JobStore {
             return result;
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
         }
@@ -185,7 +185,7 @@ public class OraJobStore implements JobStore {
             ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
-            throw new BackendCriticalException("Database error", ex);
+            throw new ServiceCriticalException("Database error", ex);
         }
     }
 
@@ -198,7 +198,7 @@ public class OraJobStore implements JobStore {
             try {
                 rs.close();
             } catch (SQLException e) {
-                throw new BackendCriticalException("Error on closing ResultSet", e);
+                throw new ServiceCriticalException("Error on closing ResultSet", e);
             }
         }
     }

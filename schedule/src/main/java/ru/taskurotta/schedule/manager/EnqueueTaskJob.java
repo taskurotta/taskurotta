@@ -6,7 +6,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.server.TaskServer;
@@ -100,7 +100,7 @@ public class EnqueueTaskJob implements Job {
 
     public static TaskContainer renewTaskGuids(TaskContainer target) {
         UUID newGuid = UUID.randomUUID();
-        return new TaskContainer(newGuid, newGuid, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions());
+        return new TaskContainer(newGuid, newGuid, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions(), target.isUnsafe(), target.getFailTypes());
     }
 
 

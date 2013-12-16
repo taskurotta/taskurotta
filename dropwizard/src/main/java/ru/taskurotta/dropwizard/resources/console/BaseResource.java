@@ -2,7 +2,7 @@ package ru.taskurotta.dropwizard.resources.console;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.backend.console.manager.ConsoleManager;
+import ru.taskurotta.service.console.manager.ConsoleManager;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;

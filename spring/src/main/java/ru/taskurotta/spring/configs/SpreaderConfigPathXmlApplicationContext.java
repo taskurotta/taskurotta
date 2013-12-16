@@ -7,6 +7,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.TaskSpreader;
@@ -14,6 +15,8 @@ import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.client.memory.ClientServiceManagerMemory;
 import ru.taskurotta.util.ActorDefinition;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -29,15 +32,37 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     private TaskSpreaderProvider taskSpreaderProvider;
 
     private String context;
+    private String[] contexts;
+
+    private String defaultPropertiesLocation;
     private Properties properties;
 
     @Override
     public void init() {
         if (applicationContext == null) {
-            applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
+
+            if (context != null) {
+                applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
+            } else {
+                applicationContext = new ClassPathXmlApplicationContext(contexts, false);
+            }
 
             if (properties != null && !properties.isEmpty()) {
+                System.err.println("properties: " + properties);
                 applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
+            }
+
+            if (defaultPropertiesLocation != null) {
+                Properties defaultProperties = null;
+                try {
+                    defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Can not load default properties", e);
+                }
+
+                System.err.println("defaultProperties [" + defaultPropertiesLocation + "]: " + defaultProperties);
+                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
+                        ("defaultProperties", defaultProperties));
             }
 
             applicationContext.refresh();
@@ -72,7 +97,21 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
         this.context = context;
     }
 
+    public void setContexts(String[] contexts) {
+        this.contexts = contexts;
+    }
+
     public void setProperties(Properties properties) {
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            final Object obj = System.getenv(entry.getKey().toString());
+            if (obj != null) {
+                entry.setValue(obj);
+            }
+        }
         this.properties = properties;
+    }
+
+    public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
+        this.defaultPropertiesLocation = defaultPropertiesLocation;
     }
 }

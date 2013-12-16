@@ -5,7 +5,7 @@ import com.bazaarvoice.dropwizard.assets.AssetsConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
 import org.hibernate.validator.constraints.NotEmpty;
-import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
+import ru.taskurotta.service.config.impl.MemoryConfigService;
 import ru.taskurotta.dropwizard.server.pooling.InternalPoolConfig;
 
 import java.util.Properties;
@@ -16,7 +16,7 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
     private Properties properties;
 
     @JsonProperty
-    private MemoryConfigBackend actorConfig;
+    private MemoryConfigService actorConfig;
 
     @JsonProperty
     private InternalPoolConfig internalPoolConfig;
@@ -58,11 +58,11 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
         this.internalPoolConfig = internalPoolConfig;
     }
 
-    public MemoryConfigBackend getActorConfig() {
+    public MemoryConfigService getActorConfig() {
         return actorConfig;
     }
 
-    public void setActorConfig(MemoryConfigBackend actorConfig) {
+    public void setActorConfig(MemoryConfigService actorConfig) {
         this.actorConfig = actorConfig;
     }
 

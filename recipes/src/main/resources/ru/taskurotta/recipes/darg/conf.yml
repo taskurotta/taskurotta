@@ -8,7 +8,7 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/recipes/darg/context.xml
+        context: ru/taskurotta/recipes/darg/SpreaderBeans.xml
 
 actor:
   - decider:
@@ -57,7 +57,7 @@ logback:
         - ru.taskurotta.server.json:
              key: name
              \@level: DEBUG
-        - ru.taskurotta.backend:
+        - ru.taskurotta.service:
              key: name
              \@level: DEBUG
         - ru.taskurotta.bootstrap.config:

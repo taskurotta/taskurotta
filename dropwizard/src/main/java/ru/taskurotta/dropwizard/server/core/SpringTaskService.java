@@ -17,7 +17,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import ru.taskurotta.backend.config.impl.MemoryConfigBackend;
+import ru.taskurotta.service.config.impl.MemoryConfigService;
 
 import javax.ws.rs.Path;
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
 
         appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", props));
 
-        //Initializes YamlConfigBackend bean with actor preferences parsed from DW server YAML configuration
+        //Initializes YamlConfigService bean with actor preferences parsed from DW server YAML configuration
         if (configuration.getActorConfig() != null) {
             appContext.addBeanFactoryPostProcessor(new BeanFactoryPostProcessor() {
                 @Override
@@ -62,8 +62,8 @@ public class SpringTaskService extends Service<TaskServerConfig> {
                         @Override
                         public Object postProcessBeforeInitialization(Object bean, String beanName)
                                 throws BeansException {
-                            if (bean instanceof MemoryConfigBackend) {
-                                MemoryConfigBackend cfgBean = (MemoryConfigBackend) bean;
+                            if (bean instanceof MemoryConfigService) {
+                                MemoryConfigService cfgBean = (MemoryConfigService) bean;
                                 cfgBean.setActorPreferencesCollection(configuration.getActorConfig().getAllActorPreferences());
                                 cfgBean.setExpirationPoliciesCollection(configuration.getActorConfig().getAllExpirationPolicies());
                             }
@@ -80,6 +80,8 @@ public class SpringTaskService extends Service<TaskServerConfig> {
             });
         }
         appContext.refresh();
+
+        logger.debug("configuration.getResourceBeans() [{}]", configuration.getResourceBeans());
 
         //-----Register resources-----------------
         int resourcesCount = 0;

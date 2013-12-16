@@ -30,12 +30,18 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     private TaskSpreaderProvider taskSpreaderProvider;
 
     private String context;
+    private String[] contexts;
     private Properties properties;
 
     @Override
     public void init() {
         if (applicationContext == null) {
-            applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
+
+            if (context != null) {
+                applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
+            } else {
+                applicationContext = new ClassPathXmlApplicationContext(contexts, false);
+            }
 
             if (properties != null && !properties.isEmpty()) {
                 PropertyPlaceholderConfigurer propertyPlaceholderConfigurer = new PropertyPlaceholderConfigurer();
@@ -75,6 +81,10 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
 
     public void setContext(String context) {
         this.context = context;
+    }
+
+    public void setContexts(String[] context) {
+        this.contexts = contexts;
     }
 
     public void setProperties(Properties properties) {

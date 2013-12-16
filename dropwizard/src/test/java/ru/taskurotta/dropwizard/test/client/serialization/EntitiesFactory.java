@@ -41,7 +41,7 @@ public class EntitiesFactory {
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false, null);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError) {
@@ -59,11 +59,7 @@ public class EntitiesFactory {
     }
 
     public static ErrorContainer createErrorContainer() {
-        ErrorContainer result = new ErrorContainer();
-        result.setClassName(Throwable.class.getName());
-        result.setMessage("Test exception");
-        result.setStackTrace("Test stack trace");
-        return result;
+        return new ErrorContainer(new Throwable("Test exception"));
     }
 
     public static ArgContainer createArgSimpleValue(UUID taskId) {

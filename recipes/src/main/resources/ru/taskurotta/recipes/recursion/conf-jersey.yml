@@ -1,0 +1,32 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/recursion/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/recipes/recursion/SpreaderBeans-jersey.xml
+        properties:
+          endpoint: "http://localhost:8090"
+          threadPoolSize: 20
+          readTimeout: 0
+          connectTimeout: 3000
+          number: 4
+          count: 1
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.flow.FlowArbiterProfiler
+
+actor:
+  - FibonacciDecider:
+      actorInterface: ru.taskurotta.recipes.recursion.decider.FibonacciDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 1

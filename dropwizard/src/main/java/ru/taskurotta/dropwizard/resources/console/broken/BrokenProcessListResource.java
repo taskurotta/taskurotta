@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.StringUtils;
-import ru.taskurotta.backend.process.BrokenProcessBackend;
-import ru.taskurotta.backend.process.BrokenProcessVO;
-import ru.taskurotta.backend.process.GroupCommand;
-import ru.taskurotta.backend.process.ProcessGroupVO;
-import ru.taskurotta.backend.process.SearchCommand;
-import ru.taskurotta.backend.recovery.RecoveryProcessBackend;
+import ru.taskurotta.service.process.BrokenProcessService;
+import ru.taskurotta.service.process.BrokenProcessVO;
+import ru.taskurotta.service.process.GroupCommand;
+import ru.taskurotta.service.process.ProcessGroupVO;
+import ru.taskurotta.service.process.SearchCommand;
+import ru.taskurotta.service.recovery.RecoveryProcessService;
 import ru.taskurotta.dropwizard.resources.Action;
 
 import javax.ws.rs.Consumes;
@@ -51,8 +51,8 @@ public class BrokenProcessListResource {
     private static final String DATETIME_TEMPLATE = "dd.MM.yyyy HH:ss";
 
 
-    private BrokenProcessBackend brokenProcessBackend;
-    private RecoveryProcessBackend recoveryProcessBackend;
+    private BrokenProcessService brokenProcessService;
+    private RecoveryProcessService recoveryProcessService;
 
     private ExecutorService executorService = null;
 
@@ -76,7 +76,7 @@ public class BrokenProcessListResource {
 
         } else if (Action.LIST.getValue().equals(action)) {
             GroupCommand command = convertToCommand(starterIdOpt, actorIdOpt, exceptionOpt, dateFromOpt, dateToOpt, groupOpt);
-            Collection<BrokenProcessVO> processes = brokenProcessBackend.find(command);
+            Collection<BrokenProcessVO> processes = brokenProcessService.find(command);
             logger.debug("Processes got by command [{}] are [{}]", command, processes);
             return Response.ok(processes, MediaType.APPLICATION_JSON).build();
 
@@ -107,7 +107,8 @@ public class BrokenProcessListResource {
     }
 
     @POST
-    //TODO: action command should contain searchCommand to be passed as is to a recovery backend. Backend itself should delete recovered values from broken processes store
+    //TODO: action command should contain searchCommand to be passed as is to a recovery service. Service itself
+    // should delete recovered values from broken processes store
     public Response executeAction(@PathParam("action") String action, ActionCommand command) {
         logger.debug("Executing action [{}] with command [{}]", action, command);
 
@@ -138,7 +139,7 @@ public class BrokenProcessListResource {
 
                 @Override
                 public void run() {
-                    recoveryProcessBackend.restartProcessCollection(processIds);
+                    recoveryProcessService.restartProcessCollection(processIds);
 
                 }
             });
@@ -149,8 +150,8 @@ public class BrokenProcessListResource {
 //                    for (UUID processId : processIds) {
 //                        try {
 //                            //TODO: should some transactions be applied here?
-//                            recoveryProcessBackend.restartProcess(processId);
-//                            brokenProcessBackend.delete(processId.toString());
+//                            recoveryProcessService.restartProcess(processId);
+//                            brokenProcessService.delete(processId.toString());
 //                            localResult++;
 //                            logger.debug("Processed processId [{}]", processId);
 //                        } catch (Throwable e) {
@@ -237,7 +238,7 @@ public class BrokenProcessListResource {
 
     public List<ProcessGroupVO> getGroupList(GroupCommand command) {
         List<ProcessGroupVO> result = null;
-        Collection<BrokenProcessVO> processes = brokenProcessBackend.find(command);
+        Collection<BrokenProcessVO> processes = brokenProcessService.find(command);
 
         if (processes != null && !processes.isEmpty()) {
             Map<String, Collection<BrokenProcessVO>> groupedProcesses = groupProcessList(processes, command.getGroup());
@@ -327,12 +328,12 @@ public class BrokenProcessListResource {
     }
 
     @Required
-    public void setBrokenProcessBackend(BrokenProcessBackend brokenProcessBackend) {
-        this.brokenProcessBackend = brokenProcessBackend;
+    public void setBrokenProcessService(BrokenProcessService brokenProcessService) {
+        this.brokenProcessService = brokenProcessService;
     }
 
     @Required
-    public void setRecoveryProcessBackend(RecoveryProcessBackend recoveryProcessBackend) {
-        this.recoveryProcessBackend = recoveryProcessBackend;
+    public void setRecoveryProcessService(RecoveryProcessService recoveryProcessService) {
+        this.recoveryProcessService = recoveryProcessService;
     }
 }

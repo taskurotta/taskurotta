@@ -10,7 +10,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/multiplier/SpreaderBeans-jersey.xml
         properties:
-          count: 5000
+          count: 0
           startTasks: true
           startTasksInBackground: false
           endpoint: "http://localhost:8811"

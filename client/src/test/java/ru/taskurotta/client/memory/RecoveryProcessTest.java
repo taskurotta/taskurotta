@@ -1,11 +1,11 @@
 package ru.taskurotta.client.memory;
 
 import org.junit.Test;
-import ru.taskurotta.backend.dependency.GeneralDependencyBackend;
-import ru.taskurotta.backend.dependency.links.Graph;
-import ru.taskurotta.backend.dependency.links.GraphDao;
-import ru.taskurotta.backend.dependency.links.MemoryGraphDao;
-import ru.taskurotta.backend.recovery.RecoveryTask;
+import ru.taskurotta.service.dependency.GeneralDependencyService;
+import ru.taskurotta.service.dependency.links.Graph;
+import ru.taskurotta.service.dependency.links.GraphDao;
+import ru.taskurotta.service.dependency.links.MemoryGraphDao;
+import ru.taskurotta.service.recovery.RecoveryTask;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorUtils;
@@ -36,22 +36,22 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
 
         // clean tasks and graph
-        memoryQueueBackend.simulateDataLoss();// = new MemoryQueueBackend(0);
-        dependencyBackend = new GeneralDependencyBackend(new MemoryGraphDao());
-        recoveryProcessBackend.setDependencyBackend(dependencyBackend);
+        memoryQueueService.simulateDataLoss();// = new MemoryQueueService(0);
+        dependencyService = new GeneralDependencyService(new MemoryGraphDao());
+        recoveryProcessService.setDependencyService(dependencyService);
 
         // check no tasks in queue
         assertFalse(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
         // check no graph for process
-        assertNull(dependencyBackend.getGraph(processId));
+        assertNull(dependencyService.getGraph(processId));
 
         // recovery process
-        new RecoveryTask(recoveryProcessBackend, processId).call();
+        new RecoveryTask(recoveryProcessService, processId).call();
 
         // check start task in queue
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
         // check not null graph for process
-        assertNotNull(dependencyBackend.getGraph(processId));
+        assertNotNull(dependencyService.getGraph(processId));
     }
 
     @Test
@@ -74,16 +74,16 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertTrue(isTaskPresent(workerTaskId, processId));
 
         // clean tasks from queues
-        memoryQueueBackend.simulateDataLoss();
-        //memoryQueueBackend = new MemoryQueueBackend(0);
+        memoryQueueService.simulateDataLoss();
+        //memoryQueueService = new MemoryQueueService(0);
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
         // check not finished items in graph
-        assertFalse(dependencyBackend.getGraph(processId).getNotFinishedItems().isEmpty());
+        assertFalse(dependencyService.getGraph(processId).getNotFinishedItems().isEmpty());
 
         // recovery process
-        new RecoveryTask(recoveryProcessBackend, processId).call();
+        new RecoveryTask(recoveryProcessService, processId).call();
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));
@@ -109,13 +109,13 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertTrue(isTaskPresent(workerTaskId, processId));
 
         // clean tasks from queues
-        memoryQueueBackend.simulateDataLoss();
+        memoryQueueService.simulateDataLoss();
 
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
         // reset not finished items
-        dependencyBackend.changeGraph(new GraphDao.Updater() {
+        dependencyService.changeGraph(new GraphDao.Updater() {
             @Override
             public UUID getProcessId() {
                 return processId;
@@ -129,10 +129,10 @@ public class RecoveryProcessTest extends AbstractTestStub {
             }
         });
 
-        memoryQueueBackendStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
+        memoryQueueServiceStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
-        new RecoveryTask(recoveryProcessBackend, processId).call();
+        new RecoveryTask(recoveryProcessService, processId).call();
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));

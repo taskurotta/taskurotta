@@ -21,49 +21,62 @@
     <!-- /REST resources -->
 
     <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
-        <constructor-arg name="configBackend" ref="configBackend"/>
-        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
-        <constructor-arg name="processBackend" ref="processBackend"/>
-        <constructor-arg name="queueBackend" ref="originalQueueBackend"/>
-        <constructor-arg name="taskBackend" ref="taskBackend"/>
-        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend" />
+        <constructor-arg name="configService" ref="configService"/>
+        <constructor-arg name="dependencyService" ref="dependencyService"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="queueService" ref="originalQueueBackend"/>
+        <constructor-arg name="taskService" ref="taskService"/>
+        <constructor-arg name="brokenProcessService" ref="brokenProcessService" />
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
     </bean>
 
     <!-- Backends -->
-    <bean id="originalQueueBackend" class="ru.taskurotta.backend.queue.MemoryQueueBackend">
+    <bean id="originalQueueBackend" class="ru.taskurotta.service.queue.MemoryQueueService">
         <constructor-arg name="pollDelay" value="${pollDelay}" />
         <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
     </bean>
 
-    <bean id="queueBackend" class="ru.taskurotta.backend.recovery.MemoryQueueBackendStatistics">
+    <bean id="queueService" class="ru.taskurotta.service.recovery.MemoryQueueServiceStatistics">
         <constructor-arg ref="originalQueueBackend"/>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.backend.storage.MemoryTaskDao" />
+    <bean id="taskDao" class="ru.taskurotta.service.storage.MemoryTaskDao" />
 
-    <bean id="taskBackend" class="ru.taskurotta.backend.storage.GeneralTaskBackend">
+    <bean id="taskService" class="ru.taskurotta.service.storage.GeneralTaskService">
         <constructor-arg name="taskDao" ref="taskDao" />
     </bean>
-    <bean id="dependencyBackend" class="ru.taskurotta.backend.dependency.GeneralDependencyBackend">
+    <bean id="dependencyService" class="ru.taskurotta.service.dependency.GeneralDependencyService">
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
-    <bean id="brokenProcessBackend" class="ru.taskurotta.backend.process.MemoryBrokenProcessBackend" />
+    <bean id="brokenProcessService" class="ru.taskurotta.service.process.MemoryBrokenProcessService" />
 
-    <bean id="graphDao" class="ru.taskurotta.backend.dependency.links.MemoryGraphDao" />
+    <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao" />
 
-    <bean id="processBackend" class="ru.taskurotta.backend.storage.MemoryProcessBackend" />
+    <bean id="processService" class="ru.taskurotta.service.storage.MemoryProcessService" />
 
-    <bean id="configBackend" class="ru.taskurotta.backend.config.impl.MemoryConfigBackend" />
+    <bean id="configService" class="ru.taskurotta.service.config.impl.MemoryConfigService" />
 
-    <bean id="recoveryProcessBackend" class="ru.taskurotta.backend.recovery.GeneralRecoveryProcessBackend">
-        <constructor-arg name="dependencyBackend" ref="dependencyBackend"/>
-        <constructor-arg name="processBackend" ref="processBackend"/>
-        <constructor-arg name="queueBackendStatistics" ref="queueBackend"/>
-        <constructor-arg name="taskBackend" ref="taskBackend"/>
+    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
+        <constructor-arg name="dependencyService" ref="dependencyService"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="queueServiceStatistics" ref="queueService"/>
+        <constructor-arg name="taskService" ref="taskService"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
-        <constructor-arg name="brokenProcessBackend" ref="brokenProcessBackend"/>
+        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
         <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
+    </bean>
+
+    <bean id="garbageCollectorService" class="ru.taskurotta.service.gc.MemoryGarbageCollectorService">
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="poolSize" value="${gc.poolSize}"/>
+        <constructor-arg name="timeBeforeDelete">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time.before.delete}"/>
+            </bean>
+        </constructor-arg>
     </bean>
     <!-- /Backends -->
 
@@ -72,7 +85,7 @@
         <property name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.backend.statistics.MetricsDataHandler" init-method="init" />
-    <bean id="metricsNumberDataHandler" class="ru.taskurotta.backend.statistics.NumberDataHandler" init-method="init" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.service.statistics.MetricsDataHandler" init-method="init" />
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.statistics.NumberDataHandler" init-method="init" />
 
 </beans>

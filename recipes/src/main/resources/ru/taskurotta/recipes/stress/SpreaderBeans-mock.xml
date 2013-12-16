@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config/>
+
+    <bean id="taskServer" class="ru.taskurotta.recipes.stress.SpeedTestTaskServer">
+        <constructor-arg name="originalTaskServer" ref="mockTaskServer"/>
+    </bean>
+
+    <!-- Task server -->
+    <bean id="mockTaskServer" class="ru.taskurotta.server.GeneralTaskServer">
+        <constructor-arg name="serviceBundle" ref="serviceBundle"/>
+    </bean>
+
+    <bean id="serviceBundle" class="ru.taskurotta.recipes.stress.MockServiceBundle">
+    </bean>
+
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
+        <constructor-arg name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.recipes.stress.StressTaskCreator">
+        <property name="clientServiceManager" ref="clientServiceManager"/>
+        <property name="needRun" value="${needRun}"/>
+        <property name="shotSize" value="${shotSize}"/>
+        <property name="initialCount" value="${initialCount}"/>
+    </bean>
+
+
+    <!--<bean id="jerseyTaskServerForStartProcesses" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">-->
+        <!--<property name="endpoint" value="${endpoint}"/>-->
+        <!--<property name="connectTimeout" value="${connectTimeout}"/>-->
+        <!--<property name="readTimeout" value="${readTimeout}"/>-->
+        <!--<property name="threadPoolSize" value="${threadPoolSize}"/>-->
+        <!--&lt;!&ndash; All connections are for the same host, so value matches threadpool size &ndash;&gt;-->
+        <!--<property name="maxConnectionsPerHost" value="${threadPoolSize}"/>-->
+    <!--</bean>-->
+
+    <!--<bean id="clientServiceManagerForStartProcesses" class="ru.taskurotta.client.internal.CommonClientServiceManager">-->
+        <!--<constructor-arg name="taskServer" ref="taskServer"/>-->
+    <!--</bean>-->
+</beans>

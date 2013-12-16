@@ -1,3 +1,7 @@
+#
+# Config for hazelcast based transport P-o-C.
+#
+
 runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext

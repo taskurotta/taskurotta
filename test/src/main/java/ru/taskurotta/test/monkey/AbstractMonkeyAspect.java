@@ -16,7 +16,7 @@ public abstract class AbstractMonkeyAspect {
 
     private double threshold = 0.5;
 
-    //"execution(* ru.taskurotta.backend.queue.MemoryQueueBackend.pollCommit(..))"
+    //"execution(* ru.taskurotta.service.queue.MemoryQueueService.pollCommit(..))"
     @Pointcut
     public abstract void pointCut();
 

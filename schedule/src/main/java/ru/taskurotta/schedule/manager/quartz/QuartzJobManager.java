@@ -15,7 +15,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.manager.EnqueueTaskJob;
@@ -57,7 +57,7 @@ public class QuartzJobManager implements JobManager {
 
         if (job != null) {
             try {
-                if(!isActive(job)) {
+                if (!isActive(job)) {
                     runJob(job);
                     jobStore.updateJobStatus(job.getId(), JobConstants.STATUS_ACTIVE);
                 }

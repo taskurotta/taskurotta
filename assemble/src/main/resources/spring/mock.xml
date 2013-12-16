@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
+            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config/>
+
+    <!-- REST resources -->
+    <bean id="taskPollerResource" class="ru.taskurotta.dropwizard.resources.TaskPollerResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskReleaserResource" class="ru.taskurotta.dropwizard.resources.TaskReleaserResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <bean id="taskStarterResource" class="ru.taskurotta.dropwizard.resources.TaskStarterResource">
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <!-- /REST resources -->
+
+    <!-- Health checks -->
+    <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
+        <constructor-arg name="name" value="check task server"/>
+        <property name="taskServer" ref="taskServer"/>
+    </bean>
+    <!-- /Health checks -->
+
+
+    <!-- Task server -->
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
+        <constructor-arg name="serviceBundle" ref="serviceBundle"/>
+    </bean>
+
+    <bean id="serviceBundle" class="ru.taskurotta.recipes.stress.MockServiceBundle">
+    </bean>
+
+</beans>

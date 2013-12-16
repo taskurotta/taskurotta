@@ -3,9 +3,9 @@ package ru.taskurotta.dropwizard.resources.console.actors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.backend.console.manager.ActorConfigManager;
-import ru.taskurotta.backend.console.model.MetricsStatDataVO;
-import ru.taskurotta.backend.console.retriever.metrics.MetricsMethodDataRetriever;
+import ru.taskurotta.service.console.manager.ActorConfigManager;
+import ru.taskurotta.service.console.model.MetricsStatDataVO;
+import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

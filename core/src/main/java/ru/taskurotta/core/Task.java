@@ -15,15 +15,12 @@ public interface Task {
      * Unique task id.
      * Can not be null.
      */
-
     public UUID getId();
-
 
     /**
      * Unique process id.
      * Can not be null.
      */
-
     public UUID getProcessId();
 
     /**
@@ -33,7 +30,6 @@ public interface Task {
      * @return Target of task consumer
      */
     public TaskTarget getTarget();
-
 
     /**
      * Args an array of objects containing the values of the
@@ -50,14 +46,14 @@ public interface Task {
     /**
      * Time in milliseconds when task should be started.
      *
-     * @return
+     * @return Time in milliseconds when task should be started.
      */
     public long getStartTime();
 
     /**
      * Returns number of attempts to perform the task.
      *
-     * @return
+     * @return number of attempts to perform the task.
      */
     public int getNumberOfAttempts();
 
@@ -65,7 +61,20 @@ public interface Task {
      * Several options of task scheduling. This field always null on tasks received from server because this information
      * not needed on client side.
      *
-     * @return
+     * @return {@link TaskOptions} object
      */
     public TaskOptions getTaskOptions();
+
+    /**
+     *
+     * @return true if task can produce exception in normal flow. Deciders should be aware of this. Workers can't work
+     * with such tasks.
+     */
+    public boolean isUnsafe();
+
+    /**
+     *
+     * @return array of class names of exception classes
+     */
+    public String[] getFailTypes();
 }
