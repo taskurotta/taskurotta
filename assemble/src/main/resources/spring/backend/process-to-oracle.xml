@@ -35,10 +35,18 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="hazelcastInstance" ref="hzInstance"/>
         <property name="recoveryProcessService" ref="recoveryProcessService"/>
-        <property name="threadCount" value="${recovery.process.thread.count}"/>
+        <property name="threadCount" value="${recovery.process.thread-count}"/>
         <property name="useDaemonThreads" value="true"/>
-        <property name="processBatchSize" value="${recovery.process.batch.size}"/>
+        <property name="processBatchSize" value="${recovery.process.batch-size}"/>
         <property name="startupRecovery" value="${recovery.startup.run}"/>
+    </bean>
+
+    <bean id="scheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
+        <!-- wait 10 seconds before starting repeated execution -->
+        <property name="delay" value="10000" />
+        <!-- run every 50 seconds -->
+        <property name="period" value="50000" />
+        <property name="timerTask" ref="processRecoveryService" />
     </bean>
 
     <bean id="processRecoveryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
@@ -51,6 +59,7 @@
             </bean>
         </property>
     </bean>
+
 
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
@@ -71,8 +80,8 @@
     <bean id="originalDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
         <property name="url" value="${oradb.url}"/>
-        <property name="initialSize" value="${oradb.initial.size}"/>
-        <property name="maxActive" value="${oradb.max.active}"/>
+        <property name="initialSize" value="${oradb.initial-size}"/>
+        <property name="maxActive" value="${oradb.max-active}"/>
         <property name="username" value="${oradb.user}"/>
         <property name="password" value="${oradb.password}"/>
     </bean>
