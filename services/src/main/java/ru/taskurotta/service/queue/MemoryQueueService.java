@@ -36,19 +36,12 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryQueueService.class);
 
-    private int pollDelay = 60;
-    private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
+    private long pollDelay = 60000l;
     private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<>();
 
-    public MemoryQueueService(int pollDelay) {
+    public MemoryQueueService(long pollDelay) {
 
         this.pollDelay = pollDelay;
-    }
-
-    public MemoryQueueService(int pollDelay, TimeUnit pollDelayUnit) {
-
-        this.pollDelay = pollDelay;
-        this.pollDelayUnit = pollDelayUnit;
 
         if (logger.isTraceEnabled()) {
             Thread monitor = new Thread() {
@@ -177,7 +170,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         TaskQueueItem result;
 
         try {
-            result = queue.poll(pollDelay, pollDelayUnit);
+            result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             logger.error("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
             throw new ServiceCriticalException("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);

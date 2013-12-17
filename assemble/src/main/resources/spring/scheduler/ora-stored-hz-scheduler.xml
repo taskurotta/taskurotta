@@ -19,7 +19,7 @@
 
     <bean id="jobManager" class="ru.taskurotta.schedule.adapter.HzJobManagerAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic.name}" />
+        <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic-name}" />
         <constructor-arg name="jobManager" ref="realJobManager" />
     </bean>
 

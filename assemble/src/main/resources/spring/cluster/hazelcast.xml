@@ -21,20 +21,20 @@
                 </hz:join>
             </hz:network>
 
-            <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
-            <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
+            <hz:executor-service name="${hz.executor-service.dependency.service-name}" pool-size="${hz.executor-service.dependency.pool-size}"/>
+            <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
 
-            <hz:map name="${hz.task.map.name}" backup-count="1"/>
+            <hz:map name="${hz.map.task.name}" backup-count="1"/>
 
-            <hz:map name="${hz.decision.map.name}" backup-count="1"/>
+            <hz:map name="${hz.map.decision.name}" backup-count="1"/>
 
-            <hz:map name="${hz.graph.map.name}" backup-count="1"/>
+            <hz:map name="${hz.map.graph.name}" backup-count="1"/>
 
-            <hz:map name="${hz.graph.decision.map.name}" backup-count="1"/>
+            <hz:map name="${hz.map.graph-decision.name}" backup-count="1"/>
 
-            <hz:map name="${hz.process.map.name}" backup-count="1"/>
+            <hz:map name="${hz.map.process.name}" backup-count="1"/>
 
-            <hz:map name="${hz.actor.preferences.map.name}" backup-count="1"/>
+            <hz:map name="${hz.map.actor-preferences.name}" backup-count="1"/>
 
             <hz:serialization>
                 <hz:serializers>
