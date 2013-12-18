@@ -34,11 +34,6 @@ public class TaskContainer implements Serializable {
 
     public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
                          TaskType type, long startTime, int numberOfAttempts,
-                         ArgContainer[] args, TaskOptionsContainer options, String[] failTypes) {
-
-    }
-    public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
-                         TaskType type, long startTime, int numberOfAttempts,
                          ArgContainer[] args, TaskOptionsContainer options, boolean unsafe, String[] failTypes) {
         super();
         this.taskId = taskId;
