@@ -39,7 +39,7 @@ public abstract class AbstractQueueServiceStatistics implements QueueServiceStat
         TaskQueueItem taskQueueItem = queueService.poll(actorId, taskList);
 
         if (taskQueueItem == null) {
-            return taskQueueItem;
+            return null;
         }
 
         String queueName = createQueueName(actorId, taskList);
