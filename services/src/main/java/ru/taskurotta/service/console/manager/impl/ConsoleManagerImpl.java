@@ -2,7 +2,7 @@ package ru.taskurotta.service.console.manager.impl;
 
 import ru.taskurotta.service.console.manager.ConsoleManager;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.model.ProfileVO;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.model.QueueVO;
@@ -94,7 +94,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public ProcessVO getProcess(UUID processUuid) {
+    public Process getProcess(UUID processUuid) {
         if (processInfo == null) {
             return null;
         }
@@ -118,7 +118,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize) {
         if (processInfo == null) {
             return null;
         }
@@ -162,15 +162,15 @@ public class ConsoleManagerImpl implements ConsoleManager {
     @Override
     public TaskTreeVO getTreeForProcess(UUID processUuid) {
         TaskTreeVO result = null;
-        ProcessVO process = processInfo.getProcess(processUuid);
-        if (process != null && process.getStartTaskUuid() != null) {
-            result = getTreeForTask(process.getStartTaskUuid(), processUuid);
+        Process process = processInfo.getProcess(processUuid);
+        if (process != null && process.getStartTaskId() != null) {
+            result = getTreeForTask(process.getStartTaskId(), processUuid);
         }
         return result;
     }
 
     @Override
-    public List<ProcessVO> findProcesses(String processId, String customId) {
+    public List<Process> findProcesses(String processId, String customId) {
         if (processInfo == null) {
             return null;
         }

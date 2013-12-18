@@ -15,7 +15,7 @@ public class ObjectTypes {
     public static final int DECISION_ROW_STREAM = 2;
     public static final int ERROR_CONTAINER = 7;
     public static final int GRAPH = 1;
-    public static final int PROCESS_VO = 11;
+    public static final int PROCESS = 11;
     public static final int TASK_CONTAINER = 6;
     public static final int TASK_KEY = 10;
     public static final int TASK_OPTIONS_CONTAINER = 5;

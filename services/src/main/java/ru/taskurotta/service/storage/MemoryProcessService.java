@@ -3,7 +3,7 @@ package ru.taskurotta.service.storage;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -22,23 +22,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MemoryProcessService implements ProcessService, ProcessInfoRetriever {
 
-    private Map<UUID, ProcessVO> processesStorage = new ConcurrentHashMap<>();
+    private Map<UUID, Process> processesStorage = new ConcurrentHashMap<>();
 
     @Override
     public void startProcess(TaskContainer task) {
-        ProcessVO process = new ProcessVO();
-        process.setStartTime(System.currentTimeMillis());
-        process.setProcessUuid(task.getProcessId());
-        process.setStartTaskUuid(task.getTaskId());
-        process.setStartTask(task);
-        processesStorage.put(task.getProcessId(), process);
+        Process process = new Process(task);
+        processesStorage.put(process.getProcessId(), process);
     }
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
-        ProcessVO process = processesStorage.get(processId);
+        Process process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
-        process.setReturnValueJson(returnValue);
+        process.setReturnValue(returnValue);
         processesStorage.put(processId, process);
     }
 
@@ -48,7 +44,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public ProcessVO getProcess(UUID processUUID) {
+    public Process getProcess(UUID processUUID) {
         return processesStorage.get(processUUID);
     }
 
@@ -58,10 +54,10 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
-        List<ProcessVO> result = new ArrayList<>();
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize) {
+        List<Process> result = new ArrayList<>();
         if (!processesStorage.isEmpty()) {
-            ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
+            Process[] processes = new Process[processesStorage.values().size()];
             processes = processesStorage.values().toArray(processes);
             int pageStart = (pageNumber - 1) * pageSize;
             int pageEnd = (pageSize * pageNumber >= processes.length) ? processes.length : pageSize * pageNumber;
@@ -72,29 +68,29 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public List<ProcessVO> findProcesses(final ProcessSearchCommand command) {
-        List<ProcessVO> result = new ArrayList<>();
+    public List<Process> findProcesses(final ProcessSearchCommand command) {
+        List<Process> result = new ArrayList<>();
         if (command.getCustomId()!=null || command.getProcessId()!=null ) {
-            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<Process>() {
 
                 private boolean hasText(String target){
                     return target != null && target.trim().length()>0;
                 }
 
-                private boolean isValid (ProcessVO processVO) {
+                private boolean isValid (Process process) {
                     boolean isValid = true;
                     if (hasText(command.getCustomId())) {
-                        isValid = processVO.getProcessUuid().toString().startsWith(command.getCustomId());
+                        isValid = process.getProcessId().toString().startsWith(command.getCustomId());
                     }
                     if (hasText(command.getProcessId())) {
-                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getProcessId());
+                        isValid = isValid && process.getProcessId().toString().startsWith(command.getProcessId());
                     }
                     return isValid;
                 }
 
                 @Override
-                public boolean apply(ProcessVO processVO) {
-                    return isValid(processVO);
+                public boolean apply(Process process) {
+                    return isValid(process);
                 }
 
             }));

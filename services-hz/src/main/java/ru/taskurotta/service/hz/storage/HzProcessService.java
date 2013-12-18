@@ -5,7 +5,7 @@ import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.service.storage.ProcessService;
@@ -13,6 +13,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -24,59 +25,49 @@ import java.util.concurrent.TimeUnit;
  */
 public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
-    private String processesStorageMapName = "processesStorage";//default
-    private HazelcastInstance hzInstance;
+    private IMap<UUID, Process> processIMap;
 
-
-    public HzProcessService(HazelcastInstance hzInstance) {
-        this.hzInstance = hzInstance;
+    public HzProcessService(HazelcastInstance hzInstance, String processesStorageMapName) {
+        this.processIMap = hzInstance.getMap(processesStorageMapName);
     }
 
     @Override
     public void startProcess(TaskContainer task) {
-        ProcessVO process = new ProcessVO();
-        process.setStartTime(System.currentTimeMillis());
-        process.setProcessUuid(task.getProcessId());
-        process.setStartTaskUuid(task.getTaskId());
-        process.setStartTask(task);
-        hzInstance.getMap(processesStorageMapName).set(task.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
+        Process process = new Process(task);
+        processIMap.set(process.getProcessId(), process, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
-
-        // TODO: get map reference only one time
-        IMap<UUID, ProcessVO> processMap = hzInstance.getMap(processesStorageMapName);
-        ProcessVO process = processMap.get(processId);
+        Process process = processIMap.get(processId);
         process.setEndTime(System.currentTimeMillis());
-        process.setReturnValueJson(returnValue);
-        processMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
+        process.setReturnValue(returnValue);
+        processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
     public void deleteProcess(UUID processId) {
-        hzInstance.getMap(processesStorageMapName).delete(processId);
+        processIMap.delete(processId);
     }
 
     @Override
-    public ProcessVO getProcess(UUID processUUID) {
-        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
-        return processesStorage.get(processUUID);
+    public Process getProcess(UUID processUUID) {
+        return processIMap.get(processUUID);
     }
 
     @Override
     public TaskContainer getStartTask(UUID processId) {
-        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
-        return processesStorage.get(processId).getStartTask();
+        return processIMap.get(processId).getStartTask();
     }
 
     @Override
-    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
-        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
-        List<ProcessVO> result = new ArrayList<>();
-        ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
-        processes = processesStorage.values().toArray(processes);
-        if (!processesStorage.isEmpty()) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize) {
+        List<Process> result = new ArrayList<>();
+
+        Collection<Process> values = processIMap.values();
+        Process[] processes = new Process[values.size()];
+        processes = values.toArray(processes);
+        if (!processIMap.isEmpty()) {
             int pageEnd = pageSize * pageNumber >= processes.length ? processes.length : pageSize * pageNumber;
             int pageStart = (pageNumber - 1) * pageSize;
             result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
@@ -86,40 +77,35 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public List<ProcessVO> findProcesses(final ProcessSearchCommand command) {
-        IMap<UUID, ProcessVO> processesStorage = hzInstance.getMap(processesStorageMapName);
-        List<ProcessVO> result = new ArrayList<>();
+    public List<Process> findProcesses(final ProcessSearchCommand command) {
+        List<Process> result = new ArrayList<>();
 
         if (!command.isEmpty()) {
-            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+            result.addAll(Collections2.filter(processIMap.values(), new Predicate<Process>() {
 
                 private boolean hasText(String target){
                     return target != null && target.trim().length()>0;
                 }
 
-                private boolean isValid (ProcessVO processVO) {
+                private boolean isValid (Process process) {
                     boolean isValid = true;
                     if (hasText(command.getCustomId())) {
-                        isValid = processVO.getProcessUuid().toString().startsWith(command.getCustomId());
+                        isValid = process.getProcessId().toString().startsWith(command.getCustomId());
                     }
                     if (hasText(command.getProcessId())) {
-                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getProcessId());
+                        isValid = isValid && process.getProcessId().toString().startsWith(command.getProcessId());
                     }
                     return isValid;
                 }
 
                 @Override
-                public boolean apply(ProcessVO processVO) {
-                    return isValid(processVO);
+                public boolean apply(Process process) {
+                    return isValid(process);
                 }
 
             }));
         }
 
         return result;
-    }
-
-    public void setProcessesStorageMapName(String processesStorageMapName) {
-        this.processesStorageMapName = processesStorageMapName;
     }
 }
