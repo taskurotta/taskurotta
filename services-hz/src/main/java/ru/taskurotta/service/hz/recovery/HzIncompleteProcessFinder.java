@@ -7,7 +7,6 @@ import com.hazelcast.query.Predicates;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessFinder;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -31,10 +30,10 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
     }
 
     @Override
-    public Collection<UUID> find(long inactiveTimeOutMillis) {
+    public Collection<UUID> find(long incompleteTimeOutMillis) {
 
         Predicate predicate = new Predicates.AndPredicate(
-                new Predicates.BetweenPredicate(startTimeIndexName, 0l, System.currentTimeMillis() - inactiveTimeOutMillis),
+                new Predicates.BetweenPredicate(startTimeIndexName, 0l, System.currentTimeMillis() - incompleteTimeOutMillis),
                 new Predicates.EqualPredicate(stateIndexName, Process.START));
 
         Collection<UUID> processIds = processIMap.localKeySet(predicate);

@@ -2,14 +2,10 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
@@ -31,45 +27,11 @@
 
 
     <!-- Recovery -->
-    <bean id="processRecoveryService" class="ru.taskurotta.recovery.ProcessRecoveryService" init-method="init">
-        <property name="dataSource" ref="dataSource"/>
-        <property name="hazelcastInstance" ref="hzInstance"/>
-        <property name="recoveryProcessService" ref="recoveryProcessService"/>
-        <property name="threadCount" value="${recovery.process.thread-count}"/>
-        <property name="useDaemonThreads" value="true"/>
-        <property name="processBatchSize" value="${recovery.process.batch-size}"/>
-        <property name="startupRecovery" value="${recovery.startup.run}"/>
-    </bean>
-
-    <bean id="scheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
-        <!-- wait 10 seconds before starting repeated execution -->
-        <property name="delay" value="10000" />
-        <!-- run every 50 seconds -->
-        <property name="period" value="50000" />
-        <property name="timerTask" ref="processRecoveryService" />
-    </bean>
-
-    <bean id="processRecoveryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="cronExpression" value="${recovery.process.cron}"/>
-        <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                <property name="targetObject" ref="processRecoveryService"/>
-                <property name="targetMethod" value="findAndSubmitRecovery"/>
-                <property name="concurrent" value="false"/>
-            </bean>
-        </property>
-    </bean>
-
-
-    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="triggers">
-            <list>
-                <ref bean="processRecoveryTrigger"/>
-            </list>
-        </property>
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.ora.recovery.OraIncompleteProcessFinder">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+        <constructor-arg name="batchSize" value="${recovery.process.batch-size}"/>
     </bean>
     <!-- /Recovery -->
-
 
 
     <!-- Data source -->

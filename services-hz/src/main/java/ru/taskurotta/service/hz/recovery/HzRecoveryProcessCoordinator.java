@@ -28,14 +28,14 @@ public class HzRecoveryProcessCoordinator {
     private BlockingQueue<UUID> uuidQueue = new LinkedBlockingQueue<>();
 
     public HzRecoveryProcessCoordinator(final HazelcastInstance hazelcastInstance, final IncompleteProcessFinder incompleteProcessFinder,
-                                        final RecoveryProcessService recoveryProcessService, final long inactiveTimeOutMillis,
-                                        long findIncompleteProcessDuration, int recoveryTaskPoolSize) {
+                                        final RecoveryProcessService recoveryProcessService, final long incompleteTimeOutMillis,
+                                        long findIncompleteProcessPeriod, int recoveryTaskPoolSize) {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(inactiveTimeOutMillis);
+                Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis);
 
                 if (incompleteProcessIds == null || incompleteProcessIds.isEmpty()) {
                     return;
@@ -52,7 +52,7 @@ public class HzRecoveryProcessCoordinator {
                 Partition partition = hazelcastInstance.getPartitionService().getPartition(id);
                 return partition.getOwner().localMember();
             }
-        }, 0l, findIncompleteProcessDuration, TimeUnit.MILLISECONDS);
+        }, 0l, findIncompleteProcessPeriod, TimeUnit.MILLISECONDS);
 
         ExecutorService executorService = Executors.newFixedThreadPool(recoveryTaskPoolSize);
         for (int i = 0; i < recoveryTaskPoolSize; i++) {

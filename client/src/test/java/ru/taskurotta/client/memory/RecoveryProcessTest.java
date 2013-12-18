@@ -1,12 +1,11 @@
 package ru.taskurotta.client.memory;
 
 import org.junit.Test;
+import ru.taskurotta.core.Task;
 import ru.taskurotta.service.dependency.GeneralDependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.MemoryGraphDao;
-import ru.taskurotta.service.recovery.RecoveryTask;
-import ru.taskurotta.core.Task;
 import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.ActorUtils;
 
@@ -46,14 +45,14 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertNull(dependencyService.getGraph(processId));
 
         // recovery process
-        new RecoveryTask(recoveryProcessService, processId).call();
+        recoveryProcessService.restartProcess(processId);
 
         assertFalse(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
 
         memoryQueueServiceStatistics.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), null);
 
         // recovery process
-        new RecoveryTask(recoveryProcessService, processId).call();
+        recoveryProcessService.restartProcess(processId);
 
         // check start task in queue
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
@@ -90,14 +89,14 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertFalse(dependencyService.getGraph(processId).getNotFinishedItems().isEmpty());
 
         // recovery process
-        new RecoveryTask(recoveryProcessService, processId).call();
+        recoveryProcessService.restartProcess(processId);
 
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
         memoryQueueServiceStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
-        new RecoveryTask(recoveryProcessService, processId).call();
+        recoveryProcessService.restartProcess(processId);
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));
@@ -146,7 +145,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         memoryQueueServiceStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
-        new RecoveryTask(recoveryProcessService, processId).call();
+        recoveryProcessService.restartProcess(processId);
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));

@@ -35,8 +35,8 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
     }
 
     @Override
-    public Collection<UUID> find(long inactiveTimeOutMillis) {
-        long fromTime = System.currentTimeMillis() - inactiveTimeOutMillis;
+    public Collection<UUID> find(long incompleteTimeOutMillis) {
+        long fromTime = System.currentTimeMillis() - incompleteTimeOutMillis;
 
         if (logger.isInfoEnabled()) {
             logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
