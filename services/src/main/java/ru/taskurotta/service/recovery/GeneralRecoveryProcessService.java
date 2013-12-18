@@ -15,6 +15,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -259,21 +260,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         taskDao.addTask(startTaskContainer);
         dependencyService.startProcess(startTaskContainer);
 
-        String actorId = startTaskContainer.getActorId();
-        processId = startTaskContainer.getProcessId();
-        UUID taskId = startTaskContainer.getTaskId();
-        long startTime = startTaskContainer.getStartTime();
-
-        String taskList = null;
-        TaskOptionsContainer taskOptionsContainer = startTaskContainer.getOptions();
-        if (taskOptionsContainer != null) {
-            ActorSchedulingOptionsContainer actorSchedulingOptionsContainer = taskOptionsContainer.getActorSchedulingOptions();
-            if (actorSchedulingOptionsContainer != null) {
-                taskList = actorSchedulingOptionsContainer.getTaskList();
-            }
-        }
-
-        boolean result = queueServiceStatistics.enqueueItem(actorId, taskId, processId, startTime, taskList);
+        boolean result = restartTasks(Arrays.asList(startTaskContainer));
 
         logger.info("#[{}]: restart from start task [{}]", processId, startTaskContainer);
 

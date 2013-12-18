@@ -48,6 +48,13 @@ public class RecoveryProcessTest extends AbstractTestStub {
         // recovery process
         new RecoveryTask(recoveryProcessService, processId).call();
 
+        assertFalse(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
+
+        memoryQueueServiceStatistics.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), null);
+
+        // recovery process
+        new RecoveryTask(recoveryProcessService, processId).call();
+
         // check start task in queue
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
         // check not null graph for process
