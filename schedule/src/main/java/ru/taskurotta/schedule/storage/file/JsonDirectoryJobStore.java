@@ -31,7 +31,7 @@ public class JsonDirectoryJobStore implements JobStore {
     private File storeDir;
 
 
-    private void init() throws IllegalStateException {
+    public void init() throws IllegalStateException {
         if (!StringUtils.isBlank(storeLocation)) {
             storeDir = new File(storeLocation);
             storeDir.mkdirs();
@@ -39,7 +39,7 @@ public class JsonDirectoryJobStore implements JobStore {
         if (!storeDir.exists()) {
             throw new IllegalStateException("Cannot find or create directory for job store [" + storeLocation + "]");
         }
-        logger.debug("Store dir inited, location [{}]", storeDir.getPath());
+        logger.debug("Store dir initialized, location [{}]", storeDir.getPath());
     }
 
     protected int getAvailableFileNumber() {
