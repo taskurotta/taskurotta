@@ -7,15 +7,14 @@ import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.process.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
-import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.service.storage.TaskDao;
+import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -260,7 +259,21 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         taskDao.addTask(startTaskContainer);
         dependencyService.startProcess(startTaskContainer);
 
-        boolean result = restartTasks(Arrays.asList(startTaskContainer));
+        String actorId = startTaskContainer.getActorId();
+        processId = startTaskContainer.getProcessId();
+        UUID taskId = startTaskContainer.getTaskId();
+        long startTime = startTaskContainer.getStartTime();
+
+        String taskList = null;
+        TaskOptionsContainer taskOptionsContainer = startTaskContainer.getOptions();
+        if (taskOptionsContainer != null) {
+            ActorSchedulingOptionsContainer actorSchedulingOptionsContainer = taskOptionsContainer.getActorSchedulingOptions();
+            if (actorSchedulingOptionsContainer != null) {
+                taskList = actorSchedulingOptionsContainer.getTaskList();
+            }
+        }
+
+        boolean result = queueServiceStatistics.enqueueItem(actorId, taskId, processId, startTime, taskList);
 
         logger.info("#[{}]: restart from start task [{}]", processId, startTaskContainer);
 
