@@ -2,7 +2,7 @@ package ru.taskurotta.dropwizard.resources.console.process;
 
 import com.google.common.base.Optional;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 
 import javax.ws.rs.GET;
@@ -25,7 +25,7 @@ public class ProcessListResource extends BaseResource {
     public Response getProcessInfo(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
         try {
             int pgSize = pageSize.or(-1);
-            GenericPage<ProcessVO> processes = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
+            GenericPage<Process> processes = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
             logger.debug("Processes getted is [{}]", processes);
             return Response.ok(processes, MediaType.APPLICATION_JSON).build();
         } catch (Throwable e) {

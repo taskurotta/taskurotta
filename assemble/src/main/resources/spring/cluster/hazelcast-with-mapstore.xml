@@ -76,8 +76,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.dependency.links.Graph"
                                    class-name="ru.taskurotta.service.hz.serialization.GraphStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.console.model.ProcessVO"
-                                   class-name="ru.taskurotta.service.hz.serialization.ProcessVOStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.console.model.Process"
+                                   class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.TaskKey"

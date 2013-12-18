@@ -7,25 +7,25 @@
         </tr>
     </table>
 
-    <div ng-hide="process.processUuid.length > 0" class="text-warning">
+    <div ng-hide="process.processId.length > 0" class="text-warning">
         Searching for process id {{processId}} ...
     </div>
 
-    <div ng-show="process.processUuid.length > 0">
+    <div ng-show="process.processId.length > 0">
         <div>
-            <a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processUuid}}">List task for this
+            <a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processId}}">List task for this
                 process</a>
         </div>
 
         <table width="100%" class="table">
             <tr>
                 <td class="form-header">ID:</td>
-                <td>{{process.processUuid}}</td>
+                <td>{{process.processId}}</td>
             </tr>
             <tr>
                 <td class="form-header">Start task ID:</td>
                 <td>
-                    <a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
+                    <a ng-href="#/processes/task?processId={{process.processId}}&taskId={{process.startTaskId}}" class="btn btn-link">{{process.startTaskId}}</a>
                 </td>
             </tr>
             <tr>
@@ -42,18 +42,18 @@
             </tr>
             <tr>
                 <td class="form-header">Return value:</td>
-                <td>{{process.returnValueJson}}</td>
+                <td>{{process.returnValue}}</td>
             </tr>
         </table>
 
         <div style="background-color: #f5f5f5;padding:2px;">
             <h3>Process tree:</h3>
-            <b>&#8595<i ng-class="getTreeStateIconClass(taskTree.state)"></i><a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>
+            <b>&#8595<i ng-class="getTreeStateIconClass(taskTree.state)"></i><a ng-href="#/processes/task?processId={{process.processId}}&taskId={{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>
             <div class="tree">
                 <ul style="border: 1px dotted grey;" ng-show="taskTree.children.length>0">
                     <li ng-repeat="child in taskTree.children" tsk-tree>
                         <div>
-                            <i ng-class="getTreeStateIconClass(child.state)"></i><a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{child.id}}" class="btn btn-link">{{child.id}}</a>
+                            <i ng-class="getTreeStateIconClass(child.state)"></i><a ng-href="#/processes/task?processId={{process.processId}}&taskId={{child.id}}" class="btn btn-link">{{child.id}}</a>
                             <span class="muted">{{child.desc}}</span>
                         </div>
                         <ul style="border: 1px dotted grey;" ng-show="child.children.length>0">

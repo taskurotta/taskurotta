@@ -39,7 +39,7 @@ public class HzServiceBundle implements ServiceBundle {
 
     public HzServiceBundle(int pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
 
-        this.processService = new HzProcessService(hazelcastInstance);
+        this.processService = new HzProcessService(hazelcastInstance, "Process");
 
         this.taskService = new GeneralTaskService(taskDao);
 

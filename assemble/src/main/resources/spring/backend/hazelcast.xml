@@ -100,7 +100,7 @@
 
     <bean id="processService" class="ru.taskurotta.service.hz.storage.HzProcessService">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <property name="processesStorageMapName" value="${hz.map.process.name}"/>
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
     </bean>
 
     <bean id="brokenProcessService" class="ru.taskurotta.service.process.MemoryBrokenProcessService">

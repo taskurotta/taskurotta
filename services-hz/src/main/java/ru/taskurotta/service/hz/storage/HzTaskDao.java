@@ -25,13 +25,10 @@ public class HzTaskDao implements TaskDao {
 
     private static final Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
 
-    private HazelcastInstance hzInstance;
-
     private IMap<TaskKey, TaskContainer> id2TaskMap;
     private IMap<TaskKey, DecisionContainer> id2TaskDecisionMap;
 
     public HzTaskDao(HazelcastInstance hzInstance, String id2TaskMapName, String id2TaskDecisionMapName) {
-        this.hzInstance = hzInstance;
 
         id2TaskMap = hzInstance.getMap(id2TaskMapName);
         id2TaskDecisionMap = hzInstance.getMap(id2TaskDecisionMapName);
