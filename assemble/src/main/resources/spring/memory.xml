@@ -32,8 +32,11 @@
 
     <!-- Backends -->
     <bean id="originalQueueBackend" class="ru.taskurotta.service.queue.MemoryQueueService">
-        <constructor-arg name="pollDelay" value="${pollDelay}" />
-        <constructor-arg name="pollDelayUnit" value="${pollDelayUnit}" />
+        <constructor-arg name="pollDelay">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${server.poll-delay}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="queueService" class="ru.taskurotta.service.recovery.MemoryQueueServiceStatistics">
@@ -64,17 +67,21 @@
         <constructor-arg name="taskService" ref="taskService"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
-        <constructor-arg name="recoveryProcessTimeOut" value="${recovery.process.timeout}"/>
+        <constructor-arg name="recoveryProcessTimeOut">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.process.timeout}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.gc.MemoryGarbageCollectorService">
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
-        <constructor-arg name="poolSize" value="${gc.poolSize}"/>
+        <constructor-arg name="poolSize" value="${gc.pool-size}"/>
         <constructor-arg name="timeBeforeDelete">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time.before.delete}"/>
+                <constructor-arg name="duration" value="${gc.time-before-delete}"/>
             </bean>
         </constructor-arg>
     </bean>

@@ -45,7 +45,6 @@ public class HzQueueServiceStatistics extends AbstractQueueServiceStatistics {
     private ILock synchLock;
 
     private long mergePeriod;
-    private TimeUnit mergePeriodTimeUnit;
     private String queueNamePrefix;
 
     private long queueSizeMetricPeriodSeconds;
@@ -159,7 +158,7 @@ public class HzQueueServiceStatistics extends AbstractQueueServiceStatistics {
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
         //Queue statistics for recovery
-        scheduledExecutorService.scheduleAtFixedRate(new StatisticsMerger(), 0, mergePeriod, mergePeriodTimeUnit);
+        scheduledExecutorService.scheduleAtFixedRate(new StatisticsMerger(), 0, mergePeriod, TimeUnit.MILLISECONDS);
 
         //Queue statistics for metrics
         int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(queueSizeMetricPeriodSeconds).intValue()
@@ -214,11 +213,6 @@ public class HzQueueServiceStatistics extends AbstractQueueServiceStatistics {
     @Required
     public void setMergePeriod(long mergePeriod) {
         this.mergePeriod = mergePeriod;
-    }
-
-    @Required
-    public void setMergePeriodTimeUnit(TimeUnit mergePeriodTimeUnit) {
-        this.mergePeriodTimeUnit = mergePeriodTimeUnit;
     }
 
     @Required

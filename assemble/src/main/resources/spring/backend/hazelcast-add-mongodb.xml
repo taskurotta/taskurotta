@@ -25,9 +25,9 @@
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
         <property name="maxSize" value="0"/>
-        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
         <property name="binary" value="false"/>
-        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+        <property name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
@@ -39,7 +39,7 @@
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
         <property name="mongoTemplate" ref="mongoTemplate"/>
         <property name="hzInstance" ref="hzInstance"/>
-        <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
     </bean>
@@ -51,9 +51,9 @@
         <property name="asyncBackupsCount" value="0"/>
         <property name="backupCount" value="0"/>
         <property name="maxSize" value="0"/>
-        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
+        <property name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
         <property name="binary" value="false"/>
-        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+        <property name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
@@ -69,7 +69,7 @@
     <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.MongoActorConfigManager">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>
+        <constructor-arg name="actorConfigName" value="${hz.map.actor-preferences.name}"/>
 
         <property name="metricsDataRetriever" ref="metricsDataHandler"/>
     </bean>
@@ -79,7 +79,7 @@
     <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="storagePrefix" value="${dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${dq.schedule}"/>
@@ -90,7 +90,7 @@
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="storagePrefix" value="${dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${dq.schedule}"/>
