@@ -9,8 +9,10 @@ import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.process.BrokenProcessService;
 import ru.taskurotta.service.process.MemoryBrokenProcessService;
 import ru.taskurotta.service.queue.MemoryQueueService;
+import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 import ru.taskurotta.service.recovery.MemoryQueueServiceStatistics;
+import ru.taskurotta.service.recovery.QueueServiceStatistics;
 import ru.taskurotta.service.storage.GeneralTaskService;
 import ru.taskurotta.service.storage.MemoryTaskDao;
 import ru.taskurotta.service.storage.TaskDao;
@@ -44,7 +46,7 @@ import static junit.framework.Assert.assertTrue;
  */
 public class AbstractTestStub {
 
-    protected MemoryQueueService memoryQueueService;
+    protected MemoryQueueServiceStatistics memoryQueueService;
     protected MemoryQueueServiceStatistics memoryQueueServiceStatistics;
     protected GeneralTaskService memoryStorageService;
     protected DependencyService dependencyService;
@@ -93,8 +95,8 @@ public class AbstractTestStub {
     public void setUp() throws Exception {
         taskDao = new MemoryTaskDao();
         serviceBundle = new MemoryServiceBundle(0, taskDao);
-        memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
-        memoryQueueServiceStatistics = new MemoryQueueServiceStatistics(memoryQueueService);
+        memoryQueueService = (MemoryQueueServiceStatistics) serviceBundle.getQueueService();
+        memoryQueueServiceStatistics = (MemoryQueueServiceStatistics) serviceBundle.getQueueService();
         memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
         brokenProcessService = new MemoryBrokenProcessService();
@@ -183,6 +185,19 @@ public class AbstractTestStub {
 
 		List taskIdList = Arrays.asList(expectedTaskId);
 		assertTrue(taskIdList.contains(polledTaskId));
+
+        return polledTask;
+    }
+
+    public Task pollWorkerTask(UUID ... expectedTaskId) {
+        TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestWorker.class));
+
+        Task polledTask = workerTaskSpreader.poll();
+
+        UUID polledTaskId = polledTask == null ? null: polledTask.getId();
+
+        List taskIdList = Arrays.asList(expectedTaskId);
+        assertTrue(taskIdList.contains(polledTaskId));
 
         return polledTask;
     }

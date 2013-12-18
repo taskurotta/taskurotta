@@ -150,6 +150,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         UUID processId = null;
         boolean result = true;
+        int restartedTasks = 0;
 
         for (TaskContainer taskContainer : taskContainers) {
 
@@ -200,11 +201,11 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             result = result & queueServiceStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
 
             logger.debug("#[{}]/[{}]: add task container [{}] to queue service", processId, taskId, taskContainer);
+
+            restartedTasks++;
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("#[{}]: complete restart [{}] tasks", processId, taskContainers.size());
-        }
+        logger.debug("#[{}]: complete restart [{}] tasks", processId, restartedTasks);
 
         return result;
     }

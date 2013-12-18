@@ -35,6 +35,8 @@ public class RecoveryProcessTest extends AbstractTestStub {
         // check start task in queue
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
 
+        pollDeciderTask(startTaskId);
+
         // clean tasks and graph
         memoryQueueService.simulateDataLoss();// = new MemoryQueueService(0);
         dependencyService = new GeneralDependencyService(new MemoryGraphDao());
@@ -73,6 +75,8 @@ public class RecoveryProcessTest extends AbstractTestStub {
         // check worker task in queue
         assertTrue(isTaskPresent(workerTaskId, processId));
 
+        pollWorkerTask(workerTaskId);
+
         // clean tasks from queues
         memoryQueueService.simulateDataLoss();
         //memoryQueueService = new MemoryQueueService(0);
@@ -107,6 +111,8 @@ public class RecoveryProcessTest extends AbstractTestStub {
 
         // check worker task in queue
         assertTrue(isTaskPresent(workerTaskId, processId));
+
+        pollWorkerTask(workerTaskId);
 
         // clean tasks from queues
         memoryQueueService.simulateDataLoss();
