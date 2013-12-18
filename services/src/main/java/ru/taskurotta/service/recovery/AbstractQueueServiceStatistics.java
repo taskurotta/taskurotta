@@ -36,13 +36,14 @@ public abstract class AbstractQueueServiceStatistics implements QueueServiceStat
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
 
+        String queueName = createQueueName(actorId, taskList);
+
         TaskQueueItem taskQueueItem = queueService.poll(actorId, taskList);
 
         if (taskQueueItem == null) {
+            lastPolledTaskEnqueueTimes.put(queueName, System.currentTimeMillis());
             return null;
         }
-
-        String queueName = createQueueName(actorId, taskList);
 
         lastPolledTaskEnqueueTimes.put(queueName, taskQueueItem.getEnqueueTime());
 

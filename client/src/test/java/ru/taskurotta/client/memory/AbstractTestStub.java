@@ -189,17 +189,10 @@ public class AbstractTestStub {
         return polledTask;
     }
 
-    public Task pollWorkerTask(UUID ... expectedTaskId) {
+    public Task pollWorkerTask() {
         TaskSpreader workerTaskSpreader = taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(AbstractTestStub.TestWorker.class));
 
-        Task polledTask = workerTaskSpreader.poll();
-
-        UUID polledTaskId = polledTask == null ? null: polledTask.getId();
-
-        List taskIdList = Arrays.asList(expectedTaskId);
-        assertTrue(taskIdList.contains(polledTaskId));
-
-        return polledTask;
+        return workerTaskSpreader.poll();
     }
 
     public void release(UUID taskAId, Object value, Task... newTasks) {
