@@ -1,6 +1,16 @@
 angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute', 'console.metrics.controllers'])
 
-.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
+.controller("rootController", function ($rootScope, $scope, $location, $log, $window, $http) {
+
+    $scope.serverVersion = "";
+
+    $scope.updateVersion = function() {
+        $http.get("/rest/console/manifest/version").then(function(success){
+            $scope.serverVersion = success.data || "";
+        }, function(error) {
+            $scope.serverVersion = "";
+        });
+    };
 
     $scope.isActiveTab = function (rootPath) {
         var result = "";
@@ -15,6 +25,9 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.back = function () {
         $window.history.back();
     };
+
+    $scope.updateVersion();
+
 })
 
 .controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
@@ -292,10 +305,27 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
+.controller("homeController", function ($scope, $http, $log) {
+        $scope.configInvisible = true;
+        $scope.propsInvisible = true;
 
-.controller("homeController", function ($scope) {
+        $scope.serverServicesBeans = {};
+        $scope.properties = {};
+        $scope.startupDate = 0;
 
-})
+        $scope.updateContextInfo = function() {
+            $http.get("/rest/console/context/service").then(function(success){
+                $scope.serverServicesBeans = success.data.configBeans || {};
+                $scope.properties = success.data.properties || {};
+                $scope.startupDate = success.data.startupDate || 0;
+            }, function(error) {
+                $log.log("Cannot update context info: " + angular.toJson(error));
+            });
+        };
+
+        $scope.updateContextInfo();
+
+    })
 
 .controller("aboutController", function ($scope) {
 

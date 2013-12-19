@@ -23,22 +23,27 @@ public class ManifestInfoResource {
 
     private static final Logger logger = LoggerFactory.getLogger(ManifestInfoResource.class);
 
+    private String version = null;
+
     @GET
     @Path("version")
     public String getImplementationVersion() {
-        String result = null;
+        if (version == null) {
+            version = getManifestVersion();
+        }
+        return version;
+    }
 
+    protected String getManifestVersion() {
+        String result = null;
         Properties allProps = getManifestProperties();
         logger.debug("Manifest file properties are [{}]", allProps);
-
         if (allProps!=null && !allProps.isEmpty()) {
             result = allProps.getProperty("Implementation-Version");
         }
-
         logger.debug("Implementation version is [{}]", result);
         return result;
     }
-
 
     protected Properties getManifestProperties() {
         Properties result = new Properties();

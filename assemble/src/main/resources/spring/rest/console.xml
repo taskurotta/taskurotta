@@ -133,4 +133,6 @@
 
     <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource" />
 
+    <bean id="contextResource" class="ru.taskurotta.dropwizard.resources.console.meta.ContextResource" />
+
 </beans>

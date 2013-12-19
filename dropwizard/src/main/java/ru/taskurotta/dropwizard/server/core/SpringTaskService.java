@@ -17,6 +17,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import ru.taskurotta.dropwizard.server.ServerPropertiesAware;
 import ru.taskurotta.service.config.impl.MemoryConfigService;
 
 import javax.ws.rs.Path;
@@ -48,7 +49,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
 
         String contextLocation = configuration.getContextLocation();
         AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(contextLocation.split(","), false);
-        Properties props = getMergedProperties(configuration);
+        final Properties props = getMergedProperties(configuration);
         logger.debug("TaskServer properties getted are [{}]", props);
 
         appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", props));
@@ -67,6 +68,12 @@ public class SpringTaskService extends Service<TaskServerConfig> {
                                 cfgBean.setActorPreferencesCollection(configuration.getActorConfig().getAllActorPreferences());
                                 cfgBean.setExpirationPoliciesCollection(configuration.getActorConfig().getAllExpirationPolicies());
                             }
+
+                            if (bean instanceof ServerPropertiesAware) {
+                                ServerPropertiesAware spa = (ServerPropertiesAware)bean;
+                                spa.setProperties(props);
+                            }
+
                             return bean;
                         }
 
