@@ -106,6 +106,11 @@
     <bean id="brokenProcessService" class="ru.taskurotta.service.process.MemoryBrokenProcessService">
     </bean>
 
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessFinder">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
+    </bean>
+
     <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
@@ -118,6 +123,23 @@
                 <constructor-arg name="duration" value="${recovery.process.timeout}"/>
             </bean>
         </constructor-arg>
+    </bean>
+
+    <bean id="recoveryProcessCoordinator" class="ru.taskurotta.service.hz.recovery.HzRecoveryProcessCoordinator">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="incompleteProcessFinder" ref="incompleteProcessFinder"/>
+        <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="incompleteTimeOutMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="findIncompleteProcessPeriod">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="recoveryTaskPoolSize" value="${recovery.recovery-task-pool-size}"/>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.hz.gc.HzGarbageCollectorService">

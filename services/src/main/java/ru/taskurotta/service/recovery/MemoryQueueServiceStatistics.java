@@ -52,4 +52,11 @@ public class MemoryQueueServiceStatistics extends AbstractQueueServiceStatistics
     public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
         return queueService.isTaskInQueue(actorId, taskList, taskId, processId);
     }
+
+    /**
+     * Drps and recreate queeu map
+     */
+    public void simulateDataLoss() {
+        queueService.simulateDataLoss();
+    }
 }
