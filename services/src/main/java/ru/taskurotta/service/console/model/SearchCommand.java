@@ -1,4 +1,4 @@
-package ru.taskurotta.service.process;
+package ru.taskurotta.service.console.model;
 
 import java.util.UUID;
 

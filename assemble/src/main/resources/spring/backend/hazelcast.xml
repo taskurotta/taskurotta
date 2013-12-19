@@ -103,7 +103,9 @@
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
     </bean>
 
-    <bean id="brokenProcessService" class="ru.taskurotta.service.process.MemoryBrokenProcessService">
+    <bean id="brokenProcessService" class="ru.taskurotta.service.hz.storage.HzBrokenProcessService">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="brokenProcessMapName" value="${hz.map.broken-process.name}"/>
     </bean>
 
     <bean id="incompleteProcessFinder" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessFinder">

@@ -5,11 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.StringUtils;
-import ru.taskurotta.service.process.BrokenProcessService;
-import ru.taskurotta.service.process.BrokenProcessVO;
-import ru.taskurotta.service.process.GroupCommand;
-import ru.taskurotta.service.process.ProcessGroupVO;
-import ru.taskurotta.service.process.SearchCommand;
+import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.console.model.GroupCommand;
+import ru.taskurotta.service.console.model.ProcessGroupVO;
+import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.recovery.RecoveryProcessService;
 import ru.taskurotta.dropwizard.resources.Action;
 
@@ -76,7 +76,7 @@ public class BrokenProcessListResource {
 
         } else if (Action.LIST.getValue().equals(action)) {
             GroupCommand command = convertToCommand(starterIdOpt, actorIdOpt, exceptionOpt, dateFromOpt, dateToOpt, groupOpt);
-            Collection<BrokenProcessVO> processes = brokenProcessService.find(command);
+            Collection<BrokenProcess> processes = brokenProcessService.find(command);
             logger.debug("Processes got by command [{}] are [{}]", command, processes);
             return Response.ok(processes, MediaType.APPLICATION_JSON).build();
 
@@ -238,10 +238,10 @@ public class BrokenProcessListResource {
 
     public List<ProcessGroupVO> getGroupList(GroupCommand command) {
         List<ProcessGroupVO> result = null;
-        Collection<BrokenProcessVO> processes = brokenProcessService.find(command);
+        Collection<BrokenProcess> processes = brokenProcessService.find(command);
 
         if (processes != null && !processes.isEmpty()) {
-            Map<String, Collection<BrokenProcessVO>> groupedProcesses = groupProcessList(processes, command.getGroup());
+            Map<String, Collection<BrokenProcess>> groupedProcesses = groupProcessList(processes, command.getGroup());
             result = convertToGroupsList(groupedProcesses, command);
         }
 
@@ -249,14 +249,14 @@ public class BrokenProcessListResource {
     }
 
 
-    private Map<String, Collection<BrokenProcessVO>> groupProcessList(Collection<BrokenProcessVO> processes, String groupType) {
-        Map<String, Collection<BrokenProcessVO>> result = new HashMap<>();
+    private Map<String, Collection<BrokenProcess>> groupProcessList(Collection<BrokenProcess> processes, String groupType) {
+        Map<String, Collection<BrokenProcess>> result = new HashMap<>();
 
         if (processes != null && !processes.isEmpty()) {
 
             if (GroupCommand.GROUP_STARTER.equals(groupType)) {
-                for (BrokenProcessVO bp: processes) {
-                    Collection<BrokenProcessVO> coll = result.get(bp.getStartActorId());
+                for (BrokenProcess bp: processes) {
+                    Collection<BrokenProcess> coll = result.get(bp.getStartActorId());
                     if (coll == null) {
                         coll = new ArrayList<>();
                     }
@@ -264,8 +264,8 @@ public class BrokenProcessListResource {
                     result.put(bp.getStartActorId(), coll);
                 }
             } else if (GroupCommand.GROUP_ACTOR.equals(groupType)) {
-                for (BrokenProcessVO bp: processes) {
-                    Collection<BrokenProcessVO> coll = result.get(bp.getBrokenActorId());
+                for (BrokenProcess bp: processes) {
+                    Collection<BrokenProcess> coll = result.get(bp.getBrokenActorId());
                     if (coll == null) {
                         coll = new ArrayList<>();
                     }
@@ -273,8 +273,8 @@ public class BrokenProcessListResource {
                     result.put(bp.getBrokenActorId(), coll);
                 }
             } else if (GroupCommand.GROUP_EXCEPTION.equals(groupType)) {
-                for (BrokenProcessVO bp: processes) {
-                    Collection<BrokenProcessVO> coll = result.get(bp.getErrorClassName());
+                for (BrokenProcess bp: processes) {
+                    Collection<BrokenProcess> coll = result.get(bp.getErrorClassName());
                     if (coll == null) {
                         coll = new ArrayList<>();
                     }
@@ -290,12 +290,12 @@ public class BrokenProcessListResource {
         return result;
     }
 
-    private List<ProcessGroupVO> convertToGroupsList(Map<String, Collection<BrokenProcessVO>> groupedProcesses, GroupCommand command) {
+    private List<ProcessGroupVO> convertToGroupsList(Map<String, Collection<BrokenProcess>> groupedProcesses, GroupCommand command) {
         List<ProcessGroupVO> result = null;
         if (groupedProcesses!=null && !groupedProcesses.isEmpty()) {
             result = new ArrayList<>();
-            for (Map.Entry<String, Collection<BrokenProcessVO>> entry: groupedProcesses.entrySet()) {
-                Collection<BrokenProcessVO> groupItems = entry.getValue();
+            for (Map.Entry<String, Collection<BrokenProcess>> entry: groupedProcesses.entrySet()) {
+                Collection<BrokenProcess> groupItems = entry.getValue();
                 ProcessGroupVO group = convertToGroup(groupItems, entry.getKey());
                 result.add(group);
             }
@@ -303,14 +303,14 @@ public class BrokenProcessListResource {
         return result;
     }
 
-    private static ProcessGroupVO convertToGroup(Collection<BrokenProcessVO> members, String name) {
+    private static ProcessGroupVO convertToGroup(Collection<BrokenProcess> members, String name) {
         ProcessGroupVO group= new ProcessGroupVO();
         Set<String> actorsDiffs = new HashSet<>();
         Set<String> startersDiffs = new HashSet<>();
         Set<String> exceptionsDiffs = new HashSet<>();
         Set<String> processIds = new HashSet<>();
         if (members!=null && !members.isEmpty()) {
-            for(BrokenProcessVO bp: members) {
+            for(BrokenProcess bp: members) {
                 actorsDiffs.add(bp.getBrokenActorId());
                 startersDiffs.add(bp.getStartActorId());
                 exceptionsDiffs.add(bp.getErrorClassName());
