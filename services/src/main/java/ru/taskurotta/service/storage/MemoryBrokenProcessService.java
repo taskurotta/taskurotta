@@ -1,4 +1,7 @@
-package ru.taskurotta.service.process;
+package ru.taskurotta.service.storage;
+
+import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.console.model.SearchCommand;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,34 +28,34 @@ public class MemoryBrokenProcessService implements BrokenProcessService {
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorClassNames = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> stackTraces = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<UUID, BrokenProcessVO> brokenProcess = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, BrokenProcess> brokenProcess = new ConcurrentHashMap<>();
 
     private static final Lock lock = new ReentrantLock();
 
     @Override
-    public void save(BrokenProcessVO brokenProcessVO) {
+    public void save(BrokenProcess brokenProcess) {
 
-        UUID processId = brokenProcessVO.getProcessId();
+        UUID processId = brokenProcess.getProcessId();
 
-        addProcessId(deciderActorIds, brokenProcessVO.getStartActorId(), processId);
-        addProcessId(brokenActorIds, brokenProcessVO.getBrokenActorId(), processId);
-        addProcessId(times, brokenProcessVO.getTime(), processId);
-        addProcessId(errorMessages, brokenProcessVO.getErrorMessage(), processId);
-        addProcessId(errorClassNames, brokenProcessVO.getErrorClassName(), processId);
-        addProcessId(stackTraces, brokenProcessVO.getStackTrace(), processId);
+        addProcessId(deciderActorIds, brokenProcess.getStartActorId(), processId);
+        addProcessId(brokenActorIds, brokenProcess.getBrokenActorId(), processId);
+        addProcessId(times, brokenProcess.getTime(), processId);
+        addProcessId(errorMessages, brokenProcess.getErrorMessage(), processId);
+        addProcessId(errorClassNames, brokenProcess.getErrorClassName(), processId);
+        addProcessId(stackTraces, brokenProcess.getStackTrace(), processId);
 
-        brokenProcess.put(processId, brokenProcessVO);
+        this.brokenProcess.put(processId, brokenProcess);
     }
 
     @Override
-    public Collection<BrokenProcessVO> find(SearchCommand searchCommand) {
+    public Collection<BrokenProcess> find(SearchCommand searchCommand) {
 
         if (searchCommand == null) {
             return new ArrayList<>();
         }
 
         List<UUID> processIds = new ArrayList<>();
-        Collection<BrokenProcessVO> result = new ArrayList<>();
+        Collection<BrokenProcess> result = new ArrayList<>();
 
         if (searchCommand.getProcessId() != null) {
             result.add(brokenProcess.get(searchCommand.getProcessId()));
@@ -99,9 +102,9 @@ public class MemoryBrokenProcessService implements BrokenProcessService {
         }
 
         for (UUID processId : processIds) {
-            BrokenProcessVO brokenProcessVO = brokenProcess.get(processId);
-            if (brokenProcessVO != null) {
-                result.add(brokenProcessVO);
+            BrokenProcess brokenProcess = this.brokenProcess.get(processId);
+            if (brokenProcess != null) {
+                result.add(brokenProcess);
             }
         }
 
@@ -109,7 +112,7 @@ public class MemoryBrokenProcessService implements BrokenProcessService {
     }
 
     @Override
-    public Collection<BrokenProcessVO> findAll() {
+    public Collection<BrokenProcess> findAll() {
         return brokenProcess.values();
     }
 

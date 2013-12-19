@@ -13,9 +13,9 @@ import org.springframework.jdbc.support.lob.LobCreator;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.exception.ServiceCriticalException;
-import ru.taskurotta.service.process.BrokenProcessService;
-import ru.taskurotta.service.process.BrokenProcessVO;
-import ru.taskurotta.service.process.SearchCommand;
+import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.console.model.SearchCommand;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -50,11 +50,11 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
 
     protected LobHandler lobHandler;
 
-    protected RowMapper<BrokenProcessVO> brokenProcessRowMapper = new RowMapper<BrokenProcessVO>() {
+    protected RowMapper<BrokenProcess> brokenProcessRowMapper = new RowMapper<BrokenProcess>() {
 
         @Override
-        public BrokenProcessVO mapRow(ResultSet rs, int i) throws SQLException {
-            BrokenProcessVO result = new BrokenProcessVO();
+        public BrokenProcess mapRow(ResultSet rs, int i) throws SQLException {
+            BrokenProcess result = new BrokenProcess();
             result.setBrokenActorId(rs.getString("BROKEN_ACTOR_ID"));
             result.setErrorClassName(rs.getString("ERROR_CLASS_NAME"));
             result.setProcessId(UUID.fromString(rs.getString("PROCESS_ID")));
@@ -68,7 +68,7 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
     };
 
     @Override
-    public void save (final BrokenProcessVO brokenProcessVO) {
+    public void save (final BrokenProcess brokenProcess) {
 
         try {
             Long id = getJdbcTemplate().execute(SQL_CREATE_BROKEN_PROCESS,
@@ -76,14 +76,14 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
 
                         public Long doInCallableStatement(CallableStatement ps) throws SQLException, DataAccessException {
                             LobCreator lobCreator = lobHandler.getLobCreator();
-                            ps.setString(1, brokenProcessVO.getProcessId().toString());
-                            ps.setString(2, brokenProcessVO.getStartActorId());
-                            ps.setString(3, brokenProcessVO.getBrokenActorId());
+                            ps.setString(1, brokenProcess.getProcessId().toString());
+                            ps.setString(2, brokenProcess.getStartActorId());
+                            ps.setString(3, brokenProcess.getBrokenActorId());
                             ps.setTimestamp(4, new Timestamp(new Date().getTime()));
-                            ps.setLong(5, brokenProcessVO.getTime());
-                            ps.setString(6, brokenProcessVO.getErrorMessage());
-                            ps.setString(7, brokenProcessVO.getErrorClassName());
-                            lobCreator.setClobAsString(ps, 8, brokenProcessVO.getStackTrace());
+                            ps.setLong(5, brokenProcess.getTime());
+                            ps.setString(6, brokenProcess.getErrorMessage());
+                            ps.setString(7, brokenProcess.getErrorClassName());
+                            lobCreator.setClobAsString(ps, 8, brokenProcess.getStackTrace());
 
                             ps.registerOutParameter(9, Types.BIGINT);
 
@@ -94,9 +94,9 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
                         }
                     });
 
-            logger.debug("Created BrokenProcessVO entry with key[{}]", id);
+            logger.debug("Created BrokenProcess entry with key[{}]", id);
         } catch (DataAccessException e) {
-            String errMessage = "Cannot create BrokenProcessVO entry["+brokenProcessVO+"]";
+            String errMessage = "Cannot create BrokenProcess entry["+ brokenProcess +"]";
             logger.error(errMessage, e);
             throw new ServiceCriticalException(errMessage);
         }
@@ -104,7 +104,7 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
     }
 
     @Override
-    public Collection<BrokenProcessVO> find(SearchCommand searchCommand) {
+    public Collection<BrokenProcess> find(SearchCommand searchCommand) {
         List<Object> parameters = new ArrayList<>();//order does matter
         StringBuilder sb = new StringBuilder(SQL_LIST_ALL);
         boolean first = true;
@@ -144,7 +144,7 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
             first = false;
         }
 
-        Collection<BrokenProcessVO> result;
+        Collection<BrokenProcess> result;
         String searchSql = sb.toString();
         long startTime = System.currentTimeMillis();
         try {
@@ -160,8 +160,8 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
     }
 
     @Override
-    public Collection<BrokenProcessVO> findAll() {
-        Collection<BrokenProcessVO> result;
+    public Collection<BrokenProcess> findAll() {
+        Collection<BrokenProcess> result;
         try {
             result = getJdbcTemplate().query(SQL_LIST_ALL, brokenProcessRowMapper);
         } catch(EmptyResultDataAccessException e) {

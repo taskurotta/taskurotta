@@ -7,8 +7,8 @@ import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.process.BrokenProcessService;
-import ru.taskurotta.service.process.BrokenProcessVO;
+import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.service.storage.ProcessService;
@@ -248,7 +248,7 @@ public class GeneralTaskServer implements TaskServer {
     
     private void saveBrokenProcess(DecisionContainer taskDecision) {
         UUID processId = taskDecision.getProcessId();
-        BrokenProcessVO brokenProcess = new BrokenProcessVO();
+        BrokenProcess brokenProcess = new BrokenProcess();
         brokenProcess.setTime(System.currentTimeMillis());
         brokenProcess.setProcessId(processId);
         brokenProcess.setBrokenActorId(taskDecision.getActorId());

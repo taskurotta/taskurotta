@@ -1,4 +1,6 @@
-package ru.taskurotta.service.process;
+package ru.taskurotta.service.console.model;
+
+import ru.taskurotta.service.console.model.SearchCommand;
 
 /**
  * User: dimadin

@@ -52,7 +52,7 @@
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
-    <bean id="brokenProcessService" class="ru.taskurotta.service.process.MemoryBrokenProcessService" />
+    <bean id="brokenProcessService" class="ru.taskurotta.service.storage.MemoryBrokenProcessService" />
 
     <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao" />
 

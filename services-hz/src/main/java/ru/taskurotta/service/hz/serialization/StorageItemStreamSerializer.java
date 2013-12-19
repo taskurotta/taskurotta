@@ -33,7 +33,7 @@ public class StorageItemStreamSerializer implements StreamSerializer<StorageItem
 
     @Override
     public int getTypeId() {
-        return ObjectTypes.COMMON_STORAGE_ITEM;
+        return ObjectTypes.STORAGE_ITEM;
     }
 
     @Override

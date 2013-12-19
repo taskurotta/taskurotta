@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
-import ru.taskurotta.service.process.BrokenProcessService;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;

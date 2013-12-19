@@ -1,4 +1,4 @@
-package ru.taskurotta.service.process;
+package ru.taskurotta.service.console.model;
 
 import java.util.UUID;
 
@@ -7,7 +7,7 @@ import java.util.UUID;
  * Date: 11.10.13
  * Time: 18:24
  */
-public class BrokenProcessVO {
+public class BrokenProcess {
 
     private UUID processId;
     private String startActorId;
@@ -75,7 +75,7 @@ public class BrokenProcessVO {
 
     @Override
     public String toString() {
-        return "BrokenProcessVO{" +
+        return "BrokenProcess{" +
                 "processId=" + processId +
                 ", startActorId='" + startActorId + '\'' +
                 ", brokenActorId='" + brokenActorId + '\'' +
