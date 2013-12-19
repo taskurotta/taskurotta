@@ -282,14 +282,12 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         logger.trace("#[{}]/[{}]: get decision container [{}]", processId, taskId, decisionContainer);
 
         if (decisionContainer == null) {
-            return new ArrayList<TaskContainer>() {{
-                add(taskContainer);
-            }};
+            return Arrays.asList(taskContainer);
         }
 
         TaskContainer[] arrTaskContainers = decisionContainer.getTasks();
         if (logger.isTraceEnabled()) {
-            logger.trace("#[{}]: decision [{}] get new [{}] tasks", processId, taskId, arrTaskContainers.length);
+            logger.trace("#[{}]/[{}]: decision [{}] get new [{}] tasks", processId, taskId, decisionContainer, arrTaskContainers.length);
         }
 
         Collection<TaskContainer> taskContainers = new ArrayList<>();
