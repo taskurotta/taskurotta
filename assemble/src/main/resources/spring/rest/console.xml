@@ -131,4 +131,6 @@
         <property name="graphInfo" ref="dependencyService"/>
     </bean>
 
+    <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource" />
+
 </beans>

@@ -41,14 +41,6 @@
         <property name="startupRecovery" value="${recovery.startup.run}"/>
     </bean>
 
-    <bean id="scheduledTask" class="org.springframework.scheduling.timer.ScheduledTimerTask">
-        <!-- wait 10 seconds before starting repeated execution -->
-        <property name="delay" value="10000" />
-        <!-- run every 50 seconds -->
-        <property name="period" value="50000" />
-        <property name="timerTask" ref="processRecoveryService" />
-    </bean>
-
     <bean id="processRecoveryTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="cronExpression" value="${recovery.process.cron}"/>
         <property name="jobDetail">
