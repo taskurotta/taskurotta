@@ -36,18 +36,19 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
 
     @Override
     public Collection<UUID> find(long incompleteTimeOutMillis) {
-        long fromTime = System.currentTimeMillis() - incompleteTimeOutMillis;
+        long timeBefore = System.currentTimeMillis() - incompleteTimeOutMillis;
 
-        if (logger.isInfoEnabled()) {
-            logger.info("Try to find incomplete processes, was started before [{} ({})]", fromTime, new Date(fromTime));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Try to find incomplete processes, started before [{}]", new Date(timeBefore));
         }
 
         Collection<UUID> processIds = new ArrayList<>();
 
-        try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_INCOMPLETE_PROCESSES)) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_INCOMPLETE_PROCESSES)) {
 
             preparedStatement.setInt(1, 0);
-            preparedStatement.setLong(2, fromTime);
+            preparedStatement.setLong(2, timeBefore);
             preparedStatement.setInt(3, batchSize);
 
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -56,7 +57,7 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
 
                 processIds.add(processId);
 
-                logger.debug("Found incomplete processId [{}]", processId);
+                logger.trace("Found incomplete processId [{}]", processId);
             }
 
         } catch (SQLException ex) {
@@ -64,7 +65,7 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("Found [{}] incomplete processes", processIds.size());
+            logger.info("Found [{}] incomplete processes, started before [{}]", processIds.size(), new Date(timeBefore));
         }
 
         return processIds;
