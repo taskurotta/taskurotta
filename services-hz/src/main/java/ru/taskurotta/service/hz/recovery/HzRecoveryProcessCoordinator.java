@@ -1,7 +1,8 @@
 package ru.taskurotta.service.hz.recovery;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.Partition;
+import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.ILock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.recovery.IncompleteProcessFinder;
@@ -9,10 +10,10 @@ import ru.taskurotta.service.recovery.RecoveryProcessService;
 
 import java.util.Collection;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -25,50 +26,43 @@ public class HzRecoveryProcessCoordinator {
 
     private static final Logger logger = LoggerFactory.getLogger(HzRecoveryProcessCoordinator.class);
 
-    private BlockingQueue<UUID> uuidQueue = new LinkedBlockingQueue<>();
-
     public HzRecoveryProcessCoordinator(final HazelcastInstance hazelcastInstance, final IncompleteProcessFinder incompleteProcessFinder,
                                         final RecoveryProcessService recoveryProcessService, final long incompleteTimeOutMillis,
-                                        long findIncompleteProcessPeriod, int recoveryTaskPoolSize) {
+                                        final int incompleteProcessBatchSize, final long findIncompleteProcessPeriod,
+                                        String recoveryProcessServiceName, final String recoveryProcessCoordinatorLockName) {
+
+        final IExecutorService iExecutorService = hazelcastInstance.getExecutorService(recoveryProcessServiceName);
 
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis);
-
-                if (incompleteProcessIds == null || incompleteProcessIds.isEmpty()) {
+                ILock iLock = hazelcastInstance.getLock(recoveryProcessCoordinatorLockName);
+                if (!iLock.tryLock()) {
                     return;
                 }
 
-                for (UUID uuid : incompleteProcessIds) {
-                    if (isLocalItem(uuid)) {
-                        uuidQueue.add(uuid);
+                Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis, incompleteProcessBatchSize);
+                if (incompleteProcessIds.isEmpty()) {
+                    return;
+                }
+
+                for (final UUID uuid : incompleteProcessIds) {
+
+                    Future<Boolean> future = iExecutorService.submitToKeyOwner(new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() throws Exception {
+                            return recoveryProcessService.restartProcess(uuid);
+                        }
+                    }, uuid);
+
+                    try {
+                        future.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.error("Catch error while get result of restart process [" + uuid + "]", e);
                     }
                 }
-            }
-
-            private boolean isLocalItem(UUID id) {
-                Partition partition = hazelcastInstance.getPartitionService().getPartition(id);
-                return partition.getOwner().localMember();
             }
         }, 0l, findIncompleteProcessPeriod, TimeUnit.MILLISECONDS);
-
-        ExecutorService executorService = Executors.newFixedThreadPool(recoveryTaskPoolSize);
-        for (int i = 0; i < recoveryTaskPoolSize; i++) {
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        try {
-                            UUID processId = uuidQueue.take();
-                            recoveryProcessService.restartProcess(processId);
-                        } catch (InterruptedException e) {
-                            logger.error("Catch exception while get processId for start recovery", e);
-                        }
-                    }
-                }
-            });
-        }
     }
 }

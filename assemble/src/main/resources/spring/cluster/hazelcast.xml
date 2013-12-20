@@ -23,6 +23,7 @@
 
             <hz:executor-service name="${hz.executor-service.dependency.service-name}" pool-size="${hz.executor-service.dependency.pool-size}"/>
             <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
+            <hz:executor-service name="${hz.executor-service.recovery-process.service-name}" pool-size="${hz.executor-service.recovery-process.pool-size}"/>
 
             <hz:map name="${hz.map.task.name}" backup-count="1"/>
 

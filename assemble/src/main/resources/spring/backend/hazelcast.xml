@@ -54,14 +54,6 @@
     <!-- /Delay queue support -->
 
     <!-- Backends -->
-    <!--<bean id="realQueueBackend" class="ru.taskurotta.service.hz.queue.HzMongoQueueService">-->
-    <!--<constructor-arg name="pollDelay" value="${server.poll-delay}"/>-->
-    <!--<constructor-arg name="pollDelayUnit" value="${pollDelayUnit}"/>-->
-    <!--<constructor-arg name="hazelcastInstance" ref="hzInstance"/>-->
-
-    <!--<property name="queueNamePrefix" value="${hz.queue.task.prefix}"/>-->
-    <!--</bean>-->
-
     <bean id="realQueueBackend" class="ru.taskurotta.service.hz.queue.HzQueueService">
         <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
@@ -136,12 +128,14 @@
                 <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="incompleteProcessBatchSize" value="${recovery.process.batch-size}"/>
         <constructor-arg name="findIncompleteProcessPeriod">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="recoveryTaskPoolSize" value="${recovery.recovery-task-pool-size}"/>
+        <constructor-arg name="recoveryProcessServiceName" value="${hz.executor-service.recovery-process.service-name}"/>
+        <constructor-arg name="recoveryProcessCoordinatorLockName" value="${recovery.coordinator.lock-name}"/>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.hz.gc.HzGarbageCollectorService">
