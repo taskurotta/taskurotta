@@ -29,13 +29,14 @@ public class HzRecoveryProcessCoordinator {
 
     public HzRecoveryProcessCoordinator(final HazelcastInstance hazelcastInstance, final IncompleteProcessFinder incompleteProcessFinder,
                                         final RecoveryProcessService recoveryProcessService, final long incompleteTimeOutMillis,
+                                        final int incompleteProcessBatchSize,
                                         long findIncompleteProcessPeriod, int recoveryTaskPoolSize) {
 
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis);
+                Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis, incompleteProcessBatchSize);
 
                 if (incompleteProcessIds == null || incompleteProcessIds.isEmpty()) {
                     return;
