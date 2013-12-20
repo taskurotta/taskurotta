@@ -24,18 +24,16 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
     private static final Logger logger = LoggerFactory.getLogger(OraIncompleteProcessFinder.class);
 
     private DataSource dataSource;
-    private int batchSize;
 
     private static final String SQL_FIND_INCOMPLETE_PROCESSES =
             "SELECT * FROM (SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time) WHERE ROWNUM <= ?";
 
-    public OraIncompleteProcessFinder(DataSource dataSource, int batchSize) {
+    public OraIncompleteProcessFinder(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.batchSize = batchSize;
     }
 
     @Override
-    public Collection<UUID> find(long incompleteTimeOutMillis) {
+    public Collection<UUID> find(long incompleteTimeOutMillis, int batchSize) {
         long timeBefore = System.currentTimeMillis() - incompleteTimeOutMillis;
 
         if (logger.isDebugEnabled()) {

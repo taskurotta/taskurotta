@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessFinder;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
@@ -35,7 +36,7 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
     }
 
     @Override
-    public Collection<UUID> find(long incompleteTimeOutMillis) {
+    public Collection<UUID> find(long incompleteTimeOutMillis, int batchSize) {
 
         long timeBefore = System.currentTimeMillis() - incompleteTimeOutMillis;
 
@@ -48,6 +49,10 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
                 new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));
 
         Collection<UUID> processIds = processIMap.localKeySet(predicate);
+
+        if (processIds.size() > batchSize) {
+            processIds = new ArrayList<>(processIds).subList(0, batchSize);
+        }
 
         if (logger.isInfoEnabled()) {
             logger.info("Found [{}] incomplete processes, started before [{}]", processIds.size(), new Date(timeBefore));
