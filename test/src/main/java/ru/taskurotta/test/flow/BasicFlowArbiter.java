@@ -15,8 +15,6 @@ public class BasicFlowArbiter implements FlowArbiter {
 	private final List<Stage> stages;
 	private boolean strictFlowCheck = true;
 
-	private String lastTag;
-
 	public BasicFlowArbiter(List<String> stages) {
 		this.stages = new LinkedList<Stage>();
 		for (String line : stages) {
@@ -44,7 +42,6 @@ public class BasicFlowArbiter implements FlowArbiter {
 
 			process(tag);
 
-			lastTag = tag;   // saved for waitForTag processes
 			stages.notifyAll();
 		}
 
@@ -52,10 +49,17 @@ public class BasicFlowArbiter implements FlowArbiter {
 
 	protected void waitForTag(String tag, long timeToWait) {
 		try {
+            Stage current = stages.size() > 0 ? stages.get(0) : null;
+            if (current == null) {
+                throw new IncorrectFlowException("Expected flow finished. Can't wait for tag '" + tag + "'");
+            }
+
 			long endTime = System.currentTimeMillis() + timeToWait;
-			while (!lastTag.equals(tag) && timeToWait > 0) {
-				stages.wait(timeToWait);
+			while (current.contains(tag) && timeToWait > 0) {
+				log.debug("before wait for tag [{}], remaining time: {} ms", tag, timeToWait);
+                stages.wait(timeToWait);
 				timeToWait = endTime - System.currentTimeMillis();
+                log.debug("after wait for tag [{}], remaining time: {} ms", tag, timeToWait);
 			}
 			if (timeToWait <= 0) {
 				throw new IncorrectFlowException("Tag '"+ tag +"' doesn't checked");
