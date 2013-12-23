@@ -29,7 +29,6 @@
     <!-- Recovery -->
     <bean id="incompleteProcessFinder" class="ru.taskurotta.service.ora.recovery.OraIncompleteProcessFinder">
         <constructor-arg name="dataSource" ref="dataSource"/>
-        <constructor-arg name="batchSize" value="${recovery.process.batch-size}"/>
     </bean>
     <!-- /Recovery -->
 

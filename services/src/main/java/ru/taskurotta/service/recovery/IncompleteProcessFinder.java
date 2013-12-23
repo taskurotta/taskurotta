@@ -9,5 +9,5 @@ import java.util.UUID;
  * Time: 14:48
  */
 public interface IncompleteProcessFinder {
-    public Collection<UUID> find(long incompleteTimeOutMillis);
+    public Collection<UUID> find(long incompleteTimeOutMillis, int batchSize);
 }

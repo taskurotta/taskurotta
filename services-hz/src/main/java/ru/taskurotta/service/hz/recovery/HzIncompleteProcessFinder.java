@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessFinder;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
@@ -24,18 +25,18 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
 
     private IMap<UUID, Process> processIMap;
 
-    private static final String startTimeIndexName = "startTime";
-    private static final String stateIndexName = "state";
+    private static final String START_TIME_INDEX_NAME = "startTime";
+    private static final String STATE_INDEX_NAME = "state";
 
     public HzIncompleteProcessFinder(HazelcastInstance hazelcastInstance, String processesStorageMapName) {
         this.processIMap = hazelcastInstance.getMap(processesStorageMapName);
 
-        processIMap.addIndex(startTimeIndexName, true);
-        processIMap.addIndex(stateIndexName, false);
+        processIMap.addIndex(START_TIME_INDEX_NAME, true);
+        processIMap.addIndex(STATE_INDEX_NAME, false);
     }
 
     @Override
-    public Collection<UUID> find(long incompleteTimeOutMillis) {
+    public Collection<UUID> find(long incompleteTimeOutMillis, int batchSize) {
 
         long timeBefore = System.currentTimeMillis() - incompleteTimeOutMillis;
 
@@ -44,10 +45,14 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
         }
 
         Predicate predicate = new Predicates.AndPredicate(
-                new Predicates.BetweenPredicate(startTimeIndexName, 0l, timeBefore),
-                new Predicates.EqualPredicate(stateIndexName, Process.START));
+                new Predicates.BetweenPredicate(START_TIME_INDEX_NAME, 0l, timeBefore),
+                new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));
 
         Collection<UUID> processIds = processIMap.localKeySet(predicate);
+
+        if (processIds.size() > batchSize) {
+            processIds = new ArrayList<>(processIds).subList(0, batchSize);
+        }
 
         if (logger.isInfoEnabled()) {
             logger.info("Found [{}] incomplete processes, started before [{}]", processIds.size(), new Date(timeBefore));

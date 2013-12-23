@@ -80,7 +80,11 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         if (taskContainers.isEmpty()) {
             logger.warn("#[{}]: not found not finished tasks, replay process", processId);
-            taskContainers = replayProcess(processService.getStartTask(processId));
+            TaskContainer startTaskContainer = processService.getStartTask(processId);
+            taskContainers = replayProcess(startTaskContainer);
+            if (logger.isDebugEnabled()) {
+                logger.debug("#[{}]: finish replay. For task [{}] found [{}] child tasks", processId, startTaskContainer.getTaskId(), taskContainers.size());
+            }
         }
 
         boolean result;
@@ -267,7 +271,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         return result;
     }
 
-    private Collection<TaskContainer> replayProcess(final TaskContainer taskContainer) {
+    private Collection<TaskContainer> replayProcess(TaskContainer taskContainer) {
 
         if (taskContainer == null) {
             return null;
@@ -276,7 +280,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         UUID processId = taskContainer.getProcessId();
         UUID taskId = taskContainer.getTaskId();
 
-        logger.trace("#[{}]/[{}]: try to replay task", processId, taskContainer);
+        logger.trace("#[{}]/[{}]: try to replay task", processId, taskId);
 
         DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
         logger.trace("#[{}]/[{}]: get decision container [{}]", processId, taskId, decisionContainer);
@@ -286,6 +290,10 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         }
 
         TaskContainer[] arrTaskContainers = decisionContainer.getTasks();
+        if (arrTaskContainers == null || arrTaskContainers.length == 0) {
+            return Arrays.asList(taskContainer);
+        }
+
         if (logger.isTraceEnabled()) {
             logger.trace("#[{}]/[{}]: decision [{}] get new [{}] tasks", processId, taskId, decisionContainer, arrTaskContainers.length);
         }
@@ -294,8 +302,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         for (TaskContainer tc : arrTaskContainers) {
             taskContainers.addAll(replayProcess(tc));
         }
-
-        logger.info("#[{}]: finish replay. For task [{}] found [{}] child tasks", processId, taskId, taskContainers.size());
 
         return taskContainers;
     }

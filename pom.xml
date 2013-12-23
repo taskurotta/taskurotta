@@ -26,7 +26,7 @@
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.3</aspectj.version>
-        <hazelcast.version>3.1.2</hazelcast.version>
+        <hazelcast.version>3.1.3</hazelcast.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
 
@@ -47,7 +47,6 @@
         <module>services-ora</module>
         <module>services-hz</module>
         <module>transport</module>
-        <module>patches</module>
         <module>test</module>
         <module>schedule</module>
         <module>hazelcast</module>
