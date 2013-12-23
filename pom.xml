@@ -47,7 +47,6 @@
         <module>services-ora</module>
         <module>services-hz</module>
         <module>transport</module>
-        <module>patches</module>
         <module>test</module>
         <module>schedule</module>
         <module>hazelcast</module>
