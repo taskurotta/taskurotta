@@ -15,6 +15,11 @@ public class DatasetVO implements Serializable {
     private String xLabel;
     private String yLabel;
 
+    private String yFormatter;
+    private String xFormatter;
+    private int xTicks;
+    private int yTicks;
+
     public List<Number[]> getData() {
         return data;
     }
@@ -55,6 +60,38 @@ public class DatasetVO implements Serializable {
         this.yLabel = yLabel;
     }
 
+    public String getyFormatter() {
+        return yFormatter;
+    }
+
+    public void setyFormatter(String yFormatter) {
+        this.yFormatter = yFormatter;
+    }
+
+    public String getxFormatter() {
+        return xFormatter;
+    }
+
+    public void setxFormatter(String xFormatter) {
+        this.xFormatter = xFormatter;
+    }
+
+    public int getxTicks() {
+        return xTicks;
+    }
+
+    public void setxTicks(int xTicks) {
+        this.xTicks = xTicks;
+    }
+
+    public int getyTicks() {
+        return yTicks;
+    }
+
+    public void setyTicks(int yTicks) {
+        this.yTicks = yTicks;
+    }
+
     @Override
     public String toString() {
         return "DatasetVO{" +
@@ -63,6 +100,10 @@ public class DatasetVO implements Serializable {
                 ", label='" + label + '\'' +
                 ", xLabel='" + xLabel + '\'' +
                 ", yLabel='" + yLabel + '\'' +
+                ", yFormatter='" + yFormatter + '\'' +
+                ", xFormatter='" + xFormatter + '\'' +
+                ", xTicks='" + xTicks + '\'' +
+                ", yTicks='" + yTicks + '\'' +
                 "} ";
     }
 

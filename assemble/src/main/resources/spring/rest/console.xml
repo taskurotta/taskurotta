@@ -57,6 +57,7 @@
                 <entry key="errorDecision" value="Actor with error decision mean execution time (ms)" />
                 <entry key="enqueue" value="QueueBackend#enqueueTask method invocation" />
                 <entry key="queueSize" value="Number of tasks in the queue" />
+                <entry key="memory" value="Free and total amounts of memory consumed by this node" />
             </map>
         </property>
 
@@ -81,17 +82,20 @@
 
         <property name="metricDataTypes">
             <map>
-                <entry key="queueSize" value="items" />
+                <entry key="queueSize" value="size" />
+                <entry key="memory" value="size" />
             </map>
         </property>
         <property name="metricPeriods">
             <map>
                 <entry key="queueSize" value="day, hour, 5minutes" />
+                <entry key="memory" value="day, hour, 5minutes" />
             </map>
         </property>
         <property name="metricScopes">
             <map>
                 <entry key="queueSize" value = "cluster" />
+                <entry key="memory" value = "cluster" />
             </map>
         </property>
 
@@ -105,6 +109,7 @@
                 <entry key="rate" value="Hits (times)" />
                 <entry key="mean" value="Mean time (ms)" />
                 <entry key="items" value="Number of items" />
+                <entry key="size" value="Size" />
             </map>
         </property>
 
