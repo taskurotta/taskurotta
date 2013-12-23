@@ -72,10 +72,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-
 public final class SerializationServiceImpl implements SerializationService {
 
-    private final static Logger logger = LoggerFactory.getLogger(SerializationServiceImpl.class);
+    protected static final Logger logger = LoggerFactory.getLogger(SerializationServiceImpl.class);
 
     private static final int CONSTANT_SERIALIZERS_SIZE = SerializationConstants.CONSTANT_SERIALIZERS_LENGTH;
 
@@ -411,14 +410,14 @@ public final class SerializationServiceImpl implements SerializationService {
         return s;
     }
 
-
     private ConcurrentHashMap<Class,SerializerAdapter> serializersCache = new ConcurrentHashMap<>();
 
     public SerializerAdapter serializerFor(final Class type) {
+
+
         SerializerAdapter serializer = serializersCache.get(type);
 
         if (serializer != null) {
-
             return serializer;
         }
 
@@ -435,7 +434,7 @@ public final class SerializationServiceImpl implements SerializationService {
         return serializer;
     }
 
-    private SerializerAdapter serializerForInternal(final Class type) {
+    public SerializerAdapter serializerForInternal(final Class type) {
         if (DataSerializable.class.isAssignableFrom(type)) {
             return dataSerializerAdapter;
         } else if (Portable.class.isAssignableFrom(type)) {
@@ -471,10 +470,8 @@ public final class SerializationServiceImpl implements SerializationService {
                 safeRegister(type, serializer);
             }
         }
-
         return serializer;
     }
-
 
     private static void getInterfaces(Class clazz, Set<Class> interfaces) {
         final Class[] classes = clazz.getInterfaces();
