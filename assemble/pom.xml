@@ -131,11 +131,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>patches</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
             <version>${spring.version}</version>
