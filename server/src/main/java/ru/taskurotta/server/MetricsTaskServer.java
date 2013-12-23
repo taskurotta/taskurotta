@@ -1,12 +1,21 @@
 package ru.taskurotta.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.statistics.MetricFactory;
 import ru.taskurotta.service.statistics.MetricName;
+import ru.taskurotta.service.statistics.datalistener.NumberDataListener;
 import ru.taskurotta.service.statistics.metrics.Metric;
+import ru.taskurotta.service.statistics.metrics.TimeConstants;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
@@ -17,9 +26,59 @@ public class MetricsTaskServer implements TaskServer {
 
     private TaskServer taskServer;
     private MetricFactory metricsFactory;
+    private NumberDataListener numberDataListener;
 
-    public MetricsTaskServer(TaskServer taskServer) {
+    private static final Logger logger = LoggerFactory.getLogger(MetricsTaskServer.class);
+
+    private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread result = new Thread(r);
+            result.setDaemon(true);
+            result.setName("memory-data-gatherer");
+            return result;
+        }
+    });
+
+    public MetricsTaskServer(TaskServer taskServer, MetricFactory metricsFactory, NumberDataListener numberDataListener, int metricsPeriodSeconds) {
         this.taskServer = taskServer;
+        this.metricsFactory = metricsFactory;
+        this.numberDataListener = numberDataListener;
+
+        //Queue statistics for metrics
+        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(metricsPeriodSeconds).intValue();//number of points to cover 24 hours period.
+        scheduledExecutorService.scheduleAtFixedRate(new MemoryDataFlusher(dataPointsCount), 0, metricsPeriodSeconds, TimeUnit.SECONDS);
+    }
+
+    class MemoryDataFlusher implements Runnable {
+        private int dataSize = 0;
+
+        private static final String FREE_MEM = "free";
+        private static final String TOTAL_MEM = "total";
+
+        MemoryDataFlusher (int dataSize) {
+            this.dataSize = dataSize;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (numberDataListener != null) {
+                    Runtime runtime = Runtime.getRuntime();
+
+                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), FREE_MEM, runtime.freeMemory(),
+                            System.currentTimeMillis(), dataSize);
+
+                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), TOTAL_MEM, runtime.totalMemory(),
+                            System.currentTimeMillis(), dataSize);
+                }
+                logger.debug("Memory data successfully flushed");
+
+            } catch (Throwable e) {
+                logger.error("MemoryDataFlusher iteration failed", e);
+            }
+        }
+
     }
 
     @Override
@@ -88,7 +147,4 @@ public class MetricsTaskServer implements TaskServer {
 
     }
 
-    public void setMetricsFactory(MetricFactory metricsFactory) {
-        this.metricsFactory = metricsFactory;
-    }
 }
