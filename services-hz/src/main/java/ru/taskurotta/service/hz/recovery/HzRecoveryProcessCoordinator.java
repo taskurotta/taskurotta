@@ -38,30 +38,47 @@ public class HzRecoveryProcessCoordinator {
             @Override
             public void run() {
                 ILock iLock = hazelcastInstance.getLock(recoveryProcessCoordinatorLockName);
-                if (!iLock.tryLock()) {
+
+                if (iLock.tryLock()) {
+                    logger.debug("Get lock for find incomplete processes");
+                } else {
+                    logger.debug("Can't get lock, skip find incomplete process");
                     return;
                 }
 
                 Collection<UUID> incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis, incompleteProcessBatchSize);
+
                 if (incompleteProcessIds.isEmpty()) {
+                    logger.debug("Not found incomplete processes, sleep during [{}] milliseconds", findIncompleteProcessPeriod);
                     return;
                 }
 
-                for (final UUID uuid : incompleteProcessIds) {
+                while (!incompleteProcessIds.isEmpty()) {
+                    for (final UUID processId : incompleteProcessIds) {
 
-                    Future<Boolean> future = iExecutorService.submitToKeyOwner(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return recoveryProcessService.restartProcess(uuid);
+                        Future<Boolean> future = iExecutorService.submitToKeyOwner(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() throws Exception {
+                                return recoveryProcessService.restartProcess(processId);
+                            }
+                        }, processId);
+
+                        logger.trace("Send distributed task for recovery process [{}]", processId);
+
+                        boolean result = false;
+                        try {
+                            result = future.get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            logger.error("Catch error while get result of restart process [" + processId + "]", e);
                         }
-                    }, uuid);
 
-                    try {
-                        future.get();
-                    } catch (InterruptedException | ExecutionException e) {
-                        logger.error("Catch error while get result of restart process [" + uuid + "]", e);
+                        logger.trace("Recovery process [{}] with result [{}]", processId, result);
                     }
+
+                    incompleteProcessIds = incompleteProcessFinder.find(incompleteTimeOutMillis, incompleteProcessBatchSize);
                 }
+
+                logger.debug("Recovery all find incomplete processes, sleep during [{}] milliseconds", findIncompleteProcessPeriod);
             }
         }, 0l, findIncompleteProcessPeriod, TimeUnit.MILLISECONDS);
     }
