@@ -39,7 +39,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     private TaskService taskService;
     private BrokenProcessService brokenProcessService;
     // time out between recovery process in milliseconds
-    private long recoveryProcessTimeOut = 60000l;
+    private long recoveryProcessTimeOut;
 
     public GeneralRecoveryProcessService() {}
 
