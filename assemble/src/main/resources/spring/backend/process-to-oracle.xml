@@ -29,6 +29,20 @@
     <!-- Recovery -->
     <bean id="incompleteProcessFinder" class="ru.taskurotta.service.ora.recovery.OraIncompleteProcessFinder">
         <constructor-arg name="dataSource" ref="dataSource"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
+        <constructor-arg name="incompleteTimeOutMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="findIncompleteProcessPeriod">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="recoveryLockName" value="${recovery.lock-name}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
     <!-- /Recovery -->
 

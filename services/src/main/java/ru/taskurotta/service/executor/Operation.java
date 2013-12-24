@@ -1,6 +1,8 @@
 package ru.taskurotta.service.executor;
 
-public interface Operation extends Runnable {
+import java.io.Serializable;
+
+public interface Operation extends Runnable, Serializable {
 
     public void init(Object nativePoint);
 
