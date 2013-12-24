@@ -42,6 +42,7 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="recoveryLockName" value="${recovery.lock-name}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
     <!-- /Recovery -->
 

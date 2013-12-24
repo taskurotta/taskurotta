@@ -34,9 +34,14 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
     private static final String START_TIME_INDEX_NAME = "startTime";
     private static final String STATE_INDEX_NAME = "state";
 
-    public HzIncompleteProcessFinder(final HazelcastInstance hazelcastInstance, final OperationExecutor operationExecutor, String processesStorageMapName,
-                                     final long findIncompleteProcessPeriod, final long incompleteTimeOutMillis,
-                                     final String recoveryLockName) {
+    public HzIncompleteProcessFinder(final HazelcastInstance hazelcastInstance, final OperationExecutor operationExecutor,
+                                     String processesStorageMapName, final long findIncompleteProcessPeriod,
+                                     final long incompleteTimeOutMillis, final String recoveryLockName,
+                                     boolean enabled) {
+
+        if (!enabled) {
+            return;
+        }
 
         this.processIMap = hazelcastInstance.getMap(processesStorageMapName);
 

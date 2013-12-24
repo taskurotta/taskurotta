@@ -34,7 +34,12 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
 
     public OraIncompleteProcessFinder(final DataSource dataSource, final HazelcastInstance hazelcastInstance,
                                       final OperationExecutor operationExecutor, final long findIncompleteProcessPeriod,
-                                      final long incompleteTimeOutMillis, final String recoveryLockName) {
+                                      final long incompleteTimeOutMillis, final String recoveryLockName,
+                                      boolean enabled) {
+
+        if (!enabled) {
+            return;
+        }
 
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override

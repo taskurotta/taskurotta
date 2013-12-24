@@ -122,6 +122,7 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="recoveryLockName" value="${recovery.lock-name}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
     <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
