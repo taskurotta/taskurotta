@@ -306,10 +306,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         return taskContainers;
     }
 
-    public void setQueueServiceStatistics(QueueServiceStatistics queueServiceStatistics) {
-        this.queueServiceStatistics = queueServiceStatistics;
-    }
-
     public void setDependencyService(DependencyService dependencyService) {
         this.dependencyService = dependencyService;
     }
@@ -322,15 +318,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.processService = processService;
     }
 
-    public void setTaskService(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
     public void setBrokenProcessService(BrokenProcessService brokenProcessService) {
         this.brokenProcessService = brokenProcessService;
-    }
-
-    public void setRecoveryProcessTimeOut(long recoveryProcessTimeOut) {
-        this.recoveryProcessTimeOut = recoveryProcessTimeOut;
     }
 }

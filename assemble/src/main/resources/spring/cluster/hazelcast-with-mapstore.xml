@@ -29,6 +29,8 @@
             <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
             <hz:executor-service name="${hz.executor-service.recovery-process.service-name}" pool-size="${hz.executor-service.recovery-process.pool-size}"/>
 
+            <hz:queue name="${hz.queue.recovery-operation.name}" max-size="${hz.queue.recovery-operation.max-size}"/>
+
             <hz:map name="${hz.map.task.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
                     max-size="10" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
