@@ -9,6 +9,7 @@ import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.transport.model.TaskType;
 
 import java.util.Arrays;
@@ -58,7 +59,12 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 logger.debug("Task id[{}], type[{}], method[{}] args before swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
             }
 
-            ArgType[] argTypes = task.getOptions().getArgTypes();
+            TaskOptionsContainer taskOptionsContainer = task.getOptions();
+            ArgType[] argTypes = null;
+
+            if (taskOptionsContainer != null) {
+                argTypes = task.getOptions().getArgTypes();
+            }
 
             for (int i = 0; i < args.length; i++) {
                 ArgContainer arg = args[i];

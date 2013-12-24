@@ -14,15 +14,19 @@ spreader:
         defaultPropertiesLocation: default.properties
         properties:
           cycles: 10
-          initialCount: 2
-          shotSize: 4000
+          initialCount: 7
+          shotSize: 1000
           needRun: true
           pollDelay: 10
           pollDelayUnit: "SECONDS"
           hz.nodes: localhost:7777
           mongo.host: localhost
           mongo.port: 27017
-          gc.enabled: true
+          gc.enabled: false
+          recovery.enabled: false
+          hz.queue.task.memory-limit: 10000
+          hz.map.general.max-size: 10
+
 
 profiler:
   - MainProfilerConfig:
@@ -40,7 +44,7 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
-      count: 20
+      count: 50
 
 logback:
     appender:

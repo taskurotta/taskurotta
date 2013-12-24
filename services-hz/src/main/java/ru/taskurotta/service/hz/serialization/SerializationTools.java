@@ -78,7 +78,7 @@ public class SerializationTools {
     }
 
     public static void writeStringArray(ObjectDataOutput out, String[] array) throws IOException {
-        int length = array == null ? 0 : array.length;
+        int length = array == null ? -1 : array.length;
         out.writeInt(length);
         if (length > 0) {
             for (String string : array) {
@@ -89,6 +89,9 @@ public class SerializationTools {
 
     public static String[] readStringArray(ObjectDataInput in) throws IOException {
         int length = in.readInt();
+        if (length == -1) {
+            return null;
+        }
         String[] strings = new String[length];
         for (int i = 0; i < strings.length; i++) {
             strings[i] = readString(in);

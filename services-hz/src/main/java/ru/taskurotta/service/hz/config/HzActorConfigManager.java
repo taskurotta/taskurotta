@@ -6,7 +6,6 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
 import ru.taskurotta.service.console.model.ActorVO;
@@ -114,7 +113,6 @@ public class HzActorConfigManager implements ActorConfigManager {
         return result;
     }
 
-    @Required
     public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {
         this.metricsDataRetriever = metricsDataRetriever;
     }
