@@ -10,8 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Performes some support operations (such as data filtering) on the metrics data sets.
- * User: dimadin
+ * Performs some support operations (such as data filtering) on the metrics data sets.
  * Date: 19.09.13 16:49
  */
 public class MetricsDataUtils {
@@ -169,19 +168,6 @@ public class MetricsDataUtils {
 
     }
 
-//    public static List<Number[]> convertToLimitedDataRow(DataPointVO<? extends Number>[] target, long limit) {
-//        List<Number[]> result = new ArrayList<>();
-//        if(target!=null && target.length> 0) {
-//            for (int i = 0; i < target.length; i++) {
-//                Number value = target[i]!=null? target[i].getValue(): null;
-//
-//                Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length): i, value};
-//                result.add(item);
-//            }
-//        }
-//        return result;
-//    }
-
     public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline, float timeStep) {
         List<Number[]> result = new ArrayList<>();
         if(target!=null && target.length> 0) {
@@ -189,6 +175,21 @@ public class MetricsDataUtils {
                 Number value = target[i]!=null? target[i].getValue(): null;
 
                 Number[] item = {toTimeline? convertToTime(i, target[i]!=null? target[i].getTime(): 0, target.length, timeStep): i, value};
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    public static List<Number[]> convertToTimedDataRow(DataPointVO<? extends Number>[] target) {
+        List<Number[]> result = new ArrayList<>();
+        if(target!=null && target.length> 0) {
+            for (int i = 0; i < target.length; i++) {
+                Number[] item = new Number[2];
+                if (target[i]!=null) {
+                    item[0] = target[i].getTime();
+                    item[1] = target[i].getValue();
+                }
                 result.add(item);
             }
         }

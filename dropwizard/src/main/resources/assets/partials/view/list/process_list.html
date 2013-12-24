@@ -48,10 +48,10 @@
                     <small><b>{{process.customId}}<b><small>
                 </td>
                 <td>
-                    <small>{{process.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
+                    <small ng-if="process.startTime>0">{{process.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
                 </td>
                 <td>
-                    <small>{{process.endTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
+                    <small ng-if="process.endTime>0">{{process.endTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
                 </td>
 
             </tr>

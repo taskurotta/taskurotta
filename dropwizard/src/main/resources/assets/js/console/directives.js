@@ -286,35 +286,81 @@ angular.module("console.directives", ['ngRoute'])
         },
         controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $window, $log, $http, $$timeUtil) {
 
+            var dateTimeUtils = {
+                withLeadingZero: function(number) {
+                    if (number<10) {
+                        return "0"+number;
+                    } else {
+                        return number;
+                    }
+                },
+                getShortDate: function(date) {
+                    if (date) {
+                        return this.withLeadingZero(date.getDate()) + "/" + this.withLeadingZero(date.getMonth()+1);
+                    } else {
+                        return "";
+                    }
+                },
+                getTimeStr: function(time) {
+                    if (time) {
+                        return this.withLeadingZero(time.getHours()) + ":" + this.withLeadingZero(time.getMinutes());
+                    } else {
+                        return "";
+                    }
+                }
+            };
+
+            var formatters = {
+                time: function(val, axis) {
+                    var date = new Date(val);
+                    return dateTimeUtils.getShortDate(date) + " " + dateTimeUtils.getTimeStr(date);
+                },
+                memory: function (bytes, axis) {
+                    var kilobyte = 1024;
+                    var megabyte = kilobyte * 1024;
+                    var gigabyte = megabyte * 1024;
+                    var terabyte = gigabyte * 1024;
+
+                    if ((bytes >= 0) && (bytes < kilobyte)) {
+                        return bytes + ' B';
+
+                    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+                        return (bytes / kilobyte).toFixed(2) + ' KB';
+
+                    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+                        return (bytes / megabyte).toFixed(2) + ' MB';
+
+                    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+                        return (bytes / gigabyte).toFixed(2) + ' GB';
+
+                    } else if (bytes >= terabyte) {
+                        return (bytes / terabyte).toFixed(2) + ' TB';
+
+                    } else {
+                        return bytes + ' B';
+                    }
+                }
+            };
+
             var jPlot = $($element);
             //Setting css width and height if explicitly set
             if($scope.width) { jPlot.css("width", $scope.width); }
             if($scope.height) { jPlot.css("height", $scope.height); }
 
-            var options = {
-                legend: {
-                    show: true
-                },
+            var defaultOptions = {
+                legend: {show: true},
                 series: {
-                    lines: {
-                        show: true
-                    },
-                    points: {
-                        show: true
-                    }
+                    lines: {show: true},
+                    points: {show: true}
                 },
                 yaxis: {
                     ticks: 5
                 },
-                zoom: {
-                    interactive: true
-                },
-                pan: {
-                    interactive: true
-                }
+                zoom: {interactive: true},
+                pan: {interactive: true}
             };
 
-            var plotElem = $.plot(jPlot, [], options);
+            var plotElem = $.plot(jPlot, [], defaultOptions);
 
             var refreshTriggerId = -1;
             var updatePlotData = function(newData) {
@@ -322,7 +368,29 @@ angular.module("console.directives", ['ngRoute'])
                 if($scope.holder) {
                     $scope.holder = newData;
                 }
-                plotElem = $.plot(jPlot, newData, options);
+                var newOptions = $.extend({}, defaultOptions);
+
+                if (newData.length>0) {
+                    if (!!newData[0].yFormatter && !!formatters[newData[0].yFormatter]) {
+                        newOptions = $.extend(newOptions, {
+                            yaxis: {
+                                tickFormatter: formatters[newData[0].yFormatter],
+                                ticks: newData[0].yTicks
+                            }
+                        });
+                    }
+
+                    if (!!newData[0].xFormatter && !!formatters[newData[0].xFormatter]) {
+                        newOptions = $.extend(newOptions, {
+                            xaxis: {
+                                tickFormatter: formatters[newData[0].xFormatter],
+                                ticks: newData[0].xTicks
+                            }
+                        });
+                    }
+                }
+
+                plotElem = $.plot(jPlot, newData, newOptions);
             };
 
             $scope.update = function() {

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
 import ru.taskurotta.service.console.retriever.metrics.MetricsNumberDataRetriever;
+import ru.taskurotta.service.statistics.MetricName;
 import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.service.statistics.metrics.TimeConstants;
 import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
@@ -36,16 +37,15 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
             DatasetVO ds = getDataset(metricName, dataSetName, dataType, period);
             result.add(ds);
         }
+        logger.debug("Datasets extracted for metric[{}], datasets[{}], scope[{}], dataType[{}], period[{}] are[{}]", metricName, dataSetNames, scope, dataType, period, result);
         return result;
     }
 
     private DatasetVO getDataset(String metricName, String dataSetName, String dataType, String period) {
-        Collection <String> names;
-        if ((names=methodDataRetriever.getMetricNames()) != null && names.contains(metricName)) {
+        if (hasMethodMetric(metricName)) {
             return getMethodDataset(metricName, dataSetName, dataType, period);
 
-        } else if((names=numberDataRetriever.getNumberMetricNames()) != null && names.contains(metricName)) {
-
+        } else if(hasNumberMetric(metricName)) {
             return getNumberDataset(metricName, dataSetName, dataType, period);
 
         } else {
@@ -53,24 +53,45 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         }
     }
 
+    protected boolean hasMethodMetric(String metric) {
+        Collection <String> names = methodDataRetriever.getMetricNames();
+        return names != null && names.contains(metric);
+    }
+
+    protected boolean hasNumberMetric(String metric) {
+        Collection <String> names = numberDataRetriever.getNumberMetricNames();
+        return names != null && names.contains(metric);
+    }
+
     private DatasetVO getNumberDataset(String metricName, String dataSetName, String dataType, String period) {
+        if (!OPT_DATATYPE_SIZE.equals(dataType)) {
+            throw new IllegalArgumentException("Unsupported dataType ["+dataType+"] for metric ["+metricName+"]");
+        }
+
         DatasetVO ds = new DatasetVO();
         ds.setLabel(dataSetName);
-        ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
-        ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
-        if (!OPT_DATATYPE_ITEMS.equals(dataType)) {
-            throw new IllegalArgumentException("Unsupported dataType["+dataType+"] for metric["+metricName+"]");
-        }
 
         DataPointVO<Number>[] rawData = numberDataRetriever.getData(metricName, dataSetName);
         MetricsDataUtils.sortDataSet(rawData);
 
         DataPointVO<Number>[] timeLimitedSubset = getSubset(rawData, getSubsetSizeForPeriod(rawData.length, numberMetricsPeriodSeconds, period));
-        float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
-        List<Number[]> dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("DataPoint for period[{}], multiplier[{}] are [{}]", period, multiplier, getDatapointAsString(dataPoints));
+        List<Number[]> dataPoints = null;
+        if (MetricName.MEMORY.getValue().equals(metricName)) {
+            dataPoints = MetricsDataUtils.convertToTimedDataRow(timeLimitedSubset);
+            ds.setyFormatter("memory");
+            ds.setxFormatter("time");
+            ds.setxLabel("Time");
+            ds.setyLabel("Memory");
+            ds.setxTicks(10);
+            ds.setyTicks(8);
+        } else {
+            float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
+            dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
+            ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
+            ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
+            if (logger.isDebugEnabled()) {
+                logger.debug("DataPoint for period[{}], multiplier[{}] are [{}]", period, multiplier, getDatapointAsString(dataPoints));
+            }
         }
 
         ds.setData(dataPoints);
@@ -137,28 +158,31 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
 
         boolean useTimeline = true;
-        if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            DataPointVO<Long>[] rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            DataPointVO<Long>[] rawData = methodDataRetriever.getCountsForLastHour(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            DataPointVO<Double>[] rawData = methodDataRetriever.getMeansForLastDay(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            DataPointVO<Double>[] rawData = methodDataRetriever.getMeansForLastHour(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
+        DataPointVO<? extends Number>[] rawData = null;
+
+        if (MetricName.MEMORY.getValue().equals(metricName)) {
+            rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
+        } else if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
+        } else if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            rawData = methodDataRetriever.getCountsForLastHour(metricName, dataSetName);
+        } else if (OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            rawData = methodDataRetriever.getMeansForLastDay(metricName, dataSetName);
+        } else if (OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            rawData = methodDataRetriever.getMeansForLastHour(metricName, dataSetName);
         } else {
             throw new IllegalArgumentException("Unsupported dataType["+dataType+"] and period["+period+"] combination");
         }
 
-        return ds;
+        MetricsDataUtils.sortDataSet(rawData);
+        if (MetricName.MEMORY.getValue().equals(metricName)) {
+            ds.setData(MetricsDataUtils.convertToTimedDataRow(rawData));
+            ds.setyFormatter("memory");
+        } else {
+            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
+        }
 
+        return ds;
     }
 
     @Required

@@ -96,13 +96,27 @@ public class MetricsConsoleUtils implements MetricsConstants {
             return "Timeline: minutes ago";
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             return "Timeline: seconds ago";
-        } else if (OPT_DATATYPE_ITEMS.equals(dataType) && (OPT_PERIOD_HOUR.equals(period) || OPT_PERIOD_DAY.equals(period)) ) {
+        } else if (OPT_DATATYPE_SIZE.equals(dataType) && (OPT_PERIOD_HOUR.equals(period) || OPT_PERIOD_DAY.equals(period)) ) {
             return "Timeline: minutes ago";
-        } else if (OPT_DATATYPE_ITEMS.equals(dataType) && OPT_PERIOD_5MINUTES.equals(period)) {
+        } else if (OPT_DATATYPE_SIZE.equals(dataType) && OPT_PERIOD_5MINUTES.equals(period)) {
             return "Timeline: seconds ago";
         } else {
             return "";
         }
+    }
+
+    public static String getXFormatter(String dataType, String period) {
+        String result = "false";
+
+
+        return result;
+    }
+
+    public static String getYFormatter(String dataType, String period) {
+        String result = "false";
+
+
+        return result;
     }
 
     public static String getYLabel(String dataType, String period) {
@@ -114,7 +128,7 @@ public class MetricsConsoleUtils implements MetricsConstants {
             return "Mean time, ms";
         } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             return "Mean time, ms";
-        } else if (OPT_DATATYPE_ITEMS.equals(dataType)) {
+        } else if (OPT_DATATYPE_SIZE.equals(dataType)) {
             return "Size, items";
         } else {
             return "";

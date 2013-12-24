@@ -19,8 +19,7 @@ public interface MetricsConstants {
 
     public static final String OPT_DATATYPE_RATE = "rate";
     public static final String OPT_DATATYPE_MEAN = "mean";
-    public static final String OPT_DATATYPE_ITEMS = "items";
-
+    public static final String OPT_DATATYPE_SIZE = "size";
 
     public static final String OPT_UNDEFINED = "-1";
 
