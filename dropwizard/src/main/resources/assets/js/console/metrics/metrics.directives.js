@@ -44,8 +44,14 @@ angular.module("console.metrics.directives", ['console.metrics.services'])
                 jPlot.bind("plothover", function (event, pos, item) {
 
                     if ($scope.datasets.length>0) {
-                        var posX = tskMetricsFormatters.getFormattedValue($scope.datasets[0].xFormatter, pos.x.toFixed(2), false);
-                        var posY = tskMetricsFormatters.getFormattedValue($scope.datasets[0].yFormatter, pos.y.toFixed(2), false);
+                        var posX = tskMetricsFormatters.getFormattedValue($scope.datasets[0].xFormatter, pos.x, false);
+                        var posY = tskMetricsFormatters.getFormattedValue($scope.datasets[0].yFormatter, pos.y, false);
+                        if (angular.isNumber(posX)) {
+                            posX = posX.toFixed(2);
+                        }
+                        if (angular.isNumber(posY)) {
+                            posY = posY.toFixed(2);
+                        }
                         $("#metrics-hoverdata .current").text("(" + posX + ", " + posY + ")");
 
                         if (item) {
