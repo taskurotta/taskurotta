@@ -184,13 +184,18 @@ public class MetricsDataUtils {
     public static List<Number[]> convertToTimedDataRow(DataPointVO<? extends Number>[] target) {
         List<Number[]> result = new ArrayList<>();
         if(target!=null && target.length> 0) {
+            boolean hasNullGap = false;
             for (int i = 0; i < target.length; i++) {
                 Number[] item = new Number[2];
-                if (target[i]!=null) {
+                if (target[i] != null) {
                     item[0] = target[i].getTime();
                     item[1] = target[i].getValue();
+                    result.add(item);
+                    hasNullGap = false;
+                } else if (!hasNullGap) {//to prevent adding multiple [null, null] entries. A single [null, null] should present indicating data gap
+                    result.add(item);
+                    hasNullGap = true;
                 }
-                result.add(item);
             }
         }
         return result;

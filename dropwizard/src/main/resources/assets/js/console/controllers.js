@@ -30,7 +30,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
+.controller("queueCardController", function ($scope, $$data, tskTimeUtil, $log, $routeParams) {
 
     $scope.feedback = "";
 
@@ -61,7 +61,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("processListController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("processListController", function ($scope, $$data, tskTimeUtil, $log) {
     //Init paging object
     $scope.processesPage = {
         pageSize: 5,
@@ -91,7 +91,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.update();
 })
 
-.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {//id=
+.controller("processCardController", function ($scope, $$data, tskTimeUtil, $log, $routeParams) {//id=
     $scope.process = {};
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
@@ -123,7 +123,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.update();
 })
 
-.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams, $location) {//params: customId, processId
+.controller("processSearchController", function ($scope, $$data, tskTimeUtil, $log, $routeParams, $location) {//params: customId, processId
     $scope.customId = $routeParams.customId || '';
     $scope.processId = $routeParams.processId || '';
     $scope.processes = [];
@@ -252,7 +252,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("hoveringQueuesController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("hoveringQueuesController", function ($scope, $$data, tskTimeUtil, $log) {
 
     $scope.feedback = "";
 

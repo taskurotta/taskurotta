@@ -71,9 +71,6 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         getTaskDecision: function(taskId, processId) {
             return $http.get('/rest/console/tasks/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         },
-        getMetricsOptions: function() {
-            return $http.get('/rest/console/metrics/options/');
-        },
         getQueueRealSize: function(queueName) {
             return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
         }

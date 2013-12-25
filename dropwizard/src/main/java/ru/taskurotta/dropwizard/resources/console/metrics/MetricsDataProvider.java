@@ -82,8 +82,8 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
             ds.setxFormatter("time");
             ds.setxLabel("Time");
             ds.setyLabel("Memory");
-            ds.setxTicks(10);
-            ds.setyTicks(8);
+//            ds.setxTicks(10);
+//            ds.setyTicks(8);
         } else {
             float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
             dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
@@ -160,9 +160,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         boolean useTimeline = true;
         DataPointVO<? extends Number>[] rawData = null;
 
-        if (MetricName.MEMORY.getValue().equals(metricName)) {
-            rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
-        } else if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
             rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
         } else if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
             rawData = methodDataRetriever.getCountsForLastHour(metricName, dataSetName);
@@ -175,12 +173,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         }
 
         MetricsDataUtils.sortDataSet(rawData);
-        if (MetricName.MEMORY.getValue().equals(metricName)) {
-            ds.setData(MetricsDataUtils.convertToTimedDataRow(rawData));
-            ds.setyFormatter("memory");
-        } else {
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        }
+        ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
 
         return ds;
     }

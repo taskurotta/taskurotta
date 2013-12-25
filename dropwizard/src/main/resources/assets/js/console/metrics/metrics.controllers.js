@@ -1,9 +1,18 @@
-angular.module("console.metrics.controllers", [])
-    .controller("metricsController", function ($scope, $$data, $log, $location, $filter) {
+angular.module("console.metrics.controllers", ['console.metrics.services', 'console.metrics.directives', 'console.util.services'])
+    .controller("metricsController", function ($scope, tskMetricsData, tskTimeUtil, $log) {
         $scope.dataHolder = [];
         $scope.smoothRates = ["", 3, 7, 20, 30];
-        $scope.actorIds = [];
         $scope.metricsOptions = {};
+
+        $scope.plotProps = {
+            updatePeriod: 0,
+            options: {
+                zoom: {interactive: false},
+                pan: {interactive: false}
+//                xaxis: {ticks: 10},
+//                yaxis: {ticks: 10}
+            }
+        };
 
         $scope.collapse = {
             filter: false,
@@ -31,6 +40,12 @@ angular.module("console.metrics.controllers", [])
             }
         };
 
+        var unCheckAllDatasets = function() {
+            for (var key in $scope.selection.datasets) {
+                $scope.selection.datasets[key] = false;
+            }
+        };
+
         var getActiveDataset = function() {
             var datasets = $scope.dataHolder;
             if (datasets && datasets.length>0) {
@@ -43,11 +58,24 @@ angular.module("console.metrics.controllers", [])
             return null;
         };
 
+        var selectFirstAvailableOptions = function(){
+
+            if ($scope.metricsOptions.scopes && $scope.metricsOptions.scopes[$scope.selection.metric.value].length>0) {
+                $scope.selection.scopeMode = $scope.metricsOptions.scopes[$scope.selection.metric.value][0];
+            }
+
+            if ($scope.metricsOptions.periods && $scope.metricsOptions.periods[$scope.selection.metric.value].length>0) {
+                $scope.selection.periodMode = $scope.metricsOptions.periods[$scope.selection.metric.value][0];
+            }
+
+            if ($scope.metricsOptions.dataTypes && $scope.metricsOptions.dataTypes[$scope.selection.metric.value].length>0) {
+                $scope.selection.dataMode = $scope.metricsOptions.dataTypes[$scope.selection.metric.value][0];
+            }
+        };
+
         //Uncheck previously selected datasets
         $scope.$watch('selection.metric', function() {
-            for (var key in $scope.selection.datasets) {
-                $scope.selection.datasets[key] = false;
-            }
+            unCheckAllDatasets();
         });
 
         $scope.getYLabel = function() {
@@ -89,13 +117,22 @@ angular.module("console.metrics.controllers", [])
             return result;
         };
 
+        $scope.getSelectedDataSetsCount = function() {
+            var result = 0;
+            for(var ds in $scope.selection.datasets) {
+                if($scope.selection.datasets[ds]) {
+                    result++;
+                }
+            }
+            return result;
+        };
 
         $scope.getDatasetList = function() {
             var result = [];
             if(angular.isDefined($scope.selection.metric.value)
                 && angular.isDefined($scope.metricsOptions.dataSets)) {
                 var allDatasetsForMetric = $scope.metricsOptions.dataSets[$scope.selection.metric.value];
-                if(allDatasetsForMetric) {//TODO: use filter?
+                if (allDatasetsForMetric) {//TODO: use filter?
                     for(var i = 0; i<allDatasetsForMetric.length; i++) {
                         if($scope.selection.showDatasets || (allDatasetsForMetric[i].general == !$scope.selection.showDatasets)) {
                             result.push(allDatasetsForMetric[i]);
@@ -111,45 +148,66 @@ angular.module("console.metrics.controllers", [])
             return result;
         };
 
-        $scope.getDataSetUrl = function() {
-            var dataset = $scope.getSelectedDataSets();
-            var type = $scope.selection.dataMode.value;
-            var scope = $scope.selection.scopeMode.value;
-            var period = $scope.selection.periodMode.value;
-            var metric = $scope.selection.metric.value;
-            var action = "data";
-            var zeroes = !$scope.selection.omitZeroes;
-            var smooth = $scope.selection.smoothRate;
-
-            if($scope.selection.actorSpecific) {
-                action = "actorData";
-            }
-
-            if (!!dataset && !!type && !!scope && !!period && !!metric) {//url contains some defined values
-                return "/rest/console/metrics/"+action+"/?zeroes="+zeroes+"&metric=" + metric + "&period=" + period + "&scope=" + scope + "&type=" + type + "&dataset=" + encodeURIComponent(dataset) + "&smooth=" + smooth;
-            }
-            return "";
-        };
-
-        $$data.getMetricsOptions().then(function(value) {
+        tskMetricsData.getMetricsOptions().then(function(value) {
             $scope.metricsOptions = angular.fromJson(value.data || {});
             $log.info("metricsController: metricsOptions found are: " + angular.toJson(value.data));
 
             //Select first available values by default
-            if($scope.metricsOptions.metrics && $scope.metricsOptions.metrics.length>0) {
+            if ($scope.metricsOptions.metrics && $scope.metricsOptions.metrics.length>0) {
                 $scope.selection.metric = $scope.metricsOptions.metrics[0];
             }
-            if($scope.metricsOptions.scopes && $scope.metricsOptions.scopes[$scope.selection.metric.value].length>0) {
-                $scope.selection.scopeMode = $scope.metricsOptions.scopes[$scope.selection.metric.value][0];
-            }
-            if($scope.metricsOptions.periods && $scope.metricsOptions.periods[$scope.selection.metric.value].length>0) {
-                $scope.selection.periodMode = $scope.metricsOptions.periods[$scope.selection.metric.value][0];
-            }
-            if($scope.metricsOptions.dataTypes && $scope.metricsOptions.dataTypes[$scope.selection.metric.value].length>0) {
-                $scope.selection.dataMode = $scope.metricsOptions.dataTypes[$scope.selection.metric.value][0];
-            }
+
+            selectFirstAvailableOptions();
 
         });
 
+        $scope.update = function() {
+            var dataset = $scope.getSelectedDataSets();
+            tskMetricsData.getMetricsData($scope.selection, dataset).then(function(success) {
+                $scope.dataHolder = success.data || [];
+            }, function (error) {
+                $scope.dataHolder = [];
+                $log.log("Error updating metrics data: " + angular.toJson(error));
+            });
+        };
 
-    });
+        $scope.clear = function() {
+            $scope.dataHolder = [];
+            unCheckAllDatasets();
+        };
+
+        var refreshTriggerId = -1;
+        $scope.$watch('plotProps.updatePeriod', function (newVal, oldVal) {
+            if (newVal > 0) {
+                refreshTriggerId = tskTimeUtil.setInterval($scope.update, newVal * 1000, $scope);//Start autoUpdate
+            } else {
+                tskTimeUtil.clearInterval(refreshTriggerId);
+            }
+        });
+
+        $scope.$watch(function() {
+            var result = 0;
+            for (var ds in $scope.selection.datasets) {
+                if($scope.selection.datasets[ds]) {
+                    result++;
+                }
+            }
+            return result;
+
+        }, function (newVal, oldVal) {
+            if (newVal > 0) {
+                $scope.update();
+            } else {
+                $scope.clear();
+            }
+        });
+
+        $scope.$watch("selection.metric.value", function(newVal, oldVal){
+            selectFirstAvailableOptions();
+        });
+
+        $scope.update();
+
+    })
+
+;

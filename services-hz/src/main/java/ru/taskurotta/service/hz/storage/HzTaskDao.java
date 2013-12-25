@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * TaskDao storing tasks in HZ shared(and processId partitioned) maps
- * User: dimadin
  * Date: 11.06.13 18:13
  */
 public class HzTaskDao implements TaskDao {

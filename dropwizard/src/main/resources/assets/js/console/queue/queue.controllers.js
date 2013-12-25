@@ -1,6 +1,6 @@
 angular.module("queue.controllers", ['console.services', 'ngRoute'])
 
-    .controller("queueListController", function ($scope, $$data, $$timeUtil, $log, $cookieStore) {
+    .controller("queueListController", function ($scope, $$data, tskTimeUtil, $log, $cookieStore) {
         var initPagingObject = function() {
             var result = {
                 pageSize: 5,
