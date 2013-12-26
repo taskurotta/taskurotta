@@ -5,6 +5,8 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
+import com.hazelcast.monitor.LocalMapStats;
+import com.hazelcast.monitor.LocalQueueStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -14,7 +16,10 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.hazelcast.store.MongoMapStore;
+import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
+import java.util.Formatter;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -89,7 +94,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     int localNullPoll = nullPoll.incrementAndGet();
 
-                    if ((localNullPoll + 1) % 10 == 0) {
+                    if ((localNullPoll + 1) % 1000 == 0) {
                         log.error("Actors still receive empty answer [{}]",  localNullPoll + 1);
                     }
                     return null;
@@ -100,23 +105,58 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 //                }
                 long count = taskCount.incrementAndGet();
 
-                if (count % 10000 == 0) {
+                if (count % 5000 == 0) {
+
+                    long totalHeapCost = 0;
+
+                    StringBuilder sb = new StringBuilder();
+
                     for (HazelcastInstance hzInstance : Hazelcast.getAllHazelcastInstances()) {
 
-                        StringBuilder sb = new StringBuilder("============  " + hzInstance.getName() + "  ===========");
+                        sb.append("\n============  " + hzInstance.getName() + "  " + "===========");
+
                         for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
                             sb.append("\n" + distributedObject.getServiceName() + " -> " + distributedObject.getName
                                     ());
                             if (distributedObject instanceof IMap) {
-                                sb.append("     size = " + ((IMap) distributedObject).size());
+                                IMap map = (IMap) distributedObject;
+                                LocalMapStats stat = map.getLocalMapStats();
+
+                                sb.append("\tsize = " + map.size());
+                                sb.append("\townedEntryMemoryCost = " + bytesToMb(stat.getOwnedEntryMemoryCost()));
+                                sb.append("\theapCost = " + bytesToMb(stat.getHeapCost()));
+                                sb.append("\tdirtyEntryCount = " + stat.getDirtyEntryCount());
+
+                                totalHeapCost += stat.getHeapCost();
                             }
                             if (distributedObject instanceof IQueue) {
-                                sb.append("     size = " + ((IQueue) distributedObject).size());
+                                IQueue queue = (IQueue) distributedObject;
+                                LocalQueueStats stat = queue.getLocalQueueStats();
+
+                                sb.append("\tsize = " + queue.size());
+                                sb.append("\townedItemCount = " + stat.getOwnedItemCount());
                             }
                         }
 
-                        System.err.println(sb);
+                        sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
                     }
+
+                    sb.append("\nMongo Maps statistics:");
+                    sb.append("\ndelete \tmean = " + MongoMapStore.deleteTimer.mean() + " \toneMinuteRate = " +
+                            MongoMapStore.deleteTimer.oneMinuteRate());
+                    sb.append("\nload \tmean = " + MongoMapStore.loadTimer.mean() + " \toneMinuteRate = " +
+                            MongoMapStore.loadTimer.oneMinuteRate());
+                    sb.append("\nstore \tmean = " + MongoMapStore.storeTimer.mean() + " \toneMinuteRate = " +
+                            MongoMapStore.storeTimer.oneMinuteRate());
+
+                    sb.append("\nMongo Queues statistics:");
+                    sb.append("\ndelete \tmean = " + MongoQueueStore.deleteTimer.mean() + " \toneMinuteRate = " +
+                            MongoQueueStore.deleteTimer.oneMinuteRate());
+                    sb.append("\nload \tmean = " + MongoQueueStore.loadTimer.mean() + " \toneMinuteRate = " +
+                            MongoQueueStore.loadTimer.oneMinuteRate());
+                    sb.append("\nstore \tmean = " + MongoQueueStore.storeTimer.mean() + " \toneMinuteRate = " +
+                            MongoQueueStore.storeTimer.oneMinuteRate());
+                    System.err.println(sb);
                 }
 
 //                    if (count > 7000) {
@@ -183,6 +223,15 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 taskSpreader.release(taskDecision);
             }
         };
+    }
+
+    public static String bytesToMb(long bytes) {
+        return new Formatter().format("%8.2f", ((double) bytes / 1024 / 1024)).toString();
+    }
+
+    public static void main(String[] args) {
+        System.err.println("ggg: " + bytesToMb(1000000));
+        System.err.println("ggg: " + bytesToMb(1000000));
     }
 
     public void setTargetTolerance(double targetTolerance) {

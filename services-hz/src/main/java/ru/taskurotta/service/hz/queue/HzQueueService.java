@@ -1,5 +1,23 @@
 package ru.taskurotta.service.hz.queue;
 
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.IQueue;
+import com.hazelcast.core.Member;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
+import ru.taskurotta.service.console.model.GenericPage;
+import ru.taskurotta.service.console.model.QueueStatVO;
+import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.hz.console.HzQueueStatTask;
+import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.queue.TaskQueueItem;
+import ru.taskurotta.util.ActorUtils;
+import ru.taskurotta.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,24 +28,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IExecutorService;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.Member;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.QueueStatVO;
-import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.service.hz.console.HzQueueStatTask;
-import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
-import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
-import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.util.ActorUtils;
-import ru.taskurotta.util.StringUtils;
-
 /**
  * User: stukushin
  * Date: 06.12.13
@@ -36,20 +36,35 @@ import ru.taskurotta.util.StringUtils;
 public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueService.class);
-
+    private static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
+    private transient final ReentrantLock lock = new ReentrantLock();
     private QueueFactory queueFactory;
     private HazelcastInstance hazelcastInstance;
     private String queueNamePrefix;
-
-    private static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
-
-    private transient final ReentrantLock lock = new ReentrantLock();
+    private long pollDelay;
     private Map<String, DelayIQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
 
-    public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix) {
+    public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix,
+                          long pollDelay) {
         this.queueFactory = queueFactory;
         this.hazelcastInstance = hazelcastInstance;
         this.queueNamePrefix = queueNamePrefix;
+        this.pollDelay = pollDelay;
+    }
+
+    private static QueueStatVO getItemByName(List<QueueStatVO> list, String name) {
+        QueueStatVO result = null;
+
+        if (list != null && !list.isEmpty() && !StringUtils.isBlank(name)) {
+            for (QueueStatVO qs : list) {
+                if (name.equals(qs.getName())) {
+                    result = qs;
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -58,11 +73,17 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         String queueName = createQueueName(actorId, taskList);
         DelayIQueue<TaskQueueItem> queue = getQueue(queueName);
 
-        TaskQueueItem taskQueueItem = queue.poll();
-        if (logger.isDebugEnabled()) {
-            logger.debug("poll() returns taskQueueItem [{}]. [{}].size: {}", taskQueueItem, queueName, queue.size());
-        }
+        TaskQueueItem taskQueueItem = null;
 
+        try {
+            taskQueueItem = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
+            if (logger.isDebugEnabled()) {
+                logger.debug("poll() returns taskQueueItem [{}]. [{}].size: {}", taskQueueItem, queueName, queue.size());
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return taskQueueItem;
     }
 
@@ -260,20 +281,5 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 }
             }
         }
-    }
-
-    private static QueueStatVO getItemByName(List<QueueStatVO> list, String name) {
-        QueueStatVO result = null;
-
-        if (list != null && !list.isEmpty() && !StringUtils.isBlank(name)) {
-            for (QueueStatVO qs : list) {
-                if (name.equals(qs.getName())) {
-                    result = qs;
-                    break;
-                }
-            }
-        }
-
-        return result;
     }
 }
