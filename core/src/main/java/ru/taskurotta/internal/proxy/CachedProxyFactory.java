@@ -19,7 +19,7 @@ import java.util.Map;
 abstract public class CachedProxyFactory implements ProxyFactory {
 
 
-    private Map<Class, Object> clientToProxy = new HashMap<>();
+    private Map<Class, Object> clientToProxy = new HashMap<Class, Object>();
 
     abstract public <TargetInterface> TargetInterface createProxy(Class<TargetInterface> proxyType, RuntimeContext injectedRuntimeContext);
 

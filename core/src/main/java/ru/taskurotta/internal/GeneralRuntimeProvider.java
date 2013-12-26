@@ -118,7 +118,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.WORKER, workerName, version, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<>();
+                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
@@ -157,7 +157,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.DECIDER_ASYNCHRONOUS, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<>();
+                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
@@ -194,7 +194,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.DECIDER_START, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<>();
+                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);

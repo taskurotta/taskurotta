@@ -89,7 +89,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
     }
 
     private Map<Method, MethodDescriptor> createMethodCache(Class target) {
-        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
 
         Class<?> deciderInterface = AnnotationUtils.findAnnotatedClass(target, Decider.class);
 

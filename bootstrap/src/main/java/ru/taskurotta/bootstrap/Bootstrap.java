@@ -37,9 +37,9 @@ public class Bootstrap implements BootstrapMBean {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	private Config config;
-    private Map<String, Thread> shutdownHookThreadMap = new HashMap<>();
-    private Map<String, ActorConfig> actorConfigMap = new HashMap<>();
-    private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<>();
+    private Map<String, Thread> shutdownHookThreadMap = new HashMap<String, Thread>();
+    private Map<String, ActorConfig> actorConfigMap = new HashMap<String, ActorConfig>();
+    private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<String, ActorThreadPool>();
 
     public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
 		config = parseArgs(args);
@@ -109,7 +109,7 @@ public class Bootstrap implements BootstrapMBean {
 
     @Override
     public Map<String, Integer> getActorPoolSizes() {
-        Map<String, Integer> actorPoolSizes = new HashMap<>();
+        Map<String, Integer> actorPoolSizes = new HashMap<String, Integer>();
 
         Set<String> actorPoolIdSet = actorThreadPoolMap.keySet();
 

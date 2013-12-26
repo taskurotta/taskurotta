@@ -23,7 +23,7 @@ public class ActorExecutor implements Runnable {
     private RuntimeProcessor runtimeProcessor;
     private TaskSpreader taskSpreader;
 
-    private ThreadLocal<Boolean> threadRun = new ThreadLocal<>();
+    private ThreadLocal<Boolean> threadRun = new ThreadLocal<Boolean>();
     private volatile boolean instanceRun = true;
 
     public ActorExecutor(Profiler profiler, Inspector inspector, RuntimeProcessor runtimeProcessor, TaskSpreader taskSpreader) {

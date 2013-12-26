@@ -23,7 +23,7 @@ public class ErrorContainer implements Serializable {
     }
 
     public ErrorContainer(Throwable throwable) {
-        ArrayList<String> namesList = new ArrayList<>();
+        ArrayList<String> namesList = new ArrayList<String>();
         Class parent = throwable.getClass();
         do {
             namesList.add(parent.getName());

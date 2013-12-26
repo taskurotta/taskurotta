@@ -54,7 +54,7 @@ public class MetricsProfiler implements Profiler {
     private boolean isConsoleOutput = false;
     private int consoleOutputPeriod = 3;
 
-    private ThreadLocal<Long> cycleStartTime = new ThreadLocal<>();
+    private ThreadLocal<Long> cycleStartTime = new ThreadLocal<Long>();
 
     public MetricsProfiler(Class actorClass, Properties properties) {
 
