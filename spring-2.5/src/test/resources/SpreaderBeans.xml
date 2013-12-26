@@ -8,6 +8,10 @@
 
     <context:property-placeholder/>
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory"/>
+    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory">
+        <constructor-arg>
+            <bean class="ru.taskurotta.spring.configs.MockTaskServer"></bean>
+        </constructor-arg>
+    </bean>
 
 </beans>
