@@ -47,12 +47,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     public GeneralRecoveryProcessService() {}
 
-    public GeneralRecoveryProcessService(QueueServiceStatistics queueServiceStatistics, DependencyService dependencyService,
-                                         TaskDao taskDao, ProcessService processService, TaskService taskService,
-                                         BrokenProcessService brokenProcessService, GarbageCollectorService garbageCollectorService,
-                                         long recoveryProcessTimeOut) {
-        this.queueServiceStatistics = queueServiceStatistics;
-    public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao, ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService, long recoveryProcessTimeOut) {
+    public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao, ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService, GarbageCollectorService garbageCollectorService, long recoveryProcessTimeOut) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.taskDao = taskDao;

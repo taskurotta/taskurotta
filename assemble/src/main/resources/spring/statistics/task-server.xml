@@ -5,8 +5,7 @@
     <bean id="metricsTaskServer" class="ru.taskurotta.server.MetricsTaskServer">
         <constructor-arg name="taskServer" ref="realTaskServer"/>
         <constructor-arg name="metricsFactory" ref="metricsFactory"/>
-        <constructor-arg name="numberDataListener" ref="metricsNumberDataHandler" />
-        <constructor-arg name="metricsPeriodSeconds" value = "${metric.data.memory.period-in-seconds}" />
+        <constructor-arg name="memoryMetricsPeriodSeconds" value = "${metric.data.memory.period-in-seconds}" />
     </bean>
 
     <bean id="taskServer" class="ru.taskurotta.assemble.ProxyTaskServer">
@@ -17,6 +16,7 @@
         <constructor-arg name="dumpPeriod" value="${metric.data.method.period-in-seconds}"/>
         <constructor-arg name="dumpingThreads" value="3"/>
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>
+        <constructor-arg name="numberDataListener" ref="metricsNumberDataHandler" />
     </bean>
 
     <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>

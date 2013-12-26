@@ -1,4 +1,4 @@
-package ru.taskurotta.server;
+package ru.taskurotta.service.metrics.queue;
 
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;

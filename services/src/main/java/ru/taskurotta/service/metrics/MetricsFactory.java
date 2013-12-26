@@ -3,6 +3,7 @@ package ru.taskurotta.service.metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.metrics.handler.DataListener;
+import ru.taskurotta.service.metrics.handler.NumberDataListener;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,12 +34,14 @@ public class MetricsFactory {
      */
     private DataListener dataListener;
 
-    public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener) {
+    private NumberDataListener numberDataListener;
+
+    public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener, NumberDataListener numberDataListener) {
         this.executorService = Executors.newScheduledThreadPool(dumpingThreads);
         this.dumpPeriod = dumpPeriod;
         this.dataListener = dataListener;
+        this.numberDataListener = numberDataListener;
     }
-
 
     public Metric getInstance(String name, int dumpPeriodMs, DataListener dataListener) {
 
@@ -54,15 +57,19 @@ public class MetricsFactory {
         }
 
         return metric;
-
     }
 
-
     public Metric getInstance(String name) {
-
         return getInstance(name, dumpPeriod, dataListener);
     }
 
+    public PeriodicMetric getPeriodicInstance(String name, int periodSeconds) {
+
+        //number of points to cover 24 hours period.
+        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(periodSeconds).intValue();
+
+        return new PeriodicMetric(name, executorService, numberDataListener, periodSeconds, dataPointsCount);
+    }
 
     private Metric instantiate(String name, int periodDelay, final DataListener dataListener) {
         final Metric result = new Metric(name);
@@ -75,15 +82,10 @@ public class MetricsFactory {
                 } catch (Throwable e) {//must catch all of the exceptions : scheduled pool shuts quietly on exception
                     logger.error("Cannot dump metrics result", e);
                 }
-
             }
         }, 0, periodDelay, TimeUnit.SECONDS);
 
         return result;
-    }
-
-    public void scheduleMetricsTask() {
-
     }
 
     public void shutdown() {

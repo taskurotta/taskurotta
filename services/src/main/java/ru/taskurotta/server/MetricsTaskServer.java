@@ -2,20 +2,19 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.service.metrics.MetricsFactory;
-import ru.taskurotta.service.metrics.MetricName;
-import ru.taskurotta.service.metrics.handler.NumberDataListener;
 import ru.taskurotta.service.metrics.Metric;
-import ru.taskurotta.service.metrics.TimeConstants;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.MetricsFactory;
+import ru.taskurotta.service.metrics.PeriodicMetric;
+import ru.taskurotta.service.metrics.PeriodicMetric.DatasetValueExtractor;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * TaskServer wrapper delegating method calls to enclosed server with metrics data collect operations
@@ -25,67 +24,47 @@ public class MetricsTaskServer implements TaskServer {
 
     private TaskServer taskServer;
     private MetricsFactory metricsFactory;
-    private NumberDataListener numberDataListener;
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsTaskServer.class);
 
-    private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread result = new Thread(r);
-            result.setDaemon(true);
-            result.setName("memory-data-gatherer");
-            return result;
-        }
-    });
-
-    public MetricsTaskServer(TaskServer taskServer, MetricsFactory metricsFactory, NumberDataListener numberDataListener, int metricsPeriodSeconds) {
+    public MetricsTaskServer(TaskServer taskServer, MetricsFactory metricsFactory, int memoryMetricsPeriodSeconds) {
         this.taskServer = taskServer;
         this.metricsFactory = metricsFactory;
-        this.numberDataListener = numberDataListener;
 
-        //Queue statistics for metrics
-        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(metricsPeriodSeconds).intValue();//number of points to cover 24 hours period.
-        scheduledExecutorService.scheduleAtFixedRate(new MemoryDataFlusher(dataPointsCount), 0, metricsPeriodSeconds, TimeUnit.SECONDS);
-    }
+        PeriodicMetric memoryMetric = metricsFactory.getPeriodicInstance(MetricName.MEMORY.getValue(), memoryMetricsPeriodSeconds);
+        memoryMetric.periodicMark(new DatasetValueExtractor() {
 
-    class MemoryDataFlusher implements Runnable {
-        private int dataSize = 0;
+            private static final String FREE_MEM = "free";
+            private static final String TOTAL_MEM = "total";
+            private Runtime runtime = Runtime.getRuntime();
 
-        private static final String FREE_MEM = "free";
-        private static final String TOTAL_MEM = "total";
-
-        MemoryDataFlusher (int dataSize) {
-            this.dataSize = dataSize;
-        }
-
-        @Override
-        public void run() {
-            long free = -1l;
-            long total = -1l;
-            try {
-                if (numberDataListener != null) {
-                    Runtime runtime = Runtime.getRuntime();
-                    free = runtime.freeMemory();
-                    total = runtime.totalMemory();
-                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), FREE_MEM, free,
-                            System.currentTimeMillis(), dataSize);
-
-                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), TOTAL_MEM, total,
-                            System.currentTimeMillis(), dataSize);
-
-                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), MetricName.MEMORY.getValue(), total-free,
-                            System.currentTimeMillis(), dataSize);
-
-                }
-                logger.debug("Memory data successfully flushed, total[{}], free[{}]", total, free);
-
-            } catch (Throwable e) {
-                logger.error("MemoryDataFlusher iteration failed", e);
+            @Override
+            public List<String> getDatasets() {
+                return Arrays.asList(FREE_MEM, TOTAL_MEM);
             }
-        }
 
+            @Override
+            public Number getDatasetValue(String dataset) {
+                if (TOTAL_MEM.equals(dataset)) {
+                    return runtime.totalMemory();
+                } else if (FREE_MEM.equals(dataset)) {
+                    return runtime.freeMemory();
+                } else {
+                    return 0;
+                }
+            }
+
+            @Override
+            public Number getGeneralValue(Map<String, Number> datasetsValues) {
+                Number result = 0l;
+                if (datasetsValues!=null && !datasetsValues.isEmpty()) {
+                    result = (long)datasetsValues.get(TOTAL_MEM) - (long)datasetsValues.get(FREE_MEM);
+                }
+                return result;
+            }
+        });
     }
+
 
     @Override
     public void startProcess(TaskContainer task) {

@@ -22,16 +22,6 @@ import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.MemoryGraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
-import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
-import ru.taskurotta.service.recovery.MemoryQueueServiceStatistics;
-import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.service.storage.GeneralTaskService;
-import ru.taskurotta.service.storage.MemoryBrokenProcessService;
-import ru.taskurotta.service.storage.MemoryTaskDao;
-import ru.taskurotta.service.storage.TaskDao;
-import ru.taskurotta.service.MemoryServiceBundle;
-import ru.taskurotta.service.ServiceBundle;
-import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.queue.MemoryQueueService;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 import ru.taskurotta.service.storage.BrokenProcessService;
@@ -113,10 +103,7 @@ public class AbstractTestStub {
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1, 1000l);
-        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueServiceStatistics, dependencyService, taskDao,
-                                                                    serviceBundle.getProcessService(), serviceBundle.getTaskService(),
-                                                                    brokenProcessService, garbageCollectorService, 1l);
-        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueService, dependencyService, taskDao, serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, 1l);
+        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueService, dependencyService, taskDao, serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, garbageCollectorService, 1l);
 
         taskServer = new GeneralTaskServer(serviceBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
