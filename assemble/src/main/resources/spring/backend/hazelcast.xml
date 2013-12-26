@@ -58,6 +58,11 @@
         <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="queueNamePrefix" value="${hz.queue.task.prefix}"/>
+        <constructor-arg name="pollDelay">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${server.poll-delay}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="queueService" class="ru.taskurotta.assemple.ProxyQueueService">

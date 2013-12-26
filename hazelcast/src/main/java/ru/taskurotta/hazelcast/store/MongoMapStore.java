@@ -24,6 +24,8 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -34,12 +36,18 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 
 public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
 
     private final static Logger logger = LoggerFactory.getLogger(MongoMapStore.class);
-
+    public static Timer storeTimer = Metrics.newTimer(MongoMapStore.class, "store",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+    public static Timer loadTimer = Metrics.newTimer(MongoMapStore.class, "load",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+    public static Timer deleteTimer = Metrics.newTimer(MongoMapStore.class, "delete",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     private String mapName;
     private MongoDBConverter converter;
     private DBCollection coll;
@@ -54,9 +62,15 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
     }
 
     public void store(Object key, Object value) {
-        DBObject dbo = converter.toDBObject(value);
-        dbo.put("_id", key);
-        coll.save(dbo);
+        long startTime = System.nanoTime();
+
+        try {
+            DBObject dbo = converter.toDBObject(value);
+            dbo.put("_id", key);
+            coll.save(dbo);
+        } finally {
+            storeTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+        }
     }
 
     public void storeAll(Map map) {
@@ -66,9 +80,15 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
     }
 
     public void delete(Object key) {
-        DBObject dbo = new BasicDBObject();
-        dbo.put("_id", key);
-        coll.remove(dbo);
+        long startTime = System.nanoTime();
+
+        try {
+            DBObject dbo = new BasicDBObject();
+            dbo.put("_id", key);
+            coll.remove(dbo);
+        } finally {
+            deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+        }
     }
 
     public void deleteAll(Collection keys) {
@@ -81,19 +101,27 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
     }
 
     public Object load(Object key) {
-        DBObject dbo = new BasicDBObject();
-        dbo.put("_id", key);
-        DBObject obj = coll.findOne(dbo);
-        if (obj == null)
-            return null;
+        long startTime = System.nanoTime();
 
         try {
-            Class clazz = Class.forName(obj.get("_class").toString());
-            return converter.toObject(clazz, obj);
-        } catch (ClassNotFoundException e) {
-            logger.warn(e.getMessage(), e);
+
+            DBObject dbo = new BasicDBObject();
+            dbo.put("_id", key);
+            DBObject obj = coll.findOne(dbo);
+            if (obj == null)
+                return null;
+
+            try {
+                Class clazz = Class.forName(obj.get("_class").toString());
+                return converter.toObject(clazz, obj);
+            } catch (ClassNotFoundException e) {
+                logger.warn(e.getMessage(), e);
+            }
+            return null;
+
+        } finally {
+            loadTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
-        return null;
     }
 
     public Map loadAll(Collection keys) {

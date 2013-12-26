@@ -21,6 +21,12 @@
 
         <dependency>
             <groupId>ru.taskurotta</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
             <artifactId>test</artifactId>
             <version>${project.version}</version>
         </dependency>

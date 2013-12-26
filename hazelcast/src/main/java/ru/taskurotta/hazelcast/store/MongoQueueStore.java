@@ -1,13 +1,5 @@
 package ru.taskurotta.hazelcast.store;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.hazelcast.core.QueueStore;
 import com.hazelcast.spring.mongodb.MongoDBConverter;
 import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
@@ -16,7 +8,18 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Timer;
 import org.springframework.data.mongodb.core.MongoTemplate;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * User: moroz
@@ -24,12 +27,17 @@ import org.springframework.data.mongodb.core.MongoTemplate;
  */
 public class MongoQueueStore implements QueueStore<Object> {
 
+    protected static final Logger logger = Logger.getLogger(MongoQueueStore.class.getName());
+    public static Timer storeTimer = Metrics.newTimer(MongoQueueStore.class, "store",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+    public static Timer loadTimer = Metrics.newTimer(MongoQueueStore.class, "load",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+    public static Timer deleteTimer = Metrics.newTimer(MongoQueueStore.class, "delete",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     private String storageName;
     private MongoTemplate mongoTemplate;
     private MongoDBConverter converter;
     private DBCollection coll;
-
-    protected static final Logger logger = Logger.getLogger(MongoQueueStore.class.getName());
 
     public MongoQueueStore(String storageName, MongoTemplate mongoTemplate) {
         this.storageName = storageName;
@@ -48,16 +56,28 @@ public class MongoQueueStore implements QueueStore<Object> {
 
     @Override
     public void delete(Long aLong) {
-        DBObject dbo = new BasicDBObject();
-        dbo.put("_id", aLong);
-        coll.remove(dbo);
+        long startTime = System.nanoTime();
+
+        try {
+            DBObject dbo = new BasicDBObject();
+            dbo.put("_id", aLong);
+            coll.remove(dbo);
+        } finally {
+            deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+        }
     }
 
     @Override
     public void store(Long aLong, Object taskQueueItem) {
-        DBObject dbo = converter.toDBObject(taskQueueItem);
-        dbo.put("_id", aLong);
-        coll.save(dbo);
+        long startTime = System.nanoTime();
+
+        try {
+            DBObject dbo = converter.toDBObject(taskQueueItem);
+            dbo.put("_id", aLong);
+            coll.save(dbo);
+        } finally {
+            storeTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+        }
     }
 
     @Override
@@ -79,19 +99,27 @@ public class MongoQueueStore implements QueueStore<Object> {
 
     @Override
     public Object load(Long aLong) {
-        DBObject dbo = new BasicDBObject();
-        dbo.put("_id", aLong);
-        DBObject obj = coll.findOne(dbo);
-        if (obj == null)
-            return null;
+        long startTime = System.nanoTime();
 
         try {
-            Class clazz = Class.forName(obj.get("_class").toString());
-            return converter.toObject(clazz, obj);
-        } catch (ClassNotFoundException e) {
-            logger.log(Level.WARNING, e.getMessage(), e);
+
+            DBObject dbo = new BasicDBObject();
+            dbo.put("_id", aLong);
+            DBObject obj = coll.findOne(dbo);
+            if (obj == null)
+                return null;
+
+            try {
+                Class clazz = Class.forName(obj.get("_class").toString());
+                return converter.toObject(clazz, obj);
+            } catch (ClassNotFoundException e) {
+                logger.log(Level.WARNING, e.getMessage(), e);
+            }
+            return null;
+
+        } finally {
+            loadTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
-        return null;
     }
 
     @Override
