@@ -67,6 +67,7 @@
         <constructor-arg name="taskService" ref="taskService"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
         <constructor-arg name="recoveryProcessTimeOut">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${recovery.process.timeout}"/>
