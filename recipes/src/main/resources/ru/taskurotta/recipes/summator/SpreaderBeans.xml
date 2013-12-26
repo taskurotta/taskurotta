@@ -7,7 +7,7 @@
 
     <context:property-placeholder />
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory">
+    <bean id="clientServiceManager" class="ru.taskurotta.client.MockClientServiceManagerMemory">
         <constructor-arg name="pollDelay" value="3" />
     </bean>
 

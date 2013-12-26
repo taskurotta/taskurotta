@@ -12,7 +12,6 @@ import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
-import ru.taskurotta.client.memory.ClientServiceManagerMemory;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.io.IOException;
@@ -78,10 +77,10 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
                 logger.debug("Not found bean of [{}]", taskSpreaderProviderClass);
             }
 
-            if (taskSpreaderProvider == null) {
-                ClientServiceManager clientServiceManager = new ClientServiceManagerMemory();
-                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
-            }
+//            if (taskSpreaderProvider == null) {
+//                ClientServiceManager clientServiceManager = new ClientServiceManagerMemory();
+//                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
+//            }
         } catch (BeansException e) {
             logger.error("Not found bean of class [{}]", taskSpreaderProviderClass);
             throw new RuntimeException("Not found bean of class", e);
