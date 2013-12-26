@@ -26,7 +26,13 @@ public class Main {
         try {
             ObjectName name = new ObjectName("ru.taskurotta.bootstrap.jmx:type=BootstrapMBean");
             mBeanServer.registerMBean(bootstrap, name);
-        } catch (MalformedObjectNameException | NotCompliantMBeanException | InstanceAlreadyExistsException | MBeanRegistrationException e) {
+        } catch (MalformedObjectNameException e) {
+            throw new RuntimeException("Catch exception while start new instance", e);
+        } catch (NotCompliantMBeanException e) {
+            throw new RuntimeException("Catch exception while start new instance", e);
+        } catch (InstanceAlreadyExistsException e) {
+            throw new RuntimeException("Catch exception while start new instance", e);
+        } catch (MBeanRegistrationException e) {
             throw new RuntimeException("Catch exception while start new instance", e);
         }
 

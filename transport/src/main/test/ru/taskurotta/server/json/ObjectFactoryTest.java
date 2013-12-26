@@ -203,7 +203,7 @@ public class ObjectFactoryTest {
 
     @Test
     public void argContainerCollectionPromise() {
-        List<Promise<?>> arg = new ArrayList<>();
+        List<Promise<?>> arg = new ArrayList<Promise<?>>();
         for (int i = 0; i < 10; i++) {
             arg.add(Promise.asPromise(Math.random()));
         }
@@ -282,7 +282,7 @@ public class ObjectFactoryTest {
 
     @Test
     public void argContainerListInt() {
-        List<Integer> arg = new ArrayList<>(10);
+        List<Integer> arg = new ArrayList<Integer>(10);
         for (int i = 0; i < 10; i++) {
             arg.add(i);
         }
@@ -293,7 +293,7 @@ public class ObjectFactoryTest {
 
     @Test
     public void argContainerListObject() {
-        List<TestObject> arg = new ArrayList<>(10);
+        List<TestObject> arg = new ArrayList<TestObject>(10);
         for (int i = 0; i < 10; i++) {
             TestObject testObject = new TestObject("Test object " + i, i);
             arg.add(testObject);
@@ -305,7 +305,7 @@ public class ObjectFactoryTest {
 
     @Test
     public void argContainerLinkedListInt() {
-        List<Integer> arg = new LinkedList<>();
+        List<Integer> arg = new LinkedList<Integer>();
         for (int i = 0; i < 10; i++) {
             arg.add(i);
         }
@@ -317,7 +317,7 @@ public class ObjectFactoryTest {
     @org.junit.Ignore
     @Test
     public void argContainerMapPromise() {
-        Map<Integer, Object> arg = new HashMap<>();
+        Map<Integer, Object> arg = new HashMap<Integer, Object>();
         Promise payload = Promise.asPromise(true);
         for (int i = 0; i < 10; i++) {
             arg.put(i, payload);

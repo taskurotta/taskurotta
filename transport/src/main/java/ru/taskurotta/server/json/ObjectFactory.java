@@ -324,7 +324,7 @@ public class ObjectFactory {
     }
 
     private ArgContainer[] parseCollectionValues(Object collection) {
-        List<ArgContainer> result = new ArrayList<>();
+        List<ArgContainer> result = new ArrayList<ArgContainer>();
         for (Object o : ((Collection) collection)) {
             result.add(dumpArg(o));
         }

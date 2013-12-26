@@ -13,16 +13,9 @@
     <name>Taskurotta :: Spring</name>
 
     <dependencies>
-
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>bootstrap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>client</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -31,20 +24,16 @@
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
             <version>${spring-data-mongodb.version}</version>
         </dependency>
-
-
 
     </dependencies>
 
