@@ -199,7 +199,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
             }
 
-//            if (lastEnqueueTime > 0 && lastEnqueueTime < taskContainer.getStartTime()) {
             if (lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
 
