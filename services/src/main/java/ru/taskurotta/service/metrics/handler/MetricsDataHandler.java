@@ -1,15 +1,14 @@
-package ru.taskurotta.service.statistics;
+package ru.taskurotta.service.metrics.handler;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
-import ru.taskurotta.service.statistics.datalistener.DataListener;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
-import ru.taskurotta.service.statistics.metrics.TimeConstants;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
-import ru.taskurotta.service.statistics.metrics.data.DataRowVO;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.TimeConstants;
+import ru.taskurotta.service.metrics.model.DataPointVO;
+import ru.taskurotta.service.metrics.model.DataRowVO;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;

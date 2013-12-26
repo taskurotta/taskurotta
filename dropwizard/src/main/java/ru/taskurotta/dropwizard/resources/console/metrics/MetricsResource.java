@@ -7,7 +7,7 @@ import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsole
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.AvailableOptionsVO;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.DatasetVO;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

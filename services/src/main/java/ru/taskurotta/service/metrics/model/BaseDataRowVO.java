@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics.metrics.data;
+package ru.taskurotta.service.metrics.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;

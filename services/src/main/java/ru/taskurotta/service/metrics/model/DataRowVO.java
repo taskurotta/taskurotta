@@ -1,4 +1,7 @@
-package ru.taskurotta.service.statistics.metrics.data;
+package ru.taskurotta.service.metrics.model;
+
+import ru.taskurotta.service.metrics.model.BaseDataRowVO;
+import ru.taskurotta.service.metrics.model.DataPointVO;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReferenceArray;

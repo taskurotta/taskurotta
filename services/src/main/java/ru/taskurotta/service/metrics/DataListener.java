@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics.datalistener;
+package ru.taskurotta.service.metrics;
 
 /**
  * User: stukushin

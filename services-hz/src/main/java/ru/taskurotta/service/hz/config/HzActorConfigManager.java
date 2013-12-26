@@ -12,8 +12,8 @@ import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
-import ru.taskurotta.service.statistics.MetricName;
-import ru.taskurotta.service.statistics.QueueBalanceVO;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.ArrayList;
 import java.util.Collection;

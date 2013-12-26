@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics;
+package ru.taskurotta.service.metrics;
 
 /**
  * Supported metrics

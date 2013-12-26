@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics.metrics.data;
+package ru.taskurotta.service.metrics.model;
 
 /**
  * POJO wrapper for metrics data point.

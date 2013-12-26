@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.statistics.MetricName;
+import ru.taskurotta.service.metrics.MetricName;
 
 import java.util.ArrayList;
 import java.util.List;

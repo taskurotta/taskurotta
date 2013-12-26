@@ -2,11 +2,11 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.service.statistics.MetricsFactory;
-import ru.taskurotta.service.statistics.MetricName;
-import ru.taskurotta.service.statistics.datalistener.NumberDataListener;
-import ru.taskurotta.service.statistics.metrics.Metric;
-import ru.taskurotta.service.statistics.metrics.TimeConstants;
+import ru.taskurotta.service.metrics.MetricsFactory;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.handler.NumberDataListener;
+import ru.taskurotta.service.metrics.Metric;
+import ru.taskurotta.service.metrics.TimeConstants;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;

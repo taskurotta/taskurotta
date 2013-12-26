@@ -1,12 +1,11 @@
-package ru.taskurotta.service.statistics;
+package ru.taskurotta.service.metrics.handler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.retriever.metrics.MetricsNumberDataRetriever;
-import ru.taskurotta.service.statistics.datalistener.NumberDataListener;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
-import ru.taskurotta.service.statistics.metrics.data.NumberDataRowVO;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.model.DataPointVO;
+import ru.taskurotta.service.metrics.model.NumberDataRowVO;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;

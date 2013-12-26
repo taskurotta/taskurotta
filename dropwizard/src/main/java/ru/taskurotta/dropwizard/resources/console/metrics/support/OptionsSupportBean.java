@@ -1,6 +1,6 @@
 package ru.taskurotta.dropwizard.resources.console.metrics.support;
 
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.OptionVO;
 
 import java.util.ArrayList;

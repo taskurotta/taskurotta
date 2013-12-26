@@ -2,9 +2,9 @@ package ru.taskurotta.server;
 
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.service.statistics.MetricsFactory;
-import ru.taskurotta.service.statistics.MetricName;
-import ru.taskurotta.service.statistics.metrics.Metric;
+import ru.taskurotta.service.metrics.MetricsFactory;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.Metric;
 
 import java.util.UUID;
 

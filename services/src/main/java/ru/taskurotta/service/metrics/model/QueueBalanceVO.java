@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics;
+package ru.taskurotta.service.metrics.model;
 
 import java.io.Serializable;
 import java.util.Arrays;

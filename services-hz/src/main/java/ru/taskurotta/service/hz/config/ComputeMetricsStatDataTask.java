@@ -1,10 +1,10 @@
 package ru.taskurotta.service.hz.config;
 
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
-import ru.taskurotta.service.statistics.MetricsDataHandler;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
-import ru.taskurotta.service.statistics.metrics.RateUtils;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
+import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.RateUtils;
+import ru.taskurotta.service.metrics.model.DataPointVO;
 
 import java.io.Serializable;
 import java.util.ArrayList;

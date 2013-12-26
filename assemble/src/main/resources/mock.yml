@@ -21,10 +21,10 @@ logging:
     level: WARN
     loggers:
         ru.taskurotta: INFO
-#        ru.taskurotta.service.statistics.datalistener TRACE
+#        ru.taskurotta.service.metricstalistener TRACE
 #        ru.taskurotta: INFO
-#        ru.taskurotta.service.statistics.datalisteners: TRACE
-#        ru.taskurotta.service.statistics.metrics: TRACE
+#        ru.taskurotta.service.metricstalisteners: TRACE
+#        ru.taskurotta.service.metricstrics: TRACE
 #        ru.taskurotta.recovery: DEBUG
 #        ru.taskurotta.service.recovery: DEBUG
 #        ru.taskurotta.service.hz.support: DEBUG

@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics.datalistener;
+package ru.taskurotta.service.metrics.handler;
 
 /**
  * DataListener for metrics data representing one simple Number at a time

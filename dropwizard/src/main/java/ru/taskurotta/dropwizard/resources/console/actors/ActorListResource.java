@@ -8,8 +8,8 @@ import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.statistics.QueueBalanceVO;
-import ru.taskurotta.service.statistics.metrics.RateUtils;
+import ru.taskurotta.service.metrics.model.QueueBalanceVO;
+import ru.taskurotta.service.metrics.RateUtils;
 import ru.taskurotta.dropwizard.resources.Action;
 
 import javax.ws.rs.Consumes;

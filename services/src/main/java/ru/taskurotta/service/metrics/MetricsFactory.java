@@ -1,9 +1,8 @@
-package ru.taskurotta.service.statistics;
+package ru.taskurotta.service.metrics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.service.statistics.datalistener.DataListener;
-import ru.taskurotta.service.statistics.metrics.Metric;
+import ru.taskurotta.service.metrics.handler.DataListener;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

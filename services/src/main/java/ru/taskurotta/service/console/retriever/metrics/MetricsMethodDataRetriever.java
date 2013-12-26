@@ -1,6 +1,6 @@
 package ru.taskurotta.service.console.retriever.metrics;
 
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
+import ru.taskurotta.service.metrics.model.DataPointVO;
 
 import java.util.Collection;
 import java.util.Date;

@@ -1,10 +1,10 @@
 package ru.taskurotta.service.hz.config;
 
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
-import ru.taskurotta.service.statistics.MetricsDataHandler;
-import ru.taskurotta.service.statistics.QueueBalanceVO;
-import ru.taskurotta.service.statistics.MetricName;
+import ru.taskurotta.service.metrics.model.DataPointVO;
+import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
+import ru.taskurotta.service.metrics.model.QueueBalanceVO;
+import ru.taskurotta.service.metrics.MetricName;
 
 import java.io.Serializable;
 import java.util.concurrent.Callable;

@@ -1,4 +1,4 @@
-package ru.taskurotta.service.statistics.metrics;
+package ru.taskurotta.service.metrics;
 
 /**
  * User: dimadin

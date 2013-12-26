@@ -3,7 +3,7 @@ package ru.taskurotta.service.console.manager;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
-import ru.taskurotta.service.statistics.QueueBalanceVO;
+import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.Collection;
 import java.util.Map;
