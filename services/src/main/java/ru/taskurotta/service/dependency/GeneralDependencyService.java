@@ -8,7 +8,7 @@ import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;

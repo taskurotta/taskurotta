@@ -3,7 +3,6 @@ package ru.taskurotta.internal.core;
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.transport.model.ArgType;
 
 import java.util.Arrays;
 

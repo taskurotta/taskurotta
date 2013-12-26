@@ -6,7 +6,7 @@ import ru.taskurotta.core.Promise;
 import ru.taskurotta.exception.IllegalReturnTypeException;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;

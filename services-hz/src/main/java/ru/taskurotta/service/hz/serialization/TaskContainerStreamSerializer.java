@@ -6,7 +6,7 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.io.IOException;
 import java.util.UUID;
