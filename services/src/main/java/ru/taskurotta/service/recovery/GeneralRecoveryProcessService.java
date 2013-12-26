@@ -5,12 +5,14 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
+import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -39,11 +41,17 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     private ProcessService processService;
     private TaskService taskService;
     private BrokenProcessService brokenProcessService;
+    private GarbageCollectorService garbageCollectorService;
     // time out between recovery process in milliseconds
     private long recoveryProcessTimeOut;
 
     public GeneralRecoveryProcessService() {}
 
+    public GeneralRecoveryProcessService(QueueServiceStatistics queueServiceStatistics, DependencyService dependencyService,
+                                         TaskDao taskDao, ProcessService processService, TaskService taskService,
+                                         BrokenProcessService brokenProcessService, GarbageCollectorService garbageCollectorService,
+                                         long recoveryProcessTimeOut) {
+        this.queueServiceStatistics = queueServiceStatistics;
     public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao, ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService, long recoveryProcessTimeOut) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
@@ -51,6 +59,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.processService = processService;
         this.taskService = taskService;
         this.brokenProcessService = brokenProcessService;
+        this.garbageCollectorService = garbageCollectorService;
         this.recoveryProcessTimeOut = recoveryProcessTimeOut;
     }
 
@@ -90,7 +99,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         boolean result;
         if (taskContainers == null || taskContainers.isEmpty()) {
-            // ToDo (stukushin): if after replay process taskContainers is empty, than finish process
+            UUID startTaskId = processService.getStartTask(processId).getTaskId();
+            finishProcess(processId, startTaskId);
             result = false;
         } else {
             if (logger.isTraceEnabled()) {
@@ -192,7 +202,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
             }
 
-//            if (lastEnqueueTime > 0 && lastEnqueueTime < taskContainer.getStartTime()) {
             if (lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
 
@@ -305,6 +314,19 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         }
 
         return taskContainers;
+    }
+
+    private void finishProcess(UUID processId, UUID startTaskId) {
+        // save result to process storage
+        DecisionContainer decisionContainer = taskService.getDecision(startTaskId, processId);
+        ArgContainer argContainer = decisionContainer.getValue();
+        String returnValue = argContainer.getJSONValue();
+        processService.finishProcess(processId, returnValue);
+
+        logger.debug("#[{}]: finish process. Save result [{}] from [{}] as process result", processId, returnValue, startTaskId);
+
+        // send process to GC
+        garbageCollectorService.delete(processId);
     }
 
     public void setDependencyService(DependencyService dependencyService) {

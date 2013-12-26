@@ -48,6 +48,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
                 thread.setName("GC-" + counter++);
+                thread.setDaemon(true);
                 return thread;
             }
         });
