@@ -1,4 +1,4 @@
-package ru.taskurotta.assemple;
+package ru.taskurotta.assemble;
 
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;

@@ -63,9 +63,15 @@
                 <constructor-arg name="duration" value="${server.poll-delay}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="mergePeriodMs">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${hz.recovery.merge-period}"/>
+            </bean>
+        </constructor-arg>
+
     </bean>
 
-    <bean id="queueService" class="ru.taskurotta.assemple.ProxyQueueService">
+    <bean id="queueService" class="ru.taskurotta.assemble.ProxyQueueService">
         <constructor-arg name="target" ref="realQueueBackend"/>
     </bean>
 
@@ -133,7 +139,7 @@
     <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
-        <constructor-arg name="queueServiceStatistics" ref="metricsQueueBackend"/>
+        <constructor-arg name="queueService" ref="metricsQueueBackend"/>
         <constructor-arg name="taskService" ref="taskService"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
@@ -174,7 +180,7 @@
         <constructor-arg name="decisionProcessingExecutorService" value="${hz.executor-service.decisions.service-name}"/>
     </bean>
 
-    <bean id="taskServer" class="ru.taskurotta.assemple.ProxyTaskServer">
+    <bean id="taskServer" class="ru.taskurotta.assemble.ProxyTaskServer">
         <constructor-arg name="target" ref="realTaskServer"/>
     </bean>
     <!-- /Task server -->

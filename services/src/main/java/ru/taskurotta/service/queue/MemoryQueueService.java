@@ -36,6 +36,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryQueueService.class);
 
+    protected final ConcurrentHashMap<String, Long> lastPolledTaskEnqueueTimes = new ConcurrentHashMap<>();
     private long pollDelay = 60000l;
     private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<>();
 
@@ -79,6 +80,17 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         return new GenericPage<>(result, pageNum, pageSize, queues.size());
     }
 
+    @Override
+    public long getLastPolledTaskEnqueueTime(String queueName) {
+        Long time = lastPolledTaskEnqueueTimes.get(queueName);
+
+        // if no tasks in queue, than return -1
+        if (time == null) {
+            return -1;
+        }
+
+        return time;
+    }
 
     private List<String> getTaskQueueNames(String filter) {
         List<String> result = new ArrayList<>();
@@ -165,9 +177,11 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
 
-        TaskQueueItem result;
+        String queueName = createQueueName(actorId, taskList);
+        DelayQueue <DelayedTaskElement> queue = getQueue(queueName);
+
+        TaskQueueItem result = null;
 
         try {
             result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
@@ -177,6 +191,8 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         }
 
         logger.debug("Task poll for actorId[{}], taskList[{}] returned item [{}]. Remaining queue.size: [{}]", actorId, taskList, result, queue.size());
+
+        lastPolledTaskEnqueueTimes.put(queueName, result!=null? result.getEnqueueTime() : System.currentTimeMillis() );
 
         return result;
 

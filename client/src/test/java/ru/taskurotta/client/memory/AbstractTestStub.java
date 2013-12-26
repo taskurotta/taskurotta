@@ -3,16 +3,6 @@ package ru.taskurotta.client.memory;
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
-import ru.taskurotta.service.MemoryServiceBundle;
-import ru.taskurotta.service.ServiceBundle;
-import ru.taskurotta.service.dependency.DependencyService;
-import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.service.storage.MemoryBrokenProcessService;
-import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
-import ru.taskurotta.service.recovery.MemoryQueueServiceStatistics;
-import ru.taskurotta.service.storage.GeneralTaskService;
-import ru.taskurotta.service.storage.MemoryTaskDao;
-import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.core.Promise;
@@ -25,6 +15,16 @@ import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
+import ru.taskurotta.service.MemoryServiceBundle;
+import ru.taskurotta.service.ServiceBundle;
+import ru.taskurotta.service.dependency.DependencyService;
+import ru.taskurotta.service.queue.MemoryQueueService;
+import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.MemoryBrokenProcessService;
+import ru.taskurotta.service.storage.MemoryTaskDao;
+import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
@@ -43,8 +43,7 @@ import static junit.framework.Assert.assertTrue;
  */
 public class AbstractTestStub {
 
-    protected MemoryQueueServiceStatistics memoryQueueService;
-    protected MemoryQueueServiceStatistics memoryQueueServiceStatistics;
+    protected MemoryQueueService memoryQueueService;
     protected GeneralTaskService memoryStorageService;
     protected DependencyService dependencyService;
     protected GeneralRecoveryProcessService recoveryProcessService;
@@ -92,12 +91,11 @@ public class AbstractTestStub {
     public void setUp() throws Exception {
         taskDao = new MemoryTaskDao();
         serviceBundle = new MemoryServiceBundle(0, taskDao);
-        memoryQueueService = (MemoryQueueServiceStatistics) serviceBundle.getQueueService();
-        memoryQueueServiceStatistics = (MemoryQueueServiceStatistics) serviceBundle.getQueueService();
+        memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
         memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
         brokenProcessService = new MemoryBrokenProcessService();
-        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueServiceStatistics, dependencyService, taskDao, serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, 1l);
+        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueService, dependencyService, taskDao, serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, 1l);
 
         taskServer = new GeneralTaskServer(serviceBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);

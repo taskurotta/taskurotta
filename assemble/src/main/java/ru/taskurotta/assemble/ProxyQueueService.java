@@ -1,4 +1,4 @@
-package ru.taskurotta.assemple;
+package ru.taskurotta.assemble;
 
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
@@ -33,5 +33,10 @@ public class ProxyQueueService implements QueueService {
     @Override
     public String createQueueName(String actorId, String taskList) {
         return target.createQueueName(actorId, taskList);
+    }
+
+    @Override
+    public long getLastPolledTaskEnqueueTime(String queueName) {
+        return target.getLastPolledTaskEnqueueTime(queueName);
     }
 }

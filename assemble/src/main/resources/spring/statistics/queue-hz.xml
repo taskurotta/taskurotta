@@ -2,23 +2,21 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="metricsQueueBackend" class="ru.taskurotta.service.hz.recovery.HzQueueServiceStatistics">
+    <bean id="metricsQueueBackend" class="ru.taskurotta.server.MetricsQueueService">
         <constructor-arg name="queueService" ref="realQueueBackend"/>
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="mergePeriod">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${hz.recovery.merge-period}"/>
-            </bean>
-        </property>
-        <property name="queueNamePrefix" value="${hz.queue.task.prefix}"/>
-        <property name="queueSizeMetricPeriodSeconds" value="${metric.data.queue-size.period-in-seconds}"/>
-        <property name="metricsFactory" ref="metricsFactory"/>
-        <property name="numberDataListener" ref="metricsNumberDataHandler"/>
+        <constructor-arg name="metricsFactory" ref="metricsFactory"/>
     </bean>
 
-    <bean id="queueService" class="ru.taskurotta.assemple.ProxyQueueService">
+    <bean id="queueService" class="ru.taskurotta.assemble.ProxyQueueService">
         <constructor-arg name="target" ref="metricsQueueBackend"/>
+    </bean>
+
+    <bean id="queueSizeMetricsBean" class="ru.taskurotta.service.hz.support.HzQueueSizeMetricProvider" >
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+        <constructor-arg name="numberDataListener" ref="metricsNumberDataHandler" />
+        <constructor-arg name="queueNamePrefix" value = "${hz.queue.task.prefix}" />
+        <constructor-arg name="queueSizeMetricPeriodSeconds" value="${metric.data.queue-size.period-in-seconds}" />
+        <constructor-arg name="retriever" ref="realQueueBackend" />
     </bean>
 
 </beans>

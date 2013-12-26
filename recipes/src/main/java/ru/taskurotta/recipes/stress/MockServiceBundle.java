@@ -177,6 +177,13 @@ public class MockServiceBundle implements ServiceBundle {
 
                 return  actorId;
             }
+
+            @Override
+            public long getLastPolledTaskEnqueueTime(String queueName) {
+                return System.currentTimeMillis();
+            }
+
+
         };
     }
 

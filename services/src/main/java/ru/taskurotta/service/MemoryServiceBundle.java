@@ -7,16 +7,15 @@ import ru.taskurotta.service.dependency.GeneralDependencyService;
 import ru.taskurotta.service.dependency.links.MemoryGraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
-import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.service.storage.MemoryBrokenProcessService;
 import ru.taskurotta.service.queue.MemoryQueueService;
 import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.service.recovery.MemoryQueueServiceStatistics;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.MemoryBrokenProcessService;
 import ru.taskurotta.service.storage.MemoryProcessService;
 import ru.taskurotta.service.storage.ProcessService;
-import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.service.storage.TaskDao;
+import ru.taskurotta.service.storage.TaskService;
 
 /**
  * User: romario
@@ -37,7 +36,7 @@ public class MemoryServiceBundle implements ServiceBundle {
     public MemoryServiceBundle(int pollDelay, TaskDao taskDao) {
         this.processService = new MemoryProcessService();
         this.taskService = new GeneralTaskService(taskDao);
-        this.queueService = new MemoryQueueServiceStatistics(new MemoryQueueService(pollDelay));
+        this.queueService = new MemoryQueueService(pollDelay);
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyService = new GeneralDependencyService(memoryGraphDao);
         this.configService = new MemoryConfigService();

@@ -25,4 +25,6 @@ public interface QueueService {
 
     public String createQueueName(String actorId, String taskList);
 
+    public long getLastPolledTaskEnqueueTime(String queueName);
+
 }

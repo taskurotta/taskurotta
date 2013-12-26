@@ -18,9 +18,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * User: stukushin
- * Date: 27.08.13
- * Time: 14:39
+ * TaskServer wrapper delegating method calls to enclosed server with metrics data collect operations
+ * Date: 27.08.13 14:39
  */
 public class MetricsTaskServer implements TaskServer {
 
@@ -62,17 +61,24 @@ public class MetricsTaskServer implements TaskServer {
 
         @Override
         public void run() {
+            long free = -1l;
+            long total = -1l;
             try {
                 if (numberDataListener != null) {
                     Runtime runtime = Runtime.getRuntime();
-
-                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), FREE_MEM, runtime.freeMemory(),
+                    free = runtime.freeMemory();
+                    total = runtime.totalMemory();
+                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), FREE_MEM, free,
                             System.currentTimeMillis(), dataSize);
 
-                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), TOTAL_MEM, runtime.totalMemory(),
+                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), TOTAL_MEM, total,
                             System.currentTimeMillis(), dataSize);
+
+                    numberDataListener.handleNumberData(MetricName.MEMORY.getValue(), MetricName.MEMORY.getValue(), total-free,
+                            System.currentTimeMillis(), dataSize);
+
                 }
-                logger.debug("Memory data successfully flushed");
+                logger.debug("Memory data successfully flushed, total[{}], free[{}]", total, free);
 
             } catch (Throwable e) {
                 logger.error("MemoryDataFlusher iteration failed", e);

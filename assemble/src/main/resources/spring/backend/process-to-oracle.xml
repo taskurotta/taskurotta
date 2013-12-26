@@ -13,7 +13,6 @@
     <context:annotation-config/>
 
 
-
     <bean id="processService" class="ru.taskurotta.service.ora.storage.OraProcessService">
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>

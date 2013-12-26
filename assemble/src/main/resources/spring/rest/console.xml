@@ -57,7 +57,7 @@
                 <entry key="errorDecision" value="Actor with error decision mean execution time (ms)" />
                 <entry key="enqueue" value="QueueBackend#enqueueTask method invocation" />
                 <entry key="queueSize" value="Number of tasks in the queue" />
-                <entry key="memory" value="Free and total amounts of memory consumed by this node" />
+                <entry key="memory" value="Occupied, free and total amounts of memory consumed by this node" />
             </map>
         </property>
 
@@ -71,6 +71,7 @@
                 <entry key="errorDecision#errorDecision" value="Mean value for all actors" />
                 <entry key="enqueue#enqueue" value="QueueBackend#enqueueTask method invocation" />
                 <entry key="queueSize#queueSize" value="Total number of task for all queues" />
+                <entry key="memory#memory" value="Occupied memory evaluated as: (total - free)" />
             </map>
         </property>
 

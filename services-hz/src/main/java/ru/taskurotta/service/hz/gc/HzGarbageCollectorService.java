@@ -29,7 +29,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long timeBeforeDelete, boolean enabled) {
 
-        logger.debug("Garbage Collector initialization {}", enabled);
+        logger.debug("Garbage Collector initialization. Enabled: {}", enabled);
 
         this.enabled = enabled;
 

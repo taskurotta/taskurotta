@@ -49,7 +49,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
 
         assertFalse(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
 
-        memoryQueueServiceStatistics.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), null);
+        memoryQueueService.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), null);
 
         // recovery process
         recoveryProcessService.restartProcess(processId);
@@ -93,7 +93,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
 
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
-        memoryQueueServiceStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
+        memoryQueueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
         recoveryProcessService.restartProcess(processId);
@@ -142,7 +142,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
             }
         });
 
-        memoryQueueServiceStatistics.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
+        memoryQueueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
         recoveryProcessService.restartProcess(processId);

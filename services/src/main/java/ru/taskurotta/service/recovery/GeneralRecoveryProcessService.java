@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
+import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
@@ -32,7 +33,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralRecoveryProcessService.class);
 
-    private QueueServiceStatistics queueServiceStatistics;
+    private QueueService queueService;
     private DependencyService dependencyService;
     private TaskDao taskDao;
     private ProcessService processService;
@@ -43,8 +44,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     public GeneralRecoveryProcessService() {}
 
-    public GeneralRecoveryProcessService(QueueServiceStatistics queueServiceStatistics, DependencyService dependencyService, TaskDao taskDao, ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService, long recoveryProcessTimeOut) {
-        this.queueServiceStatistics = queueServiceStatistics;
+    public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao, ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService, long recoveryProcessTimeOut) {
+        this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.taskDao = taskDao;
         this.processService = processService;
@@ -185,8 +186,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 continue;
             }
 
-            String queueName = queueServiceStatistics.createQueueName(taskContainer.getActorId(), taskList);
-            Long lastEnqueueTime = queueServiceStatistics.getLastPolledTaskEnqueueTime(queueName);
+            String queueName = queueService.createQueueName(taskContainer.getActorId(), taskList);
+            Long lastEnqueueTime = queueService.getLastPolledTaskEnqueueTime(queueName);
             if (logger.isTraceEnabled()) {
                 logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
             }
@@ -202,7 +203,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 continue;
             }
 
-            result = result & queueServiceStatistics.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
+            result = result & queueService.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
 
             logger.debug("#[{}]/[{}]: add task container [{}] to queue service", processId, taskId, taskContainer);
 

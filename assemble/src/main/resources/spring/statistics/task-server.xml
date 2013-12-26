@@ -9,7 +9,7 @@
         <constructor-arg name="metricsPeriodSeconds" value = "${metric.data.memory.period-in-seconds}" />
     </bean>
 
-    <bean id="taskServer" class="ru.taskurotta.assemple.ProxyTaskServer">
+    <bean id="taskServer" class="ru.taskurotta.assemble.ProxyTaskServer">
         <constructor-arg name="target" ref="metricsTaskServer" />
     </bean>
 

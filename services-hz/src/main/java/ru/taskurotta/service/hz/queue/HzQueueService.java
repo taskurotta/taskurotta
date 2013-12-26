@@ -3,6 +3,8 @@ package ru.taskurotta.service.hz.queue;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.ILock;
+import com.hazelcast.core.IMap;
 import com.hazelcast.core.IQueue;
 import com.hazelcast.core.Member;
 import org.slf4j.Logger;
@@ -20,36 +22,54 @@ import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * User: stukushin
- * Date: 06.12.13
- * Time: 15:30
+ * Implementation of a QueueService for a Hazelcast cluster.
+ * Date: 06.12.13 15:30
  */
 public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueService.class);
-    private static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
     private transient final ReentrantLock lock = new ReentrantLock();
-    private QueueFactory queueFactory;
-    private HazelcastInstance hazelcastInstance;
-    private String queueNamePrefix;
     private long pollDelay;
+    protected final ConcurrentHashMap<String, Long> lastPolledTaskEnqueueTimes = new ConcurrentHashMap<>();
+
+    protected QueueFactory queueFactory;
+    protected HazelcastInstance hazelcastInstance;
+    protected String queueNamePrefix;
+
+    protected static final String HZ_QUEUE_INFO_EXECUTOR_SERVICE = "hzQueueInfoExecutorService";
+
+    private static final String LAST_POLLED_TASK_ENQUEUE_TIME = "lastPolledTaskEnqueueTimes";
+    private static final String SYNCH_LOCK_NAME = HzQueueService.class.getName().concat("#SINCH_LOCK");
+
+    private ILock synchLock = null;
+
     private Map<String, DelayIQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
 
-    public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix,
-                          long pollDelay) {
+    public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix, long mergePeriodMs, long pollDelay) {
         this.queueFactory = queueFactory;
         this.hazelcastInstance = hazelcastInstance;
         this.queueNamePrefix = queueNamePrefix;
         this.pollDelay = pollDelay;
+
+        this.synchLock = hazelcastInstance.getLock(SYNCH_LOCK_NAME);
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
+        //Queue statistics for recovery
+        scheduledExecutorService.scheduleAtFixedRate(new StatisticsMerger(), 0, mergePeriodMs, TimeUnit.MILLISECONDS);
     }
 
     private static QueueStatVO getItemByName(List<QueueStatVO> list, String name) {
@@ -67,24 +87,80 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         return result;
     }
 
+    class StatisticsMerger implements Runnable {
+
+        @Override
+        public void run() {
+
+            synchLock.lock();
+
+            try { //should always wrap ScheduledExecutorService tasks to try-catch to prevent silent task death
+
+                IMap<String, Long> mutualMap = hazelcastInstance.getMap(LAST_POLLED_TASK_ENQUEUE_TIME);
+                Map<String, Long> myMap = lastPolledTaskEnqueueTimes;
+
+                Set<String> keys = new HashSet<>();
+                keys.addAll(mutualMap.keySet());
+                keys.addAll(myMap.keySet());
+
+                for (String key: keys) {
+                    Long mutualValue = mutualMap.get(key);
+                    Long myValue = myMap.get(key);
+
+                    if (mutualValue == null) {
+                        mutualMap.set(key, myValue);
+
+                    } else if (myValue == null) {
+                        myMap.put(key, mutualValue);
+
+                    } else if (myValue > mutualValue) {
+                        mutualMap.set(key, myValue);
+
+                    } else {
+                        myMap.put(key, mutualValue);
+
+                    }
+                }
+
+            } catch (Throwable e) {
+                logger.error("StatisticsMerger iteration failed", e);
+            } finally {
+                synchLock.unlock();
+            }
+        }
+    }
+
+    @Override
+    public long getLastPolledTaskEnqueueTime(String queueName) {
+        Long time = lastPolledTaskEnqueueTimes.get(queueName);
+
+        // if no tasks in queue, than return -1
+        if (time == null) {
+            return -1;
+        }
+
+        return time;
+    }
+
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
 
         String queueName = createQueueName(actorId, taskList);
         DelayIQueue<TaskQueueItem> queue = getQueue(queueName);
 
-        TaskQueueItem taskQueueItem = null;
+        TaskQueueItem result= null;
 
         try {
-            taskQueueItem = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
+            result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
             if (logger.isDebugEnabled()) {
-                logger.debug("poll() returns taskQueueItem [{}]. [{}].size: {}", taskQueueItem, queueName, queue.size());
+                logger.debug("poll() returns taskQueueItem [{}]. [{}].size: {}", result, queueName, queue.size());
             }
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Queue poll operation interrupted", e);
         }
-        return taskQueueItem;
+        lastPolledTaskEnqueueTimes.put(queueName, result!=null? result.getEnqueueTime() : System.currentTimeMillis() );
+        return result;
     }
 
     @Override
