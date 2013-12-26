@@ -28,23 +28,23 @@
     </bean>
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.stress.StressTaskCreator">
-        <property name="clientServiceManager" ref="clientServiceManager"/>
-        <property name="needRun" value="${needRun}"/>
-        <property name="shotSize" value="${shotSize}"/>
-        <property name="initialCount" value="${initialCount}"/>
+        <constructor-arg name="clientServiceManager" ref="clientServiceManager"/>
+        <constructor-arg name="needRun" value="${needRun}"/>
+        <constructor-arg name="initialCount" value="${initialCount}"/>
+        <constructor-arg name="shotSize" value="${shotSize}"/>
     </bean>
 
 
     <!--<bean id="jerseyTaskServerForStartProcesses" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">-->
-        <!--<property name="endpoint" value="${endpoint}"/>-->
-        <!--<property name="connectTimeout" value="${connectTimeout}"/>-->
-        <!--<property name="readTimeout" value="${readTimeout}"/>-->
-        <!--<property name="threadPoolSize" value="${threadPoolSize}"/>-->
-        <!--&lt;!&ndash; All connections are for the same host, so value matches threadpool size &ndash;&gt;-->
-        <!--<property name="maxConnectionsPerHost" value="${threadPoolSize}"/>-->
+    <!--<property name="endpoint" value="${endpoint}"/>-->
+    <!--<property name="connectTimeout" value="${connectTimeout}"/>-->
+    <!--<property name="readTimeout" value="${readTimeout}"/>-->
+    <!--<property name="threadPoolSize" value="${threadPoolSize}"/>-->
+    <!--&lt;!&ndash; All connections are for the same host, so value matches threadpool size &ndash;&gt;-->
+    <!--<property name="maxConnectionsPerHost" value="${threadPoolSize}"/>-->
     <!--</bean>-->
 
     <!--<bean id="clientServiceManagerForStartProcesses" class="ru.taskurotta.client.internal.CommonClientServiceManager">-->
-        <!--<constructor-arg name="taskServer" ref="taskServer"/>-->
+    <!--<constructor-arg name="taskServer" ref="taskServer"/>-->
     <!--</bean>-->
 </beans>
