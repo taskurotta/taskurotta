@@ -6,7 +6,7 @@ import ru.taskurotta.annotation.WorkerClient;
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.exception.ProxyFactoryException;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

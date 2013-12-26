@@ -12,7 +12,7 @@ import ru.taskurotta.schedule.JobConstants;
 import ru.taskurotta.schedule.JobVO;
 import ru.taskurotta.schedule.storage.file.JsonDirectoryJobStore;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.util.Collection;
 import java.util.HashSet;

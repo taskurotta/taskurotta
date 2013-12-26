@@ -1,6 +1,6 @@
 package ru.taskurotta.core;
 
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 /**
  * Instance of TaskTarget implementation should be immutable object.

@@ -4,7 +4,7 @@ import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.internal.RuntimeContext;
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

@@ -3,8 +3,8 @@ package ru.taskurotta.client.memory;
 import org.junit.Test;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.internal.core.TaskOptionsImpl;
-import ru.taskurotta.transport.model.ArgType;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.ArgType;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.util.UUID;
 

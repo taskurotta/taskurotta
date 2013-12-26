@@ -6,7 +6,7 @@ import ru.taskurotta.service.dependency.GeneralDependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.MemoryGraphDao;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorUtils;
 
 import java.util.HashMap;
