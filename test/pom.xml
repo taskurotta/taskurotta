@@ -18,6 +18,11 @@
             <artifactId>spring</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>

@@ -8,7 +8,7 @@
 
     <context:property-placeholder/>
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.memory.ClientServiceManagerMemory"/>
+    <bean id="clientServiceManager" class="ru.taskurotta.client.MockClientServiceManagerMemory"/>
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.delayed.TaskCreator">
         <property name="clientServiceManager" ref="clientServiceManager"/>
