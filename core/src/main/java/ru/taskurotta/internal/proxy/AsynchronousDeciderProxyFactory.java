@@ -16,7 +16,7 @@ import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.AnnotationUtils;
 
 import java.lang.reflect.Method;

@@ -48,6 +48,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double previousCountTotalRate = 0;
     private double targetTolerance = 4.0;
     private AtomicInteger nullPoll = new AtomicInteger(0);
+    private ThreadLocal<Integer> localTaskCount = new ThreadLocal<>();
+    private int taskPerProcess = 1;
 
     public LifetimeProfiler() {
     }
@@ -142,43 +144,33 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     }
 
                     sb.append("\nMongo Maps statistics:");
-                    sb.append("\ndelete \tmean = " + MongoMapStore.deleteTimer.mean() + " \toneMinuteRate = " +
-                            MongoMapStore.deleteTimer.oneMinuteRate());
-                    sb.append("\nload \tmean = " + MongoMapStore.loadTimer.mean() + " \toneMinuteRate = " +
-                            MongoMapStore.loadTimer.oneMinuteRate());
-                    sb.append("\nstore \tmean = " + MongoMapStore.storeTimer.mean() + " \toneMinuteRate = " +
-                            MongoMapStore.storeTimer.oneMinuteRate());
+                    sb.append(String.format("\ndelete mean: %6.3f oneMinuteRate: %6.3f",
+                            MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate()));
+                    sb.append(String.format("\nload   mean: %6.3f oneMinuteRate: %6.3f",
+                            MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate()));
+                    sb.append(String.format("\nstore  mean: %6.3f oneMinuteRate: %6.3f",
+                            MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
 
                     sb.append("\nMongo Queues statistics:");
-                    sb.append("\ndelete \tmean = " + MongoQueueStore.deleteTimer.mean() + " \toneMinuteRate = " +
-                            MongoQueueStore.deleteTimer.oneMinuteRate());
-                    sb.append("\nload \tmean = " + MongoQueueStore.loadTimer.mean() + " \toneMinuteRate = " +
-                            MongoQueueStore.loadTimer.oneMinuteRate());
-                    sb.append("\nstore \tmean = " + MongoQueueStore.storeTimer.mean() + " \toneMinuteRate = " +
-                            MongoQueueStore.storeTimer.oneMinuteRate());
+                    sb.append(String.format("\ndelete mean: %6.3f oneMinuteRate: %6.3f",
+                            MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
+                    sb.append(String.format("\nload   mean: %6.3f oneMinuteRate: %6.3f",
+                            MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                    sb.append(String.format("\nstore  mean: %6.3f oneMinuteRate: %6.3f",
+                            MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
                     System.err.println(sb);
                 }
 
-//                    if (count > 7000) {
-//                        try {
-//                            TimeUnit.HOURS.sleep(1);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
+                if (localTaskCount.get() == null) {
+                    localTaskCount.set(0);
+                }
+                localTaskCount.set(localTaskCount.get() + 1);
 
-//                    if (count == nextShot) {
-//                        if (StressTaskCreator.LATCH != null) {
-//                            nextShot += StressTaskCreator.getShotSize();
-//                            log.info("Shot on " + count);
-//                            StressTaskCreator.LATCH.countDown();
-//                        }
-//                    }
-
-                ThreadLocalRandom tlr = ThreadLocalRandom.current();
-
-                StressTaskCreator.sendOneTask(tlr);
-
+                if (localTaskCount.get() == taskPerProcess) {
+                    ThreadLocalRandom tlr = ThreadLocalRandom.current();
+                    StressTaskCreator.sendOneTask(tlr);
+                    localTaskCount.set(0);
+                }
 
                 if (timeIsZero) {
                     long current = System.currentTimeMillis();
@@ -240,6 +232,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     public void setTasksForStat(int tasksForStat) {
         LifetimeProfiler.tasksForStat = tasksForStat;
+    }
+
+    public void setTaskPerProcess(int taskPerProcess) {
+        this.taskPerProcess = taskPerProcess;
     }
 
     @Override

@@ -16,7 +16,7 @@ import ru.taskurotta.internal.GeneralRuntimeProvider;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.policy.retry.BlankRetryPolicy;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.UUID;

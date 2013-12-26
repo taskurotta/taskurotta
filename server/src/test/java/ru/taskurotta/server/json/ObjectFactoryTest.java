@@ -24,7 +24,7 @@ import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 /**
  * User: romario
