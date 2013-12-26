@@ -121,7 +121,7 @@ public class LoggingConfig {
         }
 
         private List<Element> parseAppenders(JsonNode appendersNode) {
-            List<Element> appenders = new ArrayList<>();
+            List<Element> appenders = new ArrayList<Element>();
 
             for (JsonNode appenderNode : appendersNode) {
                 String appenderName = appenderNode.fieldNames().next();
@@ -136,7 +136,7 @@ public class LoggingConfig {
         }
 
         private List<Element> parseLoggers(JsonNode loggersNode) {
-            List<Element> loggers = new ArrayList<>();
+            List<Element> loggers = new ArrayList<Element>();
 
             for (JsonNode loggerNode : loggersNode) {
                 String loggerName = loggerNode.fieldNames().next();
@@ -151,7 +151,7 @@ public class LoggingConfig {
         }
 
         private List<Element> parseAppenderRefs(JsonNode appenderRefsNode) {
-            List<Element> appenderRefs = new ArrayList<>();
+            List<Element> appenderRefs = new ArrayList<Element>();
 
             for (JsonNode appenderRefNode : appenderRefsNode) {
                 String loggerName = appenderRefNode.fieldNames().next();

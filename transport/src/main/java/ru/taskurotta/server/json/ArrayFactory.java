@@ -8,7 +8,7 @@ import java.util.HashMap;
  */
 public class ArrayFactory {
 
-    public static final HashMap<String, Class> primitives = new HashMap<>(8);
+    public static final HashMap<String, Class> primitives = new HashMap<String, Class>(8);
     static {
         primitives.put("byte", byte.class);
         primitives.put("short", short.class);

@@ -20,13 +20,11 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>client</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>services</artifactId>
@@ -43,12 +41,6 @@
             <groupId>com.yammer.dropwizard</groupId>
             <artifactId>dropwizard-client</artifactId>
             <version>${dropwizard.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>client</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
 

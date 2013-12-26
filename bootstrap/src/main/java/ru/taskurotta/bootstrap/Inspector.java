@@ -34,7 +34,7 @@ public class Inspector {
         }
     }
 
-    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<>();
+    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<PolicyCounters>();
 
     public Inspector(RetryPolicy retryPolicy, ActorThreadPool actorThreadPool) {
         this.retryPolicy = retryPolicy;
