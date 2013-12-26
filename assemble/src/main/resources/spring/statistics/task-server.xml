@@ -13,7 +13,7 @@
         <constructor-arg name="target" ref="metricsTaskServer" />
     </bean>
 
-    <bean id="metricsFactory" class="ru.taskurotta.service.statistics.MetricFactory" destroy-method="shutdown">
+    <bean id="metricsFactory" class="ru.taskurotta.service.statistics.MetricsFactory" destroy-method="shutdown">
         <constructor-arg name="dumpPeriod" value="${metric.data.method.period-in-seconds}"/>
         <constructor-arg name="dumpingThreads" value="3"/>
         <constructor-arg name="dataListener" ref="metricsDataHandler"/>

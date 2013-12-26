@@ -2,7 +2,7 @@ package ru.taskurotta.server;
 
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.service.statistics.MetricFactory;
+import ru.taskurotta.service.statistics.MetricsFactory;
 import ru.taskurotta.service.statistics.MetricName;
 import ru.taskurotta.service.statistics.metrics.Metric;
 
@@ -15,9 +15,9 @@ import java.util.UUID;
 public class MetricsQueueService implements QueueService {
 
     private QueueService queueService;
-    private MetricFactory metricsFactory;
+    private MetricsFactory metricsFactory;
 
-    public MetricsQueueService(QueueService queueService, MetricFactory metricsFactory) {
+    public MetricsQueueService(QueueService queueService, MetricsFactory metricsFactory) {
         this.queueService = queueService;
         this.metricsFactory = metricsFactory;
     }

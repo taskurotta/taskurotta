@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
  * User: dimadin
  * Date: 12.09.13 17:21
  */
-public class MetricFactory {
+public class MetricsFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(MetricFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(MetricsFactory.class);
 
     private Map<String, Metric> metricsCache = new ConcurrentHashMap<>();//stores created Metric instances
 
@@ -34,7 +34,7 @@ public class MetricFactory {
      */
     private DataListener dataListener;
 
-    public MetricFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener) {
+    public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener) {
         this.executorService = Executors.newScheduledThreadPool(dumpingThreads);
         this.dumpPeriod = dumpPeriod;
         this.dataListener = dataListener;

@@ -2,7 +2,7 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.service.statistics.MetricFactory;
+import ru.taskurotta.service.statistics.MetricsFactory;
 import ru.taskurotta.service.statistics.MetricName;
 import ru.taskurotta.service.statistics.datalistener.NumberDataListener;
 import ru.taskurotta.service.statistics.metrics.Metric;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class MetricsTaskServer implements TaskServer {
 
     private TaskServer taskServer;
-    private MetricFactory metricsFactory;
+    private MetricsFactory metricsFactory;
     private NumberDataListener numberDataListener;
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsTaskServer.class);
@@ -39,7 +39,7 @@ public class MetricsTaskServer implements TaskServer {
         }
     });
 
-    public MetricsTaskServer(TaskServer taskServer, MetricFactory metricsFactory, NumberDataListener numberDataListener, int metricsPeriodSeconds) {
+    public MetricsTaskServer(TaskServer taskServer, MetricsFactory metricsFactory, NumberDataListener numberDataListener, int metricsPeriodSeconds) {
         this.taskServer = taskServer;
         this.metricsFactory = metricsFactory;
         this.numberDataListener = numberDataListener;
