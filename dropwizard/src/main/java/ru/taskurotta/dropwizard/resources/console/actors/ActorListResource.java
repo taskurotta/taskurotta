@@ -10,7 +10,7 @@ import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 import ru.taskurotta.service.metrics.RateUtils;
-import ru.taskurotta.dropwizard.resources.Action;
+import ru.taskurotta.service.console.Action;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
