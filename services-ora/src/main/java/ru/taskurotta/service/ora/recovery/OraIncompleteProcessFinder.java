@@ -29,6 +29,8 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
 
     private static final Logger logger = LoggerFactory.getLogger(OraIncompleteProcessFinder.class);
 
+    private OperationExecutor operationExecutor;
+
     private static final String SQL_FIND_INCOMPLETE_PROCESSES =
             "SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time";
 
@@ -41,6 +43,8 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
             return;
         }
 
+        this.operationExecutor = operationExecutor;
+
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -52,9 +56,7 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
         scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-
                 try {
-
                     if (!operationExecutor.isEmpty()) {
                         logger.debug("RecoveryOperationExecutor queue isn't empty. Skip find incomplete processes");
                         return;
@@ -83,7 +85,7 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
                         ResultSet resultSet = preparedStatement.executeQuery();
                         while (resultSet.next()) {
                             UUID processId = UUID.fromString(resultSet.getString("process_id"));
-                            operationExecutor.enqueue(new RecoveryOperation(processId));
+                            toRecovery(processId);
                         }
                     } catch (SQLException ex) {
                         throw new IllegalStateException("Database error", ex);
@@ -94,5 +96,11 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
                 }
             }
         }, 0l, findIncompleteProcessPeriod, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    public void toRecovery(UUID processId) {
+        operationExecutor.enqueue(new RecoveryOperation(processId));
+        logger.trace("Send process [{}] to recovery", processId);
     }
 }

@@ -64,9 +64,9 @@
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
-        <constructor-arg name="recoveryProcessTimeOut">
+        <constructor-arg name="recoveryProcessChangeTimeout">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${recovery.process.timeout}"/>
+                <constructor-arg name="duration" value="${recovery.process.change-timeout}"/>
             </bean>
         </constructor-arg>
     </bean>

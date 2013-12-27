@@ -2,17 +2,20 @@ package ru.taskurotta.service.hz.recovery;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
-import com.hazelcast.core.IMap;
-import com.hazelcast.query.Predicate;
-import com.hazelcast.query.Predicates;
+import com.hazelcast.spring.mongodb.MongoDBConverter;
+import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.IncompleteProcessFinder;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -22,39 +25,37 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * User: stukushin
- * Date: 18.12.13
- * Time: 14:51
+ * Date: 27.12.13
+ * Time: 12:17
  */
-public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
+public class MongoIncompleteProcessFinder implements IncompleteProcessFinder {
 
-    private static final Logger logger = LoggerFactory.getLogger(HzIncompleteProcessFinder.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoIncompleteProcessFinder.class);
 
     private OperationExecutor operationExecutor;
-    private IMap<UUID, Process> processIMap;
+
+    private MongoDBConverter converter;
 
     private static final String START_TIME_INDEX_NAME = "startTime";
     private static final String STATE_INDEX_NAME = "state";
 
-    public HzIncompleteProcessFinder(final HazelcastInstance hazelcastInstance, final OperationExecutor operationExecutor,
-                                     String processesStorageMapName, final long findIncompleteProcessPeriod,
-                                     final long incompleteTimeOutMillis, final String hzRecoveryLockName,
-                                     boolean enabled) {
+    public MongoIncompleteProcessFinder(final HazelcastInstance hazelcastInstance, final OperationExecutor operationExecutor,
+                                        final MongoTemplate mongoTemplate, final String processesStorageMapName,
+                                        final long findIncompleteProcessPeriod, final long incompleteTimeOutMillis,
+                                        final String mongoRecoveryLockName, boolean enabled) {
 
         if (!enabled) {
             return;
         }
 
         this.operationExecutor = operationExecutor;
-        this.processIMap = hazelcastInstance.getMap(processesStorageMapName);
-
-        processIMap.addIndex(START_TIME_INDEX_NAME, true);
-        processIMap.addIndex(STATE_INDEX_NAME, false);
+        this.converter = new SpringMongoDBConverter(mongoTemplate);
 
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setName("HzIncompleteProcessFinderThread");
+                thread.setName("MongoIncompleteProcessFinder");
                 return thread;
             }
         });
@@ -67,7 +68,7 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
                         return;
                     }
 
-                    ILock iLock = hazelcastInstance.getLock(hzRecoveryLockName);
+                    ILock iLock = hazelcastInstance.getLock(mongoRecoveryLockName);
                     if (iLock.tryLock()) {
                         logger.debug("Get lock for find incomplete processes");
                     } else {
@@ -81,25 +82,27 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
                         logger.debug("Try to find incomplete processes, started before [{}]", new Date(timeBefore));
                     }
 
-                    Predicate predicate = new Predicates.AndPredicate(
-                            new Predicates.BetweenPredicate(START_TIME_INDEX_NAME, 0l, timeBefore),
-                            new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));
+                    DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
 
-                    Collection<UUID> processIds = processIMap.keySet(predicate);
+                    BasicDBObject query = new BasicDBObject();
+                    query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", timeBefore));
+                    query.append(STATE_INDEX_NAME, 0);
 
-                    if (processIds == null || processIds.isEmpty()) {
-                        logger.debug("Not found incomplete processes");
-                        return;
-                    } else {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Found [{}] incomplete processes", processIds.size());
+                    int counter = 0;
+                    try (DBCursor dbCursor = dbCollection.find(query)) {
+                        while (dbCursor.hasNext()) {
+                            DBObject dbObject = dbCursor.next();
+                            Process process = (Process) converter.toObject(Process.class, dbObject);
+                            UUID processId = process.getProcessId();
+                            toRecovery(processId);
+
+                            counter++;
                         }
                     }
 
-                    for (UUID processId : processIds) {
-                        toRecovery(processId);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Found [{}] incomplete processes", counter);
                     }
-
                 } catch (Exception e) {
                     logger.error(e.getLocalizedMessage(), e);
                 }
