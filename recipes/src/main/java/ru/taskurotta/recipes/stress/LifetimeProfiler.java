@@ -72,6 +72,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             maxTaskQuantity = (Integer) properties.get("maxTaskQuantity");
         }
 
+        if (properties.containsKey("taskPerProcess")) {
+            taskPerProcess = (Integer) properties.get("taskPerProcess");
+        }
+
     }
 
     @Override
@@ -102,9 +106,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     return null;
                 }
 
-//                if (nextShot == 0) {
-//                    nextShot = (StressTaskCreator.getShotSize() * StressTaskCreator.getInitialCount()) - deltaShot;
-//                }
                 long count = taskCount.incrementAndGet();
 
                 if (count % 5000 == 0) {
@@ -115,11 +116,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     for (HazelcastInstance hzInstance : Hazelcast.getAllHazelcastInstances()) {
 
-                        sb.append("\n============  " + hzInstance.getName() + "  " + "===========");
+                        sb.append("\n============  ").append(hzInstance.getName()).append("  ===========");
 
                         for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
-                            sb.append("\n" + distributedObject.getServiceName() + " -> " + distributedObject.getName
-                                    ());
+                            sb.append(String.format("\n%22s->%18s", distributedObject.getServiceName(), distributedObject.getName()));
                             if (distributedObject instanceof IMap) {
                                 IMap map = (IMap) distributedObject;
                                 LocalMapStats stat = map.getLocalMapStats();
@@ -144,19 +144,19 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     }
 
                     sb.append("\nMongo Maps statistics:");
-                    sb.append(String.format("\ndelete mean: %6.3f oneMinuteRate: %6.3f",
+                    sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
                             MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate()));
-                    sb.append(String.format("\nload   mean: %6.3f oneMinuteRate: %6.3f",
+                    sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
                             MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate()));
-                    sb.append(String.format("\nstore  mean: %6.3f oneMinuteRate: %6.3f",
+                    sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
                             MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
 
                     sb.append("\nMongo Queues statistics:");
-                    sb.append(String.format("\ndelete mean: %6.3f oneMinuteRate: %6.3f",
+                    sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
                             MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
-                    sb.append(String.format("\nload   mean: %6.3f oneMinuteRate: %6.3f",
+                    sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
                             MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
-                    sb.append(String.format("\nstore  mean: %6.3f oneMinuteRate: %6.3f",
+                    sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
                             MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
                     System.err.println(sb);
                 }
@@ -218,12 +218,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     }
 
     public static String bytesToMb(long bytes) {
-        return new Formatter().format("%8.2f", ((double) bytes / 1024 / 1024)).toString();
-    }
-
-    public static void main(String[] args) {
-        System.err.println("ggg: " + bytesToMb(1000000));
-        System.err.println("ggg: " + bytesToMb(1000000));
+        return new Formatter().format("%6.2f", ((double) bytes / 1024 / 1024)).toString();
     }
 
     public void setTargetTolerance(double targetTolerance) {

@@ -11,6 +11,15 @@ spreader:
         context: ru/taskurotta/test/fullfeature/SpreaderBeans.xml
         properties:
           foo: bar
+policy:
+  - MainPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 1
+          maximumRetryIntervalSeconds: 1
+          maximumAttempts: 3
 
 actor:
   - Decider:

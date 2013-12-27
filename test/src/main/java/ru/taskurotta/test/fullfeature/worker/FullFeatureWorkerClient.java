@@ -12,7 +12,8 @@ import ru.taskurotta.core.Promise;
 public interface FullFeatureWorkerClient {
 
     Promise<Double> sqr(Promise<Double> a);
-    Promise<Double> sqr(Promise<Double> a, ActorSchedulingOptions options);
+    Promise<Double> sqr(Promise<Double> a, Promise<?> ... waitFor);
+    Promise<Double> sqr(Promise<Double> a, ActorSchedulingOptions options, Promise<?> ... waitFor);
 
     @AcceptFail(type = IllegalArgumentException.class)
     Promise<Double> sqrt(Promise<Double> a);

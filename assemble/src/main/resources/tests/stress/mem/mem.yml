@@ -37,6 +37,7 @@ profiler:
           exitAfterAll: false
           tasksForStat: 1000
           maxTaskQuantity: 1000000
+          taskPerProcess: 1
 
 actor:
   - MultiplierDecider:

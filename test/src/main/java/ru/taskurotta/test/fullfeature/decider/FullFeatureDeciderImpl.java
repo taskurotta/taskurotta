@@ -27,13 +27,13 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         ActorSchedulingOptionsImpl options = new ActorSchedulingOptionsImpl();
         options.setStartTime(System.currentTimeMillis() + 100);
 
-        Promise<Double> p0 = worker.sqr(Promise.asPromise(data[0]));
-        Promise<Double> p1 = worker.sqr(Promise.asPromise(data[1]), options);
-        Promise<Double> res0 = async.step1(p0, p1);
+        Promise<Double> p01 = worker.sqr(Promise.asPromise(data[0]));
+        Promise<Double> p02 = worker.sqr(Promise.asPromise(data[1]), options);
+        Promise<Double> res0 = async.step1(p01, p02);
 
-        Promise<Double> p2 = worker.sqr(Promise.asPromise(data[2]));
-        Promise<Double> p3 = worker.sqr(Promise.asPromise(data[3]));
-        Promise<Double> res1 = async.step1(p2, p3);
+        Promise<Double> p11 = worker.sqr(Promise.asPromise(data[2]));
+        Promise<Double> p12 = worker.sqr(Promise.asPromise(data[3]), p01, p02);
+        Promise<Double> res1 = async.step1(p11, p12);
 
         List<Promise<Double>> list = new ArrayList<>(Arrays.asList(res0, res1));
         Promise <Double> result = async.step4(list);
@@ -42,7 +42,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Double> step1(Promise<Double> p1, @NoWait Promise<Double> p2) {
-        return step2(p1.get(), p2);
+        return async.step2(p1.get(), p2);
     }
 
     @Asynchronous
