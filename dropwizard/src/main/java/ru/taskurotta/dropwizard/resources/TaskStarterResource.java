@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.server.TaskServer;
+import ru.taskurotta.server.TaskServerResource;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import javax.ws.rs.Consumes;
@@ -16,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
-@Path("/tasks/start")
+@Path(TaskServerResource.START)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class TaskStarterResource {
@@ -25,7 +26,7 @@ public class TaskStarterResource {
     private TaskServer taskServer;
 
     @POST
-    public Response startProcess(TaskContainer taskContainer, @QueryParam("generateId") Optional<Boolean> generateId) {
+    public Response startProcess(TaskContainer taskContainer, @QueryParam("generateId") Optional< Boolean > generateId) {
         logger.debug("startProcess resource called with entity[{}], generateId[{}]", taskContainer, generateId);
 
         if (generateId.or(false)) {

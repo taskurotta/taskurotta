@@ -19,7 +19,7 @@ spreader:
           count: 20
           startTasks: true
           startTasksInBackground: true
-          startTaskPeriodSeconds: 30 #-1 = disabled
+          startTaskPeriodSeconds: 10 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
