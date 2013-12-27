@@ -43,11 +43,13 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     private BrokenProcessService brokenProcessService;
     private GarbageCollectorService garbageCollectorService;
     // time out between recovery process in milliseconds
-    private long recoveryProcessTimeOut;
+    private long recoveryProcessChangeTimeout;
 
     public GeneralRecoveryProcessService() {}
 
-    public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao, ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService, GarbageCollectorService garbageCollectorService, long recoveryProcessTimeOut) {
+    public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao,
+                                         ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
+                                         GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.taskDao = taskDao;
@@ -55,7 +57,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.taskService = taskService;
         this.brokenProcessService = brokenProcessService;
         this.garbageCollectorService = garbageCollectorService;
-        this.recoveryProcessTimeOut = recoveryProcessTimeOut;
+        this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         long changeTimeout = System.currentTimeMillis() - lastChange;
         logger.debug("#[{}]: change timeout = [{}]", processId, changeTimeout);
 
-        if (changeTimeout < recoveryProcessTimeOut) {
+        if (changeTimeout < recoveryProcessChangeTimeout) {
             logger.debug("#[{}]: graph recently apply or recovery, skip recovery", processId);
             return false;
         }
@@ -88,7 +90,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             TaskContainer startTaskContainer = processService.getStartTask(processId);
             taskContainers = replayProcess(startTaskContainer);
             if (logger.isDebugEnabled()) {
-                logger.debug("#[{}]: finish replay. For task [{}] found [{}] child tasks", processId, startTaskContainer.getTaskId(), taskContainers.size());
+                logger.debug("#[{}]: finish replay. For task [{}] found [{}] child tasks",
+                        processId, startTaskContainer.getTaskId(),taskContainers.size());
             }
         }
 
@@ -115,7 +118,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             public boolean apply(Graph graph) {
                 graph.setTouchTimeMillis(System.currentTimeMillis());
                 if (logger.isTraceEnabled()) {
-                    logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(), new Date(graph.getTouchTimeMillis()));
+                    logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
+                            new Date(graph.getTouchTimeMillis()));
                 }
 
                 return true;
@@ -185,7 +189,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 // this task must start in future, ignore it
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("#[{}]/[{}]: must started later at [{}], but now is [{}]", processId, taskId, new Date(startTime), new Date(now));
+                    logger.debug("#[{}]/[{}]: must started later at [{}], but now is [{}]",
+                            processId, taskId, new Date(startTime), new Date(now));
                 }
 
                 continue;
@@ -194,14 +199,16 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             String queueName = queueService.createQueueName(taskContainer.getActorId(), taskList);
             Long lastEnqueueTime = queueService.getLastPolledTaskEnqueueTime(queueName);
             if (logger.isTraceEnabled()) {
-                logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
+                logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]",
+                        processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
             }
 
             if (lastEnqueueTime < taskContainer.getStartTime()) {
                 // this task must start later than last task pushed to queue
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("#[{}]/[{}]: (startTime = [{}]) skip restart, because early tasks in queue [{}] (last enqueue time = [{}]) isn't polled.", processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
+                    logger.debug("#[{}]/[{}]: (startTime = [{}]) skip restart, because early tasks in queue [{}] (last enqueue time = [{}]) isn't polled.",
+                            processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
                 }
 
                 continue;
