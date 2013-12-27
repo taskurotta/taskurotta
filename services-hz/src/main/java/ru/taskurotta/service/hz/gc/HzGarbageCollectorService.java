@@ -84,4 +84,9 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
         garbageCollectorQueue.add(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
 
     }
+
+    @Override
+    public int getCurrentSize() {
+        return garbageCollectorQueue.size();
+    }
 }

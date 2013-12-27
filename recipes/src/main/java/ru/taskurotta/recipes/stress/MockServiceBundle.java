@@ -290,6 +290,11 @@ public class MockServiceBundle implements ServiceBundle {
             public void delete(UUID processId) {
                 // ignore
             }
+
+            @Override
+            public int getCurrentSize() {
+                return 0;
+            }
         };
     }
 }

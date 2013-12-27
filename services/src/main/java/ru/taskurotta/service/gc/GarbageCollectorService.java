@@ -6,4 +6,6 @@ public interface GarbageCollectorService {
 
     public void delete(UUID processId);
 
+    public int getCurrentSize();
+
 }

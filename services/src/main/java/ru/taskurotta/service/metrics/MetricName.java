@@ -15,7 +15,9 @@ public enum MetricName {
     ERROR_DECISION("errorDecision"),
     ENQUEUE("enqueue"),
     QUEUE_SIZE("queueSize"),
-    MEMORY("memory");
+    MEMORY("memory"),
+    OPERATION_EXECUTOR_SIZE("operationExecutorSize"),
+    GARBAGE_COLLECTOR_QUEUE_SIZE("garbageCollectorQueueSize");
 
 
     private String value;

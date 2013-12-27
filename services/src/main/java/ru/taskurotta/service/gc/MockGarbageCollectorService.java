@@ -22,4 +22,9 @@ public class MockGarbageCollectorService implements GarbageCollectorService {
     public void delete(UUID processId) {
         // do nothing
     }
+
+    @Override
+    public int getCurrentSize() {
+        return 0;
+    }
 }

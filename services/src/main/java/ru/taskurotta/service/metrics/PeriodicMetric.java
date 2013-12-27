@@ -66,11 +66,11 @@ public class PeriodicMetric {
                             numberDataListener.handleNumberData(metricName, dataset, datasetValue,
                                     System.currentTimeMillis(), dataSize);
                         }
-                        Number generalValue = valueExtractor.getGeneralValue(datasetsValues);
-                        if (generalValue!=null) {
-                            numberDataListener.handleNumberData(metricName, metricName, generalValue,
-                                    System.currentTimeMillis(), dataSize);
-                        }
+                    }
+                    Number generalValue = valueExtractor.getGeneralValue(datasetsValues);
+                    if (generalValue!=null) {
+                        numberDataListener.handleNumberData(metricName, metricName, generalValue,
+                                System.currentTimeMillis(), dataSize);
                     }
                     logger.debug("Flushed metrics data for datasets [{}]", datasets);
 
