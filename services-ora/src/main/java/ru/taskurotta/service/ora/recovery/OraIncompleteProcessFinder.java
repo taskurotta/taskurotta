@@ -55,6 +55,11 @@ public class OraIncompleteProcessFinder implements IncompleteProcessFinder {
 
                 try {
 
+                    if (!operationExecutor.isEmpty()) {
+                        logger.debug("RecoveryOperationExecutor queue isn't empty. Skip find incomplete processes");
+                        return;
+                    }
+
                     ILock iLock = hazelcastInstance.getLock(recoveryLockName);
                     if (iLock.tryLock()) {
                         logger.debug("Get lock for find incomplete processes");

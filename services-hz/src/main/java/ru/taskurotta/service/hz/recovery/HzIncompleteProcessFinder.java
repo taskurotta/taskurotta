@@ -61,6 +61,11 @@ public class HzIncompleteProcessFinder implements IncompleteProcessFinder {
             public void run() {
                 try {
 
+                    if (!operationExecutor.isEmpty()) {
+                        logger.debug("RecoveryOperationExecutor queue isn't empty. Skip find incomplete processes");
+                        return;
+                    }
+
                     ILock iLock = hazelcastInstance.getLock(recoveryLockName);
                     if (iLock.tryLock()) {
                         logger.debug("Get lock for find incomplete processes");

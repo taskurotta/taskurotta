@@ -10,6 +10,7 @@ import ru.taskurotta.service.recovery.RecoveryProcessService;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,7 +30,15 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
         final ExecutorService recoveryOperationExecutorService = Executors.newFixedThreadPool(recoveryOperationPoolSize);
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("HzRecoveryOperationExecutorThread");
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -61,5 +70,15 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         } catch (InterruptedException e) {
             logger.error("Catch exception while offer operation to queue", e);
         }
+    }
+
+    @Override
+    public int size() {
+        return operationIQueue.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return operationIQueue.isEmpty();
     }
 }
