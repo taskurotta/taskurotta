@@ -11,10 +11,8 @@
         <constructor-arg name="target" ref="metricsQueueBackend"/>
     </bean>
 
-    <bean id="queueSizeMetricsProvider" class="ru.taskurotta.service.hz.metrics.HzQueueSizeMetricProvider" >
-        <constructor-arg name="hzInstance" ref="hzInstance" />
+    <bean id="queueSizeMetricsProvider" class="ru.taskurotta.service.metrics.handler.QueueSizeMetricHandler" >
         <constructor-arg name="metricsFactory" ref="metricsFactory" />
-        <constructor-arg name="queueNamePrefix" value = "${hz.queue.task.prefix}" />
         <constructor-arg name="queueSizeMetricPeriodSeconds" value="${metric.data.queue-size.period-in-seconds}" />
         <constructor-arg name="retriever" ref="realQueueBackend" />
     </bean>

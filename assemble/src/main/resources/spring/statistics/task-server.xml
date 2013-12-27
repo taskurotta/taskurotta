@@ -19,7 +19,4 @@
         <constructor-arg name="numberDataListener" ref="metricsNumberDataHandler" />
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
-    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init"/>
-
 </beans>

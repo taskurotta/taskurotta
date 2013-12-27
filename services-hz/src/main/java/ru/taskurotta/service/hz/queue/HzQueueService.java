@@ -290,6 +290,11 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         return result;
     }
 
+    @Override
+    public List<String> getQueueNames() {
+        return getTaskQueueNamesByPrefix(queueNamePrefix, null, false);
+    }
+
     private DelayIQueue<TaskQueueItem> getQueue(String queueName) {
 
         DelayIQueue<TaskQueueItem> queue = queueMap.get(queueName);

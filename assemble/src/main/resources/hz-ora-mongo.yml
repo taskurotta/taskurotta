@@ -36,21 +36,6 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
-#        ru.taskurotta.service.hz.support.console: DEBUG
-#        ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider: DEBUG
-#        ru.taskurotta.service.hz.queue: DEBUG
-#        ru.taskurotta.server: DEBUG
-#        ru.taskurotta.dropwizard.resources: DEBUG
-#        ru.taskurotta.service.hz.storage: DEBUG
-#        ru.taskurotta.service.ora.storage.OraBrokenProcessService: TRACE
-#        ru.taskurotta.dropwizard.resources.console.broken: DEBUG
-#        ru.taskurotta.service.hz: DEBUG
-#        ru.taskurotta.service.hz.config: DEBUG
-#        ru.taskurotta.dropwizard.resources.console: DEBUG
-#        ru.taskurotta.service.metricstalistener: DEBUG
-#        ru.taskurotta.schedule: DEBUG
-#        ru.taskurotta.service.metricsEBUG
-#        ru.taskurotta.service.recovery: DEBUG
         com.yammer: INFO
     file:
         enabled: true

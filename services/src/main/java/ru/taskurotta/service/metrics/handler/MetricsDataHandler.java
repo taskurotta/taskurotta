@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * User: dimadin
+ * Holds metrics data collected via backend services methods invocations. Stores and exposes data.
  * Date: 19.09.13 10:30
  */
 public class MetricsDataHandler implements DataListener, MetricsMethodDataRetriever, TimeConstants {

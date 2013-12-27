@@ -139,7 +139,7 @@
     <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
-        <constructor-arg name="queueService" ref="metricsQueueBackend"/>
+        <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
@@ -185,5 +185,10 @@
         <constructor-arg name="target" ref="realTaskServer"/>
     </bean>
     <!-- /Task server -->
+
+    <!-- Metrics data support -->
+        <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
+        <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init"/>
+    <!-- Metrics data support -->
 
 </beans>

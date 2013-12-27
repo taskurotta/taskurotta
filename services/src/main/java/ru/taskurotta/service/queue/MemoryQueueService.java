@@ -323,6 +323,11 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         return result;
     }
 
+    @Override
+    public List<String> getQueueNames() {
+        return new ArrayList<>(queues.keySet());
+    }
+
     /**
      * Drps and recreate queeu map
      */

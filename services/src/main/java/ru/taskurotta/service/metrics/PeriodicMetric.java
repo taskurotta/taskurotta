@@ -34,10 +34,19 @@ public class PeriodicMetric {
 
     public static interface DatasetValueExtractor {
 
+        /**
+         * @return list of all datasets for this metric
+         */
         public List<String> getDatasets();
 
+        /**
+         * @return value of this metrics's dataset
+         */
         public Number getDatasetValue(String dataset);
 
+        /**
+         * General value (for all datasets). Could be average value, sum, most possible, or whatever depending on metric
+         */
         public Number getGeneralValue(Map<String, Number> datasetsValues);
     }
 

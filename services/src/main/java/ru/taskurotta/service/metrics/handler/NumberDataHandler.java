@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Handler for metrics with simple numeric data. Stores and provides data for console
+ * Handler for metrics with simple numeric data. Stores and exposes data.
  * User: dimadin
  * Date: 25.10.13 10:30
  */
