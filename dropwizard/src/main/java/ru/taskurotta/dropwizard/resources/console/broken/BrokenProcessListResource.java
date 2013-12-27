@@ -11,7 +11,7 @@ import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.ProcessGroupVO;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.recovery.RecoveryProcessService;
-import ru.taskurotta.dropwizard.resources.Action;
+import ru.taskurotta.service.console.Action;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

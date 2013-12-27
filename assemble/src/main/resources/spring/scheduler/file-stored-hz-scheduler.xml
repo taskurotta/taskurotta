@@ -4,32 +4,32 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        ">
 
-    <bean id = "realJobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
-        <property name="jobStore" ref="jobStore" />
-        <property name="queueInfoRetriever" ref="realQueueBackend" />
-        <property name="taskServer" ref="taskServer" />
+    <bean id = "realJobManager" class="ru.taskurotta.service.schedule.QuartzJobManager" >
+        <constructor-arg name="jobStore" ref="jobStore" />
+        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
+        <constructor-arg name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id = "realJobStore" class="ru.taskurotta.schedule.storage.file.JsonDirectoryJobStore" init-method="init">
+    <bean id = "realJobStore" class="ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore" init-method="init">
         <property name="storeLocation" value="${schedule.job.store.dir}" />
     </bean>
 
-    <bean id="jobStore" class="ru.taskurotta.schedule.adapter.HzJobStoreAdapter">
+    <bean id="jobStore" class="ru.taskurotta.service.hz.schedule.adapter.HzJobStoreAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
         <constructor-arg name="jobStore" ref="realJobStore" />
         <constructor-arg name="isSharedStore" value="${schedule.job.store.shared}" />
     </bean>
 
-    <bean id="jobManager" class="ru.taskurotta.schedule.adapter.HzJobManagerAdapter">
+    <bean id="jobManager" class="ru.taskurotta.service.hz.schedule.adapter.HzJobManagerAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
         <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic-name}" />
         <constructor-arg name="jobManager" ref="realJobManager" />
     </bean>
 
-    <bean id = "consoleScheduleResource" class="ru.taskurotta.schedule.console.SchedulerResource">
+    <bean id = "consoleScheduleResource" class="ru.taskurotta.dropwizard.resources.console.schedule.SchedulerResource">
         <property name="jobManager" ref="jobManager" />
     </bean>
 
-    <bean id="consoleScheduleValidator" class="ru.taskurotta.schedule.console.SchedulerValidationResource" />
+    <bean id="consoleScheduleValidator" class="ru.taskurotta.dropwizard.resources.console.schedule.SchedulerValidationResource" />
 
 </beans>

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,7 +38,16 @@ public class MetricsFactory {
     private NumberDataListener numberDataListener;
 
     public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener, NumberDataListener numberDataListener) {
-        this.executorService = Executors.newScheduledThreadPool(dumpingThreads);
+        this.executorService = Executors.newScheduledThreadPool(dumpingThreads, new ThreadFactory() {
+            private int counter = 0;
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setDaemon(true);
+                thread.setName("Metrics-job-" + counter++);
+                return thread;
+            }
+        });
         this.dumpPeriod = dumpPeriod;
         this.dataListener = dataListener;
         this.numberDataListener = numberDataListener;

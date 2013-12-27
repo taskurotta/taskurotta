@@ -3,6 +3,7 @@ package ru.taskurotta.client.jersey;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import ru.taskurotta.server.TaskServerResource;
 
 import javax.annotation.PostConstruct;
 
@@ -20,9 +21,9 @@ public class JerseyTaskServerProxy extends BaseTaskProxy {
 
         Client client = Client.create(cc);
 
-        startResource = client.resource(getContextUrl(TaskurottaResource.START));
-        pullResource = client.resource(getContextUrl(TaskurottaResource.POLL));
-        releaseResource = client.resource(getContextUrl(TaskurottaResource.RELEASE));
+        startResource = client.resource(getContextUrl(TaskServerResource.START));
+        pullResource = client.resource(getContextUrl(TaskServerResource.POLL));
+        releaseResource = client.resource(getContextUrl(TaskServerResource.RELEASE));
 
         //Prints JSON request to console
         //client.addFilter(new LoggingFilter(System.out));

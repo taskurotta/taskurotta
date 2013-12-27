@@ -7,20 +7,20 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <bean id = "jobStore" class="ru.taskurotta.schedule.storage.file.JsonDirectoryJobStore" init-method="init">
+    <bean id = "jobStore" class="ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore" init-method="init">
         <property name="storeLocation" value="${schedule.job.store.dir}" />
     </bean>
 
-    <bean id = "jobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
-        <property name="jobStore" ref="jobStore" />
-        <property name="queueInfoRetriever" ref="realQueueBackend" />
-        <property name="taskServer" ref="taskServer" />
+    <bean id = "jobManager" class="ru.taskurotta.service.schedule.QuartzJobManager" >
+        <constructor-arg name="jobStore" ref="jobStore" />
+        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
+        <constructor-arg name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id = "consoleScheduleResource" class="ru.taskurotta.schedule.console.SchedulerResource">
+    <bean id = "consoleScheduleResource" class="ru.taskurotta.dropwizard.resources.console.schedule.SchedulerResource">
         <property name="jobManager" ref="jobManager" />
     </bean>
 
-    <bean id="consoleScheduleValidator" class="ru.taskurotta.schedule.console.SchedulerValidationResource" />
+    <bean id="consoleScheduleValidator" class="ru.taskurotta.dropwizard.resources.console.schedule.SchedulerValidationResource" />
 
 </beans>
