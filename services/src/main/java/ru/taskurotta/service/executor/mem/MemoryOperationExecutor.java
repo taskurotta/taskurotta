@@ -68,5 +68,13 @@ public class MemoryOperationExecutor implements OperationExecutor {
         queue.add(operation);
     }
 
+    @Override
+    public int size() {
+        return queue.size();
+    }
 
+    @Override
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
 }
