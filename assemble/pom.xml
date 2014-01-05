@@ -50,11 +50,6 @@
         </dependency>
         <dependency>
             <groupId>ru.taskurotta</groupId>
-            <artifactId>schedule</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
             <artifactId>server</artifactId>
             <version>${project.version}</version>
         </dependency>
