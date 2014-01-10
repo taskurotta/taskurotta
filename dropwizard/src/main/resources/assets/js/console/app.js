@@ -89,15 +89,6 @@ angular.module("consoleApp", ['console.services', 'console.controllers', 'consol
             templateUrl: '/partials/view/list/actors_list.html',
             controller: "actorListController"
         });
-        $routeProvider.when('/actors/actor', {
-            templateUrl: '/partials/view/list/actors_list.html',
-            controller: "actorListController"
-        });
-        $routeProvider.when('/actors/compare', {
-            templateUrl: '/partials/view/card/actor_compare.html',
-            controller: "actorCompareController"
-        });
-
 
         //SCHEDULE
         $routeProvider.when('/schedule/list', {

@@ -6,11 +6,7 @@
     <bean id = "actorListResource" class = "ru.taskurotta.dropwizard.resources.console.actors.ActorListResource">
         <property name="actorConfigManager" ref="actorConfigManager"/>
         <property name="configService" ref="configService"/>
-    </bean>
-
-    <bean id="actorCompareResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorCompareResource">
-        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
-        <property name="actorConfigManager" ref="actorConfigManager"/>
+        <property name="metricsDataRetriever" ref="metricsDataHandler" />
     </bean>
 
     <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
@@ -124,10 +120,10 @@
     </bean>
 
     <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">
-        <property name="queueInfo" ref="realQueueBackend"/>
-        <property name="taskInfo" ref="taskService"/>
-        <property name="processInfo" ref="processService"/>
-        <property name="graphInfo" ref="dependencyService"/>
+        <property name="queueInfo" ref="realQueueBackend" />
+        <property name="taskInfo" ref="taskService" />
+        <property name="processInfo" ref="processService" />
+        <property name="graphInfo" ref="dependencyService" />
     </bean>
 
     <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource" />
