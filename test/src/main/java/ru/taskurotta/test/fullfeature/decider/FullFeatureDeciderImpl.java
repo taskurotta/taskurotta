@@ -1,5 +1,7 @@
 package ru.taskurotta.test.fullfeature.decider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
@@ -16,6 +18,7 @@ import java.util.List;
  * Created by void 20.12.13 17:56
  */
 public class FullFeatureDeciderImpl implements FullFeatureDecider {
+    protected final static Logger log = LoggerFactory.getLogger(FullFeatureDeciderImpl.class);
 
     FullFeatureDeciderImpl async;
     FullFeatureWorkerClient worker;
@@ -37,7 +40,8 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
         List<Promise<Double>> list = new ArrayList<>(Arrays.asList(res0, res1));
         Promise <Double> result = async.step4(list);
-        async.isResultOk(data, result);
+        Promise<Boolean> resultOk = async.isResultOk(data, result);
+        async.logResult(resultOk);
     }
 
     @Asynchronous
@@ -76,6 +80,11 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         double val = Math.sqrt(d[0] * d[0] + d[1] * d[1]) + Math.sqrt(d[2] * d[2] + d[3] * d[3]);
         boolean resultOk = val - result.get() < 1e-6;
         return Promise.asPromise(resultOk);
+    }
+
+    @Asynchronous
+    public void logResult(Promise<Boolean> result) {
+        log.info("is process correct: {}", result.get());
     }
 
 
