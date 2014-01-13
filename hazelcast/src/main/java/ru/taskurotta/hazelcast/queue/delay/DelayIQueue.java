@@ -21,12 +21,12 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean add(E e) {
-        return queue.add(e);
+        return offer(e);
     }
 
     public boolean add(E e, long delayTime, TimeUnit unit) {
         if (delayTime == 0) {
-            return add(e);
+            return offer(e);
         }
 
         return storage.add(e, delayTime, unit);
@@ -34,7 +34,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean offer(E e) {
-        return queue.offer(e);
+        return queue.offer(e) || storage.add(e, 0l, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class DelayIQueue<E> implements IQueue<E> {
 
     @Override
     public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
-        return add(e, timeout, unit);
+        return queue.offer(e, timeout, unit);
     }
 
     @Override
