@@ -21,13 +21,9 @@
     <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="maxSize" value="0"/>
-        <property name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
-        <property name="binary" value="false"/>
-        <property name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
+        <constructor-arg name="maxSize" value="${hz.queue.task.max-size}"/>
+        <constructor-arg name="backupCount" value="${hz.queue.task.backup-count}"/>
+        <constructor-arg name="asyncBackupsCount" value="${hz.queue.task.async-backup-count}"/>
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
@@ -38,7 +34,6 @@
 
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
         <property name="mongoTemplate" ref="mongoTemplate"/>
-        <property name="hzInstance" ref="hzInstance"/>
         <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
@@ -47,13 +42,9 @@
     <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="maxSize" value="0"/>
-        <property name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
-        <property name="binary" value="false"/>
-        <property name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
+        <constructor-arg name="maxSize" value="${gc.queue.max-size}"/>
+        <constructor-arg name="backupCount" value="${gc.queue.backup-count}"/>
+        <constructor-arg name="asyncBackupsCount" value="${gc.queue.async-backup-count}"/>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">

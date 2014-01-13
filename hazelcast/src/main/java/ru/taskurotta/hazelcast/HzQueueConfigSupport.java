@@ -1,7 +1,5 @@
 package ru.taskurotta.hazelcast;
 
-import java.util.Properties;
-
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.DistributedObject;
@@ -24,27 +22,23 @@ public class HzQueueConfigSupport {
 
     private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
 
-
     private HazelcastInstance hzInstance;
     private QueueStoreFactory queueStoreFactory;
 
-
-    //    private String queueStoreBeanName;
-    private int maxSize = 100;
+    private int maxSize = 0;
     private int backupCount = 0;
     private int asyncBackupsCount = 0;
 
-    private Integer memoryLimit = 100;
-    private Boolean binary = false;
-    private Integer bulkLoad = 10;
-
-
     private ILock queueConfigLock;
 
-
-    public HzQueueConfigSupport(HazelcastInstance hzInstance, QueueStoreFactory queueStoreFactory) {
+    public HzQueueConfigSupport(HazelcastInstance hzInstance, QueueStoreFactory queueStoreFactory,
+                                int maxSize, int backupCount, int asyncBackupsCount) {
         this.hzInstance = hzInstance;
         this.queueStoreFactory = queueStoreFactory;
+        this.maxSize = maxSize;
+        this.backupCount = backupCount;
+        this.asyncBackupsCount = asyncBackupsCount;
+
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
     }
 
@@ -60,6 +54,8 @@ public class HzQueueConfigSupport {
             QueueConfig qc = new QueueConfig();
             qc.setName(queueName);
             qc.setMaxSize(maxSize);
+            qc.setBackupCount(backupCount);
+            qc.setAsyncBackupCount(asyncBackupsCount);
 
             qc.setQueueStoreConfig(createQueueStoreConfig(queueName));
 
@@ -72,15 +68,12 @@ public class HzQueueConfigSupport {
     }
 
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
-        QueueStoreConfig result = new QueueStoreConfig();
-        result.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
-        result.setEnabled(true);
-        Properties properties = new Properties();
-        properties.setProperty("binary", this.binary.toString());
-        properties.setProperty("memory-limit", this.memoryLimit.toString());
-        properties.setProperty("bulk-load", this.bulkLoad.toString());
-        result.setProperties(properties);
-        return result;
+        QueueStoreConfig queueStoreConfig = new QueueStoreConfig();
+
+        queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
+        queueStoreConfig.setEnabled(true);
+
+        return queueStoreConfig;
     }
 
     private boolean isQueueExists(String name) {
@@ -92,60 +85,5 @@ public class HzQueueConfigSupport {
             }
         }
         return result;
-    }
-
-
-    public void setHzInstance(HazelcastInstance hzInstance) {
-        this.hzInstance = hzInstance;
-    }
-
-
-    public void setMaxSize(int maxSize) {
-        this.maxSize = maxSize;
-    }
-
-
-    public void setBackupCount(int backupCount) {
-        this.backupCount = backupCount;
-    }
-
-    public void setAsyncBackupsCount(int asyncBackupsCount) {
-        this.asyncBackupsCount = asyncBackupsCount;
-    }
-
-    public boolean isBinary() {
-        return binary;
-    }
-
-    public void setBinary(boolean binary) {
-        this.binary = binary;
-    }
-
-    public int getBackupCount() {
-        return backupCount;
-    }
-
-    public int getAsyncBackupsCount() {
-        return asyncBackupsCount;
-    }
-
-    public int getMaxSize() {
-        return maxSize;
-    }
-
-    public int getMemoryLimit() {
-        return memoryLimit;
-    }
-
-    public void setMemoryLimit(int memoryLimit) {
-        this.memoryLimit = memoryLimit;
-    }
-
-    public int getBulkLoad() {
-        return bulkLoad;
-    }
-
-    public void setBulkLoad(int bulkLoad) {
-        this.bulkLoad = bulkLoad;
     }
 }
