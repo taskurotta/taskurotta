@@ -20,6 +20,8 @@ spreader:
           pollDelay: 10
           pollDelayUnit: "SECONDS"
           hz.nodes: localhost:7777
+          hz.jmx.detailed: true
+          hz.jmx: true
           mongo.host: localhost
           mongo.port: 27017
           gc.enabled: false
