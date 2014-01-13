@@ -1,6 +1,5 @@
 package ru.taskurotta.hazelcast.store;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.mongodb.DBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ public class HzQueueRestoreSupport {
     private static final Logger logger = LoggerFactory.getLogger(HzQueueRestoreSupport.class);
 
     private MongoTemplate mongoTemplate;
-    private HazelcastInstance hzInstance;
     private String queuePrefix;
     private HzQueueConfigSupport hzQueueConfigSupport;
     private boolean restore = true;
@@ -48,13 +46,8 @@ public class HzQueueRestoreSupport {
         }
     }
 
-
     public void setMongoTemplate(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
-    }
-
-    public void setHzInstance(HazelcastInstance hzInstance) {
-        this.hzInstance = hzInstance;
     }
 
     public void setQueuePrefix(String queuePrefix) {
