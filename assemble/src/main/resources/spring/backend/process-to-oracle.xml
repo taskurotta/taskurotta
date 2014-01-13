@@ -26,22 +26,8 @@
 
 
     <!-- Recovery -->
-    <bean id="oraIncompleteProcessFinder" class="ru.taskurotta.service.ora.recovery.OraIncompleteProcessFinder">
-        <constructor-arg name="dataSource" ref="dataSource"/>
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
-        <constructor-arg name="incompleteTimeOutMillis">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="findIncompleteProcessPeriod">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="recoveryLockName" value="${recovery.ora.lock-name}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    <bean id = "incompleteProcessDao" class="ru.taskurotta.service.ora.recovery.OraIncompleteProcessDao">
+        <constructor-arg name="dataSource" ref="dataSource" />
     </bean>
     <!-- /Recovery -->
 
@@ -60,7 +46,6 @@
         <property name="password" value="${oradb.password}"/>
     </bean>
     <!-- /Data source -->
-
 
     <!-- Transactions -->
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
