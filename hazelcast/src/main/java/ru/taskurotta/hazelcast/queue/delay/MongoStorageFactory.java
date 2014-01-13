@@ -8,7 +8,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
@@ -25,6 +26,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 16:58
  */
 public class MongoStorageFactory implements StorageFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
 
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
@@ -51,6 +54,7 @@ public class MongoStorageFactory implements StorageFactory {
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
                 thread.setName("MongoStorageFactory-" + counter++);
+                thread.setDaemon(true);
                 return thread;
             }
         });
@@ -58,26 +62,30 @@ public class MongoStorageFactory implements StorageFactory {
         singleThreadScheduledExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                for (Map.Entry<String, String> entry : dbCollectionNamesMap.entrySet()) {
-                    String dbCollectionName = entry.getValue();
+                try {
+                    for (Map.Entry<String, String> entry : dbCollectionNamesMap.entrySet()) {
+                        String dbCollectionName = entry.getValue();
 
-                    DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                        DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
-                    BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
+                        BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
 
-                    try (DBCursor dbCursor = dbCollection.find(query)) {
-                        String queueName = entry.getKey();
-                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
+                        try (DBCursor dbCursor = dbCollection.find(query)) {
+                            String queueName = entry.getKey();
+                            IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                        while (dbCursor.hasNext()) {
-                            DBObject dbObject = dbCursor.next();
-                            StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+                            while (dbCursor.hasNext()) {
+                                DBObject dbObject = dbCursor.next();
+                                StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
 
-                            if (iQueue.add(storageItem.getObject())) {
-                                dbCollection.remove(dbObject);
+                                if (iQueue.offer(storageItem.getObject())) {
+                                    dbCollection.remove(dbObject);
+                                }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    logger.error(e.getLocalizedMessage(), e);
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
