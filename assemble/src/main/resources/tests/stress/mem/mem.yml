@@ -62,7 +62,7 @@ logback:
              file: ./target/logs/recipes-multiply.log
              append: false
              encoder:
-                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name

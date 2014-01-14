@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -63,17 +64,18 @@ public class MongoStorageFactory implements StorageFactory {
             @Override
             public void run() {
                 try {
-                    for (Map.Entry<String, String> entry : dbCollectionNamesMap.entrySet()) {
-                        String dbCollectionName = entry.getValue();
+                    Set<Map.Entry<String, String>> entrySet = dbCollectionNamesMap.entrySet();
 
+                    BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
+
+                    for (Map.Entry<String, String> entry : entrySet) {
+                        String dbCollectionName = entry.getValue();
                         DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
-                        BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
+                        String queueName = entry.getKey();
+                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
                         try (DBCursor dbCursor = dbCollection.find(query)) {
-                            String queueName = entry.getKey();
-                            IQueue iQueue = hazelcastInstance.getQueue(queueName);
-
                             while (dbCursor.hasNext()) {
                                 DBObject dbObject = dbCursor.next();
                                 StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
@@ -125,7 +127,6 @@ public class MongoStorageFactory implements StorageFactory {
 
             @Override
             public boolean remove(Object o) {
-                // ToDo maybe use full scan
                 return delete(o, dbCollection);
             }
 
@@ -152,14 +153,7 @@ public class MongoStorageFactory implements StorageFactory {
     }
 
     private boolean delete(Object o, DBCollection dbCollection) {
-        DBObject query = new BasicDBObject(OBJECT_NAME, o);
-
-        try (DBCursor dbCursor = dbCollection.find(query)) {
-            while (dbCursor.hasNext()) {
-                dbCollection.remove(dbCursor.next());
-            }
-        }
-
+        dbCollection.remove(new BasicDBObject(OBJECT_NAME, o));
         return true;
     }
 }
