@@ -24,6 +24,9 @@
         <constructor-arg name="maxSize" value="${hz.queue.task.max-size}"/>
         <constructor-arg name="backupCount" value="${hz.queue.task.backup-count}"/>
         <constructor-arg name="asyncBackupsCount" value="${hz.queue.task.async-backup-count}"/>
+        <constructor-arg name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
+        <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
+        <constructor-arg name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
@@ -45,6 +48,9 @@
         <constructor-arg name="maxSize" value="${gc.queue.max-size}"/>
         <constructor-arg name="backupCount" value="${gc.queue.backup-count}"/>
         <constructor-arg name="asyncBackupsCount" value="${gc.queue.async-backup-count}"/>
+        <constructor-arg name="memoryLimit" value="${gc.queue.memory-limit}"/>
+        <constructor-arg name="binary" value="${gc.queue.binary}"/>
+        <constructor-arg name="bulkLoad" value="${gc.queue.bulk-load}"/>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">

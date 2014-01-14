@@ -10,6 +10,8 @@ import com.hazelcast.core.QueueStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
+
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
  * Uses named spring bean as mapStore implementation
@@ -28,16 +30,23 @@ public class HzQueueConfigSupport {
     private int maxSize = 0;
     private int backupCount = 0;
     private int asyncBackupsCount = 0;
+    private Integer memoryLimit = 100;
+    private Boolean binary = false;
+    private Integer bulkLoad = 10;
 
     private ILock queueConfigLock;
 
     public HzQueueConfigSupport(HazelcastInstance hzInstance, QueueStoreFactory queueStoreFactory,
-                                int maxSize, int backupCount, int asyncBackupsCount) {
+                                int maxSize, int backupCount, int asyncBackupsCount,
+                                int memoryLimit, boolean binary, int bulkLoad) {
         this.hzInstance = hzInstance;
         this.queueStoreFactory = queueStoreFactory;
         this.maxSize = maxSize;
         this.backupCount = backupCount;
         this.asyncBackupsCount = asyncBackupsCount;
+        this.memoryLimit = memoryLimit;
+        this.binary = binary;
+        this.bulkLoad = bulkLoad;
 
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
     }
@@ -69,6 +78,12 @@ public class HzQueueConfigSupport {
 
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
         QueueStoreConfig queueStoreConfig = new QueueStoreConfig();
+
+        Properties properties = new Properties();
+        properties.setProperty("binary", binary.toString());
+        properties.setProperty("memory-limit", memoryLimit.toString());
+        properties.setProperty("bulk-load", bulkLoad.toString());
+        queueStoreConfig.setProperties(properties);
 
         queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
         queueStoreConfig.setEnabled(true);
