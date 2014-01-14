@@ -118,10 +118,10 @@
         <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
     </bean>
 
-    <bean id="hzIncompleteProcessFinder" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessFinder">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder">
+        <constructor-arg name="dao" ref="incompleteProcessDao"/>
         <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
-        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
         <constructor-arg name="incompleteTimeOutMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
@@ -132,8 +132,12 @@
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="hzRecoveryLockName" value="${recovery.hz.lock-name}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+        <constructor-arg name="nodeLock" ref="recoveryNodeLock" />
+    </bean>
+
+    <bean id = "incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
     </bean>
 
     <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">

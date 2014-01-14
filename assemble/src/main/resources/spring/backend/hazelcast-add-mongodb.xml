@@ -94,22 +94,9 @@
     </bean>
     <!-- /Delay queue support -->
 
-    <bean id="mongoIncompleteProcessFinder" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessFinder">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
-        <constructor-arg name="incompleteTimeOutMillis">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="findIncompleteProcessPeriod">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="mongoRecoveryLockName" value="${recovery.mongo.lock-name}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    <bean id = "incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessDao">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
     </bean>
+
 </beans>

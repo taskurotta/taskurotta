@@ -75,4 +75,6 @@
         </hz:config>
     </hz:hazelcast>
 
+    <hz:lock id="recoveryNodeLock" instance-ref="hzInstance" name="${hz.recovery.lock.name}" />
+
 </beans>
