@@ -81,7 +81,7 @@ public class HzQueueConfigSupport {
         queueStoreConfig.setProperty("memory-limit", memoryLimit.toString());
         queueStoreConfig.setProperty("bulk-load", bulkLoad.toString());
         queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
-        queueStoreConfig.setEnabled(false);
+        queueStoreConfig.setEnabled(true);
 
         return queueStoreConfig;
     }
