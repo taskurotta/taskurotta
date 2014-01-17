@@ -17,7 +17,10 @@
 
             <hz:network port="${hz.port}" port-auto-increment="true">
                 <hz:join>
-                    <hz:multicast enabled="true"/>
+                    <hz:multicast enabled="false"/>
+                    <hz:tcp-ip enabled="true">
+                        <hz:members>${hz.nodes}</hz:members>
+                    </hz:tcp-ip>
                 </hz:join>
             </hz:network>
 

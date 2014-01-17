@@ -17,4 +17,17 @@
         <constructor-arg name="retriever" ref="realQueueBackend" />
     </bean>
 
+    <bean id="gcQueueSizeMetrucHandler" class="ru.taskurotta.service.metrics.handler.GcMetricHandler">
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService" />
+        <constructor-arg name="metricsFactory" ref="metricsFactory" />
+        <constructor-arg name="periodSeconds" value = "5" />
+    </bean>
+
+    <bean id="recoveryQueueSizeMetrucHandler" class="ru.taskurotta.service.metrics.handler.OperationMetricsHandler">
+        <constructor-arg name="metricsFactory" ref="metricsFactory" />
+        <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor" />
+        <constructor-arg name="periodSeconds" value = "5" />
+    </bean>
+
+
 </beans>

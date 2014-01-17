@@ -9,7 +9,7 @@ import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -54,17 +54,30 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status) {
         List<Process> result = new ArrayList<>();
+        Collection<Process> values = null;
         if (!processesStorage.isEmpty()) {
-            Process[] processes = new Process[processesStorage.values().size()];
-            processes = processesStorage.values().toArray(processes);
-            int pageStart = (pageNumber - 1) * pageSize;
-            int pageEnd = (pageSize * pageNumber >= processes.length) ? processes.length : pageSize * pageNumber;
-            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
-        }
-        return new GenericPage<>(result, pageNumber, pageSize, processesStorage.values().size());
 
+            if (status > 0) {
+                values = Collections2.filter(processesStorage.values(), new Predicate<Process>() {
+                    @Override
+                    public boolean apply(Process input) {
+                        return input!=null && (input.getState() == status);
+                    }
+                });
+            } else {
+                values = processesStorage.values();
+            }
+
+            if (values!=null && !values.isEmpty()) {
+                int pageStart = (pageNumber - 1) * pageSize;
+                int pageEnd = Math.min(pageSize * pageNumber, values.size());
+                result.addAll(new ArrayList(values).subList(pageStart, pageEnd));
+            }
+        }
+
+        return new GenericPage<>(result, pageNumber, pageSize, values!=null? values.size(): 0);
     }
 
     @Override

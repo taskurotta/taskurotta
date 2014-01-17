@@ -70,12 +70,22 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         items: []
     };
 
+    $scope.filters = [
+        {status: -1, name: "All"},
+        {status: 0, name: "Started"},
+        {status: 1, name: "Finished"}
+    ];
+
+    $scope.selection = {
+        filter: $scope.filters[0]
+    };
+
     $scope.initialized = false;
 
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
-        $$data.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize).then(function (value) {
+        $$data.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize, $scope.selection.filter.status).then(function (value) {
             $scope.processesPage = angular.fromJson(value.data || {});
             $scope.initialized = true;
             $log.info("processListController: successfully updated processes list");

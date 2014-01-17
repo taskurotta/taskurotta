@@ -24,6 +24,7 @@ public class ProcessResource extends BaseResource {
 
     private static int DEFAULT_START_PAGE = 1;
     private static int DEFAULT_PAGE_SIZE = 10;
+    private static int DEFAULT_STATUS = -1;
 
     @GET
     @Path("/search")
@@ -61,10 +62,10 @@ public class ProcessResource extends BaseResource {
     }
 
     @GET
-    public GenericPage<Process> listProcesses(@QueryParam("pageNum") Optional< Integer > pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
+    public GenericPage<Process> listProcesses(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize, @QueryParam("status") Optional<Integer> status) {
 
         try {
-            GenericPage<Process> result = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE));
+            GenericPage<Process> result = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), status.or(DEFAULT_STATUS));
             logger.debug("Processes page is [{}]", result);
             return result;
 

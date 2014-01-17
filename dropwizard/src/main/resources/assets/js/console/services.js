@@ -56,8 +56,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         getProcessTree: function (processId, startTaskId) {
             return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
         },
-        getProcessesList: function (pageNumber, pageSize) {
-            return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        getProcessesList: function (pageNumber, pageSize, status) {
+            return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize + "&status=" + status);
         },
         getProcessTasks: function (processId) {
             return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));

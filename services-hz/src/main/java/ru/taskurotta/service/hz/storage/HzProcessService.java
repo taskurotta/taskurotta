@@ -12,7 +12,6 @@ import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -61,19 +60,30 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status) {
         List<Process> result = new ArrayList<>();
-
-        Collection<Process> values = processIMap.values();
-        Process[] processes = new Process[values.size()];
-        processes = values.toArray(processes);
+        Collection<Process> values = null;
         if (!processIMap.isEmpty()) {
-            int pageEnd = pageSize * pageNumber >= processes.length ? processes.length : pageSize * pageNumber;
-            int pageStart = (pageNumber - 1) * pageSize;
-            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
-        }
-        return new GenericPage<>(result, pageNumber, pageSize, processes.length);
 
+            if (status>0) {
+                values = Collections2.filter(processIMap.values(), new Predicate<Process>() {
+                    @Override
+                    public boolean apply(Process input) {
+                        return input!=null && (input.getState() == status);
+                    }
+                });
+            } else {
+                values = processIMap.values();
+            }
+
+            if (values!=null && !values.isEmpty()) {
+                int pageEnd = Math.min(pageSize * pageNumber, values.size());
+                int pageStart = (pageNumber - 1) * pageSize;
+                result.addAll(new ArrayList(values).subList(pageStart, pageEnd));
+            }
+        }
+
+        return new GenericPage<>(result, pageNumber, pageSize, values!=null? values.size(): 0);
     }
 
     @Override

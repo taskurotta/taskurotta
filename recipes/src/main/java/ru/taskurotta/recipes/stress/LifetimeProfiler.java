@@ -48,7 +48,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double previousCountTotalRate = 0;
     private double targetTolerance = 4.0;
     private AtomicInteger nullPoll = new AtomicInteger(0);
-    private ThreadLocal<Integer> localTaskCount = new ThreadLocal<>();
+    private ThreadLocal<Integer> localTaskCount = new ThreadLocal<Integer>();
     private int taskPerProcess = 1;
 
     public LifetimeProfiler() {

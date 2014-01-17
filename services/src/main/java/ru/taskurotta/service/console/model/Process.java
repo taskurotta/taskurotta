@@ -1,9 +1,9 @@
 package ru.taskurotta.service.console.model;
 
+import ru.taskurotta.transport.model.TaskContainer;
+
 import java.io.Serializable;
 import java.util.UUID;
-
-import ru.taskurotta.transport.model.TaskContainer;
 
 /**
  * POJO representing workflow process
@@ -15,14 +15,14 @@ public class Process implements Serializable {
     public static final int START = 0;
     public static final int FINISH = 1;
 
-    private UUID processId;
-    private UUID startTaskId;
-    private String customId;
-    private long startTime = -1l;
-    private long endTime = -1l;
-    private int state;
-    private String returnValue;
-    private TaskContainer startTask;
+    protected UUID processId;
+    protected UUID startTaskId;
+    protected String customId;
+    protected long startTime = -1l;
+    protected long endTime = -1l;
+    protected int state;
+    protected String returnValue;
+    protected TaskContainer startTask;
 
     public Process() {}
 

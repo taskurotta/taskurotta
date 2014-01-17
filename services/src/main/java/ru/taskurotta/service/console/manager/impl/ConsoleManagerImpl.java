@@ -118,11 +118,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status) {
         if (processInfo == null) {
             return null;
         }
-        return processInfo.listProcesses(pageNumber, pageSize);
+        return processInfo.listProcesses(pageNumber, pageSize, status);
     }
 
     @Override

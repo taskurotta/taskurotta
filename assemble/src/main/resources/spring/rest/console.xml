@@ -15,7 +15,7 @@
     <bean id="consoleQueueListResource" class="ru.taskurotta.dropwizard.resources.console.queue.QueueStatListResource" parent="baseConsoleResource">
         <property name = "queueInfoRetriever" ref = "realQueueBackend" />
     </bean>
-    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.QueueContentResource" parent="baseConsoleResource"/>
+    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.queue.QueueContentResource" parent="baseConsoleResource"/>
     <bean id="consoleTaskCardResource" class="ru.taskurotta.dropwizard.resources.console.process.TaskResource" parent="baseConsoleResource"/>
     <bean id="consoleProcessCardResource" class="ru.taskurotta.dropwizard.resources.console.process.ProcessResource" parent="baseConsoleResource"/>
     <bean id="consoleTaskTreeResource" class="ru.taskurotta.dropwizard.resources.console.process.TaskTreeResource" parent="baseConsoleResource"/>
@@ -54,6 +54,8 @@
                 <entry key="enqueue" value="QueueBackend#enqueueTask method invocation" />
                 <entry key="queueSize" value="Number of tasks in the queue" />
                 <entry key="memory" value="Occupied, free and total amounts of memory consumed by this node" />
+                <entry key="operationExecutorSize" value="Number of operations in the recovery service executor's queue" />
+                <entry key="garbageCollectorQueueSize" value="Number of garbage collect tasks in the service's queue" />
             </map>
         </property>
 
@@ -68,6 +70,8 @@
                 <entry key="enqueue#enqueue" value="QueueBackend#enqueueTask method invocation" />
                 <entry key="queueSize#queueSize" value="Total number of task for all queues" />
                 <entry key="memory#memory" value="Occupied memory evaluated as: (total - free)" />
+                <entry key="operationExecutorSize#operationExecutorSize" value="Number of operations in the recovery service executor's queue" />
+                <entry key="garbageCollectorQueueSize#garbageCollectorQueueSize" value="Number of garbage collect tasks in the service's queue" />
             </map>
         </property>
 
@@ -81,12 +85,16 @@
             <map>
                 <entry key="queueSize" value="size" />
                 <entry key="memory" value="size" />
+                <entry key="operationExecutorSize" value="size" />
+                <entry key="garbageCollectorQueueSize" value="size" />
             </map>
         </property>
         <property name="metricPeriods">
             <map>
                 <entry key="queueSize" value="day, hour, 5minutes" />
                 <entry key="memory" value="day, hour, 5minutes" />
+                <entry key="operationExecutorSize" value="day, hour, 5minutes" />
+                <entry key="garbageCollectorQueueSize" value="day, hour, 5minutes" />
             </map>
         </property>
         <property name="metricScopes">
@@ -129,5 +137,13 @@
     <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource" />
 
     <bean id="contextResource" class="ru.taskurotta.dropwizard.resources.console.meta.ContextResource" />
+
+    <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryInfoResource">
+        <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor" />
+    </bean>
+
+    <bean id = "gcResource" class="ru.taskurotta.dropwizard.resources.console.operation.GarbageCollectorResource">
+        <property name="gcService" ref="garbageCollectorService" />
+    </bean>
 
 </beans>

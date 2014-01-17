@@ -1,6 +1,7 @@
-package ru.taskurotta.dropwizard.resources.console;
+package ru.taskurotta.dropwizard.resources.console.queue;
 
 import com.google.common.base.Optional;
+import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
