@@ -8,11 +8,17 @@
     <hz:hazelcast id="hzInstance">
         
         <hz:config>
+
+            <hz:properties>
+                <hz:property name="hazelcast.jmx">true</hz:property>
+                <hz:property name="hazelcast.jmx.detailed">true</hz:property>
+            </hz:properties>
+
             <hz:queue name="testQueue" backup-count="0" async-backup-count="0" max-size="0">
                 <hz:queue-store enabled="true" store-implementation="queueStore">
                     <hz:properties>
                         <hz:property name="binary">false</hz:property>
-                        <hz:property name="memory-limit">10</hz:property>
+                        <hz:property name="memory-limit">1000</hz:property>
                         <hz:property name="bulk-load">250</hz:property>
                     </hz:properties>
                 </hz:queue-store>
@@ -21,6 +27,6 @@
         
     </hz:hazelcast>
 
-    <bean id="queueStore" class="ru.taskurotta.hz.test.queue.MemoryQueueStore"/>
+    <bean id="queueStore" class="ru.taskurotta.hz.test.queue.FakeQueueStore"/>
 
 </beans>

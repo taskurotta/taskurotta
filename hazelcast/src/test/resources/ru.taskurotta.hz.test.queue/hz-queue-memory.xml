@@ -21,6 +21,6 @@
         
     </hz:hazelcast>
 
-    <bean id="queueStore" class="ru.taskurotta.hz.test.queue.QueueStoreImpl"/>
+    <bean id="queueStore" class="ru.taskurotta.hz.test.queue.MemoryQueueStore"/>
 
 </beans>
