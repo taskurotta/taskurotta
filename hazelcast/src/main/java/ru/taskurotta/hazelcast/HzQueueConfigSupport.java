@@ -10,8 +10,6 @@ import com.hazelcast.core.QueueStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
  * Uses named spring bean as mapStore implementation
@@ -27,12 +25,12 @@ public class HzQueueConfigSupport {
     private HazelcastInstance hzInstance;
     private QueueStoreFactory queueStoreFactory;
 
-    private int maxSize = 0;
-    private int backupCount = 0;
-    private int asyncBackupsCount = 0;
-    private Integer memoryLimit = 100;
-    private Boolean binary = false;
-    private Integer bulkLoad = 10;
+    private int maxSize;
+    private int backupCount;
+    private int asyncBackupsCount;
+    private Integer memoryLimit;
+    private Boolean binary;
+    private Integer bulkLoad;
 
     private ILock queueConfigLock;
 
@@ -69,7 +67,7 @@ public class HzQueueConfigSupport {
             qc.setQueueStoreConfig(createQueueStoreConfig(queueName));
 
             hzInstance.getConfig().addQueueConfig(qc);
-            logger.debug("Config for queue name[{}] added...", queueName);
+            logger.debug("For queue name [{}] add config [{}]", queueName, qc);
 
         } finally {
             queueConfigLock.unlock();
@@ -79,12 +77,9 @@ public class HzQueueConfigSupport {
     public QueueStoreConfig createQueueStoreConfig(String queueName) {
         QueueStoreConfig queueStoreConfig = new QueueStoreConfig();
 
-        Properties properties = new Properties();
-        properties.setProperty("binary", binary.toString());
-        properties.setProperty("memory-limit", memoryLimit.toString());
-        properties.setProperty("bulk-load", bulkLoad.toString());
-        queueStoreConfig.setProperties(properties);
-
+        queueStoreConfig.setProperty("binary", binary.toString());
+        queueStoreConfig.setProperty("memory-limit", memoryLimit.toString());
+        queueStoreConfig.setProperty("bulk-load", bulkLoad.toString());
         queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
         queueStoreConfig.setEnabled(true);
 
