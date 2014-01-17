@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
+            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    <hz:hazelcast id="hzInstance">
+        <hz:config>
+            <hz:properties>
+                <hz:property name="hazelcast.jmx">true</hz:property>
+                <hz:property name="hazelcast.jmx.detailed">true</hz:property>
+            </hz:properties>
+        </hz:config>
+    </hz:hazelcast>
+
+    <!-- Mongo -->
+    <mongo:mongo id="mongo" host="localhost" port="27017">
+        <mongo:options connections-per-host="50"
+                       threads-allowed-to-block-for-connection-multiplier="5"
+                       max-wait-time="12000"
+                       connect-timeout="0"
+                       socket-timeout="0"
+                       socket-keep-alive="false"
+                       auto-connect-retry="true"
+                       max-auto-connect-retry-time="0"
+                       write-number="0"
+                       write-timeout="0"
+                       write-fsync="false"
+                       slave-ok="false"/>
+    </mongo:mongo>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="test"/>
+        <property name="writeConcern" ref="writeConcern"/>
+    </bean>
+
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="1"/>
+        <constructor-arg name="wtimeout" value="0"/>
+        <constructor-arg name="fsync" value="true"/>
+        <constructor-arg name="j" value="true"/>
+    </bean>
+
+    <bean id="queueStoreFactory" class="ru.taskurotta.hazelcast.store.MongoQueueStorageFactory">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <!-- /Mongo -->
+
+    <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
+        <constructor-arg name="maxSize" value="0"/>
+        <constructor-arg name="backupCount" value="0"/>
+        <constructor-arg name="asyncBackupsCount" value="0"/>
+        <constructor-arg name="memoryLimit" value="1000"/>
+        <constructor-arg name="binary" value="false"/>
+        <constructor-arg name="bulkLoad" value="250"/>
+    </bean>
+
+</beans>
