@@ -93,6 +93,9 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
 
     @Override
     public int getCurrentSize() {
+        if (!enabled) {
+            return 0;
+        }
         return garbageCollectorQueue.size();
     }
 }
