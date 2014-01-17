@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd">
+
+    <hz:hazelcast id="hzInstance">
+        
+        <hz:config>
+            <hz:queue name="testQueue" backup-count="0" async-backup-count="0" max-size="0">
+                <hz:queue-store enabled="true" store-implementation="queueStore">
+                    <hz:properties>
+                        <hz:property name="binary">false</hz:property>
+                        <hz:property name="memory-limit">10</hz:property>
+                        <hz:property name="bulk-load">250</hz:property>
+                    </hz:properties>
+                </hz:queue-store>
+            </hz:queue>
+        </hz:config>
+        
+    </hz:hazelcast>
+
+    <bean id="queueStore" class="ru.taskurotta.hz.test.queue.MemoryQueueStore"/>
+
+</beans>
