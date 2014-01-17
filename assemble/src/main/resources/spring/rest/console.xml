@@ -138,7 +138,7 @@
 
     <bean id="contextResource" class="ru.taskurotta.dropwizard.resources.console.meta.ContextResource" />
 
-    <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryInfoResource">
+    <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryResource">
         <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor" />
     </bean>
 

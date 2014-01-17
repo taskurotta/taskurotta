@@ -44,23 +44,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         listTasks: function (pageNumber, pageSize) {
             return $http.get('/rest/console/tasks/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
-        getProcess: function (processId) {
-            return $http.get('/rest/console/processes/process/' + encodeURIComponent(processId));
-        },
         findTasks: function (processId, taskId) {
             return $http.get('/rest/console/tasks/search?processId=' + encodeURIComponent(processId) + "&taskId=" + encodeURIComponent(taskId));
-        },
-        findProcess: function (processId, customId) {
-            return $http.get('/rest/console/processes/search?processId=' + encodeURIComponent(processId) + "&customId=" + encodeURIComponent(customId));
-        },
-        getProcessTree: function (processId, startTaskId) {
-            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
-        },
-        getProcessesList: function (pageNumber, pageSize, status) {
-            return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize + "&status=" + status);
-        },
-        getProcessTasks: function (processId) {
-            return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
         },
         getHoveringQueues: function (periodSize) {
             return $http.get('/rest/console/hoveringQueues/?periodSize=' + periodSize);
@@ -79,4 +64,31 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
 
     return resultService;
 
-});
+})
+    .factory("tskProcesses", function ($resource, $http) {
+
+        var resultService = {
+            getProcess: function (processId) {
+                return $http.get('/rest/console/processes/process/' + encodeURIComponent(processId));
+            },
+            findProcess: function (processId, customId) {
+                return $http.get('/rest/console/processes/search?processId=' + encodeURIComponent(processId) + "&customId=" + encodeURIComponent(customId));
+            },
+            getProcessTree: function (processId, startTaskId) {
+                return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
+            },
+            getProcessesList: function (pageNumber, pageSize, status) {
+                return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize + "&status=" + status);
+            },
+            getProcessTasks: function (processId) {
+                return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
+            },
+            addProcessToRecovery: function (processId) {
+                return $http.post('/console/operation/recovery/add', processId);
+            }
+        };
+
+        return resultService;
+    })
+;
+

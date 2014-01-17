@@ -44,8 +44,11 @@
                         <i ng-if="process.state == 0" class="icon-time" popover="Process have not been finished yet" popover-trigger="mouseenter"></i>
                     </td>
                     <td>
-                        <a class="btn-link"
-                           ng-href="#/processes/process?processId={{process.processId}}"><small>{{process.processId}}</small></a>
+                        <small>
+                            <a class="btn-link"
+                               ng-href="#/processes/process?processId={{process.processId}}">{{process.processId}}</a>
+                            <div class="muted"><b>{{ getStatusName(process.state) }}</b></div>
+                        </small>
                     </td>
                     <td>
                         <a ng-href="#/processes/task?processId={{process.processId}}&taskId={{process.startTaskId}}" class="btn-link"><small>{{process.startTaskId}}</small></a>
@@ -67,7 +70,8 @@
                         </small>
                     </td>
                     <td>
-                        <button class="btn btn-small" popover="Submit process to recovery service" popover-trigger="mouseenter" disabled>
+                        <button ng-click="addProcessToRecovery(process.processId)" class="btn btn-small"
+                                popover="Submit process to recovery service" popover-trigger="mouseenter" ng-if="!wasSubmitted(process.processId)">
                             <i class="icon-retweet"></i>
                         </button>
                     </td>

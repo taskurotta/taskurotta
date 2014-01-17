@@ -65,7 +65,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         Collection<Process> values = null;
         if (!processIMap.isEmpty()) {
 
-            if (status>0) {
+            if (status>=0) {
                 values = Collections2.filter(processIMap.values(), new Predicate<Process>() {
                     @Override
                     public boolean apply(Process input) {

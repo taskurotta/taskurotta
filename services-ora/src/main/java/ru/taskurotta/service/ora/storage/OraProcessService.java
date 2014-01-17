@@ -133,18 +133,18 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status) {
-        List<Process> result = null;
+        List<Process> result = new ArrayList<>();
         long totalCount = 0;
         ResultSet rs = null;
         String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS ";
-        if (status>0) {
+        if (status >= 0) {
             query+= "WHERE STATE = ? ";
         }
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery(query))
         ) {
             int argIndex = 1;
-            if (status>0) {
+            if (status >= 0) {
                 ps.setInt(argIndex++, status);
             }
             int startIndex = (pageNumber - 1) * pageSize + 1;
@@ -154,9 +154,6 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
             rs = ps.executeQuery();
             while (rs.next()) {
-                if (result == null) {
-                    result = new ArrayList<>();
-                }
                 result.add(createProcessFromResultSet(rs));
                 totalCount = rs.getLong("cnt");
             }
@@ -166,6 +163,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         } finally {
             closeResultSet(rs);
         }
+
+        log.debug("Process list got by params: pageNum[{}], pageSize[{}], status[{}] is [{}]", pageNumber, pageSize, status, result);
 
         return new GenericPage<>(result, pageNumber, pageSize, totalCount);
     }

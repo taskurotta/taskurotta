@@ -19,7 +19,7 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/console/operation/recovery")
-public class RecoveryInfoResource {
+public class RecoveryResource {
 
     private OperationExecutor recoveryOperationExecutor;
 
