@@ -79,7 +79,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             DecisionContainer finishDecisionContainer = taskService.getDecision(startTaskContainer.getTaskId(), processId);
 
             processService.finishProcess(processId, finishDecisionContainer.getValue().getJSONValue());
-            taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
+            taskService.finishProcess(processId, graph.getProcessTasks());
             garbageCollectorService.delete(processId);
 
             return true;
