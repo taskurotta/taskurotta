@@ -44,12 +44,14 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     private GarbageCollectorService garbageCollectorService;
     // time out between recovery process in milliseconds
     private long recoveryProcessChangeTimeout;
+    private long findIncompleteProcessPeriod;
 
     public GeneralRecoveryProcessService() {}
 
     public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService, TaskDao taskDao,
                                          ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
-                                         GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout) {
+                                         GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
+                                         long findIncompleteProcessPeriod) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.taskDao = taskDao;
@@ -58,6 +60,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.brokenProcessService = brokenProcessService;
         this.garbageCollectorService = garbageCollectorService;
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
+        this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
     }
 
     @Override
@@ -181,6 +184,10 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         boolean result = true;
         int restartedTasks = 0;
 
+        long now = System.currentTimeMillis();
+
+        long lastRecoveryStartTime = now - findIncompleteProcessPeriod;
+
         for (TaskContainer taskContainer : taskContainers) {
 
             String actorId = taskContainer.getActorId();
@@ -199,7 +206,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 }
             }
 
-            long now = System.currentTimeMillis();
             if (startTime > now) {
                 // this task must start in future, ignore it
 
@@ -213,23 +219,19 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
             String queueName = queueService.createQueueName(taskContainer.getActorId(), taskList);
             Long lastEnqueueTime = queueService.getLastPolledTaskEnqueueTime(queueName);
-            if (logger.isTraceEnabled()) {
-                logger.trace("#[{}]/[{}]: startTime = [{}], queue [{}] last enqueue time = [{}]",
-                        processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
-            }
 
-            if (lastEnqueueTime < taskContainer.getStartTime()) {
+            if (lastEnqueueTime < lastRecoveryStartTime) {
                 // this task must start later than last task pushed to queue
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("#[{}]/[{}]: (startTime = [{}]) skip restart, because early tasks in queue [{}] (last enqueue time = [{}]) isn't polled.",
-                            processId, taskId, new Date(startTime), queueName, new Date(lastEnqueueTime));
+                    logger.debug("#[{}]/[{}]: skip restart, because early tasks in queue [{}] (last enqueue time = [{}], last recovery start time = [{}]) isn't polled.",
+                            processId, taskId, queueName, new Date(lastEnqueueTime), new Date(lastRecoveryStartTime));
                 }
 
                 continue;
             }
 
-            result = result & queueService.enqueueItem(actorId, taskId, processId, taskContainer.getStartTime(), taskList);
+            result = result & queueService.enqueueItem(actorId, taskId, processId, startTime, taskList);
 
             logger.debug("#[{}]/[{}]: add task container [{}] to queue service", processId, taskId, taskContainer);
 

@@ -153,6 +153,11 @@
                 <constructor-arg name="duration" value="${recovery.process.change-timeout}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="findIncompleteProcessPeriod">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.hz.gc.HzGarbageCollectorService">
