@@ -27,6 +27,9 @@ public class WorkflowStarter {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
+    private int waitOn = -1;
+    private int waitForSeconds = -1;
+
     public void startWork() {
         if (startTasks) {
             final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
@@ -78,6 +81,16 @@ public class WorkflowStarter {
                 if (started%10 == 0) {
                     logger.info("Started [{}] processes", started);
                 }
+
+                if (waitOn > 0 && waitForSeconds > 0 && (started%waitOn == 0)) {
+                    try {
+                        Thread.sleep(waitForSeconds * 1000);
+                    } catch (InterruptedException e) {
+                        logger.error("Start tasks thread interrupted", e);
+                    }
+
+                }
+
             } catch(ServerException ex) {
                 logger.error("Error at start new process. Started ["+started+"] of ["+count+"]. Message: " + ex.getMessage());
             }
@@ -102,5 +115,13 @@ public class WorkflowStarter {
 
     public void setStartTaskPeriodSeconds(int startTaskPeriodSeconds) {
         this.startTaskPeriodSeconds = startTaskPeriodSeconds;
+    }
+
+    public void setWaitOn(int waitOn) {
+        this.waitOn = waitOn;
+    }
+
+    public void setWaitForSeconds(int waitForSeconds) {
+        this.waitForSeconds = waitForSeconds;
     }
 }

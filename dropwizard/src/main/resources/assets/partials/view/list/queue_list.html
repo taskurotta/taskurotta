@@ -53,8 +53,14 @@
                     <td>
                         <small>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</small></td>
                     <td>
-                        <small><a clas="btn btn-link" style="cursor: pointer;"
-                           ng-href="#/queues/queue/{{encodeURI(queue.name)}}"><b>{{queue.name}}</b></a></small>
+                        <small>
+                            <a clas="btn btn-link" style="cursor: pointer;"
+                           ng-href="#/queues/queue/{{encodeURI(queue.name)}}"><b>{{queue.name}}</b></a>
+                            <div style="width: 100%;" ng-if="queue.lastPolledTaskEnqueueTime > 0">
+                                <i class="icon-question-sign" popover="Enqueue time for the last polled task for the queue" popover-trigger="mouseenter"></i>
+                                <i class="muted">{{ queue.lastPolledTaskEnqueueTime | date:'dd.MM.yyyy HH:mm:ss' }}</i>
+                            </div>
+                        </small>
                     </td>
                     <td>
                         <small>{{queue.lastActivity | date:'dd.MM.yyyy HH:mm:ss'}}</small>

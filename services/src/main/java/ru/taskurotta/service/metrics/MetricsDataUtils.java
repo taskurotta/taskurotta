@@ -25,7 +25,7 @@ public class MetricsDataUtils {
         List<Number[]> result = new ArrayList<>();
         if (target!=null && !target.isEmpty()) {
             for(Number[] item : target) {
-                if(isContainNotNegativeValue(item, true)) {
+                if (isContainNotNegativeValue(item, true)) {
                     result.add(item);
                 }
             }
@@ -35,7 +35,6 @@ public class MetricsDataUtils {
         }
         return result;
     }
-
 
     public static boolean isContainNotNegativeValue(Number[] point, boolean nullAllowed) {
         boolean result = true;
@@ -48,7 +47,6 @@ public class MetricsDataUtils {
         }
         return result;
     }
-
 
     public static boolean isNotNegativeNumber(Number target, boolean nullAllowed) {
         boolean result = false;
@@ -139,7 +137,7 @@ public class MetricsDataUtils {
             }
         }
 
-        if(count>0) {
+        if (count>0) {
             result = result/Long.valueOf(count);
         }
 
@@ -170,7 +168,7 @@ public class MetricsDataUtils {
 
     public static List<Number[]> convertToDataRow(DataPointVO<? extends Number>[] target, boolean toTimeline, float timeStep) {
         List<Number[]> result = new ArrayList<>();
-        if(target!=null && target.length> 0) {
+        if (target!=null && target.length> 0) {
             for (int i = 0; i < target.length; i++) {
                 Number value = target[i]!=null? target[i].getValue(): null;
 
@@ -183,7 +181,7 @@ public class MetricsDataUtils {
 
     public static List<Number[]> convertToTimedDataRow(DataPointVO<? extends Number>[] target) {
         List<Number[]> result = new ArrayList<>();
-        if(target!=null && target.length> 0) {
+        if (target!=null && target.length> 0) {
             boolean hasNullGap = false;
             for (int i = 0; i < target.length; i++) {
                 Number[] item = new Number[2];
@@ -267,7 +265,7 @@ public class MetricsDataUtils {
 
         if (target != null && target.length > 0) {
             result = 0l;
-            for (DataPointVO<Long> dp: target) {
+            for (DataPointVO<Long> dp : target) {
                 if (dp!=null && dp.getValue()>0) {
                     result += dp.getValue();
                 }

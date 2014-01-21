@@ -13,6 +13,7 @@ public class QueueStatVO implements Serializable {
     private String name;
     private int count = 0;
     private Date lastActivity = null;
+    private long lastPolledTaskEnqueueTime = -1;
 
     private long inHour = 0;
     private long outHour = 0;
@@ -84,6 +85,14 @@ public class QueueStatVO implements Serializable {
 
     public void setNodes(int nodes) {
         this.nodes = nodes;
+    }
+
+    public long getLastPolledTaskEnqueueTime() {
+        return lastPolledTaskEnqueueTime;
+    }
+
+    public void setLastPolledTaskEnqueueTime(long lastPolledTaskEnqueueTime) {
+        this.lastPolledTaskEnqueueTime = lastPolledTaskEnqueueTime;
     }
 
     public QueueStatVO sumValuesWith(QueueStatVO qs) {

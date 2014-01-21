@@ -190,6 +190,11 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         logger.debug("Finish processing task decision[{}]", taskId);
+
+
+        if (taskDecision.getActorId().equals("ru.taskurotta.recipes.calculate.decider.MathActionDecider#1.0") && (taskDecision.getTasks()==null || taskDecision.getTasks().length==0)) {
+            logger.info("TEST! Finish processing task decision[{}]", taskId);
+        }
     }
 
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {

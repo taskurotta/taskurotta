@@ -1,8 +1,5 @@
 package ru.taskurotta.service.metrics.model;
 
-import ru.taskurotta.service.metrics.model.BaseDataRowVO;
-import ru.taskurotta.service.metrics.model.DataPointVO;
-
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -22,7 +19,13 @@ public class NumberDataRowVO extends BaseDataRowVO {
     //Return updated position
     public int populate(Number value, long measureTime) {
         int position = getPosition();
-        this.data.set(position, new DataPointVO<Number>(value, measureTime));
+        DataPointVO<Number> positionValue = this.data.get(position);
+
+        if (positionValue!=null) {
+            positionValue.update(value, measureTime);
+        } else {
+            this.data.set(position, new DataPointVO<Number>(value, measureTime));
+        }
 
         this.updated.set(new Date().getTime());
         if (lastActive.get() < measureTime) {

@@ -73,6 +73,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                         }
 
                         Collection<UUID> incompleteProcesses = dao.findProcesses(timeBefore);
+
                         if (incompleteProcesses!=null && !incompleteProcesses.isEmpty()) {
                             for (UUID ip : incompleteProcesses) {
                                 toRecovery(ip);
@@ -82,6 +83,8 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                                 logger.debug("[{}] processes was sent to recovery", incompleteProcesses.size());
                             }
 
+                        } else {
+                            logger.debug("Incomplete processes for recovery were not found");
                         }
 
                     } else {

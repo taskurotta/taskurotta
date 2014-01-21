@@ -46,7 +46,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         if(dataRow == null) {
             synchronized (lastHourDataHolder) {
                 dataRow = lastHourDataHolder.get(holderKey);
-                if(dataRow == null) {
+                if (dataRow == null) {
                     dataRow = new DataRowVO(SECONDS_IN_HOUR, metricName, datasetName);
                     lastHourDataHolder.put(holderKey, dataRow);
                 }

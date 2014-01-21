@@ -36,6 +36,8 @@
         <property name="startTasks" value="${startTasks}" />
         <property name="startTasksInBackground" value = "${startTasksInBackground}" />
         <property name="startTaskPeriodSeconds" value="${startTaskPeriodSeconds}" />
+        <property name="waitOn" value = "${waitOnEveryNTaskOnStart}" />
+        <property name="waitForSeconds" value = "${waitWorSecondsOnStart}" />
     </bean>
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">

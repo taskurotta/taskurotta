@@ -59,7 +59,7 @@ public class DefaultRetryPolicyConfigTest {
 
         actorExecutorsPool.shutdown();
 
-        List<Integer> retryTimeouts = new ArrayList<>();
+        List<Integer> retryTimeouts = new ArrayList<Integer>();
         retryTimeouts.add(0);
         retryTimeouts.add(2);
         retryTimeouts.add(2);

@@ -30,6 +30,11 @@ public class DataPointVO<T extends Number> {
         this.value = value;
     }
 
+    public void update(T value, long time) {
+        this.value = value;
+        this.time = time;
+    }
+
     @Override
     public String toString() {
         return "DataPointVO{" +

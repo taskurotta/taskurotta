@@ -9,9 +9,9 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
 import ru.taskurotta.service.metrics.handler.NumberDataHandler;
-import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.model.DataPointVO;
 import ru.taskurotta.util.StringUtils;
 

@@ -26,4 +26,6 @@ public interface QueueInfoRetriever {
 
     public List<String> getQueueNames();
 
+    public long getLastPolledTaskEnqueueTime(String queueName);
+
 }

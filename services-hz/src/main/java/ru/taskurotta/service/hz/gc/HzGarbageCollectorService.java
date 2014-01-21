@@ -61,18 +61,10 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                         while (true) {
                             logger.trace("Try to get process for garbage collector");
 
-                            UUID processId = null;
-                            try {
-                                processId = garbageCollectorQueue.take();
-                            } catch (InterruptedException e) {
-                                logger.error("Catch exception while find process for garbage collector", e);
+                            UUID processId = garbageCollectorQueue.take();
+                            if (processId != null) {
+                                gc(processId);
                             }
-
-                            if (processId == null) {
-                                continue;
-                            }
-
-                            gc(processId);
                         }
                     } catch (Exception e) {
                         logger.error(e.getLocalizedMessage(), e);

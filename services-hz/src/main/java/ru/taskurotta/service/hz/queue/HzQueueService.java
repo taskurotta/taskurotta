@@ -132,7 +132,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public long getLastPolledTaskEnqueueTime(String queueName) {
-        Long time = lastPolledTaskEnqueueTimes.get(queueName);
+        Long time = lastPolledTaskEnqueueTimes.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
 
         // if no tasks in queue, than return -1
         if (time == null) {
@@ -159,7 +159,10 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         } catch (InterruptedException e) {
             logger.error("Queue poll operation interrupted", e);
         }
-        lastPolledTaskEnqueueTimes.put(queueName, result!=null? result.getEnqueueTime() : System.currentTimeMillis() );
+
+        long lastPolledTaskEnqueueTime = (result!=null? result.getEnqueueTime() : System.currentTimeMillis());
+        lastPolledTaskEnqueueTimes.put(queueName, lastPolledTaskEnqueueTime);
+        logger.debug("lastPolledTaskEnqueueTimes updated for queue[{}] with new value [{}]", queueName, lastPolledTaskEnqueueTime);
         return result;
     }
 

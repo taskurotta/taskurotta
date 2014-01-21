@@ -5,7 +5,7 @@ runtime:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
           sleep: 200 #-1 = disabled
-          workerFailChance: 0.1 #-1 = disabled
+          workerFailChance: -1 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
 
@@ -16,14 +16,17 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 20
-          startTasks: true
+          count: 40
+          startTasks: false
           startTasksInBackground: true
-          startTaskPeriodSeconds: 10 #-1 = disabled
+          startTaskPeriodSeconds: -1 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
+          waitOnEveryNTaskOnStart: 5
+          waitWorSecondsOnStart: 20
+
 
 policy:
   - MainPolicyConfig:
@@ -61,7 +64,7 @@ actor:
       policyConfig: MainPolicyConfig
       count: 2
       properties:
-        failover: "25 SECONDS"
+        failover: "5 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.recipes.calculate.worker.NumberGenerator
