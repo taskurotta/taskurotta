@@ -189,7 +189,6 @@ public class GeneralTaskServer implements TaskServer {
             garbageCollectorService.delete(processId);
         }
 
-        processSnapshot(taskDecision, dependencyDecision);
         logger.debug("Finish processing task decision[{}]", taskId);
     }
 
@@ -265,11 +264,6 @@ public class GeneralTaskServer implements TaskServer {
             brokenProcess.setStackTrace(errorContainer.getStackTrace());
         }
         brokenProcessService.save(brokenProcess);
-    }
-
-    protected void processSnapshot(DecisionContainer taskDecision, DependencyDecision dependencyDecision) {
-        logger.debug("Snapshot processing initialized with taskDecision[{}], dependencyDecision[{}]", taskDecision, dependencyDecision);
-        //TODO: implement it
     }
 
     /**
