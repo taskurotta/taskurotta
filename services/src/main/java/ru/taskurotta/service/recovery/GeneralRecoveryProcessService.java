@@ -70,6 +70,21 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             return restartProcessFromBeginning(processId);
         }
 
+        // if process isn't finished and graph is finished, than force finish process
+        if (graph.isFinished()) {
+            logger.warn("#[{}]: isn't finished, but graph is finished, force finish process", processId);
+
+            TaskContainer startTaskContainer = processService.getStartTask(processId);
+
+            DecisionContainer finishDecisionContainer = taskService.getDecision(startTaskContainer.getTaskId(), processId);
+
+            processService.finishProcess(processId, finishDecisionContainer.getValue().getJSONValue());
+            taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
+            garbageCollectorService.delete(processId);
+
+            return true;
+        }
+
         long lastChange = Math.max(graph.getLastApplyTimeMillis(), graph.getTouchTimeMillis());
         long changeTimeout = System.currentTimeMillis() - lastChange;
         logger.debug("#[{}]: change timeout = [{}]", processId, changeTimeout);
