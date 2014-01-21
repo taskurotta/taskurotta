@@ -69,6 +69,7 @@ public class HzQueueConfigSupport {
             hzInstance.getConfig().addQueueConfig(qc);
             logger.debug("For queue name [{}] add config [{}]", queueName, qc);
 
+            hzInstance.getQueue(queueName);//ensures HZ queue initialization
         } finally {
             queueConfigLock.unlock();
         }
