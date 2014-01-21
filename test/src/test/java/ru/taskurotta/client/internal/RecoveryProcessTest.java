@@ -148,6 +148,6 @@ public class RecoveryProcessTest extends AbstractTestStub {
         recoveryProcessService.restartProcess(processId);
 
         // check tasks in queue
-        assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));
+        assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));
     }
 }
