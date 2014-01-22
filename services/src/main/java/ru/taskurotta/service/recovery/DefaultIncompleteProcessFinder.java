@@ -29,6 +29,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
     private long findIncompleteProcessPeriod;
     private long incompleteTimeOutMillis;
 
+    private boolean enabled;
 
     public DefaultIncompleteProcessFinder(final IncompleteProcessDao dao, final Lock nodeLock, final OperationExecutor operationExecutor, long findIncompleteProcessPeriod,
                                       final long incompleteTimeOutMillis, boolean enabled) {
@@ -38,6 +39,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
         this.nodeLock = nodeLock;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
         this.incompleteTimeOutMillis = incompleteTimeOutMillis;
+        this.enabled = enabled;
 
         if (enabled) {
             runProcessFinder();
@@ -74,7 +76,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
 
                         Collection<UUID> incompleteProcesses = dao.findProcesses(timeBefore);
 
-                        if (incompleteProcesses!=null && !incompleteProcesses.isEmpty()) {
+                        if (incompleteProcesses != null && !incompleteProcesses.isEmpty()) {
                             for (UUID ip : incompleteProcesses) {
                                 toRecovery(ip);
                             }
@@ -100,6 +102,10 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
 
     @Override
     public void toRecovery(UUID processId) {
+        if (!enabled) {
+            return;
+        }
+
         operationExecutor.enqueue(new RecoveryOperation(processId));
         logger.trace("Process [{}] was sent to recovery queue", processId);
     }

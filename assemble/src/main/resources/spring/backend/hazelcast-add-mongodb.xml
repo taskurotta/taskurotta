@@ -58,6 +58,17 @@
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
         <constructor-arg name="hzQueueConfigSupport" ref="gcQueueConfigSupport"/>
     </bean>
+
+    <bean id="recoveryQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
+        <constructor-arg name="maxSize" value="${recovery.queue.max-size}"/>
+        <constructor-arg name="backupCount" value="${recovery.queue.backup-count}"/>
+        <constructor-arg name="asyncBackupsCount" value="${recovery.queue.async-backup-count}"/>
+        <constructor-arg name="memoryLimit" value="${recovery.queue.memory-limit}"/>
+        <constructor-arg name="binary" value="${recovery.queue.binary}"/>
+        <constructor-arg name="bulkLoad" value="${recovery.queue.bulk-load}"/>
+    </bean>
     <!-- /Queues persistence support -->
 
     <!--  Actor config support  -->
@@ -94,9 +105,20 @@
     </bean>
     <!-- /Delay queue support -->
 
-    <bean id = "incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessDao">
+    <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessDao">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
     </bean>
+
+    <!-- Services -->
+    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="recoveryQueueConfigSupport"/>
+        <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
+        <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    </bean>
+    <!-- /Services -->
 
 </beans>

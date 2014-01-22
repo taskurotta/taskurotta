@@ -26,8 +26,6 @@
 
             <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
 
-            <hz:queue name="${hz.queue.recovery-operation.name}" max-size="${hz.queue.recovery-operation.max-size}"/>
-
             <hz:map name="${hz.map.task.name}" backup-count="1"/>
 
             <hz:map name="${hz.map.decision.name}" backup-count="1"/>
