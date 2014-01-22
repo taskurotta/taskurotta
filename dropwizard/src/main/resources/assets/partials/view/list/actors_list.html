@@ -81,7 +81,7 @@
                         <span class="icon-ban-circle" ng-if="actor.blocked" style="width:25px; height:25px;cursor:help;" popover="Blocked: 'poll' and 'release' requests for this actor are rejected." popover-trigger="mouseenter" />
                     </td>
                     <td>
-                        <small><b>{{actor.actorId}}</b></small>
+                        <small><b>{{ withNewLineOnDots(actor.actorId) }}</b></small>
                     </td>
                     <td ng-repeat="sMetric in getSelectedMetricNames()">
                         <div ng-repeat="(nName, nItem) in metricsData">

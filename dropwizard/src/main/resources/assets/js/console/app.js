@@ -111,7 +111,7 @@ angular.module("consoleApp", ['console.services', 'console.controllers', 'consol
 
     })
 
-    .run(function ($rootScope, $log) {
+    .run(function ($rootScope, $log, tskUtil) {
         $rootScope.getStartIndex = function (pageNum, pageSize) {
             return (pageNum - 1) * pageSize + 1;
         };
@@ -138,6 +138,10 @@ angular.module("consoleApp", ['console.services', 'console.controllers', 'consol
             } else {
                 return "Have not been released yet";
             }
+        };
+
+        $rootScope.withNewLineOnDots = function(value) {
+            return tskUtil.injectNewLineDelimiter(value, 20, ".");
         };
 
     });

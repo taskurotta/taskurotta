@@ -29,8 +29,8 @@ properties:
   recovery.startup.run: false
   hz.queue.restore: true
   recovery.process.cron: "0 0 0/8 * * ?"
-  gc.time-before-delete: "1 minutes"
-  recovery.process.incomplete-timeout: "1 minutes"
+  gc.time-before-delete: "5 minutes"
+  recovery.process.incomplete-timeout: "5 minutes"
 
 #Http server configuration:
 logging:
@@ -40,11 +40,11 @@ logging:
         ru.taskurotta: INFO
         com.yammer: INFO
 #        ru.taskurotta.service.gc: DEBUG
-        ru.taskurotta.service.recovery: DEBUG
-        ru.taskurotta.server: DEBUG
-        ru.taskurotta.service.hz.queue: DEBUG
+#        ru.taskurotta.service.recovery: DEBUG
+#        ru.taskurotta.server: DEBUG
+#        ru.taskurotta.service.hz.queue: DEBUG
 #        ru.taskurotta.dropwizard.resources.console.queue: DEBUG
-        ru.taskurotta.service.hz.storage: DEBUG
+#        ru.taskurotta.service.hz.storage: DEBUG
     file:
         enabled: true
         archive: true
