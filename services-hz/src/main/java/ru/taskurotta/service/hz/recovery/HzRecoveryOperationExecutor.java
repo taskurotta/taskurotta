@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.RecoveryProcessService;
@@ -22,10 +23,28 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(HzRecoveryOperationExecutor.class);
 
+    private boolean enabled;
+
     private IQueue<Operation> operationIQueue;
 
-    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final String recoveryOperationQueueName,
-                                       final RecoveryProcessService recoveryProcessService, final int recoveryOperationPoolSize) {
+    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
+                                       String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
+        this(hazelcastInstance, recoveryProcessService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
+    }
+
+    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
+                                       HzQueueConfigSupport hzQueueConfigSupport, String recoveryOperationQueueName,
+                                       int recoveryOperationPoolSize, boolean enabled) {
+
+        this.enabled = enabled;
+        if (!enabled) {
+            return;
+        }
+
+        if (hzQueueConfigSupport != null) {
+            hzQueueConfigSupport.createQueueConfig(recoveryOperationQueueName);
+        }
+
         this.operationIQueue = hazelcastInstance.getQueue(recoveryOperationQueueName);
 
         final ExecutorService recoveryOperationExecutorService = Executors.newFixedThreadPool(recoveryOperationPoolSize);
@@ -39,6 +58,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
                 return thread;
             }
         });
+
         executorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -65,20 +85,24 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
     @Override
     public void enqueue(Operation operation) {
-        try {
-            operationIQueue.offer(operation, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            logger.error("Catch exception while offer operation to queue", e);
+        if (!enabled) {
+            return;
         }
+
+        operationIQueue.offer(operation);
     }
 
     @Override
     public int size() {
+        if (!enabled) {
+            return 0;
+        }
+
         return operationIQueue.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return operationIQueue.isEmpty();
+        return !enabled || operationIQueue.isEmpty();
     }
 }

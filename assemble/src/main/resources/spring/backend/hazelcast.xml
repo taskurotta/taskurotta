@@ -113,9 +113,10 @@
 
     <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="recoveryOperationQueueName" value="${hz.queue.recovery-operation.name}"/>
         <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
         <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
     <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder">
@@ -135,7 +136,7 @@
         <constructor-arg name="nodeLock" ref="recoveryNodeLock" />
     </bean>
 
-    <bean id = "incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
+    <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
         <constructor-arg name="hazelcastInstance" ref="hzInstance" />
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
     </bean>
@@ -196,8 +197,8 @@
     <!-- /Task server -->
 
     <!-- Metrics data support -->
-        <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
-        <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init"/>
+    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init"/>
     <!-- Metrics data support -->
 
 </beans>
