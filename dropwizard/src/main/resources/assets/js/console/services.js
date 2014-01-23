@@ -29,12 +29,6 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
 .factory("$$data", function ($resource, $http) {
 
     var resultService = {
-        getQueueContent: function (queueName, pageNumber, pageSize) {
-            return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
-        },
-        getQueueList: function (pageNumber, pageSize, filter) {
-            return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + encodeURIComponent(filter));
-        },
         getTask: function (taskId, processId) {
             return $http.get('/rest/console/tasks/task?processId=' + encodeURIComponent(processId) + '&taskId=' + encodeURIComponent(taskId));
         },
@@ -55,16 +49,35 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         },
         getTaskDecision: function(taskId, processId) {
             return $http.get('/rest/console/tasks/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
-        },
-        getQueueRealSize: function(queueName) {
-            return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
         }
-
     };
 
     return resultService;
 
 })
+    .factory("tskQueues", function ($resource, $http) {
+
+        var resultService = {
+            getQueueContent: function (queueName, pageNumber, pageSize) {
+                return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+            },
+            getQueueList: function (pageNumber, pageSize, filter) {
+                return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + encodeURIComponent(filter));
+            },
+            getQueueRealSize: function(queueName) {
+                return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
+            },
+            clearQueue: function(queueName) {
+                return $http.post('/rest/console/queues/clear', queueName);
+            },
+            removeQueue: function(queueName) {
+                return $http.post('/rest/console/queues/remove', queueName);
+            }
+        };
+
+        return resultService;
+    })
+
     .factory("tskProcesses", function ($resource, $http) {
 
         var resultService = {

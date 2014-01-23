@@ -118,6 +118,7 @@ public class MongoStorageFactory implements StorageFactory {
         }
 
         final DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+        final String finalDbCollectionName = dbCollectionName;
 
         return new Storage() {
             @Override
@@ -137,9 +138,23 @@ public class MongoStorageFactory implements StorageFactory {
 
             @Override
             public void destroy() {
-                dbCollection.drop();
+                String unPrefixed = removePrefix(finalDbCollectionName);
+                dbCollectionNamesMap.remove(queueName);
+
+                mongoTemplate.dropCollection(finalDbCollectionName);
+                mongoTemplate.dropCollection(unPrefixed);
+
+                logger.debug("Destroying storage collections: delayedStore[{}] and queueBackingStore[{}]", finalDbCollectionName, unPrefixed);
             }
         };
+    }
+
+    private String removePrefix (String target) {
+        String result = target;
+        if (target != null && storagePrefix!= null && target.startsWith(storagePrefix)) {
+            result = target.substring(storagePrefix.length(), target.length());
+        }
+        return result;
     }
 
     private boolean save(Object o, long delayTime, TimeUnit unit, DBCollection dbCollection, String queueName) {

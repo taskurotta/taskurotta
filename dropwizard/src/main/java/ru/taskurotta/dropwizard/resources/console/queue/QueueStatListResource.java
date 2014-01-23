@@ -4,12 +4,13 @@ import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.dropwizard.resources.console.BaseResource;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
@@ -60,18 +61,21 @@ public class QueueStatListResource extends BaseResource {
         }
     }
 
-//    @Path("/{queueName}/stat_time")
-//    @GET
-//    public Long getLastPolledTaskEnqueueTime(@PathParam("queueName") String queueName) {
-//        try {
-//            long lastPolledTaskEnqueueTime = queueInfoRetriever.getLastPolledTaskEnqueueTime(queueName);
-//            logger.debug("Queue [{}] lastPolledTaskEnqueueTime is [{}]", queueName, lastPolledTaskEnqueueTime);
-//            return lastPolledTaskEnqueueTime;
-//        } catch (Throwable e) {
-//            logger.error("Error at getting queue["+queueName+"] lastPolledTaskEnqueueTime", e);
-//            throw new WebApplicationException(e);
-//        }
-//    }
+    @POST
+    @Path("/remove")
+    public void removeQueue(String queueName) {
+        logger.warn("Remove queue[{}] request processing", queueName);
+        queueInfoRetriever.clearQueue(queueName);
+        queueInfoRetriever.removeQueue(queueName);
+    }
+
+    @POST
+    @Path("/clear")
+    public void clearQueue(String queueName) {
+        logger.warn("Clear queue [{}] request processing", queueName);
+        queueInfoRetriever.clearQueue(queueName);
+    }
+
 
     @Required
     public void setQueueInfoRetriever(QueueInfoRetriever queueInfoRetriever) {

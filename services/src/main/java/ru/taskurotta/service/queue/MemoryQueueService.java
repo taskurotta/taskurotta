@@ -92,6 +92,22 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         return time;
     }
 
+    @Override
+    public void clearQueue(String queueName) {
+        DelayQueue<DelayedTaskElement> queue = getQueue(queueName);
+        queue.clear();
+    }
+
+    @Override
+    public void removeQueue(String queueName) {
+        DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+        if (queue != null) {
+            synchronized (queues) {
+                queues.remove(queueName);
+            }
+        }
+    }
+
     private List<String> getTaskQueueNames(String filter) {
         List<String> result = new ArrayList<>();
         for (String name: queues.keySet()) {

@@ -143,6 +143,28 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
+    public void clearQueue(String queueName) {
+        DelayIQueue<TaskQueueItem> queue = getQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+        queue.clear();
+    }
+
+    @Override
+    public void removeQueue(String queueName) {
+        final ReentrantLock lock = this.lock;
+        lock.lock();
+        try {
+            DelayIQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+            logger.debug("Removing queue with name [{}], cached queue is [{}]", queueName, queue);
+            if (queue != null) {
+                queueMap.remove(queueName);
+                queue.destroy();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
     public TaskQueueItem poll(String actorId, String taskList) {
 
         String queueName = createQueueName(actorId, taskList);

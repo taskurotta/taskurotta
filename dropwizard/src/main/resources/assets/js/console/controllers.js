@@ -30,7 +30,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("queueCardController", function ($scope, $$data, tskTimeUtil, $log, $routeParams) {
+.controller("queueCardController", function ($scope, tskQueues, tskTimeUtil, $log, $routeParams) {
 
     $scope.feedback = "";
 
@@ -46,7 +46,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
     //Updates queue items by polling REST resource
     $scope.update = function () {
-        $$data.getQueueContent($scope.queueName, $scope.queueTasksPage.pageNumber, $scope.queueTasksPage.pageSize).then(function (value) {
+        tskQueues.getQueueContent($scope.queueName, $scope.queueTasksPage.pageNumber, $scope.queueTasksPage.pageSize).then(function (value) {
             $scope.queueTasksPage = angular.fromJson(value.data || {});
             $log.info("queueContentController: successfully updated queue content");
         }, function (errReason) {

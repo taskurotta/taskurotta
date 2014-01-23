@@ -1,6 +1,6 @@
-angular.module("queue.controllers", ['console.services', 'ngRoute'])
+angular.module("queue.controllers", ['console.services', 'ngRoute', 'ui.bootstrap.modal'])
 
-    .controller("queueListController", function ($scope, $$data, tskTimeUtil, $log, $cookieStore) {
+    .controller("queueListController", function ($scope, tskQueues, tskTimeUtil, $log, $cookieStore, $modal) {
         var initPagingObject = function() {
             var result = {
                 pageSize: 5,
@@ -51,7 +51,7 @@ angular.module("queue.controllers", ['console.services', 'ngRoute'])
 
         $scope.showRealSize = function (queueName, idx) {
 
-            $$data.getQueueRealSize(queueName).then(function(value) {
+            tskQueues.getQueueRealSize(queueName).then(function(value) {
                 $scope.realSizes[idx] = value.data;
             }, function(err) {
                 $scope.realSizes[idx] = "n/a";
@@ -72,7 +72,7 @@ angular.module("queue.controllers", ['console.services', 'ngRoute'])
         //Updates queues states  by polling REST resource
         $scope.update = function () {
 
-            $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize, $scope.selection.filter).then(function (value) {
+            tskQueues.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize, $scope.selection.filter).then(function (value) {
                 $scope.queuesPage = value.data || initPagingObject();
                 $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
                 $scope.initialized = true;
@@ -87,6 +87,52 @@ angular.module("queue.controllers", ['console.services', 'ngRoute'])
         $scope.refresh = function() {
             $scope.initialized = false;
             $scope.update();
+        };
+
+
+        $scope.clear = function(queueName) {
+
+            $modal.open({
+                templateUrl: '/partials/view/modal/approve_msg.html',
+                windowClass: 'approve',
+                controller: function ($scope) {
+                    $scope.description = "All current elements of the queue would be completely lost";
+                }
+            }).result.then(function(okMess) {
+                    tskQueues.clearQueue(queueName).then(function(ok){
+                        $scope.refresh();
+                    }, function(errReason){
+                        $scope.feedback = angular.toJson(errReason);
+                        $log.error("queueListController: queue draining failed: " + $scope.feedback);
+                        $scope.initialized = true;
+                    });
+                }, function(cancelMsg) {
+                    //do nothing
+                });
+
+        };
+
+        $scope.remove = function(queueName) {
+
+            $modal.open({
+                templateUrl: '/partials/view/modal/approve_msg.html',
+                windowClass: 'approve',
+                controller: function ($scope) {
+                    $scope.description = "Current queue and all of its content would be lost";
+                }
+
+            }).result.then(function(okMess) {
+                    tskQueues.removeQueue(queueName).then(function(ok){
+                        $scope.refresh();
+                    }, function(errReason){
+                        $scope.feedback = angular.toJson(errReason);
+                        $log.error("queueListController: queue removal failed: " + $scope.feedback);
+                        $scope.initialized = true;
+                    });
+                }, function(cancelMsg) {
+                    //do nothing
+                });
+
         };
 
         //Initialization:

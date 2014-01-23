@@ -69,7 +69,7 @@ public class CommonStorageFactory implements StorageFactory {
                             iMap.delete(key);
                         }
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     logger.error(e.getLocalizedMessage(), e);
                 }
             }

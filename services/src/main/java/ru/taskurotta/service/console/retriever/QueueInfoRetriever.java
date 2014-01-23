@@ -28,4 +28,8 @@ public interface QueueInfoRetriever {
 
     public long getLastPolledTaskEnqueueTime(String queueName);
 
+    public void clearQueue(String queueName);
+
+    public void removeQueue(String queueName);
+
 }

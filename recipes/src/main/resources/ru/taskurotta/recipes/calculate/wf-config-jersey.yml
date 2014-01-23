@@ -16,16 +16,16 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 40
-          startTasks: false
+          count: 57
+          startTasks: true
           startTasksInBackground: true
           startTaskPeriodSeconds: -1 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
-          waitOnEveryNTaskOnStart: 5
-          waitWorSecondsOnStart: 20
+          waitOnEveryNTaskOnStart: -1 #-1 = disabled
+          waitWorSecondsOnStart: -1 #-1 = disabled
 
 
 policy:
