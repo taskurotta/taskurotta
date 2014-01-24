@@ -76,15 +76,14 @@ public class ContextResource implements ServerPropertiesAware, ApplicationContex
 
     protected void appendBeansInfo(Map<String, String> result, String[] beanNames) {
         if (beanNames!=null && beanNames.length>0 && result!=null) {
-            StringBuilder sb = new StringBuilder();
             for (String beanName : beanNames) {
                 Object bean = applicationContext.getBean(beanName);
-                String className = null;
+                String className;
 
                 if (AopUtils.isAopProxy(bean)) {
                     className = ((TargetClassAware)bean).getTargetClass().getName();
                 } else {
-                    className = bean!=null? bean.getClass().getName(): "";
+                    className = bean != null ? bean.getClass().getName(): "";
                 }
 
                 result.put(beanName, className);

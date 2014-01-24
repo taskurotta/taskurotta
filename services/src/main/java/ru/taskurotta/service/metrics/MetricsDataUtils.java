@@ -31,7 +31,7 @@ public class MetricsDataUtils {
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Remove zero values filter: before [{}] after [{}] points", target!=null? target.size(): null, result!=null? result.size(): null);
+            logger.debug("Remove zero values filter: before [{}] after [{}] points", target!=null? target.size(): null, result.size());
         }
         return result;
     }
@@ -78,7 +78,7 @@ public class MetricsDataUtils {
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Smoothing data filter: before [{}] after [{}] points", target!=null? target.size(): null, compressedData!=null? compressedData.size(): null);
+            logger.debug("Smoothing data filter: before [{}] after [{}] points", target!=null? target.size(): null, compressedData.size());
         }
 
         return compressedData;
