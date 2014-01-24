@@ -96,7 +96,7 @@ public class ActorListResource {
             if (actors.getItems()!=null && !actors.getItems().isEmpty()) {
                 for (ActorVO actor: actors.getItems()) {
                     ActorExtVO extActor = new ActorExtVO(actor);
-                    extActor.queueState = actorConfigManager.getQueueState(actor.getActorId());
+                    extActor.queueState = actorConfigManager.getQueueState(actor.getId());
                     if (extActor.queueState != null) {
                         extActor.dayRate = RateUtils.getOverallRate(extActor.queueState.getTotalInDay(), extActor.queueState.getInDayPeriod(), extActor.queueState.getTotalOutDay(), extActor.queueState.getOutDayPeriod());
                         extActor.hourRate = RateUtils.getOverallRate(extActor.queueState.getTotalInHour(), extActor.queueState.getInHourPeriod(), extActor.queueState.getTotalOutHour(), extActor.queueState.getOutHourPeriod());
@@ -119,7 +119,7 @@ public class ActorListResource {
         protected double dayRate = 0d;
 
         public ActorExtVO(ActorVO actor) {
-            this.actorId = actor.getActorId();
+            this.id = actor.getId();
             this.blocked = actor.isBlocked();
             this.queueName = actor.getQueueName();
             this.lastPoll = actor.getLastPoll();

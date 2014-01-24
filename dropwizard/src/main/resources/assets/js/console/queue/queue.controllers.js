@@ -118,7 +118,7 @@ angular.module("queue.controllers", ['console.services', 'ngRoute', 'ui.bootstra
                 templateUrl: '/partials/view/modal/approve_msg.html',
                 windowClass: 'approve',
                 controller: function ($scope) {
-                    $scope.description = "Current queue and all of its content would be lost";
+                    $scope.description = "Current queue, all of its content and actor preference data would be lost";
                 }
 
             }).result.then(function(okMess) {

@@ -81,14 +81,14 @@
                         <span class="icon-ban-circle" ng-if="actor.blocked" style="width:25px; height:25px;cursor:help;" popover="Blocked: 'poll' and 'release' requests for this actor are rejected." popover-trigger="mouseenter" />
                     </td>
                     <td>
-                        <small><b>{{ withNewLineOnDots(actor.actorId) }}</b></small>
+                        <small><b>{{ withNewLineOnDots(actor.id) }}</b></small>
                     </td>
                     <td ng-repeat="sMetric in getSelectedMetricNames()">
                         <div ng-repeat="(nName, nItem) in metricsData">
 
                             <hr ng-if="!$first" />
 
-                            {{sMetricItem = getActorStatData(sMetric, actor.actorId, nItem); ""}}
+                            {{sMetricItem = getActorStatData(sMetric, actor.id, nItem); ""}}
 
                             <small>
                                 <table class="inner-table">
@@ -135,11 +135,12 @@
                         </div>
                     </td>
                     <td>
-                        <button ng-if="actor.blocked" class="btn" ng-click="unblockActor(actor.actorId)">
+                        <button ng-if="actor.blocked" class="btn btn-mini" ng-click="unblockActor(actor.id)">
                             <i class="icon-play-circle" popover="Unblock actor" popover-trigger="mouseenter"></i>
                         </button>
-                        <button ng-if="!actor.blocked" class="btn" ng-click="blockActor(actor.actorId)">
-                            <i class="icon-ban-circle" popover="Block actor" popover-trigger="mouseenter"></i>
+
+                        <button ng-if="!actor.blocked" class="btn btn-mini" ng-click="blockActor(actor.id)">
+                            <i class="icon-ban-circle" popover="Block actor" popover-trigger="mouseenter" />
                         </button>
                     </td>
                 </tr>

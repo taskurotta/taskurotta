@@ -49,14 +49,14 @@ public class HzActorConfigManager implements ActorConfigManager {
         IMap<String, ActorPreferences> actorsPrefs = hzInstance.getMap(actorConfigName);
         List<ActorPreferences> allPreferences = new ArrayList(actorsPrefs.values());
 
-        if (allPreferences!=null && !allPreferences.isEmpty()) {
+        if (allPreferences != null && !allPreferences.isEmpty()) {
             int fromIndex = (pageNum - 1) * pageSize;
             int toIndex = Math.min(pageSize * pageNum, allPreferences.size());
             List<ActorPreferences> subList = allPreferences.subList(fromIndex, toIndex);
             List<ActorVO> pageItems = new ArrayList<>();
             for (ActorPreferences ap : subList) {
                 ActorVO actorVO = new ActorVO();
-                actorVO.setActorId(ap.getId());
+                actorVO.setId(ap.getId());
                 actorVO.setBlocked(ap.isBlocked());
                 actorVO.setQueueName(ap.getQueueName());
                 if (metricsDataRetriever!=null) {
