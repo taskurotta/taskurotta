@@ -43,12 +43,9 @@ public class MongoActorConfigManager extends HzActorConfigManager {
             while (cursor.hasNext()) {
                 DBObject value = cursor.next();
                 ActorVO actorVO = (ActorVO) converter.toObject(ActorVO.class, value);
-                String actorId = (String)value.get("_id");
-                actorVO.setId(actorId);
-
                 if (metricsDataRetriever!=null) {
-                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorId));
-                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorId));
+                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorVO.getId()));
+                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorVO.getId()));
                 }
 
                 items.add(actorVO);
