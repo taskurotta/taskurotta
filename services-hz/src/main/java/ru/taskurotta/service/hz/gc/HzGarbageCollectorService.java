@@ -57,17 +57,17 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override
                 public void run() {
-                    try {
-                        while (true) {
+                    while (true) {
+                        try {
                             logger.trace("Try to get process for garbage collector");
 
                             UUID processId = garbageCollectorQueue.take();
                             if (processId != null) {
                                 gc(processId);
                             }
+                        } catch (Exception e) {
+                            logger.error(e.getLocalizedMessage(), e);
                         }
-                    } catch (Exception e) {
-                        logger.error(e.getLocalizedMessage(), e);
                     }
                 }
             });
