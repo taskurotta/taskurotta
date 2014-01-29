@@ -29,8 +29,9 @@ properties:
   recovery.startup.run: false
   hz.queue.restore: true
   recovery.process.cron: "0 0 0/8 * * ?"
-  gc.time-before-delete: "5 minutes"
-  recovery.process.incomplete-timeout: "5 minutes"
+  gc.time-before-delete: "15 minutes"
+  recovery.process.incomplete-timeout: "15 minutes"
+  hz.nodes: "localhost:7777,localhost:7778"
 
 #Http server configuration:
 logging:
@@ -39,6 +40,9 @@ logging:
         com.hazelcast: INFO
         ru.taskurotta: INFO
         com.yammer: INFO
+#        ru.taskurotta.assemble: DEBUG
+#        ru.taskurotta.hazelcast.queue.delay: DEBUG
+#        ru.taskurotta.service.metrics.handler: DEBUG
 #        ru.taskurotta.service.gc: DEBUG
 #        ru.taskurotta.service.recovery: DEBUG
 #        ru.taskurotta.server: DEBUG

@@ -16,7 +16,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 57
+          count: 50
           startTasks: true
           startTasksInBackground: true
           startTaskPeriodSeconds: -1 #-1 = disabled
