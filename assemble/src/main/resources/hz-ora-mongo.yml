@@ -40,6 +40,7 @@ logging:
         com.hazelcast: INFO
         ru.taskurotta: INFO
         com.yammer: INFO
+        ru.taskurotta.hazelcast.HzQueueConfigSupport: DEBUG
 #        ru.taskurotta.assemble: DEBUG
 #        ru.taskurotta.hazelcast.queue.delay: DEBUG
 #        ru.taskurotta.service.metrics.handler: DEBUG

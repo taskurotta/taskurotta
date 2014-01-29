@@ -28,55 +28,64 @@ public class MetricsStorageFactory implements StorageFactory {
 
     @Override
     public Storage createStorage(String queueName) {
-        final Storage storage = storageFactory.createStorage(queueName);
-        final Metric storageMetric = metricsFactory.getInstance(MetricName.STORAGE.getValue());
-
-        logger.debug("Creating new [{}] metric for queue[{}] with original storage class[{}]", MetricName.STORAGE.getValue(), queueName, storage.getClass().getName());
-
-        return new Storage() {
-
-            @Override
-            public boolean add(Object o, long delayTime, TimeUnit unit) {
-                long start = System.currentTimeMillis();
-                boolean result = storage.add(o, delayTime, unit);
-                long period = System.currentTimeMillis() - start;
-                storageMetric.mark("add", period);
-                storageMetric.mark(MetricName.STORAGE.getValue(), period);
-                logger.debug("Marking add metric");
-                return result;
-            }
-
-            @Override
-            public boolean remove(Object o) {
-                long start = System.currentTimeMillis();
-                boolean result = storage.remove(o);
-                long period = System.currentTimeMillis() - start;
-                storageMetric.mark("remove", period);
-                storageMetric.mark(MetricName.STORAGE.getValue(), period);
-                logger.debug("Marking remove metric");
-                return result;
-            }
-
-            @Override
-            public void clear() {
-                long start = System.currentTimeMillis();
-                storage.clear();
-                long period = System.currentTimeMillis() - start;
-                storageMetric.mark("clear", period);
-                storageMetric.mark(MetricName.STORAGE.getValue(), period);
-                logger.debug("Marking clear metric");
-            }
-
-            @Override
-            public void destroy() {
-                long start = System.currentTimeMillis();
-                storage.destroy();
-                long period = System.currentTimeMillis() - start;
-                storageMetric.mark("destroy", period);
-                storageMetric.mark(MetricName.STORAGE.getValue(), period);
-                logger.debug("Marking destroy metric");
-            }
-
-        };
+        return new MetricsStorage(storageFactory.createStorage(queueName), metricsFactory);
     }
+
+    static class MetricsStorage implements Storage {
+        private static final Logger logger = LoggerFactory.getLogger(MetricsStorage.class);
+
+        Storage storage;
+        Metric storageMetric;
+
+        MetricsStorage(Storage storage, MetricsFactory metricsFactory) {
+            this.storage = storage;
+            this.storageMetric = metricsFactory.getInstance(MetricName.STORAGE.getValue());
+            logger.debug("Creating new [{}] metric with original storage class[{}]", MetricName.STORAGE.getValue(), storage.getClass().getName());
+        }
+
+        @Override
+        public boolean add(Object o, long delayTime, TimeUnit unit) {
+            long start = System.currentTimeMillis();
+            boolean result = storage.add(o, delayTime, unit);
+            long period = System.currentTimeMillis() - start;
+            storageMetric.mark("add", period);
+            storageMetric.mark(MetricName.STORAGE.getValue(), period);
+            logger.trace("Marking add metric");
+            return result;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            long start = System.currentTimeMillis();
+            boolean result = storage.remove(o);
+            long period = System.currentTimeMillis() - start;
+            storageMetric.mark("remove", period);
+            storageMetric.mark(MetricName.STORAGE.getValue(), period);
+            logger.trace("Marking remove metric");
+            return result;
+        }
+
+        @Override
+        public void clear() {
+            long start = System.currentTimeMillis();
+            storage.clear();
+            long period = System.currentTimeMillis() - start;
+            storageMetric.mark("clear", period);
+            storageMetric.mark(MetricName.STORAGE.getValue(), period);
+            logger.trace("Marking clear metric");
+        }
+
+        @Override
+        public void destroy() {
+            long start = System.currentTimeMillis();
+            storage.destroy();
+            long period = System.currentTimeMillis() - start;
+            storageMetric.mark("destroy", period);
+            storageMetric.mark(MetricName.STORAGE.getValue(), period);
+            logger.trace("Marking destroy metric");
+        }
+
+    };
+
+
 }
