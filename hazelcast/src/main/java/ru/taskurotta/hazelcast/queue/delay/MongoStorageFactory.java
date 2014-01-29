@@ -48,6 +48,14 @@ public class MongoStorageFactory implements StorageFactory {
 
         this.converter = new SpringMongoDBConverter(mongoTemplate);
 
+        Set<String> collectionNames = mongoTemplate.getCollectionNames();
+        for (String collectionName : collectionNames) {
+            if (collectionName.startsWith(storagePrefix)) {
+                String queueName = collectionName.replaceFirst(storagePrefix, "");
+                dbCollectionNamesMap.put(queueName, collectionName);
+            }
+        }
+
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
 
