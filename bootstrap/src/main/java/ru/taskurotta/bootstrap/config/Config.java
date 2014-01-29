@@ -306,8 +306,6 @@ public class Config {
                         if (config.profilerConfigs.size() == 1) {
                             String profilerConfigName = config.profilerConfigs.keySet().iterator().next();
                             actorConfig.setProfilerConfig(profilerConfigName);
-                        } else {
-                            throw new RuntimeException("Don't set ProfilerConfig for [" + actorConfigName + "] or exists few ProfilerConfig");
                         }
                     }
 
@@ -315,8 +313,6 @@ public class Config {
                         if (config.policyConfigs.size() == 1) {
                             String policyConfigName = config.policyConfigs.keySet().iterator().next();
                             actorConfig.setPolicyConfig(policyConfigName);
-                        } else {
-                            throw new RuntimeException("Don't set PolicyConfig for [" + actorConfigName + "] or exists few PolicyConfig");
                         }
                     }
 
