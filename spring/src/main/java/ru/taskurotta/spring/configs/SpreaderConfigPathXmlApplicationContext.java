@@ -47,12 +47,11 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
             }
 
             if (properties != null && !properties.isEmpty()) {
-                System.err.println("properties: " + properties);
                 applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
             }
 
             if (defaultPropertiesLocation != null) {
-                Properties defaultProperties = null;
+                Properties defaultProperties;
                 try {
                     defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
                 } catch (IOException e) {

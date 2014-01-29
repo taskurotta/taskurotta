@@ -43,18 +43,10 @@ policy:
 actor:
   - PiDecider:
       actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      policyConfig: LinearRertyPolicyConfig
       count: 1
 
   - PiWorker:
       actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      policyConfig: LinearRertyPolicyConfig
       count: 10
 
 logback:
@@ -75,12 +67,9 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.service.gc:
-             key: name
-             \@level: TRACE
         - org.springframework:
              key: name
-             \@level: !!!str OFF
+             \@level: WARN
     root:
         appender-ref:
             - STDOUT:
