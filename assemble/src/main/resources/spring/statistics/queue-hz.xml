@@ -17,17 +17,19 @@
         <constructor-arg name="retriever" ref="realQueueBackend" />
     </bean>
 
-    <bean id="gcQueueSizeMetrucHandler" class="ru.taskurotta.service.metrics.handler.GcMetricHandler">
+
+    <!-- TODO: delete and make it per-hit metric. Periodic check is useless -->
+    <bean id="gcQueueSizeMetricHandler" class="ru.taskurotta.service.metrics.handler.GcMetricHandler">
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService" />
         <constructor-arg name="metricsFactory" ref="metricsFactory" />
         <constructor-arg name="periodSeconds" value = "5" />
     </bean>
 
-    <bean id="recoveryQueueSizeMetrucHandler" class="ru.taskurotta.service.metrics.handler.OperationMetricsHandler">
+    <!-- TODO: delete and make it per-hit metric. Periodic check is useless -->
+    <bean id="recoveryQueueSizeMetricHandler" class="ru.taskurotta.service.metrics.handler.OperationMetricsHandler">
         <constructor-arg name="metricsFactory" ref="metricsFactory" />
         <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor" />
         <constructor-arg name="periodSeconds" value = "5" />
     </bean>
-
 
 </beans>
