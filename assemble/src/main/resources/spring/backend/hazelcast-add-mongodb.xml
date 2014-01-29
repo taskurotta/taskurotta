@@ -96,10 +96,10 @@
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="storagePrefix" value="${dq.storage-prefix}"/>
+        <constructor-arg name="storagePrefix" value="${gc.dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${dq.schedule}"/>
+                <constructor-arg name="duration" value="${gc.dq.schedule}"/>
             </bean>
         </constructor-arg>
     </bean>
