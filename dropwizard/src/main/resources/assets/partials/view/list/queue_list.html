@@ -54,7 +54,11 @@
                 </tr>
                 <tr ng-if="initialized" ng-repeat="queue in queuesPage.items">
                     <td>
-                        <small>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</small>
+                        <small>
+                            {{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}
+                            <i class="icon-flag" ng-if="queue.local" popover="Owned by current node" popover-trigger="mouseenter" ></i>
+                            <i class="icon-globe" ng-if="!queue.local" popover="Owned by remote node" popover-trigger="mouseenter"></i>
+                        </small>
                     </td>
                     <td>
                         <small>

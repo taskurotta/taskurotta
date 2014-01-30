@@ -15,6 +15,7 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.hz.console.HzQueueStatTask;
+import ru.taskurotta.hazelcast.util.ClusterUtils;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.util.ActorUtils;
@@ -305,6 +306,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 if (!resultItems.isEmpty()) {
                     for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);
+                        item.setLocal(ClusterUtils.isLocalQueue(queueNamePrefix+item.getName(), hazelcastInstance));
                     }
 
                     result = new GenericPage<>(resultItems, pageNum, pageSize, fullFilteredQueueNamesList.size());

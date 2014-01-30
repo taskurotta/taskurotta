@@ -11,6 +11,7 @@ import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.util.ClusterUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -66,22 +67,28 @@ public class MongoStorageFactory implements StorageFactory {
                 try {
                     Set<Map.Entry<String, String>> entrySet = dbCollectionNamesMap.entrySet();
 
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Registered stores are [{}]", getRegisteredQueues(entrySet));
+                    }
+
                     BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
 
                     for (Map.Entry<String, String> entry : entrySet) {
                         String dbCollectionName = entry.getValue();
-                        DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
-
                         String queueName = entry.getKey();
-                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                        try (DBCursor dbCursor = dbCollection.find(query)) {
-                            while (dbCursor.hasNext()) {
-                                DBObject dbObject = dbCursor.next();
-                                StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+                        if (ClusterUtils.isLocalQueue(queueName, hazelcastInstance)) {//Node should serve only local queues
+                            DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                            IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                                if (iQueue.offer(storageItem.getObject())) {
-                                    dbCollection.remove(dbObject);
+                            try (DBCursor dbCursor = dbCollection.find(query)) {
+                                while (dbCursor.hasNext()) {
+                                    DBObject dbObject = dbCursor.next();
+                                    StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+
+                                    if (iQueue.offer(storageItem.getObject())) {
+                                        dbCollection.remove(dbObject);
+                                    }
                                 }
                             }
                         }
@@ -91,6 +98,21 @@ public class MongoStorageFactory implements StorageFactory {
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
+    }
+
+    private String getRegisteredQueues(Set<Map.Entry<String, String>> entrySet) {
+        StringBuilder sb = new StringBuilder();
+        String prefix = "Size: 0";
+        if (entrySet != null && !entrySet.isEmpty()) {
+            prefix = "Size: " + String.valueOf(entrySet.size());
+            for (Map.Entry<String, String> item : entrySet) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(item.getKey());
+            }
+        }
+        return prefix + " " + sb.toString();
     }
 
     @Override
