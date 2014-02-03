@@ -46,6 +46,8 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer loadTimer = Metrics.newTimer(MongoMapStore.class, "load",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+    public static Timer loadSuccessTimer = Metrics.newTimer(MongoMapStore.class, "load_success",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer deleteTimer = Metrics.newTimer(MongoMapStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     private String mapName;
@@ -100,6 +102,7 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         coll.remove(dbb);
     }
 
+
     public Object load(Object key) {
         long startTime = System.nanoTime();
 
@@ -113,7 +116,13 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
 
             try {
                 Class clazz = Class.forName(obj.get("_class").toString());
-                return converter.toObject(clazz, obj);
+                Object result = converter.toObject(clazz, obj);
+
+                if (result != null) {
+                    loadSuccessTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+                }
+
+                return result;
             } catch (ClassNotFoundException e) {
                 logger.warn(e.getMessage(), e);
             }

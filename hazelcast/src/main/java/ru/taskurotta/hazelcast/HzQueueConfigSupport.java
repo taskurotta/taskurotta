@@ -64,6 +64,9 @@ public class HzQueueConfigSupport {
                                     MongoMapStore.deleteTimer.count(), MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate()));
                             sb.append(String.format("\nload count: %d mean: %8.3f oneMinuteRate: %8.3f",
                                     MongoMapStore.loadTimer.count(), MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate()));
+                            sb.append(String.format("\nload success count: %d mean: %8.3f oneMinuteRate: %8.3f",
+                                    MongoMapStore.loadSuccessTimer.count(), MongoMapStore.loadSuccessTimer.mean(),
+                                    MongoMapStore.loadSuccessTimer.oneMinuteRate()));
                             sb.append(String.format("\nstore count: %d mean: %8.3f oneMinuteRate: %8.3f",
                                     MongoMapStore.storeTimer.count(), MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
 
