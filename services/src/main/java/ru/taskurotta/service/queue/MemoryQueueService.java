@@ -197,7 +197,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         String queueName = createQueueName(actorId, taskList);
         DelayQueue <DelayedTaskElement> queue = getQueue(queueName);
 
-        TaskQueueItem result = null;
+        TaskQueueItem result;
 
         try {
             result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
@@ -206,9 +206,11 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
             throw new ServiceCriticalException("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
         }
 
-        logger.debug("Task poll for actorId[{}], taskList[{}] returned item [{}]. Remaining queue.size: [{}]", actorId, taskList, result, queue.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Poll for actorId [{}], taskList [{}] returned item [{}]. Remaining queue.size: [{}]", actorId, taskList, result, queue.size());
+        }
 
-        lastPolledTaskEnqueueTimes.put(queueName, result!=null? result.getEnqueueTime() : System.currentTimeMillis() );
+        lastPolledTaskEnqueueTimes.put(queueName, result != null ? result.getEnqueueTime() : System.currentTimeMillis());
 
         return result;
 
@@ -225,7 +227,9 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         boolean result = queue.add(new DelayedTaskElement(taskId, processId, startTime, System.currentTimeMillis()));
 
-        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("EnqueueItem() for actorId [{}], taskList [{}], taskId [{}], startTime [{}]; Queue.size: [{}]", actorId, taskList, taskId, startTime, queue.size());
+        }
 
         return result;
     }

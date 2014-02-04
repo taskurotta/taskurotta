@@ -12,4 +12,6 @@ public interface SpreaderConfig {
     public void init();
 
     public TaskSpreader getTaskSpreader(Class clazz);
+
+    public TaskSpreader getTaskSpreader(Class clazz, String taskList);
 }

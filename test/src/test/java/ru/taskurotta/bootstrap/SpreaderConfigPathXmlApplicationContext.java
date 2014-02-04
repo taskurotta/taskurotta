@@ -47,7 +47,7 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
 
         try {
             try {
-                ClientServiceManager clientServiceManager = (ClientServiceManager) applicationContext.getBean(ClientServiceManager.class);
+                ClientServiceManager clientServiceManager = applicationContext.getBean(ClientServiceManager.class);
                 taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
             } catch (NoSuchBeanDefinitionException e) {
                 logger.debug("Not found bean of [{}]", taskSpreaderProviderClass);
@@ -66,6 +66,11 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     @Override
     public TaskSpreader getTaskSpreader(Class clazz) {
         return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz));
+    }
+
+    @Override
+    public TaskSpreader getTaskSpreader(Class clazz, String taskList) {
+        return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz, taskList));
     }
 
     public void setContext(String context) {
