@@ -22,8 +22,7 @@ public class ActorDefinition implements Serializable {
 
     private String fullName;
     
-    private ActorDefinition() {
-    }    
+    private ActorDefinition() {}
     
     public static ActorDefinition valueOf(String name, String version) {
     	ActorDefinition actorDefinition = new ActorDefinition();
@@ -80,6 +79,13 @@ public class ActorDefinition implements Serializable {
         }
 
         throw new ActorRuntimeException("Class [" + actorClass.getName() + "] has no either annotation @Worker or @Decider");
+    }
+
+    public static ActorDefinition valueOf(Class actorClass, String taskList) {
+        ActorDefinition actorDefinition = valueOf(actorClass);
+        actorDefinition.taskList = taskList;
+
+        return actorDefinition;
     }
 
     public String getName() {

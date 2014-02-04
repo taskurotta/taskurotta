@@ -20,6 +20,7 @@ public class ActorConfig {
     private Properties properties;
     private long sleepTimeoutMillis = 1000l;
     private long shutdownTimeoutMillis = 60000l;
+    private String taskList;
 
     public String getActorInterface() {
         return actorInterface;
@@ -95,5 +96,29 @@ public class ActorConfig {
 
     public long getShutdownTimeoutMillis() {
         return shutdownTimeoutMillis;
+    }
+
+    public String getTaskList() {
+        return taskList;
+    }
+
+    public void setTaskList(String taskList) {
+        this.taskList = taskList;
+    }
+
+    @Override
+    public String toString() {
+        return "ActorConfig{" +
+                "actorInterface='" + actorInterface + '\'' +
+                ", runtimeConfig='" + runtimeConfig + '\'' +
+                ", spreaderConfig='" + spreaderConfig + '\'' +
+                ", profilerConfig='" + profilerConfig + '\'' +
+                ", policyConfig='" + policyConfig + '\'' +
+                ", count=" + count +
+                ", properties=" + properties +
+                ", sleepTimeoutMillis=" + sleepTimeoutMillis +
+                ", shutdownTimeoutMillis=" + shutdownTimeoutMillis +
+                ", taskList='" + taskList + '\'' +
+                '}';
     }
 }

@@ -132,7 +132,12 @@ public class Bootstrap implements BootstrapMBean {
         final Class actorClass = getActorClass(actorConfig.getActorInterface());
 
         SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
-        TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+        TaskSpreader taskSpreader;
+        if (actorConfig.getTaskList() == null) {
+            taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+        } else {
+            taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass, actorConfig.getTaskList());
+        }
 
         RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
         RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);

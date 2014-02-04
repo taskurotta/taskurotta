@@ -24,6 +24,11 @@ public class TestSpreaderConfig implements SpreaderConfig {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
+    public TaskSpreader getTaskSpreader(Class clazz, String taskList) {
+        return null;
+    }
+
     public void setContext(String context) {
         this.context = context;
     }

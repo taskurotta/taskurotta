@@ -91,6 +91,11 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
         return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz));
     }
 
+    @Override
+    public TaskSpreader getTaskSpreader(Class clazz, String taskList) {
+        return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz, taskList));
+    }
+
     public void setContext(String context) {
         this.context = context;
     }
