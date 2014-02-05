@@ -66,4 +66,13 @@ public class TaskOptionsImpl implements TaskOptions {
         result = 31 * result + (promisesWaitFor != null ? Arrays.hashCode(promisesWaitFor) : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "TaskOptionsImpl{" +
+                "argTypes=" + Arrays.toString(argTypes) +
+                ", actorSchedulingOptions=" + actorSchedulingOptions +
+                ", promisesWaitFor=" + Arrays.toString(promisesWaitFor) +
+                '}';
+    }
 }
