@@ -6,6 +6,7 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.util.concurrent.TimeUnit;
@@ -49,7 +50,18 @@ public class Inspector {
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                Task task = taskSpreader.poll();
+                Task task = null;
+
+                try {
+                    task = taskSpreader.poll();
+                } catch (ServerException e) {
+                    if (actorThreadPool.mute()) {
+                        logger.warn("Actor thread pool thread has been muted (on poll) due to server error[{}]", e.getLocalizedMessage());
+                        return null;
+                    } else {
+                        throw e;
+                    }
+                }
 
                 if (task == null) {
                     PolicyCounters policyCounters = getRetryCounter(pollCounterThreadLocal);
@@ -65,7 +77,16 @@ public class Inspector {
 
             @Override
             public void release(TaskDecision taskDecision) {
-                taskSpreader.release(taskDecision);
+                try {
+                    taskSpreader.release(taskDecision);
+                } catch (ServerException e) {
+                    if (actorThreadPool.mute()) {
+                        logger.warn("Actor thread pool thread has been muted (on release) due to server error[{}]", e.getLocalizedMessage());
+                        return;
+                    } else {
+                        throw e;
+                    }
+                }
             }
         };
     }
@@ -97,7 +118,7 @@ public class Inspector {
             logger.trace("Sleep thread [{}] for [{}] seconds after [{}] tries by retry policy", Thread.currentThread().getName(), nextRetryDelaySeconds, policyCounters.numberOfTries);
             TimeUnit.SECONDS.sleep(nextRetryDelaySeconds);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Retry policy sleep interrupted", e.getLocalizedMessage());
         }
     }
 
