@@ -131,12 +131,27 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         long meanTaskCount = taskCount.get();
         double rate = 1000.0 * meanTaskCount / deltaTime;
         double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / tasksForStat);
+
+//        logServerStat();
+
         log.info("Total task count: " + taskCount);
         log.info("Delta time: " + deltaTime);
         log.info(String.format("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta));
         stopDecorating.set(true);
         log.info("Decoration stopped");
         log.info("End");
+
         System.exit(0);
     }
+
+//    private void logServerStat() {
+//        try {
+//            Client client = Client.create();
+//            WebResource statResource = client.resource("/rest/server/stats");
+//            log.info("Server stat data: \n {}", statResource.get(String.class));
+//        } catch(Throwable e) {
+//            log.info("Cannot obtain server stat data...");
+//        }
+//    }
+
 }
