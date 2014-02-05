@@ -9,8 +9,6 @@ import com.hazelcast.core.IQueue;
 import com.hazelcast.core.QueueStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.store.MongoMapStore;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -49,49 +47,6 @@ public class HzQueueConfigSupport {
         this.bulkLoad = bulkLoad;
 
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
-
-
-        if (logger.isDebugEnabled()) {//Logging debug monitor
-            Thread monitor = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        while(true) {
-                            StringBuilder sb = new StringBuilder("\nMongoMapStore statistics:\n");
-
-                            sb.append(String.format("\ndelete count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoMapStore.deleteTimer.count(), MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate()));
-                            sb.append(String.format("\nload count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoMapStore.loadTimer.count(), MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate()));
-                            sb.append(String.format("\nload success count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoMapStore.loadSuccessTimer.count(), MongoMapStore.loadSuccessTimer.mean(),
-                                    MongoMapStore.loadSuccessTimer.oneMinuteRate()));
-                            sb.append(String.format("\nstore count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoMapStore.storeTimer.count(), MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
-
-                            sb.append("\nMongo Queues statistics:");
-                            sb.append(String.format("\ndelete count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoQueueStore.deleteTimer.count(), MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
-                            sb.append(String.format("\nload count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoQueueStore.deleteTimer.count(), MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
-                            sb.append(String.format("\nstore count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                                    MongoQueueStore.deleteTimer.count(), MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
-
-                            logger.debug(sb.toString());
-
-                            Thread.sleep(5*60*1000l);
-                        }
-                    } catch (Throwable e) {
-                        logger.debug("Stopping debug monitor due to error", e);
-                    }
-
-                }
-            });
-            monitor.setName("MongoMapStore-debug-monitor#"+getClass().getName());
-            monitor.setDaemon(true);
-            monitor.start();
-        }
 
     }
 

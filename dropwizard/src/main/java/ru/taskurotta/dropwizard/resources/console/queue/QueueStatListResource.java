@@ -48,6 +48,13 @@ public class QueueStatListResource extends BaseResource {
         }
     }
 
+    @Path("/local/count")
+    @GET
+    public Integer getLocalQueuesCount() {
+        //TODO: implement it for stress test usage
+        return 0;
+    }
+
     @Path("/{queueName}/size")
     @GET
     public Integer getQueueRealSize(@PathParam("queueName") String queueName) {
