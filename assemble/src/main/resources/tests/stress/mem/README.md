@@ -17,3 +17,6 @@ actor:
 
 actor:
         java -Xmx88m -Xms88m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -cp assemble/target/assemble-0.5.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem.yml
+
+# Full feature test: Actor + Direct + HZ + Mongo
+        java -Xmx128m -Xms128m -server -XX:+UseParNewGC -cp target/assemble-0.5.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f src/main/resources/tests/stress/mem/mem-ff.yml
