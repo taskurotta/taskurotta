@@ -4,7 +4,7 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: 200 #-1 = disabled
+          sleep: -1 #-1 = disabled
           workerFailChance: -1 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
@@ -16,7 +16,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 50
+          count: 10
           startTasks: true
           startTasksInBackground: true
           startTaskPeriodSeconds: -1 #-1 = disabled
@@ -24,8 +24,8 @@ spreader:
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
-          waitOnEveryNTaskOnStart: -1 #-1 = disabled
-          waitWorSecondsOnStart: -1 #-1 = disabled
+          waitOnEveryNTaskOnStart: 1000 #-1 = disabled
+          waitWorSecondsOnStart: 3600 #-1 = disabled
 
 
 policy:
@@ -53,8 +53,8 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 4
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "5 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Multiplier
@@ -63,8 +63,8 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 2
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "25 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.recipes.calculate.worker.NumberGenerator
@@ -73,8 +73,8 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 4
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "25 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Summarizer
@@ -83,5 +83,5 @@ actor:
       profilerConfig: MainProfilerConfig
       policyConfig: MainPolicyConfig
       count: 2
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "25 SECONDS"

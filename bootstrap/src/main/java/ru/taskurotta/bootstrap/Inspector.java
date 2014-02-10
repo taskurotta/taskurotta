@@ -22,7 +22,7 @@ public class Inspector {
     private RetryPolicy retryPolicy; //TaskServer poll policy of inspected actor
     private ActorThreadPool actorThreadPool; //pool of threads for given actor
 
-    private int failoverCheckTime = 60; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
+    private int failoverCheckTime = 0; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
     private TimeUnit failoverCheckTimeUnit = TimeUnit.SECONDS;
 
     protected static  class PolicyCounters {
@@ -110,8 +110,15 @@ public class Inspector {
                 return;
             }
 
-            nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
-            logger.info("Communication with TaskServer was idle, waiting for [{}] seconds to continue", nextRetryDelaySeconds);
+            if (failoverCheckTime > 0) {//fixed sleep interval configured
+                nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
+                logger.info("Idle communication with TaskServer: apply long wait for [{}] seconds to continue", nextRetryDelaySeconds);
+
+            } else {//try to apply max interval for configured policy
+                nextRetryDelaySeconds = Math.max(0, retryPolicy.getMaxIntervalSeconds());//prevent negative values
+                logger.debug("Idle communication with TaskServer: apply max policy wait for [{}] seconds to continue", nextRetryDelaySeconds);
+            }
+
         }
 
         try {

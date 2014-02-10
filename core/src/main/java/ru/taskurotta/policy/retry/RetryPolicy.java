@@ -30,4 +30,6 @@ public interface RetryPolicy {
      *         retrying.
      */
     long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries);
+
+    long getMaxIntervalSeconds();
 }

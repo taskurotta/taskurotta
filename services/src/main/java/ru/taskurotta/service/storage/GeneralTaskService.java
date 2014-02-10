@@ -48,6 +48,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         // due guarantees for its immutability.
 
         if (task == null) {
+            logger.error("Inconsistent state, taskId[{}] does not present at task service", taskId);
             return null;
         }
 

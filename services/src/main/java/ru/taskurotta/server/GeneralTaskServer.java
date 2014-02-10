@@ -117,7 +117,11 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // idempotent statement
-        return taskService.getTaskToExecute(item.getTaskId(), item.getProcessId());
+        TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId());
+        if (result == null) {
+            logger.error("Failed to get task for queue item ["+item+"] from store. Inconsistent state: possible data loss?");
+        }
+        return result;
     }
 
     @Override

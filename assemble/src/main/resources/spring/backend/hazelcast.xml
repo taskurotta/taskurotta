@@ -146,7 +146,6 @@
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
-        <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
         <constructor-arg name="recoveryProcessChangeTimeout">

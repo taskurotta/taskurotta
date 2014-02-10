@@ -46,9 +46,14 @@ public class MongoStorageFactory implements StorageFactory {
                                String storagePrefix, long scheduleDelayMillis) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
-
         this.converter = new SpringMongoDBConverter(mongoTemplate);
 
+        fireStorageScanTask(hazelcastInstance, scheduleDelayMillis);
+
+    }
+
+
+    private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
 
@@ -68,7 +73,7 @@ public class MongoStorageFactory implements StorageFactory {
                     Set<Map.Entry<String, String>> entrySet = dbCollectionNamesMap.entrySet();
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Registered stores are [{}]", getRegisteredQueues(entrySet));
+                        logger.debug("MongoDB storage scan iteration start: registered stores are [{}]", getRegisteredQueues(entrySet));
                     }
 
                     BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
@@ -81,23 +86,23 @@ public class MongoStorageFactory implements StorageFactory {
                             DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
                             IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                            try (DBCursor dbCursor = dbCollection.find(query)) {
-                                while (dbCursor.hasNext()) {
-                                    DBObject dbObject = dbCursor.next();
-                                    StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+                            DBCursor dbCursor = dbCollection.find(query);
+                            while (dbCursor.hasNext()) {
+                                DBObject dbObject = dbCursor.next();
+                                StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
 
-                                    if (iQueue.offer(storageItem.getObject())) {
-                                        dbCollection.remove(dbObject);
-                                    }
+                                if (iQueue.offer(storageItem.getObject())) {
+                                    dbCollection.remove(dbObject);
                                 }
                             }
                         }
                     }
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
+                } catch (Throwable e) {
+                    logger.error("MongoDB storage scan iteration failed. Try to resume in ["+scheduleDelayMillis+"]ms...", e);
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
+
     }
 
     private String getRegisteredQueues(Set<Map.Entry<String, String>> entrySet) {

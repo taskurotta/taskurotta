@@ -87,12 +87,13 @@ public class ActorThreadPoolTest {
 
     @Test
     public void testWake() throws Exception {
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(5);//ensure pool is sleepy
+
+        assertEquals(1, actorThreadPool.getCurrentSize());
 
         actorThreadPool.wake();
 
-        TimeUnit.SECONDS.sleep(1);
-
         assertEquals(10, actorThreadPool.getCurrentSize());
+
     }
 }
