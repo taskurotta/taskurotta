@@ -32,7 +32,6 @@ public class MathActionDeciderImpl implements MathActionDecider {
         Promise<Integer> a = numberGeneratorClient.getNumber();
 
         selfAsync.callExecutor(a, start);
-
     }
 
     @Asynchronous
@@ -43,23 +42,20 @@ public class MathActionDeciderImpl implements MathActionDecider {
             throw new RandomDeciderException("Its decider exception time");
         }
 
-        int oddOrEven = a.get()%2;//=0 чётное либо =1 нечётное.
-
         Promise<Integer> result = null;
         String action = "";
-        switch(oddOrEven) {
-        case 0:
-            result = summarizerClient.summarize(a.get(), a.get());
-            action = a.get()+"+"+a.get()+"=";
-            break;
-        case 1:
-            result = multiplierClient.multiply(a.get(), a.get());
-            action = a.get()+"*"+a.get()+"=";
-            break;
+        switch(a.get() % 2) {
+            case 0:
+                result = summarizerClient.summarize(a.get(), a.get());
+                action = a.get()+"+"+a.get()+"=";
+                break;
+            case 1:
+                result = multiplierClient.multiply(a.get(), a.get());
+                action = a.get()+"*"+a.get()+"=";
+                break;
         }
 
         selfAsync.logResult(result, action, startTime);
-
     }
 
     public void init() {

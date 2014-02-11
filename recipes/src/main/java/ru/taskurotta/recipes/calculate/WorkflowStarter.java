@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
-import ru.taskurotta.recipes.calculate.decider.MathActionDeciderClient;
 import ru.taskurotta.exception.server.ServerException;
+import ru.taskurotta.recipes.calculate.decider.MathActionDeciderClient;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,6 +14,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class WorkflowStarter {
+
+    private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
 
     private ClientServiceManager clientServiceManager;
 
@@ -25,10 +27,8 @@ public class WorkflowStarter {
 
     private int startTaskPeriodSeconds = -1;
 
-    private static final Logger logger = LoggerFactory.getLogger(WorkflowStarter.class);
-
-    private int waitOn = -1;
-    private int waitForSeconds = -1;
+    private int waitOnEveryNTask = -1;
+    private int waitOnEveryNTaskInSeconds = -1;
 
     public void startWork() {
         if (startTasks) {
@@ -37,8 +37,8 @@ public class WorkflowStarter {
 
             if(startTaskPeriodSeconds > 0) {
 
-                ScheduledExecutorService ses = Executors.newScheduledThreadPool(1);
-                ses.scheduleAtFixedRate(new Runnable() {
+                ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+                scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
                         startTasks(decider);
@@ -52,7 +52,6 @@ public class WorkflowStarter {
             logger.info("Start work time [{}], count[{}]", new SimpleDateFormat("HH:mm:ss.SS").format(new Date()), count);
         }
     }
-
 
     public void startTasks(final MathActionDeciderClient decider) {
         if (startTasksInBackground) {
@@ -78,17 +77,19 @@ public class WorkflowStarter {
             try{
                 decider.performAction();
                 started++;
-                if (started%10 == 0) {
-                    logger.info("Started [{}] processes", started);
-                }
 
-                if (waitOn > 0 && waitForSeconds > 0 && (started%waitOn == 0)) {
+                /*if (started % 10 == 0) {
+                    logger.info("Started [{}] processes", started);
+                }*/
+
+                if (waitOnEveryNTask > 0 && waitOnEveryNTaskInSeconds > 0 && (started % waitOnEveryNTask == 0)) {
+                    logger.info("Sleep for [{}] seconds after [{}] tasks", waitOnEveryNTaskInSeconds, started);
+
                     try {
-                        Thread.sleep(waitForSeconds * 1000);
+                        TimeUnit.SECONDS.sleep(waitOnEveryNTaskInSeconds);
                     } catch (InterruptedException e) {
                         logger.error("Start tasks thread interrupted", e);
                     }
-
                 }
 
             } catch(ServerException ex) {
@@ -117,11 +118,11 @@ public class WorkflowStarter {
         this.startTaskPeriodSeconds = startTaskPeriodSeconds;
     }
 
-    public void setWaitOn(int waitOn) {
-        this.waitOn = waitOn;
+    public void setWaitOnEveryNTask(int waitOnEveryNTask) {
+        this.waitOnEveryNTask = waitOnEveryNTask;
     }
 
-    public void setWaitForSeconds(int waitForSeconds) {
-        this.waitForSeconds = waitForSeconds;
+    public void setWaitOnEveryNTaskInSeconds(int waitOnEveryNTaskInSeconds) {
+        this.waitOnEveryNTaskInSeconds = waitOnEveryNTaskInSeconds;
     }
 }

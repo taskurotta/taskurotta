@@ -25,6 +25,9 @@ public class SummarizerImpl implements Summarizer {
         }
 
         if (sleep > 0) {
+
+            logger.info("Sleep for [{}] ms", sleep);
+
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {
