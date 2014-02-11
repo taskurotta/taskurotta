@@ -94,7 +94,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         if (result) {//has some tasks restarted -> mark graph as touched
 
             logger.trace("#[{}]: try to update graph", processId);
-            dependencyService.changeGraph(new GraphDao.Updater() {
+            boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
                 @Override
                 public UUID getProcessId() {
                     return processId;
@@ -113,7 +113,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             });
 
             brokenProcessService.delete(processId);
-            logger.info("Process[{}] has been recovered (with broken process service clean up)", processId);
+            logger.info("Process[{}] has been recovered, graph update result [{}]", processId, graphUpdated);
         }
 
         return result;

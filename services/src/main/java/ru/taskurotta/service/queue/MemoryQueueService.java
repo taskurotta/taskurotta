@@ -108,6 +108,11 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         }
     }
 
+    @Override
+    public long getQueueStorageCount(String queueName) {
+        return 0;//no storages for memory impl
+    }
+
     private List<String> getTaskQueueNames(String filter) {
         List<String> result = new ArrayList<>();
         for (String name: queues.keySet()) {

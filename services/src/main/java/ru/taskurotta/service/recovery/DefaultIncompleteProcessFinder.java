@@ -62,12 +62,16 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
             @Override
             public void run() {
                 try {
-                    if (!operationExecutor.isEmpty()) {
+
+                    logger.debug("Fired incomplete process searcher, iteration period[{}] ms", findIncompleteProcessPeriod);
+
+                    if (!operationExecutor.isEmpty()) { //has some processes previously recovered still in processing
                         logger.debug("RecoveryOperationExecutor queue isn't empty. Skip find incomplete processes");
                         return;
                     }
 
                     if (nodeLock.tryLock()) {
+                        int recovered = 0;
                         long timeBefore = System.currentTimeMillis() - incompleteTimeOutMillis;
 
                         if (logger.isDebugEnabled()) {
@@ -75,26 +79,21 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                         }
 
                         Collection<UUID> incompleteProcesses = dao.findProcesses(timeBefore);
-
                         if (incompleteProcesses != null && !incompleteProcesses.isEmpty()) {
                             for (UUID ip : incompleteProcesses) {
                                 toRecovery(ip);
+                                recovered++;
                             }
-
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("[{}] processes was sent to recovery", incompleteProcesses.size());
-                            }
-
-                        } else {
-                            logger.debug("Incomplete processes for recovery were not found");
                         }
+
+                        logger.debug("[{}] processes were sent to recovery", recovered);
 
                     } else {
                         logger.debug("Can't get lock for incomplete processes search, skip iteration");
                     }
 
                 } catch (Throwable e) {
-                    logger.error("IncompleteProcessFinder iteration failed due to error, try to resume on next iteration...", e);
+                    logger.error("IncompleteProcessFinder iteration failed due to error, try to resume in [" + findIncompleteProcessPeriod + "] ms...", e);
                 }
             }
         }, 0l, findIncompleteProcessPeriod, TimeUnit.MILLISECONDS);

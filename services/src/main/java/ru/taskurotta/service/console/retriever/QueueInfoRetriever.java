@@ -32,4 +32,6 @@ public interface QueueInfoRetriever {
 
     public void removeQueue(String queueName);
 
+    public long getQueueStorageCount(String queueName);
+
 }

@@ -85,6 +85,17 @@ public class MetricsStorageFactory implements StorageFactory {
             logger.trace("Marking destroy metric");
         }
 
+        @Override
+        public long size() {
+            long start = System.currentTimeMillis();
+            long result = storage.size();
+            long period = System.currentTimeMillis() - start;
+            storageMetric.mark("size", period);
+            storageMetric.mark(MetricName.STORAGE.getValue(), period);
+            logger.trace("Marking size metric");
+            return result;
+        }
+
     };
 
 

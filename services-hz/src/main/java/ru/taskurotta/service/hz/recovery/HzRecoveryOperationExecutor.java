@@ -43,6 +43,8 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
         if (hzQueueConfigSupport != null) {
             hzQueueConfigSupport.createQueueConfig(recoveryOperationQueueName);
+        } else {
+            logger.warn("HzQueueConfigSupport is not configured");
         }
 
         this.operationIQueue = hazelcastInstance.getQueue(recoveryOperationQueueName);

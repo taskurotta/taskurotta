@@ -50,13 +50,13 @@ public class HzQueueConfigSupport {
 
     }
 
-    public void createQueueConfig(String queueName) {
+    public boolean createQueueConfig(String queueName) {
         try {
             queueConfigLock.lock();
 
             if (isQueueExists(queueName)) {
                 logger.debug("Skip creating queue[{}] config: it already exists...", queueName);
-                return;
+                return false;
             }
 
             QueueConfig qc = new QueueConfig();
@@ -71,6 +71,8 @@ public class HzQueueConfigSupport {
             logger.debug("For queue name [{}] add config [{}]", queueName, qc);
 
             hzInstance.getQueue(queueName);//ensures HZ queue initialization
+
+            return true;
         } finally {
             queueConfigLock.unlock();
         }

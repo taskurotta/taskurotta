@@ -2,9 +2,10 @@ package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -21,6 +22,8 @@ public class BaseQueueFactory implements QueueFactory {
 
     private transient final ReentrantLock lock = new ReentrantLock();
     private ConcurrentHashMap<String, DelayIQueue> queueMap = new ConcurrentHashMap<>();
+
+    private static final Logger logger = LoggerFactory.getLogger(BaseQueueFactory.class);
 
     public BaseQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory) {
         this.hazelcastInstance = hazelcastInstance;
@@ -51,6 +54,8 @@ public class BaseQueueFactory implements QueueFactory {
 
                 if (hzQueueConfigSupport != null) {
                     hzQueueConfigSupport.createQueueConfig(queueName);
+                } else {
+                    logger.warn("HzQueueConfigSupport is not configured");
                 }
 
                 IQueue iQueue = hazelcastInstance.getQueue(queueName);

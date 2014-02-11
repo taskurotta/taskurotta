@@ -166,6 +166,12 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
+    public long getQueueStorageCount(String queueName) {
+        DelayIQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+        return queue!=null? queue.getStorageSize(): -1;//-1 indicating that there is no such queue cached yet
+    }
+
+    @Override
     public TaskQueueItem poll(String actorId, String taskList) {
 
         String queueName = createQueueName(actorId, taskList);

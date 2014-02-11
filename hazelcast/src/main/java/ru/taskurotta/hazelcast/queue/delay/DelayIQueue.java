@@ -189,4 +189,8 @@ public class DelayIQueue<E> implements IQueue<E> {
         storage.destroy();
         queue.destroy();
     }
+
+    public long getStorageSize() {
+        return storage.size();
+    }
 }

@@ -52,7 +52,6 @@ public class MongoStorageFactory implements StorageFactory {
 
     }
 
-
     private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
@@ -98,7 +97,8 @@ public class MongoStorageFactory implements StorageFactory {
                         }
                     }
                 } catch (Throwable e) {
-                    logger.error("MongoDB storage scan iteration failed. Try to resume in ["+scheduleDelayMillis+"]ms...", e);
+                    logger.error("MongoDB storage scan iteration failed. Try to resume in [" + scheduleDelayMillis + "]ms...", e);
+                    clearRegisteredStorages();//to ensure db indexes again
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
@@ -118,6 +118,20 @@ public class MongoStorageFactory implements StorageFactory {
             }
         }
         return prefix + " " + sb.toString();
+    }
+
+
+    protected void clearRegisteredStorages() {
+        if (dbCollectionNamesMap.size() > 0) {
+            final ReentrantLock lock = this.lock;
+            lock.lock();
+            try {
+                dbCollectionNamesMap.clear();
+                logger.warn("Clear registered mongo storages cache to update on online status");
+            } finally {
+                lock.unlock();
+            }
+        }
     }
 
     @Override
@@ -172,6 +186,11 @@ public class MongoStorageFactory implements StorageFactory {
                 mongoTemplate.dropCollection(unPrefixed);
 
                 logger.debug("Destroying storage collections: delayedStore[{}] and queueBackingStore[{}]", finalDbCollectionName, unPrefixed);
+            }
+
+            @Override
+            public long size() {
+                return dbCollection.count();
             }
         };
     }

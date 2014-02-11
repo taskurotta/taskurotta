@@ -98,6 +98,19 @@ public class CommonStorageFactory implements StorageFactory {
             public void destroy() {
                 // don't destroy, because it's common storage for all queues
             }
+
+            @Override
+            public long size() {
+                int result = 0;
+
+                for (StorageItem st : iMap.values()) {
+                    if (st!=null && st.getQueueName().equals(queueName)) {
+                        result++;
+                    }
+                }
+
+                return result;
+            }
         };
     }
 
