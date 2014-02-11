@@ -71,16 +71,6 @@
     </bean>
     <!-- /Queues persistence support -->
 
-    <!--  Actor config support  -->
-    <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.MongoActorConfigManager">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="actorConfigName" value="${hz.map.actor-preferences.name}"/>
-
-        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
-    </bean>
-    <!-- /Actor config support -->
-
     <!-- Delay queue support -->
     <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
