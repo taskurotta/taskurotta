@@ -132,6 +132,24 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
+    public void markProcessAsBroken(UUID processId) {
+        log.trace("Try to mark process [{}] as broken([{}])", processId, Process.BROKEN);
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS set STATE = ? WHERE PROCESS_ID = ?")) {
+
+            ps.setInt(1, Process.BROKEN);
+            ps.setString(2, processId.toString());
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            log.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new ServiceCriticalException("Database error", ex);
+        }
+
+        log.debug("Process [{}] marked as broken([{}])", processId, Process.BROKEN);
+    }
+
+    @Override
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status) {
         List<Process> result = new ArrayList<>();
         long totalCount = 0;

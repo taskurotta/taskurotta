@@ -159,6 +159,7 @@ public class GeneralTaskServer implements TaskServer {
 
                 if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
                     saveBrokenProcess(taskDecision);
+                    processService.markProcessAsBroken(processId);
                     return;
                 }
             }
@@ -166,6 +167,7 @@ public class GeneralTaskServer implements TaskServer {
 
         if (unsafePromiseSentToWorker(taskDecision.getTasks())) {
             saveBrokenProcess(taskDecision);
+            processService.markProcessAsBroken(processId);
             return;
         }
 

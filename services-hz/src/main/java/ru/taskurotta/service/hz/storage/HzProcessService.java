@@ -60,6 +60,13 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
+    public void markProcessAsBroken(UUID processId) {
+        Process process = processIMap.get(processId);
+        process.setState(Process.BROKEN);
+        processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
+    }
+
+    @Override
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status) {
         List<Process> result = new ArrayList<>();
         Collection<Process> values = null;
@@ -79,7 +86,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
             if (values!=null && !values.isEmpty()) {
                 int pageEnd = Math.min(pageSize * pageNumber, values.size());
                 int pageStart = (pageNumber - 1) * pageSize;
-                result.addAll(new ArrayList(values).subList(pageStart, pageEnd));
+                result.addAll(new ArrayList<>(values).subList(pageStart, pageEnd));
             }
         }
 
