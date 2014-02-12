@@ -38,7 +38,7 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
 
     @Override
     public Collection<UUID> findProcesses(long timeBefore) {
-        Collection<UUID> result = new ArrayList();
+        Collection<UUID> result = new ArrayList<>();
 
         DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
 
@@ -61,5 +61,4 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
 
         return result;
     }
-
 }
