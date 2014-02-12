@@ -10,7 +10,7 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:spring/actor.xml
+          - classpath:spring/actor-ff.xml
         defaultPropertiesLocation: default.properties
         properties:
           cycles: 10

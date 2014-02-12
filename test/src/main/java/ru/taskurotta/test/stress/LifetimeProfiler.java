@@ -48,8 +48,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double previousCountTotalRate = 0;
     private double targetTolerance = 4.0;
     private AtomicInteger nullPoll = new AtomicInteger(0);
-    private ThreadLocal<Integer> localTaskCount = new ThreadLocal<Integer>();
-    private int taskPerProcess = 1;
 
     public LifetimeProfiler() {
     }
@@ -70,10 +68,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
         if (properties.containsKey("maxTaskQuantity")) {
             maxTaskQuantity = (Integer) properties.get("maxTaskQuantity");
-        }
-
-        if (properties.containsKey("taskPerProcess")) {
-            taskPerProcess = (Integer) properties.get("taskPerProcess");
         }
 
     }
@@ -163,14 +157,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     System.err.println(sb);
                 }
 
-                if (localTaskCount.get() == null) {
-                    localTaskCount.set(0);
-                }
-                localTaskCount.set(localTaskCount.get() + 1);
 
-                if (localTaskCount.get() == taskPerProcess) {
+                if (task.getTarget().getName().equals("ru.taskurotta.test.fullfeature.decider.FullFeatureDecider") &&
+                        task.getTarget().getMethod().equals("logResult")) {
+
                     StressTaskCreator.sendOneTask();
-                    localTaskCount.set(0);
                 }
 
                 if (timeIsZero) {
@@ -187,7 +178,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         deltaRate = Math.abs(rate - previousRate);
                         totalDelta += deltaRate;
                     }
-                    double totalRate = 1000.0 * count / (double) (LifetimeProfiler.lastTime.get() - LifetimeProfiler.startTime.get());
+                    double totalRate = 1000.0 * count / (double) (curTime - LifetimeProfiler.startTime.get());
                     double currentCountTotalRate = count / totalRate;
                     double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
                     previousCountTotalRate = currentCountTotalRate;
@@ -228,10 +219,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     public void setTasksForStat(int tasksForStat) {
         LifetimeProfiler.tasksForStat = tasksForStat;
-    }
-
-    public void setTaskPerProcess(int taskPerProcess) {
-        this.taskPerProcess = taskPerProcess;
     }
 
     @Override
