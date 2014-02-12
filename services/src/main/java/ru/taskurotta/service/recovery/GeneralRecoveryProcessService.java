@@ -16,7 +16,6 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
@@ -164,7 +163,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 String actorId = taskContainer.getActorId();
 
                 if (isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)
-                        && queueService.enqueueItem(taskContainer.getActorId(), taskContainer.getTaskId(), processId, taskContainer.getStartTime(), taskList)) {
+                        && queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
                     logger.trace("#[{}]: task [{}] have been restarted", processId, taskContainer);
                     restartedTasks++;
                 }
@@ -265,8 +264,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         dependencyService.startProcess(startTaskContainer);
         logger.debug("Restart process[{}] from start: start task [{}]", processId, startTaskContainer);
 
-        return restartTasks(Arrays.asList(startTaskContainer), processId) > 0;
-
+        return queueService.enqueueItem(startTaskContainer.getActorId(), startTaskContainer.getTaskId(), processId,
+                startTaskContainer.getStartTime(), TransportUtils.getTaskList(startTaskContainer));
     }
 
     private void finishProcess(UUID processId, UUID startTaskId, Collection<UUID> finishedTaskIds) {
@@ -284,7 +283,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         // send process to GC
         garbageCollectorService.delete(processId);
-
     }
 
     public void setDependencyService(DependencyService dependencyService) {
