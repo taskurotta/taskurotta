@@ -3,6 +3,7 @@ package ru.taskurotta.service.ora.recovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.ServiceCriticalException;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessDao;
 
 import javax.sql.DataSource;
@@ -32,11 +33,11 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
 
     @Override
     public Collection<UUID> findProcesses(long timeBefore) {
-        Collection<UUID> result = null;
+        Collection<UUID> result;
         try (Connection connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_INCOMPLETE_PROCESSES)) {
 
-            preparedStatement.setInt(1, 0);
+            preparedStatement.setInt(1, Process.START);
             preparedStatement.setLong(2, timeBefore);
 
             ResultSet resultSet = preparedStatement.executeQuery();

@@ -54,6 +54,13 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
+    public void markProcessAsBroken(UUID processId) {
+        Process process = processesStorage.get(processId);
+        process.setState(Process.BROKEN);
+        processesStorage.put(processId, process);
+    }
+
+    @Override
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status) {
         List<Process> result = new ArrayList<>();
         Collection<Process> values = null;
@@ -73,7 +80,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
             if (values!=null && !values.isEmpty()) {
                 int pageStart = (pageNumber - 1) * pageSize;
                 int pageEnd = Math.min(pageSize * pageNumber, values.size());
-                result.addAll(new ArrayList(values).subList(pageStart, pageEnd));
+                result.addAll(new ArrayList<>(values).subList(pageStart, pageEnd));
             }
         }
 

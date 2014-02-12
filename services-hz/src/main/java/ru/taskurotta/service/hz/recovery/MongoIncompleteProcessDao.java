@@ -38,13 +38,13 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
 
     @Override
     public Collection<UUID> findProcesses(long timeBefore) {
-        Collection<UUID> result = new ArrayList();
+        Collection<UUID> result = new ArrayList<>();
 
         DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
 
         BasicDBObject query = new BasicDBObject();
         query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", timeBefore));
-        query.append(STATE_INDEX_NAME, 0);
+        query.append(STATE_INDEX_NAME, Process.START);
 
         try (DBCursor dbCursor = dbCollection.find(query)) {
             while (dbCursor.hasNext()) {
@@ -61,5 +61,4 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
 
         return result;
     }
-
 }
