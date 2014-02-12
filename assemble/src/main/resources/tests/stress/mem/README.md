@@ -24,5 +24,6 @@ actor:
 # Full feature test: Actor + Direct + HZ + Mongo
 
 actor:
-        java -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -server -cp assemble/target/assemble-0.5.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem-ff.yml
+        java -Xmx88m -Xms88m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -server -cp
+        assemble/target/assemble-0.5.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem-ff.yml
 
