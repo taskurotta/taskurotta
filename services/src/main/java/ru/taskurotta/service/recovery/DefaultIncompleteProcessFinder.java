@@ -24,12 +24,12 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
 
     private OperationExecutor operationExecutor;
     private IncompleteProcessDao dao;
-
     private Lock nodeLock;
     private long findIncompleteProcessPeriod;
     private long incompleteTimeOutMillis;
-
     private boolean enabled;
+
+    private ScheduledExecutorService scheduledExecutorService;
 
     public DefaultIncompleteProcessFinder(final IncompleteProcessDao dao, final Lock nodeLock, final OperationExecutor operationExecutor, long findIncompleteProcessPeriod,
                                       final long incompleteTimeOutMillis, boolean enabled) {
@@ -48,7 +48,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
     }
 
     protected void runProcessFinder() {
-        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
@@ -109,4 +109,29 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
         logger.trace("Process [{}] was sent to recovery queue", processId);
     }
 
+    public void start() {
+        this.enabled = true;
+
+        if (scheduledExecutorService == null || scheduledExecutorService.isShutdown()) {
+            runProcessFinder();
+            logger.debug("DefaultIncompleteProcessFinder started");
+        } else {
+            logger.warn("DefaultIncompleteProcessFinder already started");
+        }
+    }
+
+    public void stop() {
+        this.enabled = false;
+
+        if (scheduledExecutorService == null || scheduledExecutorService.isShutdown()) {
+            logger.warn("DefaultIncompleteProcessFinder already stopped");
+        } else {
+            scheduledExecutorService.shutdown();
+            logger.debug("DefaultIncompleteProcessFinder started");
+        }
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
 }
