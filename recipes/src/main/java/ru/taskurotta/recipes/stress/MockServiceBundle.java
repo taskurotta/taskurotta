@@ -78,6 +78,11 @@ public class MockServiceBundle implements ServiceBundle {
             public TaskContainer getStartTask(UUID processId) {
                 return createRandomMultiplyTaskContainer();
             }
+
+            @Override
+            public void markProcessAsBroken(UUID processId) {
+
+            }
         };
     }
 

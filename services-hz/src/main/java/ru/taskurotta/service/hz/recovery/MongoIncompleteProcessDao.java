@@ -44,7 +44,7 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
 
         BasicDBObject query = new BasicDBObject();
         query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", timeBefore));
-        query.append(STATE_INDEX_NAME, 0);
+        query.append(STATE_INDEX_NAME, Process.START);
 
         try (DBCursor dbCursor = dbCollection.find(query)) {
             while (dbCursor.hasNext()) {

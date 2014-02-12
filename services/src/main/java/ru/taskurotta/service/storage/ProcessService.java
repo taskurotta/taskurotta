@@ -17,10 +17,7 @@ public interface ProcessService {
 
     public void deleteProcess(UUID processId);
 
-    /**
-     * Get start task for process by it's id
-     *
-     * @param processId
-     */
     public TaskContainer getStartTask(UUID processId);
+
+    public void markProcessAsBroken(UUID processId);
 }
