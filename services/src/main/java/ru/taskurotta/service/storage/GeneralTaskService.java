@@ -108,7 +108,9 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             return isDeciderAsynchronousTaskType ? pArg : pArg.updateType(false);              // simply strip of promise wrapper
         }
 
-        if (!taskDao.isTaskReleased(pArg.getTaskId(), processId)) {
+        UUID taskId = pArg.getTaskId();
+
+        if (!taskDao.isTaskReleased(taskId, processId)) {
             if (ArgType.NO_WAIT.equals(argType)) {
                 // value may be null for NoWait promises
                 // leave it in peace...
@@ -117,14 +119,14 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
         }
 
-        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
+        ArgContainer taskValue = getTaskValue(taskId, processId);//try to find promise value obtained by its task result
 
         ArgContainer newArg = new ArgContainer(taskValue);
         if (isDeciderAsynchronousTaskType) {
 
             // set real value into promise for Decider tasks
             newArg.setPromise(true);
-            newArg.setTaskId(pArg.getTaskId());
+            newArg.setTaskId(taskId);
         } else {
 
             // swap promise with real value for Actor tasks
