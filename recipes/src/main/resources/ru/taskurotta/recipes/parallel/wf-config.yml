@@ -15,22 +15,20 @@ spreader:
 
 profiler:
   - MainProfilerConfig:
-#      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      class: ru.taskurotta.spring.configs.ProfilerConfigPathXmlApplicationContext
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
       instance:
         class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
-        context: ru/taskurotta/recipes/parallel/RuntimeBeans.xml
-#        properties:
-#          meterCycle: true
-#          trackExecute: true
-#          trackCycle: false
-#          trackPull: true
-#          trackRelease: true
-#          trackError: false
-#          logOutput: false
-#          logOutputPeriod: 10
-#          consoleOutput: false
-#          consoleOutputPeriod: 10
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: false
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
 
 policy:
   - LinearRertyPolicyConfig:
