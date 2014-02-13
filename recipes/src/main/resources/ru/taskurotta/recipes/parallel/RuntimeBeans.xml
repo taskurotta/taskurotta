@@ -10,6 +10,16 @@
 
     <bean id="runtimeProvider" class="ru.taskurotta.RuntimeProviderManager" factory-method="getRuntimeProvider"/>
 
+    <bean id="metricsProfiler" class="ru.taskurotta.bootstrap.profiler.MetricsProfiler">
+        <constructor-arg name="actorClass" value="ru.taskurotta.recipes.parallel.workers.PiWorker"/>
+        <constructor-arg name="properties">
+            <props>
+                <prop key="logOutput">true</prop>
+                <prop key="consoleOutput">true</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+
     <bean id="piWorker" class="ru.taskurotta.recipes.parallel.workers.PiWorkerImpl"/>
 
     <bean id="piDecider" class="ru.taskurotta.recipes.parallel.decider.PiDeciderImpl">
