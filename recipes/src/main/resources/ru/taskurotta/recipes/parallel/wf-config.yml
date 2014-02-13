@@ -15,6 +15,7 @@ spreader:
 
 profiler:
   - MainProfilerConfig:
+#      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
       class: ru.taskurotta.spring.configs.ProfilerConfigPathXmlApplicationContext
       instance:
         class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
