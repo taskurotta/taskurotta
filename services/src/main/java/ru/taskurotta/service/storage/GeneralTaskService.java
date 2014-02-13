@@ -108,8 +108,6 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             return isDeciderAsynchronousTaskType ? pArg : pArg.updateType(false);              // simply strip of promise wrapper
         }
 
-        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
-
         if (!taskDao.isTaskReleased(pArg.getTaskId(), processId)) {
             if (ArgType.NO_WAIT.equals(argType)) {
                 // value may be null for NoWait promises
@@ -118,6 +116,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             }
             throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
         }
+
+        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
 
         ArgContainer newArg = new ArgContainer(taskValue);
         if (isDeciderAsynchronousTaskType) {
