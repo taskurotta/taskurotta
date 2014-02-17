@@ -10,6 +10,8 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.util.Collection;
@@ -18,8 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * User: moroz
@@ -27,7 +27,7 @@ import java.util.logging.Logger;
  */
 public class MongoQueueStore implements QueueStore<Object> {
 
-    protected static final Logger logger = Logger.getLogger(MongoQueueStore.class.getName());
+    protected static final Logger logger = LoggerFactory.getLogger(MongoQueueStore.class);
     public static Timer storeTimer = Metrics.newTimer(MongoQueueStore.class, "store",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer loadTimer = Metrics.newTimer(MongoQueueStore.class, "load",
@@ -113,7 +113,7 @@ public class MongoQueueStore implements QueueStore<Object> {
                 Class clazz = Class.forName(obj.get("_class").toString());
                 return converter.toObject(clazz, obj);
             } catch (ClassNotFoundException e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
+                logger.error(e.getMessage(), e);
             }
             return null;
 
@@ -134,14 +134,25 @@ public class MongoQueueStore implements QueueStore<Object> {
         while (cursor.hasNext()) {
             try {
                 DBObject obj = cursor.next();
-                Class clazz = null;
-                clazz = Class.forName(obj.get("_class").toString());
+                Class clazz = Class.forName(obj.get("_class").toString());
                 map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
             } catch (ClassNotFoundException e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
+                logger.error(e.getMessage(), e);
             }
         }
+
+        if (map.size() != longs.size()) {
+            logger.warn("Cannot load all items from store, loaded [{}] out of [{}]", map.size(), longs.size());
+        }
+
         return map;
+    }
+
+    /**
+     * @return min Id of an item stored
+     */
+    public long getMinItemId() {
+        return -1;
     }
 
     @Override

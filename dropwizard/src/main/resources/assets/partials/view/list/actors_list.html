@@ -135,12 +135,12 @@
                         </div>
                     </td>
                     <td>
-                        <button ng-if="actor.blocked" class="btn btn-mini" ng-click="unblockActor(actor.id)">
-                            <i class="icon-play-circle" popover="Unblock actor" popover-trigger="mouseenter"></i>
+                        <button ng-if="actor.blocked" class="btn btn-mini" ng-click="unblockActor(actor.id)" popover="Unblock actor" popover-trigger="mouseenter">
+                            <i class="icon-play-circle" ></i>
                         </button>
 
-                        <button ng-if="!actor.blocked" class="btn btn-mini" ng-click="blockActor(actor.id)">
-                            <i class="icon-ban-circle" popover="Block actor" popover-trigger="mouseenter" />
+                        <button ng-if="!actor.blocked" class="btn btn-mini" ng-click="blockActor(actor.id)" popover="Block actor" popover-trigger="mouseenter">
+                            <i class="icon-ban-circle" />
                         </button>
                     </td>
                 </tr>

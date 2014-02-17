@@ -146,6 +146,7 @@
 
     <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryResource">
         <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor" />
+        <property name="incompleteProcessFinder" ref="incompleteProcessFinder" />
     </bean>
 
     <bean id = "gcResource" class="ru.taskurotta.dropwizard.resources.console.operation.GarbageCollectorResource">

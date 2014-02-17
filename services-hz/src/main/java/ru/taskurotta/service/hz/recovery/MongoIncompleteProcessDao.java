@@ -37,7 +37,7 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
     }
 
     @Override
-    public Collection<UUID> findProcesses(long timeBefore) {
+    public Collection<UUID> findProcesses(long timeBefore, int limit) {
         Collection<UUID> result = new ArrayList<>();
 
         DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
@@ -46,7 +46,7 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
         query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", timeBefore));
         query.append(STATE_INDEX_NAME, Process.START);
 
-        try (DBCursor dbCursor = dbCollection.find(query)) {
+        try (DBCursor dbCursor = limit>0? dbCollection.find(query).limit(limit): dbCollection.find(query)) {
             while (dbCursor.hasNext()) {
                 DBObject dbObject = dbCursor.next();
                 Process process = (Process) converter.toObject(Process.class, dbObject);

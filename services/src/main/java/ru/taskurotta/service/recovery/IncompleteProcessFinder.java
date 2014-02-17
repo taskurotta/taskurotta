@@ -9,6 +9,12 @@ import java.util.UUID;
  */
 public interface IncompleteProcessFinder {
 
+    public void start();
+
+    public void stop();
+
     public void toRecovery(UUID processId);
+
+    public boolean isStarted();
 
 }

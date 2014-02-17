@@ -8,6 +8,6 @@ import java.util.UUID;
  */
 public interface IncompleteProcessDao {
 
-    Collection<UUID> findProcesses(long timeBefore);
+    Collection<UUID> findProcesses(long timeBefore, int limit);
 
 }

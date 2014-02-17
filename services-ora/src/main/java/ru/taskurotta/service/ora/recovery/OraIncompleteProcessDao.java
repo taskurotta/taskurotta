@@ -21,7 +21,7 @@ import java.util.UUID;
 public class OraIncompleteProcessDao implements IncompleteProcessDao {
 
     protected static final String SQL_FIND_INCOMPLETE_PROCESSES =
-            "SELECT process_id FROM process WHERE state = ? AND start_time < ? ORDER BY start_time";
+            "SELECT process_id FROM process WHERE state = ? AND start_time < ?";
 
     private static final Logger logger = LoggerFactory.getLogger(OraIncompleteProcessDao.class);
 
@@ -32,13 +32,16 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
     }
 
     @Override
-    public Collection<UUID> findProcesses(long timeBefore) {
+    public Collection<UUID> findProcesses(long timeBefore, int limit) {
         Collection<UUID> result;
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(SQL_FIND_INCOMPLETE_PROCESSES)) {
+            PreparedStatement preparedStatement = connection.prepareStatement(getSql(limit))) {
 
             preparedStatement.setInt(1, Process.START);
             preparedStatement.setLong(2, timeBefore);
+            if (limit>0) {
+                preparedStatement.setInt(3, limit);
+            }
 
             ResultSet resultSet = preparedStatement.executeQuery();
             result = new ArrayList<>();
@@ -48,10 +51,14 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
             }
 
         } catch (Throwable e) {
-            logger.error("Cannot find incomplete before time["+timeBefore+"]processes due to database error", e);
+            logger.error("Cannot find incomplete before time["+timeBefore+"]processes limit["+limit+"] due to database error", e);
             throw new ServiceCriticalException("Incomplete processes search before time["+timeBefore+"] failed", e);
         }
         return result;
+    }
+
+    private String getSql(int limit) {
+        return limit>0? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? ": SQL_FIND_INCOMPLETE_PROCESSES;
     }
 
 }

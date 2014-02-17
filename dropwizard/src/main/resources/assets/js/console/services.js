@@ -67,6 +67,9 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
             getQueueRealSize: function(queueName) {
                 return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
             },
+            getQueueStorageRealSize: function(queueName) {
+                return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/storage/size");
+            },
             clearQueue: function(queueName) {
                 return $http.post('/rest/console/queues/clear', queueName);
             },

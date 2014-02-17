@@ -112,7 +112,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             });
 
             brokenProcessService.delete(processId);
-            logger.info("Process[{}] has been recovered, graph update result [{}]", processId, graphUpdated);
+            logger.debug("Process[{}] has been recovered, graph update result [{}]", processId, graphUpdated);
         }
 
         return result;

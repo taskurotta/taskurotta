@@ -4,7 +4,7 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: 10000 #-1 = disabled
+          sleep: -1 #-1 = disabled
           workerFailChance: -1 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
@@ -16,16 +16,16 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 100000
+          count: 500
           startTasks: true
-          startTasksInBackground: true
+          startTasksInBackground: false
           startTaskPeriodSeconds: -1 #-1 = disabled
-          endpoint: "http://localhost:8081"
+          endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
-          waitOnEveryNTask: 10000 #-1 = disabled
-          waitOnEveryNTaskInSeconds: 10 #-1 = disabled
+          waitOnEveryNTask: 500 #-1 = disabled
+          waitOnEveryNTaskInSeconds: 40 #-1 = disabled
 
 
 policy:
@@ -35,15 +35,15 @@ policy:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
           initialRetryIntervalSeconds: 1
-          maximumRetryIntervalSeconds: 10
-          maximumAttempts: 3
+          maximumRetryIntervalSeconds: 1
+          maximumAttempts: 99
 
 profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
       instance:
         singleton: true
-        logPeriod: 10000
+        logPeriod: 30000
 
 actor:
   - MathActionDecider:

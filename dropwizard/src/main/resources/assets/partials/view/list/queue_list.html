@@ -105,6 +105,12 @@
                             <span class="icon-info-sign" />
                         </button>
 
+                        <button ng-click="showStorageRealSize(queue.name, $index)" class="btn btn-mini"
+                                popover="Show current size of the storage for this queue. Storage contains tasks that would be enqueued in future."
+                                popover-trigger="mouseenter">
+                            <span class="icon-hdd" />
+                        </button>
+
                         <button ng-click="clear(queue.name)" class="btn btn-mini"
                                 popover="Remove all elements from the queue"
                                 popover-trigger="mouseenter" >

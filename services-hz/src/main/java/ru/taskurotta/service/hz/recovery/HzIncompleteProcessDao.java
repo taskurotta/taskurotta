@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessDao;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -33,12 +34,25 @@ public class HzIncompleteProcessDao implements IncompleteProcessDao {
     }
 
     @Override
-    public Collection<UUID> findProcesses(long timeBefore) {
+    public Collection<UUID> findProcesses(long timeBefore, int limit) {
         Predicate predicate = new Predicates.AndPredicate(
                 new Predicates.BetweenPredicate(START_TIME_INDEX_NAME, 0l, timeBefore),
                 new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));
 
-        Collection<UUID> result = processIMap.keySet(predicate);
+        //PagingPredicate should be available in HZ 3.2
+        Collection<UUID> result = null;
+        if (limit > 0) {
+            result = new ArrayList<>();
+            int cnt = 0;
+            for (UUID item : processIMap.keySet(predicate)) {
+                result.add(item);
+                if (++cnt >= limit) {
+                    break;
+                }
+            }
+        } else {
+            result = processIMap.keySet(predicate);
+        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("Found [{}] incomplete processes for beforeTime[{]]", (result!=null? result.size(): null), timeBefore);

@@ -11,11 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
+import ru.taskurotta.hazelcast.util.ClusterUtils;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.hz.console.HzQueueStatTask;
-import ru.taskurotta.hazelcast.util.ClusterUtils;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.util.ActorUtils;
@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -54,10 +55,15 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     private static final String LAST_POLLED_TASK_ENQUEUE_TIME = "lastPolledTaskEnqueueTimes";
     private static final String SYNCH_LOCK_NAME = HzQueueService.class.getName().concat("#SINCH_LOCK");
+    private static final String DRAIN_LOCK_NAME = HzQueueService.class.getName().concat("#DRAIN_LOCK");
 
     private ILock synchLock = null;
 
     private Map<String, DelayIQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
+
+    private ILock drainLock;
+
+    private AtomicInteger cnt = new AtomicInteger(0);
 
     public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix, long mergePeriodMs, long pollDelay) {
         this.queueFactory = queueFactory;
@@ -66,6 +72,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         this.pollDelay = pollDelay;
 
         this.synchLock = hazelcastInstance.getLock(SYNCH_LOCK_NAME);
+        this.drainLock = hazelcastInstance.getLock(DRAIN_LOCK_NAME);
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -178,20 +185,53 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         DelayIQueue<TaskQueueItem> queue = getQueue(queueName);
 
         TaskQueueItem result= null;
-
         try {
             result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
             if (logger.isDebugEnabled()) {
                 logger.debug("poll() returns taskQueueItem [{}]. [{}].size: {}", result, queueName, queue.size());
             }
 
+            if (result==null && queue.size()>0) {//possible queue store data loss -> apply null values drain
+                result = getValueAfterNullDrain(queueName, queue);
+                //do not update effective time if queue is nullified to prevent recovered tasks overflow
+            } else {
+                updateQueueEffectiveTime(queueName, result);
+            }
+
         } catch (InterruptedException e) {
             logger.error("Queue poll operation interrupted", e);
         }
 
+        return result;
+    }
+
+    private void updateQueueEffectiveTime (String queueName, TaskQueueItem result) {
         long lastPolledTaskEnqueueTime = (result!=null? result.getEnqueueTime() : System.currentTimeMillis());
         lastPolledTaskEnqueueTimes.put(queueName, lastPolledTaskEnqueueTime);
         logger.debug("lastPolledTaskEnqueueTimes updated for queue[{}] with new value [{}]", queueName, lastPolledTaskEnqueueTime);
+    }
+
+    private TaskQueueItem getValueAfterNullDrain(String queueName, DelayIQueue<TaskQueueItem> queue) {
+        TaskQueueItem result = null;
+        if (drainLock.tryLock()) {
+            try {
+                logger.warn("Null item polled from not empty queue: possible store data loss? Try to drain null values...");
+                long cnt = 0l;
+                long start = System.currentTimeMillis();
+                do {
+                    cnt++;
+                    result = queue.poll();
+                    if (cnt % 100 == 0) {
+                        logger.warn("[{}] empty values drained away... Still processing", cnt);
+                    }
+                } while (result == null && queue.size()>0);
+                logger.warn("Total: [{}] empty values drained away in [{}] ms", cnt, System.currentTimeMillis() - start);
+
+            } finally {
+                drainLock.unlock();
+                updateQueueEffectiveTime(queueName, result);//update only when drain is finished
+            }
+        }
         return result;
     }
 

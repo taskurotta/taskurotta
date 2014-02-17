@@ -78,9 +78,9 @@ public class WorkflowStarter {
                 decider.performAction();
                 started++;
 
-                /*if (started % 10 == 0) {
+                if (started % 50 == 0) {
                     logger.info("Started [{}] processes", started);
-                }*/
+                }
 
                 if (waitOnEveryNTask > 0 && waitOnEveryNTaskInSeconds > 0 && (started % waitOnEveryNTask == 0)) {
                     logger.info("Sleep for [{}] seconds after [{}] tasks", waitOnEveryNTaskInSeconds, started);

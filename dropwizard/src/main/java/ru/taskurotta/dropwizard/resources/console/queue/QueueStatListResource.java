@@ -68,6 +68,19 @@ public class QueueStatListResource extends BaseResource {
         }
     }
 
+    @Path("/{queueName}/storage/size")
+    @GET
+    public Long getQueueStorageRealSize(@PathParam("queueName") String queueName) {
+        try {
+            long result = queueInfoRetriever.getQueueStorageCount(queueName);
+            logger.debug("Queue [{}] storage real size is [{}]", queueName, result);
+            return result;
+        } catch (Throwable e) {
+            logger.error("Error at getting queue["+queueName+"] storage size", e);
+            throw new WebApplicationException(e);
+        }
+    }
+
     @POST
     @Path("/remove")
     public void removeQueue(String queueName) {

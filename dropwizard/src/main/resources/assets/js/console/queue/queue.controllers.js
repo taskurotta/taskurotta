@@ -59,6 +59,16 @@ angular.module("queue.controllers", ['console.services', 'ngRoute', 'ui.bootstra
 
         };
 
+        $scope.showStorageRealSize = function (queueName, idx) {
+
+            tskQueues.getQueueStorageRealSize(queueName).then(function(value) {
+                $scope.realSizes[idx] = value.data;
+            }, function(err) {
+                $scope.realSizes[idx] = "n/a";
+            });
+
+        };
+
         $scope.totalTasks = function () {
             var result = 0;
             if($scope.queuesPage.items) {
