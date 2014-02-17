@@ -13,6 +13,7 @@ import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.ItemIdAware;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * User: moroz
  * Date: 16.08.13
  */
-public class MongoQueueStore implements QueueStore<Object> {
+public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     protected static final Logger logger = LoggerFactory.getLogger(MongoQueueStore.class);
     public static Timer storeTimer = Metrics.newTimer(MongoQueueStore.class, "store",
@@ -141,9 +142,10 @@ public class MongoQueueStore implements QueueStore<Object> {
             }
         }
 
-        if (map.size() != longs.size()) {
-            logger.warn("Cannot load all items from store, loaded [{}] out of [{}]", map.size(), longs.size());
-        }
+//        duplicates check in QueueContainer#load
+//        if (map.size() != longs.size()) {
+//            logger.warn("Cannot load all items from store, loaded [{}] out of [{}]", map.size(), longs.size());
+//        }
 
         return map;
     }
@@ -152,7 +154,17 @@ public class MongoQueueStore implements QueueStore<Object> {
      * @return min Id of an item stored
      */
     public long getMinItemId() {
-        return -1;
+        long result = -1l;
+        DBObject sortCommand = new BasicDBObject();
+        sortCommand.put("_id", "1");//by _id asc(min first)
+        DBCursor cursor = coll.find().sort(sortCommand).limit(1);
+        DBObject val = null;
+
+        if (cursor.hasNext() && (val=cursor.next()) != null) {
+            result = Long.valueOf(val.get("_id").toString());
+        }
+
+        return result;
     }
 
     @Override
