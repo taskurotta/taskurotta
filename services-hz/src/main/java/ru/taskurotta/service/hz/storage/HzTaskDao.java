@@ -73,7 +73,7 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        return new ArrayList<TaskContainer>(
+        return new ArrayList<>(
                 Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
                     @Override
                     public boolean apply(TaskContainer taskContainer) {
@@ -84,7 +84,7 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void updateTask(TaskContainer taskContainer) {
-
+        id2TaskMap.set(new TaskKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer);
     }
 
     @Override
