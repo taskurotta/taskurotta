@@ -41,6 +41,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         Process process = processIMap.get(processId);
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValue(returnValue);
+        process.setState(Process.FINISH);
         processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
 
