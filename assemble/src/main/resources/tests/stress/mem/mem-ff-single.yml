@@ -10,36 +10,10 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:spring/actor-ff.xml
+          - classpath:spring/actor-ff-single.xml
         defaultPropertiesLocation: default.properties
         properties:
-          cycles: 10
-          initialCount: 7
-          shotSize: 10
-          needRun: true
-          pollDelay: 10
-          pollDelayUnit: "SECONDS"
-          hz.nodes: localhost:7777
-          hz.jmx.detailed: true
-          hz.jmx: true
-          mongo.host: localhost
-          mongo.port: 27017
-          gc.enabled: false
-          recovery.enabled: false
-          hz.queue.task.memory-limit: 10000
-          hz.map.general.max-size: 10
-
-
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
-        properties:
-          exitAfterAll: false
-          tasksForStat: 10
-          maxTaskQuantity: 10
-          taskPerProcess: 24
+          foo: bar
 
 actor:
   - FFDecider:
@@ -60,7 +34,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./target/logs/recipes-multiply.log
+             file: ./target/logs/full-feature-test-single.log
              append: false
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
@@ -68,21 +42,21 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.recipes.stress:
-             key: name
-             \@level: DEBUG
         - ru.taskurotta.test.fullfeature:
              key: name
-             \@level: WARN
-        - ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderImpl:
+             \@level: TRACE
+        - ru.taskurotta.service.hz.queue.HzQueueService:
              key: name
-             \@level: INFO
-        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             \@level: TRACE
+        - ru.taskurotta.server.GeneralTaskServer:
              key: name
-             \@level: !!!str OFF
-        - ru.taskurotta.service.hz.gc:
+             \@level: TRACE
+        - ru.taskurotta.service.hz.server.HazelcastTaskServer:
              key: name
-             \@level: DEBUG
+             \@level: TRACE
+        - ru.taskurotta.service.storage.GeneralTaskService:
+             key: name
+             \@level: TRACE
         - org:
              key: name
              \@level: ERROR
