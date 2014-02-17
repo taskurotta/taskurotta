@@ -191,12 +191,13 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 logger.debug("poll() returns taskQueueItem [{}]. [{}].size: {}", result, queueName, queue.size());
             }
 
-            if (result==null && queue.size()>0) {//possible queue store data loss -> apply null values drain
-                result = getValueAfterNullDrain(queueName, queue);
-                //do not update effective time if queue is nullified to prevent recovered tasks overflow
-            } else {
-                updateQueueEffectiveTime(queueName, result);
-            }
+            updateQueueEffectiveTime(queueName, result);
+//            if (result==null && queue.size()>0) {//possible queue store data loss -> apply null values drain
+//                result = getValueAfterNullDrain(queueName, queue);
+//                //do not update effective time if queue is nullified to prevent recovered tasks overflow
+//            } else {
+//                updateQueueEffectiveTime(queueName, result);
+//            }
 
         } catch (InterruptedException e) {
             logger.error("Queue poll operation interrupted", e);
