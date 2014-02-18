@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config/>
+
+    <bean id="taskServer" class="ru.taskurotta.recipes.stress.SpeedTestTaskServer">
+        <constructor-arg name="originalTaskServer" ref="jerseyTaskServer"/>
+    </bean>
+
+    <!-- Jersey client with embedded apache HTTP client for connection pooling -->
+    <bean id="jerseyTaskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">
+        <property name="endpoint" value="${endpoint}"/>
+        <property name="connectTimeout" value="${connectTimeout}"/>
+        <property name="readTimeout" value="${readTimeout}"/>
+        <property name="threadPoolSize" value="${threadPoolSize}"/>
+        <!-- All connections are for the same host, so value matches threadpool size -->
+        <property name="maxConnectionsPerHost" value="${threadPoolSize}"/>
+    </bean>
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
+        <constructor-arg name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.test.stress.StressTaskCreator">
+        <constructor-arg name="clientServiceManager" ref="clientServiceManager"/>
+        <constructor-arg name="needRun" value="${needRun}"/>
+        <constructor-arg name="shotSize" value="${shotSize}"/>
+    </bean>
+
+</beans>
