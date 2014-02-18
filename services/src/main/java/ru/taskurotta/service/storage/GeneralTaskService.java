@@ -121,6 +121,15 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
         ArgContainer taskValue = getTaskValue(taskId, processId);//try to find promise value obtained by its task result
 
+        if (taskValue == null) {
+            if (ArgType.NO_WAIT.equals(argType)) {
+                // value may be null for NoWait promises
+                // leave it in peace...
+                return pArg;
+            }
+            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
+        }
+
         ArgContainer newArg = new ArgContainer(taskValue);
         if (isDeciderAsynchronousTaskType) {
 

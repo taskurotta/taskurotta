@@ -74,4 +74,57 @@ public class NoWaitTest extends AbstractTestStub {
         assertEmptyQueue();
     }
 
+
+    /**
+     * - A -> B, E, C(@NoWait B, E)
+     * - B -> D
+     * <p/>
+     * С can be queued after task B but before task D has been processed
+     */
+    @Test
+    public void testNoWaitPartiallyResolved() {
+
+        UUID taskAId = UUID.randomUUID();
+        UUID taskBId = UUID.randomUUID();
+        UUID taskCId = UUID.randomUUID();
+        UUID taskDId = UUID.randomUUID();
+        UUID taskEId = UUID.randomUUID();
+
+        startProcess(deciderTask(taskAId, TaskType.DECIDER_START, "start"));
+
+        // should be task A
+        pollDeciderTask(taskAId);
+
+        // task should be in "process" state
+        assertTaskInProgress(taskAId);
+
+        // create B, C
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_ASYNCHRONOUS, "startB");
+        Task deciderTaskE = deciderTask(taskEId, TaskType.DECIDER_ASYNCHRONOUS, "startE");
+        Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
+                new Object[]{promise(deciderTaskB), promise(deciderTaskE)},
+                new TaskOptionsImpl(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
+
+        release(taskAId, null, deciderTaskB, deciderTaskE, deciderTaskC);
+
+        // poll task B and E
+        pollDeciderTask(taskBId, taskEId);
+        pollDeciderTask(taskBId, taskEId);
+
+        // release task B = create task D
+        Task taskD = deciderTask(taskDId, TaskType.DECIDER_ASYNCHRONOUS, "startD", null);
+        release(taskBId, promise(taskD), taskD);
+
+        // poll task D
+        pollDeciderTask(taskDId);
+
+        // release task E
+        release(taskEId, null);
+
+        // poll task C
+        pollDeciderTask(taskCId);
+
+        assertEmptyQueue();
+    }
 }
+
