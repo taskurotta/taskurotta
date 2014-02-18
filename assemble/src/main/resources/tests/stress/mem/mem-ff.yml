@@ -25,6 +25,8 @@ spreader:
           mongo.host: localhost
           mongo.port: 27017
           gc.enabled: false
+          gc.pool-size: 8
+          gc.time-before-delete: 1 minutes
           recovery.enabled: false
           hz.queue.task.memory-limit: 10000
           hz.map.general.max-size: 10
@@ -77,9 +79,12 @@ logback:
         - ru.taskurotta.recipes.stress:
              key: name
              \@level: DEBUG
+        - ru.taskurotta.test.monkey:
+             key: name
+             \@level: TRACE
         - ru.taskurotta.test.fullfeature:
              key: name
-             \@level: WARN
+             \@level: INFO
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF
