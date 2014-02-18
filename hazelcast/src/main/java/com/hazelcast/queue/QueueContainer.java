@@ -585,12 +585,14 @@ public class QueueContainer implements IdentifiedDataSerializable {
                 cnt = getItemQueue().size();
                 getItemQueue().clear();
             } else {
-                Iterator<QueueItem> iter = getItemQueue().iterator();
-                while (iter.hasNext()) {
-                    if (iter.next().getItemId()< minId) {
-                        iter.remove();
-                        cnt++;
-                    }
+                LinkedList<QueueItem> queue = getItemQueue();
+                QueueItem item = null;
+                while ( (item = queue.pollFirst()) != null
+                        && (item.getItemId() < minId) ) {
+                    cnt++;
+                }
+                if (item != null) {
+                    queue.offerFirst(item); //return polled item to queue
                 }
             }
             logger.warning("Store cleanup: ["+cnt+"] items removed");
