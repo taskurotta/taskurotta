@@ -9,12 +9,8 @@
     <context:property-placeholder/>
     <context:annotation-config/>
 
-    <bean id="taskServer" class="ru.taskurotta.recipes.stress.SpeedTestTaskServer">
-        <constructor-arg name="originalTaskServer" ref="jerseyTaskServer"/>
-    </bean>
-
     <!-- Jersey client with embedded apache HTTP client for connection pooling -->
-    <bean id="jerseyTaskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">
+    <bean id="taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">
         <property name="endpoint" value="${endpoint}"/>
         <property name="connectTimeout" value="${connectTimeout}"/>
         <property name="readTimeout" value="${readTimeout}"/>
