@@ -220,6 +220,24 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         return result;
     }
 
+    @Override
+    public int getFinishedCount() {
+        int result = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement("SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ?")) {
+
+            ps.setInt(1, Process.FINISH);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                result = rs.getInt("cnt");
+            }
+        } catch (SQLException ex) {
+            log.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new ServiceCriticalException("Database error", ex);
+        }
+        return result;
+    }
+
     private String getSearchSql(ProcessSearchCommand command) {
         StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM PROCESS WHERE ");
         boolean requireAndCdtn = false;

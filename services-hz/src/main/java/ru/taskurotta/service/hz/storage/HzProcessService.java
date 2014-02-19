@@ -13,6 +13,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -124,6 +125,18 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
             }));
         }
 
+        return result;
+    }
+
+    @Override
+    public int getFinishedCount() {
+        int result = 0;
+        Iterator<Process> iter = processIMap.values().iterator();
+        while (iter.hasNext()) {
+            if (iter.next().getState() == Process.FINISH) {
+                result++;
+            }
+        }
         return result;
     }
 }

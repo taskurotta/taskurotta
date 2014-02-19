@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    <context:property-placeholder/>
+    <context:annotation-config />
+
+    <!-- Jersey client with embedded apache HTTP client for connection pooling -->
+    <bean id="taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy">
+        <property name="endpoint" value="${endpoint}"/>
+        <property name="connectTimeout" value="3000"/>
+        <property name="readTimeout" value="0"/>
+        <property name="threadPoolSize" value="10"/>
+        <!-- All connections are for the same host, so value matches threadpool size -->
+        <property name="maxConnectionsPerHost" value="10"/>
+    </bean>
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
+        <constructor-arg name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.test.mongofail.WorkflowStarter" init-method="start">
+        <property name="clientServiceManager" ref="clientServiceManager" />
+        <property name="mongoTemplate" ref="mongoTemplate" />
+        <property name="count" value = "${count}" />
+        <property name="checkDelay" value = "${checkDelay}" />
+        <property name="endpoint" value = "${endpoint}" />
+        <property name="failDelay" value = "${failDelay}" />
+        <property name="processStartDelay" value = "${processStartDelay}" />
+        <property name="actorDelay" value = "${actorDelay}" />
+    </bean>
+
+    <mongo:mongo id="mongo" host="localhost" port="27017">
+        <mongo:options connections-per-host="50"
+                       threads-allowed-to-block-for-connection-multiplier="5"
+                       max-wait-time="12000"
+                       connect-timeout="0"
+                       socket-timeout="0"
+                       socket-keep-alive="false"
+                       auto-connect-retry="true"
+                       max-auto-connect-retry-time="0"
+                       write-number="0"
+                       write-timeout="0"
+                       write-fsync="false"
+                       slave-ok="false"/>
+    </mongo:mongo>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongo" ref="mongo"/>
+        <constructor-arg name="databaseName" value="taskurotta"/>
+        <property name="writeConcern" ref="writeConcern"/>
+    </bean>
+
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="1"/>
+        <constructor-arg name="wtimeout" value="0"/>
+        <constructor-arg name="fsync" value="true"/>
+        <constructor-arg name="j" value="true"/>
+    </bean>
+
+
+</beans>

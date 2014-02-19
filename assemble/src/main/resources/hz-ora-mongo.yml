@@ -25,10 +25,12 @@ properties:
   oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
   oradb.user: "taskurotta"
   oradb.password: "taskurotta"
-#  recovery.process.incomplete-timeout: "30 SECONDS"
-  hz.nodes: "localhost:7777,localhost:7778"
+#  recovery.process.incomplete-timeout: "5 SECONDS"
+#  recovery.find-incomplete-process-period: "5 SECONDS"
+#  hz.nodes: "localhost:7777,localhost:7778"
 #  gc.enabled: false
-#  hz.queue.task.memory-limit: 10
+  recovery.enabled: true
+  hz.queue.task.memory-limit: 5
 
 #Http server configuration:
 logging:

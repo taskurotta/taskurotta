@@ -10,6 +10,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -114,6 +115,18 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
                 }
 
             }));
+        }
+        return result;
+    }
+
+    @Override
+    public int getFinishedCount() {
+        int result = 0;
+        Iterator<Process> iterator = processesStorage.values().iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getState() == Process.FINISH) {
+                result++;
+            }
         }
         return result;
     }

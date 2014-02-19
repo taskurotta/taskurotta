@@ -214,6 +214,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return queueInfo.getQueuesStatsPage(pageNumber, pageSize, filter);
     }
 
+    @Override
+    public int getFinishedCount() {
+        return processInfo.getFinishedCount();
+    }
+
     public void setQueueInfo(QueueInfoRetriever queueInfo) {
         this.queueInfo = queueInfo;
     }

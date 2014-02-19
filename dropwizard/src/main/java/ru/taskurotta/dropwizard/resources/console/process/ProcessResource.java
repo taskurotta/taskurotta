@@ -76,5 +76,18 @@ public class ProcessResource extends BaseResource {
 
     }
 
+    @GET
+    @Path("/finished/count")
+    public Integer getFinishedCount() {
+
+        try {
+            return consoleManager.getFinishedCount();
+        } catch(Throwable e) {
+            logger.error("Error at getting finished processes count", e);
+            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
 
 }

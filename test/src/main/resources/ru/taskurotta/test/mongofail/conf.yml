@@ -1,0 +1,72 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/test/mongofail/runtime-ctx.xml
+
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/test/mongofail/spreader-ctx.xml
+        properties:
+          endpoint: "http://localhost:8811"
+          count: 100
+          checkDelay: 100000
+          failDelay: 25000
+          processStartDelay: 500
+          actorDelay: 30000
+
+
+policy:
+  - MainPolicyConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 1
+          maximumRetryIntervalSeconds: 1
+          maximumAttempts: 99
+
+
+actor:
+  - Decider:
+      actorInterface: ru.taskurotta.test.mongofail.decider.TimeLogDecider
+      count: 1
+
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/mongofail.log
+             append: true
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - org.springframework:
+             key: name
+             \@level: !!!str WARN
+        - org.apache:
+             key: name
+             \@level: !!!str WARN
+        - httpclient:
+             key: name
+             \@level: !!!str WARN
+
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref

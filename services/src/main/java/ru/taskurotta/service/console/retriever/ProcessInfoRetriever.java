@@ -19,4 +19,6 @@ public interface ProcessInfoRetriever {
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status);
 
     public List<Process> findProcesses(ProcessSearchCommand command);
+
+    public int getFinishedCount();
 }
