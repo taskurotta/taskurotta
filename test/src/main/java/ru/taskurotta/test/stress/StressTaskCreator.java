@@ -69,8 +69,16 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         executorService.execute(new Runnable() {
             @Override
             public void run() {
-                deciderClient.start();
-                cd.countDown();
+                boolean done = false;
+                while (!done) {
+                    try {
+                        deciderClient.start();
+                        cd.countDown();
+                        done = true;
+                    } catch (Exception e) {
+                        log.warn("Start task rejected", e);
+                    }
+                }
             }
         });
 
