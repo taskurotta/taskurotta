@@ -4,7 +4,7 @@
         <concrete-aspect name="ru.taskurotta.test.monkey.MonkeyAspect"
                          extends="ru.taskurotta.test.monkey.AbstractMonkeyAspect">
             <pointcut name="pointCut"
-                      expression="execution(* com.mongodb.DBCollection.*(..))"/>
+                      expression="execution(* com.mongodb.DBPort.go(..))"/>
 <!--
 
             <pointcut name="pointCut"

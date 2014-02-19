@@ -81,7 +81,7 @@ logback:
              \@level: DEBUG
         - ru.taskurotta.test.monkey:
              key: name
-             \@level: TRACE
+             \@level: INFO
         - ru.taskurotta.test.fullfeature:
              key: name
              \@level: INFO
