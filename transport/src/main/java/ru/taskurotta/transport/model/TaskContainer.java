@@ -1,6 +1,5 @@
 package ru.taskurotta.transport.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.taskurotta.internal.core.TaskType;
 
 import java.io.Serializable;
