@@ -10,6 +10,7 @@ import com.hazelcast.core.IQueue;
 import com.mongodb.DBAddress;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import java.net.UnknownHostException;
 /**
  * Created by void 17.01.14 11:20
  */
+@Ignore
 public class QueueTest {
     protected final static Logger log = LoggerFactory.getLogger(QueueTest.class);
 
