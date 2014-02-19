@@ -142,26 +142,33 @@ public class GeneralTaskServer implements TaskServer {
      */
     public void processDecision(DecisionContainer taskDecision) {
 
-        logger.debug("Start processing task decision[{}]", taskDecision);
-
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
 
-        if (taskDecision.containsError()) {
-            TaskContainer task = taskService.getTask(taskId, processId);
+        logger.trace("#[{}]/[{}]: start processing taskDecision = [{}]", processId, taskId, taskDecision);
 
-            if (taskDecision.getRestartTime() != TaskDecision.NO_RESTART) {
+        if (taskDecision.containsError()) {
+
+            TaskContainer task = taskService.getTask(taskId, processId);
+            logger.trace("#[{}]/[{}]: after get taskDecision with error again get task = [{}]", processId, taskId, task);
+
+            long restartTime = taskDecision.getRestartTime();
+            if (restartTime != TaskDecision.NO_RESTART) {
+
                 // enqueue task immediately if needed
-                logger.debug("Error task enqueued again, taskId [{}]", taskId);
-                enqueueTask(taskId, task.getProcessId(), task.getActorId(), taskDecision.getRestartTime(), getTaskList(task));
+                logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
+                enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
                 return;
+
             } else {
 
                 if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
                     saveBrokenProcess(taskDecision);
                     processService.markProcessAsBroken(processId);
+                    logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
                     return;
                 }
+
             }
         }
 
@@ -173,10 +180,10 @@ public class GeneralTaskServer implements TaskServer {
 
         // idempotent statement
         DependencyDecision dependencyDecision = dependencyService.applyDecision(taskDecision);
-        logger.debug("release() received dependencyDecision = [{}]", dependencyDecision);
+        logger.trace("#[{}]/[{}]: after apply taskDecision, get dependencyDecision = [{}]", processId, taskId, dependencyDecision);
 
         if (dependencyDecision.isFail()) {
-            logger.debug("release() failed dependencyDecision. release() should be retried after RELEASE_TIMEOUT");
+            logger.debug("#[{}]/[{}]: failed dependencyDecision = [{}]", processId, taskId, dependencyDecision);
             return;
         }
 
@@ -195,8 +202,7 @@ public class GeneralTaskServer implements TaskServer {
             garbageCollectorService.delete(processId);
         }
 
-        logger.debug("Finish processing task decision[{}]", taskId);
-
+        logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
     }
 
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {
