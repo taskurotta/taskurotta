@@ -14,14 +14,6 @@ public class TaskCreator {
 
     public void startTask() {
         decider.start();
-        for(int i=0; i<1000; i++) {
-
-            try {
-                TimeUnit.MILLISECONDS.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {
