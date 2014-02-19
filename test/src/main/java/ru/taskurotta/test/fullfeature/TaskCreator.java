@@ -4,8 +4,6 @@ import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderClient;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Created by void 20.12.13 19:05
  */
