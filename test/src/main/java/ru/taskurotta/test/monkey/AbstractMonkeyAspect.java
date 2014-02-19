@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractMonkeyAspect {
     private final static Logger log = LoggerFactory.getLogger(AbstractMonkeyAspect.class);
 
-    private double threshold = 0.05;
+    private double threshold = 0.005;
 
     //"execution(* ru.taskurotta.service.queue.MemoryQueueService.pollCommit(..))"
     @Pointcut

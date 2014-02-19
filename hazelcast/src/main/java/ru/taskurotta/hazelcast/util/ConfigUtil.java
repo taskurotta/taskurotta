@@ -8,7 +8,7 @@ import com.hazelcast.config.NetworkConfig;
 public class ConfigUtil {
 
     public static Config disableMulticast(Config config) {
-        return config.setNetworkConfig(new NetworkConfig().setJoin(new JoinConfig().setMulticastConfig
-                (new MulticastConfig().setEnabled(false))));
+        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
+        return config;
     }
 }
