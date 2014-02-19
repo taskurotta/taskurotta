@@ -11,6 +11,7 @@ spreader:
         context: ru/taskurotta/test/fullfeature/SpreaderBeans.xml
         properties:
           foo: bar
+
 policy:
   - MainPolicyConfig:
       class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
@@ -24,40 +25,41 @@ policy:
 actor:
   - Decider:
       actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 1
   - Worker:
       actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 2
+
 logback:
     appender:
         - STDOUT:
              key: name
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
-                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
              file: ./target/logs/full-feature-test.log
              append: true
              encoder:
-                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: DEBUG
-        - org.springframework:
+             \@level: INFO
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF
-        - ru.taskurotta.service.queue.MemoryQueueService:
+        - org:
              key: name
-             \@level: !!!str OFF
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
     root:
         appender-ref:
             - STDOUT:
