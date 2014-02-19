@@ -82,7 +82,6 @@ public class TaskContainer implements Serializable {
         return type;
     }
 
-    @JsonIgnore
     public boolean isUnsafe() {
         return unsafe;
     }
