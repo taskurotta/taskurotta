@@ -40,19 +40,6 @@
                                 <span ng-if="job.cron.length>0 && isCronValid" popover="Valid cron expression" popover-trigger="mouseenter" class="icon-thumbs-up" ></span>
                                 <span ng-if="job.cron.length>0 && !isCronValid" popover = "Incorrect cron expression" popover-trigger="mouseenter" class="icon-thumbs-down"></span>
 
-                                <!--<table class="inner-table" cellpadding="0" cellspacing="0">-->
-                                    <!--<tr>-->
-                                        <!--<td style="width: 120px;">-->
-                                            <!--<input class="input-small search-query" type="text" ng-model="job.cron" ng-change="validateCron()" required />-->
-                                        <!--</td>-->
-                                        <!--<td ng-if="job.cron.length>0 && isCronValid" popover="Valid cron expression" popover-trigger="mouseenter">-->
-                                            <!--<i class="icon-thumbs-up" />-->
-                                        <!--</td>-->
-                                        <!--<td ng-if="job.cron.length>0 && !isCronValid" popover = "Incorrect cron expression" popover-trigger="mouseenter">-->
-                                            <!--<i class="icon-thumbs-down" />-->
-                                        <!--</td>-->
-                                    <!--</tr>-->
-                                <!--</table>-->
                             </td>
                         </tr>
                         <tr>
@@ -63,6 +50,16 @@
                             </td>
                             <td>
                                 <input style="outline: 0" class="input-mini search-query" ng-model="job.queueLimit" /><span ng-if="job.queueLimit<=0" class="muted"><small>disabled</small></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <span style="cursor:pointer;" popover="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option."
+                                      popover-placement="right" class="badge badge-info">?</span>
+                                <b>Max errors:</b>
+                            </td>
+                            <td>
+                                <input style="outline: 0" class="input-mini search-query" ng-model="job.maxErrors" /><span ng-if="job.maxErrors<=0" class="muted"><small>disabled</small></span>
                             </td>
                         </tr>
                     </table>

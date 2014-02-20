@@ -15,4 +15,7 @@ public interface JobConstants {
     String DATA_KEY_TASK_SERVER = "taskServer";
     String DATA_KEY_QUEUE_INFO_RETRIEVER = "queueInfoRetriever";
 
+    public static final int DEFAULT_MAX_CONSEQUENTIAL_ERRORS = 3;
+
+
 }

@@ -20,6 +20,7 @@ public class JobVO implements Serializable {
     protected int status = JobConstants.STATUS_UNDEFINED;
     protected int errorCount = 0;
     protected String lastError;
+    protected int maxErrors = JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS;
 
     public long getId() {
         return id;
@@ -85,6 +86,14 @@ public class JobVO implements Serializable {
         this.lastError = lastError;
     }
 
+    public int getMaxErrors() {
+        return maxErrors;
+    }
+
+    public void setMaxErrors(int maxErrors) {
+        this.maxErrors = maxErrors;
+    }
+
     @Override
     public String toString() {
         return "JobVO{" +
@@ -95,6 +104,7 @@ public class JobVO implements Serializable {
                 ", queueLimit=" + queueLimit +
                 ", status=" + status +
                 ", errorCount=" + errorCount +
+                ", maxErrors=" + maxErrors +
                 ", lastError='" + lastError + '\'' +
                 "} ";
     }

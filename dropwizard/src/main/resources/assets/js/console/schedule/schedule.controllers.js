@@ -7,6 +7,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
             name: "",
             cron: "",
             queueLimit: 0,
+            maxErrors: 3,
             task: {
                 type: "WORKER_SCHEDULED",
                 method: "",
@@ -41,7 +42,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
 
         $scope.createScheduledJob = function() {
             if ($scope.isValidForm()) {
-                $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.job.cron)+"&name="+encodeURIComponent($scope.job.name) + "&queueLimit=" + $scope.job.queueLimit, $scope.job.task).then(
+                $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.job.cron)+"&name="+encodeURIComponent($scope.job.name) + "&queueLimit=" + $scope.job.queueLimit + "&maxErrors=" + $scope.job.maxErrors, $scope.job.task).then(
                     function(value) {
                         $location.url("/schedule/list");
                     },
@@ -55,7 +56,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
             if ($scope.isValidForm()) {
                 var jobId = parseInt($routeParams.id);
                 if (jobId>0) {
-                    $http.put("/rest/console/schedule/update?jobId="+encodeURIComponent(jobId)+"&cron="+encodeURIComponent($scope.job.cron)+"&name="+encodeURIComponent($scope.job.name) + "&queueLimit=" + $scope.job.queueLimit, $scope.job.task).then(
+                    $http.put("/rest/console/schedule/update?jobId="+encodeURIComponent(jobId)+"&cron="+encodeURIComponent($scope.job.cron)+"&name="+encodeURIComponent($scope.job.name) + "&queueLimit=" + $scope.job.queueLimit + "&maxErrors=" + $scope.job.maxErrors, $scope.job.task).then(
                         function(value) {
                             $location.url("/schedule/list");
                         },
@@ -84,7 +85,8 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
         $scope.isValidForm = function() {
             var exists = angular.isDefined($scope.job.name) && angular.isDefined($scope.isCronValid) && angular.isDefined($scope.job.task.method) && angular.isDefined($scope.job.task.actorId);
             var queueLimitParseable = $scope.job.queueLimit==0 || !!parseInt($scope.job.queueLimit);
-            return exists && queueLimitParseable && $scope.job.name.length>0 && $scope.isCronValid && $scope.job.task.method.length>0 && $scope.job.task.actorId.length>0;
+            var maxErrorsParseable = $scope.job.maxErrors==0 || !!parseInt($scope.job.maxErrors);
+            return exists && maxErrorsParseable && queueLimitParseable && $scope.job.name.length>0 && $scope.isCronValid && $scope.job.task.method.length>0 && $scope.job.task.actorId.length>0;
         };
 
         $scope.update();
