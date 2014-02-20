@@ -36,7 +36,7 @@ public class OraJobStore implements JobStore {
     @Override
     public long addJob(JobVO task) {
         try (Connection connection = dataSource.getConnection();
-            CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
+            CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, MAX_ERRORS, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
         ) {
             cs.setString(1, task.getName());
             cs.setString(2, task.getCron());
@@ -44,12 +44,13 @@ public class OraJobStore implements JobStore {
             cs.setString(4, (String) taskSerializer.serialize(task.getTask()));
             cs.setTimestamp(5, new Timestamp(new Date().getTime()));
             cs.setInt(6, task.getQueueLimit());
-            cs.setInt(7, task.getErrorCount());
+            cs.setInt(7, task.getMaxErrors());
+            cs.setInt(8, task.getErrorCount());
 
-            cs.registerOutParameter(8, Types.NUMERIC);
+            cs.registerOutParameter(9, Types.NUMERIC);
             cs.execute();
 
-            Long resultId = cs.getLong(8);
+            Long resultId = cs.getLong(9);
             return resultId;
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
@@ -106,6 +107,7 @@ public class OraJobStore implements JobStore {
                 result.setCron(rs.getString("CRON"));
                 result.setStatus(rs.getInt("STATUS"));
                 result.setQueueLimit(rs.getInt("QUEUE_LIMIT"));
+                result.setMaxErrors(rs.getInt("MAX_ERRORS"));
                 result.setErrorCount(rs.getInt("ERR_COUNT"));
                 result.setLastError(rs.getString("LAST_ERR_MESSAGE"));
                 result.setTask(taskSerializer.deserialize(rs.getString("JSON")));
@@ -136,7 +138,7 @@ public class OraJobStore implements JobStore {
     @Override
     public void updateJob(JobVO jobVO) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ? WHERE id = ? ");
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ?, MAX_ERRORS = ? WHERE id = ? ");
         ) {
             ps.setString(1, jobVO.getName());
             ps.setString(2, jobVO.getCron());
@@ -144,7 +146,8 @@ public class OraJobStore implements JobStore {
             ps.setString(4, (String) taskSerializer.serialize(jobVO.getTask()));
             ps.setTimestamp(5, new Timestamp(new Date().getTime()));
             ps.setInt(6, jobVO.getQueueLimit());
-            ps.setLong(7, jobVO.getId());
+            ps.setInt(7, jobVO.getMaxErrors());
+            ps.setLong(8, jobVO.getId());
 
             ps.executeUpdate();
         } catch (SQLException ex) {

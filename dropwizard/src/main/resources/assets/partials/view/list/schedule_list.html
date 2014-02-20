@@ -47,6 +47,7 @@
                             <small><b>{{ st.job.name }}</b></small>
                         </a>
                         <span ng-if="st.job.queueLimit>0" class="muted"><br /><small><i>Queue limit:</i> <b>{{st.job.queueLimit}}</b></small></span>
+                        <span ng-if="st.job.maxErrors>0" class="muted"><br /><small><i>Max errors:</i> <b>{{st.job.maxErrors}}</b></small></span>
                     </td>
                     <td>
                         <small><b>{{ withNewLineOnDots(st.job.task.actorId) }}</b></small>

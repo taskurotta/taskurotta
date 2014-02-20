@@ -21,8 +21,6 @@ public class EnqueueTaskJob implements Job {
 
     private static final Logger logger = LoggerFactory.getLogger(EnqueueTaskJob.class);
 
-    public static final int MAX_CONSEQUENTIAL_ERRORS = 3;
-
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         JobDataMap jdm = context.getJobDetail().getJobDataMap();
@@ -63,8 +61,8 @@ public class EnqueueTaskJob implements Job {
                 job.setLastError(e.getClass().getName() + ": " + e.getMessage());
                 try {
                     jobManager.updateErrorCount(job.getId(), job.getErrorCount(), job.getLastError());
-
-                    if (job.getErrorCount() + 1 >= MAX_CONSEQUENTIAL_ERRORS) {
+                    int maxErrCount = job.getMaxErrors();
+                    if (maxErrCount>0 && job.getErrorCount() + 1 >= maxErrCount) {
                         if (jobManager.stopJob(job.getId())) {
                             jobManager.updateJobStatus(job.getId(), JobConstants.STATUS_ERROR);
                         }

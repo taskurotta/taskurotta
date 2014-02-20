@@ -113,11 +113,11 @@ public class SchedulerResource implements JobConstants {
 
     @PUT
     @Path("/create")
-    public Long createSchedulerJob(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
+    public Long createSchedulerJob(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt, @QueryParam("maxErrors")Optional<Integer> maxErrorsOpt,
                                                 @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
         JobVO job = null;
         try {
-            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, jobIdOpt, task);
+            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, maxErrorsOpt, jobIdOpt, task);
             logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt, nameOpt, task);
             long id = jobManager.addJob(job);
             logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", nameOpt, cronOpt, id);
@@ -132,11 +132,11 @@ public class SchedulerResource implements JobConstants {
 
     @PUT
     @Path("/update")
-    public void updateScheduledTask(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt,
+    public void updateScheduledTask(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt, @QueryParam("maxErrors")Optional<Integer> maxErrorsOpt,
                                                 @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
         JobVO job = null;
         try {
-            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, jobIdOpt, task);
+            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, maxErrorsOpt, jobIdOpt, task);
             jobManager.updateJob(job);
             logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
 
@@ -147,16 +147,18 @@ public class SchedulerResource implements JobConstants {
 
     }
 
-    protected JobVO getValidJob (Optional<String> cronOpt, Optional<String> nameOpt, Optional<Integer> queueLimitOpt, Optional<Long> jobIdOpt, TaskContainer task) {
+    protected JobVO getValidJob (Optional<String> cronOpt, Optional<String> nameOpt, Optional<Integer> queueLimitOpt, Optional<Integer> maxErrorsOpt, Optional<Long> jobIdOpt, TaskContainer task) {
         String cron = cronOpt.or("");
         String name = nameOpt.or("");
         Integer queueLimit = queueLimitOpt.or(-1);
+        Integer maxErrors = maxErrorsOpt.or(JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS);
         Long jobId = jobIdOpt.or(-1l);
 
         JobVO job = new JobVO();
         job.setId(jobId);
         job.setCron(cron);
         job.setQueueLimit(queueLimit);
+        job.setMaxErrors(maxErrors);
         job.setName(name);
         job.setTask(extendTask(task));
         job.setStatus(STATUS_INACTIVE);//modification should be applied only for inactive tasks
