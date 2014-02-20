@@ -100,16 +100,32 @@
                             </td>
                         </tr>
 
+
                         <!--<tr>-->
                             <!--<td>-->
-                                <!--<span style="cursor:pointer;" popover="Arguments for the actor invokation. Should be represented as valid JSON string."-->
-                                      <!--popover-placement="right" class="badge badge-info">?</span>-->
-                                <!--<b>Args JSON:</b>-->
+                                <!--<i class="icon-question-sign" popover="You must specify row JSON string corresponding to a list of ArgContainer entities" popover-trigger="mouseenter" /><span class="muted">Specify JSON arguments</span>-->
                             <!--</td>-->
                             <!--<td>-->
-                                <!--<textarea ng-model="task.argsJson"></textarea>-->
+                                <!--<span ng-click="argsVisible = !argsVisible" style="cursor: pointer;" >-->
+                                    <!--<i ng-if="argsVisible" class="icon-chevron-up" />-->
+                                    <!--<i ng-if="!argsVisible" class="icon-chevron-down" />-->
+                                <!--</span>-->
                             <!--</td>-->
                         <!--</tr>-->
+
+                        <!--<tr>-->
+                            <!--<td>-->
+                                <!--<div collapse="!argsVisible">-->
+                                    <!--<b>Args JSON:</b>-->
+                                <!--</div>-->
+                            <!--</td>-->
+                            <!--<td>-->
+                                <!--<div collapse="!argsVisible">-->
+                                    <!--<textarea ng-model="task.argsJson"></textarea>-->
+                                <!--</div>-->
+                            <!--</td>-->
+                        <!--</tr>-->
+
                     </table>
                 </div>
             </td>

@@ -15,6 +15,8 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
             }
         };
 
+        $scope.argsVisible = false;
+
         $scope.types = ["WORKER_SCHEDULED", "DECIDER_START"];
 
         $scope.isCronValid = false;
