@@ -98,7 +98,7 @@ public class MongoStorageFactory implements StorageFactory {
                     }
                 } catch (Throwable e) {
                     logger.error("MongoDB storage scan iteration failed. Try to resume in [" + scheduleDelayMillis + "]ms...", e);
-                    clearRegisteredStorages();//to ensure db indexes again
+                    // ToDo: repair index on dbCollection
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
@@ -118,20 +118,6 @@ public class MongoStorageFactory implements StorageFactory {
             }
         }
         return prefix + " " + sb.toString();
-    }
-
-
-    protected void clearRegisteredStorages() {
-        if (dbCollectionNamesMap.size() > 0) {
-            final ReentrantLock lock = this.lock;
-            lock.lock();
-            try {
-                dbCollectionNamesMap.clear();
-                logger.warn("Clear registered mongo storages cache to update on online status");
-            } finally {
-                lock.unlock();
-            }
-        }
     }
 
     @Override

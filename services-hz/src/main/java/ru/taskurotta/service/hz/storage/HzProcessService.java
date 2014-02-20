@@ -4,6 +4,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
@@ -13,7 +15,6 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +25,8 @@ import java.util.concurrent.TimeUnit;
  * Date: 13.06.13 16:00
  */
 public class HzProcessService implements ProcessService, ProcessInfoRetriever {
+
+    private static final Logger logger = LoggerFactory.getLogger(HzProcessService.class);
 
     private IMap<UUID, Process> processIMap;
 
@@ -39,7 +42,13 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
-        Process process = processIMap.get(processId);
+        Process process = getProcess(processId);
+
+        if (process == null) {
+            logger.error("#[{}]: can't finish process, because process not found in storage", processId);
+            return;
+        }
+
         process.setEndTime(System.currentTimeMillis());
         process.setReturnValue(returnValue);
         process.setState(Process.FINISH);
@@ -52,18 +61,31 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public Process getProcess(UUID processUUID) {
-        return processIMap.get(processUUID);
+    public Process getProcess(UUID processId) {
+        return processIMap.get(processId);
     }
 
     @Override
     public TaskContainer getStartTask(UUID processId) {
-        return processIMap.get(processId).getStartTask();
+        Process process = getProcess(processId);
+
+        if (process == null) {
+            logger.error("#[{}]: can't get process start task, because process not found in storage", processId);
+            return null;
+        }
+
+        return process.getStartTask();
     }
 
     @Override
     public void markProcessAsBroken(UUID processId) {
-        Process process = processIMap.get(processId);
+        Process process = getProcess(processId);
+
+        if (process == null) {
+            logger.error("#[{}]: can't mark process as broken, because process not found in storage", processId);
+            return;
+        }
+
         process.setState(Process.BROKEN);
         processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
@@ -131,12 +153,15 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public int getFinishedCount() {
         int result = 0;
-        Iterator<Process> iter = processIMap.values().iterator();
-        while (iter.hasNext()) {
-            if (iter.next().getState() == Process.FINISH) {
+
+        Collection<Process> processes = processIMap.values();
+
+        for (Process process : processes) {
+            if (process.getState() == Process.FINISH) {
                 result++;
             }
         }
+
         return result;
     }
 }
