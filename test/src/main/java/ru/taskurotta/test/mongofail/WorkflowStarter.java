@@ -1,7 +1,5 @@
 package ru.taskurotta.test.mongofail;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +10,10 @@ import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.test.mongofail.decider.TimeLogDeciderClient;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Javadoc should be here
  * Date: 18.02.14 15:45
  */
 public class WorkflowStarter {
@@ -38,13 +34,9 @@ public class WorkflowStarter {
 
     private long actorDelay;
 
-    private Client client = Client.create();
-
     private AtomicInteger started = new AtomicInteger(0);//TODO: should it really be atomic?
 
-    private String endpoint;
-
-    public static final String REST_SERVICE_PREFIX = "/rest/";
+    private FinishedCountRetriever finishedCountRetriever;
 
     public void start() {
 
@@ -54,10 +46,10 @@ public class WorkflowStarter {
                 final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
                 final TimeLogDeciderClient decider = deciderClientProvider.getDeciderClient(TimeLogDeciderClient.class);
 
-                for (int i = 0; i < count; i++) {
+                for (int i = 1; i <= count; i++) {
                     decider.execute();
                     started.incrementAndGet();
-                    if (i>0 && i % 10 == 0) {
+                    if (i % 10 == 0) {
                         logger.info("Started [{}]/[{}] processes", i, count);
                     }
 
@@ -73,7 +65,6 @@ public class WorkflowStarter {
                 logger.info("Started [{}] processes", count);
             }
         });
-
 
         Thread dataKiller = new Thread(new Runnable() {
             @Override
@@ -94,6 +85,7 @@ public class WorkflowStarter {
         Thread checker = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 if (checkDelay > 0) {
                     try {
                         Thread.sleep(checkDelay);
@@ -102,16 +94,20 @@ public class WorkflowStarter {
                     }
                 }
 
-                WebResource processesResource = client.resource(getContextUrl("/console/processes/finished/count"));
-                WebResource.Builder rb = processesResource.getRequestBuilder();
-                rb.type(MediaType.APPLICATION_JSON);
-                rb.accept(MediaType.APPLICATION_JSON);
-                Integer res = rb.get(Integer.class);
+                int actual = finishedCountRetriever.getFinishedCount();
+                int strd = started.get();
 
-                logger.info("Checking processes finished: should be [{}], started[{}], actual [{}]", count, started.get(), res);
+                logger.info("Checking processes finished: should be [{}], started[{}], actual [{}]", count, strd, actual);
+
+                if (actual != strd) {
+                    logger.error("Data was not restored after fail: should be ["+count+"], started["+strd+"], actual ["+actual+"]", new IllegalStateException("Check failed"));
+                }
+
+                System.exit(0);
 
             }
         });
+
         checker.setName("Checker");
         starter.setName("Starter");
         dataKiller.setName("DataKiller");
@@ -120,7 +116,6 @@ public class WorkflowStarter {
         checker.start();
         dataKiller.start();
 
-
         if (actorDelay > 0) {
             try {
                 Thread.sleep(actorDelay);
@@ -128,10 +123,6 @@ public class WorkflowStarter {
                 logger.error("Actor main thread interrupted!", e);
             }
         }
-    }
-
-    protected String getContextUrl(String path) {
-        return endpoint.replaceAll("/*$", "") + REST_SERVICE_PREFIX + path.replaceAll("^/*", "");
     }
 
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
@@ -169,12 +160,12 @@ public class WorkflowStarter {
     }
 
     @Required
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setActorDelay(long actorDelay) {
+        this.actorDelay = actorDelay;
     }
 
     @Required
-    public void setActorDelay(long actorDelay) {
-        this.actorDelay = actorDelay;
+    public void setFinishedCountRetriever(FinishedCountRetriever finishedCountRetriever) {
+        this.finishedCountRetriever = finishedCountRetriever;
     }
 }

@@ -23,15 +23,20 @@
         <constructor-arg name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="taskCreator" class="ru.taskurotta.test.mongofail.WorkflowStarter" init-method="start">
-        <property name="clientServiceManager" ref="clientServiceManager" />
-        <property name="mongoTemplate" ref="mongoTemplate" />
-        <property name="count" value = "${count}" />
-        <property name="checkDelay" value = "${checkDelay}" />
+
+    <bean id = "actualCountRetriever" class="ru.taskurotta.test.mongofail.RestRetriever" >
         <property name="endpoint" value = "${endpoint}" />
-        <property name="failDelay" value = "${failDelay}" />
-        <property name="processStartDelay" value = "${processStartDelay}" />
-        <property name="actorDelay" value = "${actorDelay}" />
+    </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.test.mongofail.WorkflowStarter" init-method="start">
+        <property name = "clientServiceManager" ref = "clientServiceManager" />
+        <property name = "mongoTemplate" ref = "mongoTemplate" />
+        <property name = "count" value = "${count}" />
+        <property name = "checkDelay" value = "${checkDelay}" />
+        <property name = "failDelay" value = "${failDelay}" />
+        <property name = "processStartDelay" value = "${processStartDelay}" />
+        <property name = "actorDelay" value = "${actorDelay}" />
+        <property name = "finishedCountRetriever" ref = "actualCountRetriever" />
     </bean>
 
     <mongo:mongo id="mongo" host="localhost" port="27017">

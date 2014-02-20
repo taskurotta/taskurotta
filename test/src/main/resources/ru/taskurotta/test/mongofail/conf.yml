@@ -13,7 +13,7 @@ spreader:
         properties:
           endpoint: "http://localhost:8811"
           count: 100
-          checkDelay: 100000
+          checkDelay: 60000
           failDelay: 25000
           processStartDelay: 500
           actorDelay: 30000
