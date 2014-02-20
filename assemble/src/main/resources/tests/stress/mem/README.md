@@ -28,6 +28,6 @@ actor:
         assemble/target/assemble-0.5.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem-ff.yml
 
 # Full feature test with monkeys: Actor + Direct + HZ + Mongo
-                java -Xmx128m -Xms128m -server -javaagent:assemble/target/dependency/aspectjweaver-1.7.2.jar -cp \
+                java -Xmx128m -Xms128m -server -javaagent:assemble/target/dependency/aspectjweaver-1.7.3.jar -cp \
                 assemble/target/assemble-0.5.0-SNAPSHOT.jar:assemble/src/main/resources/default.properties \
                 ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem-ff.yml
