@@ -57,7 +57,7 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
                 }
 
                 if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                    logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+                    logger.warn("#[{}]/[{}]: Won't apply graph modification. Current task is already finished.", processId, finishedTaskId);
                     return false; // ignore task decision and its tasks
                 }
 
@@ -77,7 +77,7 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
             return resultDecision;
         }
 
-        logger.warn("Can't apply graph modification");
+        logger.warn("#[{}]/[{}]: Can't apply graph modification", processId, finishedTaskId);
         // TODO: should be analyzed at TaskServer
         return resultDecision.withFail();
     }
