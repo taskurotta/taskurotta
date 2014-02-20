@@ -64,9 +64,10 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         executorService.submit(new Runnable() {
             @Override
             public void run() {
-                try {
 
-                    while (true) {
+                while (true) {
+
+                    try {
                         Operation operation = operationIQueue.poll(1, TimeUnit.SECONDS);
 
                         if (operation == null) {
@@ -76,11 +77,12 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
                         operation.init(recoveryProcessService);
 
                         recoveryOperationExecutorService.submit(operation);
-                    }
 
-                } catch (Exception e) {
-                    logger.error(e.getLocalizedMessage(), e);
+                    } catch (Throwable throwable) {
+                        logger.error(throwable.getLocalizedMessage(), throwable);
+                    }
                 }
+
             }
         });
     }
