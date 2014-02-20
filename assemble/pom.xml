@@ -202,7 +202,7 @@
                                 <artifactItem>
                                     <groupId>org.aspectj</groupId>
                                     <artifactId>aspectjweaver</artifactId>
-                                    <version>1.7.2</version>
+                                    <version>${aspectj.version}</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
