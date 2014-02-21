@@ -50,13 +50,14 @@ public class Inspector {
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                Task task = null;
+                Task task;
 
                 try {
                     task = taskSpreader.poll();
                 } catch (ServerException e) {
                     if (actorThreadPool.mute()) {
-                        logger.warn("Actor thread pool thread has been muted (on poll) due to server error[{}]", e.getLocalizedMessage());
+                        logger.warn("Actor thread pool thread has been muted (on poll) due to server error [{}]. Remain [{}] threads.",
+                                e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
                         return null;
                     } else {
                         throw e;
@@ -81,8 +82,8 @@ public class Inspector {
                     taskSpreader.release(taskDecision);
                 } catch (ServerException e) {
                     if (actorThreadPool.mute()) {
-                        logger.warn("Actor thread pool thread has been muted (on release) due to server error[{}]", e.getLocalizedMessage());
-                        return;
+                        logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
+                                e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
                     } else {
                         throw e;
                     }
