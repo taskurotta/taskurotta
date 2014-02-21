@@ -40,6 +40,8 @@ public class WorkflowStarter {
 
     public void start() {
 
+        logger.info("Start process: count[{}], failDelay[{}], checkDelay[{}], actorDelay[{}]", count, failDelay, checkDelay, actorDelay);
+
         Thread starter = new Thread(new Runnable() {
             @Override
             public void run() {
