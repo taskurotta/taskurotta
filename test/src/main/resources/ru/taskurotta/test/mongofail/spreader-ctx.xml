@@ -39,7 +39,7 @@
         <property name = "finishedCountRetriever" ref = "actualCountRetriever" />
     </bean>
 
-    <mongo:mongo id="mongo" host="localhost" port="27017">
+    <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
         <mongo:options connections-per-host="50"
                        threads-allowed-to-block-for-connection-multiplier="5"
                        max-wait-time="12000"
@@ -56,7 +56,7 @@
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg name="mongo" ref="mongo"/>
-        <constructor-arg name="databaseName" value="taskurotta"/>
+        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
         <property name="writeConcern" ref="writeConcern"/>
     </bean>
 

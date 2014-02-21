@@ -17,6 +17,9 @@ spreader:
           failDelay: 25000
           processStartDelay: 500
           actorDelay: 30000
+          mongo.host: localhost
+          mongo.port: 27017
+          mongo.db.name: taskurotta
 
 
 policy:
