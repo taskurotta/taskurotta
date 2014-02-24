@@ -96,13 +96,12 @@ public class ActorThreadPool {
             }
         }
 
-        int count = 0;
         for (int i = 0; i < threadsToStart; i++) {
             createActorExecutorThread();
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount.get());
+            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), threadsToStart, activeActorExecutorThreadCount.get());
         }
     }
 
