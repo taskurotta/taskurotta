@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,7 +28,7 @@ public class ActorThreadPool {
     private ActorExecutor actorExecutor;//ActorExecutor task instance for the pool
     private AtomicInteger activeActorExecutorThreadCount = new AtomicInteger();
 
-    private Thread[] actorExecutorThreads;
+    private ConcurrentHashMap<String, Thread> threadMap;
 
     public ActorThreadPool(Class actorClass, int size, long sleepTimeoutMillis, long shutdownTimeoutMillis) {
         this.actorClass = actorClass;
@@ -35,15 +36,14 @@ public class ActorThreadPool {
         this.sleepTimeoutMillis = sleepTimeoutMillis;
         this.shutdownTimeoutMillis = shutdownTimeoutMillis;
 
-        this.actorExecutorThreads = new Thread[size];
-        this.activeActorExecutorThreadCount.set(size);
+        this.threadMap = new ConcurrentHashMap<String, Thread>(size);
     }
 
     public void start(ActorExecutor actorExecutor) {
         this.actorExecutor = actorExecutor;
 
         for (int i = 0; i < size; i++) {
-            createActorExecutorThread(i);
+            createActorExecutorThread();
         }
     }
 
@@ -68,12 +68,7 @@ public class ActorThreadPool {
             return false;
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Stopping actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
-        }
-
-        actorExecutor.stopThread();
-        activeActorExecutorThreadCount.decrementAndGet();
+        destroyActorExecutorThread();
 
         if (logger.isTraceEnabled()) {
             logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount.get());
@@ -86,29 +81,25 @@ public class ActorThreadPool {
      * Submits new task to the pool, expanding it to max size. (meaning task server is now active and actors ready for full scale execution).
      */
     public synchronized void wake() {
-        if (activeActorExecutorThreadCount.get() == size) {
+
+        int threadsToStart = size - activeActorExecutorThreadCount.get();
+
+        if (threadsToStart == 0) {
             if (logger.isTraceEnabled()) {
                 logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount.get());
             }
 
             return;
-        }
-
-        if (actorExecutorThreads == null || actorExecutorThreads.length == 0) {
-            throw new RuntimeException("Pool has not been initialized");
+        } else {
+            if (logger.isTraceEnabled()) {
+                logger.trace("Try to start [{}] actor [{}]'s threads. Now active [{}]", threadsToStart, actorClass.getName(), activeActorExecutorThreadCount.get());
+            }
         }
 
         int count = 0;
-        for (int i = 0; i < size; i++) {
-            if (actorExecutorThreads[i].isAlive()) {
-                continue;
-            }
-
-            createActorExecutorThread(i);
-            count++;
+        for (int i = 0; i < threadsToStart; i++) {
+            createActorExecutorThread();
         }
-
-        activeActorExecutorThreadCount.set(size);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), count, activeActorExecutorThreadCount.get());
@@ -141,7 +132,7 @@ public class ActorThreadPool {
 
         try {
             while (hasAlive.get()) {
-                for (Thread thread : actorExecutorThreads) {
+                for (Thread thread : threadMap.values()) {
                     if (thread.isAlive()) {
                         if (System.currentTimeMillis() - startTime.get() >= shutdownTimeoutMillis) {
                             if (logger.isWarnEnabled()) {
@@ -177,14 +168,30 @@ public class ActorThreadPool {
         return activeActorExecutorThreadCount.get();
     }
 
-    private void createActorExecutorThread(int i) {
+    private void createActorExecutorThread() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        Thread thread = new Thread(actorExecutor, actorClass.getSimpleName() + "-(" + simpleDateFormat.format(new Date()) + ")-" + i);
-        actorExecutorThreads[i] = thread;
+        String threadName = actorClass.getSimpleName() + "-(" + simpleDateFormat.format(new Date()) + ")-" + activeActorExecutorThreadCount.getAndIncrement();
+
+        Thread thread = new Thread(actorExecutor, threadName);
+        thread.setDaemon(true);
         thread.start();
 
+        threadMap.put(threadName, thread);
+
         if (logger.isTraceEnabled()) {
-            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), thread.getName());
+            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), threadName);
         }
+    }
+
+    private void destroyActorExecutorThread() {
+
+        String threadName = Thread.currentThread().getName();
+
+        if (logger.isTraceEnabled()) {
+            logger.trace("Try to destroy actor's [{}] thread [{}]", actorClass.getName(), threadName);
+        }
+
+        activeActorExecutorThreadCount.decrementAndGet();
+        actorExecutor.stopThread();
     }
 }
