@@ -60,6 +60,7 @@ public class Inspector {
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
                         return null;
                     } else {
+                        logger.error("Can't mute actor thread pool (on poll), throw exception", e);
                         throw e;
                     }
                 }
@@ -85,6 +86,7 @@ public class Inspector {
                         logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
                     } else {
+                        logger.error("Can't mute actor thread pool (on release), throw exception", e);
                         throw e;
                     }
                 }

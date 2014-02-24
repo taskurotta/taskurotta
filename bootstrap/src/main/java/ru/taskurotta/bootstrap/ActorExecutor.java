@@ -75,7 +75,7 @@ public class ActorExecutor implements Runnable {
 
         }
 
-        logger.trace("Finish actor executor thread [{}]", threadName);
+        logger.debug("Finish actor executor thread [{}]", threadName);
     }
 
     /**
