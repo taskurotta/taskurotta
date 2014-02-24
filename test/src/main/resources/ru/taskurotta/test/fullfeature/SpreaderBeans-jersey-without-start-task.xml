@@ -23,10 +23,4 @@
         <constructor-arg name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="taskCreator" class="ru.taskurotta.test.stress.StressTaskCreator">
-        <constructor-arg name="clientServiceManager" ref="clientServiceManager"/>
-        <constructor-arg name="needRun" value="${needRun}"/>
-        <constructor-arg name="shotSize" value="${shotSize}"/>
-    </bean>
-
 </beans>
