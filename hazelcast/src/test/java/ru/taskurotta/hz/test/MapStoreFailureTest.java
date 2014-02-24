@@ -2,6 +2,8 @@ package ru.taskurotta.hz.test;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -68,6 +70,31 @@ public class MapStoreFailureTest {
 
         Assert.assertNull(failedValue);//map should not contain failed value
 
+    }
+
+    @Test
+    public void mongoTemplateConsTest() {
+        DBCollection dbCollection = mongoTemplate.getCollection("consCollection");
+        int loaded = 1000;
+        for (int i = 1; i <= loaded; i++ ) {
+            BasicDBObject obj = new BasicDBObject();
+            obj.put("key-" + 1, "val-" + i);
+            dbCollection.insert(obj);
+        }
+
+        System.out.println("Loaded ["+loaded+"], dbCount ["+dbCollection.getCount()+"]");
+    }
+
+    @Test
+    public void mongoHzConsTest() {
+        IMap map = hzInstance.getMap("yetAnotherMap");
+        DBCollection dbCollection = mongoTemplate.getCollection("yetAnotherMap");
+        int loaded = 1000;
+        for (int i = 1; i <= loaded; i++ ) {
+            map.put("key-" + i, "val-" + i);
+        }
+
+        System.out.println("Loaded ["+loaded+"], dbCount ["+dbCollection.count()+"]");
     }
 
 }

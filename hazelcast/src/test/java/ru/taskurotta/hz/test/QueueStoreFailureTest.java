@@ -2,6 +2,7 @@ package ru.taskurotta.hz.test;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
+import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -37,7 +38,18 @@ public class QueueStoreFailureTest {
         hzInstance = appContext.getBean("hzInstance", HazelcastInstance.class);
         queueConfigSupport = appContext.getBean("queueConfigSupport", HzQueueConfigSupport.class);
         mongoTemplate = appContext.getBean("mongoTemplate", MongoTemplate.class);
+        dataDrop();
+    }
+
+
+    private void dataDrop() {
         mongoTemplate.getDb().dropDatabase();
+
+        try {
+            Thread.sleep(1000);//to ensure mongoDB data flushing
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -53,23 +65,9 @@ public class QueueStoreFailureTest {
             testQueue.add("key-" + i);
         }
 
-        try {
-            Thread.sleep(1000);//to ensure mongoDB data flushing
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         logger.info("Before drop: hz queueSize [{}], mongo size [{}]", testQueue.size(), mongoTemplate.getCollection(queueName).count());
 
-
-
-        mongoTemplate.dropCollection(queueName);
-
-        try {
-            Thread.sleep(1000);//to ensure mongoDB data flushing
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        dataDrop();
 
         logger.info("After drop: hz queueSize [{}], mongo size [{}]", testQueue.size(), mongoTemplate.getCollection(queueName).count());
 
@@ -80,6 +78,21 @@ public class QueueStoreFailureTest {
         }
 
         Assert.assertEquals(0, testQueue.size());
+
+    }
+
+    @Test
+    public void testQueueStoreCons() {
+        String name = "yetAnotherQueue";
+        int loaded = 1000;
+        queueConfigSupport.createQueueConfig(name);
+        IQueue testQueue = hzInstance.getQueue(name);
+        DBCollection testQueueColl = mongoTemplate.getCollection(name);
+        for (int i = 1; i <= loaded; i++) {
+            testQueue.add("key-" + i);
+        }
+
+        logger.info("Hz queueSize [{}], mongo size [{}], loaded[{}]", testQueue.size(), testQueueColl.count(), loaded);
 
     }
 

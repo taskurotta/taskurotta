@@ -12,6 +12,9 @@
             <hz:map name="MapStoreFailureTestMap" backup-count="1" max-size="10">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapstore"></hz:map-store>
             </hz:map>
+            <hz:map name="yetAnotherMap" backup-count="1" max-size="10">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="realMapStore"></hz:map-store>
+            </hz:map>
         </hz:config>
     </hz:hazelcast>
 
