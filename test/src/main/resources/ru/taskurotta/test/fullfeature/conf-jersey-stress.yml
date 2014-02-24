@@ -53,14 +53,14 @@ logback:
              key: name
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
-                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
              file: ./target/logs/ff-stress.log
              append: true
              encoder:
-                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
