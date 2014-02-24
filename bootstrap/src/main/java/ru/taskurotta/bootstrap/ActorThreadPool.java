@@ -168,8 +168,11 @@ public class ActorThreadPool {
     }
 
     private void createActorExecutorThread() {
+
+        int counter = activeActorExecutorThreadCount.getAndIncrement();
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        String threadName = actorClass.getSimpleName() + "-(" + simpleDateFormat.format(new Date()) + ")-" + activeActorExecutorThreadCount.getAndIncrement();
+        String threadName = actorClass.getSimpleName() + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
 
         Thread thread = new Thread(actorExecutor, threadName);
         thread.setDaemon(true);
