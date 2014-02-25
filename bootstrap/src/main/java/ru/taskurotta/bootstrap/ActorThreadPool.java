@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,26 +21,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ActorThreadPool {
     private static final Logger logger = LoggerFactory.getLogger(ActorThreadPool.class);
 
-    private Class actorClass;//actor class served by this pool
-    private int size = 0;//pool size
-    private long sleepTimeoutMillis;
+    private Class actorClass; //actor class served by this pool
+    private int size = 0; //pool size
     private long shutdownTimeoutMillis;
 
-    private ActorExecutor actorExecutor;//ActorExecutor task instance for the pool
+    private ActorExecutor actorExecutor; //ActorExecutor task instance for the pool
     private AtomicInteger activeActorExecutorThreadCount = new AtomicInteger();
 
     private ConcurrentHashMap<String, Thread> threadMap;
 
-    public ActorThreadPool(Class actorClass, int size, long sleepTimeoutMillis, long shutdownTimeoutMillis) {
+    public ActorThreadPool(Class actorClass, int size, long shutdownTimeoutMillis) {
         this.actorClass = actorClass;
         this.size = size;
-        this.sleepTimeoutMillis = sleepTimeoutMillis;
         this.shutdownTimeoutMillis = shutdownTimeoutMillis;
 
         this.threadMap = new ConcurrentHashMap<String, Thread>(size);
     }
 
-    public void start(ActorExecutor actorExecutor) {
+    public synchronized void start(ActorExecutor actorExecutor) {
         this.actorExecutor = actorExecutor;
 
         for (int i = 0; i < size; i++) {
@@ -108,57 +107,65 @@ public class ActorThreadPool {
     /**
      * Gracefully shutdown pool
      */
-    public void shutdown() {
+    public synchronized void shutdown() {
         if (logger.isInfoEnabled()) {
             logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), shutdownTimeoutMillis / 1000);
         }
 
         actorExecutor.stopInstance();
 
-        ThreadLocal<Boolean> hasAlive = new ThreadLocal<Boolean>(){
-            @Override
-            protected Boolean initialValue() {
-                return Boolean.TRUE;
-            }
-        };
-
-        ThreadLocal<Long> startTime = new ThreadLocal<Long>(){
-            @Override
-            protected Long initialValue() {
-                return System.currentTimeMillis();
-            }
-        };
+        long stopTime = System.currentTimeMillis();
 
         try {
-            while (hasAlive.get()) {
-                for (Thread thread : threadMap.values()) {
-                    if (thread.isAlive()) {
-                        if (System.currentTimeMillis() - startTime.get() >= shutdownTimeoutMillis) {
-                            if (logger.isWarnEnabled()) {
-                                logger.warn("Wait [{}] seconds while actor [{}]'s thread [{}] die, but now exit", (System.currentTimeMillis() - startTime.get()) / 1000, actorClass.getName(), thread.getName());
-                            }
+            while (!threadMap.isEmpty()) {
 
-                            return;
-                        }
-
-                        if (logger.isTraceEnabled()) {
-                            logger.trace("Actor [{}]'s thread [{}] is alive, wait util thread dies", actorClass.getName(), thread.getName());
-                        }
-
-                        TimeUnit.MILLISECONDS.sleep(sleepTimeoutMillis);
-                        hasAlive.set(Boolean.TRUE);
-                        break;
+                if (System.currentTimeMillis() - stopTime >= shutdownTimeoutMillis) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Wait [{}] seconds while actor [{}]'s thread pool die, but now exit", (System.currentTimeMillis() - stopTime) / 1000, actorClass.getName());
                     }
 
-                    hasAlive.set(Boolean.FALSE);
+                    return;
                 }
+
+                for (Map.Entry<String, Thread> entry : threadMap.entrySet()) {
+
+                    String threadName = entry.getKey();
+                    Thread thread = entry.getValue();
+
+                    if (thread == null) {
+
+                        logger.warn("Thread [{}] not exists", threadName);
+
+                        threadMap.remove(threadName);
+
+                        continue;
+                    }
+
+                    if (thread.isAlive()) {
+
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Thread [{}] still alive for [{}] seconds after start shutdown", threadName, (System.currentTimeMillis() - stopTime) / 1000);
+                        }
+
+                    } else {
+
+                        threadMap.remove(threadName, thread);
+
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Thread [{}] exit after [{}] seconds after start shutdown", threadName, (System.currentTimeMillis() - stopTime) / 1000);
+                        }
+
+                    }
+                }
+
+                TimeUnit.SECONDS.sleep(10);
             }
 
             if (logger.isInfoEnabled()) {
-                logger.info("Successfully shutdown pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - startTime.get()) / 1000);
+                logger.info("Successfully shutdown thread pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - stopTime) / 1000);
             }
-        } catch (InterruptedException e) {
-            logger.error("Throw exception while try to gracefully shutdown actor [" + actorClass.getName() + "]", e);
+        } catch (Throwable t) {
+            logger.error("Throw exception while try to gracefully shutdown thread pool for actor [" + actorClass.getName() + "]", t);
             // just exit
         }
     }
