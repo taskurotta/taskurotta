@@ -18,7 +18,6 @@ public class ActorConfig {
     private String policyConfig;
     private int count = 1;
     private Properties properties;
-    private long sleepTimeoutMillis = 1000l;
     private long shutdownTimeoutMillis = 60000l;
     private String taskList;
 
@@ -79,15 +78,7 @@ public class ActorConfig {
     }
 
     public Object getProperty(String name) {
-        return properties!=null? properties.getProperty(name): null;
-    }
-
-    public void setSleepTimeout(String sleepTimeout) {
-        this.sleepTimeoutMillis = DurationParser.toMillis(sleepTimeout);
-    }
-
-    public long getSleepTimeoutMillis() {
-        return sleepTimeoutMillis;
+        return properties != null ? properties.getProperty(name) : null;
     }
 
     public void setShutdownTimeout(String shutdownTimeout) {
@@ -116,7 +107,6 @@ public class ActorConfig {
                 ", policyConfig='" + policyConfig + '\'' +
                 ", count=" + count +
                 ", properties=" + properties +
-                ", sleepTimeoutMillis=" + sleepTimeoutMillis +
                 ", shutdownTimeoutMillis=" + shutdownTimeoutMillis +
                 ", taskList='" + taskList + '\'' +
                 '}';
