@@ -22,6 +22,7 @@ public class ActorThreadPool {
     private static final Logger logger = LoggerFactory.getLogger(ActorThreadPool.class);
 
     private Class actorClass; //actor class served by this pool
+    private String taskList;
     private int size = 0; //pool size
     private long shutdownTimeoutMillis;
 
@@ -30,8 +31,9 @@ public class ActorThreadPool {
 
     private ConcurrentHashMap<String, Thread> threadMap;
 
-    public ActorThreadPool(Class actorClass, int size, long shutdownTimeoutMillis) {
+    public ActorThreadPool(Class actorClass, String taskList, int size, long shutdownTimeoutMillis) {
         this.actorClass = actorClass;
+        this.taskList = taskList;
         this.size = size;
         this.shutdownTimeoutMillis = shutdownTimeoutMillis;
 
@@ -179,7 +181,7 @@ public class ActorThreadPool {
         int counter = activeActorExecutorThreadCount.getAndIncrement();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        String threadName = actorClass.getSimpleName() + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
+        String threadName = actorClass.getName() + (taskList == null ? "" : "[" + taskList + "]") + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
 
         Thread thread = new Thread(actorExecutor, threadName);
         thread.setDaemon(true);
