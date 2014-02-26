@@ -19,13 +19,24 @@ public class OraRetriever implements FinishedCountRetriever {
 
     private static final Logger log = LoggerFactory.getLogger(OraRetriever.class);
 
+    protected static final String SQL_GET_PROCESS_CNT_BY_STATE = "SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ? ";
+
     @Override
     public int getFinishedCount() {
+        return getFinishedCount(null);
+    }
+
+    @Override
+    public int getFinishedCount(String customId) {
         int result = 0;
+        String sql = customId!=null? SQL_GET_PROCESS_CNT_BY_STATE + " AND CUSTOM_ID = ? ": SQL_GET_PROCESS_CNT_BY_STATE;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ?")) {
+            PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, ru.taskurotta.service.console.model.Process.FINISH);
+            if (customId!=null) {
+                ps.setString(2, customId);
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 result = rs.getInt("cnt");

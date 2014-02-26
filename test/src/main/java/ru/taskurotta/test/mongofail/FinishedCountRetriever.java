@@ -8,4 +8,6 @@ public interface FinishedCountRetriever {
 
     int getFinishedCount();
 
+    int getFinishedCount(String customId);
+
 }

@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.bootstrap.Bootstrap;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
+import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 import ru.taskurotta.test.mongofail.decider.TimeLogDeciderClient;
 
 import java.io.IOException;
@@ -39,8 +41,9 @@ public class WorkflowStarter {
     private FinishedCountRetriever finishedCountRetriever;
 
     public void start() {
+        final String customId = "mongo_fail_test_" + System.currentTimeMillis();//unique for each test invocation
 
-        logger.info("Start process: count[{}], failDelay[{}], checkDelay[{}], actorDelay[{}]", count, failDelay, checkDelay, actorDelay);
+        logger.info("Start process[{}]: count[{}], failDelay[{}], checkDelay[{}], actorDelay[{}]", customId, count, failDelay, checkDelay, actorDelay);
 
         Thread starter = new Thread(new Runnable() {
             @Override
@@ -48,8 +51,10 @@ public class WorkflowStarter {
                 final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
                 final TimeLogDeciderClient decider = deciderClientProvider.getDeciderClient(TimeLogDeciderClient.class);
 
+                ActorSchedulingOptions opts = new ActorSchedulingOptionsImpl();
+                opts.setCustomId(customId);
                 for (int i = 1; i <= count; i++) {
-                    decider.execute();
+                    decider.execute(opts);
                     started.incrementAndGet();
                     if (i % 10 == 0) {
                         logger.info("Started [{}]/[{}] processes", i, count);
@@ -102,7 +107,9 @@ public class WorkflowStarter {
                 logger.info("Checking processes finished: should be [{}], started[{}], actual [{}]", count, strd, actual);
 
                 if (actual != strd) {
-                    logger.error("Data was not restored after fail: should be ["+count+"], started["+strd+"], actual ["+actual+"]", new IllegalStateException("Check failed"));
+                    logger.error("Data were not restored after fail: should be ["+count+"], started["+strd+"], actual ["+actual+"]", new IllegalStateException("Check failed"));
+                } else {
+                    logger.info("Data were successfully restored after fail: should be ["+count+"], started["+strd+"], actual ["+actual+"]");
                 }
 
                 System.exit(0);

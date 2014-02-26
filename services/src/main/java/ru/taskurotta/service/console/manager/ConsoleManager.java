@@ -74,6 +74,6 @@ public interface ConsoleManager {
 
     public GenericPage<QueueStatVO> getQueuesStatInfo(int pageNumber, int pageSize, String filter);
 
-    public int getFinishedCount();
+    public int getFinishedCount(String customId);
 
 }

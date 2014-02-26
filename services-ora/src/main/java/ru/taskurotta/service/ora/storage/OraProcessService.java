@@ -34,6 +34,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
+    protected static final String SQL_GET_PROCESS_CNT_BY_STATE = "SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ? ";
+
     public OraProcessService(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -221,12 +223,16 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public int getFinishedCount() {
+    public int getFinishedCount(String customId) {
         int result = 0;
+        String sql = customId!=null? SQL_GET_PROCESS_CNT_BY_STATE + "AND CUSTOM_ID = ? ": SQL_GET_PROCESS_CNT_BY_STATE;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ?")) {
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, Process.FINISH);
+            if (customId != null) {
+                ps.setString(2, customId);
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 result = rs.getInt("cnt");

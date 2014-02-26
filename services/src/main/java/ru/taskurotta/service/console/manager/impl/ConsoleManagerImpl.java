@@ -215,8 +215,8 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public int getFinishedCount() {
-        return processInfo.getFinishedCount();
+    public int getFinishedCount(String customId) {
+        return processInfo.getFinishedCount(customId);
     }
 
     public void setQueueInfo(QueueInfoRetriever queueInfo) {

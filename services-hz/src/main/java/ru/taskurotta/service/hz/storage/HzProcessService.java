@@ -151,14 +151,16 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public int getFinishedCount() {
+    public int getFinishedCount(String customId) {
         int result = 0;
 
         Collection<Process> processes = processIMap.values();
 
         for (Process process : processes) {
             if (process.getState() == Process.FINISH) {
-                result++;
+                if (customId == null || customId.equals(process.getCustomId())) {
+                    result++;
+                }
             }
         }
 

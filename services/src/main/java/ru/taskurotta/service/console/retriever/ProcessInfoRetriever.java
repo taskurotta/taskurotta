@@ -20,5 +20,5 @@ public interface ProcessInfoRetriever {
 
     public List<Process> findProcesses(ProcessSearchCommand command);
 
-    public int getFinishedCount();
+    public int getFinishedCount(String customId);
 }

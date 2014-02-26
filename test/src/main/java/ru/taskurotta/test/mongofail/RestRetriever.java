@@ -18,7 +18,15 @@ public class RestRetriever implements FinishedCountRetriever {
 
     @Override
     public int getFinishedCount() {
+        return getFinishedCount(null);
+    }
+
+    @Override
+    public int getFinishedCount(String customId) {
         WebResource processesResource = client.resource(getContextUrl("/console/processes/finished/count"));
+        if (customId!=null) {
+            processesResource.queryParam("customId", customId);
+        }
         WebResource.Builder rb = processesResource.getRequestBuilder();
         rb.type(MediaType.APPLICATION_JSON);
         rb.accept(MediaType.APPLICATION_JSON);

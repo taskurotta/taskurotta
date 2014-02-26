@@ -78,10 +78,10 @@ public class ProcessResource extends BaseResource {
 
     @GET
     @Path("/finished/count")
-    public Integer getFinishedCount() {
-
+    public Integer getFinishedCount(@QueryParam("customId") Optional<String> customIdOpt) {
+        String customId = customIdOpt.orNull();
         try {
-            return consoleManager.getFinishedCount();
+            return consoleManager.getFinishedCount(customId);
         } catch(Throwable e) {
             logger.error("Error at getting finished processes count", e);
             throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);

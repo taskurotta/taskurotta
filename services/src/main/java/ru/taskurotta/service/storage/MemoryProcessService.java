@@ -120,12 +120,16 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public int getFinishedCount() {
+    public int getFinishedCount(String customId) {
         int result = 0;
         Iterator<Process> iterator = processesStorage.values().iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().getState() == Process.FINISH) {
-                result++;
+            Process process = iterator.next();
+            if (process.getState() == Process.FINISH) {
+                if (customId == null || customId.equals(process.getCustomId())) {
+                    result++;
+                }
+
             }
         }
         return result;
