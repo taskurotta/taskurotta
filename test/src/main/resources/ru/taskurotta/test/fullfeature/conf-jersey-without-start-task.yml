@@ -8,14 +8,12 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-stress.xml
+        context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-without-start-task.xml
         properties:          
           endpoint: "http://localhost:8081"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
-          shotSize: 1000          
-          needRun: true
 
 policy:
   - MainPolicyConfig:
@@ -26,17 +24,6 @@ policy:
           initialRetryIntervalSeconds: 1
           maximumRetryIntervalSeconds: 1
           maximumAttempts: 3
-
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
-        properties:
-          exitAfterAll: true
-          tasksForStat: 1000
-          maxTaskQuantity: 1000000
-          taskPerProcess: 12
 
 actor:
   - FFDecider:
@@ -71,6 +58,9 @@ logback:
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF
+        - ru.taskurotta.test.stress.StressTaskCreator:
+              key: name
+              \@level: ERROR
         - org:
              key: name
              \@level: ERROR

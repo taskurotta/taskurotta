@@ -49,7 +49,7 @@ logging:
         archive: true
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
-        logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+        logFormat: "%d %p [%t] %c - %m%n"
 
 http:
     rootPath: "/rest/*"

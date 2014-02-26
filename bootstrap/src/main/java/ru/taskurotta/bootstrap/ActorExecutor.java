@@ -34,9 +34,10 @@ public class ActorExecutor implements Runnable {
 
     @Override
     public void run() {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Started executor thread [{}]", Thread.currentThread().getName());
-        }
+
+        String threadName = Thread.currentThread().getName();
+
+        logger.trace("Started actor executor thread [{}]", threadName);
 
         threadRun.set(Boolean.TRUE);
 
@@ -46,23 +47,17 @@ public class ActorExecutor implements Runnable {
 
             try {
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Thread [{}]: Poll", Thread.currentThread().getName());
-                }
+                logger.trace("Thread [{}]: try to poll", threadName);
                 Task task = taskSpreader.poll();
 
                 if (task == null) {
                     continue;
                 }
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Thread [{}]: try to execute task [{}]", Thread.currentThread().getName(), task);
-                }
+                logger.trace("Thread [{}]: try to execute task [{}]", threadName, task);
                 TaskDecision taskDecision = runtimeProcessor.execute(task);
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Thread [{}]: try to release decision [{}] of task [{}]", Thread.currentThread().getName(), taskDecision, task);
-                }
+                logger.trace("Thread [{}]: try to release decision [{}] of task [{}]", threadName, taskDecision, task);
                 taskSpreader.release(taskDecision);
 
             } catch (ServerConnectionException ex) {
@@ -80,27 +75,29 @@ public class ActorExecutor implements Runnable {
 
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Exit executor thread [{}]", Thread.currentThread().getName());
-        }
+        logger.debug("Finish actor executor thread [{}]", threadName);
     }
 
     /**
      * stop current thread
      */
     void stopThread() {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Set threadRun = false for thread [{}]", Thread.currentThread().getName());
-        }
         threadRun.set(Boolean.FALSE);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Set threadRun = false for thread [{}]", Thread.currentThread().getName());
+        }
     }
 
     /**
      * stop all threads
      */
     void stopInstance() {
-        logger.debug("Shutdown ActorExecutor");
         instanceRun = false;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Set instanceRun = false for thread from thread [{}]", Thread.currentThread().getName());
+        }
     }
 }
 
