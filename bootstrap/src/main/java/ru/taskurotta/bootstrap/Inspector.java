@@ -63,6 +63,9 @@ public class Inspector {
                         logger.error("Can't mute actor thread pool (on poll), throw exception", e);
                         throw e;
                     }
+                } catch (Exception e) {
+                    logger.error("Catch unexpected exception on poll", e);
+                    throw new RuntimeException(e);
                 }
 
                 if (task == null) {
@@ -89,6 +92,9 @@ public class Inspector {
                         logger.error("Can't mute actor thread pool (on release), throw exception", e);
                         throw e;
                     }
+                } catch (Exception e) {
+                    logger.error("Catch unexpected exception on release", e);
+                    throw new RuntimeException(e);
                 }
             }
         };
