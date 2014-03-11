@@ -72,7 +72,7 @@ public class ActorThreadPool {
         destroyActorExecutorThread();
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getSimpleName(), activeActorExecutorThreadCount.get());
+            logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getName(), activeActorExecutorThreadCount.get());
         }
 
         return true;
