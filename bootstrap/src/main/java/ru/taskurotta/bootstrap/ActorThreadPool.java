@@ -184,7 +184,6 @@ public class ActorThreadPool {
         String threadName = actorClass.getName() + (taskList == null ? "" : "[" + taskList + "]") + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
 
         Thread thread = new Thread(actorExecutor, threadName);
-        thread.setDaemon(true);
         thread.start();
 
         threadMap.put(threadName, thread);
