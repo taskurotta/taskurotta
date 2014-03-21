@@ -25,40 +25,46 @@
                 </hz:join>
             </hz:network>
 
-            <hz:executor-service name="${hz.dependency.service.name}" pool-size="${hz.dependency.max.pool.size}"/>
-            <hz:executor-service name="${hz.decisions.service.name}" pool-size="${hz.decisions.max.pool.size}"/>
+            <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
 
-            <hz:map name="${hz.task.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+            <hz:map name="${hz.map.task.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="10" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
+                    max-size="${hz.map.general.max-size}" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+            <hz:map name="${hz.map.decision.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="10" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
+                    max-size="${hz.map.general.max-size}" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+            <hz:map name="${hz.map.graph.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="10" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
+                    max-size="${hz.map.general.max-size}" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.graph.decision.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+            <hz:map name="${hz.map.graph-decision.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="10" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
+                    max-size="1000" eviction-percentage="25" max-size-policy="PER_NODE">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.process.map.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+            <hz:map name="${hz.map.process.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="10" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
+                    max-size="${hz.map.general.max-size}" eviction-percentage="25"
+                    max-size-policy="USED_HEAP_PERCENTAGE">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
             </hz:map>
 
-            <hz:map name="${hz.actor.preferences.map.name}" backup-count="0">
+            <hz:map name="${hz.map.broken-process.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
+                    max-idle-seconds="0"
+                    max-size="1000" eviction-percentage="25" max-size-policy="PER_NODE">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+            </hz:map>
+
+            <hz:map name="${hz.map.actor-preferences.name}" backup-count="0">
                 <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
             </hz:map>
 
@@ -68,6 +74,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.console.model.BrokenProcess"
+                                   class-name="ru.taskurotta.service.hz.serialization.BrokenProcessStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.dependency.HzGraphDao.DecisionRow"
@@ -76,8 +84,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.dependency.links.Graph"
                                    class-name="ru.taskurotta.service.hz.serialization.GraphStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.console.model.ProcessVO"
-                                   class-name="ru.taskurotta.service.hz.serialization.ProcessVOStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.console.model.Process"
+                                   class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.TaskKey"

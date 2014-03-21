@@ -1,6 +1,6 @@
 package ru.taskurotta.transport.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -32,11 +32,6 @@ public class TaskContainer implements Serializable {
     public TaskContainer() {
     }
 
-    public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
-                         TaskType type, long startTime, int numberOfAttempts,
-                         ArgContainer[] args, TaskOptionsContainer options, String[] failTypes) {
-
-    }
     public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
                          TaskType type, long startTime, int numberOfAttempts,
                          ArgContainer[] args, TaskOptionsContainer options, boolean unsafe, String[] failTypes) {
@@ -86,7 +81,6 @@ public class TaskContainer implements Serializable {
         return type;
     }
 
-    @JsonIgnore
     public boolean isUnsafe() {
         return unsafe;
     }

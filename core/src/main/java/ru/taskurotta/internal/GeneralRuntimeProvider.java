@@ -15,12 +15,12 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
 import ru.taskurotta.exception.TaskTargetRequiredException;
 import ru.taskurotta.internal.core.TaskTargetImpl;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.internal.proxy.DeciderProxyFactory;
 import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
-import ru.taskurotta.transport.model.TaskType;
 import ru.taskurotta.util.AnnotationUtils;
 import ru.taskurotta.util.StringUtils;
 
@@ -118,7 +118,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.WORKER, workerName, version, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<>();
+                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
@@ -157,7 +157,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.DECIDER_ASYNCHRONOUS, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<>();
+                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);
@@ -194,7 +194,7 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
             TaskTarget key = createTaskTarget(TaskType.DECIDER_START, actorName, actorVersion, method.getName());
 
             if (taskTargetsMap == null) {
-                taskTargetsMap = new HashMap<>();
+                taskTargetsMap = new HashMap<TaskTarget, TargetReference>();
             }
 
             RetryPolicy retryPolicy = findAndCreateRetryPolicy(method);

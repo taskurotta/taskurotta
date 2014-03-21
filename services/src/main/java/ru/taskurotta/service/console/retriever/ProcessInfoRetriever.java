@@ -1,7 +1,7 @@
 package ru.taskurotta.service.console.retriever;
 
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 
 import java.util.List;
@@ -14,9 +14,11 @@ import java.util.UUID;
  */
 public interface ProcessInfoRetriever {
 
-    public ProcessVO getProcess(UUID processUUID);
+    public Process getProcess(UUID processUUID);
 
-    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize);
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status);
 
-    public List<ProcessVO> findProcesses(ProcessSearchCommand command);
+    public List<Process> findProcesses(ProcessSearchCommand command);
+
+    public int getFinishedCount(String customId);
 }

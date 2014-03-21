@@ -52,4 +52,18 @@
     </bean>
     <!-- /Mongo -->
 
+    <bean id="debugMonitor" class="ru.taskurotta.hazelcast.MongoHealthMonitor" >
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
+        <constructor-arg name="metricsPeriodMs">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${health.mongo.metrics.log-period}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="mongoStatPeriodMs" >
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${health.mongo.stat.log-period}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
 </beans>

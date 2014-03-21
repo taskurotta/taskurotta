@@ -1,7 +1,7 @@
 package ru.taskurotta.service.hz.config;
 
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
-import ru.taskurotta.service.statistics.QueueBalanceVO;
+import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.Collection;
 

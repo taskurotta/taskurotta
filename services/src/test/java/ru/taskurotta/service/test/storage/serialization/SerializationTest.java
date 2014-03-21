@@ -3,10 +3,10 @@ package ru.taskurotta.service.test.storage.serialization;
 import org.junit.Assert;
 import org.junit.Test;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
 
 import java.util.UUID;

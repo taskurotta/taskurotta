@@ -6,15 +6,14 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.console.manager.ActorConfigManager;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.MetricsStatDataVO;
 import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
-import ru.taskurotta.service.statistics.MetricName;
-import ru.taskurotta.service.statistics.QueueBalanceVO;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.model.QueueBalanceVO;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,14 +49,14 @@ public class HzActorConfigManager implements ActorConfigManager {
         IMap<String, ActorPreferences> actorsPrefs = hzInstance.getMap(actorConfigName);
         List<ActorPreferences> allPreferences = new ArrayList(actorsPrefs.values());
 
-        if (allPreferences!=null && !allPreferences.isEmpty()) {
+        if (allPreferences != null && !allPreferences.isEmpty()) {
             int fromIndex = (pageNum - 1) * pageSize;
             int toIndex = Math.min(pageSize * pageNum, allPreferences.size());
             List<ActorPreferences> subList = allPreferences.subList(fromIndex, toIndex);
             List<ActorVO> pageItems = new ArrayList<>();
             for (ActorPreferences ap : subList) {
                 ActorVO actorVO = new ActorVO();
-                actorVO.setActorId(ap.getId());
+                actorVO.setId(ap.getId());
                 actorVO.setBlocked(ap.isBlocked());
                 actorVO.setQueueName(ap.getQueueName());
                 if (metricsDataRetriever!=null) {
@@ -114,7 +113,6 @@ public class HzActorConfigManager implements ActorConfigManager {
         return result;
     }
 
-    @Required
     public void setMetricsDataRetriever(MetricsMethodDataRetriever metricsDataRetriever) {
         this.metricsDataRetriever = metricsDataRetriever;
     }

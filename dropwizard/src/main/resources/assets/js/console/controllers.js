@@ -1,6 +1,16 @@
 angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute', 'console.metrics.controllers'])
 
-.controller("rootController", function ($rootScope, $scope, $location, $log, $window) {
+.controller("rootController", function ($rootScope, $scope, $location, $log, $window, $http) {
+
+    $scope.serverVersion = "";
+
+    $scope.updateVersion = function() {
+        $http.get("/rest/console/manifest/version").then(function(success){
+            $scope.serverVersion = success.data || "";
+        }, function(error) {
+            $scope.serverVersion = "";
+        });
+    };
 
     $scope.isActiveTab = function (rootPath) {
         var result = "";
@@ -15,52 +25,12 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.back = function () {
         $window.history.back();
     };
+
+    $scope.updateVersion();
+
 })
 
-//.controller("queueListController", function ($scope, $$data, $$timeUtil, $log) {
-//
-//    $scope.feedback = "";
-//    $scope.initialized = false;
-//
-//    //Init paging object
-//    $scope.queuesPage = {
-//        pageSize: 5,
-//        pageNumber: 1,
-//        totalCount: 0,
-//        items: []
-//    };
-//
-//    $scope.totalTasks = function () {
-//        var result = 0;
-//        if($scope.queuesPage.items) {
-//            for (var i = 0; i < $scope.queuesPage.items.length; i++) {
-//                result = result + $scope.queuesPage.items[i].count;
-//            }
-//        }
-//        return result;
-//    };
-//
-//    //Updates queues states  by polling REST resource
-//    $scope.update = function () {
-//
-//        $$data.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize).then(function (value) {
-//            $scope.queuesPage = angular.fromJson(value.data || {});
-//            $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
-//            $scope.initialized = true;
-//        }, function (errReason) {
-//            $scope.feedback = angular.toJson(errReason);
-//            $log.error("queueListController: queue state update failed: " + $scope.feedback);
-//            $scope.initialized = true;
-//        });
-//
-//    };
-//
-//    //Initialization:
-//    $scope.update();
-//
-//})
-
-.controller("queueCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {
+.controller("queueCardController", function ($scope, tskQueues, tskTimeUtil, $log, $routeParams) {
 
     $scope.feedback = "";
 
@@ -76,7 +46,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
     //Updates queue items by polling REST resource
     $scope.update = function () {
-        $$data.getQueueContent($scope.queueName, $scope.queueTasksPage.pageNumber, $scope.queueTasksPage.pageSize).then(function (value) {
+        tskQueues.getQueueContent($scope.queueName, $scope.queueTasksPage.pageNumber, $scope.queueTasksPage.pageSize).then(function (value) {
             $scope.queueTasksPage = angular.fromJson(value.data || {});
             $log.info("queueContentController: successfully updated queue content");
         }, function (errReason) {
@@ -91,7 +61,9 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("processListController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("processListController", function ($scope, tskProcesses, tskTimeUtil, $log) {
+    $scope.initialized = false;
+
     //Init paging object
     $scope.processesPage = {
         pageSize: 5,
@@ -100,15 +72,49 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         items: []
     };
 
-    $scope.initialized = false;
+    $scope.filters = [
+        {status: -1, name: "All"},
+        {status: 0, name: "Started"},
+        {status: 1, name: "Finished"}
+    ];
+
+    $scope.getStatusName = function(status) {
+        var result = "Unknown [" + status + "]";
+        if (status == 0) {
+            result = "Started and still in flight";
+        } else if (status == 1) {
+            result = "Has already finished";
+        }
+        return result;
+    };
+
+    $scope.selection = {
+        filter: $scope.filters[0]
+    };
+
+    $scope.submittedRecoveries = [];
+
+    $scope.wasSubmitted = function (processId) {
+        for (var i = 0; i<$scope.submittedRecoveries.length; i++) {
+            if (processId == $scope.submittedRecoveries[i]) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    $scope.addProcessToRecovery = function(processId) {
+        tskProcesses.addProcessToRecovery(processId);
+        $scope.submittedRecoveries.push(processId);
+    };
 
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
-        $$data.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize).then(function (value) {
+        tskProcesses.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize, $scope.selection.filter.status).then(function (value) {
             $scope.processesPage = angular.fromJson(value.data || {});
             $scope.initialized = true;
-            $log.info("processListController: successfully updated processes list");
+            $log.info("processListController: successfully updated processes list, params: pageNum["+$scope.processesPage.pageNumber+"], pageSize["+$scope.processesPage.pageSize+"], status["+$scope.selection.filter.status+"]");
         }, function (errReason) {
             $scope.feedback = errReason;
             $scope.initialized = true;
@@ -121,7 +127,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.update();
 })
 
-.controller("processCardController", function ($scope, $$data, $$timeUtil, $log, $routeParams) {//id=
+.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams) {
     $scope.process = {};
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
@@ -129,11 +135,11 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.initialized = false;
 
     $scope.update = function () {
-        $$data.getProcess($routeParams.processId).then(function (value) {
+        tskProcesses.getProcess($routeParams.processId).then(function (value) {
             $scope.process = angular.fromJson(value.data || {});
             $log.info("processCardController: successfully updated process[" + $routeParams.processId + "] content");
 
-            $$data.getProcessTree($routeParams.processId, $scope.process.startTaskUuid).then(function (value) {
+            tskProcesses.getProcessTree($routeParams.processId, $scope.process.startTaskUuid).then(function (value) {
                 $scope.taskTree = angular.fromJson(value.data || {});
                 $scope.initialized = true;
                 $log.info("processCardController: successfully updated process[" + $routeParams.processId + "]/["+$scope.process.startTaskUuid+"] tree");
@@ -153,13 +159,13 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.update();
 })
 
-.controller("processSearchController", function ($scope, $$data, $$timeUtil, $log, $routeParams, $location) {//params: customId, processId
+.controller("processSearchController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams, $location) {//params: customId, processId
     $scope.customId = $routeParams.customId || '';
     $scope.processId = $routeParams.processId || '';
     $scope.processes = [];
 
     $scope.update = function () {
-        $$data.findProcess($scope.processId, $scope.customId).then(function (value) {
+        tskProcesses.findProcess($scope.processId, $scope.customId).then(function (value) {
             $scope.processes = angular.fromJson(value.data || []);
             $location.search("customId", $scope.customId);
             $location.search("processId", $scope.processId);
@@ -282,7 +288,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("hoveringQueuesController", function ($scope, $$data, $$timeUtil, $log) {
+.controller("hoveringQueuesController", function ($scope, $$data, tskTimeUtil, $log) {
 
     $scope.feedback = "";
 
@@ -335,10 +341,27 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
+.controller("homeController", function ($scope, $http, $log) {
+        $scope.configInvisible = true;
+        $scope.propsInvisible = true;
 
-.controller("homeController", function ($scope) {
+        $scope.serverServicesBeans = {};
+        $scope.properties = {};
+        $scope.startupDate = 0;
 
-})
+        $scope.updateContextInfo = function() {
+            $http.get("/rest/console/context/service").then(function(success){
+                $scope.serverServicesBeans = success.data.configBeans || {};
+                $scope.properties = success.data.properties || {};
+                $scope.startupDate = success.data.startupDate || 0;
+            }, function(error) {
+                $log.log("Cannot update context info: " + angular.toJson(error));
+            });
+        };
+
+        $scope.updateContextInfo();
+
+    })
 
 .controller("aboutController", function ($scope) {
 

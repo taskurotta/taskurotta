@@ -69,7 +69,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
 
         String actorVersion = annotationExplorer.getActorVersion(actorAnnotation);
 
-        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<>();
+        Map<Method, MethodDescriptor> method2TaskTargetCache = new HashMap<Method, MethodDescriptor>();
 
         Method[] targetMethods = clientInterface.getMethods();
         for (Method method : targetMethods) {
@@ -78,7 +78,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
             int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
             int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
             AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
-            String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
+            String[] failTypes = acceptFail == null ? null : getFailNames(acceptFail.type());
 
             MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method),
                     positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, failTypes);

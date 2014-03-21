@@ -37,9 +37,9 @@ public class Bootstrap implements BootstrapMBean {
     private static final Logger logger = LoggerFactory.getLogger(Bootstrap.class);
 
 	private Config config;
-    private Map<String, Thread> shutdownHookThreadMap = new HashMap<>();
-    private Map<String, ActorConfig> actorConfigMap = new HashMap<>();
-    private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<>();
+    private Map<String, Thread> shutdownHookThreadMap = new HashMap<String, Thread>();
+    private Map<String, ActorConfig> actorConfigMap = new HashMap<String, ActorConfig>();
+    private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<String, ActorThreadPool>();
 
     public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
 		config = parseArgs(args);
@@ -109,7 +109,7 @@ public class Bootstrap implements BootstrapMBean {
 
     @Override
     public Map<String, Integer> getActorPoolSizes() {
-        Map<String, Integer> actorPoolSizes = new HashMap<>();
+        Map<String, Integer> actorPoolSizes = new HashMap<String, Integer>();
 
         Set<String> actorPoolIdSet = actorThreadPoolMap.keySet();
 
@@ -132,7 +132,12 @@ public class Bootstrap implements BootstrapMBean {
         final Class actorClass = getActorClass(actorConfig.getActorInterface());
 
         SpreaderConfig taskSpreaderConfig = config.spreaderConfigs.get(actorConfig.getSpreaderConfig());
-        TaskSpreader taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+        TaskSpreader taskSpreader;
+        if (actorConfig.getTaskList() == null) {
+            taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass);
+        } else {
+            taskSpreader = taskSpreaderConfig.getTaskSpreader(actorClass, actorConfig.getTaskList());
+        }
 
         RuntimeConfig runtimeConfig = config.runtimeConfigs.get(actorConfig.getRuntimeConfig());
         RuntimeProcessor runtimeProcessor = runtimeConfig.getRuntimeProcessor(actorClass);
@@ -147,7 +152,7 @@ public class Bootstrap implements BootstrapMBean {
             poolSize = actorConfig.getCount();
         }
 
-        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, poolSize, actorConfig.getSleepTimeoutMillis(), actorConfig.getShutdownTimeoutMillis());
+        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, actorConfig.getTaskList(), poolSize, actorConfig.getShutdownTimeoutMillis());
         final String actorPoolId = saveActorPool(actorId, actorThreadPool);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 

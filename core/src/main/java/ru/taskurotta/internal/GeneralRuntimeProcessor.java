@@ -10,6 +10,7 @@ import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.UndefinedActorException;
 import ru.taskurotta.exception.test.TestException;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
+import ru.taskurotta.policy.PolicyConstants;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.lang.reflect.InvocationTargetException;
@@ -68,13 +69,12 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
             long restartTime = TaskDecision.NO_RESTART;
             if (retryPolicy != null && retryPolicy.isRetryable(e)) {
-                long nextRetryDelaySeconds = 0;
                 long recordedFailure = System.currentTimeMillis();
-                if (task.getNumberOfAttempts() > 2) {
-                    nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
-                }
+                long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
 
-                restartTime = recordedFailure + nextRetryDelaySeconds * 1000;
+                if (nextRetryDelaySeconds != PolicyConstants.NONE) {
+                    restartTime = recordedFailure + nextRetryDelaySeconds * 1000;
+                }
             }
 
             if (Environment.getInstance().getType() == Environment.Type.TEST) {
@@ -83,7 +83,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
                 }
             }
 
-            if (e instanceof InvocationTargetException && e.getCause()!=null) {
+            if (e instanceof InvocationTargetException && e.getCause() != null) {
                 e = e.getCause();//to send real error to the server
             }
             taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), e, RuntimeContext.getCurrent().getTasks(), restartTime);

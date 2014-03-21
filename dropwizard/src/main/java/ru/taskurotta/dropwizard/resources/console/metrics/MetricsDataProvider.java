@@ -3,18 +3,19 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
-import ru.taskurotta.service.console.retriever.metrics.MetricsNumberDataRetriever;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
-import ru.taskurotta.service.statistics.metrics.TimeConstants;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.DatasetVO;
+import ru.taskurotta.service.console.retriever.metrics.MetricsMethodDataRetriever;
+import ru.taskurotta.service.console.retriever.metrics.MetricsNumberDataRetriever;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.TimeConstants;
+import ru.taskurotta.service.metrics.model.DataPointVO;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides metrics data for console resource
@@ -28,7 +29,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
     private MetricsMethodDataRetriever methodDataRetriever;
     private MetricsNumberDataRetriever numberDataRetriever;
     private int methodMetricsPeriodSeconds = 0;
-    private int numberMetricsPeriodSeconds = 0;
+    private Map<String, Integer> periodicMetricPeriods = null;
 
     public List<DatasetVO> getDataResponse(String metricName, List<String> dataSetNames, String scope, String dataType, String period) {
         List<DatasetVO> result = new ArrayList<>();
@@ -36,16 +37,15 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
             DatasetVO ds = getDataset(metricName, dataSetName, dataType, period);
             result.add(ds);
         }
+        logger.debug("Datasets extracted for metric[{}], datasets[{}], scope[{}], dataType[{}], period[{}] are[{}]", metricName, dataSetNames, scope, dataType, period, result);
         return result;
     }
 
     private DatasetVO getDataset(String metricName, String dataSetName, String dataType, String period) {
-        Collection <String> names;
-        if ((names=methodDataRetriever.getMetricNames()) != null && names.contains(metricName)) {
+        if (hasMethodMetric(metricName)) {
             return getMethodDataset(metricName, dataSetName, dataType, period);
 
-        } else if((names=numberDataRetriever.getNumberMetricNames()) != null && names.contains(metricName)) {
-
+        } else if(hasNumberMetric(metricName)) {
             return getNumberDataset(metricName, dataSetName, dataType, period);
 
         } else {
@@ -53,27 +53,59 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
         }
     }
 
+    protected boolean hasMethodMetric(String metric) {
+        Collection <String> names = methodDataRetriever.getMetricNames();
+        return names != null && names.contains(metric);
+    }
+
+    protected boolean hasNumberMetric(String metric) {
+        Collection <String> names = numberDataRetriever.getNumberMetricNames();
+        return names != null && names.contains(metric);
+    }
+
     private DatasetVO getNumberDataset(String metricName, String dataSetName, String dataType, String period) {
+        if (!OPT_DATATYPE_SIZE.equals(dataType)) {
+            throw new IllegalArgumentException("Unsupported dataType ["+dataType+"] for metric ["+metricName+"]");
+        }
+
         DatasetVO ds = new DatasetVO();
         ds.setLabel(dataSetName);
-        ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
-        ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
-        if (!OPT_DATATYPE_ITEMS.equals(dataType)) {
-            throw new IllegalArgumentException("Unsupported dataType["+dataType+"] for metric["+metricName+"]");
-        }
 
         DataPointVO<Number>[] rawData = numberDataRetriever.getData(metricName, dataSetName);
         MetricsDataUtils.sortDataSet(rawData);
 
-        DataPointVO<Number>[] timeLimitedSubset = getSubset(rawData, getSubsetSizeForPeriod(rawData.length, numberMetricsPeriodSeconds, period));
-        float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
-        List<Number[]> dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("DataPoint for period[{}], multiplier[{}] are [{}]", period, multiplier, getDatapointAsString(dataPoints));
-        }
+        int periodSeconds = periodicMetricPeriods.containsKey(metricName)? periodicMetricPeriods.get(metricName): 5;//5 sec is default for now
+        DataPointVO <Number>[] timeLimitedSubset = getSubset(rawData, getSubsetSizeForPeriod(rawData.length, periodSeconds, period));
+        List<Number[]> dataPoints = null;
+        dataPoints = MetricsDataUtils.convertToTimedDataRow(timeLimitedSubset);
+        ds.setyFormatter("memory");
+        ds.setyLabel("Memory");
+        ds.setxFormatter("time");
+        ds.setxLabel("Time");
+
+
+//        if (MetricName.MEMORY.getValue().equals(metricName)) {
+//            dataPoints = MetricsDataUtils.convertToTimedDataRow(timeLimitedSubset);
+//            ds.setyFormatter("memory");
+//            ds.setxFormatter("time");
+//            ds.setxLabel("Time");
+//            ds.setyLabel("Memory");
+//
+//
+//        } else {
+//            float multiplier = Float.valueOf(numberMetricsPeriodSeconds) * getTimestepMultiplier(period);
+//            dataPoints = MetricsDataUtils.convertToDataRow(timeLimitedSubset, true, multiplier);
+//            ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
+//            ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
+//            if (logger.isDebugEnabled()) {
+//                logger.debug("DataPoint for period[{}], multiplier[{}] are [{}]", period, multiplier, getDatapointAsString(dataPoints));
+//            }
+//        }
 
         ds.setData(dataPoints);
+
+        logger.debug("Datapoint subset size is[{}], original size is [{}], periodSeconds [{}], period[{}]", dataPoints!=null? dataPoints.size(): null, rawData!=null? rawData.length: null, periodSeconds, period);
 
         return ds;
     }
@@ -93,7 +125,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
 
     private static float getTimestepMultiplier(String period) {
         float result = 1;
-        if (OPT_PERIOD_HOUR.equals(period) || OPT_PERIOD_DAY.equals(period)) {//minutes in timeline
+        if (period!=null && period.toUpperCase().contains("HOUR")) {//minutes in timeline
             result = 1f/60f;
         }
         return result;
@@ -101,15 +133,32 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
 
     private static int getSubsetSizeForPeriod (int totalSize, int timeStep, String period) {
         int result = totalSize;
-        if (OPT_PERIOD_HOUR.equals(period)) {
-            result = SECONDS_IN_HOUR/timeStep;
 
-        } else if (OPT_PERIOD_DAY.equals(period)) {
-            result = SECONDS_IN_24_HOURS/timeStep;
-
-        } else if (OPT_PERIOD_5MINUTES.equals(period)) {
-            result = SECONDS_IN_MINUTE*5/timeStep;
+        if (period != null) {
+            period = period.toUpperCase();
+            if (period.contains("MINUTE")) {
+                result = SECONDS_IN_MINUTE * getNumberFromString(period, result)/timeStep;
+            } else if (period.contains("SECOND")) {
+                result = getNumberFromString(period, result)/timeStep;
+            } else if (period.contains("HOUR")) {
+                result = SECONDS_IN_HOUR * getNumberFromString(period, result)/timeStep;
+            }
         }
+
+        return result;
+    }
+
+    private static int getNumberFromString(String period, int defVal) {
+        int result = defVal;
+        if (period != null) {
+            String timeString = period.replaceAll("\\D", "").trim();
+            try {
+                result = Integer.parseInt(timeString);
+            } catch (Exception e) {
+                logger.error("Cannot parse minutes from string["+period+"], fallback to defVal["+defVal+"]", e);
+            }
+        }
+
         return result;
     }
 
@@ -133,32 +182,33 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
     private DatasetVO getMethodDataset(String metricName, String dataSetName, String dataType, String period) {
         DatasetVO ds = new DatasetVO();
         ds.setLabel(dataSetName);
-        ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
+
+        //ds.setxLabel(MetricsConsoleUtils.getXLabel(dataType, period));
+        ds.setxFormatter("time");
+        ds.setxLabel("Time");
+
         ds.setyLabel(MetricsConsoleUtils.getYLabel(dataType, period));
 
         boolean useTimeline = true;
-        if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            DataPointVO<Long>[] rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        } else if(OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            DataPointVO<Long>[] rawData = methodDataRetriever.getCountsForLastHour(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
-            DataPointVO<Double>[] rawData = methodDataRetriever.getMeansForLastDay(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
-        } else if(OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
-            DataPointVO<Double>[] rawData = methodDataRetriever.getMeansForLastHour(metricName, dataSetName);
-            MetricsDataUtils.sortDataSet(rawData);
-            ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
+        DataPointVO<? extends Number>[] rawData = null;
+
+        if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            rawData = methodDataRetriever.getCountsForLastDay(metricName, dataSetName);
+        } else if (OPT_DATATYPE_RATE.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            rawData = methodDataRetriever.getCountsForLastHour(metricName, dataSetName);
+        } else if (OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_DAY.equals(period)) {
+            rawData = methodDataRetriever.getMeansForLastDay(metricName, dataSetName);
+        } else if (OPT_DATATYPE_MEAN.equals(dataType) && OPT_PERIOD_HOUR.equals(period)) {
+            rawData = methodDataRetriever.getMeansForLastHour(metricName, dataSetName);
         } else {
             throw new IllegalArgumentException("Unsupported dataType["+dataType+"] and period["+period+"] combination");
         }
 
-        return ds;
+        MetricsDataUtils.sortDataSet(rawData);
+        ds.setData(MetricsDataUtils.convertToTimedDataRow(rawData));
+//        ds.setData(MetricsDataUtils.convertToDataRow(rawData, useTimeline, methodMetricsPeriodSeconds));
 
+        return ds;
     }
 
     @Required
@@ -176,7 +226,7 @@ public class MetricsDataProvider implements MetricsConstants, TimeConstants {
     }
 
     @Required
-    public void setNumberMetricsPeriodSeconds(int numberMetricsPeriodSeconds) {
-        this.numberMetricsPeriodSeconds = numberMetricsPeriodSeconds;
+    public void setPeriodicMetricPeriods(Map<String, Integer> periodicMetricPeriods) {
+        this.periodicMetricPeriods = periodicMetricPeriods;
     }
 }

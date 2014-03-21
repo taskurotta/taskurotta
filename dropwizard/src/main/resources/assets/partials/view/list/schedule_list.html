@@ -29,7 +29,6 @@
                     <th style="width: 40px;">#</th>
                     <th>Job name</th>
                     <th>Actor ID</th>
-                    <th>Cron</th>
                     <th>Next start</th>
                     <th style="width: 80px;">Status</th>
                     <th>Actions</th>
@@ -44,23 +43,27 @@
             <tr ng-repeat="st in scheduledTasks" ng-class="getStatusClassName(st.job.status)">
                     <td>{{ $index + 1}}</td>
                     <td>
-                        <a ng-href="#/schedule/card/{{st.job.id}}" class="btn-link">{{ st.job.name }}</a>
+                        <a ng-href="#/schedule/card/{{st.job.id}}" class="btn-link">
+                            <small><b>{{ st.job.name }}</b></small>
+                        </a>
+                        <span ng-if="st.job.queueLimit>0" class="muted"><br /><small><i>Queue limit:</i> <b>{{st.job.queueLimit}}</b></small></span>
+                        <span ng-if="st.job.maxErrors>0" class="muted"><br /><small><i>Max errors:</i> <b>{{st.job.maxErrors}}</b></small></span>
                     </td>
                     <td>
-                        <small><b>{{ st.job.task.actorId }}</b></small>
-                        <span class="muted"><br /><small>Method: <b>{{st.job.task.method}}</b> </small></span>
-                    </td>
-
-                    <td>
-                        {{ st.job.cron }}
-                        <span ng-if="st.job.queueLimit>0" class="muted"><br /><small>Simultaneous tasks in queue limit: <b>{{st.job.queueLimit}}</b></small></span>
+                        <small><b>{{ withNewLineOnDots(st.job.task.actorId) }}</b></small>
+                        <span class="muted"><br /><small><i>Method name:</i> <b>{{st.job.task.method}}</b></small></span>
                     </td>
                     <td>
-                        <span ng-if="st.job.status==1">
-                            <small>{{ st.nextExecutionTime | date:'dd-MM-yyyy HH:mm:ss'}}</small>
+                        <span ng-if="st.job.status == 1">
+                            <small><b>{{ st.nextExecutionTime | date:'dd-MM-yyyy HH:mm:ss'}}</b></small>
                         </span>
-                        <div ng-if="st.job.status==-2" style="width: 200px;">
-                            <small>Stopped due to continuous error (more then 3 times). Last error message: <b>{{st.job.lastError}}</b></small>
+                        <span ng-if="st.job.status != 1">
+                            <small><b>Disabled</b></small>
+                        </span>
+                        <br />
+                        <small class="muted"><i>Cron:</i> <b>{{ st.job.cron }}</b></small>
+                        <div ng-if="st.job.status==-2" style="width: 150px;">
+                            <small><i>Stopped due to the continuous <a class="btn-link" ng-click="showError(st.job.lastError)">error</a> (>3 times).</i></small>
                         </div>
                     </td>
                     <td>

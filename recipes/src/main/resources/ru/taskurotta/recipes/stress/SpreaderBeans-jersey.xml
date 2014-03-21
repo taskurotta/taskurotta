@@ -28,10 +28,10 @@
     </bean>
 
     <bean id="taskCreator" class="ru.taskurotta.recipes.stress.StressTaskCreator">
-        <property name="clientServiceManager" ref="clientServiceManager"/>
-        <property name="needRun" value="${needRun}"/>
-        <property name="shotSize" value="${shotSize}"/>
-        <property name="initialCount" value="${initialCount}"/>
+        <constructor-arg name="clientServiceManager" ref="clientServiceManager"/>
+        <constructor-arg name="needRun" value="${needRun}"/>
+        <constructor-arg name="shotSize" value="${shotSize}"/>
+        <constructor-arg name="initialCount" value="${initialCount}"/>
     </bean>
 
 

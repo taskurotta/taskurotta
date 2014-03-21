@@ -4,8 +4,8 @@ runtime:
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
-          sleep: 200 #-1 = disabled
-          workerFailChance: 0.1 #-1 = disabled
+          sleep: -1 #-1 = disabled
+          workerFailChance: -1 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
 
@@ -16,14 +16,17 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 80
+          count: 500
           startTasks: true
-          startTasksInBackground: true
-          startTaskPeriodSeconds: 3 #-1 = disabled
+          startTasksInBackground: false
+          startTaskPeriodSeconds: -1 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
+          waitOnEveryNTask: 500 #-1 = disabled
+          waitOnEveryNTaskInSeconds: 40 #-1 = disabled
+
 
 policy:
   - MainPolicyConfig:
@@ -32,53 +35,78 @@ policy:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
           initialRetryIntervalSeconds: 1
-          maximumRetryIntervalSeconds: 10
-          maximumAttempts: 3
+          maximumRetryIntervalSeconds: 1
+          maximumAttempts: 99
 
 profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
       instance:
         singleton: true
-        logPeriod: 10000
+        logPeriod: 30000
 
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.recipes.calculate.decider.MathActionDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      policyConfig: MainPolicyConfig
       count: 4
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "5 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Multiplier
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      policyConfig: MainPolicyConfig
       count: 2
-      properties:
-        failover: "25 SECONDS"
+#      properties:
+#        failover: "25 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.recipes.calculate.worker.NumberGenerator
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      policyConfig: MainPolicyConfig
       count: 4
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "25 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Summarizer
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      policyConfig: MainPolicyConfig
       count: 2
-      properties:
-        failover: "5 SECONDS"
+#      properties:
+#        failover: "25 SECONDS"
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./logs/recipes-parallel.log
+             append: true
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.recipes.calculate.decider:
+            key: name
+            \@level: WARN
+        - com.hazelcast:
+              key: name
+              \@level: INFO
+        - org.apache.commons.httpclient:
+              key: name
+              \@level: INFO
+        - httpclient.wire:
+              key: name
+              \@level: WARN
+        - org.springframework:
+             key: name
+             \@level: WARN
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

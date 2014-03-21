@@ -1,7 +1,6 @@
 package ru.taskurotta.internal.core;
 
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.transport.model.TaskType;
 
 /**
  * User: jedy

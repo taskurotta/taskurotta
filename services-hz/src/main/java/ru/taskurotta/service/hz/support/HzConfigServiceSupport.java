@@ -1,8 +1,6 @@
 package ru.taskurotta.service.hz.support;
 
 
-import javax.annotation.PostConstruct;
-
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.DistributedObjectEvent;
 import com.hazelcast.core.DistributedObjectListener;
@@ -12,12 +10,15 @@ import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.config.model.ActorPreferences;
+import ru.taskurotta.util.ActorUtils;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Designed to populate distributed ActorPreferences map at runtime.
  * If a new task queue object created for absent(unregistered) actor config,
  * that config would be automatically appended to configuration
- * <p/>
+ *
  * User: dimadin
  * Date: 05.09.13 11:56
  */
@@ -39,8 +40,8 @@ public class HzConfigServiceSupport implements DistributedObjectListener {
     public void distributedObjectCreated(DistributedObjectEvent event) {
         DistributedObject obj = event.getDistributedObject();
 
-        if ((obj instanceof IQueue) && (obj.getName().startsWith(queuePrefix))) {//created new task queue object
-            String actorId = obj.getName().substring(queuePrefix.length());
+        if (isActorQueue(obj)) {
+            String actorId = ActorUtils.getPrefixStripped(obj.getName(), queuePrefix);
             ActorPreferences ap = new ActorPreferences();
             ap.setId(actorId);
             ap.setBlocked(false);
@@ -54,7 +55,19 @@ public class HzConfigServiceSupport implements DistributedObjectListener {
 
     @Override
     public void distributedObjectDestroyed(DistributedObjectEvent event) {
-        //do nothing
+        DistributedObject obj = event.getDistributedObject();
+
+        if (isActorQueue(obj)) {
+            String actorId = ActorUtils.getPrefixStripped(obj.getName(), queuePrefix);
+            if (distributedActorPreferences.remove(actorId) != null) {
+                logger.info("Actor [{}] preferences have been removed", actorId);
+            }
+        }
+    }
+
+
+    private boolean isActorQueue(DistributedObject obj) {
+        return obj instanceof IQueue && obj.getName().startsWith(queuePrefix);
     }
 
     public void setQueuePrefix(String queuePrefix) {

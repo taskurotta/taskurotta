@@ -33,9 +33,11 @@
     <bean id="taskCreator" class="ru.taskurotta.recipes.calculate.WorkflowStarter" init-method="startWork">
         <property name="clientServiceManager" ref="clientServiceManager"/>
         <property name="count" value="${count}"/>
-        <property name="startTasks" value="${startTasks}" />
-        <property name="startTasksInBackground" value = "${startTasksInBackground}" />
-        <property name="startTaskPeriodSeconds" value="${startTaskPeriodSeconds}" />
+        <property name="startTasks" value="${startTasks}"/>
+        <property name="startTasksInBackground" value="${startTasksInBackground}"/>
+        <property name="startTaskPeriodSeconds" value="${startTaskPeriodSeconds}"/>
+        <property name="waitOnEveryNTask" value="${waitOnEveryNTask}"/>
+        <property name="waitOnEveryNTaskInSeconds" value="${waitOnEveryNTaskInSeconds}"/>
     </bean>
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">

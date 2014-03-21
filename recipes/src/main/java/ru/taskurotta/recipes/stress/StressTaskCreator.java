@@ -8,14 +8,19 @@ import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.multiplier.MultiplierDeciderClient;
 
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static ru.taskurotta.recipes.stress.LifetimeProfiler.*;
+import static ru.taskurotta.recipes.stress.LifetimeProfiler.lastTime;
+import static ru.taskurotta.recipes.stress.LifetimeProfiler.stabilizationCounter;
+import static ru.taskurotta.recipes.stress.LifetimeProfiler.startTime;
+import static ru.taskurotta.recipes.stress.LifetimeProfiler.stopDecorating;
+import static ru.taskurotta.recipes.stress.LifetimeProfiler.taskCount;
+import static ru.taskurotta.recipes.stress.LifetimeProfiler.tasksForStat;
 
 /**
  * User: greg
@@ -27,13 +32,34 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     private ClientServiceManager clientServiceManager;
 
 
-    private static int THREADS_COUNT = 50;
-    private static int initialCount = 4;
+    private int THREADS_COUNT = 50;
+    private int initialCount;
     private boolean needRun = true;
-    public static CountDownLatch LATCH;
-    private ExecutorService executorService;
-    private static int shotSize = 4000;
+    public static CountDownLatch cd;
 
+    public static AtomicInteger taskCompletedCounter = new AtomicInteger(0);
+    public static ExecutorService executorService;
+    public static MultiplierDeciderClient deciderClient;
+    private static int shotSize;
+
+    public StressTaskCreator(ClientServiceManager clientServiceManager, boolean needRun, int shotSize, int initialCount) {
+        this.clientServiceManager = clientServiceManager;
+        this.needRun = needRun;
+        this.initialCount = initialCount;
+        this.shotSize = shotSize;
+
+        this.cd = new CountDownLatch(shotSize * initialCount);
+
+
+        DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
+        deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
+
+        executorService = Executors.newFixedThreadPool(THREADS_COUNT);
+        for (int i = 0; i < initialCount; i++) {
+            sendInitialTasks();
+        }
+
+    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
@@ -43,76 +69,89 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         }
     }
 
-    public void setNeedRun(boolean needRun) {
-        this.needRun = needRun;
-    }
 
-    public void setClientServiceManager(ClientServiceManager clientServiceManager) {
-        this.clientServiceManager = clientServiceManager;
-    }
-
-    public void createStartTask(final MultiplierDeciderClient deciderClient) {
+    public void sendInitialTasks() {
 
         log.info("Sending new " + shotSize + " tasks...");
 
+        long ctm = System.currentTimeMillis();
+
+        ThreadLocalRandom tlr = ThreadLocalRandom.current();
+
+        final int a = tlr.nextInt(100);
+        final int b = tlr.nextInt(100);
+
         for (int i = 0; i < shotSize; i++) {
-            final int a = (int) (Math.random() * 100);
-            final int b = (int) (Math.random() * 100);
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     deciderClient.multiply(a, b);
+                    cd.countDown();
                 }
             });
         }
 
     }
 
-    public static int getInitialCount() {
-        return initialCount;
+    public static void sendOneTask(ThreadLocalRandom tlr) {
+
+        final int a = tlr.nextInt(100);
+        final int b = tlr.nextInt(100);
+
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                deciderClient.multiply(a, b);
+            }
+        });
+
     }
 
-    public void setInitialCount(int initialCount) {
-        StressTaskCreator.initialCount = initialCount;
-    }
-
-    public static int getShotSize() {
-        return shotSize;
-    }
-
-    public void setShotSize(int shotSize) {
-        StressTaskCreator.shotSize = shotSize;
-    }
 
     @Override
     public void run() {
 
-        DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
-        MultiplierDeciderClient deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
-        executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-        for (int i = 0; i < initialCount; i++) {
-            createStartTask(deciderClient);
-        }
         while (stabilizationCounter.get() < 10) {
-            LATCH = new CountDownLatch(1);
-            createStartTask(deciderClient);
+//            LATCH = new CountDownLatch(1);
+//            sendInitialTasks(deciderClient);
             try {
-                LATCH.await();
+//                LATCH.await();
+                TimeUnit.MILLISECONDS.sleep(1000);
+
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+//            while (taskCompletedCounter.decrementAndGet() > 0) {
+//                sendOneTask(tlr);
+//            }
         }
         long deltaTime = lastTime.get() - startTime.get();
         double time = 1.0 * deltaTime / 1000.0;
         long meanTaskCount = taskCount.get();
         double rate = 1000.0 * meanTaskCount / deltaTime;
         double totalDelta = LifetimeProfiler.totalDelta / (meanTaskCount / tasksForStat);
+
+//        logServerStat();
+
         log.info("Total task count: " + taskCount);
         log.info("Delta time: " + deltaTime);
         log.info(String.format("TOTAL: tasks: %6d; time: %6.3f s; rate: %8.3f tps; totalDelta: %8.3f \n", meanTaskCount, time, rate, totalDelta));
         stopDecorating.set(true);
         log.info("Decoration stopped");
         log.info("End");
+
         System.exit(0);
     }
+
+//    private void logServerStat() {
+//        try {
+//            Client client = Client.create();
+//            WebResource statResource = client.resource("/rest/server/stats");
+//            log.info("Server stat data: \n {}", statResource.get(String.class));
+//        } catch(Throwable e) {
+//            log.info("Cannot obtain server stat data...");
+//        }
+//    }
+
 }

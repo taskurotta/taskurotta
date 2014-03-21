@@ -69,6 +69,11 @@ public abstract class TimeRetryPolicyBase extends RetryPolicyBase {
     }
 
     @Override
+    public long getMaxIntervalSeconds() {
+        return maximumRetryIntervalSeconds;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

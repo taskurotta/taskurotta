@@ -1,65 +1,112 @@
 <div>
 
-    <table width="100%">
-        <tr>
-            <td style="text-align: left;"><h3>Process properties:</h3></td>
-            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
-        </tr>
-    </table>
-
-    <div ng-hide="process.processUuid.length > 0" class="text-warning">
-        Searching for process id {{processId}} ...
+    <div class="well">
+        <div style="float:left;">
+            <h4>Process <i>{{processId}}</i></h4>
+        </div>
+        <div style="float:right;">
+            <a class="btn btn-link" ng-click="back()">Back</a>
+        </div>
     </div>
 
-    <div ng-show="process.processUuid.length > 0">
-        <div>
-            <a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processUuid}}">List task for this
-                process</a>
+    <div ng-if="process.processId.length > 0">
+
+        <div class="well">
+            <b>Properties:</b>
+            <div style="padding:5px;background-color: #fff;">
+                <table width="100%" class="table table-condensed table-bordered table-striped">
+                    <tr>
+                        <td class="form-header">
+                            <small>Start task actor:</small>
+                        </td>
+                        <td>
+                            <i>{{process.startTask.actorId}}</i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>Start task method:</small>
+                        </td>
+                        <td>
+                            <i>{{ process.startTask.method }}</i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>Start task ID:</small>
+                        </td>
+                        <td>
+                            <a ng-href="#/processes/task?processId={{process.processId}}&taskId={{process.startTaskId}}" class="btn-link">
+                                <i>{{process.startTaskId}}</i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>Custom ID:</small>
+                        </td>
+                        <td>
+                            <i>
+                                {{process.customId}}
+                            </i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>Start time:</small>
+                        </td>
+                        <td>
+                            <i ng-if="process.startTime>0">
+                                {{process.startTime | date:'dd-MM-yyyy HH:mm:ss' }}
+                            </i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>End time:</small>
+                        </td>
+                        <td>
+                            <i ng-if="process.endTime>0">
+                                {{process.endTime | date:'dd-MM-yyyy HH:mm:ss' }}
+                            </i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>Return value:</small>
+                        </td>
+                        <td>
+                            <i>
+                                {{process.returnValue | json}}
+                            </i>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
-        <table width="100%" class="table">
-            <tr>
-                <td class="form-header">ID:</td>
-                <td>{{process.processUuid}}</td>
-            </tr>
-            <tr>
-                <td class="form-header">Start task ID:</td>
-                <td>
-                    <a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{process.startTaskUuid}}" class="btn btn-link">{{process.startTaskUuid}}</a>
-                </td>
-            </tr>
-            <tr>
-                <td class="form-header">Custom ID:</td>
-                <td>{{process.customId}}</td>
-            </tr>
-            <tr>
-                <td class="form-header">Start time:</td>
-                <td>{{process.startTime}}</td>
-            </tr>
-            <tr>
-                <td class="form-header">End time:</td>
-                <td>{{process.endTime}}</td>
-            </tr>
-            <tr>
-                <td class="form-header">Return value:</td>
-                <td>{{process.returnValueJson}}</td>
-            </tr>
-        </table>
+        <div class="well">
+            <div>
+                <i class="icon-question-sign" popover="Navigate to find tasks view for the process" popover-trigger="mouseenter"></i><a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processId}}">List tasks for this process <span>({{ taskTree.tasksCount }})</span></a>
+            </div>
+        </div>
 
-        <div style="background-color: #f5f5f5;padding:2px;">
-            <h3>Process tree:</h3>
-            <b>&#8595<i ng-class="getTreeStateIconClass(taskTree.state)"></i><a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{taskTree.id}}" class="btn btn-link">{{taskTree.id}}</a></b><span class="muted">{{taskTree.desc}}</span>
-            <div class="tree">
-                <ul style="border: 1px dotted grey;" ng-show="taskTree.children.length>0">
-                    <li ng-repeat="child in taskTree.children" tsk-tree>
-                        <div>
-                            <i ng-class="getTreeStateIconClass(child.state)"></i><a ng-href="#/processes/task?processId={{process.processUuid}}&taskId={{child.id}}" class="btn btn-link">{{child.id}}</a>
-                            <span class="muted">{{child.desc}}</span>
-                        </div>
-                        <ul style="border: 1px dotted grey;" ng-show="child.children.length>0">
-                            <branch></branch>
-                        </ul>
-                </ul>
+        <div class="well">
+            <div style="background-color: #f5f5f5;padding:2px;">
+                <h4>Process tree: </h4>
+                &#8595<i ng-class="getTreeStateIconClass(taskTree.state)" popover="{{getTreeStatePopover(taskTree.state)}}" popover-trigger="mouseenter"></i><a ng-href="#/processes/task?processId={{process.processId}}&taskId={{taskTree.id}}" class="btn btn-link"><b><small>{{taskTree.id}}</small></b></a><span class="muted">{{taskTree.desc}}</span>
+                <div class="tree">
+                    <ul style="border: 1px dotted grey;" ng-show="taskTree.children.length>0">
+                        <li ng-repeat="child in taskTree.children" tsk-tree>
+                            <div>
+                                <i ng-class="getTreeStateIconClass(child.state)" popover="{{getTreeStatePopover(child.state)}}" popover-trigger="mouseenter"></i><a ng-href="#/processes/task?processId={{process.processId}}&taskId={{child.id}}" class="btn btn-link"><small>{{child.id}}</small></a>
+                                <span class="muted">{{child.desc}}</span>
+                            </div>
+                            <ul style="border: 1px dotted grey;" ng-show="child.children.length>0">
+                                <branch></branch>
+                            </ul>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

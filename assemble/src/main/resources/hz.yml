@@ -30,12 +30,12 @@ logging:
     loggers:
         com.hazelcast: INFO
         ru.taskurotta: INFO
-#        ru.taskurotta.service.statistics.datalistener TRACE
-#        ru.taskurotta.service.statistics.metrics: TRACE
-#        ru.taskurotta.recovery: DEBUG
+#        ru.taskurotta.service.metricstalistener TRACE
+#        ru.taskurotta.service.metricstrics: TRACE
+        ru.taskurotta.service.recovery: TRACE
 #        ru.taskurotta.service.recovery: DEBUG
 #        ru.taskurotta.service.hz.support: DEBUG
-#        ru.taskurotta.service.hz.recovery: DEBUG
+        ru.taskurotta.service.hz.recovery: TRACE
 #        ru.taskurotta.service.hz.dependency: DEBUG
 #        ru.taskurotta.dropwizard.server.core: INFO
 #        ru.taskurotta.server: INFO

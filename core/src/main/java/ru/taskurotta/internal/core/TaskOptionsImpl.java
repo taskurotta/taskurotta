@@ -3,7 +3,6 @@ package ru.taskurotta.internal.core;
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.transport.model.ArgType;
 
 import java.util.Arrays;
 
@@ -66,5 +65,14 @@ public class TaskOptionsImpl implements TaskOptions {
         result = 31 * result + (actorSchedulingOptions != null ? actorSchedulingOptions.hashCode() : 0);
         result = 31 * result + (promisesWaitFor != null ? Arrays.hashCode(promisesWaitFor) : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "TaskOptionsImpl{" +
+                "argTypes=" + Arrays.toString(argTypes) +
+                ", actorSchedulingOptions=" + actorSchedulingOptions +
+                ", promisesWaitFor=" + Arrays.toString(promisesWaitFor) +
+                '}';
     }
 }

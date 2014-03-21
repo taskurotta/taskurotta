@@ -3,13 +3,14 @@ package ru.taskurotta.service.storage;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,23 +23,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MemoryProcessService implements ProcessService, ProcessInfoRetriever {
 
-    private Map<UUID, ProcessVO> processesStorage = new ConcurrentHashMap<>();
+    private Map<UUID, Process> processesStorage = new ConcurrentHashMap<>();
 
     @Override
     public void startProcess(TaskContainer task) {
-        ProcessVO process = new ProcessVO();
-        process.setStartTime(System.currentTimeMillis());
-        process.setProcessUuid(task.getProcessId());
-        process.setStartTaskUuid(task.getTaskId());
-        process.setStartTask(task);
-        processesStorage.put(task.getProcessId(), process);
+        Process process = new Process(task);
+        processesStorage.put(process.getProcessId(), process);
     }
 
     @Override
     public void finishProcess(UUID processId, String returnValue) {
-        ProcessVO process = processesStorage.get(processId);
+        Process process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
-        process.setReturnValueJson(returnValue);
+        process.setReturnValue(returnValue);
         processesStorage.put(processId, process);
     }
 
@@ -48,7 +45,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public ProcessVO getProcess(UUID processUUID) {
+    public Process getProcess(UUID processUUID) {
         return processesStorage.get(processUUID);
     }
 
@@ -58,46 +55,82 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize) {
-        List<ProcessVO> result = new ArrayList<>();
-        if (!processesStorage.isEmpty()) {
-            ProcessVO[] processes = new ProcessVO[processesStorage.values().size()];
-            processes = processesStorage.values().toArray(processes);
-            int pageStart = (pageNumber - 1) * pageSize;
-            int pageEnd = (pageSize * pageNumber >= processes.length) ? processes.length : pageSize * pageNumber;
-            result.addAll(Arrays.asList(processes).subList(pageStart, pageEnd));
-        }
-        return new GenericPage<>(result, pageNumber, pageSize, processesStorage.values().size());
-
+    public void markProcessAsBroken(UUID processId) {
+        Process process = processesStorage.get(processId);
+        process.setState(Process.BROKEN);
+        processesStorage.put(processId, process);
     }
 
     @Override
-    public List<ProcessVO> findProcesses(final ProcessSearchCommand command) {
-        List<ProcessVO> result = new ArrayList<>();
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status) {
+        List<Process> result = new ArrayList<>();
+        Collection<Process> values = null;
+        if (!processesStorage.isEmpty()) {
+
+            if (status >= 0) {
+                values = Collections2.filter(processesStorage.values(), new Predicate<Process>() {
+                    @Override
+                    public boolean apply(Process input) {
+                        return input!=null && (input.getState() == status);
+                    }
+                });
+            } else {
+                values = processesStorage.values();
+            }
+
+            if (values!=null && !values.isEmpty()) {
+                int pageStart = (pageNumber - 1) * pageSize;
+                int pageEnd = Math.min(pageSize * pageNumber, values.size());
+                result.addAll(new ArrayList<>(values).subList(pageStart, pageEnd));
+            }
+        }
+
+        return new GenericPage<>(result, pageNumber, pageSize, values!=null? values.size(): 0);
+    }
+
+    @Override
+    public List<Process> findProcesses(final ProcessSearchCommand command) {
+        List<Process> result = new ArrayList<>();
         if (command.getCustomId()!=null || command.getProcessId()!=null ) {
-            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<ProcessVO>() {
+            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<Process>() {
 
                 private boolean hasText(String target){
                     return target != null && target.trim().length()>0;
                 }
 
-                private boolean isValid (ProcessVO processVO) {
+                private boolean isValid (Process process) {
                     boolean isValid = true;
                     if (hasText(command.getCustomId())) {
-                        isValid = processVO.getProcessUuid().toString().startsWith(command.getCustomId());
+                        isValid = process.getProcessId().toString().startsWith(command.getCustomId());
                     }
                     if (hasText(command.getProcessId())) {
-                        isValid = isValid && processVO.getProcessUuid().toString().startsWith(command.getProcessId());
+                        isValid = isValid && process.getProcessId().toString().startsWith(command.getProcessId());
                     }
                     return isValid;
                 }
 
                 @Override
-                public boolean apply(ProcessVO processVO) {
-                    return isValid(processVO);
+                public boolean apply(Process process) {
+                    return isValid(process);
                 }
 
             }));
+        }
+        return result;
+    }
+
+    @Override
+    public int getFinishedCount(String customId) {
+        int result = 0;
+        Iterator<Process> iterator = processesStorage.values().iterator();
+        while (iterator.hasNext()) {
+            Process process = iterator.next();
+            if (process.getState() == Process.FINISH) {
+                if (customId == null || customId.equals(process.getCustomId())) {
+                    result++;
+                }
+
+            }
         }
         return result;
     }

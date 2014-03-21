@@ -9,20 +9,20 @@ import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.process.BrokenProcessService;
-import ru.taskurotta.service.process.BrokenProcessVO;
-import ru.taskurotta.service.process.SearchCommand;
+import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.recipes.multiplier.MultiplierDecider;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.util.Collection;
@@ -77,6 +77,11 @@ public class MockServiceBundle implements ServiceBundle {
             @Override
             public TaskContainer getStartTask(UUID processId) {
                 return createRandomMultiplyTaskContainer();
+            }
+
+            @Override
+            public void markProcessAsBroken(UUID processId) {
+
             }
         };
     }
@@ -177,6 +182,13 @@ public class MockServiceBundle implements ServiceBundle {
 
                 return  actorId;
             }
+
+            @Override
+            public long getLastPolledTaskEnqueueTime(String queueName) {
+                return System.currentTimeMillis();
+            }
+
+
         };
     }
 
@@ -249,18 +261,18 @@ public class MockServiceBundle implements ServiceBundle {
     public BrokenProcessService getBrokenProcessService() {
         return new BrokenProcessService() {
             @Override
-            public void save(BrokenProcessVO brokenProcessVO) {
+            public void save(BrokenProcess brokenProcess) {
                 // ignore
             }
 
             @Override
-            public Collection<BrokenProcessVO> find(SearchCommand searchCommand) {
+            public Collection<BrokenProcess> find(SearchCommand searchCommand) {
                 throw new IllegalAccessError("Method not implemented");
 
             }
 
             @Override
-            public Collection<BrokenProcessVO> findAll() {
+            public Collection<BrokenProcess> findAll() {
                 throw new IllegalAccessError("Method not implemented");
             }
 
@@ -282,6 +294,11 @@ public class MockServiceBundle implements ServiceBundle {
             @Override
             public void delete(UUID processId) {
                 // ignore
+            }
+
+            @Override
+            public int getCurrentSize() {
+                return 0;
             }
         };
     }

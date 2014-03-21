@@ -2,7 +2,7 @@ package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.DeciderClient;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.StringUtils;
 
 import java.lang.annotation.Annotation;

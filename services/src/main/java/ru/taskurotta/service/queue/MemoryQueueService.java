@@ -8,11 +8,11 @@ import ru.taskurotta.exception.ServiceCriticalException;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
-import ru.taskurotta.service.statistics.MetricName;
-import ru.taskurotta.service.statistics.MetricsDataHandler;
-import ru.taskurotta.service.statistics.NumberDataHandler;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
+import ru.taskurotta.service.metrics.handler.NumberDataHandler;
+import ru.taskurotta.service.metrics.model.DataPointVO;
 import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
@@ -36,19 +36,13 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryQueueService.class);
 
-    private int pollDelay = 60;
-    private TimeUnit pollDelayUnit = TimeUnit.SECONDS;
+    protected final ConcurrentHashMap<String, Long> lastPolledTaskEnqueueTimes = new ConcurrentHashMap<>();
+    private long pollDelay = 60000l;
     private final Map<String, DelayQueue<DelayedTaskElement>> queues = new ConcurrentHashMap<>();
 
-    public MemoryQueueService(int pollDelay) {
+    public MemoryQueueService(long pollDelay) {
 
         this.pollDelay = pollDelay;
-    }
-
-    public MemoryQueueService(int pollDelay, TimeUnit pollDelayUnit) {
-
-        this.pollDelay = pollDelay;
-        this.pollDelayUnit = pollDelayUnit;
 
         if (logger.isTraceEnabled()) {
             Thread monitor = new Thread() {
@@ -86,6 +80,38 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         return new GenericPage<>(result, pageNum, pageSize, queues.size());
     }
 
+    @Override
+    public long getLastPolledTaskEnqueueTime(String queueName) {
+        Long time = lastPolledTaskEnqueueTimes.get(queueName);
+
+        // if no tasks in queue, than return -1
+        if (time == null) {
+            return -1;
+        }
+
+        return time;
+    }
+
+    @Override
+    public void clearQueue(String queueName) {
+        DelayQueue<DelayedTaskElement> queue = getQueue(queueName);
+        queue.clear();
+    }
+
+    @Override
+    public void removeQueue(String queueName) {
+        DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
+        if (queue != null) {
+            synchronized (queues) {
+                queues.remove(queueName);
+            }
+        }
+    }
+
+    @Override
+    public long getQueueStorageCount(String queueName) {
+        return 0;//no storages for memory impl
+    }
 
     private List<String> getTaskQueueNames(String filter) {
         List<String> result = new ArrayList<>();
@@ -172,18 +198,24 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
-        DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
+
+        String queueName = createQueueName(actorId, taskList);
+        DelayQueue <DelayedTaskElement> queue = getQueue(queueName);
 
         TaskQueueItem result;
 
         try {
-            result = queue.poll(pollDelay, pollDelayUnit);
+            result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             logger.error("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
             throw new ServiceCriticalException("Error at polling task for actor["+actorId+"], taskList["+taskList+"]", e);
         }
 
-        logger.debug("Task poll for actorId[{}], taskList[{}] returned item [{}]. Remaining queue.size: [{}]", actorId, taskList, result, queue.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Poll for actorId [{}], taskList [{}] returned item [{}]. Remaining queue.size: [{}]", actorId, taskList, result, queue.size());
+        }
+
+        lastPolledTaskEnqueueTimes.put(queueName, result != null ? result.getEnqueueTime() : System.currentTimeMillis());
 
         return result;
 
@@ -200,7 +232,9 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
         DelayQueue<DelayedTaskElement> queue = getQueue(createQueueName(actorId, taskList));
         boolean result = queue.add(new DelayedTaskElement(taskId, processId, startTime, System.currentTimeMillis()));
 
-        logger.debug("enqueueItem() actorId [{}], taskId [{}], startTime [{}]; Queue.size: {}", actorId, taskId, startTime, queue.size());
+        if (logger.isDebugEnabled()) {
+            logger.debug("EnqueueItem() for actorId [{}], taskList [{}], taskId [{}], startTime [{}]; Queue.size: [{}]", actorId, taskList, taskId, startTime, queue.size());
+        }
 
         return result;
     }
@@ -312,6 +346,11 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
         logger.debug("Result list of QueueStatVO is [{}]", result);
         return result;
+    }
+
+    @Override
+    public List<String> getQueueNames() {
+        return new ArrayList<>(queues.keySet());
     }
 
     /**

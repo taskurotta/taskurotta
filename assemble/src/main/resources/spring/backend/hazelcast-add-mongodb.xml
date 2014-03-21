@@ -4,30 +4,29 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-    <bean id="hzMapConfigSupport" class="ru.taskurotta.hazelcast.HzMapConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
+    <!--<bean id="hzMapConfigSupport" class="ru.taskurotta.hazelcast.HzMapConfigSupport">-->
+        <!--<constructor-arg name="hzInstance" ref="hzInstance"/>-->
 
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="evictionPercentage" value="25"/>
-        <property name="evictionPolicy" value="LRU"/>
-        <property name="mapStore" ref="mapStore"/>
-        <property name="timeToLive" value="0"/>
-        <property name="maxSize" value="1000"/>
-        <property name="maxSizePolicy" value="PER_NODE"/>
-    </bean>
+        <!--<property name="asyncBackupsCount" value="0"/>-->
+        <!--<property name="backupCount" value="0"/>-->
+        <!--<property name="evictionPercentage" value="25"/>-->
+        <!--<property name="evictionPolicy" value="LRU"/>-->
+        <!--<property name="mapStore" ref="mapStore"/>-->
+        <!--<property name="timeToLive" value="0"/>-->
+        <!--<property name="maxSize" value="1000"/>-->
+        <!--<property name="maxSizePolicy" value="PER_NODE"/>-->
+    <!--</bean>-->
 
     <!-- Queues persistence support -->
     <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="maxSize" value="0"/>
-        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
-        <property name="binary" value="false"/>
-        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+        <constructor-arg name="maxSize" value="${hz.queue.task.max-size}"/>
+        <constructor-arg name="backupCount" value="${hz.queue.task.backup-count}"/>
+        <constructor-arg name="asyncBackupsCount" value="${hz.queue.task.async-backup-count}"/>
+        <constructor-arg name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
+        <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
+        <constructor-arg name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
@@ -38,8 +37,7 @@
 
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
         <property name="mongoTemplate" ref="mongoTemplate"/>
-        <property name="hzInstance" ref="hzInstance"/>
-        <property name="queuePrefix" value="${hz.task.queue.prefix}"/>
+        <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
     </bean>
@@ -47,13 +45,12 @@
     <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-
-        <property name="asyncBackupsCount" value="0"/>
-        <property name="backupCount" value="0"/>
-        <property name="maxSize" value="0"/>
-        <property name="memoryLimit" value="${hz.task.queue.memoryLimit}"/>
-        <property name="binary" value="false"/>
-        <property name="bulkLoad" value="${hz.task.queue.bulkLoad}"/>
+        <constructor-arg name="maxSize" value="${gc.queue.max-size}"/>
+        <constructor-arg name="backupCount" value="${gc.queue.backup-count}"/>
+        <constructor-arg name="asyncBackupsCount" value="${gc.queue.async-backup-count}"/>
+        <constructor-arg name="memoryLimit" value="${gc.queue.memory-limit}"/>
+        <constructor-arg name="binary" value="${gc.queue.binary}"/>
+        <constructor-arg name="bulkLoad" value="${gc.queue.bulk-load}"/>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
@@ -62,24 +59,23 @@
         <constructor-arg name="hzQueueConfigSupport" ref="gcQueueConfigSupport"/>
     </bean>
 
-    <!-- /Queues persistence support -->
-
-
-    <!--  Actor config support  -->
-    <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.MongoActorConfigManager">
+    <bean id="recoveryQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="actorConfigName" value="${hz.actor.preferences.map.name}"/>
-
-        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
+        <constructor-arg name="maxSize" value="${recovery.queue.max-size}"/>
+        <constructor-arg name="backupCount" value="${recovery.queue.backup-count}"/>
+        <constructor-arg name="asyncBackupsCount" value="${recovery.queue.async-backup-count}"/>
+        <constructor-arg name="memoryLimit" value="${recovery.queue.memory-limit}"/>
+        <constructor-arg name="binary" value="${recovery.queue.binary}"/>
+        <constructor-arg name="bulkLoad" value="${recovery.queue.bulk-load}"/>
     </bean>
-    <!-- /Actor config support -->
+    <!-- /Queues persistence support -->
 
     <!-- Delay queue support -->
     <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="storagePrefix" value="${dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${dq.schedule}"/>
@@ -90,12 +86,29 @@
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="storagePrefix" value="${dq.mapStoragePrefix}"/>
+        <constructor-arg name="storagePrefix" value="${gc.dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${dq.schedule}"/>
+                <constructor-arg name="duration" value="${gc.dq.schedule}"/>
             </bean>
         </constructor-arg>
     </bean>
     <!-- /Delay queue support -->
+
+    <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessDao">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
+    </bean>
+
+    <!-- Services -->
+    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="hzQueueConfigSupport" ref="recoveryQueueConfigSupport"/>
+        <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
+        <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    </bean>
+    <!-- /Services -->
+
 </beans>

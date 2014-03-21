@@ -21,7 +21,15 @@ public class DefaultProfilerConfig implements ProfilerConfig {
 
         try {
             profiler = (Profiler) Class.forName(className).getConstructor(Class.class, Properties.class).newInstance(actorInterface, properties);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException e) {
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
 

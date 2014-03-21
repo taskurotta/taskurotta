@@ -31,6 +31,9 @@ public class NumberGeneratorImpl implements NumberGenerator {
         }
 
         if (sleep > 0) {
+
+            logger.info("Sleep for [{}] ms", sleep);
+
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {

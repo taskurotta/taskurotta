@@ -37,6 +37,11 @@ public class MockStorageFactory implements StorageFactory {
             public void destroy() {
 
             }
+
+            @Override
+            public long size() {
+                return 0;
+            }
         };
     }
 }

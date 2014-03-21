@@ -1,7 +1,7 @@
 package ru.taskurotta.service.console.manager;
 
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.console.model.ProcessVO;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.model.ProfileVO;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.model.QueueVO;
@@ -49,7 +49,7 @@ public interface ConsoleManager {
     /**
      * @return process representation object for a given guid or null if process not found
      */
-    public ProcessVO getProcess(UUID processUuid);
+    public Process getProcess(UUID processUuid);
 
     /**
      * @return list of method profiles marked by Profiled annotation
@@ -58,13 +58,13 @@ public interface ConsoleManager {
 
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public GenericPage<ProcessVO> listProcesses(int pageNumber, int pageSize);
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status);
 
     public TaskTreeVO getTreeForTask(UUID taskUuid, UUID processId);
 
     public TaskTreeVO getTreeForProcess(UUID processUuid);
 
-    public List<ProcessVO> findProcesses(String processId, String customId);
+    public List<Process> findProcesses(String processId, String customId);
 
     public List<TaskContainer> findTasks(String processId, String taskId);
 
@@ -73,5 +73,7 @@ public interface ConsoleManager {
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
 
     public GenericPage<QueueStatVO> getQueuesStatInfo(int pageNumber, int pageSize, String filter);
+
+    public int getFinishedCount(String customId);
 
 }

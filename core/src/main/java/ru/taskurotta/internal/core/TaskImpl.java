@@ -48,11 +48,7 @@ public class TaskImpl implements Task {
 
         this.args = args;
 
-		if (taskOptions == null) {
-			this.taskOptions = new TaskOptionsImpl(null);
-		} else {
-			this.taskOptions = taskOptions;
-		}
+		this.taskOptions = taskOptions;
         this.unsafe = unsafe;
         this.failTypes = failTypes;
     }

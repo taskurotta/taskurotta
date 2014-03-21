@@ -14,15 +14,21 @@ spreader:
         defaultPropertiesLocation: default.properties
         properties:
           cycles: 10
-          initialCount: 2
-          shotSize: 4000
+          initialCount: 7
+          shotSize: 1000
           needRun: true
           pollDelay: 10
           pollDelayUnit: "SECONDS"
           hz.nodes: localhost:7777
+          hz.jmx.detailed: true
+          hz.jmx: true
           mongo.host: localhost
           mongo.port: 27017
-          gc.enabled: true
+          gc.enabled: false
+          recovery.enabled: false
+          hz.queue.task.memory-limit: 10000
+          hz.map.general.max-size: 10
+
 
 profiler:
   - MainProfilerConfig:
@@ -33,6 +39,7 @@ profiler:
           exitAfterAll: false
           tasksForStat: 1000
           maxTaskQuantity: 1000000
+          taskPerProcess: 1
 
 actor:
   - MultiplierDecider:
@@ -40,7 +47,7 @@ actor:
       runtimeConfig: MainRuntimeConfig
       spreaderConfig: MainTaskSpreaderConfig
       profilerConfig: MainProfilerConfig
-      count: 20
+      count: 50
 
 logback:
     appender:
@@ -55,7 +62,7 @@ logback:
              file: ./target/logs/recipes-multiply.log
              append: false
              encoder:
-                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name

@@ -31,7 +31,7 @@ public final class ClientCheckerUtil {
 
         // check: actor methods should have different names
 
-        Map<String, Method> actorMethodMap = new HashMap<>();
+        Map<String, Method> actorMethodMap = new HashMap<String, Method>();
 
         for (Method method : actorInterface.getDeclaredMethods()) {
             String methodName = method.getName();

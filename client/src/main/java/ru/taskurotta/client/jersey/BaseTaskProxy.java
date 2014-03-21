@@ -5,7 +5,6 @@ import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.client.jersey.serialization.wrapper.ActorDefinitionWrapper;
 import ru.taskurotta.exception.server.InvalidServerRequestException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
@@ -61,7 +60,7 @@ public class BaseTaskProxy implements TaskServer {
             WebResource.Builder rb = pullResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
             rb.accept(MediaType.APPLICATION_JSON);
-            result = rb.post(TaskContainer.class, new ActorDefinitionWrapper(actorDefinition));
+            result = rb.post(TaskContainer.class, actorDefinition);
         } catch(UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {

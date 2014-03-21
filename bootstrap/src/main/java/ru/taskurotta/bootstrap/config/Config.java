@@ -34,11 +34,11 @@ public class Config {
 
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
-    public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<>();
-    public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<>();
-    public Map<String, ProfilerConfig> profilerConfigs = new HashMap<>();
-    public Map<String, RetryPolicyConfig> policyConfigs = new HashMap<>();
-    public List<ActorConfig> actorConfigs = new LinkedList<>();
+    public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<String, RuntimeConfig>();
+    public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<String, SpreaderConfig>();
+    public Map<String, ProfilerConfig> profilerConfigs = new HashMap<String, ProfilerConfig>();
+    public Map<String, RetryPolicyConfig> policyConfigs = new HashMap<String, RetryPolicyConfig>();
+    public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
 
     public static Config valueOf(File configFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -283,6 +283,39 @@ public class Config {
                 ActorConfig actorConfig;
                 try {
                     actorConfig = oc.treeToValue(instanceDescriptionNode, ActorConfig.class);
+
+                    if (actorConfig.getRuntimeConfig() == null) {
+                        if (config.runtimeConfigs.size() == 1) {
+                            String runtimeConfigName = config.runtimeConfigs.keySet().iterator().next();
+                            actorConfig.setRuntimeConfig(runtimeConfigName);
+                        } else {
+                            throw new RuntimeException("Don't set RuntimeConfig for [" + actorConfigName + "] or exists few RuntimeConfig");
+                        }
+                    }
+
+                    if (actorConfig.getSpreaderConfig() == null) {
+                        if (config.spreaderConfigs.size() == 1) {
+                            String spreaderConfigName = config.spreaderConfigs.keySet().iterator().next();
+                            actorConfig.setSpreaderConfig(spreaderConfigName);
+                        } else {
+                            throw new RuntimeException("Don't set SpreaderConfig for [" + actorConfigName + "] or exists few SpreaderConfig");
+                        }
+                    }
+
+                    if (actorConfig.getProfilerConfig() == null) {
+                        if (config.profilerConfigs.size() == 1) {
+                            String profilerConfigName = config.profilerConfigs.keySet().iterator().next();
+                            actorConfig.setProfilerConfig(profilerConfigName);
+                        }
+                    }
+
+                    if (actorConfig.getPolicyConfig() == null) {
+                        if (config.policyConfigs.size() == 1) {
+                            String policyConfigName = config.policyConfigs.keySet().iterator().next();
+                            actorConfig.setPolicyConfig(policyConfigName);
+                        }
+                    }
+
                 } catch (IOException e) {
                     throw new RuntimeException("Can not deserialize ActorConfig object.", e);
                 }

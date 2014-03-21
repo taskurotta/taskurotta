@@ -7,19 +7,19 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <bean id = "jobStore" class="ru.taskurotta.schedule.storage.ora.OraJobStore" >
+    <bean id = "jobStore" class="ru.taskurotta.service.ora.schedule.storage.OraJobStore" >
         <property name="dataSource" ref="dataSource" />
     </bean>
 
-    <bean id = "realJobManager" class="ru.taskurotta.schedule.manager.quartz.QuartzJobManager" >
-        <property name="jobStore" ref="jobStore" />
-        <property name="queueInfoRetriever" ref="realQueueBackend" />
-        <property name="taskServer" ref="taskServer" />
+    <bean id = "realJobManager" class="ru.taskurotta.service.schedule.QuartzJobManager" >
+        <constructor-arg name="jobStore" ref="jobStore" />
+        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
+        <constructor-arg name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id="jobManager" class="ru.taskurotta.schedule.adapter.HzJobManagerAdapter">
+    <bean id="jobManager" class="ru.taskurotta.service.hz.schedule.adapter.HzJobManagerAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic.name}" />
+        <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic-name}" />
         <constructor-arg name="jobManager" ref="realJobManager" />
     </bean>
 
@@ -39,7 +39,7 @@
 
     <aop:config>
         <aop:pointcut id="schedulerPointcut"
-                      expression="execution(* ru.taskurotta.schedule.manager.quartz.QuartzJobManager.*(..))"/>
+                      expression="execution(* ru.taskurotta.service.schedule.QuartzJobManager.*(..))"/>
         <aop:advisor advice-ref="schedulerAdvice" pointcut-ref="schedulerPointcut"/>
     </aop:config>
     <!-- /Transactions -->

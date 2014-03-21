@@ -33,15 +33,16 @@ public class TaskSpreaderCommon implements TaskSpreader {
 
     @Override
     public Task poll() {
+        logger.trace("Poll for actorDefinition [{}]", actorDefinition);
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
         return objectFactory.parseTask(taskContainer);
     }
 
     @Override
     public void release(TaskDecision taskDecision) {
-        logger.debug("TaskSpreaderCommon#release decision[{}]",taskDecision);
+        logger.debug("Release decision[{}]", taskDecision);
         DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, actorDefinition.getFullName());
-        logger.debug("TaskSpreaderCommon#release decisionContainer[{}]", decisionContainer);
+        logger.debug("Release decisionContainer[{}]", decisionContainer);
         taskServer.release(decisionContainer);
     }
 

@@ -1,31 +1,35 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="metricsQueueBackend" class="ru.taskurotta.service.hz.recovery.HzQueueServiceStatistics">
+    <bean id="metricsQueueBackend" class="ru.taskurotta.service.metrics.queue.MetricsQueueService">
         <constructor-arg name="queueService" ref="realQueueBackend"/>
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-
-        <property name="mergePeriod" value="${hz.recovery.merge.period}"/>
-        <property name="mergePeriodTimeUnit" value="${hz.recovery.merge.timeunit}"/>
-        <property name="queueNamePrefix" value="${hz.task.queue.prefix}"/>
-        <property name="queueSizeMetricPeriodSeconds" value="${metric.queue.size.data.period.seconds}"/>
-        <property name="metricsFactory" ref="metricsFactory"/>
-        <property name="numberDataListener" ref="metricsNumberDataHandler"/>
+        <constructor-arg name="metricsFactory" ref="metricsFactory"/>
     </bean>
 
-    <bean id="queueService" class="ru.taskurotta.assemple.ProxyQueueService">
+    <bean id="queueService" class="ru.taskurotta.assemble.ProxyQueueService">
         <constructor-arg name="target" ref="metricsQueueBackend"/>
     </bean>
+
+    <bean id="queueSizeMetricsProvider" class="ru.taskurotta.service.metrics.handler.QueueSizeMetricHandler" >
+        <constructor-arg name="metricsFactory" ref="metricsFactory" />
+        <constructor-arg name="queueSizeMetricPeriodSeconds" value="${metric.data.queue-size.period-in-seconds}" />
+        <constructor-arg name="retriever" ref="realQueueBackend" />
+    </bean>
+
+
+    <!-- TODO: delete and make it per-hit metric. Periodic check is useless -->
+    <!--<bean id="gcQueueSizeMetricHandler" class="ru.taskurotta.service.metrics.handler.GcMetricHandler">-->
+        <!--<constructor-arg name="garbageCollectorService" ref="garbageCollectorService" />-->
+        <!--<constructor-arg name="metricsFactory" ref="metricsFactory" />-->
+        <!--<constructor-arg name="periodSeconds" value = "5" />-->
+    <!--</bean>-->
+
+    <!-- TODO: delete and make it per-hit metric. Periodic check is useless -->
+    <!--<bean id="recoveryQueueSizeMetricHandler" class="ru.taskurotta.service.metrics.handler.OperationMetricsHandler">-->
+        <!--<constructor-arg name="metricsFactory" ref="metricsFactory" />-->
+        <!--<constructor-arg name="operationExecutor" ref="recoveryOperationExecutor" />-->
+        <!--<constructor-arg name="periodSeconds" value = "5" />-->
+    <!--</bean>-->
 
 </beans>

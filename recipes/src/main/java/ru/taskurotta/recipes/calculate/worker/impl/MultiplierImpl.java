@@ -32,6 +32,9 @@ public class MultiplierImpl implements Multiplier {
         }
 
         if (sleep > 0) {
+
+            logger.info("Sleep for [{}] ms", sleep);
+
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {

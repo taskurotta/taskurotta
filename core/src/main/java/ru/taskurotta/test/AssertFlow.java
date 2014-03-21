@@ -4,7 +4,7 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.util.UUID;
 

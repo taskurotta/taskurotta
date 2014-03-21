@@ -1,7 +1,7 @@
 package ru.taskurotta.dropwizard.resources.console.broken;
 
-import ru.taskurotta.service.process.GroupCommand;
-import ru.taskurotta.service.process.ProcessGroupVO;
+import ru.taskurotta.service.console.model.GroupCommand;
+import ru.taskurotta.service.console.model.ProcessGroupVO;
 
 import java.io.Serializable;
 import java.util.Collection;

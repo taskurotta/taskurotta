@@ -126,7 +126,7 @@ angular.module("console.directives", ['ngRoute'])
             updateAction: "&",
             refreshRate: "="
         },
-        controller: ['$scope', '$element', '$attrs', '$transclude', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $$timeUtil) {
+        controller: ['$scope', '$element', '$attrs', '$transclude', 'tskTimeUtil', function ($scope, $element, $attrs, $transclude, tskTimeUtil) {
 
             $scope.refreshRates = [0, 1, 3, 5, 10];
 
@@ -134,10 +134,10 @@ angular.module("console.directives", ['ngRoute'])
             var currentRefreshIntervalId = -1;
             $scope.$watch('refreshRate', function (value) {
                 if (currentRefreshIntervalId > 0) {
-                    $$timeUtil.clearInterval(currentRefreshIntervalId);
+                    tskTimeUtil.clearInterval(currentRefreshIntervalId);
                 }
                 if ($scope.refreshRate > 0) {
-                    currentRefreshIntervalId = $$timeUtil.setInterval($scope.updateAction, $scope.refreshRate * 1000, $scope);//Start autoUpdate
+                    currentRefreshIntervalId = tskTimeUtil.setInterval($scope.updateAction, $scope.refreshRate * 1000, $scope);//Start autoUpdate
                 }
             }, true);
 
@@ -195,7 +195,7 @@ angular.module("console.directives", ['ngRoute'])
         restrict: 'ECA',//Element, Class, Attribute
         terminal: true,
         scope: {},
-        controller: ['$scope', '$element', '$attrs', '$transclude', '$$timeUtil', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $$timeUtil, $window, $log, $http) {
+        controller: ['$scope', '$element', '$attrs', '$transclude', 'tskTimeUtil', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, tskTimeUtil, $window, $log, $http) {
 
             $scope.process = {
                 actorId: "",
@@ -269,85 +269,6 @@ angular.module("console.directives", ['ngRoute'])
             args: "="
         },
         template: "<ul><tsk-arg-form ng-repeat='arg in args' arg='arg'></tsk-arg-form></ul>",
-        replace: true
-    };
-}])
-
-.directive('tskPlot', ['$http', function ($http) {
-    return {
-        restrict: 'ECA',//Element, Class, Attribute
-        terminal: true,
-        scope: {//'=' enables ability to $watch
-            datasetUrl: "=",
-            width: "@",
-            height: "@",
-            updatePeriod: "=",
-            holder: "="
-        },
-        controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', '$$timeUtil', function ($scope, $element, $attrs, $transclude, $window, $log, $http, $$timeUtil) {
-
-            var jPlot = $($element);
-            //Setting css width and height if explicitly set
-            if($scope.width) { jPlot.css("width", $scope.width); }
-            if($scope.height) { jPlot.css("height", $scope.height); }
-
-            var options = {
-                legend: {
-                    show: true
-                },
-                series: {
-                    lines: {
-                        show: true
-                    },
-                    points: {
-                        show: true
-                    }
-                },
-                yaxis: {
-                    ticks: 5
-                },
-                zoom: {
-                    interactive: true
-                },
-                pan: {
-                    interactive: true
-                }
-            };
-
-            var plotElem = $.plot(jPlot, [], options);
-
-            var refreshTriggerId = -1;
-            var updatePlotData = function(newData) {
-                $log.info("Update plot data. New datasets count: " + newData.length);
-                if($scope.holder) {
-                    $scope.holder = newData;
-                }
-                plotElem = $.plot(jPlot, newData, options);
-            };
-
-            $scope.update = function() {
-                $http.get($scope.datasetUrl).then(function(value) {
-                    updatePlotData(value.data);
-                });
-            };
-
-            $scope.$watch('updatePeriod', function(newVal, oldVal) {
-                if(newVal > 0){
-                    refreshTriggerId = $$timeUtil.setInterval($scope.update, newVal * 1000, $scope);//Start autoUpdate
-                } else {
-                    $$timeUtil.clearInterval(refreshTriggerId);
-                }
-            });
-
-            $scope.$watch('datasetUrl', function(newVal, oldVal) {
-                if(newVal) {
-                    $scope.update();
-                } else {
-                    updatePlotData([]);//reset plot data
-                }
-            });
-
-        }],
         replace: true
     };
 }])

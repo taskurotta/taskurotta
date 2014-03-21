@@ -9,7 +9,7 @@ import java.util.Date;
  */
 public class ActorVO {
 
-    protected String actorId;
+    protected String id;
     protected Date lastPoll;
     protected Date lastRelease;
 
@@ -24,12 +24,12 @@ public class ActorVO {
         this.blocked = blocked;
     }
 
-    public String getActorId() {
-        return actorId;
+    public String getId() {
+        return id;
     }
 
-    public void setActorId(String actorId) {
-        this.actorId = actorId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getQueueName() {
@@ -59,7 +59,7 @@ public class ActorVO {
     @Override
     public String toString() {
         return "ActorVO{" +
-                "actorId='" + actorId + '\'' +
+                "id='" + id + '\'' +
                 ", lastPoll=" + lastPoll +
                 ", lastRelease=" + lastRelease +
                 ", queueName='" + queueName + '\'' +

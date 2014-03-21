@@ -69,7 +69,7 @@ angular.module("console.util.services", [])
     }
 )
 
-.factory('$$timeUtil', ["$timeout",
+.factory('tskTimeUtil', ["$timeout",
     function ($timeout) {
         var _intervals = {}, _intervalUID = 1;
 

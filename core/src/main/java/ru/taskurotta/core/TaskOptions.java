@@ -1,6 +1,6 @@
 package ru.taskurotta.core;
 
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 
 /**
  * User: stukushin

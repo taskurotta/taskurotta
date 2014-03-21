@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
+            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
+
+    <hz:hazelcast id="hzInstance">
+        <hz:config>
+            <hz:map name="MapStoreFailureTestMap" backup-count="1" max-size="10">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapstore"></hz:map-store>
+            </hz:map>
+            <hz:map name="yetAnotherMap" backup-count="1" max-size="10">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="realMapStore"></hz:map-store>
+            </hz:map>
+        </hz:config>
+    </hz:hazelcast>
+
+    <mongo:mongo id="mongo" host="localhost" port="27017">
+        <mongo:options connections-per-host="50"
+                       threads-allowed-to-block-for-connection-multiplier="5"
+                       max-wait-time="12000"
+                       connect-timeout="0"
+                       socket-timeout="0"
+                       socket-keep-alive="false"
+                       auto-connect-retry="true"
+                       max-auto-connect-retry-time="0"
+                       write-number="0"
+                       write-timeout="0"
+                       write-fsync="false"
+                       slave-ok="false"/>
+    </mongo:mongo>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg name="mongo" ref="mongo"/>
+        <constructor-arg name="databaseName" value="test"/>
+        <property name="writeConcern" ref="writeConcern"/>
+    </bean>
+
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="1"/>
+        <constructor-arg name="wtimeout" value="0"/>
+        <constructor-arg name="fsync" value="true"/>
+        <constructor-arg name="j" value="true"/>
+    </bean>
+
+    <bean id="realMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
+        <property name="mongoTemplate" ref="mongoTemplate" />
+    </bean>
+
+    <bean id="mapstore" class="ru.taskurotta.hz.test.support.FailingMapStore">
+        <constructor-arg name="failAfter" value = "20" />
+        <constructor-arg name="mapStore" ref="realMapStore" />
+        <constructor-arg name="mapLoaderLifecycleSupport" ref="realMapStore" />
+    </bean>
+
+</beans>

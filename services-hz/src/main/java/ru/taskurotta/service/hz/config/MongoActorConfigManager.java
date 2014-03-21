@@ -1,6 +1,8 @@
 package ru.taskurotta.service.hz.config;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.spring.mongodb.MongoDBConverter;
+import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -9,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.service.console.model.ActorVO;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.statistics.MetricName;
+import ru.taskurotta.service.metrics.MetricName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +26,12 @@ public class MongoActorConfigManager extends HzActorConfigManager {
     private static final Logger logger = LoggerFactory.getLogger(MongoActorConfigManager.class);
 
     private MongoTemplate mongoTemplate;
+    private MongoDBConverter converter;
 
     public MongoActorConfigManager (HazelcastInstance hzInstance, MongoTemplate mongoTemplate, String actorConfigName) {
         super(hzInstance, actorConfigName);
         this.mongoTemplate = mongoTemplate;
+        this.converter = new SpringMongoDBConverter(mongoTemplate);
     }
 
     protected GenericPage<ActorVO> getMongoDbActorsList (int pageNum, int pageSize) {
@@ -38,26 +42,21 @@ public class MongoActorConfigManager extends HzActorConfigManager {
             DBCursor cursor = dbColl.find().skip((pageNum-1)*pageSize).limit(pageSize);
             while (cursor.hasNext()) {
                 DBObject value = cursor.next();
-                String actorId = (String)value.get("_id");
-                boolean isBlocked = (Boolean)value.get("blocked");
-                String queueName = (String)value.get("queueName");
-
-                ActorVO actorVO = new ActorVO();
-                actorVO.setActorId(actorId);
-                actorVO.setBlocked(isBlocked);
-                actorVO.setQueueName(queueName);
-
+                ActorVO actorVO = (ActorVO) converter.toObject(ActorVO.class, value);
                 if (metricsDataRetriever!=null) {
-                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorId));
-                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorId));
+                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorVO.getId()));
+                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorVO.getId()));
                 }
 
                 items.add(actorVO);
             }
             total = dbColl.count();
         }
-        return new GenericPage<ActorVO>(items, pageNum, pageSize, total);
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("ActorVO page[{}, {}] items are [{}]", pageNum, pageSize, items);
+        }
+        return new GenericPage<ActorVO>(items, pageNum, pageSize, total);
     }
 
     @Override

@@ -29,14 +29,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
 .factory("$$data", function ($resource, $http) {
 
     var resultService = {
-        getQueueContent: function (queueName, pageNumber, pageSize) {
-            return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
-        },
-        getQueueList: function (pageNumber, pageSize, filter) {
-            return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + encodeURIComponent(filter));
-        },
         getTask: function (taskId, processId) {
-            return $http.get('/rest/console/task?processId=' + encodeURIComponent(processId) + '&taskId=' + encodeURIComponent(taskId));
+            return $http.get('/rest/console/tasks/task?processId=' + encodeURIComponent(processId) + '&taskId=' + encodeURIComponent(taskId));
         },
         getTaskTree: function (taskId, processId) {
             return $http.get('/rest/console/tree/task/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
@@ -44,23 +38,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
         listTasks: function (pageNumber, pageSize) {
             return $http.get('/rest/console/tasks/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
         },
-        getProcess: function (processId) {
-            return $http.get('/rest/console/process/' + encodeURIComponent(processId));
-        },
         findTasks: function (processId, taskId) {
-            return $http.get('/rest/console/task/search?processId=' + encodeURIComponent(processId) + "&taskId=" + encodeURIComponent(taskId));
-        },
-        findProcess: function (processId, customId) {
-            return $http.get('/rest/console/process/search?processId=' + encodeURIComponent(processId) + "&customId=" + encodeURIComponent(customId));
-        },
-        getProcessTree: function (processId, startTaskId) {
-            return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
-        },
-        getProcessesList: function (pageNumber, pageSize) {
-            return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
-        },
-        getProcessTasks: function (processId) {
-            return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
+            return $http.get('/rest/console/tasks/search?processId=' + encodeURIComponent(processId) + "&taskId=" + encodeURIComponent(taskId));
         },
         getHoveringQueues: function (periodSize) {
             return $http.get('/rest/console/hoveringQueues/?periodSize=' + periodSize);
@@ -69,17 +48,63 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
             return $http.get('/rest/console/repeatedTasks/?iterationCount=' + iterationCount);
         },
         getTaskDecision: function(taskId, processId) {
-            return $http.get('/rest/console/task/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
-        },
-        getMetricsOptions: function() {
-            return $http.get('/rest/console/metrics/options/');
-        },
-        getQueueRealSize: function(queueName) {
-            return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
+            return $http.get('/rest/console/tasks/decision/' + encodeURIComponent(processId) + '/' + encodeURIComponent(taskId));
         }
-
     };
 
     return resultService;
 
-});
+})
+    .factory("tskQueues", function ($resource, $http) {
+
+        var resultService = {
+            getQueueContent: function (queueName, pageNumber, pageSize) {
+                return $http.get('/rest/console/queue/' + encodeURIComponent(queueName) + '?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+            },
+            getQueueList: function (pageNumber, pageSize, filter) {
+                return $http.get('/rest/console/queues/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + encodeURIComponent(filter));
+            },
+            getQueueRealSize: function(queueName) {
+                return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/size");
+            },
+            getQueueStorageRealSize: function(queueName) {
+                return $http.get('/rest/console/queues/' + encodeURIComponent(queueName) + "/storage/size");
+            },
+            clearQueue: function(queueName) {
+                return $http.post('/rest/console/queues/clear', queueName);
+            },
+            removeQueue: function(queueName) {
+                return $http.post('/rest/console/queues/remove', queueName);
+            }
+        };
+
+        return resultService;
+    })
+
+    .factory("tskProcesses", function ($resource, $http) {
+
+        var resultService = {
+            getProcess: function (processId) {
+                return $http.get('/rest/console/processes/process/' + encodeURIComponent(processId));
+            },
+            findProcess: function (processId, customId) {
+                return $http.get('/rest/console/processes/search?processId=' + encodeURIComponent(processId) + "&customId=" + encodeURIComponent(customId));
+            },
+            getProcessTree: function (processId, startTaskId) {
+                return $http.get('/rest/console/tree/process/' + encodeURIComponent(processId) + '/' + encodeURIComponent(startTaskId));
+            },
+            getProcessesList: function (pageNumber, pageSize, status) {
+                return $http.get('/rest/console/processes/?pageNum=' + pageNumber + '&pageSize=' + pageSize + "&status=" + status);
+            },
+            getProcessTasks: function (processId) {
+                return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
+            },
+            addProcessToRecovery: function (processId) {
+                return $http.post('/console/operation/recovery/add', processId);
+            }
+        };
+
+        return resultService;
+    })
+;
+

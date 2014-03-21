@@ -6,10 +6,11 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskType;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.internal.core.TaskType;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,6 +48,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         // due guarantees for its immutability.
 
         if (task == null) {
+            logger.error("Inconsistent state, taskId[{}] does not present at task service", taskId);
             return null;
         }
 
@@ -58,7 +60,12 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 logger.debug("Task id[{}], type[{}], method[{}] args before swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
             }
 
-            ArgType[] argTypes = task.getOptions().getArgTypes();
+            TaskOptionsContainer taskOptionsContainer = task.getOptions();
+            ArgType[] argTypes = null;
+
+            if (taskOptionsContainer != null) {
+                argTypes = task.getOptions().getArgTypes();
+            }
 
             for (int i = 0; i < args.length; i++) {
                 ArgContainer arg = args[i];
@@ -101,9 +108,20 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             return isDeciderAsynchronousTaskType ? pArg : pArg.updateType(false);              // simply strip of promise wrapper
         }
 
-        ArgContainer taskValue = getTaskValue(pArg.getTaskId(), processId);//try to find promise value obtained by its task result
+        UUID taskId = pArg.getTaskId();
 
-        if (!taskDao.isTaskReleased(pArg.getTaskId(), processId)) {
+        if (!taskDao.isTaskReleased(taskId, processId)) {
+            if (ArgType.NO_WAIT.equals(argType)) {
+                // value may be null for NoWait promises
+                // leave it in peace...
+                return pArg;
+            }
+            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
+        }
+
+        ArgContainer taskValue = getTaskValue(taskId, processId);//try to find promise value obtained by its task result
+
+        if (taskValue == null) {
             if (ArgType.NO_WAIT.equals(argType)) {
                 // value may be null for NoWait promises
                 // leave it in peace...
@@ -117,7 +135,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
             // set real value into promise for Decider tasks
             newArg.setPromise(true);
-            newArg.setTaskId(pArg.getTaskId());
+            newArg.setTaskId(taskId);
         } else {
 
             // swap promise with real value for Actor tasks

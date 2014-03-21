@@ -7,13 +7,97 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.4.0</version>
+        <version>0.5.0</version>
     </parent>
 
     <artifactId>assemble</artifactId>
 
     <packaging>jar</packaging>
     <name>Taskurotta :: Assemble</name>
+
+    <dependencies>
+
+        <!-- Taskurotta -->
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>dropwizard</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>recipes</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>services-hz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>services-ora</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>spring</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>transport</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Taskurotta -->
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+
+    </dependencies>
 
     <build>
         <plugins>
@@ -118,7 +202,7 @@
                                 <artifactItem>
                                     <groupId>org.aspectj</groupId>
                                     <artifactId>aspectjweaver</artifactId>
-                                    <version>1.7.2</version>
+                                    <version>${aspectj.version}</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -128,59 +212,6 @@
 
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>patches</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context-support</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
-            <version>2.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>dropwizard</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>services-hz</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>services-ora</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>schedule</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>recipes</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>util</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 
     <profiles>
         <profile>
@@ -204,7 +235,7 @@
                                 <argument>-Dcom.sun.management.jmxremote.port=9999</argument>
                                 <argument>-Dcom.sun.management.jmxremote.authenticate=false</argument>
                                 <argument>-Dcom.sun.management.jmxremote.ssl=false</argument>
-                                <argument>-Dts.node.custom.name="node1"</argument>
+                                <argument>-Dts.node.custom-name="node1"</argument>
                                 <argument>-DassetsMode=dev</argument>
                                 <argument>-Ddw.http.port=8811</argument>
                                 <argument>-Ddw.http.adminPort=8812</argument>
@@ -251,7 +282,7 @@
                                 <!--<argument>-Dcom.sun.management.jmxremote.authenticate=false</argument>-->
                                 <!--<argument>-Dcom.sun.management.jmxremote.ssl=false</argument>-->
                                 <!--<argument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</argument>-->
-                                <argument>-Dts.node.custom.name="node1"</argument>
+                                <argument>-Dts.node.custom-name="node1"</argument>
                                 <argument>-DassetsMode=dev</argument>
                                 <argument>-Ddw.http.port=8811</argument>
                                 <argument>-Ddw.http.adminPort=8812</argument>

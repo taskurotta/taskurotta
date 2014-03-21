@@ -12,7 +12,6 @@ import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
-import ru.taskurotta.client.memory.ClientServiceManagerMemory;
 import ru.taskurotta.util.ActorDefinition;
 
 import java.io.IOException;
@@ -48,12 +47,11 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
             }
 
             if (properties != null && !properties.isEmpty()) {
-                System.err.println("properties: " + properties);
                 applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
             }
 
             if (defaultPropertiesLocation != null) {
-                Properties defaultProperties = null;
+                Properties defaultProperties;
                 try {
                     defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
                 } catch (IOException e) {
@@ -78,10 +76,10 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
                 logger.debug("Not found bean of [{}]", taskSpreaderProviderClass);
             }
 
-            if (taskSpreaderProvider == null) {
-                ClientServiceManager clientServiceManager = new ClientServiceManagerMemory();
-                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
-            }
+//            if (taskSpreaderProvider == null) {
+//                ClientServiceManager clientServiceManager = new ClientServiceManagerMemory();
+//                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
+//            }
         } catch (BeansException e) {
             logger.error("Not found bean of class [{}]", taskSpreaderProviderClass);
             throw new RuntimeException("Not found bean of class", e);
@@ -91,6 +89,11 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     @Override
     public TaskSpreader getTaskSpreader(Class clazz) {
         return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz));
+    }
+
+    @Override
+    public TaskSpreader getTaskSpreader(Class clazz, String taskList) {
+        return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz, taskList));
     }
 
     public void setContext(String context) {

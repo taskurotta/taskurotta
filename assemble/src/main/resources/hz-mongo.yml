@@ -29,10 +29,10 @@ logging:
         com.hazelcast: INFO
         ru.taskurotta: INFO
 #        ru.taskurotta.schedule: DEBUG
-#        ru.taskurotta.service.statistics.datalistener TRACE
+#        ru.taskurotta.service.metricstalistener TRACE
 #        ru.taskurotta: INFO
-#        ru.taskurotta.service.statistics.datalisteners: TRACE
-#        ru.taskurotta.service.statistics.metrics: TRACE
+#        ru.taskurotta.service.metricstalisteners: TRACE
+#        ru.taskurotta.service.metricstrics: TRACE
 #        ru.taskurotta.recovery: DEBUG
 #        ru.taskurotta.service.recovery: DEBUG
 #        ru.taskurotta.service.hz.support: DEBUG
@@ -49,7 +49,7 @@ logging:
         archive: true
         currentLogFilename: ./target/logs/service.log
         archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
-        logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+        logFormat: "%d %p [%t] %c - %m%n"
 
 http:
     rootPath: "/rest/*"

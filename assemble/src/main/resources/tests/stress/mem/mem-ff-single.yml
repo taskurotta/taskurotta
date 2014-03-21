@@ -1,0 +1,72 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: classpath:ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        contexts:
+          - classpath:spring/hz-mongo.xml
+          - classpath:spring/actor-ff-single.xml
+        defaultPropertiesLocation: default.properties
+        properties:
+          foo: bar
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+      count: 25
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+      count: 25
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/full-feature-test-single.log
+             append: false
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: TRACE
+        - ru.taskurotta.service.hz.queue.HzQueueService:
+             key: name
+             \@level: TRACE
+        - ru.taskurotta.server.GeneralTaskServer:
+             key: name
+             \@level: TRACE
+        - ru.taskurotta.service.hz.server.HazelcastTaskServer:
+             key: name
+             \@level: TRACE
+        - ru.taskurotta.service.storage.GeneralTaskService:
+             key: name
+             \@level: TRACE
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

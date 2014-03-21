@@ -28,7 +28,7 @@
                     <small>Name</small>
                 </th>
                 <th>
-                    <small>Last polled</small>
+                    <small>Activity</small>
                 </th>
                 <th>
                     <small>Balance</small>
@@ -37,10 +37,13 @@
                 <th style="width: 50px">
                     <small>Size <span class="icon-question-sign" popover="Value is measured by metrics handler and could be several seconds delayed from real current size" popover-trigger="mouseenter"/></small>
                 </th>
+                <th>
+                    <small>Actions</small>
+                </th>
             </thead>
 
             <tfoot>
-                <td colspan="5">
+                <td colspan="6">
                     <tsk-paginator generic-page="queuesPage" update-action="update()" store="queue.list.pagination"></tsk-paginator>
                 </td>
             </tfoot>
@@ -51,13 +54,31 @@
                 </tr>
                 <tr ng-if="initialized" ng-repeat="queue in queuesPage.items">
                     <td>
-                        <small>{{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}</small></td>
-                    <td>
-                        <small><a clas="btn btn-link" style="cursor: pointer;"
-                           ng-href="#/queues/queue/{{encodeURI(queue.name)}}"><b>{{queue.name}}</b></a></small>
+                        <small>
+                            {{getStartIndex(queuesPage.pageNumber, queuesPage.pageSize) + $index}}
+                            <i class="icon-flag" ng-if="queue.local" popover="Owned by current node" popover-trigger="mouseenter" ></i>
+                            <i class="icon-globe" ng-if="!queue.local" popover="Owned by remote node" popover-trigger="mouseenter"></i>
+                        </small>
                     </td>
                     <td>
-                        <small>{{queue.lastActivity | date:'dd.MM.yyyy HH:mm:ss'}}</small>
+                        <small>
+                            <a clas="btn btn-link" style="cursor: pointer;"
+                           ng-href="#/queues/queue/{{encodeURI(queue.name)}}"><b>{{ withNewLineOnDots(queue.name) }}</b></a>
+                        </small>
+                    </td>
+                    <td>
+                        <div style="width: 100%;" ng-if="queue.lastActivity > 0">
+                            <small>
+                                <i class="icon-question-sign" popover="Last time an actor tried to poll task from the queue" popover-trigger="mouseenter" /><i class="muted">Last polled: </i>
+                                <b>{{queue.lastActivity | date:'dd.MM.yyyy HH:mm:ss'}}</b>
+                            </small>
+                        </div>
+                        <div style="width: 100%;" ng-if="queue.lastPolledTaskEnqueueTime > 0">
+                            <small>
+                                <i class="icon-question-sign" popover="Enqueue time for the last successfully polled task for the queue" popover-trigger="mouseenter" /><i class="muted">Effective time:</i>
+                                <b>{{ queue.lastPolledTaskEnqueueTime | date:'dd.MM.yyyy HH:mm:ss' }}</b>
+                            </small>
+                        </div>
                     </td>
                     <td>
                         <small ng-if="selection.balancePeriod == 'Last hour'">
@@ -71,19 +92,36 @@
                         <hr style="margin: 1px 5px 1px 5px;padding:0;"/>
                         <small class="muted">By <b>{{queue.nodes || 0}}</b> nodes</small>
                     </td>
-                    <td style="width:100px;vertical-align:top;">
-                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                            <tr>
-                                <td width="80px;" style="font-size: 12px;">
-                                    <b>{{queue.count}}
-                                        <span ng-if="hasCurrentSizeValue($index)" class="muted" style="font-size: 10px;">/{{ realSizes[$index] }}</span>
-                                    </b>
-                                </td>
-                                <td style="text-align:right;vertical-align:top;">
-                                    <button class="btn btn-mini" popover="Show current size" popover-trigger="mouseenter" ng-click="showRealSize(queue.name, $index)"><span class="icon-eye-open" /></button>
-                                </td>
-                            </tr>
-                        </table>
+                    <td>
+                        <b>
+                            {{ queue.count }}
+                            <span ng-if="hasCurrentSizeValue($index)" class="muted" style="font-size: 10px;">/{{ realSizes[$index] }}</span>
+                        </b>
+                    </td>
+                    <td>
+                        <button ng-click="showRealSize(queue.name, $index)" class="btn btn-mini"
+                                popover="Show current real size of the queue"
+                                popover-trigger="mouseenter">
+                            <span class="icon-info-sign" />
+                        </button>
+
+                        <button ng-click="showStorageRealSize(queue.name, $index)" class="btn btn-mini"
+                                popover="Show current size of the storage for this queue. Storage contains tasks that would be enqueued in future."
+                                popover-trigger="mouseenter">
+                            <span class="icon-hdd" />
+                        </button>
+
+                        <button ng-click="clear(queue.name)" class="btn btn-mini"
+                                popover="Remove all elements from the queue"
+                                popover-trigger="mouseenter" >
+                            <span class="icon-eject" />
+                        </button>
+
+                        <button ng-click="remove(queue.name)" class="btn btn-mini"
+                                popover="Remove the queue"
+                                popover-trigger="mouseenter">
+                            <span class="icon-trash" />
+                        </button>
                     </td>
                 </tr>
             </tbody>

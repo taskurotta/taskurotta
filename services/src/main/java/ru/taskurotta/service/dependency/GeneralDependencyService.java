@@ -8,7 +8,7 @@ import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.ArgType;
+import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -57,7 +57,7 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
                 }
 
                 if (!graph.hasNotFinishedItem(finishedTaskId)) {
-                    logger.warn("Won't apply graph modification. Current task [{}] is already finished.", finishedTaskId);
+                    logger.warn("#[{}]/[{}]: Won't apply graph modification. Current task is already finished.", processId, finishedTaskId);
                     return false; // ignore task decision and its tasks
                 }
 
@@ -77,7 +77,7 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
             return resultDecision;
         }
 
-        logger.warn("Can't apply graph modification");
+        logger.warn("#[{}]/[{}]: Can't apply graph modification", processId, finishedTaskId);
         // TODO: should be analyzed at TaskServer
         return resultDecision.withFail();
     }

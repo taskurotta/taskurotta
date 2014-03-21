@@ -6,6 +6,7 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.policy.retry.RetryPolicy;
 
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,7 @@ public class Inspector {
     private RetryPolicy retryPolicy; //TaskServer poll policy of inspected actor
     private ActorThreadPool actorThreadPool; //pool of threads for given actor
 
-    private int failoverCheckTime = 60; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
+    private int failoverCheckTime = 0; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
     private TimeUnit failoverCheckTimeUnit = TimeUnit.SECONDS;
 
     protected static  class PolicyCounters {
@@ -34,7 +35,7 @@ public class Inspector {
         }
     }
 
-    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<>();
+    private ThreadLocal<PolicyCounters> pollCounterThreadLocal = new ThreadLocal<PolicyCounters>();
 
     public Inspector(RetryPolicy retryPolicy, ActorThreadPool actorThreadPool) {
         this.retryPolicy = retryPolicy;
@@ -49,7 +50,23 @@ public class Inspector {
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                Task task = taskSpreader.poll();
+                Task task;
+
+                try {
+                    task = taskSpreader.poll();
+                } catch (ServerException e) {
+                    if (actorThreadPool.mute()) {
+                        logger.warn("Actor thread pool thread has been muted (on poll) due to server error [{}]. Remain [{}] threads.",
+                                e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
+                        return null;
+                    } else {
+                        logger.error("Can't mute actor thread pool (on poll), throw exception", e);
+                        throw e;
+                    }
+                } catch (Exception e) {
+                    logger.error("Catch unexpected exception on poll", e);
+                    throw new RuntimeException(e);
+                }
 
                 if (task == null) {
                     PolicyCounters policyCounters = getRetryCounter(pollCounterThreadLocal);
@@ -65,7 +82,20 @@ public class Inspector {
 
             @Override
             public void release(TaskDecision taskDecision) {
-                taskSpreader.release(taskDecision);
+                try {
+                    taskSpreader.release(taskDecision);
+                } catch (ServerException e) {
+                    if (actorThreadPool.mute()) {
+                        logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
+                                e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
+                    } else {
+                        logger.error("Can't mute actor thread pool (on release), throw exception", e);
+                        throw e;
+                    }
+                } catch (Exception e) {
+                    logger.error("Catch unexpected exception on release", e);
+                    throw new RuntimeException(e);
+                }
             }
         };
     }
@@ -89,15 +119,22 @@ public class Inspector {
                 return;
             }
 
-            nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
-            logger.info("Communication with TaskServer was idle, waiting for [{}] seconds to continue", nextRetryDelaySeconds);
+            if (failoverCheckTime > 0) {//fixed sleep interval configured
+                nextRetryDelaySeconds = failoverCheckTimeUnit.toSeconds(failoverCheckTime);
+                logger.info("Idle communication with TaskServer: apply long wait for [{}] seconds to continue", nextRetryDelaySeconds);
+
+            } else {//try to apply max interval for configured policy
+                nextRetryDelaySeconds = Math.max(0, retryPolicy.getMaxIntervalSeconds());//prevent negative values
+                logger.debug("Idle communication with TaskServer: apply max policy wait for [{}] seconds to continue", nextRetryDelaySeconds);
+            }
+
         }
 
         try {
             logger.trace("Sleep thread [{}] for [{}] seconds after [{}] tries by retry policy", Thread.currentThread().getName(), nextRetryDelaySeconds, policyCounters.numberOfTries);
             TimeUnit.SECONDS.sleep(nextRetryDelaySeconds);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Retry policy sleep interrupted", e.getLocalizedMessage());
         }
     }
 

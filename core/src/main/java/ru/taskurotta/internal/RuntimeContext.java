@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public class RuntimeContext {
 
-    private static ThreadLocal<RuntimeContext> currentContext = new ThreadLocal<>();
+    private static ThreadLocal<RuntimeContext> currentContext = new ThreadLocal<RuntimeContext>();
 
     private List<Task> tasks;
     private UUID processId;
@@ -49,7 +49,7 @@ public class RuntimeContext {
     public void handle(Task task) {
 
         if (tasks == null) {
-            tasks = new ArrayList<>();
+            tasks = new ArrayList<Task>();
         }
 
         tasks.add(task);

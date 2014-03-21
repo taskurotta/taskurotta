@@ -3,8 +3,6 @@ package ru.taskurotta.util;
 import ru.taskurotta.core.TaskTarget;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 public class ActorUtils {
@@ -35,7 +33,7 @@ public class ActorUtils {
     public static List<String> getPrefixStripped(List<String> target, String prefix) {
         List<String> result = null;
         if (target!=null && !target.isEmpty()) {
-            result = new ArrayList<>();
+            result = new ArrayList<String>();
             for (String item : target) {
                 result.add(getPrefixStripped(item, prefix));
             }
@@ -54,7 +52,7 @@ public class ActorUtils {
 //    }
 
     public static String toPrefixed(String target, String prefix) {
-        if (target != null && !target.startsWith(prefix)) {
+        if (target != null && prefix!=null && !target.startsWith(prefix)) {
             return prefix + target;
         } else {
             return target;
@@ -64,8 +62,8 @@ public class ActorUtils {
     public static List<String> toPrefixed(List<String> target, String prefix) {
         List<String> result = null;
 
-        if (target != null && !target.isEmpty()) {
-            result = new ArrayList<>();
+        if (target != null && prefix!=null && !target.isEmpty()) {
+            result = new ArrayList<String>();
             for (String item: target) {
                 result.add(toPrefixed(item, prefix));
             }

@@ -29,7 +29,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long timeBeforeDelete, boolean enabled) {
 
-        logger.debug("Garbage Collector initialization {}", enabled);
+        logger.debug("Garbage Collector initialization. Enabled: {}", enabled);
 
         this.enabled = enabled;
 
@@ -48,6 +48,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
                 thread.setName("GC-" + counter++);
+                thread.setDaemon(true);
                 return thread;
             }
         });
@@ -57,16 +58,16 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                 @Override
                 public void run() {
                     while (true) {
-                        logger.trace("Try to get process for garbage collector");
-
-                        UUID processId = null;
                         try {
-                            processId = garbageCollectorQueue.take();
-                        } catch (InterruptedException e) {
-                            logger.error("Catch exception while find process for garbage collector", e);
-                        }
+                            logger.trace("Try to get process for garbage collector");
 
-                        gc(processId);
+                            UUID processId = garbageCollectorQueue.take();
+                            if (processId != null) {
+                                gc(processId);
+                            }
+                        } catch (Exception e) {
+                            logger.error(e.getLocalizedMessage(), e);
+                        }
                     }
                 }
             });
@@ -75,12 +76,18 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
 
     @Override
     public void delete(UUID processId) {
-
         if (!enabled) {
             return;
         }
 
         garbageCollectorQueue.add(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
+    }
 
+    @Override
+    public int getCurrentSize() {
+        if (!enabled) {
+            return 0;
+        }
+        return garbageCollectorQueue.size();
     }
 }

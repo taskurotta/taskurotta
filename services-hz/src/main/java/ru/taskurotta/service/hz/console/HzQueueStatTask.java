@@ -3,11 +3,11 @@ package ru.taskurotta.service.hz.console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.QueueStatVO;
-import ru.taskurotta.service.statistics.MetricName;
-import ru.taskurotta.service.statistics.MetricsDataHandler;
-import ru.taskurotta.service.statistics.NumberDataHandler;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
-import ru.taskurotta.service.statistics.metrics.data.DataPointVO;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
+import ru.taskurotta.service.metrics.handler.NumberDataHandler;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
+import ru.taskurotta.service.metrics.model.DataPointVO;
 import ru.taskurotta.util.ActorUtils;
 
 import java.io.Serializable;

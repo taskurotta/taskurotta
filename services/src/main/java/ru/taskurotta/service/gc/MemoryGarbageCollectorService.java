@@ -29,6 +29,7 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
                 thread.setName("GC-" + counter++);
+                thread.setDaemon(true);
                 return thread;
             }
         });
@@ -80,5 +81,10 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
     @Override
     public void delete(UUID processId) {
         garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + delayTime));
+    }
+
+    @Override
+    public int getCurrentSize() {
+        return garbageCollectorQueue.size();
     }
 }

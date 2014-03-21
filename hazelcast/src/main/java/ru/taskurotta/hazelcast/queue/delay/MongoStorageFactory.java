@@ -8,10 +8,13 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.util.ClusterUtils;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +28,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 16:58
  */
 public class MongoStorageFactory implements StorageFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
 
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
@@ -41,9 +46,13 @@ public class MongoStorageFactory implements StorageFactory {
                                String storagePrefix, long scheduleDelayMillis) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
-
         this.converter = new SpringMongoDBConverter(mongoTemplate);
 
+        fireStorageScanTask(hazelcastInstance, scheduleDelayMillis);
+
+    }
+
+    private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
 
@@ -51,6 +60,7 @@ public class MongoStorageFactory implements StorageFactory {
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
                 thread.setName("MongoStorageFactory-" + counter++);
+                thread.setDaemon(true);
                 return thread;
             }
         });
@@ -58,29 +68,56 @@ public class MongoStorageFactory implements StorageFactory {
         singleThreadScheduledExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                for (Map.Entry<String, String> entry : dbCollectionNamesMap.entrySet()) {
-                    String dbCollectionName = entry.getValue();
+                try {
+                    Set<Map.Entry<String, String>> entrySet = dbCollectionNamesMap.entrySet();
 
-                    DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("MongoDB storage scan iteration start: registered stores are [{}]", getRegisteredQueues(entrySet));
+                    }
 
                     BasicDBObject query = new BasicDBObject(ENQUEUE_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
 
-                    try (DBCursor dbCursor = dbCollection.find(query)) {
+                    for (Map.Entry<String, String> entry : entrySet) {
+                        String dbCollectionName = entry.getValue();
                         String queueName = entry.getKey();
-                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                        while (dbCursor.hasNext()) {
-                            DBObject dbObject = dbCursor.next();
-                            StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+                        if (ClusterUtils.isLocalQueue(queueName, hazelcastInstance)) {//Node should serve only local queues
+                            DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                            IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                            if (iQueue.add(storageItem.getObject())) {
-                                dbCollection.remove(dbObject);
+                            DBCursor dbCursor = dbCollection.find(query);
+                            while (dbCursor.hasNext()) {
+                                DBObject dbObject = dbCursor.next();
+                                StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+
+                                if (iQueue.offer(storageItem.getObject())) {
+                                    dbCollection.remove(dbObject);
+                                }
                             }
                         }
                     }
+                } catch (Throwable e) {
+                    logger.error("MongoDB storage scan iteration failed. Try to resume in [" + scheduleDelayMillis + "]ms...", e);
+                    // ToDo: repair index on dbCollection
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
+
+    }
+
+    private String getRegisteredQueues(Set<Map.Entry<String, String>> entrySet) {
+        StringBuilder sb = new StringBuilder();
+        String prefix = "Size: 0";
+        if (entrySet != null && !entrySet.isEmpty()) {
+            prefix = "Size: " + String.valueOf(entrySet.size());
+            for (Map.Entry<String, String> item : entrySet) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(item.getKey());
+            }
+        }
+        return prefix + " " + sb.toString();
     }
 
     @Override
@@ -101,13 +138,14 @@ public class MongoStorageFactory implements StorageFactory {
                 dbCollectionNamesMap.put(queueName, dbCollectionName);
 
                 DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
-                dbCollection.createIndex(new BasicDBObject(ENQUEUE_TIME_NAME, 1));
+                dbCollection.ensureIndex(new BasicDBObject(ENQUEUE_TIME_NAME, 1));
             } finally {
                 lock.unlock();
             }
         }
 
         final DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+        final String finalDbCollectionName = dbCollectionName;
 
         return new Storage() {
             @Override
@@ -117,7 +155,6 @@ public class MongoStorageFactory implements StorageFactory {
 
             @Override
             public boolean remove(Object o) {
-                // ToDo maybe use full scan
                 return delete(o, dbCollection);
             }
 
@@ -128,9 +165,28 @@ public class MongoStorageFactory implements StorageFactory {
 
             @Override
             public void destroy() {
-                dbCollection.drop();
+                String unPrefixed = removePrefix(finalDbCollectionName);
+                dbCollectionNamesMap.remove(queueName);
+
+                mongoTemplate.dropCollection(finalDbCollectionName);
+                mongoTemplate.dropCollection(unPrefixed);
+
+                logger.debug("Destroying storage collections: delayedStore[{}] and queueBackingStore[{}]", finalDbCollectionName, unPrefixed);
+            }
+
+            @Override
+            public long size() {
+                return dbCollection.count();
             }
         };
+    }
+
+    private String removePrefix (String target) {
+        String result = target;
+        if (target != null && storagePrefix!= null && target.startsWith(storagePrefix)) {
+            result = target.substring(storagePrefix.length(), target.length());
+        }
+        return result;
     }
 
     private boolean save(Object o, long delayTime, TimeUnit unit, DBCollection dbCollection, String queueName) {
@@ -144,14 +200,7 @@ public class MongoStorageFactory implements StorageFactory {
     }
 
     private boolean delete(Object o, DBCollection dbCollection) {
-        DBObject query = new BasicDBObject(OBJECT_NAME, o);
-
-        try (DBCursor dbCursor = dbCollection.find(query)) {
-            while (dbCursor.hasNext()) {
-                dbCollection.remove(dbCursor.next());
-            }
-        }
-
+        dbCollection.remove(new BasicDBObject(OBJECT_NAME, o));
         return true;
     }
 }

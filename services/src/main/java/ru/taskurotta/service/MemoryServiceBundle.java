@@ -7,15 +7,15 @@ import ru.taskurotta.service.dependency.GeneralDependencyService;
 import ru.taskurotta.service.dependency.links.MemoryGraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
-import ru.taskurotta.service.process.BrokenProcessService;
-import ru.taskurotta.service.process.MemoryBrokenProcessService;
 import ru.taskurotta.service.queue.MemoryQueueService;
 import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.MemoryBrokenProcessService;
 import ru.taskurotta.service.storage.MemoryProcessService;
 import ru.taskurotta.service.storage.ProcessService;
-import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.service.storage.TaskDao;
+import ru.taskurotta.service.storage.TaskService;
 
 /**
  * User: romario

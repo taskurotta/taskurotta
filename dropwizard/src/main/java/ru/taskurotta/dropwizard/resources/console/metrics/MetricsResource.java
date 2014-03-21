@@ -2,35 +2,35 @@ package ru.taskurotta.dropwizard.resources.console.metrics;
 
 import com.google.common.base.Optional;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.service.statistics.metrics.MetricsDataUtils;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConsoleUtils;
 import ru.taskurotta.dropwizard.resources.console.metrics.support.MetricsConstants;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.AvailableOptionsVO;
 import ru.taskurotta.dropwizard.resources.console.metrics.vo.DatasetVO;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 import java.util.List;
 
 /**
- * User: dimadin
  * Date: 05.09.13 16:47
  */
-@Path("/console/metrics/{action}")
+@Path("/console/metrics")
 public class MetricsResource extends BaseResource implements MetricsConstants {
 
     private MetricsDataProvider metricsDataHandler;
     private MetricsOptionsProvider metricsOptionsHandler;
 
     @GET
-    public Response getMetrics(@PathParam("action") String action, @QueryParam("type") Optional<String> typeOpt, @QueryParam("period") Optional<String> periodOpt,
+    @Path("/data")
+    public List<DatasetVO> getMetricsData(@QueryParam("type") Optional<String> typeOpt, @QueryParam("period") Optional<String> periodOpt,
                                     @QueryParam("scope") Optional<String> scopeOpt, @QueryParam("metric") Optional<String> metricOpt, @QueryParam("zeroes") Optional<Boolean> zeroesOpt,
                                     @QueryParam("dataset") Optional<String> dataSetOpt, @QueryParam("smooth") Optional<Integer> smoothOpt) {
+
         String dataType = typeOpt.or(OPT_UNDEFINED);
         String period = periodOpt.or(OPT_UNDEFINED);
         String scope = scopeOpt.or(OPT_UNDEFINED);
@@ -41,32 +41,36 @@ public class MetricsResource extends BaseResource implements MetricsConstants {
         List<String> dataSetNames = MetricsConsoleUtils.extractDatasets(dataSetOpt.or(""));
         try {
 
-            if (ACTION_METRICS_DATA.equals(action)) {
-                List<DatasetVO> dataSets = metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period);
-                if (smooth > 0) {
-                    for(DatasetVO ds: dataSets) {
-                        ds.setData(MetricsDataUtils.getSmoothedDataSet(ds.getData(), smooth));
-                    }
+            List<DatasetVO> dataSets = metricsDataHandler.getDataResponse(metricName, dataSetNames, scope, dataType, period);
+            if (smooth > 0) {
+                for(DatasetVO ds: dataSets) {
+                    ds.setData(MetricsDataUtils.getSmoothedDataSet(ds.getData(), smooth));
                 }
-                if (!zeroes) {
-                    for(DatasetVO ds: dataSets) {
-                        ds.setData(MetricsDataUtils.getNonZeroValuesDataSet(ds.getData()));
-                    }
-                }
-                return Response.ok(dataSets, MediaType.APPLICATION_JSON).build();
-            } else if(ACTION_METRICS_OPTIONS.equals(action)) {
-                AvailableOptionsVO options = metricsOptionsHandler.getAvailableOptions();
-                return Response.ok(options, MediaType.APPLICATION_JSON).build();
-
-            } else {
-                throw new IllegalArgumentException("Unsupported action ["+action+"] for metrics getted");
             }
+            if (!zeroes) {
+                for(DatasetVO ds: dataSets) {
+                    ds.setData(MetricsDataUtils.getNonZeroValuesDataSet(ds.getData()));
+                }
+            }
+            return dataSets;
 
         } catch (Throwable e) {
-            logger.error("Error getting metrics for action[" + action + "], zeroes["+zeroes+"], metricName[" + metricName + "], dataType[" + dataType + "], period["+dataType+"], scope["+scope+"], dataSet["+dataSetNames+"]", e);
-            return Response.serverError().build();
+            logger.error("Error getting metrics for params: zeroes["+zeroes+"], metricName[" + metricName + "], dataType[" + dataType + "], period["+dataType+"], scope["+scope+"], dataSet["+dataSetNames+"]", e);
+            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    @GET
+    @Path("/options")
+    public AvailableOptionsVO getMetricsOptions() {
+
+        try {
+            return metricsOptionsHandler.getAvailableOptions();
+        } catch (Throwable e) {
+            logger.error("Error getting available metrics options", e);
+            throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Required

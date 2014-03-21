@@ -24,6 +24,16 @@ public class TaskTreeVO {
     public TaskTreeVO(){
     }
 
+    public int getTasksCount() {
+        int result = 0;
+        if (children!=null && children.length>0) {
+            for (TaskTreeVO node : children) {
+                result += node.getTasksCount();
+            }
+        }
+        return result + 1;//+1 for itself
+    }
+
     public TaskTreeVO(UUID id){
        this.id = id;
     }

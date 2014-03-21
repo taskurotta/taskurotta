@@ -5,7 +5,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.4.0</version>
+        <version>0.5.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,12 @@
         <dependency>
             <groupId>ru.taskurotta</groupId>
             <artifactId>spring</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>hazelcast</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -2,7 +2,10 @@ package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.IQueue;
 import com.hazelcast.query.Predicates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -19,11 +22,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonStorageFactory implements StorageFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(CommonStorageFactory.class);
+
     private final IMap<UUID, StorageItem> iMap;
+
+    public static final String ENQUEUE_TIME_NAME = "enqueueTime";
 
     public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, long scheduleDelayMillis) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
-        this.iMap.addIndex("enqueueTime", true);
+        this.iMap.addIndex(ENQUEUE_TIME_NAME, true);
 
         ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             private int counter = 0;
@@ -32,6 +39,7 @@ public class CommonStorageFactory implements StorageFactory {
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
                 thread.setName("CommonStorageFactory-" + counter++);
+                thread.setDaemon(true);
                 return thread;
             }
         });
@@ -39,21 +47,30 @@ public class CommonStorageFactory implements StorageFactory {
         singleThreadScheduledExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                if (iMap.isEmpty()) {
-                    return;
-                }
+                try {
+                    if (iMap.isEmpty()) {
+                        return;
+                    }
 
-                Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate("enqueueTime", 0l,
-                        System.currentTimeMillis()));
+                    Set<UUID> keys = iMap.localKeySet(new Predicates.BetweenPredicate(ENQUEUE_TIME_NAME, 0l,
+                            System.currentTimeMillis()));
 
-                if (keys == null || keys.isEmpty()) {
-                    return;
-                }
+                    if (keys == null || keys.isEmpty()) {
+                        return;
+                    }
 
-                for (UUID key : keys) {
-                    StorageItem storageItem = iMap.remove(key);
-                    String queueName = storageItem.getQueueName();
-                    hazelcastInstance.getQueue(queueName).add(storageItem.getObject());
+                    for (UUID key : keys) {
+                        StorageItem storageItem = iMap.get(key);
+                        String queueName = storageItem.getQueueName();
+
+                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
+
+                        if (iQueue.offer(storageItem.getObject())) {
+                            iMap.delete(key);
+                        }
+                    }
+                } catch (Throwable e) {
+                    logger.error(e.getLocalizedMessage(), e);
                 }
             }
         }, 0l, scheduleDelayMillis, TimeUnit.MILLISECONDS);
@@ -80,6 +97,19 @@ public class CommonStorageFactory implements StorageFactory {
             @Override
             public void destroy() {
                 // don't destroy, because it's common storage for all queues
+            }
+
+            @Override
+            public long size() {
+                int result = 0;
+
+                for (StorageItem st : iMap.values()) {
+                    if (st!=null && st.getQueueName().equals(queueName)) {
+                        result++;
+                    }
+                }
+
+                return result;
             }
         };
     }

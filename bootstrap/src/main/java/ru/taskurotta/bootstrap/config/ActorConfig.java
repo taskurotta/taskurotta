@@ -18,8 +18,8 @@ public class ActorConfig {
     private String policyConfig;
     private int count = 1;
     private Properties properties;
-    private long sleepTimeoutMillis = 1000l;
     private long shutdownTimeoutMillis = 60000l;
+    private String taskList;
 
     public String getActorInterface() {
         return actorInterface;
@@ -78,15 +78,7 @@ public class ActorConfig {
     }
 
     public Object getProperty(String name) {
-        return properties!=null? properties.getProperty(name): null;
-    }
-
-    public void setSleepTimeout(String sleepTimeout) {
-        this.sleepTimeoutMillis = DurationParser.toMillis(sleepTimeout);
-    }
-
-    public long getSleepTimeoutMillis() {
-        return sleepTimeoutMillis;
+        return properties != null ? properties.getProperty(name) : null;
     }
 
     public void setShutdownTimeout(String shutdownTimeout) {
@@ -95,5 +87,28 @@ public class ActorConfig {
 
     public long getShutdownTimeoutMillis() {
         return shutdownTimeoutMillis;
+    }
+
+    public String getTaskList() {
+        return taskList;
+    }
+
+    public void setTaskList(String taskList) {
+        this.taskList = taskList;
+    }
+
+    @Override
+    public String toString() {
+        return "ActorConfig{" +
+                "actorInterface='" + actorInterface + '\'' +
+                ", runtimeConfig='" + runtimeConfig + '\'' +
+                ", spreaderConfig='" + spreaderConfig + '\'' +
+                ", profilerConfig='" + profilerConfig + '\'' +
+                ", policyConfig='" + policyConfig + '\'' +
+                ", count=" + count +
+                ", properties=" + properties +
+                ", shutdownTimeoutMillis=" + shutdownTimeoutMillis +
+                ", taskList='" + taskList + '\'' +
+                '}';
     }
 }

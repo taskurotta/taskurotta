@@ -23,8 +23,6 @@ public class HzGraphDao implements GraphDao {
 
     private final static Logger logger = LoggerFactory.getLogger(HzGraphDao.class);
 
-    // TODO: garbage collection policy for real database
-
     protected IMap<UUID, Graph> graphs;
     private IMap<UUID, DecisionRow> decisions;
 
@@ -91,9 +89,6 @@ public class HzGraphDao implements GraphDao {
 
     @Override
     public void createGraph(UUID graphId, UUID taskId) {
-        if (graphs.get(graphId) != null) {
-            return;
-        }
 
         try {
             graphs.lock(graphId);

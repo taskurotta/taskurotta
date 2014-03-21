@@ -1,18 +1,23 @@
 <aspectj>
 
     <aspects>
-        <concrete-aspect name="ru.taskurotta.ru.taskurotta.test.monkey.MonkeyAspect"
-                         extends="ru.taskurotta.ru.taskurotta.test.monkey.AbstractMonkeyAspect">
+        <concrete-aspect name="ru.taskurotta.test.monkey.MonkeyAspect"
+                         extends="ru.taskurotta.test.monkey.AbstractMonkeyAspect">
             <pointcut name="pointCut"
-                      expression="execution(* ru.taskurotta.service.queue.MemoryQueueService.pollCommit(..))"/>
+                      expression="execution(* com.mongodb.DBPort.go(..))"/>
+<!--
 
+            <pointcut name="pointCut"
+                      expression="call(ru.taskurotta.transport.model.ArgContainer.new(..))"/>
+-->
         </concrete-aspect>
 
         <include within="ru.taskurotta..*"/>
+        <include within="com.mongodb.*"/>
     </aspects>
 
     <weaver options="-verbose -showWeaveInfo">
-        <include within="ru.taskurotta.service.queue.MemoryQueueService"/>
+        <include within="com.mongodb.*"/>
     </weaver>
 
 </aspectj>

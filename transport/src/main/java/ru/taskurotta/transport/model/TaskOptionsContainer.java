@@ -1,5 +1,7 @@
 package ru.taskurotta.transport.model;
 
+import ru.taskurotta.internal.core.ArgType;
+
 import java.io.Serializable;
 import java.util.Arrays;
 

@@ -13,6 +13,7 @@ public class QueueStatVO implements Serializable {
     private String name;
     private int count = 0;
     private Date lastActivity = null;
+    private long lastPolledTaskEnqueueTime = -1;
 
     private long inHour = 0;
     private long outHour = 0;
@@ -21,6 +22,8 @@ public class QueueStatVO implements Serializable {
     private long outDay = 0;
 
     private int nodes = 0;
+
+    private boolean local = false;
 
     public String getName() {
         return name;
@@ -86,6 +89,22 @@ public class QueueStatVO implements Serializable {
         this.nodes = nodes;
     }
 
+    public long getLastPolledTaskEnqueueTime() {
+        return lastPolledTaskEnqueueTime;
+    }
+
+    public void setLastPolledTaskEnqueueTime(long lastPolledTaskEnqueueTime) {
+        this.lastPolledTaskEnqueueTime = lastPolledTaskEnqueueTime;
+    }
+
+    public boolean isLocal() {
+        return local;
+    }
+
+    public void setLocal(boolean local) {
+        this.local = local;
+    }
+
     public QueueStatVO sumValuesWith(QueueStatVO qs) {
         if (qs != null) {
 
@@ -122,6 +141,7 @@ public class QueueStatVO implements Serializable {
                 ", inDay=" + inDay +
                 ", outDay=" + outDay +
                 ", nodes=" + nodes +
+                ", local=" + local +
                 "} ";
     }
 }

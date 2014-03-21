@@ -18,20 +18,16 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * TaskDao storing tasks in HZ shared(and processId partitioned) maps
- * User: dimadin
  * Date: 11.06.13 18:13
  */
 public class HzTaskDao implements TaskDao {
 
     private static final Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
 
-    private HazelcastInstance hzInstance;
-
     private IMap<TaskKey, TaskContainer> id2TaskMap;
     private IMap<TaskKey, DecisionContainer> id2TaskDecisionMap;
 
     public HzTaskDao(HazelcastInstance hzInstance, String id2TaskMapName, String id2TaskDecisionMapName) {
-        this.hzInstance = hzInstance;
 
         id2TaskMap = hzInstance.getMap(id2TaskMapName);
         id2TaskDecisionMap = hzInstance.getMap(id2TaskDecisionMapName);
@@ -77,17 +73,18 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
-            @Override
-            public boolean apply(TaskContainer taskContainer) {
-                return taskContainer.getNumberOfAttempts() >= iterationCount;
-            }
-        });
+        return new ArrayList<>(
+                Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
+                    @Override
+                    public boolean apply(TaskContainer taskContainer) {
+                        return taskContainer.getNumberOfAttempts() >= iterationCount;
+                    }
+                }));
     }
 
     @Override
     public void updateTask(TaskContainer taskContainer) {
-
+        id2TaskMap.set(new TaskKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer);
     }
 
     @Override

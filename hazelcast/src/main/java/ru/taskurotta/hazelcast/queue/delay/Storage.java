@@ -16,4 +16,6 @@ public interface Storage<E> {
     public void clear();
 
     public void destroy();
+
+    public long size();
 }
