@@ -74,16 +74,21 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                     continue;
                 }
 
-                ArgType argType = argTypes == null? null : argTypes[i];
+                ArgType argType = argTypes == null ? null : argTypes[i];
 
                 if (arg.isPromise()) {
                     args[i] = processPromiseArgValue(arg, processId, task, argType);
                 } else if (arg.isCollection()) {//can be collection of promises, case should be checked
                     ArgContainer[] compositeValue = arg.getCompositeValue();
-                    for (int j = 0; j < compositeValue.length; j++) {
-                        ArgContainer innerArg = compositeValue[j];
-                        if (innerArg.isPromise()) {
-                            compositeValue[j] = processPromiseArgValue(innerArg, processId, task, argType);
+
+                    if (compositeValue == null) {
+                        args[i] = processPromiseArgValue(arg, processId, task, argType);
+                    } else {
+                        for (int j = 0; j < compositeValue.length; j++) {
+                            ArgContainer innerArg = compositeValue[j];
+                            if (innerArg.isPromise()) {
+                                compositeValue[j] = processPromiseArgValue(innerArg, processId, task, argType);
+                            }
                         }
                     }
                 }
