@@ -38,6 +38,12 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>services-hz</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
         </dependency>
