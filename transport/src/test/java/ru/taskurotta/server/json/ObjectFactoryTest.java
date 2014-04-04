@@ -157,7 +157,7 @@ public class ObjectFactoryTest {
 
         Assert.assertEquals(arg.length, newArg.length);
         for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
+            Assert.assertEquals(arg[i], newArg[i], 0.0d);
         }
     }
 
@@ -199,6 +199,50 @@ public class ObjectFactoryTest {
         for (int i = 0; i < newArg.length; i++) {
             Assert.assertEquals(arg[i], newArg[i]);
         }
+    }
+
+    @Test
+    public void argContainerCollectionOfString() {
+        List<String> arg = new ArrayList<String>();
+        arg.add("test1");
+        arg.add("test2");
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("Object [{}] dump to [{}]", arg, argContainer);
+
+        List<String> newArg = (List<String>) objectFactory.parseArg(argContainer);
+        log.debug("ArgContainer [{}] parsed to [{}]", argContainer, newArg);
+
+        Assert.assertEquals(arg.size(), newArg.size());
+        for (int i = 0; i < newArg.size(); i++) {
+            Assert.assertEquals(arg.get(i), newArg.get(i));
+        }
+    }
+
+    @Test
+    public void argContainerEmptyCollection() {
+        List<String> arg = new ArrayList<String>();
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("Object [{}] dump to [{}]", arg, argContainer);
+
+        List<String> newArg = (List<String>) objectFactory.parseArg(argContainer);
+        log.debug("ArgContainer [{}] parsed to [{}]", argContainer, newArg);
+
+        Assert.assertEquals(arg.size(), newArg.size());
+        for (int i = 0; i < newArg.size(); i++) {
+            Assert.assertEquals(arg.get(i), newArg.get(i));
+        }
+    }
+
+    @Test
+    public void argContainerNullCollection() {
+        List<String> arg = null;
+        ArgContainer argContainer = objectFactory.dumpArg(arg);
+        log.debug("Object [{}] dump to [{}]", arg, argContainer);
+
+        List<String> newArg = (List<String>) objectFactory.parseArg(argContainer);
+        log.debug("ArgContainer [{}] parsed to [{}]", argContainer, newArg);
+
+        Assert.assertEquals(arg, newArg);
     }
 
     @Test
@@ -383,23 +427,23 @@ public class ObjectFactoryTest {
         Promise<TestObject[]> pArray = Promise.asPromise(new TestObject[]{new TestObject("child", 10),
                 new TestObject("child2", 11)});
 
-        Collection coll = new ArrayList();
+        Collection<Promise> coll = new ArrayList<Promise>();
         coll.add(pArray);
 
         testInternal(coll);
-        Assert.assertEquals(((TestObject[]) ((Promise) coll.iterator().next()).get())[1].getData(), 11);
+        Assert.assertEquals(((TestObject[]) coll.iterator().next().get())[1].getData(), 11);
     }
 
     @Test
     public void argCollectionOfPromiseOfList() {
-        ArrayList<TestObject> arrayList = new ArrayList();
+        ArrayList<TestObject> arrayList = new ArrayList<TestObject>();
         arrayList.add(new TestObject("child", 10));
         Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>) arrayList);
 
         Promise<TestObject[]> pArray = Promise.asPromise(new TestObject[]{new TestObject("child", 10),
                 new TestObject("child2", 11)});
 
-        Collection coll = new ArrayList();
+        Collection<Promise> coll = new ArrayList<Promise>();
         coll.add(pList);
         coll.add(pArray);
 
@@ -409,7 +453,7 @@ public class ObjectFactoryTest {
 
     @Test
     public void argPromiseOfEmptyCollection() {
-        ArrayList<TestObject> arrayList = new ArrayList();
+        ArrayList<TestObject> arrayList = new ArrayList<TestObject>();
         Promise<List<TestObject>> pList = Promise.asPromise((List<TestObject>) arrayList);
 
         ArgContainer arg = objectFactory.dumpArg(pList);
