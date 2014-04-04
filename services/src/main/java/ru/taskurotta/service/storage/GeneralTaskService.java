@@ -81,9 +81,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 } else if (arg.isCollection()) {//can be collection of promises, case should be checked
                     ArgContainer[] compositeValue = arg.getCompositeValue();
 
-                    if (compositeValue == null) {
-                        args[i] = processPromiseArgValue(arg, processId, task, argType);
-                    } else {
+                    if (compositeValue != null && compositeValue.length > 0) {
                         for (int j = 0; j < compositeValue.length; j++) {
                             ArgContainer innerArg = compositeValue[j];
                             if (innerArg.isPromise()) {
