@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.test.client.serialization;
+package ru.taskurotta.client.serialization;
 
 import org.junit.Assert;
 import org.slf4j.Logger;

@@ -14,7 +14,12 @@ public class ActorDefinitionSerializer extends JsonSerializer<ActorDefinition> i
         jgen.writeStartObject();
         jgen.writeStringField(ACTOR_DEFINITION_NAME, actorDefinition.getName());
         jgen.writeStringField(ACTOR_DEFINITION_VERSION, actorDefinition.getVersion());
-        jgen.writeStringField(ACTOR_DEFINITION_TASK_LIST, actorDefinition.getTaskList());
+
+        String taskList = actorDefinition.getTaskList();
+        if (taskList != null) {
+            jgen.writeStringField(ACTOR_DEFINITION_TASK_LIST, actorDefinition.getTaskList());
+        }
+
         jgen.writeEndObject();
     }
 

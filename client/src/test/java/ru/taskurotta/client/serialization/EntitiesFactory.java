@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.test.client.serialization;
+package ru.taskurotta.client.serialization;
 
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.transport.model.ArgContainer;
@@ -13,10 +13,6 @@ import ru.taskurotta.util.ActorDefinition;
 import java.util.UUID;
 
 public class EntitiesFactory {
-
-    public static ActorDefinition createActorDefinition() {
-        return ActorDefinition.valueOf("test.me.worker", "7.6.5");
-    }
 
     public static TaskContainer createTaskContainer() {
         UUID originalUuid = UUID.randomUUID();

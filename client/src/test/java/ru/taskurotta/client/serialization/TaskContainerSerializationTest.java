@@ -1,4 +1,4 @@
-package ru.taskurotta.dropwizard.test.client.serialization;
+package ru.taskurotta.client.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
