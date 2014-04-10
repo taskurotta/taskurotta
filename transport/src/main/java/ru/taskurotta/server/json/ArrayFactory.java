@@ -27,4 +27,15 @@ public class ArrayFactory {
         }
         return Array.newInstance(theClass, length);
     }
+
+
+    public static Object newInstance(Class arrayClass, int length) throws ClassNotFoundException {
+
+        Class theClass = arrayClass.getComponentType();
+        if (theClass == null) {
+            throw new IllegalStateException("Array class expected [" + arrayClass.toString() + "]");
+        }
+        return Array.newInstance(theClass, length);
+    }
+
 }

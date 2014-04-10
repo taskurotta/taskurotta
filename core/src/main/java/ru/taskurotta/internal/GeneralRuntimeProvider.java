@@ -10,6 +10,7 @@ import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.ExponentialRetry;
 import ru.taskurotta.annotation.LinearRetry;
 import ru.taskurotta.annotation.Worker;
+import ru.taskurotta.core.ArgExtractor;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
@@ -56,6 +57,23 @@ public class GeneralRuntimeProvider implements RuntimeProvider {
 
         public Object invoke(Object... args) throws InvocationTargetException, IllegalAccessException {
             log.debug("before invoke {} args({})", method, args);
+
+            if (args != null) {
+
+                Class[] types = method.getParameterTypes();
+                if (types.length != args.length) {
+                    throw new IllegalStateException("Method has " + types.length + " arguments, " +
+                            " but \'invoke\' method received " + args.length);
+                }
+
+                for (int i = 0; i < args.length; i ++) {
+                    Object arg = args[i];
+                    if (arg instanceof ArgExtractor) {
+                        args[i] = ((ArgExtractor) arg).get(types[i]);
+                    }
+                }
+            }
+
             return method.invoke(actorObject, args);
         }
 

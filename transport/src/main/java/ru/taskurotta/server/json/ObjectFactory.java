@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.ArgExtractor;
 import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
@@ -81,57 +82,77 @@ public class ObjectFactory {
             }
 
         } catch (Exception e) {
-            throw new SerializationException("Cannot deserialize arg["+ argContainer +"]", e);
+            throw new SerializationException("Cannot deserialize arg[" + argContainer + "]", e);
         }
 
     }
 
+    private Object extractValue(final ArgContainer arg) throws Exception {
 
-    private Object extractValue(ArgContainer arg) throws Exception {
-        Object result = null;
-        if (arg.isNull()) { //null object
-            // just do nothing
-        } else if (arg.isPlain()) { //simple object or primitive value
-            result = getSimpleValue(arg.getJSONValue(), arg.getClassName());
+        return new ArgExtractor() {
+            @Override
+            public Object get(Class clazz) {
+                Object result = null;
 
-        } else if (arg.isArray()) {//array of custom POJO objects or primitives
-            result = getArrayValue(arg.getJSONValue(), arg.getClassName());
+                try {
+                    if (arg.isNull()) { //null object
+                        // just do nothing
+                    } else if (arg.isPlain()) { //simple object or primitive value
+                        result = getSimpleValue(arg.getJSONValue(), clazz);
 
-        } else if (arg.isCollection()) {//collection
-            result = getCollectionValue(arg.getCompositeValue(), arg.getClassName());
+                    } else if (arg.isArray()) {//array of custom POJO objects or primitives
+                        result = getArrayValue(arg.getJSONValue(), clazz);
 
-        } else {
-            throw new SerializationException("Unsupported or null value type for arg["+arg+"]!");
-        }
-        return result;
-    }
+                    } else if (arg.isCollection()) {//collection
+                        result = getCollectionValue(arg.getCompositeValue(), clazz);
 
-    private Object getSimpleValue(String json, String valueClass) throws ClassNotFoundException, IOException {
-        Class loadedClass = Thread.currentThread().getContextClassLoader().loadClass(valueClass);
-        return mapper.readValue(json, loadedClass);
-    }
+                    } else {
+                        throw new SerializationException("Unsupported or null value type for arg[" + arg + "]!");
+                    }
+                    return result;
 
-    private Object getArrayValue(String json, String arrayItemClassName) throws Exception {
-        JsonNode node = mapper.readTree(json);
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalStateException(e);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException(e);
+                } catch (InstantiationException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
 
-        Object array = ArrayFactory.newInstance(arrayItemClassName, node.size());
-        Class<?> componentType = array.getClass().getComponentType();
+            private Object getSimpleValue(String json, Class valueClass) throws IOException {
+                return mapper.readValue(json, valueClass);
+            }
 
-        for (int i = 0; i < node.size(); i++) {
-            Array.set(array, i, mapper.readValue(node.get(i).asText(), componentType));
-        }
-        return array;
-    }
+            private Object getArrayValue(String json, Class arrayClass) throws IOException, ClassNotFoundException {
+                JsonNode node = mapper.readTree(json);
 
-    private Object getCollectionValue(ArgContainer[] items, String collectionClassName) throws Exception {
-        Class collectionClass = Thread.currentThread().getContextClassLoader().loadClass(collectionClassName);
-        Collection result = (Collection) collectionClass.newInstance();
+                Object array = ArrayFactory.newInstance(arrayClass, node.size());
+                Class<?> componentType = array.getClass().getComponentType();
 
-        for (ArgContainer item: items) {
-            result.add(parseArg(item));
-        }
+                for (int i = 0; i < node.size(); i++) {
+                    Array.set(array, i, mapper.readValue(node.get(i).asText(), componentType));
+                }
+                return array;
+            }
 
-        return result;
+            private Object getCollectionValue(ArgContainer[] items, Class collectionClass) throws IllegalAccessException, InstantiationException {
+                if (collectionClass.isInterface()) {
+// SWAP
+                }
+
+                Collection result = (Collection) collectionClass.newInstance();
+
+                for (ArgContainer item : items) {
+                    result.add(parseArg(item));
+                }
+
+                return result;
+            }
+        };
+
     }
 
     public ArgContainer dumpArg(Object arg) {
@@ -140,7 +161,7 @@ public class ObjectFactory {
 
         try {
             if (arg instanceof Promise) {
-                Promise pArg = (Promise)arg;
+                Promise pArg = (Promise) arg;
                 result.setPromise(true);
                 result.setReady(pArg.isReady());
                 result.setTaskId(pArg.getId());
@@ -156,7 +177,7 @@ public class ObjectFactory {
             }
 
         } catch (Exception e) {
-            throw new SerializationException("Cannot dump arg [" + arg+ "]", e);
+            throw new SerializationException("Cannot dump arg [" + arg + "]", e);
         }
 
         logger.debug("Object [{}] dumped into an ArgContainer[{}]", arg, result);
@@ -199,7 +220,7 @@ public class ObjectFactory {
         ActorDefinition actorDef = ActorUtils.getActorDefinition(taskContainer.getActorId());
 
         TaskType taskType = taskContainer.getType();
-        if(TaskType.WORKER_SCHEDULED.equals(taskContainer.getType())) {
+        if (TaskType.WORKER_SCHEDULED.equals(taskContainer.getType())) {
             taskType = TaskType.WORKER;//scheduled worker is worker actor
         }
         TaskTarget taskTarget = new TaskTargetImpl(taskType, actorDef.getName(), actorDef.getVersion(), taskContainer.getMethod());
@@ -251,25 +272,25 @@ public class ObjectFactory {
             return null;
         }
 
-		ActorSchedulingOptionsContainer optionsContainer = null;
-		ActorSchedulingOptions actorSchedulingOptions = taskOptions.getActorSchedulingOptions();
-		if (null != actorSchedulingOptions) {
-			optionsContainer = new ActorSchedulingOptionsContainer();
-			optionsContainer.setStartTime(actorSchedulingOptions.getStartTime());
-			optionsContainer.setCustomId(actorSchedulingOptions.getCustomId());
-			optionsContainer.setTaskList(actorSchedulingOptions.getTaskList());
-		}
+        ActorSchedulingOptionsContainer optionsContainer = null;
+        ActorSchedulingOptions actorSchedulingOptions = taskOptions.getActorSchedulingOptions();
+        if (null != actorSchedulingOptions) {
+            optionsContainer = new ActorSchedulingOptionsContainer();
+            optionsContainer.setStartTime(actorSchedulingOptions.getStartTime());
+            optionsContainer.setCustomId(actorSchedulingOptions.getCustomId());
+            optionsContainer.setTaskList(actorSchedulingOptions.getTaskList());
+        }
 
-		ArgContainer promisesWaitForDumped[] = null;
-		Promise<?>[] promisesWaitFor = taskOptions.getPromisesWaitFor();
-		if (null != promisesWaitFor) {
-			promisesWaitForDumped = new ArgContainer[promisesWaitFor.length];
-			for (int i=0; i < promisesWaitFor.length; i++) {
-				promisesWaitForDumped[i] = dumpArg(promisesWaitFor[i]);
-			}
-		}
+        ArgContainer promisesWaitForDumped[] = null;
+        Promise<?>[] promisesWaitFor = taskOptions.getPromisesWaitFor();
+        if (null != promisesWaitFor) {
+            promisesWaitForDumped = new ArgContainer[promisesWaitFor.length];
+            for (int i = 0; i < promisesWaitFor.length; i++) {
+                promisesWaitForDumped[i] = dumpArg(promisesWaitFor[i]);
+            }
+        }
 
-		return new TaskOptionsContainer(taskOptions.getArgTypes(), optionsContainer, promisesWaitForDumped);
+        return new TaskOptionsContainer(taskOptions.getArgTypes(), optionsContainer, promisesWaitForDumped);
     }
 
 
@@ -314,7 +335,7 @@ public class ObjectFactory {
         if (array != null) {
 
             int size = Array.getLength(array);
-            for (int i = 0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 String itemValue = mapper.writeValueAsString(Array.get(array, i));
                 arrayNode.add(itemValue);
             }
