@@ -111,7 +111,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // atomic statement
-        TaskQueueItem item = queueService.poll(actorDefinition.getFullName(), actorDefinition.getTaskList());
+        TaskQueueItem item = queueService.poll(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList());
         if (item == null) {
             return null;
         }

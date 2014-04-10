@@ -10,6 +10,7 @@ import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 /**
  * User: stukushin
@@ -41,7 +42,7 @@ public class TaskSpreaderCommon implements TaskSpreader {
     @Override
     public void release(TaskDecision taskDecision) {
         logger.debug("Release decision[{}]", taskDecision);
-        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, actorDefinition.getFullName());
+        DecisionContainer decisionContainer = objectFactory.dumpResult(taskDecision, ActorUtils.getActorId(actorDefinition));
         logger.debug("Release decisionContainer[{}]", decisionContainer);
         taskServer.release(decisionContainer);
     }

@@ -10,6 +10,7 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -61,34 +62,35 @@ public class MetricsProfiler implements Profiler {
         parseProperties(properties);
 
         ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
+        String actorId = ActorUtils.getActorId(actorDefinition);
 
         if (isMeterCycle) {
-            String meterName = actorDefinition.getFullName() + "#meterCycle";
+            String meterName = actorId + "#meterCycle";
             meterCycle = Metrics.newMeter(actorClass, meterName, "requests", TimeUnit.SECONDS);
         }
 
         if (isTrackExecute) {
-            String timerName = actorDefinition.getFullName() + "#timerExecute";
+            String timerName = actorId + "#timerExecute";
             timerExecute = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
         if (isTrackCycle) {
-            String timerName = actorDefinition.getFullName() + "#timerCycle";
+            String timerName = actorId + "#timerCycle";
             timerCycle = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
         if (isTrackPull) {
-            String timerName = actorDefinition.getFullName() + "#timerPull";
+            String timerName = actorId + "#timerPull";
             timerPull = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
         if (isTrackRelease) {
-            String timerName = actorDefinition.getFullName() + "#timerRelease";
+            String timerName = actorId + "#timerRelease";
             timerRelease = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 
         if (isTrackError) {
-            String timerName = actorDefinition.getFullName() + "#timerError";
+            String timerName = actorId + "#timerError";
             timerError = Metrics.newTimer(actorClass, timerName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
         }
 

@@ -24,6 +24,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +45,7 @@ public class MockServiceBundle implements ServiceBundle {
     }
 
     private static TaskContainer createRandomMultiplyTaskContainer(UUID taskId, UUID processId) {
-        String actorId = ActorDefinition.valueOf(MultiplierDecider.class).getFullName();
+        String actorId = ActorUtils.getActorId(ActorDefinition.valueOf(MultiplierDecider.class));
 
         String a = Integer.toString(ThreadLocalRandom.current().nextInt());
         String b = Integer.toString(ThreadLocalRandom.current().nextInt());

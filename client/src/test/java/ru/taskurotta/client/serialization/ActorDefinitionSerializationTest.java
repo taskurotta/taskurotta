@@ -41,8 +41,6 @@ public class ActorDefinitionSerializationTest {
             Assert.assertEquals("ActorDefinition versions must be equal", original.getVersion(), result.getVersion());
             Assert.assertEquals("ActorDefinition taskLists must be equal", original.getTaskList(),
                     result.getTaskList());
-            Assert.assertEquals("ActorDefinition fullName must be equal", original.getFullName(),
-                    result.getFullName());
         }
 
     }

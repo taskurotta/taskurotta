@@ -19,16 +19,16 @@ public class SerializationUtils {
     /**
      * @return method with name "add" and single argument
      */
-    public static Method getAddMethod(Class collectionClass) {
-        Method result = null;
-        for (Method method : collectionClass.getDeclaredMethods()) {
-            if ("add".equalsIgnoreCase(method.getName()) && method.getParameterTypes().length == 1) {
-                result = method;
-                break;
-            }
-        }
-        return result;
-    }
+//    public static Method getAddMethod(Class collectionClass) {
+//        Method result = null;
+//        for (Method method : collectionClass.getDeclaredMethods()) {
+//            if ("add".equalsIgnoreCase(method.getName()) && method.getParameterTypes().length == 1) {
+//                result = method;
+//                break;
+//            }
+//        }
+//        return result;
+//    }
 
     public static ValueType extractValueType(Class argClass) {
         ValueType result;

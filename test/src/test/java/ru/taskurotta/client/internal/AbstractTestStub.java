@@ -31,6 +31,7 @@ import ru.taskurotta.service.storage.MemoryTaskDao;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -130,7 +131,7 @@ public class AbstractTestStub {
 
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        return memoryQueueService.isTaskInQueue(actorDefinition.getFullName(), actorDefinition.getTaskList(), taskId, processId);
+        return memoryQueueService.isTaskInQueue(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList(), taskId, processId);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {
