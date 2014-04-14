@@ -31,11 +31,11 @@ public class ArrayFactory {
 
     public static Object newInstance(Class arrayClass, int length) throws ClassNotFoundException {
 
-        Class theClass = arrayClass.getComponentType();
-        if (theClass == null) {
-            throw new IllegalStateException("Array class expected [" + arrayClass.toString() + "]");
+        Class componentClass = arrayClass.getComponentType();
+        if (componentClass == null) {
+            componentClass = arrayClass;
         }
-        return Array.newInstance(theClass, length);
+        return Array.newInstance(componentClass, length);
     }
 
 }

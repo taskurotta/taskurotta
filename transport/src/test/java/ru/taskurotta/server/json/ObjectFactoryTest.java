@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ArgExtractor;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.internal.core.TaskTargetImpl;
@@ -43,7 +44,7 @@ public class ObjectFactoryTest {
     @Test
     public void argContainerBoolean() {
         Boolean arg = Boolean.FALSE;
-        testInternal(arg);
+        testInternal(arg, Boolean.class);
     }
 
     @Test
@@ -65,12 +66,13 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        boolean[] newArg = (boolean[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+        ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		boolean[] result = newArg.get(boolean[].class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
+        Assert.assertEquals(arg.length, result.length);
+        for (int i = 0; i < result.length; i++) {
+            Assert.assertEquals(arg[i], result[i]);
         }
     }
 
@@ -83,12 +85,13 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        int[] newArg = (int[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		int[] result = newArg.get(int[].class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
+        Assert.assertEquals(arg.length, result.length);
+        for (int i = 0; i < result.length; i++) {
+            Assert.assertEquals(arg[i], result[i]);
         }
     }
 
@@ -98,12 +101,13 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        byte[] newArg = (byte[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		byte[] result = newArg.get(byte[].class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
+        Assert.assertEquals(arg.length, result.length);
+        for (int i = 0; i < result.length; i++) {
+            Assert.assertEquals(arg[i], result[i]);
         }
     }
 
@@ -116,12 +120,13 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        short[] newArg = (short[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		short[] result = newArg.get(short[].class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
+        Assert.assertEquals(arg.length, result.length);
+        for (int i = 0; i < result.length; i++) {
+            Assert.assertEquals(arg[i], result[i]);
         }
     }
 
@@ -134,12 +139,13 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        long[] newArg = (long[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		long[] result = newArg.get(long[].class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
+        Assert.assertEquals(arg.length, result.length);
+        for (int i = 0; i < result.length; i++) {
+            Assert.assertEquals(arg[i], result[i]);
         }
     }
 
@@ -152,13 +158,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        double[] newArg = (double[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		double[] result = newArg.get(double[].class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i], 0.0d);
-        }
+		Assert.assertArrayEquals(arg, result, 1e-12);
     }
 
     @Test
@@ -172,13 +176,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        TestObject[] newArg = (TestObject[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		TestObject[] result = newArg.get(TestObject[].class);
+		log.debug("result = {}", (Object[])result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
-        }
+        Assert.assertArrayEquals(arg, result);
     }
 
     // Promise not supported inside object structures except Collections
@@ -192,13 +194,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        Promise<?>[] newArg = (Promise<?>[]) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		Promise<?>[] result = newArg.get(Promise[].class);
+		log.debug("result = {}", (Object[])result);
 
-        Assert.assertEquals(arg.length, newArg.length);
-        for (int i = 0; i < newArg.length; i++) {
-            Assert.assertEquals(arg[i], newArg[i]);
-        }
+		Assert.assertArrayEquals(arg, result);
     }
 
     @Test
@@ -209,13 +209,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("Object [{}] dump to [{}]", arg, argContainer);
 
-        List<String> newArg = (List<String>) objectFactory.parseArg(argContainer);
-        log.debug("ArgContainer [{}] parsed to [{}]", argContainer, newArg);
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		List<String> result = newArg.get(ArrayList.class);
+		log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.size(), newArg.size());
-        for (int i = 0; i < newArg.size(); i++) {
-            Assert.assertEquals(arg.get(i), newArg.get(i));
-        }
+        Assert.assertArrayEquals(arg.toArray(), result.toArray());
     }
 
     @Test
@@ -224,13 +222,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("Object [{}] dump to [{}]", arg, argContainer);
 
-        List<String> newArg = (List<String>) objectFactory.parseArg(argContainer);
-        log.debug("ArgContainer [{}] parsed to [{}]", argContainer, newArg);
+        ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+        List<String> result = newArg.get(ArrayList.class);
+        log.debug("result = {}", result);
 
-        Assert.assertEquals(arg.size(), newArg.size());
-        for (int i = 0; i < newArg.size(); i++) {
-            Assert.assertEquals(arg.get(i), newArg.get(i));
-        }
+        Assert.assertArrayEquals(arg.toArray(), result.toArray());
     }
 
     @Test
@@ -239,10 +235,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("Object [{}] dump to [{}]", arg, argContainer);
 
-        List<String> newArg = (List<String>) objectFactory.parseArg(argContainer);
-        log.debug("ArgContainer [{}] parsed to [{}]", argContainer, newArg);
+        ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+        List<String> result = newArg.get(ArrayList.class);
+        log.debug("ArgContainer [{}] parsed to [{}]", newArg, result);
 
-        Assert.assertEquals(arg, newArg);
+        Assert.assertEquals(arg, result);
     }
 
     @Test
@@ -254,13 +251,11 @@ public class ObjectFactoryTest {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
-        List<Promise<?>> newArg = (List<Promise<?>>) objectFactory.parseArg(argContainer);
-        log.debug("newArg = {}", newArg);
+        ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+        List<Promise<?>> result = newArg.get(ArrayList.class);
+        log.debug("ArgContainer [{}] parsed to [{}]", newArg, result);
 
-        Assert.assertEquals(arg.size(), newArg.size());
-        for (int i = 0; i < newArg.size(); i++) {
-            Assert.assertEquals(arg.get(i), newArg.get(i));
-        }
+        Assert.assertArrayEquals(arg.toArray(), result.toArray());
     }
 
     @Test
@@ -373,7 +368,8 @@ public class ObjectFactoryTest {
     @Test
     public void argContainerReadyPromiseBoolean() {
         Promise arg = Promise.asPromise(Boolean.TRUE);
-        testInternal(arg);
+        Promise result = (Promise) testInternal(arg);
+        Assert.assertEquals(arg.get(), result.get());
     }
 
     @Test
@@ -472,7 +468,7 @@ public class ObjectFactoryTest {
         testInternal(null);
     }
 
-    private void testInternal(Object arg) {
+    private Object testInternal(Object arg) {
         ArgContainer argContainer = objectFactory.dumpArg(arg);
         log.debug("argContainer = {}", argContainer);
 
@@ -480,9 +476,20 @@ public class ObjectFactoryTest {
         log.debug("newArg = {}", newArg);
 
         Assert.assertEquals(arg, newArg);
+        return newArg;
     }
 
-    @Test
+	private void testInternal(Object arg, Class expectedClass) {
+		ArgContainer argContainer = objectFactory.dumpArg(arg);
+		log.debug("argContainer = {}", argContainer);
+
+		ArgExtractor newArg = (ArgExtractor) objectFactory.parseArg(argContainer);
+		log.debug("newArg = {}", newArg);
+
+		Assert.assertEquals(arg, newArg.get(expectedClass));
+	}
+
+	@Test
     public void taskSimple() {
         Task task =
                 TestTasks.newInstance(

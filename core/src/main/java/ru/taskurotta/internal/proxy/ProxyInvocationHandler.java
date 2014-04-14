@@ -13,6 +13,7 @@ import ru.taskurotta.internal.core.TaskOptionsImpl;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;

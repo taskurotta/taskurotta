@@ -53,16 +53,16 @@ public class ObjectFactory {
     }
 
     public Object parseArg(ArgContainer argContainer) {
+        return parseArg(argContainer, true);
+    }
+
+    public Object parseArg(ArgContainer argContainer, boolean delayed) {
 
         if (argContainer == null) {
             return null;
         }
 
         try {
-//            if(argContainer.getType() == null && argContainer.getClassName()!=null) { //try to determine type. This info can be lost after swapping with Promise on server side
-//                argContainer.setType(SerializationUtils.extractValueType(Class.forName(argContainer.getClassName())));
-//            }
-
             if (argContainer.isPromise()) {
                 Promise promise = Promise.createInstance(argContainer.getTaskId());
                 if (argContainer.containsError()) {
@@ -70,13 +70,13 @@ public class ObjectFactory {
                     promise.setFail(new Fail(errorContainer.getClassNames(), errorContainer.getMessage()));
                 }
                 if (argContainer.isReady()) {
-                    promise.set(extractValue(argContainer));
+                    promise.set(extractValue(argContainer, false));
                 }
                 logger.debug("ArgContainer[{}] parsed into promise[{}]", argContainer, promise);
                 return promise;
 
             } else {//not a Promise, just some POJO or a primitive
-                Object result = extractValue(argContainer);
+                Object result = extractValue(argContainer, delayed);
                 logger.debug("ArgContainer[{}] parsed into object[{}]", argContainer, result);
                 return result;
             }
@@ -84,76 +84,89 @@ public class ObjectFactory {
         } catch (Exception e) {
             throw new SerializationException("Cannot deserialize arg[" + argContainer + "]", e);
         }
-
     }
 
-    private Object extractValue(final ArgContainer arg) throws Exception {
+    private Object extractValue(final ArgContainer arg, boolean delayed) throws Exception {
+        if (delayed) {
+            return getExtractor(arg);
+        } else {
+            Class argClass = Thread.currentThread().getContextClassLoader().loadClass(arg.getClassName());
+            return getValue(arg, argClass);
+        }
+    }
+
+    private ArgExtractor getExtractor(final ArgContainer arg) throws Exception {
 
         return new ArgExtractor() {
             @Override
-            public Object get(Class clazz) {
-                Object result = null;
-
-                try {
-                    if (arg.isNull()) { //null object
-                        // just do nothing
-                    } else if (arg.isPlain()) { //simple object or primitive value
-                        result = getSimpleValue(arg.getJSONValue(), clazz);
-
-                    } else if (arg.isArray()) {//array of custom POJO objects or primitives
-                        result = getArrayValue(arg.getJSONValue(), clazz);
-
-                    } else if (arg.isCollection()) {//collection
-                        result = getCollectionValue(arg.getCompositeValue(), clazz);
-
-                    } else {
-                        throw new SerializationException("Unsupported or null value type for arg[" + arg + "]!");
-                    }
-                    return result;
-
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(e);
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException(e);
-                } catch (InstantiationException e) {
-                    throw new IllegalStateException(e);
-                }
+            public <T> T get(Class<T> resultClass) {
+				return getValue(arg, resultClass);
             }
 
-            private Object getSimpleValue(String json, Class valueClass) throws IOException {
-                return mapper.readValue(json, valueClass);
-            }
-
-            private Object getArrayValue(String json, Class arrayClass) throws IOException, ClassNotFoundException {
-                JsonNode node = mapper.readTree(json);
-
-                Object array = ArrayFactory.newInstance(arrayClass, node.size());
-                Class<?> componentType = array.getClass().getComponentType();
-
-                for (int i = 0; i < node.size(); i++) {
-                    Array.set(array, i, mapper.readValue(node.get(i).asText(), componentType));
-                }
-                return array;
-            }
-
-            private Object getCollectionValue(ArgContainer[] items, Class collectionClass) throws IllegalAccessException, InstantiationException {
-                if (collectionClass.isInterface()) {
-// SWAP
-                }
-
-                Collection result = (Collection) collectionClass.newInstance();
-
-                for (ArgContainer item : items) {
-                    result.add(parseArg(item));
-                }
-
-                return result;
-            }
+			public String toString() {
+				return "ArgExtractor ["+ arg.toString() +"]";
+			}
         };
-
     }
+
+    private <T> T getValue(ArgContainer arg, Class<T> resultClass) {
+        Object result;
+
+        try {
+            if (arg.isNull()) { //null object
+                result = null;
+
+            } else if (arg.isPlain()) { //simple object or primitive value
+                result = getSimpleValue(arg.getJSONValue(), resultClass);
+
+            } else if (arg.isArray()) { //array of custom POJO objects or primitives
+                result = getArrayValue(arg.getJSONValue(), resultClass);
+
+            } else if (arg.isCollection()) { //collection
+                result = getCollectionValue(arg.getCompositeValue(), resultClass);
+
+            } else {
+                throw new SerializationException("Unsupported or null value type for arg[" + arg + "]!");
+            }
+
+            return resultClass.cast(result);
+
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        } catch (InstantiationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private Object getSimpleValue(String json, Class valueClass) throws IOException {
+        return mapper.readValue(json, valueClass);
+    }
+
+    private Object getArrayValue(String json, Class arrayClass) throws IOException, ClassNotFoundException {
+        JsonNode node = mapper.readTree(json);
+
+        Object array = ArrayFactory.newInstance(arrayClass, node.size());
+        Class<?> componentType = array.getClass().getComponentType();
+
+        for (int i = 0; i < node.size(); i++) {
+            Array.set(array, i, mapper.readValue(node.get(i).asText(), componentType));
+        }
+        return array;
+    }
+
+    private Object getCollectionValue(ArgContainer[] items, Class collectionClass) throws IllegalAccessException, InstantiationException {
+        Collection result = (Collection) collectionClass.newInstance();
+
+        for (ArgContainer item: items) {
+            result.add(parseArg(item, false));
+        }
+        return result;
+    }
+
 
     public ArgContainer dumpArg(Object arg) {
 
