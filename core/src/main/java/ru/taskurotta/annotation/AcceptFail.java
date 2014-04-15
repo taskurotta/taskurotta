@@ -16,4 +16,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AcceptFail {
     Class[] type() default {};
+    String[] typeNames() default{};
 }
