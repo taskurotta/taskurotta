@@ -62,7 +62,7 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
     }
 
     private void serializePlain(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
-        writeString(out, argContainer.getClassName());
+        writeString(out, argContainer.getDataType());
         if (argContainer.getTaskId() == null) {
             out.writeBoolean(false);
         } else {
@@ -71,8 +71,8 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
         }
         out.writeBoolean(argContainer.isReady());
         writeString(out, argContainer.getJSONValue());
-        if (argContainer.getType() != null) {
-            out.writeInt(argContainer.getType().getValue());
+        if (argContainer.getValueType() != null) {
+            out.writeInt(argContainer.getValueType().getValue());
         } else {
             out.writeInt(-1);
         }
@@ -95,11 +95,11 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
             valueType = ArgContainer.ValueType.fromInt(type);
         }
         boolean promise = in.readBoolean();
-        arg.setClassName(className);
+        arg.setDataType(className);
         arg.setTaskId(taskId);
         arg.setReady(ready);
         arg.setJSONValue(jsonValue);
-        arg.setType(valueType);
+        arg.setValueType(valueType);
         arg.setPromise(promise);
         return arg;
     }

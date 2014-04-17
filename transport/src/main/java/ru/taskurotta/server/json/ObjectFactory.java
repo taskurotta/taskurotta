@@ -89,13 +89,13 @@ public class ObjectFactory {
         if (arg.isNull()) { //null object
             // just do nothing
         } else if (arg.isPlain()) { //simple object or primitive value
-            result = getSimpleValue(arg.getJSONValue(), arg.getClassName());
+            result = getSimpleValue(arg.getJSONValue(), arg.getDataType());
 
         } else if (arg.isArray()) {//array of custom POJO objects or primitives
-            result = getArrayValue(arg.getJSONValue(), arg.getClassName());
+            result = getArrayValue(arg.getJSONValue(), arg.getDataType());
 
         } else if (arg.isCollection()) {//collection
-            result = getCollectionValue(arg.getCompositeValue(), arg.getClassName());
+            result = getCollectionValue(arg.getCompositeValue(), arg.getDataType());
 
         } else {
             throw new SerializationException("Unsupported or null value type for arg["+arg+"]!");
@@ -164,22 +164,22 @@ public class ObjectFactory {
 
         if (value == null) {
             target.setJSONValue(getPlainJson(value));
-            target.setClassName(Object.class.getName());
+            target.setDataType(Object.class.getName());
             return;
         }
 
         ValueType type = SerializationUtils.extractValueType(value.getClass());
-        target.setType(type);
+        target.setValueType(type);
 
         if (ValueType.PLAIN.equals(type)) {
             target.setJSONValue(getPlainJson(value));
-            target.setClassName(value.getClass().getName());
+            target.setDataType(value.getClass().getName());
         } else if (ValueType.ARRAY.equals(type)) {
             target.setJSONValue(getArrayJson(value));
-            target.setClassName(value.getClass().getComponentType().getName());
+            target.setDataType(value.getClass().getComponentType().getName());
         } else if (ValueType.COLLECTION.equals(type)) {
             target.setCompositeValue(parseCollectionValues(value));
-            target.setClassName(value.getClass().getName());
+            target.setDataType(value.getClass().getName());
 
         } else {
             throw new SerializationException("Cannot determine value type to set for object " + value);

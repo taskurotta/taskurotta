@@ -16,7 +16,7 @@ public class EntitiesComparator {
     public static void compare(ArgContainer original, ArgContainer validating) {
         if (original != null) {
             Assert.assertNotNull(validating);
-            Assert.assertEquals("Arg class names must be the same", original.getClassName(), validating.getClassName());
+            Assert.assertEquals("Arg class names must be the same", original.getDataType(), validating.getDataType());
             Assert.assertEquals("Arg JSON values must be the same", original.getJSONValue(), validating.getJSONValue());
             Assert.assertEquals("Arg task UUID must be the same", original.getTaskId(), validating.getTaskId());
         }

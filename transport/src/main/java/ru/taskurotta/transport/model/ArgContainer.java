@@ -35,11 +35,11 @@ public class ArgContainer implements Cloneable, Serializable {
 
     }
 
-    private String className;
+    private String dataType;
     private UUID taskId;
     private boolean isReady;
     private String JSONValue;
-    private ValueType type;
+    private ValueType valueType;
     private ArgContainer[] compositeValue;
     private boolean promise = false;
     private ErrorContainer errorContainer;
@@ -47,18 +47,18 @@ public class ArgContainer implements Cloneable, Serializable {
     public ArgContainer() {
     }
 
-    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, boolean promise, String JSONValue) {
-        this.type = type;
-        this.className = className;
+    public ArgContainer(String dataType, ValueType valueType, UUID taskId, boolean isReady, boolean promise, String JSONValue) {
+        this.valueType = valueType;
+        this.dataType = dataType;
         this.taskId = taskId;
         this.isReady = isReady;
         this.promise = promise;
         this.JSONValue = JSONValue;
     }
 
-    public ArgContainer(String className, ValueType type, UUID taskId, boolean isReady, boolean promise, ArgContainer[] values) {
-        this.type = type;
-        this.className = className;
+    public ArgContainer(String dataType, ValueType valueType, UUID taskId, boolean isReady, boolean promise, ArgContainer[] values) {
+        this.valueType = valueType;
+        this.dataType = dataType;
         this.taskId = taskId;
         this.isReady = isReady;
         this.promise = promise;
@@ -66,8 +66,8 @@ public class ArgContainer implements Cloneable, Serializable {
     }
 
     public ArgContainer(ArgContainer source) {
-        this.type = source.type;
-        this.className = source.className;
+        this.valueType = source.valueType;
+        this.dataType = source.dataType;
         this.taskId = source.taskId;
         this.isReady = source.isReady;
         this.JSONValue = source.JSONValue;
@@ -76,12 +76,12 @@ public class ArgContainer implements Cloneable, Serializable {
         this.errorContainer = source.errorContainer;
     }
 
-    public String getClassName() {
-        return className;
+    public String getDataType() {
+        return dataType;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
     }
 
     public boolean isPromise() {
@@ -90,30 +90,30 @@ public class ArgContainer implements Cloneable, Serializable {
 
     @JsonIgnore
     public boolean isArray() {
-        return ValueType.ARRAY.equals(type);
+        return ValueType.ARRAY.equals(valueType);
     }
 
     @JsonIgnore
     public boolean isCollection() {
-        return ValueType.COLLECTION.equals(type);
+        return ValueType.COLLECTION.equals(valueType);
     }
 
     @JsonIgnore
     public boolean isPlain() {
-        return ValueType.PLAIN.equals(type);
+        return ValueType.PLAIN.equals(valueType);
     }
 
     @JsonIgnore
     public boolean isNull() {
-        return null == type;
+        return null == valueType;
     }
 
-    public ValueType getType() {
-        return type;
+    public ValueType getValueType() {
+        return valueType;
     }
 
-    public void setType(ValueType type) {
-        this.type = type;
+    public void setValueType(ValueType valueType) {
+        this.valueType = valueType;
     }
 
     public void setPromise(boolean promise) {
@@ -122,12 +122,12 @@ public class ArgContainer implements Cloneable, Serializable {
 
 //    /**
 //     * Create new ArgContainer as a copy of this and change its value type
-//     * @param type - new value type
+//     * @param valueType - new value type
 //     * @return created object
 //     */
-//    public ArgContainer updateType(ValueType type) {
+//    public ArgContainer updateType(ValueType valueType) {
 //        ArgContainer result = new ArgContainer(this);
-//        result.type = type;
+//        result.valueType = valueType;
 //        return result;
 //    }
 
@@ -171,12 +171,12 @@ public class ArgContainer implements Cloneable, Serializable {
      */
     public ArgContainer updateValue(ArgContainer source) {
         ArgContainer result = new ArgContainer(this);
-        result.className = source.className;
+        result.dataType = source.dataType;
         result.JSONValue = source.JSONValue;
         result.compositeValue = source.compositeValue;
         result.isReady = source.isReady;
         result.promise = source.promise;
-        result.type = source.type;
+        result.valueType = source.valueType;
         return result;
     }
 
@@ -219,11 +219,11 @@ public class ArgContainer implements Cloneable, Serializable {
     @Override
     public String toString() {
         return "ArgContainer{" +
-                "className='" + className + '\'' +
+                "dataType='" + dataType + '\'' +
                 ", taskId=" + taskId +
                 ", isReady=" + isReady +
                 ", JSONValue='" + JSONValue + '\'' +
-                ", type=" + type +
+                ", valueType=" + valueType +
                 ", compositeValue=" + Arrays.toString(compositeValue) +
                 ", promise=" + promise +
                 ", errorContainer=" + errorContainer +
