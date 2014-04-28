@@ -33,7 +33,7 @@ public class SerializationTest {
         ArgContainer originalArg1 = new ArgContainer(origArg1ClassName, ArgContainer.ValueType.PLAIN, originalUuid, false, true, origArg1Value);
 
         String origArg2ClassName = "java.lang.String";
-        String origArg2Value = "string value here";
+        String origArg2Value = "\"string value here\"";
         ArgContainer originalArg2 = new ArgContainer(origArg2ClassName, ArgContainer.ValueType.PLAIN, originalUuid, true, false, origArg2Value);
 
 

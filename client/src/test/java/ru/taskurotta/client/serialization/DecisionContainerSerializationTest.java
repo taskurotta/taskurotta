@@ -9,7 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.transport.model.DecisionContainer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class DecisionContainerSerializationTest {
 
@@ -19,19 +22,29 @@ public class DecisionContainerSerializationTest {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Test
-    public void testDecisionContainerSerialization() {
+    public void testDecisionContainerSerialization() throws IOException {
         ObjectMapper jacksonMapper = new ObjectMapper();
 
         DecisionContainer original = EntitiesFactory.createDecisionContainer(false);
 
         DecisionContainer result = null;
+        File tmpJsonFile = null;
+        String fileContent = null;
+        BufferedReader reader = null;
         try {
-            File tmpJsonFile = tmpFolder.newFile();
+            tmpJsonFile = tmpFolder.newFile();
             jacksonMapper.writeValue(tmpJsonFile, original);
+            reader = new BufferedReader(new FileReader(tmpJsonFile));
+            fileContent = reader.readLine();
             result = jacksonMapper.readValue(tmpJsonFile, DecisionContainer.class);
         } catch (Exception e) {
-            logger.error("Exception at (de)serialization of DecisionContainerWrapper to tmp File", e);
-            Assert.fail("Exception at (de)serialization of DecisionContainerWrapper to tmp File");
+            logger.error("Exception at (de)serialization of DecisionContainer to tmp File", e);
+            Assert.fail("Exception at (de)serialization of DecisionContainer to tmp File");
+        } finally {
+            logger.debug("FileContent: \n" + fileContent);
+            if (reader!=null) {
+                reader.close();
+            }
         }
 
         Assert.assertNotNull(result);

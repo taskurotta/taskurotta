@@ -1,6 +1,10 @@
 package ru.taskurotta.transport.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import ru.taskurotta.transport.model.serialization.StringToJsonSerializer;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -43,6 +47,29 @@ public class ArgContainer implements Cloneable, Serializable {
     private ArgContainer[] compositeValue;
     private boolean promise = false;
     private ErrorContainer errorContainer;
+
+
+    @JsonProperty("jsonvalue")  //workaround for Jackson rawJson deserialization feature absence
+    public void setJsonValue(JsonNode jsonValue) {
+        this.JSONValue = jsonValue !=null? jsonValue.toString(): null;
+    }
+
+    //deserialization feature is not implementet at Jackson: JACKSON-781, JACKSON-596
+    @JsonSerialize(using = StringToJsonSerializer.class, contentUsing = StringToJsonSerializer.class, keyUsing = StringToJsonSerializer.class)
+    @JsonProperty("jsonvalue")
+    public String getJsonValue() {
+        return JSONValue;
+    }
+
+    @JsonIgnore
+    public String getJSONValue() {
+        return JSONValue;
+    }
+
+    @JsonIgnore
+    public void setJSONValue(String JSONValue) {
+        this.JSONValue = JSONValue;
+    }
 
     public ArgContainer() {
     }
@@ -186,14 +213,6 @@ public class ArgContainer implements Cloneable, Serializable {
 
     public void setReady(boolean ready) {
         isReady = ready;
-    }
-
-    public String getJSONValue() {
-        return JSONValue;
-    }
-
-    public void setJSONValue(String JSONValue) {
-        this.JSONValue = JSONValue;
     }
 
     public ArgContainer[] getCompositeValue() {

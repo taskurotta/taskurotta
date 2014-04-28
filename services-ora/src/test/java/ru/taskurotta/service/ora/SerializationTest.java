@@ -1,20 +1,15 @@
 package ru.taskurotta.service.ora;
 
-import java.util.Date;
-import java.util.UUID;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
-import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.internal.core.ArgType;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.transport.model.*;
+
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * User: moroz
@@ -38,7 +33,7 @@ public class SerializationTest {
         ArgContainer originalArg1 = new ArgContainer(origArg1ClassName, ArgContainer.ValueType.PLAIN, originalUuid, false, true, origArg1Value);
 
         String origArg2ClassName = "java.lang.String";
-        String origArg2Value = "string value here";
+        String origArg2Value = "\"string value here\"";
         ArgContainer originalArg2 = new ArgContainer(origArg2ClassName, ArgContainer.ValueType.PLAIN, originalUuid, true, false, origArg2Value);
 
 
