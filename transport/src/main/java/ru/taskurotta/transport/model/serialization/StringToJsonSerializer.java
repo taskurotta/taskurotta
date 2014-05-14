@@ -13,10 +13,8 @@ import java.io.IOException;
  */
 public class StringToJsonSerializer  extends com.fasterxml.jackson.databind.JsonSerializer<String> {
 
-    private static final Logger logger = LoggerFactory.getLogger(StringToJsonSerializer.class);
-
     @Override
-    public void serialize(String s, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
+    public void serialize(String s, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         jsonGenerator.writeRawValue(s);
     }
 
