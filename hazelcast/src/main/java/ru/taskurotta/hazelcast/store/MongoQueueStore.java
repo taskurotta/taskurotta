@@ -125,7 +125,7 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     @Override
     public Map<Long, Object> loadAll(Collection<Long> longs) {
-        Map<Long, Object> map = new HashMap<Long, Object>();
+        Map<Long, Object> map = new HashMap<>();
         BasicDBList dbo = new BasicDBList();
         for (Long key : longs) {
             dbo.add(new BasicDBObject("_id", key));
@@ -170,13 +170,13 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     @Override
     public Set<Long> loadAllKeys() {
-        Set<Long> keyset = new HashSet<Long>();
+        Set<Long> keySet = new HashSet<>();
         BasicDBList dbo = new BasicDBList();
         dbo.add("_id");
         DBCursor cursor = coll.find(null, dbo);
         while (cursor.hasNext()) {
-            keyset.add((Long) cursor.next().get("_id"));
+            keySet.add((Long) cursor.next().get("_id"));
         }
-        return keyset;
+        return keySet;
     }
 }
