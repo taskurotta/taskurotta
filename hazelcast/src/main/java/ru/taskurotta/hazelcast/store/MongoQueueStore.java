@@ -155,12 +155,13 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
      */
     public long getMinItemId() {
         long result = -1l;
-        DBObject sortCommand = new BasicDBObject();
-        sortCommand.put("_id", "1");//by _id asc(min first)
-        DBCursor cursor = coll.find().sort(sortCommand).limit(1);
-        DBObject val = null;
 
-        if (cursor.hasNext() && (val=cursor.next()) != null) {
+        DBObject sortCommand = new BasicDBObject();
+        sortCommand.put("_id", 1);//by _id asc(min first)
+
+        DBObject val;
+        DBCursor cursor = coll.find().sort(sortCommand).limit(1);
+        if (cursor.hasNext() && (val = cursor.next()) != null) {
             result = Long.valueOf(val.get("_id").toString());
         }
 
