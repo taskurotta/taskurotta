@@ -3,7 +3,7 @@ package ru.taskurotta.client.internal;
 import org.junit.Test;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
-import ru.taskurotta.internal.core.TaskOptionsImpl;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
 
@@ -30,7 +30,10 @@ public class WaitTest extends AbstractTestStub {
 		Task taskB = deciderTask(taskIdB, TaskType.DECIDER_ASYNCHRONOUS, "B");
 		Task taskC = deciderTask(taskIdC, TaskType.DECIDER_START, "C", null,
 				new Object[]{},
-				new TaskOptionsImpl(new ArgType[]{ArgType.WAIT}, null, new Promise[]{promise(taskB)}));
+				TaskOptions.builder()
+                        .withArgTypes(new ArgType[]{ArgType.WAIT})
+                        .withPromisesWaitFor(new Promise[]{promise(taskB)})
+                        .build());
 
 		// release decision with taskB and taskС
 		release(taskIdA, null, taskB, taskC);

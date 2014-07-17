@@ -3,7 +3,6 @@ package ru.taskurotta.recipes.custom.deciders;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 import ru.taskurotta.recipes.custom.workers.CustomWorkerClient;
 
 /**
@@ -19,8 +18,9 @@ public class CustomDeciderImpl implements CustomDecider {
 
     @Override
     public void calculate(int a, int b) {
-        ActorSchedulingOptions workerActorSchedulingOptions = new ActorSchedulingOptionsImpl(null, 0l, "workerTaskList");
-        ActorSchedulingOptions deciderActorSchedulingOptions = new ActorSchedulingOptionsImpl(null, 0l, "deciderTaskList");
+
+        ActorSchedulingOptions workerActorSchedulingOptions = ActorSchedulingOptions.builder().withTaskList("workerTaskList").build();  //new ActorSchedulingOptionsImpl(null, 0l, "workerTaskList");
+        ActorSchedulingOptions deciderActorSchedulingOptions = ActorSchedulingOptions.builder().withTaskList("deciderTaskList").build(); //new ActorSchedulingOptionsImpl(null, 0l, "deciderTaskList");
         Promise<?>[] waitFor = new Promise[0];
 
         Promise<Integer> sum0 = customWorker.sum(a, b);

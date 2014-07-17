@@ -213,10 +213,49 @@ public class ObjectFactory {
             }
         }
 
+        TaskOptions opts = parseTaskOptions(taskContainer.getOptions());//TODO: may be parsing options is redundant? Client's ActorExecutor doesn't use them anyway
+
         return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
-                taskContainer.getNumberOfAttempts(), args, null, taskContainer.isUnsafe(), taskContainer.getFailTypes());
+                taskContainer.getNumberOfAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
     }
 
+
+    public TaskOptions parseTaskOptions(TaskOptionsContainer options) {
+        if (options == null) {
+            return null;
+        }
+        return TaskOptions.builder()
+                .withArgTypes(options.getArgTypes())
+                .withPromisesWaitFor(parsePromisesWaitFor(options.getPromisesWaitFor()))
+                .withSchedulingOptions(parseSchedulingOptions(options.getActorSchedulingOptions()))
+                .build();
+    }
+
+    public ActorSchedulingOptions parseSchedulingOptions(ActorSchedulingOptionsContainer actorSchedOptions) {
+        if (actorSchedOptions == null) {
+            return null;
+        }
+
+        return ActorSchedulingOptions.builder()
+                .withCustomId(actorSchedOptions.getCustomId())
+                .withStartTime(actorSchedOptions.getStartTime())
+                .withTaskList(actorSchedOptions.getTaskList())
+                .build();
+    }
+
+    public Promise<?>[] parsePromisesWaitFor(ArgContainer[] args) {
+        if (args == null) {
+            return null;
+        }
+
+        Promise<?>[] result = new Promise<?>[args.length];
+        int i = 0;
+        for (ArgContainer arg : args) {
+            result[i++] = (Promise)parseArg(arg); //TODO: method may return plain object. But waitForPromises args array should contain only promises
+        }
+
+        return result;
+    }
 
     public TaskContainer dumpTask(Task task) {
         UUID taskId = task.getId();

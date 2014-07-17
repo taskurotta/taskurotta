@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 import ru.taskurotta.test.fullfeature.worker.FullFeatureWorkerClient;
 
 import java.util.ArrayList;
@@ -27,8 +27,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
     public void start() {
         double[] data = {2,3,4,5};
 
-        ActorSchedulingOptionsImpl options = new ActorSchedulingOptionsImpl();
-        options.setStartTime(System.currentTimeMillis() + 100);
+        ActorSchedulingOptions options = ActorSchedulingOptions.builder().withStartTime(System.currentTimeMillis() + 100l).build();
 
         Promise<Double> p01 = worker.sqr(Promise.asPromise(data[0]));
         Promise<Double> p02 = worker.sqr(Promise.asPromise(data[1]), options);

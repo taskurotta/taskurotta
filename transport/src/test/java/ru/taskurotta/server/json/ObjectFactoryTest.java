@@ -6,8 +6,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.ActorSchedulingOptions;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.test.TestTasks;
@@ -496,6 +498,25 @@ public class ObjectFactoryTest {
         Task newTask = objectFactory.parseTask(taskContainer);
 
         Assert.assertEquals(task, newTask);
+
+    }
+
+    @Test
+    public void taskWithOptions() {
+        Task task =
+                TestTasks.newInstance(
+                        UUID.randomUUID(),
+                        new TaskTargetImpl(TaskType.DECIDER_START, "ru.example.Decider", "1.0", "start"),
+                        new Object[]{true, "Hello!", 10},
+                        TaskOptions.builder().withSchedulingOptions(ActorSchedulingOptions.builder().withCustomId("I-AM-CUSTOM-ID").build()).build());
+
+
+        TaskContainer taskContainer = objectFactory.dumpTask(task);
+
+        Task newTask = objectFactory.parseTask(taskContainer);
+
+        Assert.assertEquals(task, newTask);
+        Assert.assertEquals("I-AM-CUSTOM-ID", task.getTaskOptions().getActorSchedulingOptions().getCustomId());
 
     }
 
