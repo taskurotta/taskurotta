@@ -47,8 +47,8 @@
 
             <hz:serialization>
                 <hz:serializers>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.ActorSchedulingOptionsContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskConfigContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.console.model.BrokenProcess"

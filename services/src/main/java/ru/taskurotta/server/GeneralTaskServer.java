@@ -296,8 +296,8 @@ public class GeneralTaskServer implements TaskServer {
         String taskList = null;
         if (taskContainer.getOptions() != null) {
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
-            if (taskOptionsContainer.getActorSchedulingOptions() != null) {
-                taskList = taskOptionsContainer.getActorSchedulingOptions().getTaskList();
+            if (taskOptionsContainer.getTaskConfigContainer() != null) {
+                taskList = taskOptionsContainer.getTaskConfigContainer().getTaskList();
             }
         }
 

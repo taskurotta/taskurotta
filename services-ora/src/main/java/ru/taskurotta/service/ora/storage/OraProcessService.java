@@ -79,8 +79,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
-            ps.setString(3, ((task.getOptions() != null) && (task.getOptions().getActorSchedulingOptions() != null)) ?
-                    task.getOptions().getActorSchedulingOptions().getCustomId() : null);
+            ps.setString(3, ((task.getOptions() != null) && (task.getOptions().getTaskConfigContainer() != null)) ?
+                    task.getOptions().getTaskConfigContainer().getCustomId() : null);
             ps.setLong(4, (new Date()).getTime());
             ps.setInt(5, Process.START);
             ps.setString(6, (String) taskSerializer.serialize(task));

@@ -12,13 +12,9 @@ import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
-import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.ArgContainer.ValueType;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
@@ -222,10 +218,10 @@ public class ObjectFactory {
         return new TaskOptions()
                 .setArgTypes(options.getArgTypes())
                 .setPromisesWaitFor(parsePromisesWaitFor(options.getPromisesWaitFor()))
-                .setTaskConfig(parseSchedulingOptions(options.getActorSchedulingOptions()));
+                .setTaskConfig(parseSchedulingOptions(options.getTaskConfigContainer()));
     }
 
-    public TaskConfig parseSchedulingOptions(ActorSchedulingOptionsContainer actorSchedOptions) {
+    public TaskConfig parseSchedulingOptions(TaskConfigContainer actorSchedOptions) {
         if (actorSchedOptions == null) {
             return null;
         }
@@ -280,10 +276,10 @@ public class ObjectFactory {
             return null;
         }
 
-		ActorSchedulingOptionsContainer optionsContainer = null;
+		TaskConfigContainer optionsContainer = null;
 		TaskConfig taskConfig = taskOptions.getTaskConfig();
 		if (null != taskConfig) {
-			optionsContainer = new ActorSchedulingOptionsContainer();
+			optionsContainer = new TaskConfigContainer();
 			optionsContainer.setStartTime(taskConfig.getStartTime());
 			optionsContainer.setCustomId(taskConfig.getCustomId());
 			optionsContainer.setTaskList(taskConfig.getTaskList());

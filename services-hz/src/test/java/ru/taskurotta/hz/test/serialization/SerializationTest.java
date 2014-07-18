@@ -23,20 +23,12 @@ import org.junit.Test;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
-import ru.taskurotta.service.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer;
-import ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.GraphStreamSerializer;
-import ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer;
+import ru.taskurotta.service.hz.serialization.*;
+import ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer;
 import ru.taskurotta.hazelcast.util.ConfigUtil;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
-import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.internal.core.ArgType;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
 
 /**
@@ -63,8 +55,8 @@ public class SerializationTest {
                 setTypeClass(ArgContainer.class).
                 setImplementation(new TaskOptionsContainerSerializer()).
                 setTypeClass(TaskOptionsContainer.class).
-                setImplementation(new ActorSchedulingOptionsContainerStreamSerializer()).
-                setTypeClass(ActorSchedulingOptionsContainer.class).
+                setImplementation(new TaskConfigContainerStreamSerializer()).
+                setTypeClass(TaskConfigContainer.class).
                 setImplementation(new ErrorContainerStreamSerializer()).
                 setTypeClass(ErrorContainer.class).
                 setImplementation(new TaskContainerStreamSerializer()).
@@ -188,12 +180,12 @@ public class SerializationTest {
 
     @Test
     public void actorSchedulingOptionsContainerSerializerTest() {
-        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+        TaskConfigContainer container = new TaskConfigContainer();
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
         hzMap.put("actorScheduledOptionsContainer", container);
-        ActorSchedulingOptionsContainer getted = (ActorSchedulingOptionsContainer) hzMap.get("actorScheduledOptionsContainer");
+        TaskConfigContainer getted = (TaskConfigContainer) hzMap.get("actorScheduledOptionsContainer");
         assertEquals(container, getted);
     }
 
@@ -267,13 +259,13 @@ public class SerializationTest {
         TaskOptionsContainer getted = (TaskOptionsContainer) hzMap.get("taskOptionsContainer");
 
         assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
-        assertEquals(taskOptionsContainer.getActorSchedulingOptions().getStartTime(), getted.getActorSchedulingOptions().getStartTime());
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getStartTime(), getted.getTaskConfigContainer().getStartTime());
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
 
     }
 
     private TaskOptionsContainer getTaskOptionsContainer() {
-        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+        TaskConfigContainer container = new TaskConfigContainer();
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");

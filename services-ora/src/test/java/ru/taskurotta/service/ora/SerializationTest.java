@@ -38,7 +38,7 @@ public class SerializationTest {
 
 
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
-        ActorSchedulingOptionsContainer actorSchedulingOptions = new ActorSchedulingOptionsContainer();
+        TaskConfigContainer actorSchedulingOptions = new TaskConfigContainer();
         actorSchedulingOptions.setCustomId(null);
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actorSchedulingOptions, null);
         String[] failTypes = {"java.lang.RuntimeException"};
