@@ -6,7 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;
@@ -508,7 +508,7 @@ public class ObjectFactoryTest {
                         UUID.randomUUID(),
                         new TaskTargetImpl(TaskType.DECIDER_START, "ru.example.Decider", "1.0", "start"),
                         new Object[]{true, "Hello!", 10},
-                        TaskOptions.builder().withSchedulingOptions(new TaskProperties().setCustomId("I-AM-CUSTOM-ID")).build());
+                        new TaskOptions().setTaskConfig(new TaskConfig().setCustomId("I-AM-CUSTOM-ID")));
 
 
         TaskContainer taskContainer = objectFactory.dumpTask(task);
@@ -516,7 +516,7 @@ public class ObjectFactoryTest {
         Task newTask = objectFactory.parseTask(taskContainer);
 
         Assert.assertEquals(task, newTask);
-        Assert.assertEquals("I-AM-CUSTOM-ID", task.getTaskOptions().getTaskProperties().getCustomId());
+        Assert.assertEquals("I-AM-CUSTOM-ID", task.getTaskOptions().getTaskConfig().getCustomId());
 
     }
 

@@ -3,7 +3,7 @@ package ru.taskurotta.core;
 /**
  * Date: 15.04.13 16:45
  */
-public class TaskProperties {
+public class TaskConfig {
 
     private String customId;
     private long startTime = -1;
@@ -21,17 +21,17 @@ public class TaskProperties {
         return taskList;
     }
 
-    public TaskProperties setCustomId(String customId) {
+    public TaskConfig setCustomId(String customId) {
         this.customId = customId;
         return this;
     }
 
-    public TaskProperties setStartTime(long startTime) {
+    public TaskConfig setStartTime(long startTime) {
         this.startTime = startTime;
         return this;
     }
 
-    public TaskProperties setTaskList(String taskList) {
+    public TaskConfig setTaskList(String taskList) {
         this.taskList = taskList;
         return this;
     }
@@ -41,7 +41,7 @@ public class TaskProperties {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TaskProperties that = (TaskProperties) o;
+        TaskConfig that = (TaskConfig) o;
 
         if (startTime != that.startTime) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;

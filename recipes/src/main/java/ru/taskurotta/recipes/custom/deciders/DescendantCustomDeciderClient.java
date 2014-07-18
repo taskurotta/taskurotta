@@ -2,7 +2,7 @@ package ru.taskurotta.recipes.custom.deciders;
 
 import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Promise;
 
 /**
@@ -17,11 +17,11 @@ public interface DescendantCustomDeciderClient {
     public Promise<Integer> calculate(int a, int b);
 
     @Execute
-    public Promise<Integer> calculate(int a, int b, TaskProperties taskProperties);
+    public Promise<Integer> calculate(int a, int b, TaskConfig taskConfig);
 
     @Execute
     public Promise<Integer> calculate(int a, int b, Promise<?> ... waitFor);
 
     @Execute
-    public Promise<Integer> calculate(int a, int b, TaskProperties taskProperties, Promise<?> ... waitFor);
+    public Promise<Integer> calculate(int a, int b, TaskConfig taskConfig, Promise<?> ... waitFor);
 }

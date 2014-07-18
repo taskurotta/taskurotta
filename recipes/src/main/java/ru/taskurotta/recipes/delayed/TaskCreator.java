@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 
 /**
  * Created by void 09.07.13 19:35
@@ -22,13 +22,13 @@ public class TaskCreator implements ApplicationListener<ContextRefreshedEvent> {
     public void createStartTask(MultiplierDeciderClient deciderClient) {
         log.info("warming up task launcher...");
         long startTime = System.currentTimeMillis() + 1200000;
-        TaskProperties taskProperties = new TaskProperties();
+        TaskConfig taskConfig = new TaskConfig();
         for (int i = 0; i < count; i++) {
             for (int j = 0; j < 1000; j++) {
                 int a = (int) (Math.random() * 100);
                 int b = (int) (Math.random() * 100);
-                taskProperties.setStartTime(startTime);
-                deciderClient.multiply(a, b, taskProperties);
+                taskConfig.setStartTime(startTime);
+                deciderClient.multiply(a, b, taskConfig);
             }
             startTime += 1000;
         }

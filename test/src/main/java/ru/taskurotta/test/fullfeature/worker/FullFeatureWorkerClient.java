@@ -2,7 +2,7 @@ package ru.taskurotta.test.fullfeature.worker;
 
 import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.annotation.WorkerClient;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Promise;
 
 /**
@@ -13,7 +13,7 @@ public interface FullFeatureWorkerClient {
 
     Promise<Double> sqr(Promise<Double> a);
     Promise<Double> sqr(Promise<Double> a, Promise<?> ... waitFor);
-    Promise<Double> sqr(Promise<Double> a, TaskProperties options, Promise<?> ... waitFor);
+    Promise<Double> sqr(Promise<Double> a, TaskConfig options, Promise<?> ... waitFor);
 
     @AcceptFail(type = IllegalArgumentException.class)
     Promise<Double> sqrt(Promise<Double> a);

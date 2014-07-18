@@ -3,7 +3,7 @@ package ru.taskurotta.internal.proxy;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.NoWait;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.exception.ProxyFactoryException;
 import ru.taskurotta.util.AnnotationUtils;
@@ -80,7 +80,7 @@ public final class ClientCheckerUtil {
                 case 1:
                     lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
 
-                    if (!lastArgumentClass.equals(Promise[].class) && !lastArgumentClass.equals(TaskProperties.class)) {
+                    if (!lastArgumentClass.equals(Promise[].class) && !lastArgumentClass.equals(TaskConfig.class)) {
                         throw new ProxyFactoryException("Last custom argument in client interface method " +
                                 "must be Promise<?>... or ActorSchedulingOptions, but it: " + lastArgumentClass);
                     }
@@ -91,7 +91,7 @@ public final class ClientCheckerUtil {
                     lastArgumentClass = clientParameterTypes[clientParameterTypes.length - 1];
                     penultimateArgumentClass = clientParameterTypes[clientParameterTypes.length - 2];
 
-                    if (!lastArgumentClass.equals(Promise[].class) && !penultimateArgumentClass.equals(TaskProperties.class)) {
+                    if (!lastArgumentClass.equals(Promise[].class) && !penultimateArgumentClass.equals(TaskConfig.class)) {
                         throw new ProxyFactoryException("Last and penultimate custom arguments in client interface method must be in order " +
                                 "(..., ActorSchedulingOptions, Promise<?>...), but it: (..., " + penultimateArgumentClass + ", " + lastArgumentClass);
                     }

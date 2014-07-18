@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.*;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
@@ -219,19 +219,18 @@ public class ObjectFactory {
         if (options == null) {
             return null;
         }
-        return TaskOptions.builder()
-                .withArgTypes(options.getArgTypes())
-                .withPromisesWaitFor(parsePromisesWaitFor(options.getPromisesWaitFor()))
-                .withSchedulingOptions(parseSchedulingOptions(options.getActorSchedulingOptions()))
-                .build();
+        return new TaskOptions()
+                .setArgTypes(options.getArgTypes())
+                .setPromisesWaitFor(parsePromisesWaitFor(options.getPromisesWaitFor()))
+                .setTaskConfig(parseSchedulingOptions(options.getActorSchedulingOptions()));
     }
 
-    public TaskProperties parseSchedulingOptions(ActorSchedulingOptionsContainer actorSchedOptions) {
+    public TaskConfig parseSchedulingOptions(ActorSchedulingOptionsContainer actorSchedOptions) {
         if (actorSchedOptions == null) {
             return null;
         }
 
-        return new TaskProperties()
+        return new TaskConfig()
                 .setCustomId(actorSchedOptions.getCustomId())
                 .setStartTime(actorSchedOptions.getStartTime())
                 .setTaskList(actorSchedOptions.getTaskList());
@@ -282,12 +281,12 @@ public class ObjectFactory {
         }
 
 		ActorSchedulingOptionsContainer optionsContainer = null;
-		TaskProperties taskProperties = taskOptions.getTaskProperties();
-		if (null != taskProperties) {
+		TaskConfig taskConfig = taskOptions.getTaskConfig();
+		if (null != taskConfig) {
 			optionsContainer = new ActorSchedulingOptionsContainer();
-			optionsContainer.setStartTime(taskProperties.getStartTime());
-			optionsContainer.setCustomId(taskProperties.getCustomId());
-			optionsContainer.setTaskList(taskProperties.getTaskList());
+			optionsContainer.setStartTime(taskConfig.getStartTime());
+			optionsContainer.setCustomId(taskConfig.getCustomId());
+			optionsContainer.setTaskList(taskConfig.getTaskList());
 		}
 
 		ArgContainer promisesWaitForDumped[] = null;

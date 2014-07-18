@@ -2,7 +2,7 @@ package ru.taskurotta.recipes.delayed;
 
 import ru.taskurotta.annotation.DeciderClient;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.core.TaskProperties;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Promise;
 
 /**
@@ -15,5 +15,5 @@ public interface MultiplierDeciderClient {
     public Promise<Integer> multiply(Integer a, Integer b);
 
     @Execute
-    public Promise<Integer> multiply(Integer a, Integer b, TaskProperties schedulingOptions);
+    public Promise<Integer> multiply(Integer a, Integer b, TaskConfig schedulingOptions);
 }

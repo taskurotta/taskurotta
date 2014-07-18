@@ -44,7 +44,7 @@ public class NoWaitTest extends AbstractTestStub {
         Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC");
         Task deciderTaskD = deciderTask(taskDId, TaskType.DECIDER_ASYNCHRONOUS, "startD", null,
                 new Object[]{promise(deciderTaskB), promise(deciderTaskC)},
-                TaskOptions.builder().withArgTypes(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}).build());
+                new TaskOptions().setArgTypes(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
         release(taskAId, null, deciderTaskB, deciderTaskC, deciderTaskD);
 
@@ -103,7 +103,7 @@ public class NoWaitTest extends AbstractTestStub {
         Task deciderTaskE = deciderTask(taskEId, TaskType.DECIDER_ASYNCHRONOUS, "startE");
         Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
                 new Object[]{promise(deciderTaskB), promise(deciderTaskE)},
-                TaskOptions.builder().withArgTypes(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}).build());
+                new TaskOptions().setArgTypes(new ArgType[]{ArgType.NO_WAIT, ArgType.NONE}));
 
         release(taskAId, null, deciderTaskB, deciderTaskE, deciderTaskC);
 

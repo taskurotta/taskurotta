@@ -9,55 +9,36 @@ import java.util.Arrays;
  */
 public class TaskOptions {
     private ArgType[] argTypes;
-    private TaskProperties taskProperties;
+    private TaskConfig taskConfig;
     private Promise<?>[] promisesWaitFor;
 
-    protected TaskOptions(){}
-
-    public static class Builder {
-        private ArgType[] argTypes;
-        private TaskProperties taskProperties;
-        private Promise<?>[] promisesWaitFor;
-
-        public Builder withSchedulingOptions(TaskProperties taskProperties) {
-            this.taskProperties = taskProperties;
-            return this;
-        }
-
-        public Builder withArgTypes(ArgType[] argTypes) {
-            this.argTypes = argTypes;
-            return this;
-        }
-
-        public Builder withPromisesWaitFor(Promise<?>[] promisesWaitFor) {
-            this.promisesWaitFor = promisesWaitFor;
-            return this;
-        }
-
-        public TaskOptions build() {
-            TaskOptions result = new TaskOptions();
-            result.argTypes = argTypes;
-            result.taskProperties = taskProperties;
-            result.promisesWaitFor = promisesWaitFor;
-            return result;
-        }
-
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
+    public TaskOptions(){}
 
     public ArgType[] getArgTypes() {
         return argTypes;
     }
 
-    public TaskProperties getTaskProperties() {
-        return taskProperties;
+    public TaskConfig getTaskConfig() {
+        return taskConfig;
     }
 
     public Promise<?>[] getPromisesWaitFor() {
         return promisesWaitFor;
+    }
+
+    public TaskOptions setArgTypes(ArgType[] argTypes) {
+        this.argTypes = argTypes;
+        return this;
+    }
+
+    public TaskOptions setTaskConfig(TaskConfig taskConfig) {
+        this.taskConfig = taskConfig;
+        return this;
+    }
+
+    public TaskOptions setPromisesWaitFor(Promise<?>[] promisesWaitFor) {
+        this.promisesWaitFor = promisesWaitFor;
+        return this;
     }
 
     @Override
@@ -67,7 +48,7 @@ public class TaskOptions {
 
         TaskOptions that = (TaskOptions) o;
 
-        if (taskProperties != null ? !taskProperties.equals(that.taskProperties) : that.taskProperties != null)
+        if (taskConfig != null ? !taskConfig.equals(that.taskConfig) : that.taskConfig != null)
             return false;
         if (!Arrays.equals(argTypes, that.argTypes)) return false;
         if (!Arrays.equals(promisesWaitFor, that.promisesWaitFor)) return false;
@@ -78,7 +59,7 @@ public class TaskOptions {
     @Override
     public int hashCode() {
         int result = argTypes != null ? Arrays.hashCode(argTypes) : 0;
-        result = 31 * result + (taskProperties != null ? taskProperties.hashCode() : 0);
+        result = 31 * result + (taskConfig != null ? taskConfig.hashCode() : 0);
         result = 31 * result + (promisesWaitFor != null ? Arrays.hashCode(promisesWaitFor) : 0);
         return result;
     }
@@ -87,7 +68,7 @@ public class TaskOptions {
     public String toString() {
         return "TaskOptions{" +
                 "argTypes=" + Arrays.toString(argTypes) +
-                ", actorSchedulingOptions=" + taskProperties +
+                ", actorSchedulingOptions=" + taskConfig +
                 ", promisesWaitFor=" + Arrays.toString(promisesWaitFor) +
                 '}';
     }

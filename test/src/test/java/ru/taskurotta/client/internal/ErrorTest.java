@@ -37,7 +37,7 @@ public class ErrorTest extends AbstractTestStub {
                 new String[]{"java.lang.RuntimeException"}, new Object[]{}, null);
         Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
                 new Object[]{promise(deciderTaskB)},
-                TaskOptions.builder().withArgTypes(new ArgType[]{ArgType.NONE}).build());
+                new TaskOptions().setArgTypes(new ArgType[]{ArgType.NONE}));
 
         release(taskAId, null, deciderTaskB, deciderTaskC);
 
@@ -79,7 +79,7 @@ public class ErrorTest extends AbstractTestStub {
                 new String[]{}, new Object[]{}, null);   // empty array of types as restriction!
         Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
                 new Object[]{promise(deciderTaskB)},
-                TaskOptions.builder().withArgTypes(new ArgType[]{ArgType.NONE}).build());
+                new TaskOptions().setArgTypes(new ArgType[]{ArgType.NONE}));
 
         release(taskAId, null, deciderTaskB, deciderTaskC);
 
@@ -121,7 +121,7 @@ public class ErrorTest extends AbstractTestStub {
                 new String[]{"java.lang.NullPointerException"}, new Object[]{}, null);
         Task deciderTaskC = deciderTask(taskCId, TaskType.DECIDER_ASYNCHRONOUS, "startC", null,
                 new Object[]{promise(deciderTaskB)},
-                TaskOptions.builder().withArgTypes(new ArgType[]{ArgType.NONE}).build());
+                new TaskOptions().setArgTypes(new ArgType[]{ArgType.NONE}));
 
         release(taskAId, null, deciderTaskB, deciderTaskC);
 
