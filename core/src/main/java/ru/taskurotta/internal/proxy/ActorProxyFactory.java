@@ -1,7 +1,7 @@
 package ru.taskurotta.internal.proxy;
 
 import ru.taskurotta.annotation.AcceptFail;
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskProperties;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.internal.RuntimeContext;
 import ru.taskurotta.internal.core.MethodDescriptor;
@@ -75,7 +75,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
         for (Method method : targetMethods) {
             TaskTarget taskTarget = new TaskTargetImpl(annotationExplorer.getTaskType(), actorName, actorVersion, method.getName());
             Class<?>[] parameterTypes = method.getParameterTypes();
-            int positionActorSchedulingOptions = positionParameter(parameterTypes, ActorSchedulingOptions.class);
+            int positionActorSchedulingOptions = positionParameter(parameterTypes, TaskProperties.class);
             int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
             AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
 

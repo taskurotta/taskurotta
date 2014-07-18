@@ -9,18 +9,18 @@ import java.util.Arrays;
  */
 public class TaskOptions {
     private ArgType[] argTypes;
-    private ActorSchedulingOptions actorSchedulingOptions;
+    private TaskProperties taskProperties;
     private Promise<?>[] promisesWaitFor;
 
     protected TaskOptions(){}
 
     public static class Builder {
         private ArgType[] argTypes;
-        private ActorSchedulingOptions actorSchedulingOptions;
+        private TaskProperties taskProperties;
         private Promise<?>[] promisesWaitFor;
 
-        public Builder withSchedulingOptions(ActorSchedulingOptions actorSchedulingOptions) {
-            this.actorSchedulingOptions = actorSchedulingOptions;
+        public Builder withSchedulingOptions(TaskProperties taskProperties) {
+            this.taskProperties = taskProperties;
             return this;
         }
 
@@ -37,7 +37,7 @@ public class TaskOptions {
         public TaskOptions build() {
             TaskOptions result = new TaskOptions();
             result.argTypes = argTypes;
-            result.actorSchedulingOptions = actorSchedulingOptions;
+            result.taskProperties = taskProperties;
             result.promisesWaitFor = promisesWaitFor;
             return result;
         }
@@ -52,8 +52,8 @@ public class TaskOptions {
         return argTypes;
     }
 
-    public ActorSchedulingOptions getActorSchedulingOptions() {
-        return actorSchedulingOptions;
+    public TaskProperties getTaskProperties() {
+        return taskProperties;
     }
 
     public Promise<?>[] getPromisesWaitFor() {
@@ -67,7 +67,7 @@ public class TaskOptions {
 
         TaskOptions that = (TaskOptions) o;
 
-        if (actorSchedulingOptions != null ? !actorSchedulingOptions.equals(that.actorSchedulingOptions) : that.actorSchedulingOptions != null)
+        if (taskProperties != null ? !taskProperties.equals(that.taskProperties) : that.taskProperties != null)
             return false;
         if (!Arrays.equals(argTypes, that.argTypes)) return false;
         if (!Arrays.equals(promisesWaitFor, that.promisesWaitFor)) return false;
@@ -78,7 +78,7 @@ public class TaskOptions {
     @Override
     public int hashCode() {
         int result = argTypes != null ? Arrays.hashCode(argTypes) : 0;
-        result = 31 * result + (actorSchedulingOptions != null ? actorSchedulingOptions.hashCode() : 0);
+        result = 31 * result + (taskProperties != null ? taskProperties.hashCode() : 0);
         result = 31 * result + (promisesWaitFor != null ? Arrays.hashCode(promisesWaitFor) : 0);
         return result;
     }
@@ -87,7 +87,7 @@ public class TaskOptions {
     public String toString() {
         return "TaskOptions{" +
                 "argTypes=" + Arrays.toString(argTypes) +
-                ", actorSchedulingOptions=" + actorSchedulingOptions +
+                ", actorSchedulingOptions=" + taskProperties +
                 ", promisesWaitFor=" + Arrays.toString(promisesWaitFor) +
                 '}';
     }

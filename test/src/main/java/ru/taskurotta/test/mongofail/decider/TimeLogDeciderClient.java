@@ -1,7 +1,7 @@
 package ru.taskurotta.test.mongofail.decider;
 
 import ru.taskurotta.annotation.DeciderClient;
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskProperties;
 
 /**
  * Date: 19.02.14 13:12
@@ -9,6 +9,6 @@ import ru.taskurotta.core.ActorSchedulingOptions;
 @DeciderClient(decider = TimeLogDecider.class)
 public interface TimeLogDeciderClient {
 
-    public void execute(ActorSchedulingOptions opt);
+    public void execute(TaskProperties opt);
 
 }

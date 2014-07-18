@@ -9,7 +9,7 @@ import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskProperties;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.IncorrectAsynchronousMethodDefinition;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
@@ -139,7 +139,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
                     if (implementationMethod.getName().equals(interfaceMethod)) {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
-                        int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), ActorSchedulingOptions.class);
+                        int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), TaskProperties.class);
                         int positionPromisesWaitFor = positionOfWaitList(method.getParameterTypes(), positionActorSchedulingOptions);
                         AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
 

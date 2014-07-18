@@ -1,6 +1,6 @@
 package ru.taskurotta.internal.proxy;
 
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskProperties;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskOptions;
@@ -55,14 +55,14 @@ public class ProxyInvocationHandler implements InvocationHandler {
                 args = Arrays.copyOf(args, positionPromisesWaitFor);
             }
 
-            ActorSchedulingOptions actorSchedulingOptions = null;
+            TaskProperties taskProperties = null;
             if (positionActorSchedulingOptions > -1) {
-                actorSchedulingOptions = (ActorSchedulingOptions)args[positionActorSchedulingOptions];
-                startTime = actorSchedulingOptions.getStartTime();
+                taskProperties = (TaskProperties)args[positionActorSchedulingOptions];
+                startTime = taskProperties.getStartTime();
                 args = Arrays.copyOf(args, positionActorSchedulingOptions);
             }
 
-            taskOptions = TaskOptions.builder().withArgTypes(argTypes).withSchedulingOptions(actorSchedulingOptions).withPromisesWaitFor(promisesWaitFor).build();
+            taskOptions = TaskOptions.builder().withArgTypes(argTypes).withSchedulingOptions(taskProperties).withPromisesWaitFor(promisesWaitFor).build();
         }
 
         RuntimeContext runtimeContext;

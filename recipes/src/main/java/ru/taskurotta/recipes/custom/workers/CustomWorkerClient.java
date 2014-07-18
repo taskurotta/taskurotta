@@ -1,7 +1,7 @@
 package ru.taskurotta.recipes.custom.workers;
 
 import ru.taskurotta.annotation.WorkerClient;
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskProperties;
 import ru.taskurotta.core.Promise;
 
 /**
@@ -14,9 +14,9 @@ import ru.taskurotta.core.Promise;
 public interface CustomWorkerClient {
     public Promise<Integer> sum(int a, int b);
 
-    public Promise<Integer> sum(int a, int b, ActorSchedulingOptions actorSchedulingOptions);
+    public Promise<Integer> sum(int a, int b, TaskProperties taskProperties);
 
     public Promise<Integer> sum(int a, int b, Promise<?> ... waitFor);
 
-    public Promise<Integer> sum(int a, int b, ActorSchedulingOptions actorSchedulingOptions, Promise<?> ... waitFor);
+    public Promise<Integer> sum(int a, int b, TaskProperties taskProperties, Promise<?> ... waitFor);
 }

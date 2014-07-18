@@ -7,13 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.Fail;
-import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.core.*;
+import ru.taskurotta.core.TaskProperties;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
@@ -231,16 +226,15 @@ public class ObjectFactory {
                 .build();
     }
 
-    public ActorSchedulingOptions parseSchedulingOptions(ActorSchedulingOptionsContainer actorSchedOptions) {
+    public TaskProperties parseSchedulingOptions(ActorSchedulingOptionsContainer actorSchedOptions) {
         if (actorSchedOptions == null) {
             return null;
         }
 
-        return ActorSchedulingOptions.builder()
-                .withCustomId(actorSchedOptions.getCustomId())
-                .withStartTime(actorSchedOptions.getStartTime())
-                .withTaskList(actorSchedOptions.getTaskList())
-                .build();
+        return new TaskProperties()
+                .setCustomId(actorSchedOptions.getCustomId())
+                .setStartTime(actorSchedOptions.getStartTime())
+                .setTaskList(actorSchedOptions.getTaskList());
     }
 
     public Promise<?>[] parsePromisesWaitFor(ArgContainer[] args) {
@@ -288,12 +282,12 @@ public class ObjectFactory {
         }
 
 		ActorSchedulingOptionsContainer optionsContainer = null;
-		ActorSchedulingOptions actorSchedulingOptions = taskOptions.getActorSchedulingOptions();
-		if (null != actorSchedulingOptions) {
+		TaskProperties taskProperties = taskOptions.getTaskProperties();
+		if (null != taskProperties) {
 			optionsContainer = new ActorSchedulingOptionsContainer();
-			optionsContainer.setStartTime(actorSchedulingOptions.getStartTime());
-			optionsContainer.setCustomId(actorSchedulingOptions.getCustomId());
-			optionsContainer.setTaskList(actorSchedulingOptions.getTaskList());
+			optionsContainer.setStartTime(taskProperties.getStartTime());
+			optionsContainer.setCustomId(taskProperties.getCustomId());
+			optionsContainer.setTaskList(taskProperties.getTaskList());
 		}
 
 		ArgContainer promisesWaitForDumped[] = null;
