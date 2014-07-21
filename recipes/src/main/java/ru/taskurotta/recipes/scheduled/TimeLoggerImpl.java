@@ -16,11 +16,11 @@ public class TimeLoggerImpl implements TimeLogger {
     private static final Logger logger = LoggerFactory.getLogger(TimeLoggerImpl.class);
 
     @Override
-    public void log() {
+    public void log(String arg1, String arg2, int arg3) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         Date taskDate = new Date(RuntimeContext.getCurrent().getStartTime());
 
-        logger.info("Current time[{}], task time is[{}]", sdf.format(new Date()), sdf.format(taskDate));
+        logger.info("Current time[{}], task time is[{}], arg1[{}], arg2[{}], arg3[{}]", sdf.format(new Date()), sdf.format(taskDate), arg1, arg2, arg3);
 
     }
 }

@@ -4,13 +4,12 @@ import ru.taskurotta.annotation.Execute;
 import ru.taskurotta.annotation.Worker;
 
 /**
- * User: dimadin
- * Date: 26.09.13 16:17
+ * Created on 21.07.2014.
  */
 @Worker
-public interface TimeLogger {
+public interface TimeLogger2 {
 
     @Execute
-    public void log(String arg1, String arg2, int arg3);
+    public void log();//TimeLogger without arguments
 
 }

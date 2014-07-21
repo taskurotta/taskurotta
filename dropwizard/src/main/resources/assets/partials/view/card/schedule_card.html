@@ -71,8 +71,7 @@
                     <table class="table">
                         <tr>
                             <td>
-                                <span style="cursor:pointer;" popover="ActorId of the actor to trigger."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="ActorId of the actor to trigger." popover-trigger="mouseenter" />
                                 <b>ActorId:</b>
                             </td>
                             <td>
@@ -81,8 +80,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <span style="cursor:pointer;" popover="Method of the actor to trigger."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="Method of the actor to trigger." popover-trigger="mouseenter" />
                                 <b>Method name:</b>
                             </td>
                             <td>
@@ -91,8 +89,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <span style="cursor:pointer;" popover="Type of the actor to trigger."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="Type of the actor to trigger." popover-trigger="mouseenter" />
                                 <b>Actor type:</b>
                             </td>
                             <td>
@@ -101,30 +98,37 @@
                         </tr>
 
 
-                        <!--<tr>-->
-                            <!--<td>-->
-                                <!--<i class="icon-question-sign" popover="You must specify row JSON string corresponding to a list of ArgContainer entities" popover-trigger="mouseenter" /><span class="muted">Specify JSON arguments</span>-->
-                            <!--</td>-->
-                            <!--<td>-->
-                                <!--<span ng-click="argsVisible = !argsVisible" style="cursor: pointer;" >-->
-                                    <!--<i ng-if="argsVisible" class="icon-chevron-up" />-->
-                                    <!--<i ng-if="!argsVisible" class="icon-chevron-down" />-->
-                                <!--</span>-->
-                            <!--</td>-->
-                        <!--</tr>-->
-
-                        <!--<tr>-->
-                            <!--<td>-->
-                                <!--<div collapse="!argsVisible">-->
-                                    <!--<b>Args JSON:</b>-->
-                                <!--</div>-->
-                            <!--</td>-->
-                            <!--<td>-->
-                                <!--<div collapse="!argsVisible">-->
-                                    <!--<textarea ng-model="task.argsJson"></textarea>-->
-                                <!--</div>-->
-                            <!--</td>-->
-                        <!--</tr>-->
+                        <tr>
+                            <td>
+                                <i class="icon-question-sign" popover="Arguments for the scheduled task. Only primitive and string values are allowed at the moment." popover-trigger="mouseenter" />
+                                <b>Arguments:</b>
+                            </td>
+                            <td>
+                                <table width="100%" class="table table-bordered table-condensed">
+                                    <tr>
+                                        <td colspan="3" style="text-align: center">
+                                            <span ng-hide="args.length>0" class="muted">This task has no arguments. <br /> Press the 'plus' button below if you need to specify any.</span>
+                                        </td>
+                                    </tr>
+                                    <tr ng-repeat="arg in job.task.args">
+                                        <td style="vertical-align: middle">
+                                            {{ $index }}.
+                                        </td>
+                                        <td>
+                                            <div tsk-argument ng-model="arg"></div>
+                                        </td>
+                                        <td style="vertical-align: middle">
+                                            <button class="btn btn-small" ng-click="removeArgument($index)" popover="Remove this argument" popover-trigger="mouseenter"><i class="icon-minus-sign"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" style="text-align: center">
+                                            <button class="btn btn-small" ng-click="addArgument()" popover="Add task argument" popover-trigger="mouseenter"><i class="icon-plus-sign"></i></button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
 
                     </table>
                 </div>
