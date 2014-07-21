@@ -4,7 +4,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.6.0</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
@@ -31,8 +31,8 @@
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
 
         <skip.integration.tests>true</skip.integration.tests>
-        <recipesEnv/>
-        <endpoint/>
+        <recipesEnv />
+        <endpoint />
     </properties>
 
     <modules>
@@ -291,7 +291,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute/>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -304,7 +304,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute/>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
