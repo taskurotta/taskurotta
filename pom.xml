@@ -355,25 +355,6 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!--<plugin>
-                    <groupId>com.atlassian.maven.plugins</groupId>
-                    <artifactId>maven-jgitflow-plugin</artifactId>
-                    <version>1.0-alpha7</version>
-                    <configuration>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <allowSnapshots>false</allowSnapshots>
-                        <noDeploy>true</noDeploy>
-                        <keepBranch>true</keepBranch>
-                        <pushChanges>false</pushChanges>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-utils</artifactId>
-                            <version>3.0.8</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>
