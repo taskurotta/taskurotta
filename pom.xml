@@ -340,7 +340,6 @@
                             </configuration>
                         </execution>
                         <execution>
-
                             <id>integration-tests</id>
                             <phase>integration-test</phase>
                             <goals>
