@@ -354,7 +354,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!--<plugin>
                     <groupId>com.atlassian.maven.plugins</groupId>
                     <artifactId>maven-jgitflow-plugin</artifactId>
                     <version>1.0-alpha7</version>
@@ -372,7 +372,7 @@
                             <version>3.0.8</version>
                         </dependency>
                     </dependencies>
-                </plugin>
+                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>
