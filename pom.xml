@@ -31,8 +31,8 @@
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
 
         <skip.integration.tests>true</skip.integration.tests>
-        <recipesEnv></recipesEnv>
-        <endpoint></endpoint>
+        <recipesEnv/>
+        <endpoint/>
     </properties>
 
     <modules>
