@@ -1,5 +1,6 @@
 package ru.taskurotta.internal.proxy;
 
+import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
 import ru.taskurotta.core.Promise;
@@ -83,11 +84,21 @@ abstract public class CachedProxyFactory implements ProxyFactory {
         return -1;
     }
 
-    protected String[] getFailNames(Class[] failTypes) {
+    protected String[] getFailNames(AcceptFail failAnnotation) {
+        if (null == failAnnotation) {
+            return null;
+        }
+
+        if (failAnnotation.typeNames() != null) {
+            return failAnnotation.typeNames();
+        }
+
+        Class[] failTypes = failAnnotation.type();
         String[] result = new String[failTypes.length];
         for (int i=0; i<failTypes.length; i++) {
             result[i] = failTypes[i].getName();
         }
+
         return result;
     }
 }

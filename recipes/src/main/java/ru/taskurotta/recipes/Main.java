@@ -1,9 +1,9 @@
 package ru.taskurotta.recipes;
 
-import java.io.IOException;
-
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import ru.taskurotta.bootstrap.Bootstrap;
+
+import java.io.IOException;
 
 /**
  * User: stukushin

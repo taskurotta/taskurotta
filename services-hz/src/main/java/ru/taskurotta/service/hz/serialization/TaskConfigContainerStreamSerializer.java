@@ -3,7 +3,7 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 
 import java.io.IOException;
 
@@ -13,18 +13,18 @@ import static ru.taskurotta.service.hz.serialization.SerializationTools.writeStr
 /**
  * User: greg
  */
-public class ActorSchedulingOptionsContainerStreamSerializer implements StreamSerializer<ActorSchedulingOptionsContainer> {
+public class TaskConfigContainerStreamSerializer implements StreamSerializer<TaskConfigContainer> {
 
     @Override
-    public void write(ObjectDataOutput out, ActorSchedulingOptionsContainer object) throws IOException {
+    public void write(ObjectDataOutput out, TaskConfigContainer object) throws IOException {
         writeString(out, object.getCustomId());
         out.writeLong(object.getStartTime());
         writeString(out, object.getTaskList());
     }
 
     @Override
-    public ActorSchedulingOptionsContainer read(ObjectDataInput in) throws IOException {
-        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+    public TaskConfigContainer read(ObjectDataInput in) throws IOException {
+        TaskConfigContainer container = new TaskConfigContainer();
         container.setCustomId(readString(in));
         container.setStartTime(in.readLong());
         container.setTaskList(readString(in));

@@ -6,8 +6,6 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static ru.taskurotta.service.hz.serialization.SerializationTools.readString;
@@ -32,13 +30,22 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
     }
 
     private void compositeWrite(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
-        if (argContainer.getCompositeValue() != null && argContainer.getCompositeValue().length > 0) {
-            out.writeInt(argContainer.getCompositeValue().length);
-            for (ArgContainer arg : argContainer.getCompositeValue()) {
-                serializePlain(out, arg);
-            }
-        } else {
+
+        ArgContainer[] compositeValue = argContainer.getCompositeValue();
+
+        if (compositeValue == null) {
             out.writeInt(-1);
+            return;
+        }
+
+        if (compositeValue.length == 0) {
+            out.writeInt(0);
+            return;
+        }
+
+        out.writeInt(argContainer.getCompositeValue().length);
+        for (ArgContainer arg : argContainer.getCompositeValue()) {
+            serializePlain(out, arg);
         }
     }
 
@@ -55,7 +62,7 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
     }
 
     private void serializePlain(ObjectDataOutput out, ArgContainer argContainer) throws IOException {
-        writeString(out, argContainer.getClassName());
+        writeString(out, argContainer.getDataType());
         if (argContainer.getTaskId() == null) {
             out.writeBoolean(false);
         } else {
@@ -64,8 +71,8 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
         }
         out.writeBoolean(argContainer.isReady());
         writeString(out, argContainer.getJSONValue());
-        if (argContainer.getType() != null) {
-            out.writeInt(argContainer.getType().getValue());
+        if (argContainer.getValueType() != null) {
+            out.writeInt(argContainer.getValueType().getValue());
         } else {
             out.writeInt(-1);
         }
@@ -88,27 +95,38 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
             valueType = ArgContainer.ValueType.fromInt(type);
         }
         boolean promise = in.readBoolean();
-        arg.setClassName(className);
+        arg.setDataType(className);
         arg.setTaskId(taskId);
         arg.setReady(ready);
         arg.setJSONValue(jsonValue);
-        arg.setType(valueType);
+        arg.setValueType(valueType);
         arg.setPromise(promise);
         return arg;
     }
 
     private ArgContainer compositeRead(ObjectDataInput in, ArgContainer arg) throws IOException {
         int compositeSize = in.readInt();
-        if (compositeSize != -1) {
-            List<ArgContainer> containerList = new ArrayList<>();
-            for (int i = 0; i < compositeSize; i++) {
-                ArgContainer argComposite = deserializePlain(in);
-                containerList.add(argComposite);
-            }
-            ArgContainer[] compositeValues = new ArgContainer[containerList.size()];
-            containerList.toArray(compositeValues);
-            arg.setCompositeValue(compositeValues);
+
+        switch (compositeSize) {
+
+            case -1:
+                arg.setCompositeValue(null);
+                break;
+
+            case 0:
+                arg.setCompositeValue(new ArgContainer[0]);
+                break;
+
+            default:
+                ArgContainer[] compositeValues = new ArgContainer[compositeSize];
+                for (int i = 0; i < compositeSize; i++) {
+                    compositeValues[i] = deserializePlain(in);
+                }
+                arg.setCompositeValue(compositeValues);
+                break;
+
         }
+
         return arg;
     }
 

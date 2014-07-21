@@ -7,13 +7,13 @@ import java.io.Serializable;
  * Date: 21.05.13
  * Time: 14:03
  */
-public class ActorSchedulingOptionsContainer implements Serializable {
+public class TaskConfigContainer implements Serializable {
 
     private String customId;
     private long startTime;
     private String taskList;
 
-    public ActorSchedulingOptionsContainer() {
+    public TaskConfigContainer() {
     }
 
     public String getCustomId() {
@@ -45,7 +45,7 @@ public class ActorSchedulingOptionsContainer implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ActorSchedulingOptionsContainer that = (ActorSchedulingOptionsContainer) o;
+        TaskConfigContainer that = (TaskConfigContainer) o;
 
         if (startTime != that.startTime) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;

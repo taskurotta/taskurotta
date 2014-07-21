@@ -1,6 +1,6 @@
 package ru.taskurotta.transport.utils;
 
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 
@@ -15,9 +15,9 @@ public class TransportUtils {
         if (taskContainer != null) {
             TaskOptionsContainer taskOptionsContainer = taskContainer.getOptions();
             if (taskOptionsContainer != null) {
-                ActorSchedulingOptionsContainer actorSchedulingOptionsContainer = taskOptionsContainer.getActorSchedulingOptions();
-                if (actorSchedulingOptionsContainer != null) {
-                    result = actorSchedulingOptionsContainer.getTaskList();
+                TaskConfigContainer taskConfigContainer = taskOptionsContainer.getTaskConfigContainer();
+                if (taskConfigContainer != null) {
+                    result = taskConfigContainer.getTaskList();
                 }
             }
         }

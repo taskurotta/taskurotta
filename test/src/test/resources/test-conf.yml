@@ -59,7 +59,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel.log
+             file: ./target/logs/recipes-parallel.log
              append: true
              encoder:
                  pattern: \%-4r [\%t] \%-5p \%c - \%m\%n

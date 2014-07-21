@@ -8,8 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.bootstrap.Bootstrap;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
-import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.test.mongofail.decider.TimeLogDeciderClient;
 
 import java.io.IOException;
@@ -51,7 +50,7 @@ public class WorkflowStarter {
                 final DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
                 final TimeLogDeciderClient decider = deciderClientProvider.getDeciderClient(TimeLogDeciderClient.class);
 
-                ActorSchedulingOptions opts = new ActorSchedulingOptionsImpl();
+                TaskConfig opts = new TaskConfig().setCustomId(customId);
                 opts.setCustomId(customId);
                 for (int i = 1; i <= count; i++) {
                     decider.execute(opts);

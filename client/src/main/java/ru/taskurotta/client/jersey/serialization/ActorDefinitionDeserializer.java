@@ -18,7 +18,13 @@ public class ActorDefinitionDeserializer extends JsonDeserializer<ActorDefinitio
 
         String name = rootNode.get(ACTOR_DEFINITION_NAME).textValue();
         String version = rootNode.get(ACTOR_DEFINITION_VERSION).textValue();
-        String taskList = rootNode.get(ACTOR_DEFINITION_TASK_LIST).textValue();
+
+        JsonNode taskListNode = rootNode.get(ACTOR_DEFINITION_TASK_LIST);
+        String taskList = null;
+
+        if (taskListNode != null) {
+            taskList = taskListNode.textValue();
+        }
 
         return ActorDefinition.valueOf(name, version, taskList);
     }

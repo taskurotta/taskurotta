@@ -11,6 +11,6 @@ import ru.taskurotta.annotation.Worker;
 public interface TimeLogger {
 
     @Execute
-    public void log();
+    public void log(String arg1, String arg2, int arg3);
 
 }

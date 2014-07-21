@@ -1,48 +1,39 @@
-package ru.taskurotta.internal.core;
-
-import ru.taskurotta.core.ActorSchedulingOptions;
+package ru.taskurotta.core;
 
 /**
- * User: stukushin
- * Date: 15.04.13
- * Time: 18:40
+ * Date: 15.04.13 16:45
  */
-public class ActorSchedulingOptionsImpl implements ActorSchedulingOptions {
+public class TaskConfig {
 
     private String customId;
     private long startTime = -1;
     private String taskList; // name of task queue/list
 
-    public ActorSchedulingOptionsImpl() {}
-
-    public ActorSchedulingOptionsImpl(String customId, long startTime, String taskList) {
-        this.customId = customId;
-        this.startTime = startTime;
-        this.taskList = taskList;
-    }
-
     public String getCustomId() {
         return customId;
-    }
-
-    public void setCustomId(String customId) {
-        this.customId = customId;
     }
 
     public long getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
     public String getTaskList() {
         return taskList;
     }
 
-    public void setTaskList(String taskList) {
+    public TaskConfig setCustomId(String customId) {
+        this.customId = customId;
+        return this;
+    }
+
+    public TaskConfig setStartTime(long startTime) {
+        this.startTime = startTime;
+        return this;
+    }
+
+    public TaskConfig setTaskList(String taskList) {
         this.taskList = taskList;
+        return this;
     }
 
     @Override
@@ -50,7 +41,7 @@ public class ActorSchedulingOptionsImpl implements ActorSchedulingOptions {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ActorSchedulingOptionsImpl that = (ActorSchedulingOptionsImpl) o;
+        TaskConfig that = (TaskConfig) o;
 
         if (startTime != that.startTime) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;
@@ -69,10 +60,10 @@ public class ActorSchedulingOptionsImpl implements ActorSchedulingOptions {
 
     @Override
     public String toString() {
-        return "ActorSchedulingOptionsImpl{" +
+        return "ActorSchedulingOptions{" +
                 "customId='" + customId + '\'' +
                 ", startTime=" + startTime +
-                ", taskList=" + taskList +
-                "} " + super.toString();
+                ", taskList='" + taskList + '\'' +
+                '}';
     }
 }

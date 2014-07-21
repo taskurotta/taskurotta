@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class TaskOptionsContainer implements Serializable {
 
     private ArgType[] argTypes;
-    private ActorSchedulingOptionsContainer actorSchedulingOptions;
+    private TaskConfigContainer taskConfigContainer;
     private ArgContainer[] promisesWaitFor;
 
     public TaskOptionsContainer() {
@@ -21,9 +21,9 @@ public class TaskOptionsContainer implements Serializable {
         this.argTypes = argTypes;
     }
 
-    public TaskOptionsContainer(ArgType[] argTypes, ActorSchedulingOptionsContainer actorSchedulingOptions, ArgContainer[] promisesWaitFor) {
+    public TaskOptionsContainer(ArgType[] argTypes, TaskConfigContainer taskConfigContainer, ArgContainer[] promisesWaitFor) {
         this.argTypes = argTypes;
-        this.actorSchedulingOptions = actorSchedulingOptions;
+        this.taskConfigContainer = taskConfigContainer;
         this.promisesWaitFor = promisesWaitFor;
     }
 
@@ -31,8 +31,8 @@ public class TaskOptionsContainer implements Serializable {
         return argTypes;
     }
 
-    public ActorSchedulingOptionsContainer getActorSchedulingOptions() {
-        return actorSchedulingOptions;
+    public TaskConfigContainer getTaskConfigContainer() {
+        return taskConfigContainer;
     }
 
     public ArgContainer[] getPromisesWaitFor() {
@@ -46,7 +46,7 @@ public class TaskOptionsContainer implements Serializable {
 
         TaskOptionsContainer that = (TaskOptionsContainer) o;
 
-        if (actorSchedulingOptions != null ? !actorSchedulingOptions.equals(that.actorSchedulingOptions) : that.actorSchedulingOptions != null)
+        if (taskConfigContainer != null ? !taskConfigContainer.equals(that.taskConfigContainer) : that.taskConfigContainer != null)
             return false;
         if (!Arrays.equals(argTypes, that.argTypes)) return false;
         if (!Arrays.equals(promisesWaitFor, that.promisesWaitFor)) return false;
@@ -57,7 +57,7 @@ public class TaskOptionsContainer implements Serializable {
     @Override
     public int hashCode() {
         int result = argTypes != null ? Arrays.hashCode(argTypes) : 0;
-        result = 31 * result + (actorSchedulingOptions != null ? actorSchedulingOptions.hashCode() : 0);
+        result = 31 * result + (taskConfigContainer != null ? taskConfigContainer.hashCode() : 0);
         result = 31 * result + (promisesWaitFor != null ? Arrays.hashCode(promisesWaitFor) : 0);
         return result;
     }
@@ -66,7 +66,7 @@ public class TaskOptionsContainer implements Serializable {
     public String toString() {
         return "TaskOptionsContainer{" +
                 "argTypes=" + Arrays.toString(argTypes) +
-                ", actorSchedulingOptions=" + actorSchedulingOptions +
+                ", taskConfigContainer=" + taskConfigContainer +
                 ", promisesWaitFor=" + Arrays.toString(promisesWaitFor) +
                 "}";
     }

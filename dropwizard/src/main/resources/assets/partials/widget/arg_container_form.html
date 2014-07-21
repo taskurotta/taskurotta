@@ -5,7 +5,7 @@
                 Arg class name
             </td>
             <td>
-                <input type="text" class="input-large" ng-model="model.className" />
+                <input type="text" class="input-large" ng-model="model.dataType" />
             </td>
         </tr>
         <tr>
@@ -27,7 +27,7 @@
     </table>;
     private boolean isReady;
     private String JSONValue;
-    private ValueType type;
+    private ValueType valueType;
     private ArgContainer[] compositeValue;
     private boolean promise = false;
 

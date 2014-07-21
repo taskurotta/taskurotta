@@ -23,20 +23,12 @@ import org.junit.Test;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
-import ru.taskurotta.service.hz.serialization.ActorSchedulingOptionsContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer;
-import ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.GraphStreamSerializer;
-import ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer;
-import ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer;
+import ru.taskurotta.service.hz.serialization.*;
+import ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer;
 import ru.taskurotta.hazelcast.util.ConfigUtil;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
-import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.internal.core.ArgType;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
 
 /**
@@ -63,8 +55,8 @@ public class SerializationTest {
                 setTypeClass(ArgContainer.class).
                 setImplementation(new TaskOptionsContainerSerializer()).
                 setTypeClass(TaskOptionsContainer.class).
-                setImplementation(new ActorSchedulingOptionsContainerStreamSerializer()).
-                setTypeClass(ActorSchedulingOptionsContainer.class).
+                setImplementation(new TaskConfigContainerStreamSerializer()).
+                setTypeClass(TaskConfigContainer.class).
                 setImplementation(new ErrorContainerStreamSerializer()).
                 setTypeClass(ErrorContainer.class).
                 setImplementation(new TaskContainerStreamSerializer()).
@@ -138,22 +130,22 @@ public class SerializationTest {
 
         ArgContainer argContainer1 = new ArgContainer();
         argContainer1.setTaskId(UUID.randomUUID());
-        argContainer1.setClassName("simple1");
+        argContainer1.setDataType("simple1");
         argContainer1.setJSONValue("jsonData1");
         argContainer1.setPromise(false);
         argContainer1.setReady(true);
-        argContainer1.setType(ArgContainer.ValueType.COLLECTION);
+        argContainer1.setValueType(ArgContainer.ValueType.COLLECTION);
 
         containerList.add(argContainer1);
 
         List<ArgContainer> containerList1 = new ArrayList<>();
         ArgContainer argContainer2 = new ArgContainer();
         argContainer2.setTaskId(UUID.randomUUID());
-        argContainer2.setClassName("simple2");
+        argContainer2.setDataType("simple2");
         argContainer2.setJSONValue("jsonData2");
         argContainer2.setPromise(false);
         argContainer2.setReady(true);
-        argContainer2.setType(ArgContainer.ValueType.COLLECTION);
+        argContainer2.setValueType(ArgContainer.ValueType.COLLECTION);
 
         containerList1.add(argContainer2);
         ArgContainer[] array1 = new ArgContainer[containerList1.size()];
@@ -162,10 +154,10 @@ public class SerializationTest {
         argContainer1.setCompositeValue(array1);
 
         ArgContainer argContainer = new ArgContainer();
-        argContainer.setClassName("simpleClass");
+        argContainer.setDataType("simpleClass");
         argContainer.setJSONValue("jsonData");
         argContainer.setPromise(true);
-        argContainer.setType(ArgContainer.ValueType.ARRAY);
+        argContainer.setValueType(ArgContainer.ValueType.ARRAY);
         argContainer.setReady(false);
         argContainer.setTaskId(UUID.randomUUID());
 
@@ -177,23 +169,23 @@ public class SerializationTest {
         ArgContainer getted = (ArgContainer) hzMap.get("argContainer");
 
 
-        Assert.assertEquals(argContainer.getClassName(), getted.getClassName());
+        Assert.assertEquals(argContainer.getDataType(), getted.getDataType());
         Assert.assertEquals(argContainer.getJSONValue(), getted.getJSONValue());
         Assert.assertEquals(argContainer.isPromise(), getted.isPromise());
-        Assert.assertEquals(argContainer.getType(), getted.getType());
+        Assert.assertEquals(argContainer.getValueType(), getted.getValueType());
         Assert.assertEquals(argContainer.isReady(), getted.isReady());
         Assert.assertEquals(argContainer.getTaskId(), getted.getTaskId());
-        Assert.assertEquals(argContainer.getCompositeValue()[0].getCompositeValue()[0].getClassName(), "simple2");
+        Assert.assertEquals(argContainer.getCompositeValue()[0].getCompositeValue()[0].getDataType(), "simple2");
     }
 
     @Test
     public void actorSchedulingOptionsContainerSerializerTest() {
-        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+        TaskConfigContainer container = new TaskConfigContainer();
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
         hzMap.put("actorScheduledOptionsContainer", container);
-        ActorSchedulingOptionsContainer getted = (ActorSchedulingOptionsContainer) hzMap.get("actorScheduledOptionsContainer");
+        TaskConfigContainer getted = (TaskConfigContainer) hzMap.get("actorScheduledOptionsContainer");
         assertEquals(container, getted);
     }
 
@@ -224,19 +216,19 @@ public class SerializationTest {
         List<ArgContainer> containerList = new ArrayList<>();
         ArgContainer argContainer1 = new ArgContainer();
         argContainer1.setTaskId(UUID.randomUUID());
-        argContainer1.setClassName("simple1");
+        argContainer1.setDataType("simple1");
         argContainer1.setJSONValue("jsonData1");
         argContainer1.setPromise(false);
         argContainer1.setReady(true);
-        argContainer1.setType(ArgContainer.ValueType.COLLECTION);
+        argContainer1.setValueType(ArgContainer.ValueType.COLLECTION);
 
         ArgContainer argContainer2 = new ArgContainer();
         argContainer2.setTaskId(UUID.randomUUID());
-        argContainer2.setClassName("simple1");
+        argContainer2.setDataType("simple1");
         argContainer2.setJSONValue("jsonData1");
         argContainer2.setPromise(false);
         argContainer2.setReady(true);
-        argContainer2.setType(ArgContainer.ValueType.COLLECTION);
+        argContainer2.setValueType(ArgContainer.ValueType.COLLECTION);
 
         argContainer2.setCompositeValue(new ArgContainer[]{argContainer1});
 
@@ -254,8 +246,8 @@ public class SerializationTest {
 
         TaskContainer actual = (TaskContainer) hzMap.get("taskContainer");
 
-        assertEquals(taskContainer.getArgs()[0].getClassName(), actual.getArgs()[0].getClassName());
-        assertEquals(taskContainer.getArgs()[1].getCompositeValue()[0].getClassName(), actual.getArgs()[0].getClassName());
+        assertEquals(taskContainer.getArgs()[0].getDataType(), actual.getArgs()[0].getDataType());
+        assertEquals(taskContainer.getArgs()[1].getCompositeValue()[0].getDataType(), actual.getArgs()[0].getDataType());
         assertEquals(taskContainer.getMethod(), actual.getMethod());
     }
 
@@ -267,13 +259,13 @@ public class SerializationTest {
         TaskOptionsContainer getted = (TaskOptionsContainer) hzMap.get("taskOptionsContainer");
 
         assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
-        assertEquals(taskOptionsContainer.getActorSchedulingOptions().getStartTime(), getted.getActorSchedulingOptions().getStartTime());
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getStartTime(), getted.getTaskConfigContainer().getStartTime());
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
 
     }
 
     private TaskOptionsContainer getTaskOptionsContainer() {
-        ActorSchedulingOptionsContainer container = new ActorSchedulingOptionsContainer();
+        TaskConfigContainer container = new TaskConfigContainer();
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
@@ -282,19 +274,19 @@ public class SerializationTest {
 
         ArgContainer argContainer1 = new ArgContainer();
         argContainer1.setTaskId(UUID.randomUUID());
-        argContainer1.setClassName("simple1");
+        argContainer1.setDataType("simple1");
         argContainer1.setJSONValue("jsonData1");
         argContainer1.setPromise(false);
         argContainer1.setReady(true);
-        argContainer1.setType(ArgContainer.ValueType.COLLECTION);
+        argContainer1.setValueType(ArgContainer.ValueType.COLLECTION);
 
         ArgContainer argContainer2 = new ArgContainer();
         argContainer2.setTaskId(UUID.randomUUID());
-        argContainer2.setClassName("simple2");
+        argContainer2.setDataType("simple2");
         argContainer2.setJSONValue("jsonData2");
         argContainer2.setPromise(false);
         argContainer2.setReady(true);
-        argContainer2.setType(ArgContainer.ValueType.COLLECTION);
+        argContainer2.setValueType(ArgContainer.ValueType.COLLECTION);
 
         containerList.add(argContainer1);
         containerList.add(argContainer2);

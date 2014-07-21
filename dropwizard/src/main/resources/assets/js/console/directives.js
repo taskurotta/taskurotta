@@ -303,7 +303,21 @@ angular.module("console.directives", ['ngRoute'])
         templateUrl: "/partials/widget/error_message.html",
         replace: true
     };
-}]);
+}])
+
+    .directive('tskArgument', ['$log', function($log) {
+        return {
+            require: 'ngModel',
+            restrict: 'EA',//Element, Attribute
+            scope: {//'=' enables ability to $watch
+                model: "=ngModel"
+            },
+            link: function($scope, $element, $attrs, ngModelCtrl) {
+                $scope.types = ["string", "boolean", "integer", "double", "long", "null"];
+            },
+            templateUrl: '/partials/widget/schedule/tsk_argument.html'
+        };
+    }]);
 
 
 

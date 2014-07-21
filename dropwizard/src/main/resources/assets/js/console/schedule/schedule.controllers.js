@@ -11,7 +11,8 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
             task: {
                 type: "WORKER_SCHEDULED",
                 method: "",
-                actorId: ""
+                actorId: "",
+                args: []
             }
         };
 
@@ -22,6 +23,30 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
         $scope.isCronValid = false;
 
         $scope.initialized = false;
+
+        $scope.addArgument = function() {
+            $scope.job.task.args.push({
+                type: "string",
+                value: ""
+            });
+        };
+
+        $scope.removeArgument = function(idx) {
+            $scope.job.task.args.splice(idx, 1);
+        };
+
+        var getCreateJobCommand = function() {
+            return {
+                name: $scope.job.name,
+                cron: $scope.job.cron,
+                queueLimit: $scope.job.queueLimit,
+                maxErrors: $scope.job.maxErrors,
+                actorId: $scope.job.task.actorId,
+                method: $scope.job.task.method,
+                taskType: $scope.job.task.type,
+                args: $scope.job.task.args
+            };
+        }
 
         $scope.update = function() {
             var jobId = parseInt($routeParams.id);
@@ -44,7 +69,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
 
         $scope.createScheduledJob = function() {
             if ($scope.isValidForm()) {
-                $http.put("/rest/console/schedule/create?cron="+encodeURIComponent($scope.job.cron)+"&name="+encodeURIComponent($scope.job.name) + "&queueLimit=" + $scope.job.queueLimit + "&maxErrors=" + $scope.job.maxErrors, $scope.job.task).then(
+                $http.put("/rest/console/schedule/create?", getCreateJobCommand()).then(
                     function(value) {
                         $location.url("/schedule/list");
                     },
@@ -58,7 +83,7 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
             if ($scope.isValidForm()) {
                 var jobId = parseInt($routeParams.id);
                 if (jobId>0) {
-                    $http.put("/rest/console/schedule/update?jobId="+encodeURIComponent(jobId)+"&cron="+encodeURIComponent($scope.job.cron)+"&name="+encodeURIComponent($scope.job.name) + "&queueLimit=" + $scope.job.queueLimit + "&maxErrors=" + $scope.job.maxErrors, $scope.job.task).then(
+                    $http.put("/rest/console/schedule/update?jobId="+encodeURIComponent(jobId), getCreateJobCommand()).then(
                         function(value) {
                             $location.url("/schedule/list");
                         },

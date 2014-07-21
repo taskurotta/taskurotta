@@ -9,7 +9,7 @@ import ru.taskurotta.annotation.AcceptFail;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Execute;
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.TaskTarget;
 import ru.taskurotta.exception.IncorrectAsynchronousMethodDefinition;
 import ru.taskurotta.exception.IncorrectExecuteMethodDefinition;
@@ -113,9 +113,9 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                 int positionPromisesWaitFor = positionOfWaitList(parameterTypes, positionActorSchedulingOptions);
 */
                 AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
-                String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
+                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1,
+                        null != acceptFail, getFailNames(acceptFail));
 
-                MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1, null != acceptFail, failTypes);
                 method2TaskTargetCache.put(method, descriptor);
             }
 
@@ -139,12 +139,12 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 
                     if (implementationMethod.getName().equals(interfaceMethod)) {
                         TaskTarget taskTarget = new TaskTargetImpl(TaskType.DECIDER_START, deciderName, deciderVersion, method.getName());
-                        int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), ActorSchedulingOptions.class);
+                        int positionActorSchedulingOptions = positionParameter(method.getParameterTypes(), TaskConfig.class);
                         int positionPromisesWaitFor = positionOfWaitList(method.getParameterTypes(), positionActorSchedulingOptions);
                         AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
-                        String[] failTypes = null == acceptFail ? null : getFailNames(acceptFail.type());
 
-                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, failTypes);
+                        MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method),
+                                positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, getFailNames(acceptFail));
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }

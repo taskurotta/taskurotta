@@ -125,7 +125,7 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     @Override
     public Map<Long, Object> loadAll(Collection<Long> longs) {
-        Map<Long, Object> map = new HashMap<Long, Object>();
+        Map<Long, Object> map = new HashMap<>();
         BasicDBList dbo = new BasicDBList();
         for (Long key : longs) {
             dbo.add(new BasicDBObject("_id", key));
@@ -155,12 +155,13 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
      */
     public long getMinItemId() {
         long result = -1l;
-        DBObject sortCommand = new BasicDBObject();
-        sortCommand.put("_id", "1");//by _id asc(min first)
-        DBCursor cursor = coll.find().sort(sortCommand).limit(1);
-        DBObject val = null;
 
-        if (cursor.hasNext() && (val=cursor.next()) != null) {
+        DBObject sortCommand = new BasicDBObject();
+        sortCommand.put("_id", 1);//by _id asc(min first)
+
+        DBObject val;
+        DBCursor cursor = coll.find().sort(sortCommand).limit(1);
+        if (cursor.hasNext() && (val = cursor.next()) != null) {
             result = Long.valueOf(val.get("_id").toString());
         }
 
@@ -169,13 +170,13 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     @Override
     public Set<Long> loadAllKeys() {
-        Set<Long> keyset = new HashSet<Long>();
+        Set<Long> keySet = new HashSet<>();
         BasicDBList dbo = new BasicDBList();
         dbo.add("_id");
         DBCursor cursor = coll.find(null, dbo);
         while (cursor.hasNext()) {
-            keyset.add((Long) cursor.next().get("_id"));
+            keySet.add((Long) cursor.next().get("_id"));
         }
-        return keyset;
+        return keySet;
     }
 }

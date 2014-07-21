@@ -19,6 +19,7 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.policy.retry.BlankRetryPolicy;
 import ru.taskurotta.policy.retry.RetryPolicy;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -210,7 +211,7 @@ public class Bootstrap implements BootstrapMBean {
             Class actorClass = getActorClass(actorConfig.getActorInterface());
 
             ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
-            String actorId = actorDefinition.getFullName();
+            String actorId = ActorUtils.getActorId(actorDefinition);
 
             actorConfigMap.put(actorId, actorConfig);
 

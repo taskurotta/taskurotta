@@ -3,7 +3,7 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -20,14 +20,14 @@ import static ru.taskurotta.service.hz.serialization.SerializationTools.writeArg
  */
 public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOptionsContainer> {
 
-    private ActorSchedulingOptionsContainerStreamSerializer actorSchedulingOptionsContainerStreamSerializer = new ActorSchedulingOptionsContainerStreamSerializer();
+    private TaskConfigContainerStreamSerializer taskConfigContainerStreamSerializer = new TaskConfigContainerStreamSerializer();
 
 
     @Override
     public void write(ObjectDataOutput out, TaskOptionsContainer object) throws IOException {
-        if (object.getActorSchedulingOptions() != null) {
+        if (object.getTaskConfigContainer() != null) {
             out.writeBoolean(true);
-            actorSchedulingOptionsContainerStreamSerializer.write(out, object.getActorSchedulingOptions());
+            taskConfigContainerStreamSerializer.write(out, object.getTaskConfigContainer());
         } else {
             out.writeBoolean(false);
         }
@@ -50,9 +50,9 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
 
     @Override
     public TaskOptionsContainer read(ObjectDataInput in) throws IOException {
-        ActorSchedulingOptionsContainer actorSchedulingOptionsContainer = null;
+        TaskConfigContainer taskConfigContainer = null;
         if (in.readBoolean()) {
-            actorSchedulingOptionsContainer = actorSchedulingOptionsContainerStreamSerializer.read(in);
+            taskConfigContainer = taskConfigContainerStreamSerializer.read(in);
         }
         int argTypesCount = in.readInt();
         List<ArgType> argTypeList = new ArrayList<>();
@@ -72,7 +72,7 @@ public class TaskOptionsContainerSerializer implements StreamSerializer<TaskOpti
 
         ArgContainer[] argContainersArray = readArgsContainerArray(in);
 
-        return new TaskOptionsContainer(argTypeArray, actorSchedulingOptionsContainer, argContainersArray);
+        return new TaskOptionsContainer(argTypeArray, taskConfigContainer, argContainersArray);
     }
 
     @Override

@@ -1,9 +1,8 @@
 package ru.taskurotta.recipes.custom.deciders;
 
 import ru.taskurotta.annotation.Asynchronous;
-import ru.taskurotta.core.ActorSchedulingOptions;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.internal.core.ActorSchedulingOptionsImpl;
 import ru.taskurotta.recipes.custom.workers.CustomWorkerClient;
 
 /**
@@ -19,32 +18,33 @@ public class CustomDeciderImpl implements CustomDecider {
 
     @Override
     public void calculate(int a, int b) {
-        ActorSchedulingOptions workerActorSchedulingOptions = new ActorSchedulingOptionsImpl(null, 0l, "workerTaskList");
-        ActorSchedulingOptions deciderActorSchedulingOptions = new ActorSchedulingOptionsImpl(null, 0l, "deciderTaskList");
+
+        TaskConfig workerTaskConfig = new TaskConfig().setTaskList("workerTaskList");  //new ActorSchedulingOptionsImpl(null, 0l, "workerTaskList");
+        TaskConfig deciderTaskConfig = new TaskConfig().setTaskList("deciderTaskList"); //new ActorSchedulingOptionsImpl(null, 0l, "deciderTaskList");
         Promise<?>[] waitFor = new Promise[0];
 
         Promise<Integer> sum0 = customWorker.sum(a, b);
         asynchronous.show(a, b, sum0, "Invoke worker");
 
-        Promise<Integer> sum1 = customWorker.sum(a, b, workerActorSchedulingOptions);
+        Promise<Integer> sum1 = customWorker.sum(a, b, workerTaskConfig);
         asynchronous.show(a, b, sum1, "Invoke worker with ActorSchedulingOptions");
 
         Promise<Integer> sum2 = customWorker.sum(a, b, waitFor);
         asynchronous.show(a, b, sum2, "Invoke worker with Promise<?> ... waitFor");
 
-        Promise<Integer> sum3 = customWorker.sum(a, b, workerActorSchedulingOptions, waitFor);
+        Promise<Integer> sum3 = customWorker.sum(a, b, workerTaskConfig, waitFor);
         asynchronous.show(a, b, sum3, "Invoke worker with ActorSchedulingOptions and Promise<?> ... waitFor");
 
         Promise<Integer> sum4 = descendantCustomDecider.calculate(a, b);
         asynchronous.show(a, b, sum4, "Invoke descendant decider");
 
-        Promise<Integer> sum5 = descendantCustomDecider.calculate(a, b, deciderActorSchedulingOptions);
+        Promise<Integer> sum5 = descendantCustomDecider.calculate(a, b, deciderTaskConfig);
         asynchronous.show(a, b, sum5, "Invoke descendant decider with ActorSchedulingOptions");
 
         Promise<Integer> sum6 = descendantCustomDecider.calculate(a, b, waitFor);
         asynchronous.show(a, b, sum6, "Invoke descendant decider with Promise<?> ... waitFor");
 
-        Promise<Integer> sum7 = descendantCustomDecider.calculate(a, b, deciderActorSchedulingOptions, waitFor);
+        Promise<Integer> sum7 = descendantCustomDecider.calculate(a, b, deciderTaskConfig, waitFor);
         asynchronous.show(a, b, sum7, "Invoke descendant decider with ActorSchedulingOptions and Promise<?> ... waitFor");
     }
 

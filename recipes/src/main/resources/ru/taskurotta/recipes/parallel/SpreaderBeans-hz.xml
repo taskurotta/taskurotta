@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd">
+
+    <context:property-placeholder location="classpath*:ru/taskurotta/recipes/parallel/default.properties" />
+
+    <hz:hazelcast id="hzInstance">
+        <hz:config>
+            <hz:management-center enabled="${hz.mancenter.enabled}" url="${hz.mancenter.url}"/>
+
+            <hz:properties>
+                <hz:property name="hazelcast.logging.type">${hz.logging.type}</hz:property>
+                <hz:property name="hazelcast.jmx">${hz.jmx}</hz:property>
+                <hz:property name="hazelcast.jmx.detailed">${hz.jmx.detailed}</hz:property>
+            </hz:properties>
+
+            <hz:network port="${hz.port}" port-auto-increment="true">
+                <hz:join>
+                    <hz:multicast enabled="false"/>
+                    <hz:tcp-ip enabled="true">
+                        <hz:members>${hz.nodes}</hz:members>
+                    </hz:tcp-ip>
+                </hz:join>
+            </hz:network>
+
+            <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
+
+            <hz:map name="${hz.map.task.name}" backup-count="1"/>
+
+            <hz:map name="${hz.map.decision.name}" backup-count="1"/>
+
+            <hz:map name="${hz.map.graph.name}" backup-count="1"/>
+
+            <hz:map name="${hz.map.graph-decision.name}" backup-count="1"/>
+
+            <hz:map name="${hz.map.process.name}" backup-count="1"/>
+
+            <hz:map name="${hz.map.actor-preferences.name}" backup-count="1"/>
+
+            <hz:map name="${hz.map.broken-process.name}" backup-count="1"/>
+
+            <hz:serialization>
+                <hz:serializers>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskConfigContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.console.model.BrokenProcess"
+                                   class-name="ru.taskurotta.service.hz.serialization.BrokenProcessStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.hz.dependency.HzGraphDao.DecisionRow"
+                                   class-name="ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.dependency.links.Graph"
+                                   class-name="ru.taskurotta.service.hz.serialization.GraphStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.console.model.Process"
+                                   class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.hz.TaskKey"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskKeyStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer"/>
+                    <hz:serializer type-class="java.util.UUID"
+                                   class-name="ru.taskurotta.service.hz.serialization.UUIDStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.queue.TaskQueueItem"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskQueueItemSteamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.StorageItem"
+                                   class-name="ru.taskurotta.service.hz.serialization.StorageItemStreamSerializer"/>
+                </hz:serializers>
+            </hz:serialization>
+
+        </hz:config>
+    </hz:hazelcast>
+
+    <hz:lock id="recoveryNodeLock" instance-ref="hzInstance" name="${hz.recovery.lock.name}" />
+
+    <!-- Config support -->
+    <bean id="hzConfigBackendSupport" class="ru.taskurotta.service.hz.support.HzConfigServiceSupport"
+          init-method="init">
+        <property name="hzInstance" ref="hzInstance"/>
+        <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
+        <property name="actorPreferencesMapName" value="${hz.map.actor-preferences.name}"/>
+    </bean>
+    <!-- /Config support -->
+
+    <!--  Actor config support  -->
+    <bean id="actorConfigManager" class="ru.taskurotta.service.hz.config.HzActorConfigManager">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="actorConfigName" value="${hz.map.actor-preferences.name}"/>
+
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
+    </bean>
+    <!-- /Actor config support -->
+
+    <!-- Delay queue support -->
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="scheduleDelayMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${dq.schedule}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="commonStorageName" value="commonStorageForQueueBackend"/>
+    </bean>
+
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
+    </bean>
+
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="scheduleDelayMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${dq.schedule}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="commonStorageName" value="commonStorageForGC"/>
+    </bean>
+
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
+    </bean>
+    <!-- /Delay queue support -->
+
+    <!-- Backends -->
+    <bean id="queueService" class="ru.taskurotta.service.hz.queue.HzQueueService">
+        <constructor-arg name="queueFactory" ref="queueFactoryForQueueBackend"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="queueNamePrefix" value="${hz.queue.task.prefix}"/>
+        <constructor-arg name="pollDelay">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${server.poll-delay}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="mergePeriodMs">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${hz.recovery.merge-period}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="taskDao" class="ru.taskurotta.service.hz.storage.HzTaskDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="id2TaskMapName" value="${hz.map.task.name}"/>
+        <constructor-arg name="id2TaskDecisionMapName" value="${hz.map.decision.name}"/>
+    </bean>
+
+    <bean id="taskService" class="ru.taskurotta.service.storage.GeneralTaskService">
+        <constructor-arg name="taskDao" ref="taskDao"/>
+    </bean>
+
+    <bean id="dependencyService" class="ru.taskurotta.service.hz.dependency.HzDependencyService"
+          factory-method="createInstance">
+        <constructor-arg name="graphDao" ref="graphDao"/>
+    </bean>
+
+    <bean id="graphDao" class="ru.taskurotta.service.hz.dependency.HzGraphDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="graphsMapName" value="${hz.map.graph.name}"/>
+        <constructor-arg name="decisionsMapName" value="${hz.map.graph-decision.name}"/>
+    </bean>
+
+    <bean id="configService" class="ru.taskurotta.service.hz.config.HzConfigService">
+        <constructor-arg name="actorPreferencesMapName" value="${hz.map.actor-preferences.name}"/>
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+    </bean>
+
+    <bean id="processService" class="ru.taskurotta.service.hz.storage.HzProcessService">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
+    </bean>
+
+    <bean id="brokenProcessService" class="ru.taskurotta.service.hz.storage.HzBrokenProcessService">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="brokenProcessMapName" value="${hz.map.broken-process.name}"/>
+    </bean>
+
+    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
+        <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    </bean>
+
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder">
+        <constructor-arg name="dao" ref="incompleteProcessDao"/>
+        <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+        <constructor-arg name="incompleteTimeOutMillis">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="findIncompleteProcessPeriod">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="nodeLock" ref="recoveryNodeLock" />
+        <constructor-arg name="limit" value = "${recovery.find-incomplete-process-pack-limit}" />
+    </bean>
+
+    <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
+    </bean>
+
+    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
+        <constructor-arg name="dependencyService" ref="dependencyService"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="queueService" ref="queueService"/>
+        <constructor-arg name="taskService" ref="taskService"/>
+        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
+        <constructor-arg name="recoveryProcessChangeTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.process.change-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="findIncompleteProcessPeriod">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="garbageCollectorService" class="ru.taskurotta.service.hz.gc.HzGarbageCollectorService">
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="queueFactory" ref="queueFactoryForGC"/>
+        <constructor-arg name="garbageCollectorQueueName" value="${gc.queue-name}"/>
+        <constructor-arg name="poolSize" value="${gc.pool-size}"/>
+        <constructor-arg name="timeBeforeDelete">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="enabled" value="${gc.enabled}"/>
+    </bean>
+    <!-- /Backends -->
+
+    <!-- Task server -->
+    <!--<bean id="taskServer" class="ru.taskurotta.service.hz.server.HazelcastTaskServer">-->
+    <bean id="taskServer" class="ru.taskurotta.server.GeneralTaskServer">
+        <constructor-arg name="configService" ref="configService"/>
+        <constructor-arg name="dependencyService" ref="dependencyService"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="queueService" ref="queueService"/>
+        <constructor-arg name="taskService" ref="taskService"/>
+        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
+        <!--<constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nodeCustomName" value="${node.custom-name}"/>
+        <constructor-arg name="decisionProcessingExecutorService" value="${hz.executor-service.decisions.service-name}"/>-->
+    </bean>
+    <!-- /Task server -->
+
+    <!-- Metrics data support -->
+    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init"/>
+    <!-- Metrics data support -->
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
+        <constructor-arg name="taskServer" ref="taskServer" />
+    </bean>
+
+    <bean id="taskCreator" class="ru.taskurotta.recipes.parallel.TaskCreator" init-method="createStartTask">
+        <property name="clientServiceManager" ref="clientServiceManager"/>
+        <property name="cycles" value="${cycles}"/>
+        <property name="accuracy" value="${accuracy}"/>
+    </bean>
+
+</beans>

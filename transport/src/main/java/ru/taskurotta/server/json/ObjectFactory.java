@@ -7,23 +7,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.ActorSchedulingOptions;
-import ru.taskurotta.core.Fail;
-import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.core.TaskOptions;
-import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.core.*;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.transport.model.ActorSchedulingOptionsContainer;
-import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.ArgContainer.ValueType;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
@@ -58,9 +49,6 @@ public class ObjectFactory {
         }
 
         try {
-//            if(argContainer.getType() == null && argContainer.getClassName()!=null) { //try to determine type. This info can be lost after swapping with Promise on server side
-//                argContainer.setType(SerializationUtils.extractValueType(Class.forName(argContainer.getClassName())));
-//            }
 
             if (argContainer.isPromise()) {
                 Promise promise = Promise.createInstance(argContainer.getTaskId());
@@ -92,13 +80,13 @@ public class ObjectFactory {
         if (arg.isNull()) { //null object
             // just do nothing
         } else if (arg.isPlain()) { //simple object or primitive value
-            result = getSimpleValue(arg.getJSONValue(), arg.getClassName());
+            result = getSimpleValue(arg.getJSONValue(), arg.getDataType());
 
         } else if (arg.isArray()) {//array of custom POJO objects or primitives
-            result = getArrayValue(arg.getJSONValue(), arg.getClassName());
+            result = getArrayValue(arg.getJSONValue(), arg.getDataType());
 
         } else if (arg.isCollection()) {//collection
-            result = getCollectionValue(arg.getCompositeValue(), arg.getClassName());
+            result = getCollectionValue(arg.getCompositeValue(), arg.getDataType());
 
         } else {
             throw new SerializationException("Unsupported or null value type for arg["+arg+"]!");
@@ -167,22 +155,22 @@ public class ObjectFactory {
 
         if (value == null) {
             target.setJSONValue(getPlainJson(value));
-            target.setClassName(Object.class.getName());
+            target.setDataType(Object.class.getName());
             return;
         }
 
         ValueType type = SerializationUtils.extractValueType(value.getClass());
-        target.setType(type);
+        target.setValueType(type);
 
         if (ValueType.PLAIN.equals(type)) {
             target.setJSONValue(getPlainJson(value));
-            target.setClassName(value.getClass().getName());
+            target.setDataType(value.getClass().getName());
         } else if (ValueType.ARRAY.equals(type)) {
             target.setJSONValue(getArrayJson(value));
-            target.setClassName(value.getClass().getComponentType().getName());
+            target.setDataType(value.getClass().getComponentType().getName());
         } else if (ValueType.COLLECTION.equals(type)) {
             target.setCompositeValue(parseCollectionValues(value));
-            target.setClassName(value.getClass().getName());
+            target.setDataType(value.getClass().getName());
 
         } else {
             throw new SerializationException("Cannot determine value type to set for object " + value);
@@ -216,10 +204,47 @@ public class ObjectFactory {
             }
         }
 
+        TaskOptions opts = parseTaskOptions(taskContainer.getOptions());//TODO: may be parsing options is redundant? Client's ActorExecutor doesn't use them anyway
+
         return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
-                taskContainer.getNumberOfAttempts(), args, null, taskContainer.isUnsafe(), taskContainer.getFailTypes());
+                taskContainer.getNumberOfAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
     }
 
+
+    public TaskOptions parseTaskOptions(TaskOptionsContainer options) {
+        if (options == null) {
+            return null;
+        }
+        return new TaskOptions()
+                .setArgTypes(options.getArgTypes())
+                .setPromisesWaitFor(parsePromisesWaitFor(options.getPromisesWaitFor()))
+                .setTaskConfig(parseSchedulingOptions(options.getTaskConfigContainer()));
+    }
+
+    public TaskConfig parseSchedulingOptions(TaskConfigContainer actorSchedOptions) {
+        if (actorSchedOptions == null) {
+            return null;
+        }
+
+        return new TaskConfig()
+                .setCustomId(actorSchedOptions.getCustomId())
+                .setStartTime(actorSchedOptions.getStartTime())
+                .setTaskList(actorSchedOptions.getTaskList());
+    }
+
+    public Promise<?>[] parsePromisesWaitFor(ArgContainer[] args) {
+        if (args == null) {
+            return null;
+        }
+
+        Promise<?>[] result = new Promise<?>[args.length];
+        int i = 0;
+        for (ArgContainer arg : args) {
+            result[i++] = (Promise)parseArg(arg); //TODO: method may return plain object. But waitForPromises args array should contain only promises
+        }
+
+        return result;
+    }
 
     public TaskContainer dumpTask(Task task) {
         UUID taskId = task.getId();
@@ -251,13 +276,13 @@ public class ObjectFactory {
             return null;
         }
 
-		ActorSchedulingOptionsContainer optionsContainer = null;
-		ActorSchedulingOptions actorSchedulingOptions = taskOptions.getActorSchedulingOptions();
-		if (null != actorSchedulingOptions) {
-			optionsContainer = new ActorSchedulingOptionsContainer();
-			optionsContainer.setStartTime(actorSchedulingOptions.getStartTime());
-			optionsContainer.setCustomId(actorSchedulingOptions.getCustomId());
-			optionsContainer.setTaskList(actorSchedulingOptions.getTaskList());
+		TaskConfigContainer optionsContainer = null;
+		TaskConfig taskConfig = taskOptions.getTaskConfig();
+		if (null != taskConfig) {
+			optionsContainer = new TaskConfigContainer();
+			optionsContainer.setStartTime(taskConfig.getStartTime());
+			optionsContainer.setCustomId(taskConfig.getCustomId());
+			optionsContainer.setTaskList(taskConfig.getTaskList());
 		}
 
 		ArgContainer promisesWaitForDumped[] = null;

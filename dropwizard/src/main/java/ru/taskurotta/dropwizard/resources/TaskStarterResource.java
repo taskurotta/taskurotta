@@ -26,12 +26,10 @@ public class TaskStarterResource {
     private TaskServer taskServer;
 
     @POST
-    public Response startProcess(TaskContainer taskContainer, @QueryParam("generateId") Optional< Boolean > generateId) {
-        logger.debug("startProcess resource called with entity[{}], generateId[{}]", taskContainer, generateId);
+    public Response startProcess(TaskContainer taskContainer) {
+        logger.debug("startProcess resource called with entity[{}], generateId[{}]", taskContainer);
 
-        if (generateId.or(false)) {
-            taskContainer = injectIdsIfAbsent(taskContainer);
-        }
+        taskContainer = injectIdsIfAbsent(taskContainer);
 
         try {
             taskServer.startProcess(taskContainer);
@@ -46,6 +44,9 @@ public class TaskStarterResource {
     }
 
     private TaskContainer injectIdsIfAbsent(TaskContainer target) {
+        if (target.getProcessId() != null && target.getTaskId() != null) { //has guids already set
+            return target;
+        }
         UUID taskId = target.getTaskId() != null ? target.getTaskId() : UUID.randomUUID();
         UUID processId = target.getProcessId() != null ? target.getProcessId() : UUID.randomUUID();
         return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions(), target.isUnsafe(), target.getFailTypes());

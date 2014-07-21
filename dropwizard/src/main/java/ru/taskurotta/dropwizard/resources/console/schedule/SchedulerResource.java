@@ -1,36 +1,28 @@
 package ru.taskurotta.dropwizard.resources.console.schedule;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.StringUtils;
+import ru.taskurotta.dropwizard.resources.console.schedule.model.ArgVO;
+import ru.taskurotta.dropwizard.resources.console.schedule.model.CreateJobCommand;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.console.Action;
 import ru.taskurotta.service.schedule.JobConstants;
-import ru.taskurotta.service.schedule.model.JobVO;
 import ru.taskurotta.service.schedule.JobManager;
+import ru.taskurotta.service.schedule.model.JobVO;
+import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.internal.core.TaskType;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import java.io.Serializable;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Rest resource providing data on schedulers for console
@@ -44,6 +36,8 @@ public class SchedulerResource implements JobConstants {
 
     private static final Logger logger = LoggerFactory.getLogger(SchedulerResource.class);
     private JobManager jobManager;
+
+    private ObjectMapper mapper = new ObjectMapper();
 
     @GET
     @Path("/list")
@@ -113,14 +107,13 @@ public class SchedulerResource implements JobConstants {
 
     @PUT
     @Path("/create")
-    public Long createSchedulerJob(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt, @QueryParam("maxErrors")Optional<Integer> maxErrorsOpt,
-                                                @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
+    public Long createSchedulerJob(@QueryParam("jobId")Optional<Long> jobIdOpt, CreateJobCommand command) {
         JobVO job = null;
         try {
-            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, maxErrorsOpt, jobIdOpt, task);
-            logger.debug("Creating scheduled task for cron [{}], name[{}] and TaskContainer[{}]", cronOpt, nameOpt, task);
+            job = getValidJob(jobIdOpt, command);
+            logger.debug("Creating scheduled task for jobIdOpt [{}], command[{}]", jobIdOpt, command);
             long id = jobManager.addJob(job);
-            logger.debug("Scheduled task for name[{}], cron[{}] added with id[{}]", nameOpt, cronOpt, id);
+            logger.debug("Scheduled task for command[{}] added with id[{}]", command, id);
             return id;
 
         } catch (Exception e) {
@@ -132,11 +125,10 @@ public class SchedulerResource implements JobConstants {
 
     @PUT
     @Path("/update")
-    public void updateScheduledTask(@QueryParam("cron")Optional<String> cronOpt, @QueryParam("name")Optional<String> nameOpt, @QueryParam("maxErrors")Optional<Integer> maxErrorsOpt,
-                                                @QueryParam("queueLimit")Optional<Integer> queueLimitOpt, @QueryParam("jobId")Optional<Long> jobIdOpt, TaskContainer task) {
+    public void updateScheduledTask(@QueryParam("jobId")Optional<Long> jobIdOpt, CreateJobCommand command) {
         JobVO job = null;
         try {
-            job = getValidJob(cronOpt, nameOpt, queueLimitOpt, maxErrorsOpt, jobIdOpt, task);
+            job = getValidJob(jobIdOpt, command);
             jobManager.updateJob(job);
             logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
 
@@ -147,20 +139,16 @@ public class SchedulerResource implements JobConstants {
 
     }
 
-    protected JobVO getValidJob (Optional<String> cronOpt, Optional<String> nameOpt, Optional<Integer> queueLimitOpt, Optional<Integer> maxErrorsOpt, Optional<Long> jobIdOpt, TaskContainer task) {
-        String cron = cronOpt.or("");
-        String name = nameOpt.or("");
-        Integer queueLimit = queueLimitOpt.or(-1);
-        Integer maxErrors = maxErrorsOpt.or(JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS);
-        Long jobId = jobIdOpt.or(-1l);
+    protected JobVO getValidJob (Optional<Long> jobIdOpt, CreateJobCommand command) {
+        long jobId = jobIdOpt.or(-1l);
 
         JobVO job = new JobVO();
         job.setId(jobId);
-        job.setCron(cron);
-        job.setQueueLimit(queueLimit);
-        job.setMaxErrors(maxErrors);
-        job.setName(name);
-        job.setTask(extendTask(task));
+        job.setCron(command.getCron());
+        job.setQueueLimit(command.getQueueLimit());
+        job.setMaxErrors(command.getMaxErrors());
+        job.setName(command.getName());
+        job.setTask(createTask(command));
         job.setStatus(STATUS_INACTIVE);//modification should be applied only for inactive tasks
         validateJob(job);
 
@@ -218,14 +206,69 @@ public class SchedulerResource implements JobConstants {
         }
     }
 
-    public static TaskContainer extendTask(TaskContainer target) {
-        UUID taskId = target.getTaskId()!=null? target.getTaskId(): UUID.randomUUID();
-        UUID processId = target.getProcessId()!=null? target.getProcessId(): UUID.randomUUID();
-        TaskType type = target.getType()!=null? target.getType(): TaskType.DECIDER_START;
+    public TaskContainer createTask(CreateJobCommand command) {
+        UUID guid = UUID.randomUUID();
+        TaskType type = command.getTaskType() != null? command.getTaskType(): TaskType.DECIDER_START;
         long startTime = -1; // for scheduled task start time must be -1
-        int numberOfAttempts = target.getNumberOfAttempts()!=0? target.getNumberOfAttempts(): 5;
 
-        return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), type, startTime, numberOfAttempts, target.getArgs(), target.getOptions(), target.isUnsafe(), target.getFailTypes());
+        return new TaskContainer(guid, guid, command.getMethod(), command.getActorId(),
+                type, startTime, JobConstants.DEFAULT_NUMBER_OF_ATTEMPTS,
+                getTaskArguments(guid, command.getArgs()), null, false, null);
+    }
+
+    public ArgContainer[] getTaskArguments(UUID taskId, ArgVO[] args) {
+        ArgContainer[] result = null;
+        if (args != null && args.length>0) {
+            int size = args.length;
+            result = new ArgContainer[size];
+            for(int i = 0; i<size; i++) {
+                ArgVO arg = args[i];
+                ArgContainer ac = new ArgContainer();
+                ac.setValueType(ArgContainer.ValueType.PLAIN);
+                ac.setPromise(false);
+                ac.setReady(true);
+                ac.setTaskId(taskId);
+
+                populateArgContainerValue(ac, arg.getType(), arg.getValue());
+
+                result[i] = ac;
+                logger.debug("Resulting task [{}] argument is[{}]", taskId, ac);
+            }
+        }
+
+        return result;
+    }
+
+    public void populateArgContainerValue(ArgContainer ac, String valueType, String value) {
+        Class valueClass = null;
+        try {
+            if (StringUtils.hasText(valueType)) {
+                valueClass = Thread.currentThread().getContextClassLoader().loadClass("java.lang." + capFirst(valueType.trim().toLowerCase()));
+            }
+
+            if (valueClass != null) {
+                ac.setDataType(valueClass.getName());
+                Object valueAsObject = valueClass.getConstructor(String.class).newInstance(value);
+                ac.setJSONValue(mapper.writeValueAsString(valueAsObject));
+            } else {
+                ac.setDataType(null);
+                ac.setJSONValue(null);
+            }
+
+        } catch(Exception e) {
+            String message = "Cannot populate argument["+ac+"] value["+value+"] with type ["+valueType+"]";
+            logger.error(message, e);
+            throw new IllegalArgumentException(message);
+        }
+
+    }
+
+    public static String capFirst(String target) {
+        if (target!=null && target.length()>0) {
+            return target.substring(0, 1).toUpperCase() + target.substring(1);
+        } else {
+            return target;
+        }
     }
 
     public Date getNextExecutionTime(String cron) {

@@ -21,6 +21,7 @@ spreader:
           readTimeout: 0
           connectTimeout: 3000
 
+
 policy:
   - MainPolicyConfig:
       class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
@@ -31,12 +32,13 @@ policy:
           maximumRetryIntervalSeconds: 30
           maximumAttempts: 10
 
+
 actor:
   - LoggingWorker:
-      actorInterface: ru.taskurotta.recipes.scheduled.TimeLoggerImpl
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
+      actorInterface: ru.taskurotta.recipes.scheduled.TimeLogger
       policyConfig: MainPolicyConfig
-      count: 5
-      properties:
-        failover: "25 SECONDS"
+      count: 1
+  - LoggingWorker2:
+      actorInterface: ru.taskurotta.recipes.scheduled.TimeLogger2
+      policyConfig: MainPolicyConfig
+      count: 1
