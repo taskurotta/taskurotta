@@ -1,5 +1,7 @@
 package ru.taskurotta.core;
 
+import ru.taskurotta.policy.retry.RetryPolicySettings;
+
 /**
  * Date: 15.04.13 16:45
  */
@@ -8,6 +10,7 @@ public class TaskConfig {
     private String customId;
     private long startTime = -1;
     private String taskList; // name of task queue/list
+    private RetryPolicySettings retryPolicySettings;
 
     public String getCustomId() {
         return customId;
@@ -19,6 +22,10 @@ public class TaskConfig {
 
     public String getTaskList() {
         return taskList;
+    }
+
+    public RetryPolicySettings getRetryPolicySettings() {
+        return retryPolicySettings;
     }
 
     public TaskConfig setCustomId(String customId) {
@@ -33,6 +40,11 @@ public class TaskConfig {
 
     public TaskConfig setTaskList(String taskList) {
         this.taskList = taskList;
+        return this;
+    }
+
+    public TaskConfig setRetryPolicySettings(RetryPolicySettings retryPolicySettings) {
+        this.retryPolicySettings = retryPolicySettings;
         return this;
     }
 

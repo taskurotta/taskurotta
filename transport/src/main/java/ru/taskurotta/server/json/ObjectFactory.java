@@ -283,6 +283,7 @@ public class ObjectFactory {
 			optionsContainer.setStartTime(taskConfig.getStartTime());
 			optionsContainer.setCustomId(taskConfig.getCustomId());
 			optionsContainer.setTaskList(taskConfig.getTaskList());
+            optionsContainer.setRetryPolicySettings(taskConfig.getRetryPolicySettings());
 		}
 
 		ArgContainer promisesWaitForDumped[] = null;

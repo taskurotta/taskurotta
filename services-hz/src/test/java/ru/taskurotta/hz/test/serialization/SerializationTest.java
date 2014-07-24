@@ -1,17 +1,5 @@
 package ru.taskurotta.hz.test.serialization;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-
-import static junit.framework.Assert.assertEquals;
-
 import com.hazelcast.config.Config;
 import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.core.Hazelcast;
@@ -20,16 +8,19 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
+import ru.taskurotta.internal.core.ArgType;
+import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.policy.retry.RetryPolicySettings;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
 import ru.taskurotta.service.hz.serialization.*;
-import ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer;
-import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.transport.model.*;
-import ru.taskurotta.transport.model.TaskConfigContainer;
-import ru.taskurotta.internal.core.ArgType;
-import ru.taskurotta.internal.core.TaskType;
+
+import java.util.*;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * User: romario
@@ -260,6 +251,7 @@ public class SerializationTest {
 
         assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
         assertEquals(taskOptionsContainer.getTaskConfigContainer().getStartTime(), getted.getTaskConfigContainer().getStartTime());
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getType(), getted.getTaskConfigContainer().getRetryPolicySettings().getType());
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
 
     }
@@ -269,6 +261,16 @@ public class SerializationTest {
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
+
+        RetryPolicySettings retryPolicySettings = new RetryPolicySettings();
+        retryPolicySettings.setType(RetryPolicySettings.RetryPolicyType.LINEAR);
+        retryPolicySettings.setMaximumAttempts(1);
+        retryPolicySettings.setInitialRetryIntervalSeconds(5);
+        retryPolicySettings.setMaximumRetryIntervalSeconds(25);
+        retryPolicySettings.setRetryExpirationIntervalSeconds(5);
+        retryPolicySettings.setBackoffCoefficient(1.1);
+
+        container.setRetryPolicySettings(retryPolicySettings);
 
         List<ArgContainer> containerList = new ArrayList<>();
 

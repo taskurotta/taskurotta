@@ -15,11 +15,19 @@ import static ru.taskurotta.service.hz.serialization.SerializationTools.writeStr
  */
 public class TaskConfigContainerStreamSerializer implements StreamSerializer<TaskConfigContainer> {
 
+    private RetryPolicySettingsSerializer retryPolicySettingsSerializer = new RetryPolicySettingsSerializer();
+
     @Override
     public void write(ObjectDataOutput out, TaskConfigContainer object) throws IOException {
         writeString(out, object.getCustomId());
         out.writeLong(object.getStartTime());
         writeString(out, object.getTaskList());
+        if (object.getRetryPolicySettings() != null) {
+            out.writeBoolean(true);
+            retryPolicySettingsSerializer.write(out, object.getRetryPolicySettings());
+        } else {
+            out.writeBoolean(false);
+        }
     }
 
     @Override
@@ -28,12 +36,16 @@ public class TaskConfigContainerStreamSerializer implements StreamSerializer<Tas
         container.setCustomId(readString(in));
         container.setStartTime(in.readLong());
         container.setTaskList(readString(in));
+        boolean retryPolicyExist = in.readBoolean();
+        if (retryPolicyExist) {
+            container.setRetryPolicySettings(retryPolicySettingsSerializer.read(in));
+        }
         return container;
     }
 
     @Override
     public int getTypeId() {
-        return ObjectTypes.ACTOR_SCHEDULING_OPTIONS_CONTAINER;
+        return ObjectTypes.TASK_CONFIG_CONTAINER;
     }
 
     @Override
