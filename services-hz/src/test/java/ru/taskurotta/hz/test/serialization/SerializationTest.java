@@ -18,6 +18,7 @@ import ru.taskurotta.service.hz.dependency.HzGraphDao;
 import ru.taskurotta.service.hz.serialization.*;
 import ru.taskurotta.transport.model.*;
 
+import java.io.IOException;
 import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
@@ -251,7 +252,11 @@ public class SerializationTest {
 
         assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
         assertEquals(taskOptionsContainer.getTaskConfigContainer().getStartTime(), getted.getTaskConfigContainer().getStartTime());
-        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getType(), getted.getTaskConfigContainer().getRetryPolicySettings().getType());
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().isExceptionToRetry("java.io.IOException"), true);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().isExceptionToRetry("java.io.IIOException"), false);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().isExceptionToExclude("java.lang.IllegalAccessError"), true);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getType(), getted.getTaskConfigContainer().getRetryPolicySettings().getType()
+        );
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
 
     }
@@ -269,6 +274,11 @@ public class SerializationTest {
         retryPolicySettings.setMaximumRetryIntervalSeconds(25);
         retryPolicySettings.setRetryExpirationIntervalSeconds(5);
         retryPolicySettings.setBackoffCoefficient(1.1);
+        retryPolicySettings.addExceptionToRetryException(IndexOutOfBoundsException.class);
+        retryPolicySettings.addExceptionToRetryException(IOException.class);
+        retryPolicySettings.addExceptionToRetryException(IllegalFormatException.class);
+        retryPolicySettings.addExceptionToExclude(IllegalAccessError.class);
+        retryPolicySettings.addExceptionToExclude(IllegalArgumentException.class);
 
         container.setRetryPolicySettings(retryPolicySettings);
 

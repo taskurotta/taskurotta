@@ -1,6 +1,8 @@
 package ru.taskurotta.policy.retry;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by greg
@@ -13,6 +15,9 @@ public class RetryPolicySettings implements Serializable {
     private long retryExpirationIntervalSeconds;
     private double backoffCoefficient;
     private int maximumAttempts;
+
+    private List<String> exceptionsToRetry = new ArrayList<String>();
+    private List<String> exceptionsToExclude = new ArrayList<String>();
 
     public RetryPolicyType getType() {
         return type;
@@ -67,30 +72,12 @@ public class RetryPolicySettings implements Serializable {
         return this;
     }
 
-    public enum RetryPolicyType {
-        BLANK(0), LINEAR(1), EXPOTENTIAL(2);
+    public List<String> getExceptionsToRetry() {
+        return exceptionsToRetry;
+    }
 
-        private int value;
-
-        RetryPolicyType(int value) {
-           this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public static RetryPolicyType build(int value){
-            switch (value){
-                case 0:
-                    return RetryPolicyType.BLANK;
-                case 1:
-                    return RetryPolicyType.LINEAR;
-                case 2:
-                    return RetryPolicyType.EXPOTENTIAL;
-            }
-            return null;
-        }
+    public List<String> getExceptionsToExclude() {
+        return exceptionsToExclude;
     }
 
     public TimeRetryPolicyBase buildTimeRetryPolicy() {
@@ -112,6 +99,48 @@ public class RetryPolicySettings implements Serializable {
             }
             default:
                 return new BlankRetryPolicy();
+        }
+    }
+
+    public void addExceptionToRetryException(Class<? extends Throwable> clazz) {
+        exceptionsToRetry.add(clazz.getName());
+    }
+
+    public void addExceptionToExclude(Class<? extends Throwable> clazz) {
+        exceptionsToExclude.add(clazz.getName());
+    }
+
+    public boolean isExceptionToRetry(String exceptionClass) {
+        return exceptionsToRetry.contains(exceptionClass);
+    }
+
+    public boolean isExceptionToExclude(String exceptionClass) {
+        return exceptionsToExclude.contains(exceptionClass);
+    }
+
+    public enum RetryPolicyType {
+        BLANK(0), LINEAR(1), EXPOTENTIAL(2);
+
+        private int value;
+
+        RetryPolicyType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public static RetryPolicyType build(int value) {
+            switch (value) {
+                case 0:
+                    return RetryPolicyType.BLANK;
+                case 1:
+                    return RetryPolicyType.LINEAR;
+                case 2:
+                    return RetryPolicyType.EXPOTENTIAL;
+            }
+            return null;
         }
     }
 
