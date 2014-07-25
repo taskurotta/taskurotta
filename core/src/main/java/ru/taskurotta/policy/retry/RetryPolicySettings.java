@@ -110,12 +110,26 @@ public class RetryPolicySettings implements Serializable {
         exceptionsToExclude.add(clazz.getName());
     }
 
-    public boolean isExceptionToRetry(String exceptionClass) {
-        return exceptionsToRetry.contains(exceptionClass);
-    }
+    public boolean isRetryable(String failure) {
+        boolean isRetryable = false;
 
-    public boolean isExceptionToExclude(String exceptionClass) {
-        return exceptionsToExclude.contains(exceptionClass);
+        for (String exceptionToRetry: getExceptionsToRetry()) {
+            if (exceptionToRetry.equals(failure)) {
+                isRetryable = true;
+                break;
+            }
+        }
+
+        if (isRetryable) {
+            for (String exceptionNotToRetry: getExceptionsToExclude()) {
+                if (exceptionNotToRetry.equals(failure)) {
+                    isRetryable = false;
+                    break;
+                }
+            }
+        }
+
+        return isRetryable;
     }
 
     public enum RetryPolicyType {

@@ -58,6 +58,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         retryPolicySettings.setMaximumRetryIntervalSeconds(15);
         retryPolicySettings.setRetryExpirationIntervalSeconds(PolicyConstants.NONE);
         retryPolicySettings.setType(RetryPolicySettings.RetryPolicyType.LINEAR);
+        retryPolicySettings.addExceptionToExclude(java.lang.IllegalArgumentException.class);
         TaskConfig options = new TaskConfig().setStartTime(System.currentTimeMillis() + 100l).setRetryPolicySettings(retryPolicySettings);
         Promise<Double> arg = Promise.asPromise(-1 * (p1 + p2.get()));
         Promise<Double> sqrt = worker.sqrt(arg, options);

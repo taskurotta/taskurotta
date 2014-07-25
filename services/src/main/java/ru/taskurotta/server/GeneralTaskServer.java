@@ -155,7 +155,7 @@ public class GeneralTaskServer implements TaskServer {
                 logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
                 enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
                 return;
-            } else if (retryPolicySettings != null) {
+            } else if (retryPolicySettings != null && !isErrorMatch(retryPolicySettings, taskDecision.getErrorContainer())) {
                 applyRetryPolicy(taskDecision, taskId, processId, task, retryPolicySettings);
                 return;
             } else {
@@ -214,6 +214,15 @@ public class GeneralTaskServer implements TaskServer {
             enqueueTask(taskId, processId, task.getActorId(), System.currentTimeMillis() + (customRestartTime * 1000), getTaskList(task));
             logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
         }
+    }
+
+    private static boolean isErrorMatch(RetryPolicySettings retryPolicySettings, ErrorContainer error) {
+        for (String errorName : error.getClassNames()) {
+            if (retryPolicySettings.isRetryable(errorName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {

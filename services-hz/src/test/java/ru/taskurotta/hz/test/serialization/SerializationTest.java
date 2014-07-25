@@ -252,9 +252,9 @@ public class SerializationTest {
 
         assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
         assertEquals(taskOptionsContainer.getTaskConfigContainer().getStartTime(), getted.getTaskConfigContainer().getStartTime());
-        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().isExceptionToRetry("java.io.IOException"), true);
-        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().isExceptionToRetry("java.io.IIOException"), false);
-        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().isExceptionToExclude("java.lang.IllegalAccessError"), true);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getExceptionsToRetry().contains("java.io.IOException"), true);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getExceptionsToRetry().contains("java.io.IIOException"), false);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getExceptionsToExclude().contains("java.lang.IllegalAccessError"), true);
         assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicySettings().getType(), getted.getTaskConfigContainer().getRetryPolicySettings().getType()
         );
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
