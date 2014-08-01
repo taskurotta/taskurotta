@@ -1,4 +1,9 @@
-package ru.taskurotta.policy.retry;
+package ru.taskurotta.core;
+
+import ru.taskurotta.policy.retry.BlankRetryPolicy;
+import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
+import ru.taskurotta.policy.retry.LinearRetryPolicy;
+import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,7 +28,14 @@ public class RetryPolicyConfig implements Serializable {
 
     }
 
-    public RetryPolicyConfig(RetryPolicyType type, long initialRetryIntervalSeconds, long maximumRetryIntervalSeconds, long retryExpirationIntervalSeconds, double backoffCoefficient, int maximumAttempts) {
+    public RetryPolicyConfig(
+            RetryPolicyType type,
+            long initialRetryIntervalSeconds,
+            long maximumRetryIntervalSeconds,
+            long retryExpirationIntervalSeconds,
+            double backoffCoefficient,
+            int maximumAttempts
+    ) {
         this.type = type;
         this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;
         this.maximumRetryIntervalSeconds = maximumRetryIntervalSeconds;
@@ -94,27 +106,7 @@ public class RetryPolicyConfig implements Serializable {
         return exceptionsToExclude;
     }
 
-    public TimeRetryPolicyBase buildTimeRetryPolicy() {
-        switch (type) {
-            case EXPOTENTIAL: {
-                ExponentialRetryPolicy retryPolicy = new ExponentialRetryPolicy(initialRetryIntervalSeconds);
-                retryPolicy.withMaximumRetryIntervalSeconds(getMaximumRetryIntervalSeconds());
-                retryPolicy.withRetryExpirationIntervalSeconds(getRetryExpirationIntervalSeconds());
-                retryPolicy.withBackoffCoefficient(getBackoffCoefficient());
-                retryPolicy.withMaximumAttempts(getMaximumAttempts());
-                return retryPolicy;
-            }
-            case LINEAR: {
-                LinearRetryPolicy retryPolicy = new LinearRetryPolicy(initialRetryIntervalSeconds);
-                retryPolicy.withMaximumRetryIntervalSeconds(getMaximumRetryIntervalSeconds());
-                retryPolicy.withRetryExpirationIntervalSeconds(getRetryExpirationIntervalSeconds());
-                retryPolicy.withMaximumAttempts(getMaximumAttempts());
-                return retryPolicy;
-            }
-            default:
-                return new BlankRetryPolicy();
-        }
-    }
+
 
     public void addExceptionToRetryException(Class<? extends Throwable> clazz) {
         exceptionsToRetry.add(clazz.getName());
@@ -124,30 +116,10 @@ public class RetryPolicyConfig implements Serializable {
         exceptionsToExclude.add(clazz.getName());
     }
 
-    public boolean isRetryable(String failure) {
-        boolean isRetryable = false;
 
-        for (String exceptionToRetry: getExceptionsToRetry()) {
-            if (exceptionToRetry.equals(failure)) {
-                isRetryable = true;
-                break;
-            }
-        }
-
-        if (isRetryable) {
-            for (String exceptionNotToRetry: getExceptionsToExclude()) {
-                if (exceptionNotToRetry.equals(failure)) {
-                    isRetryable = false;
-                    break;
-                }
-            }
-        }
-
-        return isRetryable;
-    }
 
     public enum RetryPolicyType {
-        BLANK(0), LINEAR(1), EXPOTENTIAL(2);
+        LINEAR(0), EXPOTENTIAL(1);
 
         private int value;
 
@@ -162,10 +134,8 @@ public class RetryPolicyConfig implements Serializable {
         public static RetryPolicyType build(int value) {
             switch (value) {
                 case 0:
-                    return RetryPolicyType.BLANK;
-                case 1:
                     return RetryPolicyType.LINEAR;
-                case 2:
+                case 1:
                     return RetryPolicyType.EXPOTENTIAL;
             }
             return null;

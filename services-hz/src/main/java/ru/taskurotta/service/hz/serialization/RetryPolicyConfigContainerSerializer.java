@@ -3,7 +3,8 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.policy.retry.RetryPolicyConfig;
+import ru.taskurotta.core.RetryPolicyConfig;
+import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
 
 import java.io.IOException;
 
@@ -14,10 +15,10 @@ import static ru.taskurotta.service.hz.serialization.SerializationTools.writeStr
 /**
  * Created by greg
  */
-public class RetryPolicySettingsSerializer implements StreamSerializer<RetryPolicyConfig> {
+public class RetryPolicyConfigContainerSerializer implements StreamSerializer<RetryPolicyConfigContainer> {
 
     @Override
-    public void write(ObjectDataOutput out, RetryPolicyConfig retryPolicyConfig) throws IOException {
+    public void write(ObjectDataOutput out, RetryPolicyConfigContainer retryPolicyConfig) throws IOException {
         out.writeInt(retryPolicyConfig.getType().getValue());
         out.writeLong(retryPolicyConfig.getInitialRetryIntervalSeconds());
         out.writeLong(retryPolicyConfig.getMaximumRetryIntervalSeconds());
@@ -41,8 +42,8 @@ public class RetryPolicySettingsSerializer implements StreamSerializer<RetryPoli
     }
 
     @Override
-    public RetryPolicyConfig read(ObjectDataInput input) throws IOException {
-        RetryPolicyConfig retryPolicyConfig = new RetryPolicyConfig();
+    public RetryPolicyConfigContainer read(ObjectDataInput input) throws IOException {
+        RetryPolicyConfigContainer retryPolicyConfig = new RetryPolicyConfigContainer();
         retryPolicyConfig.setType(RetryPolicyConfig.RetryPolicyType.build(input.readInt()));
         retryPolicyConfig.setInitialRetryIntervalSeconds(input.readLong());
         retryPolicyConfig.setMaximumRetryIntervalSeconds(input.readLong());

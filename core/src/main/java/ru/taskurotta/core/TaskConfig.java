@@ -1,6 +1,6 @@
 package ru.taskurotta.core;
 
-import ru.taskurotta.policy.retry.RetryPolicyConfig;
+import oracle.jrockit.jfr.jdkevents.ThrowableTracer;
 
 /**
  * Date: 15.04.13 16:45
@@ -48,8 +48,32 @@ public class TaskConfig {
         return this;
     }
 
-    public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type, long initialRetryIntervalSeconds, long maximumRetryIntervalSeconds, long retryExpirationIntervalSeconds, double backoffCoefficient, int maximumAttempts) {
+    public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type,
+                                            long initialRetryIntervalSeconds,
+                                            long maximumRetryIntervalSeconds,
+                                            long retryExpirationIntervalSeconds,
+                                            double backoffCoefficient,
+                                            int maximumAttempts) {
         RetryPolicyConfig rps = new RetryPolicyConfig(type, initialRetryIntervalSeconds, maximumRetryIntervalSeconds, retryExpirationIntervalSeconds, backoffCoefficient, maximumAttempts);
+        setRetryPolicyConfig(rps);
+        return this;
+    }
+
+    public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type,
+                                            long initialRetryIntervalSeconds,
+                                            long maximumRetryIntervalSeconds,
+                                            long retryExpirationIntervalSeconds,
+                                            double backoffCoefficient,
+                                            int maximumAttempts,
+                                            Class<? extends Throwable>[] exceptionToRetry,
+                                            Class<? extends Throwable>[] exceptionToExclude) {
+        RetryPolicyConfig rps = new RetryPolicyConfig(type, initialRetryIntervalSeconds, maximumRetryIntervalSeconds, retryExpirationIntervalSeconds, backoffCoefficient, maximumAttempts);
+        for (Class<? extends Throwable> clazzRetry : exceptionToRetry) {
+            rps.addExceptionToRetryException(clazzRetry);
+        }
+        for (Class<? extends Throwable> clazzExclude : exceptionToExclude) {
+            rps.addExceptionToExclude(clazzExclude);
+        }
         setRetryPolicyConfig(rps);
         return this;
     }

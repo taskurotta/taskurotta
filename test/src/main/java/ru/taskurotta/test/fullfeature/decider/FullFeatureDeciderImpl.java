@@ -9,7 +9,7 @@ import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.policy.PolicyConstants;
-import ru.taskurotta.policy.retry.RetryPolicyConfig;
+import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.test.fullfeature.worker.FullFeatureWorkerClient;
 
 import java.util.ArrayList;

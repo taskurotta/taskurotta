@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.policy.PolicyConstants;
-import ru.taskurotta.policy.retry.RetryPolicyConfig;
+import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
@@ -21,6 +21,7 @@ import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.*;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
+import ru.taskurotta.util.RetryPolicyConfigUtil;
 
 import java.util.*;
 
@@ -146,7 +147,7 @@ public class GeneralTaskServer implements TaskServer {
         if (taskDecision.containsError()) {
 
             TaskContainer task = taskService.getTask(taskId, processId);
-            final RetryPolicyConfig retryPolicyConfig = task.getOptions() == null || task.getOptions().getTaskConfigContainer() == null ? null : task.getOptions().getTaskConfigContainer().getRetryPolicyConfig();
+            final RetryPolicyConfigContainer retryPolicyConfig = task.getOptions() == null || task.getOptions().getTaskConfigContainer() == null ? null : task.getOptions().getTaskConfigContainer().getRetryPolicyConfigContainer();
 
             logger.trace("#[{}]/[{}]: after get taskDecision with error again get task = [{}]", processId, taskId, task);
             final long restartTime = taskDecision.getRestartTime();
@@ -202,8 +203,8 @@ public class GeneralTaskServer implements TaskServer {
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
     }
 
-    private void applyRetryPolicy(DecisionContainer taskDecision, UUID taskId, UUID processId, TaskContainer task, RetryPolicyConfig retryPolicyConfig) {
-        final TimeRetryPolicyBase timeRetryPolicyBase = retryPolicyConfig.buildTimeRetryPolicy();
+    private void applyRetryPolicy(DecisionContainer taskDecision, UUID taskId, UUID processId, TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
+        final TimeRetryPolicyBase timeRetryPolicyBase = RetryPolicyConfigUtil.buildTimeRetryPolicy(retryPolicyConfig);
         long recordedFailure = System.currentTimeMillis();
         long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
         if (customRestartTime == PolicyConstants.NONE) {
@@ -216,9 +217,9 @@ public class GeneralTaskServer implements TaskServer {
         }
     }
 
-    private static boolean isErrorMatch(RetryPolicyConfig retryPolicyConfig, ErrorContainer error) {
+    private static boolean isErrorMatch(RetryPolicyConfigContainer retryPolicyConfig, ErrorContainer error) {
         for (String errorName : error.getClassNames()) {
-            if (retryPolicyConfig.isRetryable(errorName)) {
+            if (RetryPolicyConfigUtil.isRetryable(errorName, retryPolicyConfig)) {
                 return true;
             }
         }
