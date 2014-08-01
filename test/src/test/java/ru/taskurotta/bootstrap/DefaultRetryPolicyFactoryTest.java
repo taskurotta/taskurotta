@@ -4,7 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
-import ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig;
+import ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.internal.GeneralRuntimeProvider;
@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
  * Date: 08.04.13
  * Time: 14:31
  */
-public class DefaultRetryPolicyConfigTest {
+public class DefaultRetryPolicyFactoryTest {
 
     @Test
     public void testGetRetryPolicy() {
@@ -32,7 +32,7 @@ public class DefaultRetryPolicyConfigTest {
         Properties properties = new Properties();
         properties.setProperty("initialRetryIntervalSeconds", String.valueOf(initialRetryIntervalSeconds));
 
-        DefaultRetryPolicyConfig retryPolicyConfig = new DefaultRetryPolicyConfig();
+        DefaultRetryPolicyFactory retryPolicyConfig = new DefaultRetryPolicyFactory();
         retryPolicyConfig.setClass(LinearRetryPolicy.class.getName());
         retryPolicyConfig.setProperties(properties);
 

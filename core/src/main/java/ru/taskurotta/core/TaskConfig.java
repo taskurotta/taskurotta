@@ -1,6 +1,6 @@
 package ru.taskurotta.core;
 
-import ru.taskurotta.policy.retry.RetryPolicySettings;
+import ru.taskurotta.policy.retry.RetryPolicyConfig;
 
 /**
  * Date: 15.04.13 16:45
@@ -10,7 +10,7 @@ public class TaskConfig {
     private String customId;
     private long startTime = -1;
     private String taskList; // name of task queue/list
-    private RetryPolicySettings retryPolicySettings;
+    private RetryPolicyConfig retryPolicyConfig;
 
     public String getCustomId() {
         return customId;
@@ -24,8 +24,8 @@ public class TaskConfig {
         return taskList;
     }
 
-    public RetryPolicySettings getRetryPolicySettings() {
-        return retryPolicySettings;
+    public RetryPolicyConfig getRetryPolicyConfig() {
+        return retryPolicyConfig;
     }
 
     public TaskConfig setCustomId(String customId) {
@@ -43,8 +43,14 @@ public class TaskConfig {
         return this;
     }
 
-    public TaskConfig setRetryPolicySettings(RetryPolicySettings retryPolicySettings) {
-        this.retryPolicySettings = retryPolicySettings;
+    public TaskConfig setRetryPolicyConfig(RetryPolicyConfig retryPolicyConfig) {
+        this.retryPolicyConfig = retryPolicyConfig;
+        return this;
+    }
+
+    public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type, long initialRetryIntervalSeconds, long maximumRetryIntervalSeconds, long retryExpirationIntervalSeconds, double backoffCoefficient, int maximumAttempts) {
+        RetryPolicyConfig rps = new RetryPolicyConfig(type, initialRetryIntervalSeconds, maximumRetryIntervalSeconds, retryExpirationIntervalSeconds, backoffCoefficient, maximumAttempts);
+        setRetryPolicyConfig(rps);
         return this;
     }
 
@@ -72,10 +78,11 @@ public class TaskConfig {
 
     @Override
     public String toString() {
-        return "ActorSchedulingOptions{" +
+        return "TaskConfig{" +
                 "customId='" + customId + '\'' +
                 ", startTime=" + startTime +
                 ", taskList='" + taskList + '\'' +
+                ", retryPolicyConfig=" + retryPolicyConfig +
                 '}';
     }
 }

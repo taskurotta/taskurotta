@@ -10,7 +10,7 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.config.ActorConfig;
 import ru.taskurotta.bootstrap.config.Config;
 import ru.taskurotta.bootstrap.config.ProfilerConfig;
-import ru.taskurotta.bootstrap.config.RetryPolicyConfig;
+import ru.taskurotta.bootstrap.config.RetryPolicyFactory;
 import ru.taskurotta.bootstrap.config.RuntimeConfig;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.bootstrap.profiler.Profiler;
@@ -146,8 +146,8 @@ public class Bootstrap implements BootstrapMBean {
         ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
         Profiler profiler = (profilerConfig == null) ? new SimpleProfiler() : profilerConfig.getProfiler(actorClass);
 
-        RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
-        RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
+        RetryPolicyFactory retryPolicyFactory = config.policyConfigs.get(actorConfig.getPolicyConfig());
+        RetryPolicy retryPolicy = (retryPolicyFactory == null) ? new BlankRetryPolicy() : retryPolicyFactory.getRetryPolicy();
 
         if (poolSize < 1) {
             poolSize = actorConfig.getCount();

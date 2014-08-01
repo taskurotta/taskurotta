@@ -37,7 +37,7 @@ public class Config {
     public Map<String, RuntimeConfig> runtimeConfigs = new HashMap<String, RuntimeConfig>();
     public Map<String, SpreaderConfig> spreaderConfigs = new HashMap<String, SpreaderConfig>();
     public Map<String, ProfilerConfig> profilerConfigs = new HashMap<String, ProfilerConfig>();
-    public Map<String, RetryPolicyConfig> policyConfigs = new HashMap<String, RetryPolicyConfig>();
+    public Map<String, RetryPolicyFactory> policyConfigs = new HashMap<String, RetryPolicyFactory>();
     public List<ActorConfig> actorConfigs = new LinkedList<ActorConfig>();
 
     public static Config valueOf(File configFile) throws IOException {
@@ -258,14 +258,14 @@ public class Config {
                     throw new RuntimeException("Can not find RetryPolicyConfig class: " + policyConfigClassName, e);
                 }
 
-                RetryPolicyConfig retryPolicyConfig;
+                RetryPolicyFactory retryPolicyFactory;
                 try {
-                    retryPolicyConfig = (RetryPolicyConfig) oc.treeToValue(policyConfigNode, policyConfigClass);
+                    retryPolicyFactory = (RetryPolicyFactory) oc.treeToValue(policyConfigNode, policyConfigClass);
                 } catch (IOException e) {
                     throw new RuntimeException("Can not deserialize RetryPolicyConfig object: " + policyConfigClassName, e);
                 }
 
-                config.policyConfigs.put(policyConfigName, retryPolicyConfig);
+                config.policyConfigs.put(policyConfigName, retryPolicyFactory);
             }
         }
 

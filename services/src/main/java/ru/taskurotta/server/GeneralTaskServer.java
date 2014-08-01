@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.policy.PolicyConstants;
-import ru.taskurotta.policy.retry.RetryPolicySettings;
+import ru.taskurotta.policy.retry.RetryPolicyConfig;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
@@ -146,17 +146,17 @@ public class GeneralTaskServer implements TaskServer {
         if (taskDecision.containsError()) {
 
             TaskContainer task = taskService.getTask(taskId, processId);
-            final RetryPolicySettings retryPolicySettings = task.getOptions() == null || task.getOptions().getTaskConfigContainer() == null ? null : task.getOptions().getTaskConfigContainer().getRetryPolicySettings();
+            final RetryPolicyConfig retryPolicyConfig = task.getOptions() == null || task.getOptions().getTaskConfigContainer() == null ? null : task.getOptions().getTaskConfigContainer().getRetryPolicyConfig();
 
             logger.trace("#[{}]/[{}]: after get taskDecision with error again get task = [{}]", processId, taskId, task);
             final long restartTime = taskDecision.getRestartTime();
-            if (retryPolicySettings == null && restartTime != TaskDecision.NO_RESTART) {
+            if (retryPolicyConfig == null && restartTime != TaskDecision.NO_RESTART) {
                 // enqueue task immediately if needed
                 logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
                 enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
                 return;
-            } else if (retryPolicySettings != null && !isErrorMatch(retryPolicySettings, taskDecision.getErrorContainer())) {
-                applyRetryPolicy(taskDecision, taskId, processId, task, retryPolicySettings);
+            } else if (retryPolicyConfig != null && !isErrorMatch(retryPolicyConfig, taskDecision.getErrorContainer())) {
+                applyRetryPolicy(taskDecision, taskId, processId, task, retryPolicyConfig);
                 return;
             } else {
                 if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
@@ -202,8 +202,8 @@ public class GeneralTaskServer implements TaskServer {
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
     }
 
-    private void applyRetryPolicy(DecisionContainer taskDecision, UUID taskId, UUID processId, TaskContainer task, RetryPolicySettings retryPolicySettings) {
-        final TimeRetryPolicyBase timeRetryPolicyBase = retryPolicySettings.buildTimeRetryPolicy();
+    private void applyRetryPolicy(DecisionContainer taskDecision, UUID taskId, UUID processId, TaskContainer task, RetryPolicyConfig retryPolicyConfig) {
+        final TimeRetryPolicyBase timeRetryPolicyBase = retryPolicyConfig.buildTimeRetryPolicy();
         long recordedFailure = System.currentTimeMillis();
         long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
         if (customRestartTime == PolicyConstants.NONE) {
@@ -216,9 +216,9 @@ public class GeneralTaskServer implements TaskServer {
         }
     }
 
-    private static boolean isErrorMatch(RetryPolicySettings retryPolicySettings, ErrorContainer error) {
+    private static boolean isErrorMatch(RetryPolicyConfig retryPolicyConfig, ErrorContainer error) {
         for (String errorName : error.getClassNames()) {
-            if (retryPolicySettings.isRetryable(errorName)) {
+            if (retryPolicyConfig.isRetryable(errorName)) {
                 return true;
             }
         }

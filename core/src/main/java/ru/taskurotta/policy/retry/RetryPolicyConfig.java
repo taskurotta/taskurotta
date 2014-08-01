@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by greg
  */
-public class RetryPolicySettings implements Serializable {
+public class RetryPolicyConfig implements Serializable {
 
     private RetryPolicyType type;
     private long initialRetryIntervalSeconds;
@@ -19,19 +19,33 @@ public class RetryPolicySettings implements Serializable {
     private List<String> exceptionsToRetry = new ArrayList<String>();
     private List<String> exceptionsToExclude = new ArrayList<String>();
 
+    public RetryPolicyConfig(){
+
+    }
+
+    public RetryPolicyConfig(RetryPolicyType type, long initialRetryIntervalSeconds, long maximumRetryIntervalSeconds, long retryExpirationIntervalSeconds, double backoffCoefficient, int maximumAttempts) {
+        this.type = type;
+        this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;
+        this.maximumRetryIntervalSeconds = maximumRetryIntervalSeconds;
+        this.retryExpirationIntervalSeconds = retryExpirationIntervalSeconds;
+        this.backoffCoefficient = backoffCoefficient;
+        this.maximumAttempts = maximumAttempts;
+    }
+
     public RetryPolicyType getType() {
         return type;
     }
 
-    public void setType(RetryPolicyType type) {
+    public RetryPolicyConfig setType(RetryPolicyType type) {
         this.type = type;
+        return this;
     }
 
     public long getInitialRetryIntervalSeconds() {
         return initialRetryIntervalSeconds;
     }
 
-    public RetryPolicySettings setInitialRetryIntervalSeconds(long initialRetryIntervalSeconds) {
+    public RetryPolicyConfig setInitialRetryIntervalSeconds(long initialRetryIntervalSeconds) {
         this.initialRetryIntervalSeconds = initialRetryIntervalSeconds;
         return this;
     }
@@ -40,7 +54,7 @@ public class RetryPolicySettings implements Serializable {
         return maximumRetryIntervalSeconds;
     }
 
-    public RetryPolicySettings setMaximumRetryIntervalSeconds(long maximumRetryIntervalSeconds) {
+    public RetryPolicyConfig setMaximumRetryIntervalSeconds(long maximumRetryIntervalSeconds) {
         this.maximumRetryIntervalSeconds = maximumRetryIntervalSeconds;
         return this;
     }
@@ -49,7 +63,7 @@ public class RetryPolicySettings implements Serializable {
         return retryExpirationIntervalSeconds;
     }
 
-    public RetryPolicySettings setRetryExpirationIntervalSeconds(long retryExpirationIntervalSeconds) {
+    public RetryPolicyConfig setRetryExpirationIntervalSeconds(long retryExpirationIntervalSeconds) {
         this.retryExpirationIntervalSeconds = retryExpirationIntervalSeconds;
         return this;
     }
@@ -58,7 +72,7 @@ public class RetryPolicySettings implements Serializable {
         return backoffCoefficient;
     }
 
-    public RetryPolicySettings setBackoffCoefficient(double backoffCoefficient) {
+    public RetryPolicyConfig setBackoffCoefficient(double backoffCoefficient) {
         this.backoffCoefficient = backoffCoefficient;
         return this;
     }
@@ -67,7 +81,7 @@ public class RetryPolicySettings implements Serializable {
         return maximumAttempts;
     }
 
-    public RetryPolicySettings setMaximumAttempts(int maximumAttempts) {
+    public RetryPolicyConfig setMaximumAttempts(int maximumAttempts) {
         this.maximumAttempts = maximumAttempts;
         return this;
     }
@@ -163,7 +177,7 @@ public class RetryPolicySettings implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        RetryPolicySettings that = (RetryPolicySettings) o;
+        RetryPolicyConfig that = (RetryPolicyConfig) o;
 
         if (Double.compare(that.backoffCoefficient, backoffCoefficient) != 0) return false;
         if (initialRetryIntervalSeconds != that.initialRetryIntervalSeconds) return false;
@@ -191,13 +205,15 @@ public class RetryPolicySettings implements Serializable {
 
     @Override
     public String toString() {
-        return "RetryPolicySettings{" +
+        return "RetryPolicyConfig{" +
                 "type=" + type +
                 ", initialRetryIntervalSeconds=" + initialRetryIntervalSeconds +
                 ", maximumRetryIntervalSeconds=" + maximumRetryIntervalSeconds +
                 ", retryExpirationIntervalSeconds=" + retryExpirationIntervalSeconds +
                 ", backoffCoefficient=" + backoffCoefficient +
                 ", maximumAttempts=" + maximumAttempts +
+                ", exceptionsToRetry=" + exceptionsToRetry +
+                ", exceptionsToExclude=" + exceptionsToExclude +
                 '}';
     }
 }

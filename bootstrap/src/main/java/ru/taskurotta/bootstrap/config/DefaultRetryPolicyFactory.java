@@ -11,7 +11,7 @@ import java.util.Properties;
  * Date: 08.04.13
  * Time: 12:42
  */
-public class DefaultRetryPolicyConfig implements RetryPolicyConfig {
+public class DefaultRetryPolicyFactory implements RetryPolicyFactory {
 
     private Properties properties;
     private String className;

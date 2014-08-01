@@ -3,7 +3,7 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.policy.retry.RetryPolicySettings;
+import ru.taskurotta.policy.retry.RetryPolicyConfig;
 
 import java.io.IOException;
 
@@ -14,54 +14,54 @@ import static ru.taskurotta.service.hz.serialization.SerializationTools.writeStr
 /**
  * Created by greg
  */
-public class RetryPolicySettingsSerializer implements StreamSerializer<RetryPolicySettings> {
+public class RetryPolicySettingsSerializer implements StreamSerializer<RetryPolicyConfig> {
 
     @Override
-    public void write(ObjectDataOutput out, RetryPolicySettings retryPolicySettings) throws IOException {
-        out.writeInt(retryPolicySettings.getType().getValue());
-        out.writeLong(retryPolicySettings.getInitialRetryIntervalSeconds());
-        out.writeLong(retryPolicySettings.getMaximumRetryIntervalSeconds());
-        out.writeLong(retryPolicySettings.getRetryExpirationIntervalSeconds());
-        out.writeDouble(retryPolicySettings.getBackoffCoefficient());
-        out.writeInt(retryPolicySettings.getMaximumAttempts());
-        int exceptionsToRetrySize = retryPolicySettings.getExceptionsToRetry().size();
+    public void write(ObjectDataOutput out, RetryPolicyConfig retryPolicyConfig) throws IOException {
+        out.writeInt(retryPolicyConfig.getType().getValue());
+        out.writeLong(retryPolicyConfig.getInitialRetryIntervalSeconds());
+        out.writeLong(retryPolicyConfig.getMaximumRetryIntervalSeconds());
+        out.writeLong(retryPolicyConfig.getRetryExpirationIntervalSeconds());
+        out.writeDouble(retryPolicyConfig.getBackoffCoefficient());
+        out.writeInt(retryPolicyConfig.getMaximumAttempts());
+        int exceptionsToRetrySize = retryPolicyConfig.getExceptionsToRetry().size();
         out.writeInt(exceptionsToRetrySize);
         if (exceptionsToRetrySize > 0) {
-            for (String exceptionClass : retryPolicySettings.getExceptionsToRetry()) {
+            for (String exceptionClass : retryPolicyConfig.getExceptionsToRetry()) {
                 writeString(out, exceptionClass);
             }
         }
-        int exceptionsToExcludeSize = retryPolicySettings.getExceptionsToExclude().size();
+        int exceptionsToExcludeSize = retryPolicyConfig.getExceptionsToExclude().size();
         out.writeInt(exceptionsToExcludeSize);
         if (exceptionsToExcludeSize > 0) {
-            for (String exceptionClass : retryPolicySettings.getExceptionsToExclude()) {
+            for (String exceptionClass : retryPolicyConfig.getExceptionsToExclude()) {
                 writeString(out, exceptionClass);
             }
         }
     }
 
     @Override
-    public RetryPolicySettings read(ObjectDataInput input) throws IOException {
-        RetryPolicySettings retryPolicySettings = new RetryPolicySettings();
-        retryPolicySettings.setType(RetryPolicySettings.RetryPolicyType.build(input.readInt()));
-        retryPolicySettings.setInitialRetryIntervalSeconds(input.readLong());
-        retryPolicySettings.setMaximumRetryIntervalSeconds(input.readLong());
-        retryPolicySettings.setRetryExpirationIntervalSeconds(input.readLong());
-        retryPolicySettings.setBackoffCoefficient(input.readDouble());
-        retryPolicySettings.setMaximumAttempts(input.readInt());
+    public RetryPolicyConfig read(ObjectDataInput input) throws IOException {
+        RetryPolicyConfig retryPolicyConfig = new RetryPolicyConfig();
+        retryPolicyConfig.setType(RetryPolicyConfig.RetryPolicyType.build(input.readInt()));
+        retryPolicyConfig.setInitialRetryIntervalSeconds(input.readLong());
+        retryPolicyConfig.setMaximumRetryIntervalSeconds(input.readLong());
+        retryPolicyConfig.setRetryExpirationIntervalSeconds(input.readLong());
+        retryPolicyConfig.setBackoffCoefficient(input.readDouble());
+        retryPolicyConfig.setMaximumAttempts(input.readInt());
         int exceptionsToRetrySize = input.readInt();
         if (exceptionsToRetrySize > 0) {
             for (int i = 0; i < exceptionsToRetrySize; i++) {
-                retryPolicySettings.getExceptionsToRetry().add(readString(input));
+                retryPolicyConfig.getExceptionsToRetry().add(readString(input));
             }
         }
         int exceptionsToExcludeSize = input.readInt();
         if (exceptionsToExcludeSize > 0) {
             for (int i = 0; i < exceptionsToExcludeSize; i++) {
-                retryPolicySettings.getExceptionsToExclude().add(readString(input));
+                retryPolicyConfig.getExceptionsToExclude().add(readString(input));
             }
         }
-        return retryPolicySettings;
+        return retryPolicyConfig;
     }
 
     @Override

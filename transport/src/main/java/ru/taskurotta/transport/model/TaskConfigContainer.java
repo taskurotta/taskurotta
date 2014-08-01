@@ -1,6 +1,6 @@
 package ru.taskurotta.transport.model;
 
-import ru.taskurotta.policy.retry.RetryPolicySettings;
+import ru.taskurotta.policy.retry.RetryPolicyConfig;
 
 import java.io.Serializable;
 
@@ -14,7 +14,7 @@ public class TaskConfigContainer implements Serializable {
     private String customId;
     private long startTime;
     private String taskList;
-    private RetryPolicySettings retryPolicySettings;
+    private RetryPolicyConfig retryPolicyConfig;
 
     public TaskConfigContainer() {
     }
@@ -43,12 +43,12 @@ public class TaskConfigContainer implements Serializable {
         this.taskList = taskList;
     }
 
-    public RetryPolicySettings getRetryPolicySettings() {
-        return retryPolicySettings;
+    public RetryPolicyConfig getRetryPolicyConfig() {
+        return retryPolicyConfig;
     }
 
-    public void setRetryPolicySettings(RetryPolicySettings retryPolicySettings) {
-        this.retryPolicySettings = retryPolicySettings;
+    public void setRetryPolicyConfig(RetryPolicyConfig retryPolicyConfig) {
+        this.retryPolicyConfig = retryPolicyConfig;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class TaskConfigContainer implements Serializable {
 
         if (startTime != that.startTime) return false;
         if (customId != null ? !customId.equals(that.customId) : that.customId != null) return false;
-        if (retryPolicySettings != null ? !retryPolicySettings.equals(that.retryPolicySettings) : that.retryPolicySettings != null)
+        if (retryPolicyConfig != null ? !retryPolicyConfig.equals(that.retryPolicyConfig) : that.retryPolicyConfig != null)
             return false;
         if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
 
@@ -72,7 +72,7 @@ public class TaskConfigContainer implements Serializable {
         int result = customId != null ? customId.hashCode() : 0;
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
         result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
-        result = 31 * result + (retryPolicySettings != null ? retryPolicySettings.hashCode() : 0);
+        result = 31 * result + (retryPolicyConfig != null ? retryPolicyConfig.hashCode() : 0);
         return result;
     }
 
@@ -82,7 +82,7 @@ public class TaskConfigContainer implements Serializable {
                 "customId='" + customId + '\'' +
                 ", startTime=" + startTime +
                 ", taskList='" + taskList + '\'' +
-                ", retryPolicySettings=" + retryPolicySettings +
+                ", retryPolicySettings=" + retryPolicyConfig +
                 '}';
     }
 }

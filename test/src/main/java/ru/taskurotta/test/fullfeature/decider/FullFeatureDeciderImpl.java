@@ -9,7 +9,7 @@ import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
 import ru.taskurotta.policy.PolicyConstants;
-import ru.taskurotta.policy.retry.RetryPolicySettings;
+import ru.taskurotta.policy.retry.RetryPolicyConfig;
 import ru.taskurotta.test.fullfeature.worker.FullFeatureWorkerClient;
 
 import java.util.ArrayList;
@@ -52,14 +52,14 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Double> step2(double p1, Promise<Double> p2) {
-        RetryPolicySettings retryPolicySettings = new RetryPolicySettings();
-        retryPolicySettings.setMaximumAttempts(3);
-        retryPolicySettings.setInitialRetryIntervalSeconds(5);
-        retryPolicySettings.setMaximumRetryIntervalSeconds(15);
-        retryPolicySettings.setRetryExpirationIntervalSeconds(PolicyConstants.NONE);
-        retryPolicySettings.setType(RetryPolicySettings.RetryPolicyType.LINEAR);
-        retryPolicySettings.addExceptionToExclude(java.lang.IllegalArgumentException.class);
-        TaskConfig options = new TaskConfig().setStartTime(System.currentTimeMillis() + 100l).setRetryPolicySettings(retryPolicySettings);
+        RetryPolicyConfig retryPolicyConfig = new RetryPolicyConfig();
+        retryPolicyConfig.setMaximumAttempts(3);
+        retryPolicyConfig.setInitialRetryIntervalSeconds(5);
+        retryPolicyConfig.setMaximumRetryIntervalSeconds(15);
+        retryPolicyConfig.setRetryExpirationIntervalSeconds(PolicyConstants.NONE);
+        retryPolicyConfig.setType(RetryPolicyConfig.RetryPolicyType.LINEAR);
+        retryPolicyConfig.addExceptionToExclude(java.lang.IllegalArgumentException.class);
+        TaskConfig options = new TaskConfig().setStartTime(System.currentTimeMillis() + 100l).setRetryPolicyConfig(retryPolicyConfig);
         Promise<Double> arg = Promise.asPromise(-1 * (p1 + p2.get()));
         Promise<Double> sqrt = worker.sqrt(arg, options);
         return async.step3(arg, sqrt);
