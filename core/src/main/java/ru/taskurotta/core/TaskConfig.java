@@ -1,6 +1,5 @@
 package ru.taskurotta.core;
 
-import oracle.jrockit.jfr.jdkevents.ThrowableTracer;
 
 /**
  * Date: 15.04.13 16:45

@@ -1,9 +1,5 @@
 package ru.taskurotta.core;
 
-import ru.taskurotta.policy.retry.BlankRetryPolicy;
-import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
-import ru.taskurotta.policy.retry.LinearRetryPolicy;
-import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
