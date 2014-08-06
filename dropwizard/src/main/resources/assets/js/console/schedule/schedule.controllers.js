@@ -11,9 +11,9 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
             task: {
                 type: "WORKER_SCHEDULED",
                 method: "",
-                actorId: "",
-                args: []
-            }
+                actorId: ""
+            },
+            args: []
         };
 
         $scope.argsVisible = false;
@@ -25,14 +25,14 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
         $scope.initialized = false;
 
         $scope.addArgument = function() {
-            $scope.job.task.args.push({
+            $scope.job.args.push({
                 type: "string",
                 value: ""
             });
         };
 
         $scope.removeArgument = function(idx) {
-            $scope.job.task.args.splice(idx, 1);
+            $scope.job.args.splice(idx, 1);
         };
 
         var getCreateJobCommand = function() {
@@ -44,9 +44,34 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
                 actorId: $scope.job.task.actorId,
                 method: $scope.job.task.method,
                 taskType: $scope.job.task.type,
-                args: $scope.job.task.args
+                args: $scope.job.args
             };
-        }
+        };
+
+        var getDataTypeAsArgType = function(dataType) {
+            var result = dataType;
+            if (!!dataType) {
+                var idx = dataType.indexOf("java.lang.");
+                if (idx>=0) {
+                    result = dataType.substring(10).toLowerCase();
+                }
+            }
+            return result;
+        };
+
+        var getJobArgs = function (argContainers) {
+            var result = [];
+            if (!!argContainers && argContainers.length>0) {
+                for (var i = 0; i<argContainers.length; i++) {
+                    var argContainer = argContainers[i];
+                    result.push({
+                        type: getDataTypeAsArgType(argContainer.dataType),
+                        value: argContainer.jsonvalue
+                    });
+                }
+            }
+            return result;
+        };
 
         $scope.update = function() {
             var jobId = parseInt($routeParams.id);
@@ -54,6 +79,11 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
                 $http.get("/rest/console/schedule/card?id=" + encodeURIComponent(jobId)).then(function(success) {
                     if (success.data) {
                         $scope.job = success.data;
+//                        $log.info("Got job: " + angular.toJson(success.data));
+                        if (!!success.data.task) {
+                            $scope.job.args = getJobArgs(success.data.task.args);
+                        }
+
                         $scope.validateCron();
                     }
                     $scope.initialized = true;
