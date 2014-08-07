@@ -125,6 +125,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
                 result[i] = row.getDsCounts().get(i);
             }
         }
+        logger.debug("getCountsForLastHour({}, {}) is [{}]", metricName, datasetName, result);
         return result;
     }
 

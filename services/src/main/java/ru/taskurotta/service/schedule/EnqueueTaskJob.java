@@ -6,10 +6,11 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.schedule.model.JobVO;
-import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.util.UUID;
 
@@ -35,7 +36,8 @@ public class EnqueueTaskJob implements Job {
             validateEntities(taskServer, job, queueInfoRetriever, jobManager);
 
             if (job.getQueueLimit() > 0) {
-                int size = queueInfoRetriever.getQueueTaskCount(taskContainer.getActorId());
+                String queueName = TransportUtils.createQueueName(taskContainer.getActorId(), TransportUtils.getTaskList(taskContainer));
+                int size = queueInfoRetriever.getQueueTaskCount(queueName);
                 if (size >= job.getQueueLimit()) {
                     logger.debug("Queue [{}] contains [{}] elements. Skip task due to limit[{}].", taskContainer.getActorId(), size, job.getQueueLimit());
                     return;

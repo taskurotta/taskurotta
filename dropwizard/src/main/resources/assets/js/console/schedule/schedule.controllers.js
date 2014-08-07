@@ -13,7 +13,8 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
                 method: "",
                 actorId: ""
             },
-            args: []
+            args: [],
+            taskList: ''
         };
 
         $scope.argsVisible = false;
@@ -44,7 +45,8 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
                 actorId: $scope.job.task.actorId,
                 method: $scope.job.task.method,
                 taskType: $scope.job.task.type,
-                args: $scope.job.args
+                args: $scope.job.args,
+                taskList: $scope.job.taskList
             };
         };
 
@@ -79,9 +81,12 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
                 $http.get("/rest/console/schedule/card?id=" + encodeURIComponent(jobId)).then(function(success) {
                     if (success.data) {
                         $scope.job = success.data;
-//                        $log.info("Got job: " + angular.toJson(success.data));
+                        $log.info("Got job: " + angular.toJson(success.data));
                         if (!!success.data.task) {
                             $scope.job.args = getJobArgs(success.data.task.args);
+                            if (!!success.data.task.options && !!success.data.task.options.taskConfigContainer) {
+                                $scope.job.taskList = success.data.task.options.taskConfigContainer.taskList
+                            }
                         }
 
                         $scope.validateCron();

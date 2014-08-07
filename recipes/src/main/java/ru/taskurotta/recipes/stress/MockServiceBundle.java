@@ -23,6 +23,7 @@ import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
@@ -177,11 +178,7 @@ public class MockServiceBundle implements ServiceBundle {
 
             @Override
             public String createQueueName(String actorId, String taskList) {
-                if (taskList != null) {
-                    return actorId + "#"+ taskList;
-                }
-
-                return  actorId;
+                return TransportUtils.createQueueName(actorId, taskList);
             }
 
             @Override

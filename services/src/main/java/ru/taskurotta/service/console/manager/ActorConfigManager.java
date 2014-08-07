@@ -18,7 +18,7 @@ public interface ActorConfigManager {
 
     public GenericPage<ActorVO> getActorList(int pageNum, int pageSize);
 
-    public QueueBalanceVO getQueueState(String actorId);
+    public QueueBalanceVO getQueueState(String queueName);
 
     public Map<String, Collection<MetricsStatDataVO>> getMetricsData(Collection<String> metrics, Collection<String> actorIds);
 

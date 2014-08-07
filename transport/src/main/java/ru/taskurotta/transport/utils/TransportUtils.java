@@ -25,4 +25,12 @@ public class TransportUtils {
         return result;
     }
 
+    public static String createQueueName(String actorId, String taskList, String queueNamePrefix) {
+        return createQueueName((queueNamePrefix!=null? queueNamePrefix+actorId: actorId), taskList);
+    }
+
+    public static String createQueueName(String actorId, String taskList) {
+        return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
+
 }

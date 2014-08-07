@@ -72,10 +72,10 @@ public class HzActorConfigManager implements ActorConfigManager {
     }
 
     @Override
-    public QueueBalanceVO getQueueState(final String actorId) {
+    public QueueBalanceVO getQueueState(final String queueName) {
         IExecutorService executorService = hzInstance.getExecutorService(ACTOR_CONFIG_EXECUTOR_SERVICE);
 
-        Map <Member, Future <QueueBalanceVO>> futures = executorService.submitToMembers(new ComputeQueueBalanceTask(actorId), hzInstance.getCluster().getMembers());
+        Map <Member, Future <QueueBalanceVO>> futures = executorService.submitToMembers(new ComputeQueueBalanceTask(queueName), hzInstance.getCluster().getMembers());
 
         QueueBalanceVO result = new QueueBalanceVO();
         for (Future<QueueBalanceVO> future : futures.values()) {
@@ -86,10 +86,10 @@ public class HzActorConfigManager implements ActorConfigManager {
                     result.setNodes(result.getNodes()+1);
                 }
             } catch (Exception e) {
-                logger.error("Cannot get queue state value for actorId["+actorId+"]", e);
+                logger.error("Cannot get queue state value for queue["+queueName+"]", e);
             }
         }
-        logger.debug("Cluster wide queue state getted is [{}]", result);
+        logger.debug("Cluster wide queue state got is [{}]", result);
         return result;
     }
 

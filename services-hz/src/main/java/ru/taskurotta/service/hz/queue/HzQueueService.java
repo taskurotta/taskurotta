@@ -18,6 +18,7 @@ import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.hz.console.HzQueueStatTask;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
+import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.StringUtils;
 
@@ -271,14 +272,15 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public String createQueueName(String actorId, String taskList) {
-        StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
-
-        result.append(actorId);
-        if (taskList != null) {
-            result.append("#").append(taskList);
-        }
-
-        return result.toString();
+        return TransportUtils.createQueueName(actorId, taskList, queueNamePrefix);
+//        StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
+//
+//        result.append(actorId);
+//        if (taskList != null) {
+//            result.append("#").append(taskList);
+//        }
+//
+//        return result.toString();
     }
 
     @Override

@@ -13,6 +13,7 @@ import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
 import ru.taskurotta.service.metrics.handler.NumberDataHandler;
 import ru.taskurotta.service.metrics.model.DataPointVO;
+import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
@@ -267,7 +268,8 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public String createQueueName(String actorId, String taskList) {
-        return (taskList == null) ? actorId : actorId + "#" + taskList;
+        return TransportUtils.createQueueName(actorId, taskList);
+        //return (taskList == null) ? actorId : actorId + "#" + taskList;
     }
 
     @Override

@@ -34,7 +34,9 @@ public class MetricsQueueService implements QueueService {
         long metricStartTime = System.currentTimeMillis();
         result = queueService.enqueueItem(actorId, taskId, processId, startTime, taskList);
         long invocationTime = System.currentTimeMillis() - metricStartTime;
-        enqueueMetric.mark(actorId, invocationTime);
+
+        String queueName = queueService.createQueueName(actorId, taskList);
+        enqueueMetric.mark(queueName, invocationTime);
         enqueueMetric.mark(MetricName.ENQUEUE.getValue(), invocationTime);
         return result;
     }

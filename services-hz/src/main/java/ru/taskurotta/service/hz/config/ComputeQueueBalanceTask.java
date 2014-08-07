@@ -16,10 +16,10 @@ import java.util.concurrent.Callable;
  */
 public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serializable {
 
-    private String actorId;
+    private String queueName;
 
-    public ComputeQueueBalanceTask(String actorId) {
-        this.actorId = actorId;
+    public ComputeQueueBalanceTask(String queueName) {
+        this.queueName = queueName;
     }
 
     @Override
@@ -29,11 +29,11 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
             return null;
         }
 
-        DataPointVO<Long>[] outHour = metricsDataRetriever.getCountsForLastHour(MetricName.SUCCESSFUL_POLL.getValue(), actorId);
-        DataPointVO<Long>[] outDay = metricsDataRetriever.getCountsForLastDay(MetricName.SUCCESSFUL_POLL.getValue(), actorId);
+        DataPointVO<Long>[] outHour = metricsDataRetriever.getCountsForLastHour(MetricName.SUCCESSFUL_POLL.getValue(), queueName);
+        DataPointVO<Long>[] outDay = metricsDataRetriever.getCountsForLastDay(MetricName.SUCCESSFUL_POLL.getValue(), queueName);
 
-        DataPointVO<Long>[] inHour = metricsDataRetriever.getCountsForLastHour(MetricName.ENQUEUE.getValue(), actorId);
-        DataPointVO<Long>[] inDay = metricsDataRetriever.getCountsForLastDay(MetricName.ENQUEUE.getValue(), actorId);
+        DataPointVO<Long>[] inHour = metricsDataRetriever.getCountsForLastHour(MetricName.ENQUEUE.getValue(), queueName);
+        DataPointVO<Long>[] inDay = metricsDataRetriever.getCountsForLastDay(MetricName.ENQUEUE.getValue(), queueName);
 
         QueueBalanceVO result = new QueueBalanceVO();
         result.setTotalInDay(getTotal(inDay));

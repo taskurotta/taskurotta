@@ -21,6 +21,8 @@ public class CreateJobCommand implements Serializable {
     private TaskType taskType;
     private ArgVO[] args;
 
+    private String taskList;
+
     public String getName() {
         return name;
     }
@@ -85,6 +87,14 @@ public class CreateJobCommand implements Serializable {
         this.args = args;
     }
 
+    public String getTaskList() {
+        return taskList;
+    }
+
+    public void setTaskList(String taskList) {
+        this.taskList = taskList;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -99,6 +109,7 @@ public class CreateJobCommand implements Serializable {
         if (cron != null ? !cron.equals(that.cron) : that.cron != null) return false;
         if (method != null ? !method.equals(that.method) : that.method != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
         if (taskType != that.taskType) return false;
 
         return true;
@@ -114,6 +125,7 @@ public class CreateJobCommand implements Serializable {
         result = 31 * result + (method != null ? method.hashCode() : 0);
         result = 31 * result + (taskType != null ? taskType.hashCode() : 0);
         result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
+        result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
         return result;
     }
 
@@ -128,6 +140,7 @@ public class CreateJobCommand implements Serializable {
                 ", method='" + method + '\'' +
                 ", taskType=" + taskType +
                 ", args=" + Arrays.toString(args) +
+                ", taskList='" + taskList + '\'' +
                 '}';
     }
 
