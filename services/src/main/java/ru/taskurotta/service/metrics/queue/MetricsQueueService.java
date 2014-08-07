@@ -5,6 +5,7 @@ import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.service.metrics.MetricsFactory;
 import ru.taskurotta.service.metrics.MetricName;
 import ru.taskurotta.service.metrics.Metric;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.util.UUID;
 
@@ -35,7 +36,7 @@ public class MetricsQueueService implements QueueService {
         result = queueService.enqueueItem(actorId, taskId, processId, startTime, taskList);
         long invocationTime = System.currentTimeMillis() - metricStartTime;
 
-        String queueName = queueService.createQueueName(actorId, taskList);
+        String queueName = TransportUtils.createQueueName(actorId, taskList);
         enqueueMetric.mark(queueName, invocationTime);
         enqueueMetric.mark(MetricName.ENQUEUE.getValue(), invocationTime);
         return result;

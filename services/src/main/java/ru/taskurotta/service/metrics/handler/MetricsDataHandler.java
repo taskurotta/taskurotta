@@ -57,7 +57,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         if (position!=0 && position%SECONDS_IN_MINUTE == 0) {//new minute started
             handleMinute(metricName, datasetName, dataRow.getTotalCount(position-SECONDS_IN_MINUTE, position), dataRow.getAverageMean(), measurementTime);
         }
-        logger.debug("Handled data for second [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
+        logger.trace("Handled data for second [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
     }
 
     public void handleMinute(String metricName, String datasetName, long count, double mean, long measurementTime) {
@@ -75,7 +75,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         }
 
         int position = dataRow.populate(count, mean, measurementTime);
-        logger.debug("Handled data for minute [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
+        logger.trace("Handled data for minute [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
     }
 
     @Override
