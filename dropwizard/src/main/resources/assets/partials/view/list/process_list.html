@@ -42,6 +42,7 @@
                         {{getStartIndex(processesPage.pageNumber, processesPage.pageSize) + $index}}
                         <i ng-if="process.state == 1" class="icon-ok" popover="Process is finished" popover-trigger="mouseenter"></i>
                         <i ng-if="process.state == 0" class="icon-time" popover="Process have not been finished yet" popover-trigger="mouseenter"></i>
+                        <i ng-if="process.state == 2" class="icon-exclamation-sign" popover="Process was stopped due to execution error" popover-trigger="mouseenter"></i>
                     </td>
                     <td>
                         <small>

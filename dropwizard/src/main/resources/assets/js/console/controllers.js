@@ -84,6 +84,8 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
             result = "Started and still in flight";
         } else if (status == 1) {
             result = "Has already finished";
+        } else if (status == 2) {
+            result = "Broken, manual fix required";
         }
         return result;
     };
