@@ -211,6 +211,12 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
                 $scope.initialized = true;
                 $scope.totalInitialized = true;
             });
+
+            $http.get("/rest/console/timer/server_time").then(function(val){
+                $scope.serverTime = val.data;
+            }, function(err){
+                $log.error("Cannot update server time", err);
+            });
         };
 
         $scope.activate = function(id) {

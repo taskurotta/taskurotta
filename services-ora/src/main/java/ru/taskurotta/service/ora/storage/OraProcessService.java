@@ -36,6 +36,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     protected static final String SQL_GET_PROCESS_CNT_BY_STATE = "SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ? ";
 
+
+
     public OraProcessService(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -75,7 +77,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         log.debug("Starting process with TaskContainer [{}]", task);
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state, start_json) VALUES (?, ?, ?, ?, ?, ?)")
+             PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state, start_json, actor_id) VALUES (?, ?, ?, ?, ?, ?, ?)")
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
@@ -84,6 +86,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             ps.setLong(4, (new Date()).getTime());
             ps.setInt(5, Process.START);
             ps.setString(6, (String) taskSerializer.serialize(task));
+            ps.setString(7, task.getActorId());
             ps.executeUpdate();
         } catch (SQLException ex) {
             log.error("DataBase exception: " + ex.getMessage(), ex);
@@ -152,13 +155,20 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter) {
         List<Process> result = new ArrayList<>();
         long totalCount = 0;
         ResultSet rs = null;
         String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS ";
-        if (status >= 0) {
-            query+= "WHERE STATE = ? ";
+        if (status >= 0 || typeFilter!=null) {
+            StringBuilder sb = new StringBuilder("WHERE");
+            if (status >= 0) {
+                sb.append(" STATE = ? ");
+            }
+            if (typeFilter != null) {
+                sb.append(" ACTOR_ID LIKE ? ");
+            }
+            query+= sb.toString();
         }
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery(query))
@@ -166,6 +176,9 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             int argIndex = 1;
             if (status >= 0) {
                 ps.setInt(argIndex++, status);
+            }
+            if (typeFilter != null) {
+                ps.setString(argIndex++, typeFilter + "%");
             }
             int startIndex = (pageNumber - 1) * pageSize + 1;
             int endIndex = startIndex + pageSize - 1;

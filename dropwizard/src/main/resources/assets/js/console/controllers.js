@@ -72,7 +72,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         items: []
     };
 
-    $scope.filters = [
+    $scope.states = [
         {status: -1, name: "All"},
         {status: 0, name: "Started"},
         {status: 1, name: "Finished"},
@@ -92,7 +92,8 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     };
 
     $scope.selection = {
-        filter: $scope.filters[0]
+        state: $scope.states[0],
+        type: ''
     };
 
     $scope.submittedRecoveries = [];
@@ -114,10 +115,10 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
-        tskProcesses.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize, $scope.selection.filter.status).then(function (value) {
+        tskProcesses.getProcessesList($scope.processesPage.pageNumber, $scope.processesPage.pageSize, $scope.selection).then(function (value) {
             $scope.processesPage = angular.fromJson(value.data || {});
             $scope.initialized = true;
-            $log.info("processListController: successfully updated processes list, params: pageNum["+$scope.processesPage.pageNumber+"], pageSize["+$scope.processesPage.pageSize+"], status["+$scope.selection.filter.status+"]");
+            $log.info("processListController: successfully updated processes list, params: pageNum["+$scope.processesPage.pageNumber+"], pageSize["+$scope.processesPage.pageSize+"], status["+$scope.selection.state.status+"]");
         }, function (errReason) {
             $scope.feedback = errReason;
             $scope.initialized = true;
@@ -126,8 +127,11 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
     };
 
-    //Initialization:
-    $scope.update();
+    $scope.$watch('selection.state', function (newVal, oldVal) {
+        //Initialization:
+        $scope.update();
+    });
+
 })
 
 .controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams) {

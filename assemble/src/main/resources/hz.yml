@@ -32,7 +32,7 @@ logging:
         ru.taskurotta: INFO
         ru.taskurotta.dropwizard.resources.console: DEBUG
         ru.taskurotta.service.hz.console: DEBUG
-        ru.taskurotta.service.metrics.handler: DEBUG
+#        ru.taskurotta.service.metrics.handler: DEBUG
 #        ru.taskurotta.service.metricstalistener TRACE
 #        ru.taskurotta.service.metricstrics: TRACE
 #        ru.taskurotta.service.recovery: TRACE

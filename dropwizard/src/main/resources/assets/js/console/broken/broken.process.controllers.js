@@ -36,7 +36,10 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
         timeTo: new Date(),
         withTime: false,
         maxDate: new Date(),
-        minDate: null
+        minDate: null,
+        time: {
+            hour: 0, minute: 0
+        }
     };
 
     $scope.feedback = {};
