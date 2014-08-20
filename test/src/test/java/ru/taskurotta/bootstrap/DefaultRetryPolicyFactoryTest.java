@@ -49,7 +49,7 @@ public class DefaultRetryPolicyFactoryTest {
         Profiler profiler = new SimpleProfiler();
         RetryPolicy retryPolicy = new LinearRetryPolicy(2);
 
-        MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class, 1);
+        MockActorThreadPool actorExecutorsPool = new MockActorThreadPool(TestWorker.class.getName(), 1);
         Inspector inspector = new Inspector(retryPolicy, actorExecutorsPool);
 
         ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, runtimeProcessor, taskSpreader);
