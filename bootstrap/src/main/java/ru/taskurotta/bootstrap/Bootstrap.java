@@ -7,12 +7,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
-import ru.taskurotta.bootstrap.config.ActorConfig;
-import ru.taskurotta.bootstrap.config.Config;
-import ru.taskurotta.bootstrap.config.ProfilerConfig;
-import ru.taskurotta.bootstrap.config.RetryPolicyFactory;
-import ru.taskurotta.bootstrap.config.RuntimeConfig;
-import ru.taskurotta.bootstrap.config.SpreaderConfig;
+import ru.taskurotta.bootstrap.config.*;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -71,7 +66,7 @@ public class Bootstrap implements BootstrapMBean {
             File configFile = new File(configFileName);
 
             if (configFile.exists()) {
-                config = Config.valueOf(configFile);
+                config = YamlConfigFactory.valueOf(configFile);
             } else {
                 logger.error("Configuration file doesn't exist: [{}]", configFileName);
                 parser.printHelp();
@@ -87,7 +82,7 @@ public class Bootstrap implements BootstrapMBean {
             URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
 
             if (configPath != null) {
-                config = Config.valueOf(configPath);
+                config = YamlConfigFactory.valueOf(configPath);
             } else {
                 logger.error("Resource file (in classpath) doesn't exist: [{}]", resourceFileName);
                 parser.printHelp();

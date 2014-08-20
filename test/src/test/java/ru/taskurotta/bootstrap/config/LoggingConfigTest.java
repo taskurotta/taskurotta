@@ -23,7 +23,7 @@ public class LoggingConfigTest {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
         File configFile = new File(Thread.currentThread().getContextClassLoader().getResource("test-conf.yml").getFile());
-        Config.valueOf(configFile);
+        YamlConfigFactory.valueOf(configFile);
 
         LoggingConfig loggingConfig = mapper.readValue(configFile, LoggingConfig.class);
         File logbackFile = loggingConfig.getConfigFile();

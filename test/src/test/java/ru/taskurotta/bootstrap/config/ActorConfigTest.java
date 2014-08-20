@@ -19,7 +19,7 @@ public class ActorConfigTest {
     @BeforeClass
     public static void setUp() throws Exception {
         URL configURL = Thread.currentThread().getContextClassLoader().getResource("test-conf.yml");
-        Config config = Config.valueOf(configURL);
+        Config config = YamlConfigFactory.valueOf(configURL);
         actorConfig = config.actorConfigs.get(0);
     }
 
