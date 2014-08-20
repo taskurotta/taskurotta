@@ -1,15 +1,16 @@
 package ru.taskurotta.bootstrap.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.jdom.output.DOMOutputter;
+import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * User: stukushin
@@ -18,24 +19,48 @@ import static org.junit.Assert.assertTrue;
  */
 public class LoggingConfigTest {
 
-    @Test
-    public void testGetConfigFile() throws Exception {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-
-        File configFile = new File(Thread.currentThread().getContextClassLoader().getResource("test-conf.yml").getFile());
-        YamlConfigFactory.valueOf(configFile);
-
-        LoggingConfig loggingConfig = mapper.readValue(configFile, LoggingConfig.class);
-        File logbackFile = loggingConfig.getConfigFile();
-
-        assertTrue(logbackFile.exists());
-
-        SAXBuilder builder = new SAXBuilder();
-        Document logbackDocument = builder.build(logbackFile);
-
-        File logbackOrigFile = new File(Thread.currentThread().getContextClassLoader().getResource("logback.xml").getFile());
-        Document logbackOrigDocument = builder.build(logbackOrigFile);
-
-        assertEquals(logbackOrigDocument.getRootElement().getChildren("appender").size(), logbackDocument.getRootElement().getChildren("appender").size());
+    @Before
+    public void setUp(){
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreComments(true);
     }
+
+    @Test
+    public void testParseConfigFile() throws Exception {
+
+        Document docFromYaml = getYamlConfiguration("test-conf.yml");
+        Document docFromOriginalXml = getXmlConfiguartion("test-conf-logback.xml");
+
+        XMLAssert.assertXMLEqual(docFromOriginalXml, docFromYaml);
+
+        Document docFromSpoiledXml = getXmlConfiguartion("test-conf-logback-spoiled.xml");
+        XMLAssert.assertXMLNotEqual(docFromSpoiledXml, docFromYaml);
+
+    }
+
+
+    private Document getYamlConfiguration(String name) throws Exception {
+        ObjectMapper mapper = Config.getYamlMapperInstance();
+        File configFile = new File(Thread.currentThread().getContextClassLoader().getResource(name).getFile());
+        Config.valueOf(configFile);
+
+        org.jdom.Document loggingCfgDoc = mapper.readValue(configFile, org.jdom.Document.class);
+        DOMOutputter outPutter = new DOMOutputter();
+        Document yamlDoc = outPutter.output(loggingCfgDoc);
+        yamlDoc.normalizeDocument();
+        yamlDoc.normalize();
+
+        return yamlDoc;
+    }
+
+    private Document getXmlConfiguartion(String name) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document xmlDoc = db.parse(Thread.currentThread().getContextClassLoader().getResourceAsStream(name));
+        xmlDoc.normalizeDocument();
+        xmlDoc.normalize();
+        return xmlDoc;
+    }
+
 }

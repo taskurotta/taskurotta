@@ -66,7 +66,7 @@ public class Bootstrap implements BootstrapMBean {
             File configFile = new File(configFileName);
 
             if (configFile.exists()) {
-                config = YamlConfigFactory.valueOf(configFile);
+                config = Config.valueOf(configFile);
             } else {
                 logger.error("Configuration file doesn't exist: [{}]", configFileName);
                 parser.printHelp();
@@ -82,7 +82,7 @@ public class Bootstrap implements BootstrapMBean {
             URL configPath = Thread.currentThread().getContextClassLoader().getResource(resourceFileName);
 
             if (configPath != null) {
-                config = YamlConfigFactory.valueOf(configPath);
+                config = Config.valueOf(configPath);
             } else {
                 logger.error("Resource file (in classpath) doesn't exist: [{}]", resourceFileName);
                 parser.printHelp();

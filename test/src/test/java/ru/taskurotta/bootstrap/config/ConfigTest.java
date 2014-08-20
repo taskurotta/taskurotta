@@ -22,7 +22,7 @@ public class ConfigTest {
     @Test
     public void testValueOfFile() throws Exception {
         File configFile = new File(Thread.currentThread().getContextClassLoader().getResource("test-conf.yml").getFile());
-        Config config = YamlConfigFactory.valueOf(configFile);
+        Config config = Config.valueOf(configFile);
 
         assertEquals(1, config.runtimeConfigs.size());
         assertEquals(1, config.spreaderConfigs.size());
@@ -34,7 +34,7 @@ public class ConfigTest {
     @Test
     public void testValueOfResource() throws Exception {
         URL configURL = Thread.currentThread().getContextClassLoader().getResource("test-conf.yml");
-        Config config = YamlConfigFactory.valueOf(configURL);
+        Config config = Config.valueOf(configURL);
 
         assertEquals(1, config.runtimeConfigs.size());
         assertEquals(1, config.spreaderConfigs.size());

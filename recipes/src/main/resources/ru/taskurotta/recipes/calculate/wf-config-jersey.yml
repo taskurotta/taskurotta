@@ -80,23 +80,23 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel.log
+             file: ./target/logs/recipes-calculate.log
              append: true
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: INFO
+             \@level: DEBUG
         - ru.taskurotta.recipes.calculate.decider:
             key: name
             \@level: WARN
         - com.hazelcast:
               key: name
-              \@level: INFO
+              \@level: WARN
         - org.apache.commons.httpclient:
               key: name
-              \@level: INFO
+              \@level: WARN
         - httpclient.wire:
               key: name
               \@level: WARN
