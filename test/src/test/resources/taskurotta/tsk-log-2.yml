@@ -1,0 +1,6 @@
+logging:
+    loggers:
+      my.logger.here: DEBUG
+    file:
+      currentLogFilename: ./logs/service.log
+      archivedLogFilenamePattern: ./logs/service.%d{yyyy-MM-dd}.log

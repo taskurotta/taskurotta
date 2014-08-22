@@ -45,6 +45,12 @@ public class Config {
         return mapper;
     }
 
+    public static Config valueOf(String content) throws IOException {
+        ObjectMapper mapper = getYamlMapperInstance();
+        initLogging(content, mapper);
+        return mapper.readValue(content, Config.class);
+    }
+
     public static Config valueOf(File configFile) throws IOException {
         ObjectMapper mapper = getYamlMapperInstance();
         initLogging(configFile.toURI().toURL(), mapper);
@@ -57,26 +63,34 @@ public class Config {
         return mapper.readValue(configURL, Config.class);
     }
 
+    public static void initLogging(String configContent, ObjectMapper mapper) throws IOException {
+        if (System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY) == null) {//have no external logback.xml location specified
+            initLogback(mapper.readValue(configContent, Document.class));
+        }
+    }
+
     public static void initLogging(URL configURL, ObjectMapper mapper) throws IOException {
         if (System.getProperty(ContextInitializer.CONFIG_FILE_PROPERTY) == null) {//have no external logback.xml location specified
+            initLogback(mapper.readValue(configURL, Document.class));
+        }
+    }
 
-            Document yamlLogbackDoc = mapper.readValue(configURL, Document.class);
-            if (yamlLogbackDoc != null) {//has logger config in yaml
-                // assume SLF4J is bound to logback in the current environment
-                LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-                try {
-                    JoranConfigurator configurator = new JoranConfigurator();
-                    configurator.setContext(context);
-                    InputStream is = new ByteArrayInputStream(new XMLOutputter().outputString(yamlLogbackDoc).getBytes("UTF-8"));
-                    // Call context.reset() to clear any previous configuration, e.g. default
-                    // configuration. For multi-step configuration, omit calling context.reset().
-                    context.reset();
-                    configurator.doConfigure(is);
-                } catch (JoranException je) {
-                    // StatusPrinter will handle this
-                }
-                StatusPrinter.printInCaseOfErrorsOrWarnings(context);
+    private static void initLogback(Document yamlLogbackDoc) throws IOException {
+        if (yamlLogbackDoc != null) {//has logger config in yaml
+            // assume SLF4J is bound to logback in the current environment
+            LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+            try {
+                JoranConfigurator configurator = new JoranConfigurator();
+                configurator.setContext(context);
+                InputStream is = new ByteArrayInputStream(new XMLOutputter().outputString(yamlLogbackDoc).getBytes("UTF-8"));
+                // Call context.reset() to clear any previous configuration, e.g. default
+                // configuration. For multi-step configuration, omit calling context.reset().
+                context.reset();
+                configurator.doConfigure(is);
+            } catch (JoranException je) {
+                // StatusPrinter will handle this
             }
+            StatusPrinter.printInCaseOfErrorsOrWarnings(context);
         }
     }
 

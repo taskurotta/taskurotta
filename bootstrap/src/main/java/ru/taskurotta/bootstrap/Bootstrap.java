@@ -38,7 +38,7 @@ public class Bootstrap implements BootstrapMBean {
     private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<String, ActorThreadPool>();
 
     public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
-		config = parseArgs(args);
+        config = parseArgs(args);
 	}
 
 	public Bootstrap(String configResourceName) throws ArgumentParserException, IOException, ClassNotFoundException {

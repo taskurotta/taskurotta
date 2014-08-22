@@ -9,6 +9,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.bootstrap.config.logging.SimpleLogConverter;
 import ru.taskurotta.util.StringUtils;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class LoggerConfigDeserializer extends JsonDeserializer<Document> {
     private static final Logger logger = LoggerFactory.getLogger(LoggerConfigDeserializer.class);
 
     public static final String YAML_LOGBACK = "logback";
+    public static final String YAML_LOGGING = "logging";
     public static final String YAML_LOGBACK_APPENDER = "appender";
     public static final String YAML_LOGBACK_LOGGER = "logger";
     public static final String YAML_LOGBACK_ROOT = "root";
@@ -39,13 +41,21 @@ public class LoggerConfigDeserializer extends JsonDeserializer<Document> {
 
         JsonNode logbackNode;
         try {
-            logbackNode = ((JsonNode) objectCodec.readTree(jsonParser)).get(YAML_LOGBACK);
+            JsonNode rootNode = objectCodec.readTree(jsonParser);
+            logbackNode = rootNode.get(YAML_LOGBACK);
+            if (logbackNode == null) {
+
+                JsonNode simpleLoggingNode = rootNode.get(YAML_LOGGING);
+                if (simpleLoggingNode != null) {//Simplified logging configuration specified
+                    return SimpleLogConverter.convert(simpleLoggingNode);
+                } else {
+                    return null;
+                }
+
+            }
+
         } catch (IOException e) {
             throw new RuntimeException("Can not parse config", e);
-        }
-
-        if (logbackNode == null) {
-            return null;
         }
 
         JsonNode appendersNode = logbackNode.get(YAML_LOGBACK_APPENDER);
@@ -162,7 +172,10 @@ public class LoggerConfigDeserializer extends JsonDeserializer<Document> {
             if (name.equals("key")) {
                 element.setAttribute(node.get(name).textValue().replaceAll("\\\\@", ""), elementName);
             } else if (name.startsWith("\\@")) {
-                element.setAttribute(name.replaceAll("\\\\@", ""), node.get(name).textValue());
+                JsonNode valNode = node.get(name);
+                String textValue = (valNode.isBoolean() && !valNode.booleanValue()) ? "OFF": valNode.textValue();
+                //logger.debug("Name is [{}], node is[{}], asText[{}], asToken[{}]", name, node, valNode.asText(), valNode.asToken().asString());
+                element.setAttribute(name.replaceAll("\\\\@", ""), textValue);
             } else {
                 if (node.get(name).elements().hasNext() || node.get(name).fieldNames().hasNext()) {
                     element.addContent(parseNode(node.get(name), new Element(name), ""));
