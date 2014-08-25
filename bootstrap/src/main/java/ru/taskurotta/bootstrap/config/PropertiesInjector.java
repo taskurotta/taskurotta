@@ -1,5 +1,7 @@
 package ru.taskurotta.bootstrap.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Properties;
 
 /**
@@ -16,15 +19,42 @@ public class PropertiesInjector {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertiesInjector.class);
 
-    public static final String PROP_PREFIX = "ts.";
+    public static void injectProperties(JsonNode propertiesAwareNode, String propertiesLocation, String fieldName) {
+        Properties props = getProperties(propertiesLocation);
+        if (props != null) {
+            injectProperties(propertiesAwareNode, props, fieldName);
+        } else {
+            logger.error("Cannot find properties by location [{}]", propertiesLocation);
+        }
+    }
 
-//    public static void injectProperties(JsonNode target, String location) {
-//
-//    }
-//
-//    public static void injectSystemProperties(Config target) {
-//
-//    }
+    public static void injectProperties(JsonNode propertiesAwareNode, Properties properties, String fieldName) {
+        if (properties != null) {
+            ObjectNode propNode = (ObjectNode)propertiesAwareNode.with(fieldName);
+            Enumeration<String> propNames = (Enumeration<String>) properties.propertyNames();
+            while (propNames.hasMoreElements()) {
+                String key = propNames.nextElement();
+                propNode.put(key, properties.getProperty(key));
+            }
+        }
+    }
+
+    public static void injectSystemProperties(JsonNode propertiesAwareNode, String prefix, String fieldName) {
+        injectProperties(propertiesAwareNode, getSystemPropertiesByPrefix(prefix), fieldName);
+    }
+
+    public static Properties getSystemPropertiesByPrefix(String prefix) {
+        Properties result = new Properties();
+        Properties sysProps = System.getProperties();
+        Enumeration<String> sysPropsNames = (Enumeration<String>) sysProps.propertyNames();
+        while (sysPropsNames.hasMoreElements()) {
+            String key = sysPropsNames.nextElement();
+            if (key.startsWith(prefix)) {
+                result.setProperty(key.substring(prefix.length()+1), sysProps.getProperty(key));
+            }
+        }
+        return result.size()>0? result: null;
+    }
 
     public static Properties getProperties (String location) {
         Properties result = null;
@@ -49,30 +79,5 @@ public class PropertiesInjector {
 
         return result;
     }
-
-//    public static JsonNode injectProperties(JsonNode target, Properties props) {
-//        if (props!=null && props.size()>0) {
-//            Enumeration<String> propNames = (Enumeration<String>) props.propertyNames();
-//            while (propNames.hasMoreElements()) {
-//                String propName = propNames.nextElement();
-//                if (isInjectable(propName)) {
-//                    injectProperty(target, propName, props.getProperty(propName));
-//                }
-//            }
-//        }
-//        return target;
-//    }
-//
-//    private static void injectProperty(JsonNode target, String propName, String propValue) {
-//        String[] paths = propName.split("\\.");
-//        for (int i = 1; i<paths.length; i++) {
-//            String nodeName = paths[i];
-//        }
-//    }
-//
-//    private static boolean isInjectable(String name) {
-//        return name!=null && name.startsWith(PROP_PREFIX);
-//    }
-
 
 }

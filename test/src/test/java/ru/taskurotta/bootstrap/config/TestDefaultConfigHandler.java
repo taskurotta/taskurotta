@@ -2,6 +2,7 @@ package ru.taskurotta.bootstrap.config;
 
 import junit.framework.Assert;
 import org.junit.Test;
+import ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext;
 
 import java.util.Properties;
 
@@ -20,17 +21,22 @@ public class TestDefaultConfigHandler {
         Config config2 = SimplifiedConfigHandler.getConfig(externalFile);
         Assert.assertEquals(2, config2.actorConfigs.size());
 
-
+        System.setProperty("rtCfg.sysKey1", "sysVal1");
+        System.setProperty("rtCfg.key5", "value5_sys");
         String fullExternalFile = Thread.currentThread().getContextClassLoader().getResource("taskurotta/tsk-updated2.yaml").getFile();
         Config config3 = SimplifiedConfigHandler.getConfig(fullExternalFile);
-        ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext rc = (ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext)(config3.runtimeConfigs.get("TestRuntimeConfig"));
+        RuntimeConfigPathXmlApplicationContext rc = (RuntimeConfigPathXmlApplicationContext)(config3.runtimeConfigs.get("rtCfg"));
         Properties props = rc.getProperties();
+
+        System.out.println("Props are: " + props);
 
         Assert.assertEquals("value1", props.getProperty("key1"));
         Assert.assertEquals("value2", props.getProperty("key2"));
-        Assert.assertEquals("value3_upd", props.getProperty("key3"));//should be overwritten
+        Assert.assertEquals("value3_upd", props.getProperty("key3"));//should be overwritten by properties file
         Assert.assertEquals("value4", props.getProperty("key4"));
-        Assert.assertEquals("value5", props.getProperty("key5"));
+
+        Assert.assertEquals("sysVal1", props.getProperty("sysKey1"));
+        Assert.assertEquals("value5_sys", props.getProperty("key5"));//should be overwritten by system property
 
     }
 

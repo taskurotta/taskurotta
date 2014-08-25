@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.bootstrap.config.*;
 
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * Created on 20.08.2014.
@@ -97,7 +95,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
 
             JsonNode instanceDescriptionNode = runtimeElement.elements().next();
             JsonNode runtimeConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
-            injectExternalProperties(runtimeConfigNode);
+            injectExternalProperties(runtimeConfigNode, runtimeConfigName);
             logger.debug("runtimeConfigNode [{}]", runtimeConfigNode);
 
             String runtimeConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
@@ -133,7 +131,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
 
             JsonNode instanceDescriptionNode = spreaderElement.elements().next();
             JsonNode spreaderConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
-            injectExternalProperties(spreaderConfigNode);
+            injectExternalProperties(spreaderConfigNode, spreaderConfigName);
             logger.debug("spreaderConfigNode [{}]", spreaderConfigNode);
 
             String spreaderConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
@@ -169,7 +167,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
 
             JsonNode instanceDescriptionNode = profilerElement.elements().next();
             JsonNode profilerConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
-            injectExternalProperties(profilerConfigNode);
+            injectExternalProperties(profilerConfigNode, profilerConfigName);
             logger.debug("profilerConfigNode [{}]", profilerConfigNode);
 
             String profilerConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
@@ -204,7 +202,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
 
             JsonNode instanceDescriptionNode = policyElement.elements().next();
             JsonNode policyConfigNode = instanceDescriptionNode.get(YAML_INSTANCE);
-            injectExternalProperties(policyConfigNode);
+            injectExternalProperties(policyConfigNode, policyConfigName);
             logger.debug("policyConfigNode [{}]", policyConfigNode);
 
             String policyConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
@@ -238,7 +236,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             logger.debug("actorConfigName [{}]", actorConfigName);
 
             JsonNode instanceDescriptionNode = actorElement.elements().next();
-            injectExternalProperties(instanceDescriptionNode);
+            injectExternalProperties(instanceDescriptionNode, actorConfigName);
             ActorConfig actorConfig;
             try {
                 actorConfig = oc.treeToValue(instanceDescriptionNode, ActorConfig.class);
@@ -283,25 +281,16 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
         }
     }
 
-    private static void injectExternalProperties(JsonNode propertiesAwareNode) {
+    private static void injectExternalProperties(JsonNode propertiesAwareNode, String prefix) {
         if (propertiesAwareNode!=null) {
             if (propertiesAwareNode.hasNonNull(YAML_PROPERTIES_LOCATION)) {
                 String[] locations = propertiesAwareNode.get(YAML_PROPERTIES_LOCATION).textValue().split("\\s*\\,\\s*");
                 for (String location : locations) {
-                    Properties props = PropertiesInjector.getProperties(location);
-                    if (props != null) {
-                        ObjectNode propNode = (ObjectNode)propertiesAwareNode.with(YAML_PROPERTIES);
-                        Enumeration<String> propNames = (Enumeration<String>) props.propertyNames();
-                        while (propNames.hasMoreElements()) {
-                            String key = propNames.nextElement();
-                            propNode.put(key, props.getProperty(key));
-                        }
-                    } else {
-                        logger.error("Cannot find properties by location [{}]", location);
-                    }
+                    PropertiesInjector.injectProperties(propertiesAwareNode, location, YAML_PROPERTIES);
                 }
                 ((ObjectNode) propertiesAwareNode).remove(YAML_PROPERTIES_LOCATION);
             }
+            PropertiesInjector.injectSystemProperties(propertiesAwareNode, prefix, YAML_PROPERTIES);
         }
     }
 
