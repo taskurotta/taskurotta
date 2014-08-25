@@ -37,7 +37,6 @@ public class TestDefaultConfigHandler {
 
         Assert.assertEquals("sysVal1", props.getProperty("sysKey1"));
         Assert.assertEquals("value5_sys", props.getProperty("key5"));//should be overwritten by system property
-
     }
 
 }
