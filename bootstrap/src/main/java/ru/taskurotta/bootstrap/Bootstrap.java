@@ -91,15 +91,25 @@ public class Bootstrap implements BootstrapMBean {
         }
 
         if (config == null) {
+            config = SimplifiedConfigHandler.getConfig(args!=null&&args.length>0?args[0]: null);
+        }
+
+        if (config == null) {
             System.out.println("Config file doesn't specified");
             parser.printHelp();
             return null;
         }
 
-		return config;
+        return config;
 	}
 
-	public void start() {
+//    public static Config injectProperties(Config target, String arg) {
+//        if (target != null) {
+//
+//        }
+//    }
+
+    public void start() {
 		start(config);
 	}
 
