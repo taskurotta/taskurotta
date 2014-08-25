@@ -33,9 +33,9 @@ public class SimplifiedConfigHandler {
         }
 
         logger.debug("try to parse config for yaml [{}]", resultCfg.toString());
-//        if (isPropertiesLocation(arg)) {
-//            PropertiesInjector.injectProperties(resultCfg, arg);
-//        }
+        if (isPropertiesLocation(arg)) {
+            PropertiesInjector.injectConfigurationProperties(resultCfg, arg);
+        }
         return Config.valueOf(resultCfg.toString());
     }
 

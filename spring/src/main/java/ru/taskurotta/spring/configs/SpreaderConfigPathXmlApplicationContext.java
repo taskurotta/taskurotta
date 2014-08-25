@@ -117,4 +117,8 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
         this.defaultPropertiesLocation = defaultPropertiesLocation;
     }
+
+    public Properties getProperties() {
+        return properties;
+    }
 }

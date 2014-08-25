@@ -3,6 +3,7 @@ package ru.taskurotta.bootstrap.config;
 import junit.framework.Assert;
 import org.junit.Test;
 import ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext;
+import ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext;
 
 import java.util.Properties;
 
@@ -37,6 +38,27 @@ public class TestDefaultConfigHandler {
 
         Assert.assertEquals("sysVal1", props.getProperty("sysKey1"));
         Assert.assertEquals("value5_sys", props.getProperty("key5"));//should be overwritten by system property
+
+
+        Config propsCfg = SimplifiedConfigHandler.getConfig("taskurotta/cfg.properties");
+        Assert.assertEquals(1, propsCfg.actorConfigs.size());
+
+        RuntimeConfigPathXmlApplicationContext propRt = (RuntimeConfigPathXmlApplicationContext)(propsCfg.runtimeConfigs.get("TestRuntimeConfig"));
+        Properties rtProps =  propRt.getProperties();
+        Assert.assertEquals("rtValue1", rtProps.getProperty("prop1"));
+        Assert.assertEquals("rtValue2", rtProps.getProperty("prop2"));
+
+        SpreaderConfigPathXmlApplicationContext spreader = (SpreaderConfigPathXmlApplicationContext) (propsCfg.spreaderConfigs.get("TestTaskSpreaderConfig"));
+        Properties spreaderProps =  spreader.getProperties();
+        Assert.assertEquals("spreaderVal1", spreaderProps.getProperty("prop1"));
+        Assert.assertEquals("spreaderVal2", spreaderProps.getProperty("prop2"));
+
+
+        System.out.println("propRt props are: " + propRt.getProperties());
+
     }
+
+
+
 
 }
