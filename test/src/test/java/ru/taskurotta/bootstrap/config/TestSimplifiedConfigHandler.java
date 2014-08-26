@@ -11,7 +11,7 @@ import java.util.Properties;
 /**
  * Created on 21.08.2014.
  */
-public class TestDefaultConfigHandler {
+public class TestSimplifiedConfigHandler {
 
     @Test
     public void testParseConfig() throws Exception {
@@ -63,6 +63,13 @@ public class TestDefaultConfigHandler {
         Assert.assertEquals(false, actor.isEnabled());//should be overwritten by cfg.properties file
 
 
+    }
+
+    @Test
+    public void testNestedPropertiesCfg() throws Exception {
+        System.setProperty("config.location", "taskurotta/nested/taskurotta-nested-test.yml");
+        Config cfg = SimplifiedConfigHandler.getConfig("taskurotta/nested/nested.properties");
+        Assert.assertNotNull(cfg);
     }
 
     private ActorConfig getTestActorCfg(List<ActorConfig> actors, String interfaceName) {

@@ -10,4 +10,4 @@ logging:
         enabled: true
         logFormat: \%-4r [\%t] \%-5p \%c - \%m\%n
         currentLogFilename: ./target/logs/service.log
-        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
+        archivedLogFilenamePattern: ./target/logs/service-%d{yyyy-MM-dd}.log.gz

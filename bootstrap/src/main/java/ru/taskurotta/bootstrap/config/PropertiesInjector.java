@@ -29,19 +29,49 @@ public class PropertiesInjector {
             injectInstanceProperties(cfgNode.get(YamlConfigDeserializer.YAML_RPOFILER), props);
             injectInstanceProperties(cfgNode.get(YamlConfigDeserializer.YAML_POLICY), props);
             injectActorProperties(cfgNode.get(YamlConfigDeserializer.YAML_ACTOR), props);
+            injectLoggerProperties(cfgNode.get(YamlConfigDeserializer.YAML_LOGGING), getFilteredByPrefix(props, YamlConfigDeserializer.YAML_LOGGING + ".", null));
         } else {
             logger.error("Cannot find properties by location [{}]", propertiesLocation);
         }
     }
 
-    private static void injectActorProperties(JsonNode jsonNode, Properties props) {
-        if (jsonNode != null) {
-            for (Iterator nodeElements = jsonNode.elements(); nodeElements.hasNext(); ) {
+    private static void injectLoggerProperties(JsonNode loggingNode, Properties props) {
+        logger.debug("Injecting logging properties[{}]", props);
+        if (loggingNode != null && props!=null) {
+            Enumeration<String> propNames = (Enumeration<String>) props.propertyNames();
+            while (propNames.hasMoreElements()) {
+                String name = propNames.nextElement();
+                String value = props.getProperty(name);
+                injectNestedProperty(loggingNode, name, value, false);
+            }
+        }
+    }
+
+    private static void injectNestedProperty(JsonNode node, String fieldName, String fieldValue, boolean plain) {
+        logger.debug("try to inject nested property name[{}], plain[{}]", fieldName, plain);
+        if (node instanceof ObjectNode) {
+            int dotIndex = fieldName.indexOf(".");
+            if (plain || dotIndex<0) {
+                ((ObjectNode)node).put(fieldName, fieldValue);
+            } else {
+                String nodeName = fieldName.substring(0, dotIndex);
+                if ("loggers".equals(nodeName)) {
+                    injectNestedProperty(node.with(nodeName), fieldName.substring(dotIndex+1), fieldValue, true);
+                } else {
+                    injectNestedProperty(node.with(nodeName), fieldName.substring(dotIndex+1), fieldValue, false);
+                }
+            }
+        }
+    }
+
+    private static void injectActorProperties(JsonNode actorsNode, Properties props) {
+        if (actorsNode != null) {
+            for (Iterator nodeElements = actorsNode.elements(); nodeElements.hasNext(); ) {
                 JsonNode element = (JsonNode) nodeElements.next();
                 String actorName = element.fieldNames().next();
                 JsonNode instanceNode = element.elements().next();
-                injectPropertiesByPrefix(instanceNode, props, actorName);
-                injectPropertiesAsNodeValues(instanceNode, getFilteredByPrefix(props, actorName + ".cfg."));
+                injectPropertiesByPrefix(instanceNode, props, actorName+".", actorName+".cfg.");
+                injectPropertiesAsNodeValues(instanceNode, getFilteredByPrefix(props, actorName + ".cfg.", null));
             }
         }
     }
@@ -66,22 +96,24 @@ public class PropertiesInjector {
 
                 JsonNode instanceNode = element.elements().next();
                 JsonNode runtimeConfigNode = instanceNode.get(YamlConfigDeserializer.YAML_INSTANCE);
-                injectPropertiesByPrefix(runtimeConfigNode, props, elementName);
+                injectPropertiesByPrefix(runtimeConfigNode, props, elementName+".", null);
             }
         }
     }
 
-    private static void injectPropertiesByPrefix(JsonNode propertiesAwareNode, Properties props, String prefix) {
-        injectProperties(propertiesAwareNode, getFilteredByPrefix(props, prefix+"."), YamlConfigDeserializer.YAML_PROPERTIES);
+    private static void injectPropertiesByPrefix(JsonNode propertiesAwareNode, Properties props, String approvePrefix, String denyPrefix) {
+        injectProperties(propertiesAwareNode, getFilteredByPrefix(props, approvePrefix, denyPrefix), YamlConfigDeserializer.YAML_PROPERTIES);
     }
 
-    private static Properties getFilteredByPrefix(Properties target, String prefix) {
+    private static Properties getFilteredByPrefix(Properties target, String approvePrefix, String denyPrefix) {
         Properties result = new Properties();
         Enumeration<String> sysPropsNames = (Enumeration<String>) target.propertyNames();
         while (sysPropsNames.hasMoreElements()) {
             String key = sysPropsNames.nextElement();
-            if (key.startsWith(prefix)) {
-                result.setProperty(key.substring(prefix.length()), target.getProperty(key));
+            if (key.startsWith(approvePrefix)) {
+                if (denyPrefix == null || !key.startsWith(denyPrefix)) {
+                    result.setProperty(key.substring(approvePrefix.length()), target.getProperty(key));
+                }
             }
         }
         return result.size()>0? result: null;
@@ -109,11 +141,11 @@ public class PropertiesInjector {
     }
 
     public static void injectSystemProperties(JsonNode propertiesAwareNode, String prefix, String fieldName) {
-        injectProperties(propertiesAwareNode, getSystemPropertiesByPrefix(prefix), fieldName);
+        injectProperties(propertiesAwareNode, getSystemPropertiesByPrefix(prefix+"."), fieldName);
     }
 
     public static Properties getSystemPropertiesByPrefix(String prefix) {
-        return getFilteredByPrefix(System.getProperties(), prefix+".");
+        return getFilteredByPrefix(System.getProperties(), prefix, null);
     }
 
     public static Properties getProperties (String location) {

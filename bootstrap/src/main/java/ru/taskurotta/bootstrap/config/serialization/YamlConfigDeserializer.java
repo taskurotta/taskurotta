@@ -28,6 +28,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
     public static final String YAML_POLICY = "policy";
     public static final String YAML_PROPERTIES_LOCATION = "propertiesLocation";
     public static final String YAML_PROPERTIES = "properties";
+    public static final String YAML_LOGGING = "logging";
 
     @Override
     public Config deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) {

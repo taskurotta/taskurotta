@@ -1,0 +1,64 @@
+runtime:
+  - rtMain:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: RuntimeBeans.xml
+
+spreader:
+  - spreaderMain:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: SpreaderBeans.xml
+        properties:
+          cycles: 10
+          accuracy: 1000
+
+profiler:
+  - profilerMain:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
+        properties:
+          meterCycle: true
+          trackExecute: true
+          trackCycle: false
+          trackPull: true
+          trackRelease: true
+          trackError: false
+          logOutput: true
+          logOutputPeriod: 10
+          consoleOutput: false
+          consoleOutputPeriod: 10
+
+policy:
+  - policyMain:
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
+      instance:
+        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        properties:
+          initialRetryIntervalSeconds: 10
+          maximumRetryIntervalSeconds: 300
+          maximumAttempts: 100
+
+actor:
+  - TestWorker:
+      actorInterface: ru.taskurotta.bootstrap.TestWorker
+      runtimeConfig: TestRuntimeConfig
+      spreaderConfig: TestTaskSpreaderConfig
+      profilerConfig: TestProfilerConfig
+      policyConfig: TestPolicyConfig
+      count: 10
+
+logging:
+    level: WARN
+    loggers:
+      org.springframework: DEBUG
+      ru.taskurotta: DEBUG
+      my.logger.here: INFO
+    console:
+        enabled: true
+    file:
+        enabled: true
+        logFormat: \%-4r [\%t] \%-5p \%c - \%m\%n
+        currentLogFilename: ./target/logs/nested-test.log
+        archivedLogFilenamePattern: ./target/logs/nested-test-%d{yyyy-MM-dd}.log.gz

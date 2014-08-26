@@ -9,7 +9,6 @@ runtime:
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
 
-
 spreader:
   - rtMain:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
@@ -27,9 +26,8 @@ spreader:
           waitOnEveryNTask: -1 #-1 = disabled
           waitOnEveryNTaskInSeconds: -1 #-1 = disabled
 
-
 policy:
-  - MainPolicyConfig:
+  - policyMain:
       class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
@@ -39,7 +37,7 @@ policy:
           maximumAttempts: 99
 
 profiler:
-  - MainProfilerConfig:
+  - rollingProfiler:
       class: ru.taskurotta.bootstrap.profiler.impl.RollingLoggingProfilerConfig
       instance:
         singleton: true
@@ -48,66 +46,18 @@ profiler:
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.recipes.calculate.decider.MathActionDecider
-#      count: 4
-#      properties:
-#        failover: "5 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Multiplier
-#      count: 2
-#      properties:
-#        failover: "25 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.recipes.calculate.worker.NumberGenerator
-#      count: 4
-#      properties:
-#        failover: "25 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Summarizer
-#      count: 2
-#      properties:
-#        failover: "25 SECONDS"
 
-
-#logback:
-#    appender:
-#        - STDOUT:
-#             key: name
-#             \@class: ch.qos.logback.core.ConsoleAppender
-#             encoder:
-#                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
-#        - FILE:
-#             key: name
-#             \@class: ch.qos.logback.core.FileAppender
-#             file: ./target/logs/recipes-calculate.log
-#             append: true
-#             encoder:
-#                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
-#    logger:
-#        - ru.taskurotta:
-#             key: name
-#             \@level: INFO
-#        - ru.taskurotta.recipes.calculate.decider:
-#            key: name
-#            \@level: WARN
-#        - com.hazelcast:
-#              key: name
-#              \@level: WARN
-#        - org.apache.commons.httpclient:
-#              key: name
-#              \@level: WARN
-#        - httpclient.wire:
-#              key: name
-#              \@level: WARN
-#        - org.springframework:
-#             key: name
-#             \@level: WARN
-#    root:
-#        appender-ref:
-#            - STDOUT:
-#                key: ref
-#            - FILE:
-#                key: ref
-
+logging:
+  file:
+    enabled: false
+  console:
+    enabled: true

@@ -36,28 +36,12 @@ profiler:
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.recipes.calculate.decider.MathActionDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      count: 1
 
   - Multiplier:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Multiplier
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      count: 1
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.recipes.calculate.worker.NumberGenerator
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      count: 1
 
   - Summarizer:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Summarizer
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
-      count: 1
