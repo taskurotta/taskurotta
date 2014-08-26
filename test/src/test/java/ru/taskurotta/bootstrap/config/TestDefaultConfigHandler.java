@@ -5,6 +5,7 @@ import org.junit.Test;
 import ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext;
 import ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -43,22 +44,36 @@ public class TestDefaultConfigHandler {
         Config propsCfg = SimplifiedConfigHandler.getConfig("taskurotta/cfg.properties");
         Assert.assertEquals(1, propsCfg.actorConfigs.size());
 
-        RuntimeConfigPathXmlApplicationContext propRt = (RuntimeConfigPathXmlApplicationContext)(propsCfg.runtimeConfigs.get("TestRuntimeConfig"));
-        Properties rtProps =  propRt.getProperties();
+        RuntimeConfigPathXmlApplicationContext runtime = (RuntimeConfigPathXmlApplicationContext)(propsCfg.runtimeConfigs.get("TestRuntimeConfig"));
+        Properties rtProps =  runtime.getProperties();
+        System.out.println("propRt props are: " + rtProps);
         Assert.assertEquals("rtValue1", rtProps.getProperty("prop1"));
         Assert.assertEquals("rtValue2", rtProps.getProperty("prop2"));
 
         SpreaderConfigPathXmlApplicationContext spreader = (SpreaderConfigPathXmlApplicationContext) (propsCfg.spreaderConfigs.get("TestTaskSpreaderConfig"));
         Properties spreaderProps =  spreader.getProperties();
+        System.out.println("spreaderProps are: " + spreaderProps);
         Assert.assertEquals("spreaderVal1", spreaderProps.getProperty("prop1"));
         Assert.assertEquals("spreaderVal2", spreaderProps.getProperty("prop2"));
 
+        ActorConfig actor = getTestActorCfg(propsCfg.actorConfigs, "ru.taskurotta.bootstrap.TestWorker");
+        Assert.assertNotNull(actor);
 
-        System.out.println("propRt props are: " + propRt.getProperties());
+        Assert.assertEquals(2, actor.getCount());//should be overwritten by cfg.properties file
+        Assert.assertEquals(false, actor.isEnabled());//should be overwritten by cfg.properties file
+
 
     }
 
-
+    private ActorConfig getTestActorCfg(List<ActorConfig> actors, String interfaceName) {
+        ActorConfig result = null;
+        for (ActorConfig aCfg : actors) {
+            if (aCfg.getActorInterface().equals(interfaceName)) {
+                return aCfg;
+            }
+        }
+        return result;
+    }
 
 
 }

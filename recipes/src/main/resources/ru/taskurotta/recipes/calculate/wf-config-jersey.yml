@@ -16,7 +16,7 @@ spreader:
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 500
+          count: 50
           startTasks: true
           startTasksInBackground: false
           startTaskPeriodSeconds: -1 #-1 = disabled
@@ -24,8 +24,8 @@ spreader:
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
-          waitOnEveryNTask: 500 #-1 = disabled
-          waitOnEveryNTaskInSeconds: 40 #-1 = disabled
+          waitOnEveryNTask: -1 #-1 = disabled
+          waitOnEveryNTaskInSeconds: -1 #-1 = disabled
 
 
 policy:
@@ -77,17 +77,17 @@ logback:
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
-        - FILE:
-             key: name
-             \@class: ch.qos.logback.core.FileAppender
-             file: ./target/logs/recipes-calculate.log
-             append: true
-             encoder:
-                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+#        - FILE:
+#             key: name
+#             \@class: ch.qos.logback.core.FileAppender
+#             file: ./target/logs/recipes-calculate.log
+#             append: true
+#             encoder:
+#                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: DEBUG
+             \@level: INFO
         - ru.taskurotta.recipes.calculate.decider:
             key: name
             \@level: WARN
@@ -107,6 +107,6 @@ logback:
         appender-ref:
             - STDOUT:
                 key: ref
-            - FILE:
-                key: ref
+#            - FILE:
+#                key: ref
 

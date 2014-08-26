@@ -32,10 +32,10 @@ public class SimplifiedConfigHandler {
             throw new IllegalArgumentException("Cannot parse config for arg ["+arg+"]");
         }
 
-        logger.debug("try to parse config for yaml [{}]", resultCfg.toString());
         if (isPropertiesLocation(arg)) {
             PropertiesInjector.injectConfigurationProperties(resultCfg, arg);
         }
+        logger.debug("try to parse config for yaml [{}]", resultCfg.toString());
         return Config.valueOf(resultCfg.toString());
     }
 

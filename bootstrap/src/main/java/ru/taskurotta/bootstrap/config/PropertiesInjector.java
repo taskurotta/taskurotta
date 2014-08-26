@@ -21,7 +21,6 @@ public class PropertiesInjector {
 
     private static final Logger logger = LoggerFactory.getLogger(PropertiesInjector.class);
 
-
     public static void injectConfigurationProperties(JsonNode cfgNode, String propertiesLocation) {
         Properties props = getProperties(propertiesLocation);
         if (props != null) {
@@ -42,6 +41,18 @@ public class PropertiesInjector {
                 String actorName = element.fieldNames().next();
                 JsonNode instanceNode = element.elements().next();
                 injectPropertiesByPrefix(instanceNode, props, actorName);
+                injectPropertiesAsNodeValues(instanceNode, getFilteredByPrefix(props, actorName + ".cfg."));
+            }
+        }
+    }
+
+    private static void injectPropertiesAsNodeValues(JsonNode objectNode, Properties props) {
+        if (objectNode != null && props != null && objectNode instanceof ObjectNode) {
+            Enumeration<String> propNames = (Enumeration<String>) props.propertyNames();
+            while (propNames.hasMoreElements()) {
+                String key = propNames.nextElement();
+                String value = props.getProperty(key);
+                ((ObjectNode) objectNode).put(key, value);
             }
         }
     }
@@ -61,7 +72,7 @@ public class PropertiesInjector {
     }
 
     private static void injectPropertiesByPrefix(JsonNode propertiesAwareNode, Properties props, String prefix) {
-        injectProperties(propertiesAwareNode, getFilteredByPrefix(props, prefix), YamlConfigDeserializer.YAML_PROPERTIES);
+        injectProperties(propertiesAwareNode, getFilteredByPrefix(props, prefix+"."), YamlConfigDeserializer.YAML_PROPERTIES);
     }
 
     private static Properties getFilteredByPrefix(Properties target, String prefix) {
@@ -70,7 +81,7 @@ public class PropertiesInjector {
         while (sysPropsNames.hasMoreElements()) {
             String key = sysPropsNames.nextElement();
             if (key.startsWith(prefix)) {
-                result.setProperty(key.substring(prefix.length()+1), target.getProperty(key));
+                result.setProperty(key.substring(prefix.length()), target.getProperty(key));
             }
         }
         return result.size()>0? result: null;
@@ -102,7 +113,7 @@ public class PropertiesInjector {
     }
 
     public static Properties getSystemPropertiesByPrefix(String prefix) {
-        return getFilteredByPrefix(System.getProperties(), prefix);
+        return getFilteredByPrefix(System.getProperties(), prefix+".");
     }
 
     public static Properties getProperties (String location) {

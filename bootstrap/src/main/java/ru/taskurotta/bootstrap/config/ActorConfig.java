@@ -10,7 +10,7 @@ import java.util.Properties;
  * Time: 17:52
  */
 public class ActorConfig {
-
+    private boolean enabled = true;
     private String actorInterface;
     private String runtimeConfig;
     private String spreaderConfig;
@@ -97,10 +97,19 @@ public class ActorConfig {
         this.taskList = taskList;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public String toString() {
         return "ActorConfig{" +
-                "actorInterface='" + actorInterface + '\'' +
+                "enabled=" + enabled +
+                ", actorInterface='" + actorInterface + '\'' +
                 ", runtimeConfig='" + runtimeConfig + '\'' +
                 ", spreaderConfig='" + spreaderConfig + '\'' +
                 ", profilerConfig='" + profilerConfig + '\'' +

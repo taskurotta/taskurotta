@@ -103,12 +103,6 @@ public class Bootstrap implements BootstrapMBean {
         return config;
 	}
 
-//    public static Config injectProperties(Config target, String arg) {
-//        if (target != null) {
-//
-//        }
-//    }
-
     public void start() {
 		start(config);
 	}
@@ -212,16 +206,21 @@ public class Bootstrap implements BootstrapMBean {
     }
 
     public void start(Config config) {
+        int started = 0;
 		for (ActorConfig actorConfig : config.actorConfigs) {
-            Class actorClass = getActorClass(actorConfig.getActorInterface());
+            if (actorConfig.isEnabled()) {
+                Class actorClass = getActorClass(actorConfig.getActorInterface());
 
-            ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
-            String actorId = ActorUtils.getActorId(actorDefinition);
+                ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
+                String actorId = ActorUtils.getActorId(actorDefinition);
 
-            actorConfigMap.put(actorId, actorConfig);
+                actorConfigMap.put(actorId, actorConfig);
 
-            startActorPool(actorId, actorConfig.getCount());
+                startActorPool(actorId, actorConfig.getCount());
+                started++;
+            }
 		}
+        logger.info("[{}] actors started...", started);
 	}
 
     private Class getActorClass(String actorInterfaceName) {
