@@ -60,11 +60,11 @@ public class Inspector {
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
                         return null;
                     } else {
-                        logger.error("Can't mute actor thread pool (on poll), throw exception", e);
+                        logger.debug("Can't mute actor thread pool (on poll), exception: ", e);
                         throw e;
                     }
                 } catch (Exception e) {
-                    logger.error("Catch unexpected exception on poll", e);
+                    logger.debug("Catch unexpected exception on poll: ", e);
                     throw new RuntimeException(e);
                 }
 
@@ -89,11 +89,11 @@ public class Inspector {
                         logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
                     } else {
-                        logger.error("Can't mute actor thread pool (on release), throw exception", e);
+                        logger.debug("Can't mute actor thread pool (on release), exception: ", e);
                         throw e;
                     }
                 } catch (Exception e) {
-                    logger.error("Catch unexpected exception on release", e);
+                    logger.debug("Catch unexpected exception on release: ", e);
                     throw new RuntimeException(e);
                 }
             }
