@@ -18,8 +18,8 @@ spreader:
         properties:
           count: 50
           startTasks: true
-          startTasksInBackground: false
-          startTaskPeriodSeconds: -1 #-1 = disabled
+          startTasksInBackground: true
+          startTaskPeriodSeconds: 60 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
@@ -71,43 +71,46 @@ actor:
 #        failover: "25 SECONDS"
 
 
-#logback:
-#    appender:
-#        - STDOUT:
-#             key: name
-#             \@class: ch.qos.logback.core.ConsoleAppender
-#             encoder:
-#                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
-#        - FILE:
-#             key: name
-#             \@class: ch.qos.logback.core.FileAppender
-#             file: ./target/logs/recipes-calculate.log
-#             append: true
-#             encoder:
-#                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
-#    logger:
-#        - ru.taskurotta:
-#             key: name
-#             \@level: INFO
-#        - ru.taskurotta.recipes.calculate.decider:
-#            key: name
-#            \@level: WARN
-#        - com.hazelcast:
-#              key: name
-#              \@level: WARN
-#        - org.apache.commons.httpclient:
-#              key: name
-#              \@level: WARN
-#        - httpclient.wire:
-#              key: name
-#              \@level: WARN
-#        - org.springframework:
-#             key: name
-#             \@level: WARN
-#    root:
-#        appender-ref:
-#            - STDOUT:
-#                key: ref
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-calculate.log
+             append: true
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.bootstrap.pool:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.recipes.calculate:
+            key: name
+            \@level: INFO
+        - com.hazelcast:
+              key: name
+              \@level: WARN
+        - org.apache.commons.httpclient:
+              key: name
+              \@level: WARN
+        - httpclient.wire:
+              key: name
+              \@level: WARN
+        - org.springframework:
+             key: name
+             \@level: WARN
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
 #            - FILE:
 #                key: ref
 

@@ -1,7 +1,8 @@
-package ru.taskurotta.bootstrap;
+package ru.taskurotta.bootstrap.pool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.bootstrap.ActorExecutor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,8 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Date: 24.04.13
  * Time: 16:14
  */
-public class ActorThreadPool {
-    private static final Logger logger = LoggerFactory.getLogger(ActorThreadPool.class);
+public class ActorMultiThreadPool implements ActorThreadPool {
+    private static final Logger logger = LoggerFactory.getLogger(ActorMultiThreadPool.class);
 
     private String actorClassName; //actor class served by this pool
     private String taskList;
@@ -31,7 +32,7 @@ public class ActorThreadPool {
 
     private ConcurrentHashMap<String, Thread> threadMap;
 
-    public ActorThreadPool(String actorClassName, String taskList, int size, long shutdownTimeoutMillis) {
+    public ActorMultiThreadPool(String actorClassName, String taskList, int size, long shutdownTimeoutMillis) {
         this.actorClassName = actorClassName;
         this.taskList = taskList;
         this.size = size;
@@ -115,6 +116,7 @@ public class ActorThreadPool {
         }
 
         actorExecutor.stopInstance();
+        actorExecutor.stopThread();
 
         long stopTime = System.currentTimeMillis();
 

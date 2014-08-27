@@ -3,6 +3,7 @@ package ru.taskurotta.bootstrap;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.bootstrap.pool.ActorMultiThreadPool;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -53,13 +54,13 @@ public class ActorThreadPoolTest {
         }
     }
 
-    private ActorThreadPool actorThreadPool;
+    private ActorMultiThreadPool actorThreadPool;
     private ActorExecutor actorExecutor;
     private int size = 10;
 
     @Before
     public void setUp() throws Exception {
-        actorThreadPool = new ActorThreadPool(TestWorker.class.getName(), null, size, 60000l);
+        actorThreadPool = new ActorMultiThreadPool(TestWorker.class.getName(), null, size, 60000l);
 
         Profiler profiler = new SimpleProfiler();
         LinearRetryPolicy retryPolicy = new LinearRetryPolicy(1);

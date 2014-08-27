@@ -18,7 +18,8 @@
 
 	<logger name="ru.taskurotta" level="INFO" />
     <logger name="ru.taskurotta.bootstrap.Inspector" level="DEBUG" />
-    <logger name="ru.taskurotta.bootstrap.ActorThreadPool" level="DEBUG" />
+    <logger name="ru.taskurotta.bootstrap.pool.ActorMultiThreadPool" level="DEBUG" />
+    <logger name="ru.taskurotta.bootstrap.pool.ActorSingleThreadPool" level="DEBUG" />
 	<logger name="ru.taskurotta.server.json.ObjectFactory" level="WARN" />
     <logger name="org.springframework" level="OFF"/>
     <logger name="httpclient.wire" level="WARN" />

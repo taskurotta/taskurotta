@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.bootstrap.config.*;
+import ru.taskurotta.bootstrap.pool.ActorMultiThreadPool;
+import ru.taskurotta.bootstrap.pool.ActorSingleThreadPool;
+import ru.taskurotta.bootstrap.pool.ActorThreadPool;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -152,7 +155,10 @@ public class Bootstrap implements BootstrapMBean {
             poolSize = actorConfig.getCount();
         }
 
-        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass.getName(), actorConfig.getTaskList(), poolSize, actorConfig.getShutdownTimeoutMillis());
+        final ActorThreadPool actorThreadPool =
+                poolSize == 1 ?
+                new ActorSingleThreadPool(actorClass.getName(), actorConfig.getTaskList(), actorConfig.getShutdownTimeoutMillis()):
+                new ActorMultiThreadPool(actorClass.getName(), actorConfig.getTaskList(), poolSize, actorConfig.getShutdownTimeoutMillis());
         final String actorPoolId = saveActorPool(actorId, actorThreadPool);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 

@@ -3,6 +3,7 @@ package ru.taskurotta.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.bootstrap.pool.ActorThreadPool;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -58,6 +59,7 @@ public class Inspector {
                     if (actorThreadPool.mute()) {
                         logger.warn("Actor thread pool thread has been muted (on poll) due to server error [{}]. Remain [{}] threads.",
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
+                        //TODO: shouldn't exception be thrown here?
                         return null;
                     } else {
                         logger.debug("Can't mute actor thread pool (on poll), exception: ", e);
@@ -88,6 +90,7 @@ public class Inspector {
                     if (actorThreadPool.mute()) {
                         logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
+                        //TODO: throw e?
                     } else {
                         logger.debug("Can't mute actor thread pool (on release), exception: ", e);
                         throw e;
