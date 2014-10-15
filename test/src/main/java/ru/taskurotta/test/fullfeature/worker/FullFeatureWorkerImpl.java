@@ -11,13 +11,13 @@ public class FullFeatureWorkerImpl implements FullFeatureWorker {
 
     @Override
     public double sqr(double a) {
-        log.info("FullFeatureWorkerImpl.sqr({})", a);
+        log.debug("FullFeatureWorkerImpl.sqr({})", a);
         return a*a;
     }
 
     @Override
     public double sqrt(double a) {
-        log.info("FullFeatureWorkerImpl.sqrt({})", a);
+        log.debug("FullFeatureWorkerImpl.sqrt({})", a);
         if (a < 0) {
             throw new IllegalArgumentException("Argument can not be less than 0: " + a);
         }
