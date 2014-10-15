@@ -24,6 +24,7 @@ import com.hazelcast.nio.Address;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.partition.PartitionView;
+import com.hazelcast.queue.PollOperation;
 import com.hazelcast.spi.AbstractOperation;
 import com.hazelcast.spi.BackupAwareOperation;
 import com.hazelcast.spi.Callback;
@@ -214,11 +215,13 @@ abstract class InvocationImpl implements Invocation, Callback<Object> {
 
     static long time = System.currentTimeMillis();
     static ConcurrentMap<Long, OpContext> operations = new ConcurrentHashMap<>();
+    static long timeout = 61000L; // watch only old operations
 
     static class OpContext {
         BackupAwareOperation op;
         public StackTraceElement[] stack;
         public String threadId;
+        public long time;
     }
 
     private void registerBackups(BackupAwareOperation op, long callId) {
@@ -229,10 +232,15 @@ abstract class InvocationImpl implements Invocation, Callback<Object> {
         }
         operationService.registerBackupCall(callId);
 
+        if (true) {
+            return;
+        }
+
         OpContext opContext = new OpContext();
         opContext.op = op;
         opContext.stack = Thread.currentThread().getStackTrace();
         opContext.threadId = Thread.currentThread().getName();
+        opContext.time = System.currentTimeMillis();
 
         operations.put(callId, opContext);
         long newTime = System.currentTimeMillis();
@@ -245,12 +253,19 @@ abstract class InvocationImpl implements Invocation, Callback<Object> {
             Map<String, AtomicInteger> opStat = new HashMap();
             Map<String, OpContext> lastOpContext = new HashMap();
 
+            long statTime = System.currentTimeMillis() - timeout;
+
             for (Long id: backupCalls.keySet()) {
                 OpContext storedOpContext = operations.get(id);
                 if (storedOpContext == null) {
                     logger.info("id without op = " + id);
                     continue;
                 }
+
+                if (storedOpContext.time > statTime) {
+                    continue;
+                }
+
                 String opClassName = storedOpContext.op.getClass().getName();
                 AtomicInteger counter = opStat.get(opClassName);
                 if (counter == null) {
@@ -261,9 +276,13 @@ abstract class InvocationImpl implements Invocation, Callback<Object> {
                 lastOpContext.put(opClassName, storedOpContext);
             }
 
-            for (Map.Entry<String, AtomicInteger> entry: opStat.entrySet()) {
-                logger.info("\t" + entry.getKey() + " :: " + entry.getValue());
-                logger.info("last op stack:\n " + stackToString(lastOpContext.get(entry.getKey()).stack));
+            if (opStat.size() == 0) {
+                logger.info("all operations are less then " + timeout + " mls old");
+            } else {
+                for (Map.Entry<String, AtomicInteger> entry : opStat.entrySet()) {
+                    logger.info("\t" + entry.getKey() + " :: " + entry.getValue());
+                    logger.info("last op stack:\n " + stackToString(lastOpContext.get(entry.getKey()).stack));
+                }
             }
         }
     }
@@ -286,6 +305,7 @@ abstract class InvocationImpl implements Invocation, Callback<Object> {
             response = RETRY_RESPONSE;
             if (logger.isFinestEnabled()) {
                 logger.finest("Call timed-out during wait-notify phase, retrying call: " + toString());
+                Thread.dumpStack();
             }
             invokeCount--;
         } else if (obj instanceof Throwable) {
@@ -648,6 +668,9 @@ abstract class InvocationImpl implements Invocation, Callback<Object> {
         sb.append("InvocationImpl");
         sb.append("{ serviceName='").append(serviceName).append('\'');
         sb.append(", op=").append(op);
+        if (op instanceof PollOperation) {
+            sb.append(", queue=" + ((PollOperation) op).getName());
+        }
         sb.append(", partitionId=").append(partitionId);
         sb.append(", replicaIndex=").append(replicaIndex);
         sb.append(", tryCount=").append(tryCount);
