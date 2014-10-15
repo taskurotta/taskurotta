@@ -24,10 +24,10 @@ spreader:
           hz.jmx: true
           mongo.host: localhost
           mongo.port: 27017
-          gc.enabled: false
+          gc.enabled: true
           gc.pool-size: 8
           gc.time-before-delete: 1 minutes
-          recovery.enabled: false
+          recovery.enabled: true
           hz.queue.task.memory-limit: 10000
           hz.map.general.max-size: 10
 
