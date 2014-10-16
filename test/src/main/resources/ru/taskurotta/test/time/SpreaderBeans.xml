@@ -10,7 +10,18 @@
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.MockClientServiceManagerMemory"/>
 
-    <bean id="taskCreator" class="ru.taskurotta.test.fullfeature.TaskCreator" init-method="startTask">
+    <bean id="taskCreator" class="ru.taskurotta.test.time.TaskCreator" init-method="startTask">
+        <property name="threads" value="${threads}"/>
+        <property name="duration">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${duration}"/>
+            </bean>
+        </property>
+        <property name="timeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${timeout}"/>
+            </bean>
+        </property>
         <property name="clientServiceManager" ref="clientServiceManager"/>
     </bean>
 

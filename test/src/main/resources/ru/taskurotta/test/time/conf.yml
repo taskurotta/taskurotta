@@ -8,18 +8,15 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-stress.xml
+        context: ru/taskurotta/test/time/SpreaderBeans.xml
         properties:          
-          endpoint: "http://localhost:8081"
-          threadPoolSize: 20
-          readTimeout: 0
-          connectTimeout: 3000
-          shotSize: 1000          
-          needRun: true
+          duration: 1 minutes
+          timeout: 1 seconds
+          threads: 25
 
 policy:
   - MainPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
@@ -31,12 +28,9 @@ profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
       instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
+        class: ru.taskurotta.test.time.LifeTimeProfiler
         properties:
-          exitAfterAll: true
-          tasksForStat: 1000
-          maxTaskQuantity: 1000000
-          taskPerProcess: 12
+          duration: 1 minutes
 
 actor:
   - FFDecider:
@@ -57,7 +51,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./target/logs/ff-stress.log
+             file: logs/leman24.log
              append: true
              encoder:
                  pattern: \%d \%p [\%t] \%c - \%m\%n
