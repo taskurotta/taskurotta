@@ -8,29 +8,21 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/test/time/SpreaderBeans.xml
+        contexts:
+          - classpath:spring/hz.xml
+          - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
+        defaultPropertiesLocation: default.properties
         properties:          
-          duration: 1 minutes
+          duration: 5 minutes
           timeout: 1 seconds
-          threads: 25
-
-policy:
-  - MainPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
-      instance:
-        class: ru.taskurotta.policy.retry.LinearRetryPolicy
-        properties:
-          initialRetryIntervalSeconds: 1
-          maximumRetryIntervalSeconds: 1
-          maximumAttempts: 3
+          threads: 50
+          gc.time-before-delete: 1 minutes
 
 profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
       instance:
         class: ru.taskurotta.test.time.LifeTimeProfiler
-        properties:
-          duration: 1 minutes
 
 actor:
   - FFDecider:

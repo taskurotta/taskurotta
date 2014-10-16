@@ -79,6 +79,6 @@ public class LifeTimeProfiler implements Profiler {
         }
 
         double pollAvgSpeed = poolCounter / workDuration;
-        logger.info("After [{}] tasks and [{}] seconds: pollAvgSpeed = [{}]/seconds", poolCounter, workDuration, pollAvgSpeed);
+        logger.info("After [{}] tasks and [{}] seconds: pollAvgSpeed = [{}] p/s", poolCounter, workDuration, pollAvgSpeed);
     }
 }
