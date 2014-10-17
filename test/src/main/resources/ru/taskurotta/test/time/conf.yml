@@ -9,14 +9,16 @@ spreader:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         contexts:
-          - classpath:spring/hz.xml
+          - classpath:spring/hz-mongo.xml
           - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
         defaultPropertiesLocation: default.properties
         properties:          
-          duration: 5 minutes
+          duration: 10 hours
           timeout: 1 seconds
           threads: 50
           gc.time-before-delete: 1 minutes
+          hz.jmx.detailed: true
+          hz.jmx: true
 
 profiler:
   - MainProfilerConfig:
@@ -54,6 +56,12 @@ logback:
         - ru.taskurotta.test.fullfeature:
              key: name
              \@level: ERROR
+        - ru.taskurotta.service.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF

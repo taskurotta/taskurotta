@@ -8,7 +8,9 @@
 
     <context:property-placeholder/>
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.MockClientServiceManagerMemory"/>
+    <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
+        <constructor-arg name="taskServer" ref="taskServer"/>
+    </bean>
 
     <bean id="taskCreator" class="ru.taskurotta.test.time.TaskCreator" init-method="startTask">
         <property name="threads" value="${threads}"/>
