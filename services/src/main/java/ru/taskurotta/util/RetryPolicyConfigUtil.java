@@ -1,6 +1,5 @@
 package ru.taskurotta.util;
 
-import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.policy.retry.ExponentialRetryPolicy;
 import ru.taskurotta.policy.retry.LinearRetryPolicy;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
