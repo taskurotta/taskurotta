@@ -46,10 +46,6 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
                 applicationContext = new ClassPathXmlApplicationContext(contexts, false);
             }
 
-            if (properties != null && !properties.isEmpty()) {
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
-            }
-
             if (defaultPropertiesLocation != null) {
                 Properties defaultProperties;
                 try {
@@ -58,9 +54,14 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
                     throw new IllegalStateException("Can not load default properties", e);
                 }
 
-                System.err.println("defaultProperties [" + defaultPropertiesLocation + "]: " + defaultProperties);
+                logger.debug("DefaultProperties is [{}]", defaultProperties);
                 applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
                         ("defaultProperties", defaultProperties));
+            }
+
+            if (properties != null && !properties.isEmpty()) {
+                logger.debug("Properties is [{}]", properties);
+                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
             }
 
             applicationContext.refresh();
@@ -75,11 +76,6 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
             } catch (NoSuchBeanDefinitionException e) {
                 logger.debug("Not found bean of [{}]", taskSpreaderProviderClass);
             }
-
-//            if (taskSpreaderProvider == null) {
-//                ClientServiceManager clientServiceManager = new ClientServiceManagerMemory();
-//                taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
-//            }
         } catch (BeansException e) {
             logger.error("Not found bean of class [{}]", taskSpreaderProviderClass);
             throw new RuntimeException("Not found bean of class", e);
