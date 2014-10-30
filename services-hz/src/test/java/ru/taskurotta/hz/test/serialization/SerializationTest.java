@@ -203,7 +203,7 @@ public class SerializationTest {
         String actorId = "actorId";
         TaskType type = TaskType.DECIDER_START;
         long startTime = 15121234;
-        int numberOfAttempts = 2;
+        int errorAttempts = 2;
 
         List<ArgContainer> containerList = new ArrayList<>();
         ArgContainer argContainer1 = new ArgContainer();
@@ -233,7 +233,7 @@ public class SerializationTest {
         TaskOptionsContainer taskOptionsContainer = getTaskOptionsContainer();
         UUID processId = UUID.randomUUID();
         String[] failTypes = {"java.lang.RuntimeException"};
-        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer, true, failTypes);
+        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, errorAttempts, args, taskOptionsContainer, true, failTypes);
         hzMap.put("taskContainer", taskContainer);
 
         TaskContainer actual = (TaskContainer) hzMap.get("taskContainer");

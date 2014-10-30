@@ -22,7 +22,7 @@ public class EntitiesFactory {
         String originalMethod = "doSomeWork";
         String originalActorId = originalName + "#" + originalVersion;
         long originalStartTime = System.currentTimeMillis();
-        int originalNumberOfAttempts = 5;
+        int originalErrorAttempts = 5;
 
         String origArg1ClassName = "null";
         String origArg1Value = null;
@@ -36,7 +36,7 @@ public class EntitiesFactory {
         ArgType[] argTypes = new ArgType[]{ArgType.WAIT, ArgType.NONE};
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes);
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false, null);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType,originalStartTime, originalErrorAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, false, null);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError) {

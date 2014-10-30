@@ -77,7 +77,7 @@ public class HzTaskDao implements TaskDao {
                 Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
                     @Override
                     public boolean apply(TaskContainer taskContainer) {
-                        return taskContainer.getNumberOfAttempts() >= iterationCount;
+                        return taskContainer.getErrorAttempts() >= iterationCount;
                     }
                 }));
     }

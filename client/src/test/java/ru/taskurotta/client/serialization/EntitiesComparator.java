@@ -47,7 +47,7 @@ public class EntitiesComparator {
             Assert.assertEquals("Tasks UUIDs must be the same", expected.getTaskId(), actual.getTaskId());
             Assert.assertEquals("Tasks process UUIDs must be the same", expected.getProcessId(), actual.getProcessId());
             Assert.assertEquals("Start times must be the same", expected.getStartTime(), actual.getStartTime());
-            Assert.assertEquals("Number of attempts must be the same", expected.getNumberOfAttempts(), actual.getNumberOfAttempts());
+            Assert.assertEquals("Number of attempts must be the same", expected.getErrorAttempts(), actual.getErrorAttempts());
 
             //validateTaskTarget(original.getTarget(), result.getTarget());
             Assert.assertEquals("Task methods must be the same", expected.getMethod(), actual.getMethod());

@@ -12,7 +12,7 @@ public interface Constants {
     public static final String TASK_ARGS = "args";
     public static final String TASK_OPTIONS = "options";
     public static final String TASK_START_TIME = "startTime";
-    public static final String TASK_NUMBER_OF_ATTEMPTS = "numberOfAttempts";
+    public static final String TASK_ERROR_ATTEMPTS = "errorAttempts";
     public static final String TASK_METHOD = "method";
     public static final String TASK_ACTOR_ID = "actorId";
     public static final String TASK_TYPE = "type";

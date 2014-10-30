@@ -26,7 +26,7 @@ public class SerializationTest {
         String originalMethod = "doSomeWork";
         String originalActorId = originalName + "#" + originalVersion;
         long originalStartTime = System.currentTimeMillis();
-        int originalNumberOfAttempts = 5;
+        int originalErrorAttempts = 5;
 
         String origArg1ClassName = "null";
         String origArg1Value = "null";
@@ -43,7 +43,7 @@ public class SerializationTest {
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actorSchedulingOptions, null);
         String[] failTypes = {"java.lang.RuntimeException"};
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalNumberOfAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, true, failTypes);
+        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalErrorAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, true, failTypes);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError, UUID taskId) {
