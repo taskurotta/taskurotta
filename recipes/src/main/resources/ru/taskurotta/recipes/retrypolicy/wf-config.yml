@@ -19,7 +19,6 @@ actor:
 
   - SumWorker:
       actorInterface: ru.taskurotta.recipes.retrypolicy.workers.SumWorker
-      count: 10
 
 logback:
     appender:
