@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.policy.PolicyConstants;
-import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
@@ -206,7 +205,7 @@ public class GeneralTaskServer implements TaskServer {
     private void applyRetryPolicy(DecisionContainer taskDecision, UUID taskId, UUID processId, TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
         final TimeRetryPolicyBase timeRetryPolicyBase = RetryPolicyConfigUtil.buildTimeRetryPolicy(retryPolicyConfig);
         long recordedFailure = System.currentTimeMillis();
-        long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
+        long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getErrorAttempts());
         if (customRestartTime == PolicyConstants.NONE) {
             saveBrokenProcess(taskDecision);
             processService.markProcessAsBroken(processId);

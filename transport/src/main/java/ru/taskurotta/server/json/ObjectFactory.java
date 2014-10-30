@@ -205,7 +205,7 @@ public class ObjectFactory {
         TaskOptions opts = parseTaskOptions(taskContainer.getOptions());//TODO: may be parsing options is redundant? Client's ActorExecutor doesn't use them anyway
 
         return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
-                taskContainer.getNumberOfAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
+                taskContainer.getErrorAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
     }
 
 
@@ -264,7 +264,7 @@ public class ObjectFactory {
         TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
         return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target), target.getType(),
-                task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer, task.isUnsafe(), task.getFailTypes());
+                task.getStartTime(), task.getErrorAttempts(), argContainers, taskOptionsContainer, task.isUnsafe(), task.getFailTypes());
     }
 
 

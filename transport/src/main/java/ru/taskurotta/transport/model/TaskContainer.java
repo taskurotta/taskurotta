@@ -18,7 +18,7 @@ public class TaskContainer implements Serializable {
     private String actorId;
     private TaskType type;
     private long startTime;
-    private int numberOfAttempts;
+    private int errorAttempts;
     private ArgContainer[] args;
     private TaskOptionsContainer options;
     private UUID processId;
@@ -33,7 +33,7 @@ public class TaskContainer implements Serializable {
     }
 
     public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
-                         TaskType type, long startTime, int numberOfAttempts,
+                         TaskType type, long startTime, int errorAttempts,
                          ArgContainer[] args, TaskOptionsContainer options, boolean unsafe, String[] failTypes) {
         super();
         this.taskId = taskId;
@@ -41,7 +41,7 @@ public class TaskContainer implements Serializable {
         this.actorId = actorId;
         this.type = type;
         this.startTime = startTime;
-        this.numberOfAttempts = numberOfAttempts;
+        this.errorAttempts = errorAttempts;
         this.args = args;
         this.options = options;
         this.processId = processId;
@@ -61,8 +61,8 @@ public class TaskContainer implements Serializable {
         return startTime;
     }
 
-    public int getNumberOfAttempts() {
-        return numberOfAttempts;
+    public int getErrorAttempts() {
+        return errorAttempts;
     }
 
     public TaskOptionsContainer getOptions() {
@@ -89,8 +89,8 @@ public class TaskContainer implements Serializable {
         return failTypes;
     }
 
-    public void incrementNumberOfAttempts() {
-        numberOfAttempts++;
+    public void incrementErrorAttempts() {
+        errorAttempts++;
     }
 
     @Override
@@ -98,7 +98,7 @@ public class TaskContainer implements Serializable {
         return "TaskContainer [taskId=" + taskId
                 + ", actorId=" + actorId + ", method=" + method + ", type=" + type
                 + ", startTime=" + startTime
-                + ", numberOfAttempts=" + numberOfAttempts
+                + ", errorAttempts=" + errorAttempts
                 + ", args=" + Arrays.toString(args)
                 + ", options=" + options
                 + ", unsafe=" + unsafe

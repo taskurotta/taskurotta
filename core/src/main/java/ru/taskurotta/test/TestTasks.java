@@ -34,14 +34,14 @@ public class TestTasks {
         return new TaskImpl(UUID.randomUUID(), processId, taskTarget, 0, 0, args, taskOptions, false, null);
     }
 
-    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
+    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int errorAttempts,
                                    Object[] args, TaskOptions taskOptions) {
-        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions, false, null);
+        return new TaskImpl(taskId, processId, taskTarget, startTime, errorAttempts, args, taskOptions, false, null);
     }
 
-    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
+    public static Task newInstance(UUID taskId, UUID processId, TaskTarget taskTarget, long startTime, int errorAttempts,
                                    Object[] args, TaskOptions taskOptions, String[] failTypes) {
-        return new TaskImpl(taskId, processId, taskTarget, startTime, numberOfAttempts, args, taskOptions, true, failTypes);
+        return new TaskImpl(taskId, processId, taskTarget, startTime, errorAttempts, args, taskOptions, true, failTypes);
     }
 
 }

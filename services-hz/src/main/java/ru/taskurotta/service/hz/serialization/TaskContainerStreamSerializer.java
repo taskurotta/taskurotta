@@ -28,7 +28,7 @@ public class TaskContainerStreamSerializer implements StreamSerializer<TaskConta
         writeString(out, object.getActorId());
         out.writeInt(object.getType().getValue());
         out.writeLong(object.getStartTime());
-        out.writeInt(object.getNumberOfAttempts());
+        out.writeInt(object.getErrorAttempts());
         writeArgsContainerArray(out, object.getArgs());
         if (object.getOptions() == null) {
             out.writeBoolean(false);
