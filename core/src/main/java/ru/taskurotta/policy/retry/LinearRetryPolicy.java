@@ -54,7 +54,7 @@ public class LinearRetryPolicy extends TimeRetryPolicyBase {
     @Override
     public long nextRetryDelaySeconds(long firstAttempt, long recordedFailure, int numberOfTries) {
 
-        if (maximumAttempts > PolicyConstants.NONE && numberOfTries > maximumAttempts) {
+        if (maximumAttempts > PolicyConstants.NONE && numberOfTries >= maximumAttempts) {
             return PolicyConstants.NONE;
         }
 

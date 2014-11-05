@@ -145,27 +145,31 @@ public class GeneralTaskServer implements TaskServer {
 
         if (taskDecision.containsError()) {
 
-            TaskContainer task = taskService.getTask(taskId, processId);
-            final RetryPolicyConfigContainer retryPolicyConfig = task.getOptions() == null || task.getOptions().getTaskConfigContainer() == null ? null : task.getOptions().getTaskConfigContainer().getRetryPolicyConfigContainer();
+            long restartTime = taskDecision.getRestartTime();
 
+            TaskContainer task = taskService.getTask(taskId, processId);
             logger.trace("#[{}]/[{}]: after get taskDecision with error again get task = [{}]", processId, taskId, task);
-            final long restartTime = taskDecision.getRestartTime();
-            if (retryPolicyConfig == null && restartTime != TaskDecision.NO_RESTART) {
+
+            if (task.getOptions() != null && task.getOptions().getTaskConfigContainer() != null) {
+                RetryPolicyConfigContainer retryPolicyConfig = task.getOptions().getTaskConfigContainer().getRetryPolicyConfigContainer();
+
+                if (isErrorMatch(retryPolicyConfig, taskDecision.getErrorContainer())) {
+                    restartTime = getRestartTime(task, retryPolicyConfig);
+                }
+            }
+
+            if (restartTime != TaskDecision.NO_RESTART) {
                 // enqueue task immediately if needed
                 logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
                 enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
                 return;
-            } else if (retryPolicyConfig != null && !isErrorMatch(retryPolicyConfig, taskDecision.getErrorContainer())) {
-                applyRetryPolicy(taskDecision, taskId, processId, task, retryPolicyConfig);
-                return;
-            } else {
-                if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
-                    saveBrokenProcess(taskDecision);
-                    processService.markProcessAsBroken(processId);
-                    logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
-                    return;
-                }
+            }
 
+            if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
+                saveBrokenProcess(taskDecision);
+                processService.markProcessAsBroken(processId);
+                logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
+                return;
             }
         }
 
@@ -202,18 +206,19 @@ public class GeneralTaskServer implements TaskServer {
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
     }
 
-    private void applyRetryPolicy(DecisionContainer taskDecision, UUID taskId, UUID processId, TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
-        final TimeRetryPolicyBase timeRetryPolicyBase = RetryPolicyConfigUtil.buildTimeRetryPolicy(retryPolicyConfig);
+    private long getRestartTime(TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
+        if (retryPolicyConfig == null) {
+            return PolicyConstants.NONE;
+        }
+
         long recordedFailure = System.currentTimeMillis();
+        TimeRetryPolicyBase timeRetryPolicyBase = RetryPolicyConfigUtil.buildTimeRetryPolicy(retryPolicyConfig);
         long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getErrorAttempts());
         if (customRestartTime == PolicyConstants.NONE) {
-            saveBrokenProcess(taskDecision);
-            processService.markProcessAsBroken(processId);
-            logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
-        } else {
-            enqueueTask(taskId, processId, task.getActorId(), System.currentTimeMillis() + (customRestartTime * 1000), getTaskList(task));
-            logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
+            return PolicyConstants.NONE;
         }
+
+        return recordedFailure + customRestartTime * 1000;
     }
 
     private static boolean isErrorMatch(RetryPolicyConfigContainer retryPolicyConfig, ErrorContainer error) {
