@@ -4,18 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.util.ActorDefinition;
 
-import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -23,49 +17,15 @@ import java.util.Properties;
  * Date: 06.02.13
  * Time: 17:54
  */
-public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
+public class SpreaderConfigPathXmlApplicationContext extends AbstractConfigClassPathXmlApplicationContext implements SpreaderConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(RuntimeConfigPathXmlApplicationContext.class);
 
-    private AbstractApplicationContext applicationContext;
     private TaskSpreaderProvider taskSpreaderProvider;
-
-    private String context;
-    private String[] contexts;
-
-    private String defaultPropertiesLocation;
-    private Properties properties;
 
     @Override
     public void init() {
-        if (applicationContext == null) {
-
-            if (context != null) {
-                applicationContext = new ClassPathXmlApplicationContext(new String[]{context}, false);
-            } else {
-                applicationContext = new ClassPathXmlApplicationContext(contexts, false);
-            }
-
-            if (defaultPropertiesLocation != null) {
-                Properties defaultProperties;
-                try {
-                    defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Can not load default properties", e);
-                }
-
-                logger.debug("DefaultProperties is [{}]", defaultProperties);
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
-                        ("defaultProperties", defaultProperties));
-            }
-
-            if (properties != null && !properties.isEmpty()) {
-                logger.debug("Properties is [{}]", properties);
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
-            }
-
-            applicationContext.refresh();
-        }
+        super.init();
 
         Class taskSpreaderProviderClass = TaskSpreaderProvider.class;
 
@@ -90,28 +50,6 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
     @Override
     public TaskSpreader getTaskSpreader(Class clazz, String taskList) {
         return taskSpreaderProvider.getTaskSpreader(ActorDefinition.valueOf(clazz, taskList));
-    }
-
-    public void setContext(String context) {
-        this.context = context;
-    }
-
-    public void setContexts(String[] contexts) {
-        this.contexts = contexts;
-    }
-
-    public void setProperties(Properties properties) {
-        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-            final Object obj = System.getenv(entry.getKey().toString());
-            if (obj != null) {
-                entry.setValue(obj);
-            }
-        }
-        this.properties = properties;
-    }
-
-    public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
-        this.defaultPropertiesLocation = defaultPropertiesLocation;
     }
 
     public Properties getProperties() {
