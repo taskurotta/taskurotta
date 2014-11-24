@@ -34,7 +34,7 @@ public class InspectorTest {
 
     @Before
     public void setUp() throws Exception {
-        inspector = new Inspector(new BlankRetryPolicy(), new MockActorThreadPool(TestWorker.class, 1));
+        inspector = new Inspector(new BlankRetryPolicy(), new MockActorThreadPool(TestWorker.class.getName(), 1));
     }
 
     @Test

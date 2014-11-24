@@ -1,0 +1,12 @@
+<configuration>
+    <appender class="ch.qos.logback.core.ConsoleAppender" name="STDOUT">
+        <encoder>
+            <pattern>%-4r [%t] %-5p %c - %m%n</pattern>
+        </encoder>
+    </appender>
+    <logger level="OFF" name="ru.taskurotta"/>
+    <logger level="OFF" name="org.springframework"/>
+    <root>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

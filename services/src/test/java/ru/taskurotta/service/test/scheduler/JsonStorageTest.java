@@ -104,7 +104,7 @@ public class JsonStorageTest {
 
         String newMethodName = "newMethodName";
         TaskContainer task = aJob.getTask();
-        TaskContainer newTask = new TaskContainer(task.getTaskId(), task.getProcessId(), newMethodName, task.getActorId(), task.getType(), task.getStartTime(), task.getNumberOfAttempts(), task.getArgs(), task.getOptions(), task.isUnsafe(), task.getFailTypes());
+        TaskContainer newTask = new TaskContainer(task.getTaskId(), task.getProcessId(), newMethodName, task.getActorId(), task.getType(), task.getStartTime(), task.getErrorAttempts(), task.getArgs(), task.getOptions(), task.isUnsafe(), task.getFailTypes());
         aJob.setTask(newTask);
         aJob.setStatus(JobConstants.STATUS_INACTIVE);
         store.updateJob(aJob);

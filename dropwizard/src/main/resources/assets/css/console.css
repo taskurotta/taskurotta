@@ -228,3 +228,10 @@ select.btn-mini + .caret {
     margin-left: -20px;
     margin-top: 9px;
 }
+
+
+span.header-mini {
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 3px;
+}

@@ -1,15 +1,11 @@
 package ru.taskurotta.bootstrap.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.jdom.Document;
-import org.jdom.input.SAXBuilder;
+import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.w3c.dom.Document;
+import ru.taskurotta.bootstrap.ConfigHelper;
 
 /**
  * User: stukushin
@@ -18,24 +14,24 @@ import static org.junit.Assert.assertTrue;
  */
 public class LoggingConfigTest {
 
-    @Test
-    public void testGetConfigFile() throws Exception {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-
-        File configFile = new File(Thread.currentThread().getContextClassLoader().getResource("test-conf.yml").getFile());
-        Config.valueOf(configFile);
-
-        LoggingConfig loggingConfig = mapper.readValue(configFile, LoggingConfig.class);
-        File logbackFile = loggingConfig.getConfigFile();
-
-        assertTrue(logbackFile.exists());
-
-        SAXBuilder builder = new SAXBuilder();
-        Document logbackDocument = builder.build(logbackFile);
-
-        File logbackOrigFile = new File(Thread.currentThread().getContextClassLoader().getResource("logback.xml").getFile());
-        Document logbackOrigDocument = builder.build(logbackOrigFile);
-
-        assertEquals(logbackOrigDocument.getRootElement().getChildren("appender").size(), logbackDocument.getRootElement().getChildren("appender").size());
+    @Before
+    public void setUp(){
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreComments(true);
     }
+
+    @Test
+    public void testParseConfigFile() throws Exception {
+
+        Document docFromYaml = ConfigHelper.getYamlConfiguration("test-conf.yml");
+        Document docFromOriginalXml = ConfigHelper.getXmlConfiguartion("test-conf-logback.xml");
+
+        XMLAssert.assertXMLEqual(docFromOriginalXml, docFromYaml);
+
+        Document docFromSpoiledXml = ConfigHelper.getXmlConfiguartion("test-conf-logback-spoiled.xml");
+        XMLAssert.assertXMLNotEqual(docFromSpoiledXml, docFromYaml);
+
+    }
+
 }

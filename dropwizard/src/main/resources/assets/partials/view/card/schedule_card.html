@@ -21,8 +21,7 @@
                     <table class="table table-condensed">
                         <tr>
                             <td style="width: 200px;">
-                                <span style="cursor:pointer;" popover="Specify the human readable name of the job."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="Specify the human readable name of the job." popover-trigger="mouseenter" />
                                 <b>Job name:</b>
                             </td>
                             <td>
@@ -31,8 +30,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <span style="cursor:pointer;" popover="Cron expression to trigger task."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="Cron expression to trigger task." popover-trigger="mouseenter" />
                                 <b>Cron:</b>
                             </td>
                             <td>
@@ -44,8 +42,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <span style="cursor:pointer;" popover="Max tasks count per actor queue. If queue size exceeds that value on current scheduler iteration, scheduler would just skip until queue is ready. Use negative or zero value to disable this option."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="Max tasks count per actor queue. If queue size exceeds that value on current scheduler iteration, scheduler would just skip until queue is ready. Use negative or zero value to disable this option." popover-trigger="mouseenter" />
                                 <b>Queue limit:</b>
                             </td>
                             <td>
@@ -54,8 +51,7 @@
                         </tr>
                         <tr>
                             <td>
-                                <span style="cursor:pointer;" popover="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option."
-                                      popover-placement="right" class="badge badge-info">?</span>
+                                <i class="icon-question-sign" popover="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option." popover-trigger="mouseenter" />
                                 <b>Max errors:</b>
                             </td>
                             <td>
@@ -96,7 +92,15 @@
                                 <select ng-model="job.task.type" ng-options="type for type in types" required />
                             </td>
                         </tr>
-
+                        <tr>
+                            <td>
+                                <i class="icon-question-sign" popover="Specify task list if any." popover-trigger="mouseenter" />
+                                <b>Task list:</b>
+                            </td>
+                            <td>
+                                <input class="input-large search-query" type="text" ng-model="job.taskList" />
+                            </td>
+                        </tr>
 
                         <tr>
                             <td>
@@ -107,10 +111,10 @@
                                 <table width="100%" class="table table-bordered table-condensed">
                                     <tr>
                                         <td colspan="3" style="text-align: center">
-                                            <span ng-hide="args.length>0" class="muted">This task has no arguments. <br /> Press the 'plus' button below if you need to specify any.</span>
+                                            <span ng-hide="job.args.length>0" class="muted">This task has no arguments. <br /> Press the 'plus' button below if you need to specify any.</span>
                                         </td>
                                     </tr>
-                                    <tr ng-repeat="arg in job.task.args">
+                                    <tr ng-repeat="arg in job.args">
                                         <td style="vertical-align: middle">
                                             {{ $index }}.
                                         </td>

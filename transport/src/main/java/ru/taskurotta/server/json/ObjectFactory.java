@@ -8,14 +8,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.core.*;
-import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.internal.core.TaskImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
-import ru.taskurotta.transport.model.*;
-import ru.taskurotta.transport.model.TaskConfigContainer;
-import ru.taskurotta.transport.model.ArgContainer.ValueType;
 import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.ArgContainer.ValueType;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
@@ -69,7 +67,7 @@ public class ObjectFactory {
             }
 
         } catch (Exception e) {
-            throw new SerializationException("Cannot deserialize arg["+ argContainer +"]", e);
+            throw new SerializationException("Cannot deserialize arg[" + argContainer + "]", e);
         }
 
     }
@@ -89,7 +87,7 @@ public class ObjectFactory {
             result = getCollectionValue(arg.getCompositeValue(), arg.getDataType());
 
         } else {
-            throw new SerializationException("Unsupported or null value type for arg["+arg+"]!");
+            throw new SerializationException("Unsupported or null value type for arg[" + arg + "]!");
         }
         return result;
     }
@@ -115,7 +113,7 @@ public class ObjectFactory {
         Class collectionClass = Thread.currentThread().getContextClassLoader().loadClass(collectionClassName);
         Collection result = (Collection) collectionClass.newInstance();
 
-        for (ArgContainer item: items) {
+        for (ArgContainer item : items) {
             result.add(parseArg(item));
         }
 
@@ -128,7 +126,7 @@ public class ObjectFactory {
 
         try {
             if (arg instanceof Promise) {
-                Promise pArg = (Promise)arg;
+                Promise pArg = (Promise) arg;
                 result.setPromise(true);
                 result.setReady(pArg.isReady());
                 result.setTaskId(pArg.getId());
@@ -144,7 +142,7 @@ public class ObjectFactory {
             }
 
         } catch (Exception e) {
-            throw new SerializationException("Cannot dump arg [" + arg+ "]", e);
+            throw new SerializationException("Cannot dump arg [" + arg + "]", e);
         }
 
         logger.debug("Object [{}] dumped into an ArgContainer[{}]", arg, result);
@@ -187,7 +185,7 @@ public class ObjectFactory {
         ActorDefinition actorDef = ActorUtils.getActorDefinition(taskContainer.getActorId());
 
         TaskType taskType = taskContainer.getType();
-        if(TaskType.WORKER_SCHEDULED.equals(taskContainer.getType())) {
+        if (TaskType.WORKER_SCHEDULED.equals(taskContainer.getType())) {
             taskType = TaskType.WORKER;//scheduled worker is worker actor
         }
         TaskTarget taskTarget = new TaskTargetImpl(taskType, actorDef.getName(), actorDef.getVersion(), taskContainer.getMethod());
@@ -207,7 +205,7 @@ public class ObjectFactory {
         TaskOptions opts = parseTaskOptions(taskContainer.getOptions());//TODO: may be parsing options is redundant? Client's ActorExecutor doesn't use them anyway
 
         return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
-                taskContainer.getNumberOfAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
+                taskContainer.getErrorAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
     }
 
 
@@ -240,7 +238,7 @@ public class ObjectFactory {
         Promise<?>[] result = new Promise<?>[args.length];
         int i = 0;
         for (ArgContainer arg : args) {
-            result[i++] = (Promise)parseArg(arg); //TODO: method may return plain object. But waitForPromises args array should contain only promises
+            result[i++] = (Promise) parseArg(arg); //TODO: method may return plain object. But waitForPromises args array should contain only promises
         }
 
         return result;
@@ -266,7 +264,7 @@ public class ObjectFactory {
         TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
         return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target), target.getType(),
-                task.getStartTime(), task.getNumberOfAttempts(), argContainers, taskOptionsContainer, task.isUnsafe(), task.getFailTypes());
+                task.getStartTime(), task.getErrorAttempts(), argContainers, taskOptionsContainer, task.isUnsafe(), task.getFailTypes());
     }
 
 
@@ -276,25 +274,37 @@ public class ObjectFactory {
             return null;
         }
 
-		TaskConfigContainer optionsContainer = null;
-		TaskConfig taskConfig = taskOptions.getTaskConfig();
-		if (null != taskConfig) {
-			optionsContainer = new TaskConfigContainer();
-			optionsContainer.setStartTime(taskConfig.getStartTime());
-			optionsContainer.setCustomId(taskConfig.getCustomId());
-			optionsContainer.setTaskList(taskConfig.getTaskList());
-		}
+        TaskConfigContainer optionsContainer = null;
+        TaskConfig taskConfig = taskOptions.getTaskConfig();
+        if (null != taskConfig) {
+            optionsContainer = new TaskConfigContainer();
+            optionsContainer.setStartTime(taskConfig.getStartTime());
+            optionsContainer.setCustomId(taskConfig.getCustomId());
+            optionsContainer.setTaskList(taskConfig.getTaskList());
+            RetryPolicyConfig rp = taskConfig.getRetryPolicyConfig();
+            if (rp != null) {
+                optionsContainer.setRetryPolicyConfigContainer(new RetryPolicyConfigContainer(
+                        rp.getType(),
+                        rp.getInitialRetryIntervalSeconds(),
+                        rp.getMaximumRetryIntervalSeconds(),
+                        rp.getRetryExpirationIntervalSeconds(),
+                        rp.getBackoffCoefficient(),
+                        rp.getMaximumAttempts(),
+                        rp.getExceptionsToRetry(),
+                        rp.getExceptionsToExclude()));
+            }
+        }
 
-		ArgContainer promisesWaitForDumped[] = null;
-		Promise<?>[] promisesWaitFor = taskOptions.getPromisesWaitFor();
-		if (null != promisesWaitFor) {
-			promisesWaitForDumped = new ArgContainer[promisesWaitFor.length];
-			for (int i=0; i < promisesWaitFor.length; i++) {
-				promisesWaitForDumped[i] = dumpArg(promisesWaitFor[i]);
-			}
-		}
+        ArgContainer promisesWaitForDumped[] = null;
+        Promise<?>[] promisesWaitFor = taskOptions.getPromisesWaitFor();
+        if (null != promisesWaitFor) {
+            promisesWaitForDumped = new ArgContainer[promisesWaitFor.length];
+            for (int i = 0; i < promisesWaitFor.length; i++) {
+                promisesWaitForDumped[i] = dumpArg(promisesWaitFor[i]);
+            }
+        }
 
-		return new TaskOptionsContainer(taskOptions.getArgTypes(), optionsContainer, promisesWaitForDumped);
+        return new TaskOptionsContainer(taskOptions.getArgTypes(), optionsContainer, promisesWaitForDumped);
     }
 
 
@@ -339,7 +349,7 @@ public class ObjectFactory {
         if (array != null) {
 
             int size = Array.getLength(array);
-            for (int i = 0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 String itemValue = mapper.writeValueAsString(Array.get(array, i));
                 arrayNode.add(itemValue);
             }

@@ -9,6 +9,7 @@ import ru.taskurotta.service.metrics.PeriodicMetric;
 import ru.taskurotta.service.metrics.PeriodicMetric.DatasetValueExtractor;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
@@ -91,14 +92,16 @@ public class MetricsTaskServer implements TaskServer {
 
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
+        String queueName = TransportUtils.createQueueName(actorId, TransportUtils.getTaskList(taskContainer));
+
         long invocationTime = System.currentTimeMillis() - startTime;
         Metric pollMetric = metricsFactory.getInstance(MetricName.POLL.getValue());
-        pollMetric.mark(actorId, invocationTime);
+        pollMetric.mark(queueName, invocationTime);
         pollMetric.mark(MetricName.POLL.getValue(), invocationTime);
 
         if (taskContainer!=null) {
             Metric successPollMetric = metricsFactory.getInstance(MetricName.SUCCESSFUL_POLL.getValue());
-            successPollMetric.mark(actorId, invocationTime);
+            successPollMetric.mark(queueName, invocationTime);
             successPollMetric.mark(MetricName.SUCCESSFUL_POLL.getValue(), invocationTime);
         }
 

@@ -7,12 +7,10 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
-import ru.taskurotta.bootstrap.config.ActorConfig;
-import ru.taskurotta.bootstrap.config.Config;
-import ru.taskurotta.bootstrap.config.ProfilerConfig;
-import ru.taskurotta.bootstrap.config.RetryPolicyConfig;
-import ru.taskurotta.bootstrap.config.RuntimeConfig;
-import ru.taskurotta.bootstrap.config.SpreaderConfig;
+import ru.taskurotta.bootstrap.config.*;
+import ru.taskurotta.bootstrap.pool.ActorMultiThreadPool;
+import ru.taskurotta.bootstrap.pool.ActorSingleThreadPool;
+import ru.taskurotta.bootstrap.pool.ActorThreadPool;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -43,7 +41,7 @@ public class Bootstrap implements BootstrapMBean {
     private Map<String, ActorThreadPool> actorThreadPoolMap = new HashMap<String, ActorThreadPool>();
 
     public Bootstrap(String[] args) throws ArgumentParserException, IOException, ClassNotFoundException {
-		config = parseArgs(args);
+        config = parseArgs(args);
 	}
 
 	public Bootstrap(String configResourceName) throws ArgumentParserException, IOException, ClassNotFoundException {
@@ -96,15 +94,19 @@ public class Bootstrap implements BootstrapMBean {
         }
 
         if (config == null) {
+            config = SimplifiedConfigHandler.getConfig(args!=null&&args.length>0?args[0]: null);
+        }
+
+        if (config == null) {
             System.out.println("Config file doesn't specified");
             parser.printHelp();
             return null;
         }
 
-		return config;
+        return config;
 	}
 
-	public void start() {
+    public void start() {
 		start(config);
 	}
 
@@ -146,14 +148,17 @@ public class Bootstrap implements BootstrapMBean {
         ProfilerConfig profilerConfig = config.profilerConfigs.get(actorConfig.getProfilerConfig());
         Profiler profiler = (profilerConfig == null) ? new SimpleProfiler() : profilerConfig.getProfiler(actorClass);
 
-        RetryPolicyConfig retryPolicyConfig = config.policyConfigs.get(actorConfig.getPolicyConfig());
-        RetryPolicy retryPolicy = (retryPolicyConfig == null) ? new BlankRetryPolicy() : retryPolicyConfig.getRetryPolicy();
+        RetryPolicyFactory retryPolicyFactory = config.policyConfigs.get(actorConfig.getPolicyConfig());
+        RetryPolicy retryPolicy = (retryPolicyFactory == null) ? new BlankRetryPolicy() : retryPolicyFactory.getRetryPolicy();
 
         if (poolSize < 1) {
             poolSize = actorConfig.getCount();
         }
 
-        final ActorThreadPool actorThreadPool = new ActorThreadPool(actorClass, actorConfig.getTaskList(), poolSize, actorConfig.getShutdownTimeoutMillis());
+        final ActorThreadPool actorThreadPool =
+                poolSize == 1 ?
+                new ActorSingleThreadPool(actorClass.getName(), actorConfig.getTaskList(), actorConfig.getShutdownTimeoutMillis()):
+                new ActorMultiThreadPool(actorClass.getName(), actorConfig.getTaskList(), poolSize, actorConfig.getShutdownTimeoutMillis());
         final String actorPoolId = saveActorPool(actorId, actorThreadPool);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
@@ -207,16 +212,21 @@ public class Bootstrap implements BootstrapMBean {
     }
 
     public void start(Config config) {
+        int started = 0;
 		for (ActorConfig actorConfig : config.actorConfigs) {
-            Class actorClass = getActorClass(actorConfig.getActorInterface());
+            if (actorConfig.isEnabled()) {
+                Class actorClass = getActorClass(actorConfig.getActorInterface());
 
-            ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
-            String actorId = ActorUtils.getActorId(actorDefinition);
+                ActorDefinition actorDefinition = ActorDefinition.valueOf(actorClass);
+                String actorId = ActorUtils.getActorId(actorDefinition);
 
-            actorConfigMap.put(actorId, actorConfig);
+                actorConfigMap.put(actorId, actorConfig);
 
-            startActorPool(actorId, actorConfig.getCount());
+                startActorPool(actorId, actorConfig.getCount());
+                started++;
+            }
 		}
+        logger.info("[{}] actors started...", started);
 	}
 
     private Class getActorClass(String actorInterfaceName) {

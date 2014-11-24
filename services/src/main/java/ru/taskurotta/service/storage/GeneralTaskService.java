@@ -228,7 +228,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             TaskContainer task = taskDao.getTask(taskDecision.getTaskId(), taskDecision.getProcessId());
 
             // TODO: should be optimized
-            task.incrementNumberOfAttempts();
+            task.incrementErrorAttempts();
             taskDao.updateTask(task);
         }
 

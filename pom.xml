@@ -4,7 +4,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
@@ -22,7 +22,7 @@
         <spring.version>3.2.6.RELEASE</spring.version>
         <spring-data-mongodb.version>1.3.3.RELEASE</spring-data-mongodb.version>
         <jackson.version>2.1.1</jackson.version>
-        <jersey.version>1.15</jersey.version>
+        <jersey.version>1.18.1</jersey.version>
         <logback.version>1.0.13</logback.version>
         <dropwizard.version>0.6.1</dropwizard.version>
         <aspectj.version>1.7.3</aspectj.version>
@@ -355,25 +355,6 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!--<plugin>
-                    <groupId>com.atlassian.maven.plugins</groupId>
-                    <artifactId>maven-jgitflow-plugin</artifactId>
-                    <version>1.0-alpha7</version>
-                    <configuration>
-                        <autoVersionSubmodules>true</autoVersionSubmodules>
-                        <allowSnapshots>false</allowSnapshots>
-                        <noDeploy>true</noDeploy>
-                        <keepBranch>true</keepBranch>
-                        <pushChanges>false</pushChanges>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.codehaus.plexus</groupId>
-                            <artifactId>plexus-utils</artifactId>
-                            <version>3.0.8</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>-->
             </plugins>
         </pluginManagement>
     </build>

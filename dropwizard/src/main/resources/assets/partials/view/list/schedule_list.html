@@ -87,12 +87,24 @@
             </tbody>
         </table>
 
-        <div>
-            <span ng-if="!totalInitialized"><img src="/img/ajax-loader.gif"/></span>
-            <span ng-if="totalInitialized" class="muted">
-                Currently scheduled on node: <b>{{total}}</b>
-            </span>
-        </div>
+
+        <table width="100%" cellspacing="0" cellpadding="0">
+            <tr>
+                <td>
+                    <span ng-if="totalInitialized" class="muted">
+                        Currently scheduled on node: <b>{{ total }}</b>
+                    </span>
+                </td>
+                <td>
+                    <span ng-if="!totalInitialized"><img src="/img/ajax-loader.gif"/></span>
+                </td>
+                <td style="text-align: right">
+                    <span ng-if="totalInitialized" class="muted">
+                        Server time: <b>{{ serverTime |  date:'dd-MM-yyyy HH:mm:ss'}}</b>
+                    </span>
+                </td>
+            </tr>
+        </table>
 
     </div>
 </div>

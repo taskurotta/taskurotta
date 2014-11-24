@@ -1,0 +1,1 @@
+"c:\Program Files\Java\jdk1.7.0_45\bin\java" -Xmx512m -Xms512m -server -javaagent:assemble/target/dependency/aspectjweaver-1.7.3.jar -DassetsMode=dev -Ddw.http.port=8081 -Ddw.http.adminPort=9081 -Ddw.logging.file.currentLogFilename="assemble/target/server1.log" -jar assemble/target/assemble-0.5.0-SNAPSHOT.jar server assemble/src/main/resources/hz-mongo.yml

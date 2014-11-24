@@ -3,6 +3,7 @@ package ru.taskurotta.bootstrap;
 import org.junit.Before;
 import org.junit.Test;
 import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.bootstrap.pool.ActorMultiThreadPool;
 import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
@@ -23,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 public class ActorThreadPoolTest {
 
     class SimpleRuntimeProcessor implements RuntimeProcessor {
-
         @Override
         public TaskDecision execute(Task task) {
             return null;
@@ -36,7 +36,6 @@ public class ActorThreadPoolTest {
     }
 
     class SimpleTaskSpreader implements TaskSpreader {
-
         @Override
         public Task poll() {
             try {
@@ -48,25 +47,22 @@ public class ActorThreadPoolTest {
         }
 
         @Override
-        public void release(TaskDecision taskDecision) {
-
-        }
+        public void release(TaskDecision taskDecision) {}
     }
 
-    private ActorThreadPool actorThreadPool;
-    private ActorExecutor actorExecutor;
+    private ActorMultiThreadPool actorThreadPool;
     private int size = 10;
 
     @Before
     public void setUp() throws Exception {
-        actorThreadPool = new ActorThreadPool(TestWorker.class, null, size, 60000l);
+        actorThreadPool = new ActorMultiThreadPool(TestWorker.class.getName(), null, size, 60000l);
 
         Profiler profiler = new SimpleProfiler();
         LinearRetryPolicy retryPolicy = new LinearRetryPolicy(1);
-        retryPolicy.setMaximumAttempts(1);
+        retryPolicy.setMaximumAttempts(2);
         Inspector inspector = new Inspector(retryPolicy, actorThreadPool);
 
-        actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader());
+        ActorExecutor actorExecutor = new ActorExecutor(profiler, inspector, new SimpleRuntimeProcessor(), new SimpleTaskSpreader());
 
         actorThreadPool.start(actorExecutor);
     }
@@ -74,26 +70,21 @@ public class ActorThreadPoolTest {
     @Test
     public void testStart() throws Exception {
         TimeUnit.SECONDS.sleep(1);
-
         assertEquals(size, actorThreadPool.getCurrentSize());
     }
 
     @Test
     public void testMute() throws Exception {
         TimeUnit.SECONDS.sleep(5);
-
         assertEquals(1, actorThreadPool.getCurrentSize());
     }
 
     @Test
     public void testWake() throws Exception {
         TimeUnit.SECONDS.sleep(5);//ensure pool is sleepy
-
         assertEquals(1, actorThreadPool.getCurrentSize());
 
         actorThreadPool.wake();
-
         assertEquals(10, actorThreadPool.getCurrentSize());
-
     }
 }

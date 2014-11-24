@@ -1,5 +1,5 @@
 runtime:
-  - MainRuntimeConfig:
+  - rtMain:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
@@ -11,26 +11,26 @@ runtime:
 
 
 spreader:
-  - MainTaskSpreaderConfig:
+  - rtMain:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
-          count: 500
+          count: 50
           startTasks: true
-          startTasksInBackground: false
-          startTaskPeriodSeconds: -1 #-1 = disabled
+          startTasksInBackground: true
+          startTaskPeriodSeconds: 60 #-1 = disabled
           endpoint: "http://localhost:8811"
           threadPoolSize: 10
           readTimeout: 0
           connectTimeout: 3000
-          waitOnEveryNTask: 500 #-1 = disabled
-          waitOnEveryNTaskInSeconds: 40 #-1 = disabled
+          waitOnEveryNTask: -1 #-1 = disabled
+          waitOnEveryNTaskInSeconds: -1 #-1 = disabled
 
 
 policy:
   - MainPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
@@ -48,27 +48,28 @@ profiler:
 actor:
   - MathActionDecider:
       actorInterface: ru.taskurotta.recipes.calculate.decider.MathActionDecider
-      count: 4
+#      count: 4
 #      properties:
 #        failover: "5 SECONDS"
 
   - Multiplier:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Multiplier
-      count: 2
+#      count: 2
 #      properties:
 #        failover: "25 SECONDS"
 
   - NumberGenerator:
       actorInterface: ru.taskurotta.recipes.calculate.worker.NumberGenerator
-      count: 4
+#      count: 4
 #      properties:
 #        failover: "25 SECONDS"
 
   - Summarizer:
       actorInterface: ru.taskurotta.recipes.calculate.worker.Summarizer
-      count: 2
+#      count: 2
 #      properties:
 #        failover: "25 SECONDS"
+
 
 logback:
     appender:
@@ -80,7 +81,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./logs/recipes-parallel.log
+             file: ./target/logs/recipes-calculate.log
              append: true
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
@@ -88,15 +89,18 @@ logback:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.recipes.calculate.decider:
+        - ru.taskurotta.bootstrap.pool:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.recipes.calculate:
             key: name
-            \@level: WARN
+            \@level: INFO
         - com.hazelcast:
               key: name
-              \@level: INFO
+              \@level: WARN
         - org.apache.commons.httpclient:
               key: name
-              \@level: INFO
+              \@level: WARN
         - httpclient.wire:
               key: name
               \@level: WARN
@@ -107,6 +111,6 @@ logback:
         appender-ref:
             - STDOUT:
                 key: ref
-            - FILE:
-                key: ref
+#            - FILE:
+#                key: ref
 

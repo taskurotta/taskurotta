@@ -7,6 +7,6 @@ import ru.taskurotta.policy.retry.RetryPolicy;
  * Date: 08.04.13
  * Time: 12:29
  */
-public interface RetryPolicyConfig {
+public interface RetryPolicyFactory {
     public RetryPolicy getRetryPolicy();
 }

@@ -1,5 +1,6 @@
 package ru.taskurotta.core;
 
+
 /**
  * Date: 15.04.13 16:45
  */
@@ -8,6 +9,7 @@ public class TaskConfig {
     private String customId;
     private long startTime = -1;
     private String taskList; // name of task queue/list
+    private RetryPolicyConfig retryPolicyConfig;
 
     public String getCustomId() {
         return customId;
@@ -19,6 +21,10 @@ public class TaskConfig {
 
     public String getTaskList() {
         return taskList;
+    }
+
+    public RetryPolicyConfig getRetryPolicyConfig() {
+        return retryPolicyConfig;
     }
 
     public TaskConfig setCustomId(String customId) {
@@ -33,6 +39,41 @@ public class TaskConfig {
 
     public TaskConfig setTaskList(String taskList) {
         this.taskList = taskList;
+        return this;
+    }
+
+    public TaskConfig setRetryPolicyConfig(RetryPolicyConfig retryPolicyConfig) {
+        this.retryPolicyConfig = retryPolicyConfig;
+        return this;
+    }
+
+    public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type,
+                                            long initialRetryIntervalSeconds,
+                                            long maximumRetryIntervalSeconds,
+                                            long retryExpirationIntervalSeconds,
+                                            double backoffCoefficient,
+                                            int maximumAttempts) {
+        RetryPolicyConfig rps = new RetryPolicyConfig(type, initialRetryIntervalSeconds, maximumRetryIntervalSeconds, retryExpirationIntervalSeconds, backoffCoefficient, maximumAttempts);
+        setRetryPolicyConfig(rps);
+        return this;
+    }
+
+    public TaskConfig withRetryPolicyConfig(RetryPolicyConfig.RetryPolicyType type,
+                                            long initialRetryIntervalSeconds,
+                                            long maximumRetryIntervalSeconds,
+                                            long retryExpirationIntervalSeconds,
+                                            double backoffCoefficient,
+                                            int maximumAttempts,
+                                            Class<? extends Throwable>[] exceptionToRetry,
+                                            Class<? extends Throwable>[] exceptionToExclude) {
+        RetryPolicyConfig rps = new RetryPolicyConfig(type, initialRetryIntervalSeconds, maximumRetryIntervalSeconds, retryExpirationIntervalSeconds, backoffCoefficient, maximumAttempts);
+        for (Class<? extends Throwable> clazzRetry : exceptionToRetry) {
+            rps.addExceptionToRetryException(clazzRetry);
+        }
+        for (Class<? extends Throwable> clazzExclude : exceptionToExclude) {
+            rps.addExceptionToExclude(clazzExclude);
+        }
+        setRetryPolicyConfig(rps);
         return this;
     }
 
@@ -60,10 +101,11 @@ public class TaskConfig {
 
     @Override
     public String toString() {
-        return "ActorSchedulingOptions{" +
+        return "TaskConfig{" +
                 "customId='" + customId + '\'' +
                 ", startTime=" + startTime +
                 ", taskList='" + taskList + '\'' +
+                ", retryPolicyConfig=" + retryPolicyConfig +
                 '}';
     }
 }

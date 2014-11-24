@@ -1,6 +1,5 @@
 package ru.taskurotta.dropwizard.resources;
 
-import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -12,7 +11,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
@@ -49,7 +47,7 @@ public class TaskStarterResource {
         }
         UUID taskId = target.getTaskId() != null ? target.getTaskId() : UUID.randomUUID();
         UUID processId = target.getProcessId() != null ? target.getProcessId() : UUID.randomUUID();
-        return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getNumberOfAttempts(), target.getArgs(), target.getOptions(), target.isUnsafe(), target.getFailTypes());
+        return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getErrorAttempts(), target.getArgs(), target.getOptions(), target.isUnsafe(), target.getFailTypes());
     }
 
     @Required

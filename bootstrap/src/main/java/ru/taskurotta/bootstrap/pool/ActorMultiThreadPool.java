@@ -1,7 +1,8 @@
-package ru.taskurotta.bootstrap;
+package ru.taskurotta.bootstrap.pool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.bootstrap.ActorExecutor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -18,10 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Date: 24.04.13
  * Time: 16:14
  */
-public class ActorThreadPool {
-    private static final Logger logger = LoggerFactory.getLogger(ActorThreadPool.class);
+public class ActorMultiThreadPool implements ActorThreadPool {
+    private static final Logger logger = LoggerFactory.getLogger(ActorMultiThreadPool.class);
 
-    private Class actorClass; //actor class served by this pool
+    private String actorClassName; //actor class served by this pool
     private String taskList;
     private int size = 0; //pool size
     private long shutdownTimeoutMillis;
@@ -31,8 +32,8 @@ public class ActorThreadPool {
 
     private ConcurrentHashMap<String, Thread> threadMap;
 
-    public ActorThreadPool(Class actorClass, String taskList, int size, long shutdownTimeoutMillis) {
-        this.actorClass = actorClass;
+    public ActorMultiThreadPool(String actorClassName, String taskList, int size, long shutdownTimeoutMillis) {
+        this.actorClassName = actorClassName;
         this.taskList = taskList;
         this.size = size;
         this.shutdownTimeoutMillis = shutdownTimeoutMillis;
@@ -58,12 +59,12 @@ public class ActorThreadPool {
      */
     public synchronized boolean mute() {
         if (logger.isTraceEnabled()) {
-            logger.trace("Try to stop actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+            logger.trace("Try to stop actor [{}]'s thread [{}]", actorClassName, Thread.currentThread().getName());
         }
 
         if (activeActorExecutorThreadCount.get() == 1) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Only one active actor [{}]'s thread [{}]", actorClass.getName(), Thread.currentThread().getName());
+                logger.debug("Only one active actor [{}]'s thread [{}]", actorClassName, Thread.currentThread().getName());
             }
 
             return false;
@@ -72,7 +73,7 @@ public class ActorThreadPool {
         destroyActorExecutorThread();
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Actor [{}]'s has [{}] active threads", actorClass.getName(), activeActorExecutorThreadCount.get());
+            logger.trace("Actor [{}]'s has [{}] active threads", actorClassName, activeActorExecutorThreadCount.get());
         }
 
         return true;
@@ -87,13 +88,13 @@ public class ActorThreadPool {
 
         if (threadsToStart == 0) {
             if (logger.isTraceEnabled()) {
-                logger.trace("All actor [{}]'s threads [{}] already started", actorClass.getName(), activeActorExecutorThreadCount.get());
+                logger.trace("All actor [{}]'s threads [{}] already started", actorClassName, activeActorExecutorThreadCount.get());
             }
 
             return;
         } else {
             if (logger.isTraceEnabled()) {
-                logger.trace("Try to start [{}] actor [{}]'s threads. Now active [{}]", threadsToStart, actorClass.getName(), activeActorExecutorThreadCount.get());
+                logger.trace("Try to start [{}] actor [{}]'s threads. Now active [{}]", threadsToStart, actorClassName, activeActorExecutorThreadCount.get());
             }
         }
 
@@ -102,7 +103,7 @@ public class ActorThreadPool {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClass.getName(), threadsToStart, activeActorExecutorThreadCount.get());
+            logger.debug("Actor [{}]'s [{}] threads started, [{}] active now", actorClassName, threadsToStart, activeActorExecutorThreadCount.get());
         }
     }
 
@@ -111,10 +112,11 @@ public class ActorThreadPool {
      */
     public synchronized void shutdown() {
         if (logger.isInfoEnabled()) {
-            logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClass.getName(), shutdownTimeoutMillis / 1000);
+            logger.info("Start gracefully shutdown pool for actor [{}]. Maximum shutdown timeout [{}] seconds", actorClassName, shutdownTimeoutMillis / 1000);
         }
 
         actorExecutor.stopInstance();
+        actorExecutor.stopThread();
 
         long stopTime = System.currentTimeMillis();
 
@@ -123,7 +125,7 @@ public class ActorThreadPool {
 
                 if (System.currentTimeMillis() - stopTime >= shutdownTimeoutMillis) {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("Wait [{}] seconds while actor [{}]'s thread pool die, but now exit", (System.currentTimeMillis() - stopTime) / 1000, actorClass.getName());
+                        logger.warn("Wait [{}] seconds while actor [{}]'s thread pool die, but now exit", (System.currentTimeMillis() - stopTime) / 1000, actorClassName);
                     }
 
                     return;
@@ -164,10 +166,10 @@ public class ActorThreadPool {
             }
 
             if (logger.isInfoEnabled()) {
-                logger.info("Successfully shutdown thread pool for actor [{}] after [{}] seconds", actorClass.getName(), (System.currentTimeMillis() - stopTime) / 1000);
+                logger.info("Successfully shutdown thread pool for actor [{}] after [{}] seconds", actorClassName, (System.currentTimeMillis() - stopTime) / 1000);
             }
         } catch (Throwable t) {
-            logger.error("Throw exception while try to gracefully shutdown thread pool for actor [" + actorClass.getName() + "]", t);
+            logger.error("Throw exception while try to gracefully shutdown thread pool for actor [" + actorClassName + "]", t);
             // just exit
         }
     }
@@ -181,7 +183,7 @@ public class ActorThreadPool {
         int counter = activeActorExecutorThreadCount.getAndIncrement();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-        String threadName = actorClass.getName() + (taskList == null ? "" : "[" + taskList + "]") + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
+        String threadName = actorClassName + (taskList == null ? "" : "[" + taskList + "]") + "-(" + simpleDateFormat.format(new Date()) + ")-" + counter;
 
         Thread thread = new Thread(actorExecutor, threadName);
         thread.start();
@@ -189,7 +191,7 @@ public class ActorThreadPool {
         threadMap.put(threadName, thread);
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Start actor [{}]'s thread [{}]", actorClass.getName(), threadName);
+            logger.trace("Start actor [{}]'s thread [{}]", actorClassName, threadName);
         }
     }
 
@@ -198,7 +200,7 @@ public class ActorThreadPool {
         String threadName = Thread.currentThread().getName();
 
         if (logger.isTraceEnabled()) {
-            logger.trace("Try to destroy actor's [{}] thread [{}]", actorClass.getName(), threadName);
+            logger.trace("Try to destroy actor's [{}] thread [{}]", actorClassName, threadName);
         }
 
         activeActorExecutorThreadCount.decrementAndGet();

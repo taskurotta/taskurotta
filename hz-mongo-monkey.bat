@@ -1,0 +1,1 @@
+java -Xmx128m -Xms128m -server -javaagent:assemble/target/dependency/aspectjweaver-1.7.3.jar -cp assemble/target/assemble-0.7.0-SNAPSHOT.jar;assemble/src/main/resources/default.properties ru.taskurotta.bootstrap.Main -f assemble/src/main/resources/tests/stress/mem/mem-ff.yml

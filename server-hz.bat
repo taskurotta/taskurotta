@@ -1,0 +1,1 @@
+java -Xmx64m -Xms64m -Ddw.http.port=8811 -Ddw.http.adminPort=9811 -Ddw.logging.file.currentLogFilename="logs/server1.log" -jar assemble/target/assemble-0.7.0-SNAPSHOT.jar server assemble/src/main/resources/hz.yml

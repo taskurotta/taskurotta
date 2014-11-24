@@ -1,17 +1,5 @@
 package ru.taskurotta.hz.test.serialization;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-
-import static junit.framework.Assert.assertEquals;
-
 import com.hazelcast.config.Config;
 import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.core.Hazelcast;
@@ -20,16 +8,20 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
+import ru.taskurotta.internal.core.ArgType;
+import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
 import ru.taskurotta.service.hz.serialization.*;
-import ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer;
-import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.transport.model.*;
-import ru.taskurotta.transport.model.TaskConfigContainer;
-import ru.taskurotta.internal.core.ArgType;
-import ru.taskurotta.internal.core.TaskType;
+
+import java.io.IOException;
+import java.util.*;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * User: romario
@@ -211,7 +203,7 @@ public class SerializationTest {
         String actorId = "actorId";
         TaskType type = TaskType.DECIDER_START;
         long startTime = 15121234;
-        int numberOfAttempts = 2;
+        int errorAttempts = 2;
 
         List<ArgContainer> containerList = new ArrayList<>();
         ArgContainer argContainer1 = new ArgContainer();
@@ -241,7 +233,7 @@ public class SerializationTest {
         TaskOptionsContainer taskOptionsContainer = getTaskOptionsContainer();
         UUID processId = UUID.randomUUID();
         String[] failTypes = {"java.lang.RuntimeException"};
-        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, numberOfAttempts, args, taskOptionsContainer, true, failTypes);
+        TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, errorAttempts, args, taskOptionsContainer, true, failTypes);
         hzMap.put("taskContainer", taskContainer);
 
         TaskContainer actual = (TaskContainer) hzMap.get("taskContainer");
@@ -260,6 +252,11 @@ public class SerializationTest {
 
         assertEquals(taskOptionsContainer.getPromisesWaitFor().length, getted.getPromisesWaitFor().length);
         assertEquals(taskOptionsContainer.getTaskConfigContainer().getStartTime(), getted.getTaskConfigContainer().getStartTime());
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicyConfigContainer().getExceptionsToRetry().contains("java.io.IOException"), true);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicyConfigContainer().getExceptionsToRetry().contains("java.io.IIOException"), false);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicyConfigContainer().getExceptionsToExclude().contains("java.lang.IllegalAccessError"), true);
+        assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicyConfigContainer().getType(), getted.getTaskConfigContainer().getRetryPolicyConfigContainer().getType()
+        );
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
 
     }
@@ -269,6 +266,21 @@ public class SerializationTest {
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
         container.setTaskList("taskList");
+
+        RetryPolicyConfigContainer retryPolicyConfig = new RetryPolicyConfigContainer();
+        retryPolicyConfig.setType(RetryPolicyConfig.RetryPolicyType.LINEAR);
+        retryPolicyConfig.setMaximumAttempts(1);
+        retryPolicyConfig.setInitialRetryIntervalSeconds(5);
+        retryPolicyConfig.setMaximumRetryIntervalSeconds(25);
+        retryPolicyConfig.setRetryExpirationIntervalSeconds(5);
+        retryPolicyConfig.setBackoffCoefficient(1.1);
+        retryPolicyConfig.addExceptionToRetryException(IndexOutOfBoundsException.class);
+        retryPolicyConfig.addExceptionToRetryException(IOException.class);
+        retryPolicyConfig.addExceptionToRetryException(IllegalFormatException.class);
+        retryPolicyConfig.addExceptionToExclude(IllegalAccessError.class);
+        retryPolicyConfig.addExceptionToExclude(IllegalArgumentException.class);
+
+        container.setRetryPolicyConfigContainer(retryPolicyConfig);
 
         List<ArgContainer> containerList = new ArrayList<>();
 

@@ -21,15 +21,15 @@ import java.util.List;
 
 public abstract class RetryPolicyBase implements RetryPolicy {
     
-    private List<Class<? extends Throwable>> exceptionsToRetry;
+    private List<Class<? extends Throwable>> exceptionsToRetry = new ArrayList<Class<? extends Throwable>>();
     
-    private List<Class<? extends Throwable>> exceptionsToExclude;
-    
+    private List<Class<? extends Throwable>> exceptionsToExclude = new ArrayList<Class<? extends Throwable>>();
+
+    protected RetryPolicyBase() {
+        exceptionsToRetry.add(Throwable.class);
+    }
+
     public List<Class<? extends Throwable>> getExceptionsToRetry() {
-        if (exceptionsToRetry == null) {
-            exceptionsToRetry = new ArrayList<Class<? extends Throwable>>();
-            exceptionsToRetry.add(Throwable.class);
-        }
         return exceptionsToRetry;
     }
 
@@ -53,9 +53,6 @@ public abstract class RetryPolicyBase implements RetryPolicy {
     }
     
     public List<Class<? extends Throwable>> getExceptionsToExclude() {
-        if (exceptionsToExclude == null) {
-            exceptionsToExclude = new ArrayList<Class<? extends Throwable>>();
-        }
         return exceptionsToExclude;
     }
     

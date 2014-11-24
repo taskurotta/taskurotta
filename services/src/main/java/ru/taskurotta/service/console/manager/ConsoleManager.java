@@ -58,7 +58,7 @@ public interface ConsoleManager {
 
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize);
 
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status);
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter);
 
     public TaskTreeVO getTreeForTask(UUID taskUuid, UUID processId);
 

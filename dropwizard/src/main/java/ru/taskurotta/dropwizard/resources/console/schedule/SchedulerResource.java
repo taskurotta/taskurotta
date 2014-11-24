@@ -15,7 +15,9 @@ import ru.taskurotta.service.schedule.JobConstants;
 import ru.taskurotta.service.schedule.JobManager;
 import ru.taskurotta.service.schedule.model.JobVO;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -211,9 +213,17 @@ public class SchedulerResource implements JobConstants {
         TaskType type = command.getTaskType() != null? command.getTaskType(): TaskType.DECIDER_START;
         long startTime = -1; // for scheduled task start time must be -1
 
-        return new TaskContainer(guid, guid, command.getMethod(), command.getActorId(),
+        String actorId = command.getActorId()!=null? command.getActorId().replaceAll("\\s", ""): null;
+        TaskOptionsContainer toc = null;
+        if (StringUtils.hasText(command.getTaskList())) {
+            TaskConfigContainer tcc = new TaskConfigContainer();
+            tcc.setTaskList(command.getTaskList());
+            toc = new TaskOptionsContainer(null, tcc, null);
+        }
+
+        return new TaskContainer(guid, guid, command.getMethod(), actorId,
                 type, startTime, JobConstants.DEFAULT_NUMBER_OF_ATTEMPTS,
-                getTaskArguments(guid, command.getArgs()), null, false, null);
+                getTaskArguments(guid, command.getArgs()), toc, false, null);
     }
 
     public ArgContainer[] getTaskArguments(UUID taskId, ArgVO[] args) {

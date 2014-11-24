@@ -62,11 +62,19 @@ public class ProcessResource extends BaseResource {
     }
 
     @GET
-    public GenericPage<Process> listProcesses(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize, @QueryParam("status") Optional<Integer> status) {
+    public GenericPage<Process> listProcesses(@QueryParam("pageNum") Optional<Integer> pageNum,
+                                              @QueryParam("pageSize") Optional<Integer> pageSize,
+                                              @QueryParam("status") Optional<Integer> status,
+                                              @QueryParam("type") Optional<String> type) {
 
         try {
-            GenericPage<Process> result = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), status.or(DEFAULT_STATUS));
-            logger.debug("Processes page is [{}]", result);
+            GenericPage<Process> result = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), status.or(DEFAULT_STATUS), type.orNull());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Processes page is [{}]. Params: pageNum[{}], pageSize[{}], status[{}], type[{}]", result,
+                        pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), status.or(DEFAULT_STATUS), type.orNull());
+            }
+
             return result;
 
         } catch (Throwable e) {

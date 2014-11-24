@@ -18,17 +18,15 @@ public class TaskImpl implements Task {
     private UUID processId;
     private TaskTarget target;
     private long startTime;
-    private int numberOfAttempts = 0;
+    private int errorAttempts = 0;
     private Object[] args;
 	private TaskOptions taskOptions;
     private boolean unsafe;
     private String[] failTypes;
 
-    public TaskImpl(){
+    public TaskImpl(){}
 
-    }
-
-    public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int numberOfAttempts,
+    public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int errorAttempts,
                     Object[] args, TaskOptions taskOptions, boolean unsafe, String[] failTypes) {
         this.processId = processId;
 
@@ -44,7 +42,7 @@ public class TaskImpl implements Task {
 
         this.target = taskTarget;
         this.startTime = startTime;
-        this.numberOfAttempts = numberOfAttempts;
+        this.errorAttempts = errorAttempts;
 
         this.args = args;
 
@@ -81,8 +79,8 @@ public class TaskImpl implements Task {
     }
 
     @Override
-    public int getNumberOfAttempts() {
-        return numberOfAttempts;
+    public int getErrorAttempts() {
+        return errorAttempts;
     }
 
     public TaskOptions getTaskOptions() {
@@ -104,7 +102,7 @@ public class TaskImpl implements Task {
 
         TaskImpl task = (TaskImpl) o;
 
-        if (numberOfAttempts != task.numberOfAttempts) return false;
+        if (errorAttempts != task.errorAttempts) return false;
         if (startTime != task.startTime) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(args, task.args)) return false;
@@ -122,7 +120,7 @@ public class TaskImpl implements Task {
         result = 31 * result + processId.hashCode();
         result = 31 * result + target.hashCode();
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
-        result = 31 * result + numberOfAttempts;
+        result = 31 * result + errorAttempts;
         result = 31 * result + Arrays.hashCode(args);
         result = 31 * result + (taskOptions != null ? taskOptions.hashCode() : 0);
         if (unsafe) {
@@ -138,7 +136,7 @@ public class TaskImpl implements Task {
                 ", processId=" + processId +
                 ", target=" + target +
                 ", startTime=" + startTime +
-                ", numberOfAttempts=" + numberOfAttempts +
+                ", errorAttempts=" + errorAttempts +
                 ", args=" + Arrays.toString(args) +
                 ", taskOptions=" + taskOptions +
                 ", unsafe=" + unsafe +

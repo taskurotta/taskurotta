@@ -1,0 +1,1 @@
+java -jar ./target/recipes-0.7.0-SNAPSHOT.jar -f ./src/main/resources/ru/taskurotta/recipes/calculate/wf-config-jersey.yml

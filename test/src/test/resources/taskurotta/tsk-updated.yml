@@ -1,0 +1,10 @@
+
+
+actor:
+  - TestWorker1:
+      actorInterface: ru.taskurotta.bootstrap.TestWorker
+      count: 2
+
+  - TestWorker2:
+      actorInterface: ru.taskurotta.bootstrap.TestWorkerImpl
+      count: 3

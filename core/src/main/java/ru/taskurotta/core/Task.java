@@ -51,11 +51,11 @@ public interface Task {
     public long getStartTime();
 
     /**
-     * Returns number of attempts to perform the task.
+     * Returns number of error attempts to perform the task.
      *
-     * @return number of attempts to perform the task.
+     * @return number of error attempts to perform the task.
      */
-    public int getNumberOfAttempts();
+    public int getErrorAttempts();
 
     /**
      * Several options of task scheduling. This field always null on tasks received from server because this information

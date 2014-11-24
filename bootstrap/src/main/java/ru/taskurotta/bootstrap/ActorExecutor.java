@@ -81,7 +81,7 @@ public class ActorExecutor implements Runnable {
     /**
      * stop current thread
      */
-    void stopThread() {
+    public void stopThread() {
         threadRun.set(Boolean.FALSE);
 
         if (logger.isDebugEnabled()) {
@@ -92,7 +92,7 @@ public class ActorExecutor implements Runnable {
     /**
      * stop all threads
      */
-    void stopInstance() {
+    public void stopInstance() {
         instanceRun = false;
 
         if (logger.isDebugEnabled()) {

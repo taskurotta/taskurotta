@@ -16,7 +16,7 @@ public interface ProcessInfoRetriever {
 
     public Process getProcess(UUID processUUID);
 
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status);
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter);
 
     public List<Process> findProcesses(ProcessSearchCommand command);
 

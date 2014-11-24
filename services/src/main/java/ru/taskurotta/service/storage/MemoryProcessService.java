@@ -62,16 +62,24 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status) {
+    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status, final String typeFilter) {
         List<Process> result = new ArrayList<>();
         Collection<Process> values = null;
         if (!processesStorage.isEmpty()) {
 
-            if (status >= 0) {
+            if (status >= 0 || typeFilter!=null) {
                 values = Collections2.filter(processesStorage.values(), new Predicate<Process>() {
                     @Override
                     public boolean apply(Process input) {
-                        return input!=null && (input.getState() == status);
+                        boolean result = false;
+                        if (input != null) {
+                            result = status>=0? (input.getState() == status): true;
+                            if (result && typeFilter != null) {
+                                String actorType = input.getStartTask()!=null? input.getStartTask().getActorId(): null;
+                                result = actorType!=null && actorType.startsWith(typeFilter);
+                            }
+                        }
+                        return result;
                     }
                 });
             } else {

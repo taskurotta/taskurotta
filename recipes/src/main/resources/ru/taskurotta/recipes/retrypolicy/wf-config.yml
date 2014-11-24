@@ -16,15 +16,9 @@ spreader:
 actor:
   - SumDecider:
       actorInterface: ru.taskurotta.recipes.retrypolicy.decider.SumDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      count: 1
 
-  - PiWorker:
+  - SumWorker:
       actorInterface: ru.taskurotta.recipes.retrypolicy.workers.SumWorker
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      count: 10
 
 logback:
     appender:
@@ -43,10 +37,10 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
-             \@level: DEBUG
+             \@level: INFO
         - org.springframework:
              key: name
-             \@level: !!!str OFF
+             \@level: ERROR
     root:
         appender-ref:
             - STDOUT:

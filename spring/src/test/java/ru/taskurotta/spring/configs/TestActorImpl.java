@@ -10,8 +10,28 @@ import org.junit.Ignore;
 
 @Ignore
 public class TestActorImpl implements TestActor {
+
+    private String replacedValue;
+    private String defaultValue;
+
     @Override
     public int sum(int a, int b) {
         return a + b;
+    }
+
+    public String getReplacedValue() {
+        return replacedValue;
+    }
+
+    public void setReplacedValue(String replacedValue) {
+        this.replacedValue = replacedValue;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }

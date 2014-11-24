@@ -3,6 +3,7 @@ package ru.taskurotta.bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.RuntimeProcessor;
+import ru.taskurotta.bootstrap.pool.ActorThreadPool;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
@@ -58,13 +59,14 @@ public class Inspector {
                     if (actorThreadPool.mute()) {
                         logger.warn("Actor thread pool thread has been muted (on poll) due to server error [{}]. Remain [{}] threads.",
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
+                        //TODO: shouldn't exception be thrown here?
                         return null;
                     } else {
-                        logger.error("Can't mute actor thread pool (on poll), throw exception", e);
+                        logger.debug("Can't mute actor thread pool (on poll), exception: ", e);
                         throw e;
                     }
                 } catch (Exception e) {
-                    logger.error("Catch unexpected exception on poll", e);
+                    logger.debug("Catch unexpected exception on poll: ", e);
                     throw new RuntimeException(e);
                 }
 
@@ -88,12 +90,13 @@ public class Inspector {
                     if (actorThreadPool.mute()) {
                         logger.warn("Actor thread pool thread has been muted (on release) due to server error [{}]. Remain [{}] threads.",
                                 e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
+                        //TODO: throw e?
                     } else {
-                        logger.error("Can't mute actor thread pool (on release), throw exception", e);
+                        logger.debug("Can't mute actor thread pool (on release), exception: ", e);
                         throw e;
                     }
                 } catch (Exception e) {
-                    logger.error("Catch unexpected exception on release", e);
+                    logger.debug("Catch unexpected exception on release: ", e);
                     throw new RuntimeException(e);
                 }
             }

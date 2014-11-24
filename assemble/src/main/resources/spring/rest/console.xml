@@ -144,6 +144,8 @@
 
     <bean id="contextResource" class="ru.taskurotta.dropwizard.resources.console.meta.ContextResource" />
 
+    <bean id="timerResource" class="ru.taskurotta.dropwizard.resources.console.meta.TimerResource" />
+
     <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryResource">
         <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor" />
         <property name="incompleteProcessFinder" ref="incompleteProcessFinder" />

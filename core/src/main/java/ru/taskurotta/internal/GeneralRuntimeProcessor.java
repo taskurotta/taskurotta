@@ -70,7 +70,7 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             long restartTime = TaskDecision.NO_RESTART;
             if (retryPolicy != null && retryPolicy.isRetryable(e)) {
                 long recordedFailure = System.currentTimeMillis();
-                long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getNumberOfAttempts());
+                long nextRetryDelaySeconds = retryPolicy.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getErrorAttempts());
 
                 if (nextRetryDelaySeconds != PolicyConstants.NONE) {
                     restartTime = recordedFailure + nextRetryDelaySeconds * 1000;

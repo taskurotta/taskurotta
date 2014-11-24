@@ -9,8 +9,15 @@
     </table>
 
     <div class="well" style="margin:5px;">
-        <span class="icon-question-sign" popover="Filter list by processes state. Refresh required." popover-trigger="mouseenter"></span>
-        <select ng-options="filter.name for filter in filters" ng-model="selection.filter" class="btn btn-mini" style="width: 100px;"></select><span class="caret"></span>
+
+        <span class="icon-question-sign" popover="Filter list by processes state." popover-trigger="mouseenter"></span><span class="header-mini">State:</span>
+        <select ng-options="filter.name for filter in states" ng-model="selection.state" class="btn btn-mini" style="width: 100px;"></select><span class="caret"></span>
+
+        <span style="margin-left: 50px;">&nbsp;</span>
+
+        <span class="icon-question-sign" popover="Filter list using *starts with* condition for actorId of process starter task. Require refresh." popover-trigger="mouseenter"></span><span class="header-mini">ActorId:</span>
+        <input ng-model="selection.type" class="input search-query"/>
+
         <div style="float:right;">
             <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>
             <button class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></button>
@@ -42,6 +49,7 @@
                         {{getStartIndex(processesPage.pageNumber, processesPage.pageSize) + $index}}
                         <i ng-if="process.state == 1" class="icon-ok" popover="Process is finished" popover-trigger="mouseenter"></i>
                         <i ng-if="process.state == 0" class="icon-time" popover="Process have not been finished yet" popover-trigger="mouseenter"></i>
+                        <i ng-if="process.state == 2" class="icon-exclamation-sign" popover="Process was stopped due to execution error" popover-trigger="mouseenter"></i>
                     </td>
                     <td>
                         <small>

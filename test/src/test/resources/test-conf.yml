@@ -32,7 +32,7 @@ profiler:
 
 policy:
   - TestPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:

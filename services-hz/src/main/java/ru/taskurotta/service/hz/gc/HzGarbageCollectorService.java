@@ -61,7 +61,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                         try {
                             logger.trace("Try to get process for garbage collector");
 
-                            UUID processId = garbageCollectorQueue.take();
+                            UUID processId = garbageCollectorQueue.poll(50, TimeUnit.SECONDS);
                             if (processId != null) {
                                 gc(processId);
                             }

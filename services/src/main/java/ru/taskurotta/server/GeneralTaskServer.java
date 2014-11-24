@@ -2,32 +2,27 @@ package ru.taskurotta.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.policy.PolicyConstants;
+import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
+import ru.taskurotta.service.console.model.BrokenProcess;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.console.model.BrokenProcess;
-import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
-import ru.taskurotta.core.TaskDecision;
-import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.transport.model.*;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
+import ru.taskurotta.util.RetryPolicyConfigUtil;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * User: romario
@@ -49,7 +44,8 @@ public class GeneralTaskServer implements TaskServer {
     /*
      *  For tests ONLY
      */
-    public GeneralTaskServer() {}
+    public GeneralTaskServer() {
+    }
 
     public GeneralTaskServer(ServiceBundle serviceBundle) {
         this.processService = serviceBundle.getProcessService();
@@ -79,7 +75,7 @@ public class GeneralTaskServer implements TaskServer {
         // some consistence check
         if (!(task.getType().equals(TaskType.DECIDER_START) || task.getType().equals(TaskType.WORKER_SCHEDULED))) {
             // TODO: send error to client
-            throw new IllegalStateException("Can not start process with task type["+task.getType()+"]. Should be one of [" + TaskType.DECIDER_START + ", " + TaskType.WORKER_SCHEDULED + "]");
+            throw new IllegalStateException("Can not start process with task type[" + task.getType() + "]. Should be one of [" + TaskType.DECIDER_START + ", " + TaskType.WORKER_SCHEDULED + "]");
         }
 
         // registration of new process
@@ -119,7 +115,7 @@ public class GeneralTaskServer implements TaskServer {
         // idempotent statement
         TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId());
         if (result == null) {
-            logger.error("Failed to get task for queue item ["+item+"] from store. Inconsistent state: possible data loss?");
+            logger.error("Failed to get task for queue item [" + item + "] from store. Inconsistent state: possible data loss?");
         }
         return result;
     }
@@ -149,26 +145,31 @@ public class GeneralTaskServer implements TaskServer {
 
         if (taskDecision.containsError()) {
 
+            long restartTime = taskDecision.getRestartTime();
+
             TaskContainer task = taskService.getTask(taskId, processId);
             logger.trace("#[{}]/[{}]: after get taskDecision with error again get task = [{}]", processId, taskId, task);
 
-            long restartTime = taskDecision.getRestartTime();
-            if (restartTime != TaskDecision.NO_RESTART) {
+            if (task.getOptions() != null && task.getOptions().getTaskConfigContainer() != null) {
+                RetryPolicyConfigContainer retryPolicyConfig = task.getOptions().getTaskConfigContainer().getRetryPolicyConfigContainer();
 
+                if (isErrorMatch(retryPolicyConfig, taskDecision.getErrorContainer())) {
+                    restartTime = getRestartTime(task, retryPolicyConfig);
+                }
+            }
+
+            if (restartTime != TaskDecision.NO_RESTART) {
                 // enqueue task immediately if needed
                 logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
                 enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
                 return;
+            }
 
-            } else {
-
-                if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
-                    saveBrokenProcess(taskDecision);
-                    processService.markProcessAsBroken(processId);
-                    logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
-                    return;
-                }
-
+            if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
+                saveBrokenProcess(taskDecision);
+                processService.markProcessAsBroken(processId);
+                logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
+                return;
             }
         }
 
@@ -205,6 +206,30 @@ public class GeneralTaskServer implements TaskServer {
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
     }
 
+    private long getRestartTime(TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
+        if (retryPolicyConfig == null) {
+            return PolicyConstants.NONE;
+        }
+
+        long recordedFailure = System.currentTimeMillis();
+        TimeRetryPolicyBase timeRetryPolicyBase = RetryPolicyConfigUtil.buildTimeRetryPolicy(retryPolicyConfig);
+        long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getErrorAttempts());
+        if (customRestartTime == PolicyConstants.NONE) {
+            return PolicyConstants.NONE;
+        }
+
+        return recordedFailure + customRestartTime * 1000;
+    }
+
+    private static boolean isErrorMatch(RetryPolicyConfigContainer retryPolicyConfig, ErrorContainer error) {
+        for (String errorName : error.getClassNames()) {
+            if (RetryPolicyConfigUtil.isRetryable(errorName, retryPolicyConfig)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean isErrorMatch(TaskContainer task, ErrorContainer error) {
         if (!task.isUnsafe()) {
             return false;   // no one error match for safe tasks
@@ -218,7 +243,7 @@ public class GeneralTaskServer implements TaskServer {
         Set<String> failTypes = new HashSet<>(Arrays.asList(taskFailTypes));
 
         for (String errorName : error.getClassNames()) {
-            if (failTypes.contains(errorName)){
+            if (failTypes.contains(errorName)) {
                 return true;
             }
         }
@@ -257,7 +282,7 @@ public class GeneralTaskServer implements TaskServer {
         }
         return false;
     }
-    
+
     private void saveBrokenProcess(DecisionContainer taskDecision) {
         UUID processId = taskDecision.getProcessId();
         BrokenProcess brokenProcess = new BrokenProcess();
