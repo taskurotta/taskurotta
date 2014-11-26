@@ -99,7 +99,11 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(runtimeConfigNode, runtimeConfigName);
             logger.debug("runtimeConfigNode [{}]", runtimeConfigNode);
 
-            String runtimeConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
+            String runtimeConfigClassName = "ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext";
+            JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
+            if (classNode != null) {
+                runtimeConfigClassName = classNode.textValue();
+            }
             logger.debug("runtimeConfigClassName [{}]", runtimeConfigClassName);
 
             Class runtimeConfigClass;
@@ -135,7 +139,11 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(spreaderConfigNode, spreaderConfigName);
             logger.debug("spreaderConfigNode [{}]", spreaderConfigNode);
 
-            String spreaderConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
+            String spreaderConfigClassName = "ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext";
+            JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
+            if (classNode != null) {
+                spreaderConfigClassName = classNode.textValue();
+            }
             logger.debug("spreaderConfigClassName [{}]", spreaderConfigClassName);
 
             Class spreaderConfigClass;
