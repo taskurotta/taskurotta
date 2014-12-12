@@ -1,4 +1,4 @@
-CREATE TABLE process (
+CREATE TABLE PROCESS (
   process_id    VARCHAR2(36)        NOT NULL,
   start_task_id VARCHAR2(36)        NOT NULL,
   custom_id     VARCHAR2(256)       NULL,
