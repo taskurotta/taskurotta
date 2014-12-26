@@ -1,38 +1,18 @@
 runtime:
   - MainRuntimeConfig:
-      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
         context: ru/taskurotta/recipes/parallel/RuntimeBeans.xml
 
 spreader:
   - MainTaskSpreaderConfig:
-      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         context: ru/taskurotta/recipes/parallel/SpreaderBeans-hz.xml
         properties:
           cycles: 10
           accuracy: 1000
 
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
-        properties:
-          meterCycle: true
-          trackExecute: true
-          trackCycle: false
-          trackPull: true
-          trackRelease: true
-          trackError: false
-          logOutput: false
-          logOutputPeriod: 10
-          consoleOutput: false
-          consoleOutputPeriod: 10
-
 policy:
   - LinearRertyPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:

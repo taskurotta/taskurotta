@@ -11,26 +11,8 @@ spreader:
           cycles: 10
           accuracy: 1000
 
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.bootstrap.profiler.MetricsProfiler
-        properties:
-          meterCycle: true
-          trackExecute: true
-          trackCycle: false
-          trackPull: true
-          trackRelease: true
-          trackError: false
-          logOutput: false
-          logOutputPeriod: 10
-          consoleOutput: false
-          consoleOutputPeriod: 10
-
 policy:
   - LinearRertyPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
@@ -41,7 +23,6 @@ policy:
 actor:
   - PiDecider:
       actorInterface: ru.taskurotta.recipes.parallel.decider.PiDecider
-      count: 1
 
   - PiWorker:
       actorInterface: ru.taskurotta.recipes.parallel.workers.PiWorker
