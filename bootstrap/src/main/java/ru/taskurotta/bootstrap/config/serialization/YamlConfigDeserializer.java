@@ -44,9 +44,9 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             throw new RuntimeException("Can not parse config", e);
         }
 
-        JsonNode runtimesNode = rootNode.get(YAML_RUNTIME);
-        if (runtimesNode != null) {
-            parseRuntimeConfigs(runtimesNode, oc, config);
+        JsonNode runtimeNode = rootNode.get(YAML_RUNTIME);
+        if (runtimeNode != null) {
+            parseRuntimeConfigs(runtimeNode, oc, config);
         } else {
             logger.error("Not found RuntimeConfigs in configuration");
             throw new RuntimeException("Not found RuntimeConfigs in configuration file");
@@ -60,18 +60,18 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             throw new RuntimeException("Not found TaskSpreaderConfigs in configuration file");
         }
 
-        JsonNode profilersNode = rootNode.get(YAML_RPOFILER);
-        if (profilersNode != null) {
-            parseProfilerConfigs(profilersNode, oc, config);
+        JsonNode profilerNode = rootNode.get(YAML_RPOFILER);
+        if (profilerNode != null) {
+            parseProfilerConfigs(profilerNode, oc, config);
         } else {
-            logger.warn("Not found ProfilerConfigs in configuration");
+            logger.debug("Not found ProfilerConfigs in configuration");
         }
 
         JsonNode policiesNode = rootNode.get(YAML_POLICY);
         if (policiesNode != null) {
             parsePolicyConfig(policiesNode, oc, config);
         } else {
-            logger.warn("Not found PolicyConfigs in configuration");
+            logger.debug("Not found PolicyConfigs in configuration");
         }
 
         JsonNode actorsNode = rootNode.get(YAML_ACTOR);
@@ -165,8 +165,8 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
         }
     }
 
-    private void parseProfilerConfigs(JsonNode profilersNode, ObjectCodec oc, Config config) {
-        for (Iterator profilerElements = profilersNode.elements(); profilerElements.hasNext(); ) {
+    private void parseProfilerConfigs(JsonNode profilerNode, ObjectCodec oc, Config config) {
+        for (Iterator profilerElements = profilerNode.elements(); profilerElements.hasNext(); ) {
 
             JsonNode profilerElement = (JsonNode) profilerElements.next();
             logger.debug("profilerElement [{}]", profilerElement);
@@ -179,7 +179,11 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(profilerConfigNode, profilerConfigName);
             logger.debug("profilerConfigNode [{}]", profilerConfigNode);
 
-            String profilerConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
+            String profilerConfigClassName = "ru.taskurotta.bootstrap.config.DefaultProfilerConfig";
+            JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
+            if (classNode != null) {
+                profilerConfigClassName = classNode.textValue();
+            }
             logger.debug("profilerConfigClassName [{}]", profilerConfigClassName);
 
             Class profilerConfigClass;
@@ -214,7 +218,11 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(policyConfigNode, policyConfigName);
             logger.debug("policyConfigNode [{}]", policyConfigNode);
 
-            String policyConfigClassName = instanceDescriptionNode.get(YAML_CLASS).textValue();
+            String policyConfigClassName = "ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory";
+            JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
+            if (classNode != null) {
+                policyConfigClassName = classNode.textValue();
+            }
             logger.debug("policyConfigClassName [{}]", policyConfigClassName);
 
             Class policyConfigClass;
