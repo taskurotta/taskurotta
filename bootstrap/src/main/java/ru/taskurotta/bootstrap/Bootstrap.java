@@ -94,7 +94,7 @@ public class Bootstrap implements BootstrapMBean {
         }
 
         if (config == null) {
-            config = SimplifiedConfigHandler.getConfig(args!=null&&args.length>0?args[0]: null);
+            config = SimplifiedConfigHandler.getConfig(args != null && args.length > 0 ? args[0] : null);
         }
 
         if (config == null) {
