@@ -179,7 +179,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(profilerConfigNode, profilerConfigName);
             logger.debug("profilerConfigNode [{}]", profilerConfigNode);
 
-            String profilerConfigClassName = "ru.taskurotta.bootstrap.config.DefaultProfilerConfig";
+            String profilerConfigClassName = DefaultProfilerConfig.class.getName();
             JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
             if (classNode != null) {
                 profilerConfigClassName = classNode.textValue();
@@ -218,7 +218,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(policyConfigNode, policyConfigName);
             logger.debug("policyConfigNode [{}]", policyConfigNode);
 
-            String policyConfigClassName = "ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory";
+            String policyConfigClassName = DefaultRetryPolicyFactory.class.getName();
             JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
             if (classNode != null) {
                 policyConfigClassName = classNode.textValue();
