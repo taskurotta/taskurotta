@@ -1,5 +1,6 @@
 package ru.taskurotta.hazelcast;
 
+import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.config.MaxSizeConfig;
@@ -60,7 +61,7 @@ public class HzMapConfigSupport {
             mc.setBackupCount(backupCount);
             mc.setAsyncBackupCount(asyncBackupsCount);
             mc.setTimeToLiveSeconds(timeToLive);
-            mc.setEvictionPolicy(MapConfig.EvictionPolicy.valueOf(evictionPolicy));
+            mc.setEvictionPolicy(EvictionPolicy.valueOf(evictionPolicy));
             mc.setMapStoreConfig(msc);
 
             MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
