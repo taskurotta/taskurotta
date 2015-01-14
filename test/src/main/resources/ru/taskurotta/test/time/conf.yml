@@ -8,17 +8,16 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        contexts:
-          - classpath:spring/hz-mongo.xml
-          - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
+        context: ru/taskurotta/test/time/SpreaderBeans-jersey.xml
         defaultPropertiesLocation: default.properties
-        properties:          
+        properties:
+          endpoint: "http://localhost:8081"
+          threadPoolSize: 100
+          readTimeout: 0
+          connectTimeout: 3000
           duration: 10 hours
           timeout: 1 seconds
           threads: 50
-          gc.time-before-delete: 1 minutes
-          hz.jmx.detailed: true
-          hz.jmx: true
 
 profiler:
   - MainProfilerConfig:

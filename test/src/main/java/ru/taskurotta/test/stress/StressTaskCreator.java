@@ -37,7 +37,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public StressTaskCreator(ClientServiceManager clientServiceManager, boolean needRun, int shotSize) {
         this.needRun = needRun;
 
-        this.cd = new CountDownLatch(shotSize);
+        cd = new CountDownLatch(shotSize);
 
         DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
         deciderClient = clientProvider.getDeciderClient(FullFeatureDeciderClient.class);
