@@ -7,6 +7,7 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.core.ISet;
 import com.hazelcast.core.ItemEvent;
 import com.hazelcast.core.ItemListener;
+import com.hazelcast.core.MapEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.config.ConfigService;
@@ -80,6 +81,16 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
 
             @Override
             public void entryEvicted(EntryEvent<String, ActorPreferences> stringActorPreferencesEntryEvent) {
+                updateActorPreferencesMap();
+            }
+
+            @Override
+            public void mapEvicted(MapEvent event) {
+                updateActorPreferencesMap();
+            }
+
+            @Override
+            public void mapCleared(MapEvent event) {
                 updateActorPreferencesMap();
             }
         }, false);

@@ -10,7 +10,7 @@ spreader:
       instance:
         context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-stress.xml
         properties:          
-          endpoint: "http://localhost:8081"
+          endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
@@ -19,7 +19,7 @@ spreader:
 
 policy:
   - MainPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
