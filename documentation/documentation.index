@@ -1,0 +1,15 @@
+# You can now add comments using a hash-sign upfront the line :)
+src/Preface.md
+src/WhatsNew.md
+	src/WhatsNewImprovements.md
+	src/WhatsNewFixes.md
+src/GettingStarted.md
+	src/WhyTaskurotta.md
+	src/Installation.md
+		src/InstallingWithMongodb.md
+	src/StartingClusterAndActors.md
+	src/ConfiguringTaskurotta.md
+	src/UseCases.md
+	src/Resources.md
+src/FAQ.md
+src/Glossary.md
