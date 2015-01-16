@@ -77,7 +77,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -88,7 +87,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.4</version>
+                <version>1.7</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.aspectj</groupId>
@@ -102,8 +101,7 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <complianceLevel>${java.version}</complianceLevel>
                 </configuration>
                 <executions>
                     <execution>
