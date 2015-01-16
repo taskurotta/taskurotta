@@ -3,11 +3,7 @@ package ru.taskurotta.hazelcast.store;
 import com.hazelcast.core.QueueStore;
 import com.hazelcast.spring.mongodb.MongoDBConverter;
 import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.*;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
@@ -15,11 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.ItemIdAware;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -131,14 +123,15 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
             dbo.add(new BasicDBObject("_id", key));
         }
         BasicDBObject dbb = new BasicDBObject("$or", dbo);
-        DBCursor cursor = coll.find(dbb);
-        while (cursor.hasNext()) {
-            try {
-                DBObject obj = cursor.next();
-                Class clazz = Class.forName(obj.get("_class").toString());
-                map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
-            } catch (ClassNotFoundException e) {
-                logger.error(e.getMessage(), e);
+        try (DBCursor cursor = coll.find(dbb)) {
+            while (cursor.hasNext()) {
+                try {
+                    DBObject obj = cursor.next();
+                    Class clazz = Class.forName(obj.get("_class").toString());
+                    map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
+                } catch (ClassNotFoundException e) {
+                    logger.error(e.getMessage(), e);
+                }
             }
         }
 
@@ -160,9 +153,10 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
         sortCommand.put("_id", 1);//by _id asc(min first)
 
         DBObject val;
-        DBCursor cursor = coll.find().sort(sortCommand).limit(1);
-        if (cursor.hasNext() && (val = cursor.next()) != null) {
-            result = Long.valueOf(val.get("_id").toString());
+        try (DBCursor cursor = coll.find().sort(sortCommand).limit(1)) {
+            if (cursor.hasNext() && (val = cursor.next()) != null) {
+                result = Long.valueOf(val.get("_id").toString());
+            }
         }
 
         return result;
@@ -173,9 +167,10 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
         Set<Long> keySet = new HashSet<>();
         BasicDBList dbo = new BasicDBList();
         dbo.add("_id");
-        DBCursor cursor = coll.find(null, dbo);
-        while (cursor.hasNext()) {
-            keySet.add((Long) cursor.next().get("_id"));
+        try (DBCursor cursor = coll.find(null, dbo)) {
+            while (cursor.hasNext()) {
+                keySet.add((Long) cursor.next().get("_id"));
+            }
         }
         return keySet;
     }
