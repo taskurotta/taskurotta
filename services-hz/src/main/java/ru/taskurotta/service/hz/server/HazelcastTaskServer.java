@@ -34,13 +34,9 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     private static final String LOCK_PROCESS_MAP_NAME = HazelcastTaskServer.class.getName() + "#lockProcessMap";
 
     protected HazelcastInstance hzInstance;
-    protected IMap lockProcessMap;
+    protected IMap<UUID, ?> lockProcessMap;
 
     protected String decisionProcessingExecutorService;
-
-    protected static HazelcastTaskServer instance;
-    protected static final Object instanceMonitor = 0;
-
     private String nodeCustomName;
 
     protected HazelcastTaskServer(ServiceBundle serviceBundle, HazelcastInstance hzInstance, String nodeCustomName,
@@ -129,8 +125,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         UUID taskId;
         HazelcastTaskServer taskServer;
 
-        public ProcessDecisionUnitOfWork() {
-        }
+        public ProcessDecisionUnitOfWork() {}
 
         public ProcessDecisionUnitOfWork(UUID processId, UUID taskId) {
             this.processId = processId;
