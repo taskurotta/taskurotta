@@ -10,14 +10,14 @@ spreader:
       instance:
         context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-single.xml
         properties:          
-          endpoint: "http://localhost:8081"
+          endpoint: "http://localhost:8811"
           threadPoolSize: 20
           readTimeout: 0
           connectTimeout: 3000
 
 policy:
   - MainPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyConfig
+      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
       instance:
         class: ru.taskurotta.policy.retry.LinearRetryPolicy
         properties:
@@ -28,11 +28,9 @@ policy:
 actor:
   - FFDecider:
       actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
-      count: 1
 
   - FFWorker:
       actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
-      count: 1
 
 logback:
     appender:

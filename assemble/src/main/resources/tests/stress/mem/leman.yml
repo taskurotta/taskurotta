@@ -2,7 +2,7 @@ runtime:
   - MainRuntimeConfig:
       class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
       instance:
-        context: classpath:ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+        context: ru/taskurotta/test/fullfeature/RuntimeBeans.xml
 
 spreader:
   - MainTaskSpreaderConfig:
@@ -10,52 +10,29 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:spring/actor-ff.xml
+          - classpath:ru/taskurotta/recipes/time/SpreaderBeans.xml
         defaultPropertiesLocation: default.properties
         properties:
-          cycles: 10
-          initialCount: 7
-          shotSize: 1000
-          needRun: true
-          pollDelay: 10
-          pollDelayUnit: "SECONDS"
-          hz.nodes: localhost:7777
+          duration: 10 hours
+          timeout: 1 seconds
+          threads: 50
+          gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
-          mongo.host: localhost
-          mongo.port: 27017
-          gc.enabled: true
-          gc.pool-size: 8
-          gc.time-before-delete: 1 minutes
-          recovery.enabled: true
-          hz.queue.task.memory-limit: 10000
-          hz.map.general.max-size: 10
-
 
 profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
       instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
-        properties:
-          exitAfterAll: false
-          tasksForStat: 1000
-          maxTaskQuantity: 1000000
-          taskPerProcess: 12
+        class: ru.taskurotta.test.time.LifeTimeProfiler
 
 actor:
   - FFDecider:
       actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 25
 
   - FFWorker:
       actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
-      runtimeConfig: MainRuntimeConfig
-      spreaderConfig: MainTaskSpreaderConfig
-      profilerConfig: MainProfilerConfig
       count: 25
 
 logback:
@@ -64,33 +41,30 @@ logback:
              key: name
              \@class: ch.qos.logback.core.ConsoleAppender
              encoder:
-                 pattern: \%c - \%m\%n
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./target/logs/recipes-multiply.log
-             append: false
+             file: logs/leman24.log
+             append: true
              encoder:
-                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.recipes.stress:
-             key: name
-             \@level: DEBUG
-        - ru.taskurotta.test.monkey:
-             key: name
-             \@level: DEBUG
         - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: ERROR
+        - ru.taskurotta.service.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.hz.gc:
              key: name
              \@level: DEBUG
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF
-        - ru.taskurotta.service.hz.gc:
-             key: name
-             \@level: DEBUG
         - org:
              key: name
              \@level: ERROR

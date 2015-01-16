@@ -12,6 +12,7 @@ import java.util.concurrent.locks.Lock;
 import static junit.framework.Assert.assertEquals;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.EvictionPolicy;
 import com.hazelcast.config.MapConfig;
 import com.hazelcast.config.MapStoreConfig;
 import com.hazelcast.config.MaxSizeConfig;
@@ -103,7 +104,7 @@ public class HZ3_Test {
 
             mapConfig.setMapStoreConfig(mapStoreConfig);
             mapConfig.setEvictionPercentage(80);
-            mapConfig.setEvictionPolicy(MapConfig.EvictionPolicy.LFU);
+            mapConfig.setEvictionPolicy(EvictionPolicy.LFU);
 
             MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
             maxSizeConfig.setSize(100);
