@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ru.taskurotta</groupId>
+        <artifactId>ru.taskurotta</artifactId>
+        <version>0.8.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <name>taskurotta-documentation</name>
+    <artifactId>taskurotta-documentation</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.build.timestamp.format>dd MMMMM yyyy</maven.build.timestamp.format>
+        <timestamp>${maven.build.timestamp}</timestamp>
+    </properties>
+
+    <build>
+        <plugins>
+    		<plugin>
+			  <artifactId>exec-maven-plugin</artifactId>
+			  <groupId>org.codehaus.mojo</groupId>
+			  <version>1.2.1</version>
+			  <executions>
+			  <execution>
+			    <id>GenerateDocumentation</id>
+			    <phase>compile</phase>
+			    <goals>
+			      <goal>exec</goal>
+			    </goals>
+			    <configuration>
+			      <executable>./build.sh</executable>
+			      <arguments>
+			         <argument>${project.version}</argument>
+			      </arguments>
+			      <workingDirectory>${env.PROJECT_HOME}</workingDirectory>            
+			    </configuration>
+			  </execution>
+			  </executions>
+			
+			</plugin>
+		</plugins>
+    </build>
+</project>
