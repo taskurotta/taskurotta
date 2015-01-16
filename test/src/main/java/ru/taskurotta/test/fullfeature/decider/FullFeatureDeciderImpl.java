@@ -93,7 +93,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public void logResult(Promise<Boolean> result) {
-        log.info("is process correct: {}", result.get());
+        log.debug("is process correct: {}", result.get());
     }
 
 

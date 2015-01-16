@@ -84,7 +84,7 @@ logback:
              \@level: DEBUG
         - ru.taskurotta.test.fullfeature:
              key: name
-             \@level: DEBUG
+             \@level: INFO
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF

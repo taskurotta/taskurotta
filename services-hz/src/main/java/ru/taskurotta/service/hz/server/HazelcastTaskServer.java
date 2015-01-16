@@ -106,11 +106,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         logger.debug("HZ server release for decision [{}]", taskDecision);
 
-        // save it in task service
-        taskService.addDecision(taskDecision);
-
         // send process call
-        ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision.getProcessId(), taskDecision.getTaskId());
+        ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision);
         hzInstance.getExecutorService(decisionProcessingExecutorService).submit(call);
     }
 
@@ -125,16 +122,14 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
         private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
 
-        UUID processId;
-        UUID taskId;
+        DecisionContainer taskDecision;
         HazelcastTaskServer taskServer;
 
         public ProcessDecisionUnitOfWork() {
         }
 
-        public ProcessDecisionUnitOfWork(UUID processId, UUID taskId) {
-            this.processId = processId;
-            this.taskId = taskId;
+        public ProcessDecisionUnitOfWork(DecisionContainer taskDecision) {
+            this.taskDecision = taskDecision;
         }
 
         @Autowired
@@ -145,19 +140,16 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         @Override
         public Object call() throws Exception {
 
+            logger.debug("ProcessDecisionUnitOfWork decision is[{}], taskId[{}], processId[{]]", taskDecision,
+                    taskDecision.getTaskId(), taskDecision.getProcessId());
+
             try {
+
+                UUID processId = taskDecision.getProcessId();
 
                 taskServer.lockProcessMap.lock(processId);
 
                 try {
-                    DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
-                    logger.debug("ProcessDecisionUnitOfWork decision is[{}], taskId[{}], processId[{]]", taskDecision, taskId, processId);
-                    if (taskDecision == null) {
-                        String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
-                        logger.error(error);
-                        //TODO: this exception disappears for some reason
-                        throw new IllegalStateException(error);
-                    }
 
                     taskServer.processDecision(taskDecision);
 
@@ -175,7 +167,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         @Override
         public Object getPartitionKey() {
-            return processId;
+            return taskDecision.getProcessId();
         }
     }
 

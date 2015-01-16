@@ -138,6 +138,9 @@ public class GeneralTaskServer implements TaskServer {
      */
     public void processDecision(DecisionContainer taskDecision) {
 
+        // save it in task service
+        taskService.addDecision(taskDecision);
+
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
 
@@ -193,6 +196,29 @@ public class GeneralTaskServer implements TaskServer {
             for (UUID readyTaskId : readyTasks) {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer task = taskService.getTask(readyTaskId, processId);
+                if (task == null) {
+
+                    // may be task not stored to collection yet.
+                    // this is ugly and should be fixed
+                    for (TaskContainer taskC: taskDecision.getTasks()) {
+                        if (taskC.getTaskId().equals(readyTaskId)) {
+                            task = taskC;
+                            break;
+                        }
+                    }
+
+                    if (task == null) {
+                        logger.error("#[{}]/[{}]: failed to enqueue task. task not found into taskService. " +
+                                        "dependencyDecision = [{}]",
+                                processId,
+                                taskId,
+                                dependencyDecision);
+
+                        // wait recovery for this process
+                        // todo: throw exception?
+                        return;
+                    }
+                }
                 enqueueTask(readyTaskId, task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
             }
         }
