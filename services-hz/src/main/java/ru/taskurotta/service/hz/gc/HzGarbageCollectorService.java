@@ -11,10 +11,7 @@ import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class HzGarbageCollectorService implements GarbageCollectorService {
 
@@ -32,16 +29,14 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
         logger.debug("Garbage Collector initialization. Enabled: {}", enabled);
 
         this.enabled = enabled;
-
         if (!enabled) {
             return;
         }
 
         this.timeBeforeDelete = timeBeforeDelete;
-
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
-        final ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -54,10 +49,10 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
         });
 
         for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
+            executorService.scheduleWithFixedDelay(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override
                 public void run() {
-                    while (true) {
+                    while (!garbageCollectorQueue.isEmpty()) {
                         try {
                             logger.trace("Try to get process for garbage collector");
 
@@ -70,16 +65,15 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                         }
                     }
                 }
-            });
+            }, 0, 1, TimeUnit.SECONDS);
         }
     }
 
     @Override
-    public void delete(UUID processId) {
+    public void collect(UUID processId) {
         if (!enabled) {
             return;
         }
-
         garbageCollectorQueue.add(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
     }
 
