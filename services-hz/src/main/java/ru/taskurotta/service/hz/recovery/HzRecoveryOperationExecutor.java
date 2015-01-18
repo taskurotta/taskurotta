@@ -11,6 +11,7 @@ import ru.taskurotta.service.recovery.RecoveryProcessService;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -51,7 +52,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
         final ExecutorService recoveryOperationExecutorService = Executors.newFixedThreadPool(recoveryOperationPoolSize);
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
@@ -61,30 +62,23 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
             }
         });
 
-        executorService.submit(new Runnable() {
+        executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-
-                while (true) {
-
+                while (!operationIQueue.isEmpty()) {
                     try {
                         Operation operation = operationIQueue.poll(1, TimeUnit.SECONDS);
 
-                        if (operation == null) {
-                            continue;
+                        if (operation != null) {
+                            operation.init(recoveryProcessService);
+                            recoveryOperationExecutorService.submit(operation);
                         }
-
-                        operation.init(recoveryProcessService);
-
-                        recoveryOperationExecutorService.submit(operation);
-
                     } catch (Throwable throwable) {
                         logger.error(throwable.getLocalizedMessage(), throwable);
                     }
                 }
-
             }
-        });
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
     @Override
@@ -92,7 +86,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         if (!enabled) {
             return;
         }
-
         operationIQueue.offer(operation);
     }
 
@@ -101,7 +94,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         if (!enabled) {
             return 0;
         }
-
         return operationIQueue.size();
     }
 
