@@ -42,6 +42,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static MultiplierDeciderClient deciderClient;
     private static int shotSize;
 
+    private volatile boolean notInShutdown = true;
+
     public StressTaskCreator(ClientServiceManager clientServiceManager, boolean needRun, int shotSize, int initialCount) {
         this.clientServiceManager = clientServiceManager;
         this.needRun = needRun;
@@ -55,7 +57,15 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
 
         executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-        for (int i = 0; i < initialCount; i++) {
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                notInShutdown = false;
+            }
+        });
+
+        for (int i = 0; i < initialCount && notInShutdown; i++) {
             sendInitialTasks();
         }
 
@@ -111,7 +121,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     @Override
     public void run() {
 
-        while (stabilizationCounter.get() < 10) {
+        while (stabilizationCounter.get() < 10 && notInShutdown) {
 //            LATCH = new CountDownLatch(1);
 //            sendInitialTasks(deciderClient);
             try {

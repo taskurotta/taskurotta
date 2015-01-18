@@ -25,6 +25,8 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
+    private volatile boolean notInShutdown = true;
+
     public HzGarbageCollectorService(final ProcessService processService, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long timeBeforeDelete, boolean enabled) {
@@ -53,11 +55,19 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             }
         });
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                notInShutdown = false;
+            }
+        });
+
+
         for (int i = 0; i < poolSize; i++) {
             executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override
                 public void run() {
-                    while (true) {
+                    while (notInShutdown) {
                         try {
                             logger.trace("Try to get process for garbage collector");
 
@@ -68,6 +78,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                         } catch (Exception e) {
                             logger.error(e.getLocalizedMessage(), e);
                         }
+
                     }
                 }
             });

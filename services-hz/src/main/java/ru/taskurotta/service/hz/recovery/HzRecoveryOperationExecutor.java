@@ -27,6 +27,8 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
     private IQueue<Operation> operationIQueue;
 
+    private volatile boolean notInShutdown = true;
+
     public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
                                        String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
         this(hazelcastInstance, recoveryProcessService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
@@ -61,11 +63,18 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
             }
         });
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                notInShutdown = false;
+            }
+        });
+
         executorService.submit(new Runnable() {
             @Override
             public void run() {
 
-                while (true) {
+                while (notInShutdown) {
 
                     try {
                         Operation operation = operationIQueue.poll(1, TimeUnit.SECONDS);
