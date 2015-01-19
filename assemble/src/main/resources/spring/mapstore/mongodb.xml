@@ -1,46 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xmlns:mongo="http://www.springframework.org/schema/data/mongo"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd
-            http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
-            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
-
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <!-- Mongo -->
-    <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
-        <mongo:options connections-per-host="${mongo.options.connections-per-host}"
-                       threads-allowed-to-block-for-connection-multiplier="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"
-                       max-wait-time="${mongo.options.max-wait-time}"
-                       connect-timeout="${mongo.options.connect-timeout}"
-                       socket-timeout="${mongo.options.socket-timeout}"
-                       socket-keep-alive="${mongo.options.socket-keep-alive}"
-                       auto-connect-retry="${mongo.options.auto-connect-retry}"
-                       max-auto-connect-retry-time="0"
-                       write-number="${mongo.options.write-number}"
-                       write-timeout="${mongo.options.write-timeout}"
-                       write-fsync="${mongo.options.write-fsync}"
-                       slave-ok="${mongo.options.slave-ok}"/>
-    </mongo:mongo>
-
-    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="mongo"/>
-        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
-        <property name="writeConcern" ref="writeConcern"/>
-    </bean>
-
     <bean id="writeConcern" class="com.mongodb.WriteConcern">
         <constructor-arg name="w" value="1"/>
         <constructor-arg name="wtimeout" value="0"/>
         <constructor-arg name="fsync" value="true"/>
         <constructor-arg name="j" value="true"/>
+    </bean>
+
+    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder" />
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="minConnectionsPerHost">
+        <constructor-arg value="${mongo.options.min-connections-per-host}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectionsPerHost">
+        <constructor-arg value="${mongo.options.connections-per-host}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="threadsAllowedToBlockForConnectionMultiplier">
+        <constructor-arg value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxWaitTime">
+        <constructor-arg value="${mongo.options.max-wait-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionIdleTime">
+        <constructor-arg value="${mongo.options.max-connection-idle-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionLifeTime">
+        <constructor-arg value="${mongo.options.max-connection-life-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectTimeout">
+        <constructor-arg value="${mongo.options.connect-timeout}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketTimeout">
+        <constructor-arg value="${mongo.options.socket-timeout}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketKeepAlive">
+        <constructor-arg value="${mongo.options.socket-keep-alive}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="writeConcern">
+        <constructor-arg value="writeConcern"/>
+    </bean>
+
+    <bean id="mongo" class="com.mongodb.MongoClient">
+        <constructor-arg name="addr">
+            <bean class="com.mongodb.ServerAddress">
+                <constructor-arg name="host" value="${mongo.host}"/>
+                <constructor-arg name="port" value="${mongo.port}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="options">
+            <bean factory-bean="mongoClientOptionsBuilder" factory-method="build"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
     </bean>
 
     <bean id="mapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
