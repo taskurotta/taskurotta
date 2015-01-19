@@ -45,7 +45,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: logs/leman24.log
+             file: ./target/5logs/leman24.log
              append: true
              encoder:
                  pattern: \%d \%p [\%t] \%c - \%m\%n

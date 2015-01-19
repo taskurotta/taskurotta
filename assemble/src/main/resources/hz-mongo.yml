@@ -21,7 +21,6 @@ properties:
   hz.jmx: true
   hz.nodes: localhost:7777
   mongo.host: localhost
-  mongo.port: 27017
 #Http server configuration:
 logging:
     level: WARN

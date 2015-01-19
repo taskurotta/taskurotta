@@ -17,7 +17,7 @@ public class FakeMapStore implements MapStore {
 
     @Override
     public void store(Object o, Object o2) {
-        logger.info("Store object: key[{}], value [{}]", o, o2);
+//        logger.info("Store object: key[{}], value [{}]", o, o2);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class FakeMapStore implements MapStore {
 
     @Override
     public void delete(Object o) {
-        logger.info("Delete object [{}]", o);
+//        logger.info("Delete object [{}]", o);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class FakeMapStore implements MapStore {
 
     @Override
     public Object load(Object o) {
-        logger.info("load object key [{}]", o);
+//        logger.info("load object key [{}]", o);
         return null;
     }
 

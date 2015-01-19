@@ -11,7 +11,10 @@ import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 public class HzGarbageCollectorService implements GarbageCollectorService {
 
@@ -22,6 +25,8 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
 
     private DelayIQueue<UUID> garbageCollectorQueue;
 
+    private volatile boolean notInShutdown = true;
+
     public HzGarbageCollectorService(final ProcessService processService, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
                                      int poolSize, long timeBeforeDelete, boolean enabled) {
@@ -29,14 +34,16 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
         logger.debug("Garbage Collector initialization. Enabled: {}", enabled);
 
         this.enabled = enabled;
+
         if (!enabled) {
             return;
         }
 
         this.timeBeforeDelete = timeBeforeDelete;
+
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
+        final ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -48,11 +55,19 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             }
         });
 
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                notInShutdown = false;
+            }
+        });
+
+
         for (int i = 0; i < poolSize; i++) {
-            executorService.scheduleWithFixedDelay(new AbstractGCTask(processService, graphDao, taskDao) {
+            executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override
                 public void run() {
-                    while (!garbageCollectorQueue.isEmpty()) {
+                    while (notInShutdown) {
                         try {
                             logger.trace("Try to get process for garbage collector");
 
@@ -63,9 +78,10 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
                         } catch (Exception e) {
                             logger.error(e.getLocalizedMessage(), e);
                         }
+
                     }
                 }
-            }, 0, 1, TimeUnit.SECONDS);
+            });
         }
     }
 
