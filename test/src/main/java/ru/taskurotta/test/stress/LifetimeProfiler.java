@@ -21,7 +21,8 @@ import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
 import java.util.Formatter;
 import java.util.Properties;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,15 +32,16 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
 
-    private final static Logger log = LoggerFactory.getLogger(LifetimeProfiler.class);
+    private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
     public static AtomicLong taskCount = new AtomicLong(0);
+    public static AtomicLong startedProcessCount = new AtomicLong(0);
     public static AtomicLong startTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
     public static int tasksForStat = 500;
     public static double totalDelta = 0;
     public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
     public static AtomicBoolean stopDecorating = new AtomicBoolean(false);
-//    private long nextShot = 0;
+    //    private long nextShot = 0;
     private double deltaRate = 0;
     private double previousRate = 0;
     private boolean timeIsZero = true;
@@ -74,6 +76,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     @Override
     public TaskSpreader decorate(final TaskSpreader taskSpreader) {
+
+        Set allHazelcastInstances = Hazelcast.getAllHazelcastInstances();
+
+        final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1?
+                (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0]: null;
+
         return new TaskSpreader() {
             @Override
             public Task poll() {
@@ -88,14 +96,13 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 }
 
 
-
                 Task task = taskSpreader.poll();
                 if (task == null) {
 
                     int localNullPoll = nullPoll.incrementAndGet();
 
                     if ((localNullPoll + 1) % 1000 == 0) {
-                        log.error("Actors still receive empty answer [{}]",  localNullPoll + 1);
+                        logger.error("Actors still receive empty answer [{}]", localNullPoll + 1);
                     }
                     return null;
                 }
@@ -154,14 +161,41 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
                     sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
                             MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
-                    System.err.println(sb);
+
+                    sb.append("\n startedProcessCount = " + startedProcessCount);
+
+
+                    logger.info(sb.toString());
+//                    System.err.println(sb);
                 }
 
+                // if server in the same jvm
+                if (hazelcastInstance != null) {
+                    if (count % 500 == 0) {
 
-                if (task.getTarget().getName().equals("ru.taskurotta.test.fullfeature.decider.FullFeatureDecider") &&
-                        task.getTarget().getMethod().equals("logResult")) {
+                        // we should not get IQueue directly from hazelcast instance. It prevents
+                        // to receive not initialized queue without Store, for example.
+                        IQueue deciderQueue = getQueueIfInitialized(hazelcastInstance,
+                                "task_ru.taskurotta.test.fullfeature.decider.FullFeatureDecider#1.0");
+                        IQueue workerQueue = getQueueIfInitialized(hazelcastInstance,
+                                "task_ru.taskurotta.test.fullfeature.worker.FullFeatureWorker#1.0");
 
-                    StressTaskCreator.sendOneTask();
+                        if (deciderQueue != null && workerQueue != null) {
+                            int maxTasks = Math.max(deciderQueue.size(), workerQueue.size());
+                            if (maxTasks < 1000) {
+                                StressTaskCreator.sendTasks(1000 - maxTasks);
+                            }
+                        }
+                    }
+
+                } else {
+
+                    if (task.getTarget().getName().equals(ru.taskurotta.test.fullfeature.decider.FullFeatureDecider.class
+                            .getName()) &&
+                            task.getTarget().getMethod().equals("logResult")) {
+
+                        StressTaskCreator.sendOneTask();
+                    }
                 }
 
                 if (timeIsZero) {
@@ -194,8 +228,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             stabilizationCounter.set(0);
                         }
                     }
-                    log.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; " +
-                            "totalRate: %8.3f; tolerance: %8.3f; freeMemory: %6d;\n", count, time, rate,
+                    logger.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; " +
+                                    "totalRate: %8.3f; tolerance: %8.3f; freeMemory: %6d;\n", count, time, rate,
                             deltaRate, totalRate, currentTolerance, Runtime.getRuntime().freeMemory() / 1024 / 1024));
                 }
 
@@ -207,6 +241,25 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 taskSpreader.release(taskDecision);
             }
         };
+    }
+
+    ConcurrentHashMap<String, IQueue> queueCache = new ConcurrentHashMap<>();
+
+    public IQueue getQueueIfInitialized(HazelcastInstance hzInstance, String name) {
+
+        IQueue queue = (IQueue) queueCache.get(name);
+        if (queue != null) {
+            return queue;
+        }
+
+        for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
+            if ((distributedObject instanceof IQueue) && name.equals(distributedObject.getName())) {
+                queue = (IQueue) distributedObject;
+                return queueCache.putIfAbsent(name, queue);
+            }
+        }
+
+        return null;
     }
 
     public static String bytesToMb(long bytes) {
