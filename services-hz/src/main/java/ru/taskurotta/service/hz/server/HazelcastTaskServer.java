@@ -34,7 +34,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     private static final String LOCK_PROCESS_MAP_NAME = HazelcastTaskServer.class.getName() + "#lockProcessMap";
 
     protected HazelcastInstance hzInstance;
-    protected IMap<UUID, ?> lockProcessMap;
+    private IMap<UUID, ?> lockProcessMap;
 
     protected String decisionProcessingExecutorService;
     private String nodeCustomName;
@@ -147,7 +147,6 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                 try {
 
                     taskServer.processDecision(taskDecision);
-
                 } finally {
                     taskServer.lockProcessMap.unlock(processId);
                 }

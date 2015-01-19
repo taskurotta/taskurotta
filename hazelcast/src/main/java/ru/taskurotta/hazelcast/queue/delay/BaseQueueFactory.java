@@ -16,6 +16,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class BaseQueueFactory implements QueueFactory {
 
+    private static final Logger logger = LoggerFactory.getLogger(BaseQueueFactory.class);
+
     private HazelcastInstance hazelcastInstance;
     private StorageFactory storageFactory;
     private HzQueueConfigSupport hzQueueConfigSupport;
@@ -23,7 +25,6 @@ public class BaseQueueFactory implements QueueFactory {
     private transient final ReentrantLock lock = new ReentrantLock();
     private ConcurrentHashMap<String, DelayIQueue> queueMap = new ConcurrentHashMap<>();
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseQueueFactory.class);
 
     public BaseQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory) {
         this.hazelcastInstance = hazelcastInstance;

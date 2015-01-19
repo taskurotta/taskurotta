@@ -29,7 +29,7 @@ spreader:
           gc.time-before-delete: 1 minutes
           recovery.enabled: true
           hz.queue.task.memory-limit: 10000
-          hz.map.general.max-size: 10
+          hz.map.general.max-size: 8
 
 
 profiler:
@@ -40,7 +40,7 @@ profiler:
         properties:
           exitAfterAll: false
           tasksForStat: 1000
-          maxTaskQuantity: 1000000
+          maxTaskQuantity: 10000000
           taskPerProcess: 12
 
 actor:
