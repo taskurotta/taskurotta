@@ -63,6 +63,13 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                 }
             });
 
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    scheduledExecutorService.shutdown();
+                }
+            });
+
             scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
                 @Override
                 public void run() {

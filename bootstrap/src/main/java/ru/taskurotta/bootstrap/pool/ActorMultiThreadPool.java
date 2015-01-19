@@ -146,6 +146,13 @@ public class ActorMultiThreadPool implements ActorThreadPool {
                     }
 
                     if (thread.isAlive()) {
+                        try {
+                            thread.join();
+                        } catch (InterruptedException e) {
+                        }
+                    }
+
+                    if (thread.isAlive()) {
 
                         if (logger.isDebugEnabled()) {
                             logger.debug("Thread [{}] still alive for [{}] seconds after start shutdown", threadName, (System.currentTimeMillis() - stopTime) / 1000);
@@ -172,6 +179,7 @@ public class ActorMultiThreadPool implements ActorThreadPool {
             logger.error("Throw exception while try to gracefully shutdown thread pool for actor [" + actorClassName + "]", t);
             // just exit
         }
+
     }
 
     public int getCurrentSize() {

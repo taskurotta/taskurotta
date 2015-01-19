@@ -53,7 +53,8 @@ public class MongoStorageFactory implements StorageFactory {
     }
 
     private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
-        ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        final ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new
+                                                                                                                     ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -62,6 +63,13 @@ public class MongoStorageFactory implements StorageFactory {
                 thread.setName("MongoStorageFactory-" + counter++);
                 thread.setDaemon(true);
                 return thread;
+            }
+        });
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                singleThreadScheduledExecutor.shutdown();
             }
         });
 

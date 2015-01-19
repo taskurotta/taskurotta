@@ -48,6 +48,12 @@ public class MetricsFactory {
                 return thread;
             }
         });
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                executorService.shutdown();
+            }
+        });
         this.dumpPeriod = dumpPeriod;
         this.dataListener = dataListener;
         this.numberDataListener = numberDataListener;

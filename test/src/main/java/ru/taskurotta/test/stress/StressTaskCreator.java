@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static ru.taskurotta.test.stress.LifetimeProfiler.lastTime;
 import static ru.taskurotta.test.stress.LifetimeProfiler.stabilizationCounter;
 import static ru.taskurotta.test.stress.LifetimeProfiler.startTime;
+import static ru.taskurotta.test.stress.LifetimeProfiler.startedProcessCount;
 import static ru.taskurotta.test.stress.LifetimeProfiler.stopDecorating;
 import static ru.taskurotta.test.stress.LifetimeProfiler.taskCount;
 import static ru.taskurotta.test.stress.LifetimeProfiler.tasksForStat;
@@ -50,7 +51,16 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
         log.info("onApplicationEvent");
         if (needRun) {
-            Executors.newSingleThreadExecutor().submit(this);
+            final ExecutorService executorService1 = Executors.newSingleThreadExecutor();
+
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    executorService1.shutdown();
+                }
+            });
+
+            executorService1.submit(this);
         }
     }
 
@@ -58,10 +68,14 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public void sendInitialTasks(int shotSize) {
         log.info("Sending new " + shotSize + " tasks");
 
+        sendTasks(shotSize);
+    }
+
+    public static void sendTasks(int shotSize) {
+
         for (int i = 0; i < shotSize; i++) {
             sendOneTask();
         }
-
     }
 
     public static void sendOneTask() {
@@ -70,11 +84,13 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
             @Override
             public void run() {
                 boolean done = false;
+                // todo: break on shutdown
                 while (!done) {
                     try {
                         deciderClient.start();
                         cd.countDown();
                         done = true;
+                        startedProcessCount.incrementAndGet();
                     } catch (Exception e) {
                         log.warn("Start task rejected", e);
                     }

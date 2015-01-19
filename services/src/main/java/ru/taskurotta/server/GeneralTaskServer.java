@@ -17,12 +17,21 @@ import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
-import ru.taskurotta.transport.model.*;
+import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
+import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.RetryPolicyConfigUtil;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * User: romario
@@ -138,6 +147,9 @@ public class GeneralTaskServer implements TaskServer {
      */
     public void processDecision(DecisionContainer taskDecision) {
 
+        // save it in task service
+        taskService.addDecision(taskDecision);
+
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
 
@@ -193,6 +205,29 @@ public class GeneralTaskServer implements TaskServer {
             for (UUID readyTaskId : readyTasks) {
                 // WARNING: This is not optimal code. We are getting whole task only for name and version values.
                 TaskContainer task = taskService.getTask(readyTaskId, processId);
+                if (task == null) {
+
+                    // may be task not stored to collection yet.
+                    // this is ugly and should be fixed
+                    for (TaskContainer taskC: taskDecision.getTasks()) {
+                        if (taskC.getTaskId().equals(readyTaskId)) {
+                            task = taskC;
+                            break;
+                        }
+                    }
+
+                    if (task == null) {
+                        logger.error("#[{}]/[{}]: failed to enqueue task. task not found into taskService. " +
+                                        "dependencyDecision = [{}]",
+                                processId,
+                                taskId,
+                                dependencyDecision);
+
+                        // wait recovery for this process
+                        // todo: throw exception?
+                        return;
+                    }
+                }
                 enqueueTask(readyTaskId, task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
             }
         }
@@ -200,7 +235,7 @@ public class GeneralTaskServer implements TaskServer {
         if (dependencyDecision.isProcessFinished()) {
             processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
-            garbageCollectorService.delete(processId);
+            garbageCollectorService.collect(processId);
         }
 
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);

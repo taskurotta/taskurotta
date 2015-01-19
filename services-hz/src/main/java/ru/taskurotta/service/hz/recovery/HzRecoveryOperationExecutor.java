@@ -11,7 +11,6 @@ import ru.taskurotta.service.recovery.RecoveryProcessService;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +26,8 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
     private boolean enabled;
 
     private IQueue<Operation> operationIQueue;
+
+    private volatile boolean notInShutdown = true;
 
     public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
                                        String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
@@ -52,7 +53,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
         final ExecutorService recoveryOperationExecutorService = Executors.newFixedThreadPool(recoveryOperationPoolSize);
 
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
@@ -62,23 +63,37 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
             }
         });
 
-        executorService.scheduleWithFixedDelay(new Runnable() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                while (!operationIQueue.isEmpty()) {
+                notInShutdown = false;
+            }
+        });
+
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+
+                while (notInShutdown) {
+
                     try {
                         Operation operation = operationIQueue.poll(1, TimeUnit.SECONDS);
 
-                        if (operation != null) {
-                            operation.init(recoveryProcessService);
-                            recoveryOperationExecutorService.submit(operation);
+                        if (operation == null) {
+                            continue;
                         }
+
+                        operation.init(recoveryProcessService);
+
+                        recoveryOperationExecutorService.submit(operation);
+
                     } catch (Throwable throwable) {
                         logger.error(throwable.getLocalizedMessage(), throwable);
                     }
                 }
+
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        });
     }
 
     @Override

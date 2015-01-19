@@ -302,7 +302,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         logger.debug("#[{}]: finish process. Save result [{}] from [{}] as process result", processId, returnValue, startTaskId);
 
         // send process to GC
-        garbageCollectorService.delete(processId);
+        garbageCollectorService.collect(processId);
     }
 
     public void setDependencyService(DependencyService dependencyService) {

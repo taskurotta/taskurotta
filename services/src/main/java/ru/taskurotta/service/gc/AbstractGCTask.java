@@ -30,16 +30,13 @@ public abstract class AbstractGCTask implements Runnable {
     }
 
     protected void gc(UUID processId) {
-
         if (processId == null) {
             logger.warn("ProcessId for garbage collector is null");
             return;
         }
-
         logger.trace("Start garbage collector for process [{}]", processId);
 
         Graph graph = graphDao.getGraph(processId);
-
         if (graph == null) {
             logger.error("Not found graph for process [{}], stop garbage collector for this process", processId);
             if (processService.getStartTask(processId) == null) {
