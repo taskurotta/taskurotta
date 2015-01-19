@@ -235,7 +235,7 @@ public class GeneralTaskServer implements TaskServer {
         if (dependencyDecision.isProcessFinished()) {
             processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
-            garbageCollectorService.delete(processId);
+            garbageCollectorService.collect(processId);
         }
 
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);

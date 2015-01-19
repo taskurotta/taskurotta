@@ -290,7 +290,7 @@ public class MockServiceBundle implements ServiceBundle {
     public GarbageCollectorService getGarbageCollectorService() {
         return new GarbageCollectorService() {
             @Override
-            public void delete(UUID processId) {
+            public void collect(UUID processId) {
                 // ignore
             }
 

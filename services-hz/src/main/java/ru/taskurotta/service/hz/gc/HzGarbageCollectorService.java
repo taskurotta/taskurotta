@@ -86,11 +86,10 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
     }
 
     @Override
-    public void delete(UUID processId) {
+    public void collect(UUID processId) {
         if (!enabled) {
             return;
         }
-
         garbageCollectorQueue.add(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
     }
 
