@@ -62,7 +62,6 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             }
         });
 
-
         for (int i = 0; i < poolSize; i++) {
             executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override

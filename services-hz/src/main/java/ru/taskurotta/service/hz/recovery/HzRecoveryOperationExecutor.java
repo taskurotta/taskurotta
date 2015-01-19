@@ -101,7 +101,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         if (!enabled) {
             return;
         }
-
         operationIQueue.offer(operation);
     }
 
@@ -110,7 +109,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         if (!enabled) {
             return 0;
         }
-
         return operationIQueue.size();
     }
 
