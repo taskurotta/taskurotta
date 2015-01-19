@@ -6,10 +6,10 @@
 
     <!-- Mongo -->
     <bean id="writeConcern" class="com.mongodb.WriteConcern">
-        <constructor-arg name="w" value="1"/>
-        <constructor-arg name="wtimeout" value="0"/>
-        <constructor-arg name="fsync" value="true"/>
-        <constructor-arg name="j" value="true"/>
+        <constructor-arg name="w" value="${mongo.options.write-concern.w}"/>
+        <constructor-arg name="wtimeout" value="${mongo.options.write-concern.wtimeout}"/>
+        <constructor-arg name="fsync" value="${mongo.options.write-concern.fsync}"/>
+        <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
     </bean>
 
     <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder" />
