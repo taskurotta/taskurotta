@@ -113,24 +113,18 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
         UUID taskId = pArg.getTaskId();
 
-        if (!taskDao.isTaskReleased(taskId, processId)) {
-            if (ArgType.NO_WAIT.equals(argType)) {
-                // value may be null for NoWait promises
-                // leave it in peace...
-                return pArg;
-            }
-            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
+        //try to find promise value obtained by its task result
+        ArgContainer taskValue = null;
+
+        try {
+            taskValue = getTaskValue(taskId, processId, ArgType.NO_WAIT.equals(argType));
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("Not initialized promise before execute [" + task + "]", e);
         }
 
-        ArgContainer taskValue = getTaskValue(taskId, processId);//try to find promise value obtained by its task result
-
+        // Task not completed yet and not initialized Promise is acceptable by Decider
         if (taskValue == null) {
-            if (ArgType.NO_WAIT.equals(argType)) {
-                // value may be null for NoWait promises
-                // leave it in peace...
-                return pArg;
-            }
-            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
+            return pArg;
         }
 
         ArgContainer newArg = new ArgContainer(taskValue);
@@ -152,21 +146,27 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         return TaskType.DECIDER_ASYNCHRONOUS.equals(taskType);
     }
 
-    private ArgContainer getTaskValue(UUID taskId, UUID processId) {
+    /**
+     * @return ArgContainer (even in case of null value result), null if it acceptable (isNoWait is true)
+     * or throw IllegalArgumentException (id decision not found and isNoWait is false)
+     */
+    private ArgContainer getTaskValue(UUID taskId, UUID processId, boolean isNoWait) throws IllegalStateException {
 
-        logger.debug("getTaskValue([{}])", taskId);
-        if (taskId == null) {
-            throw new IllegalStateException("Cannot find value for NULL taskId");
-        }
         DecisionContainer taskDecision = taskDao.getDecision(taskId, processId);
-        logger.debug("taskDecision getted for[{}] is [{}]", taskId, taskDecision);
 
         if (taskDecision == null) {
-            logger.debug("getTaskValue() taskDecision == null");
-            return null;
+            if (isNoWait) {
+                // value may be null for NoWait promises
+                // leave it in peace...
+                return null;
+            }
+            throw new IllegalArgumentException("Decision not found for not @NoWait task [" + taskId + "]");
         }
 
+        logger.debug("taskDecision of taskId [{}] is [{}]", taskId, taskDecision);
+
         ArgContainer result;
+
         if (taskDecision.containsError()) {
             result = taskDecision.getValue();
             result.setErrorContainer(taskDecision.getErrorContainer());
@@ -174,7 +174,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             result = taskDecision.getValue();
             if (result != null && result.isPromise() && !result.isReady()) {
                 logger.debug("getTaskValue([{}]) argContainer.isPromise() && !argContainer.isReady(). arg[{}]", taskId, result);
-                result = getTaskValue(result.getTaskId(), processId);
+
+                result = getTaskValue(result.getTaskId(), processId, isNoWait);
             }
         }
 
