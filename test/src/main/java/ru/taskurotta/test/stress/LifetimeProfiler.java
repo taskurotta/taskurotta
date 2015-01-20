@@ -82,6 +82,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1?
                 (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0]: null;
 
+        if (hazelcastInstance != null) {
+            new ProcessPusher(hazelcastInstance, 40, 10, 8000);
+        }
+
         return new TaskSpreader() {
             @Override
             public Task poll() {
@@ -164,31 +168,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     sb.append("\n startedProcessCount = " + startedProcessCount);
 
-
                     logger.info(sb.toString());
 //                    System.err.println(sb);
                 }
 
-                // if server in the same jvm
-                if (hazelcastInstance != null) {
-                    if (count % 500 == 0) {
-
-                        // we should not get IQueue directly from hazelcast instance. It prevents
-                        // to receive not initialized queue without Store, for example.
-                        IQueue deciderQueue = getQueueIfInitialized(hazelcastInstance,
-                                "task_ru.taskurotta.test.fullfeature.decider.FullFeatureDecider#1.0");
-                        IQueue workerQueue = getQueueIfInitialized(hazelcastInstance,
-                                "task_ru.taskurotta.test.fullfeature.worker.FullFeatureWorker#1.0");
-
-                        if (deciderQueue != null && workerQueue != null) {
-                            int maxTasks = Math.max(deciderQueue.size(), workerQueue.size());
-                            if (maxTasks < 1000) {
-                                StressTaskCreator.sendTasks(1000 - maxTasks);
-                            }
-                        }
-                    }
-
-                } else {
+                // if server not in the same jvm
+                if (hazelcastInstance == null) {
 
                     if (task.getTarget().getName().equals(ru.taskurotta.test.fullfeature.decider.FullFeatureDecider.class
                             .getName()) &&
@@ -197,6 +182,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         StressTaskCreator.sendOneTask();
                     }
                 }
+
 
                 if (timeIsZero) {
                     long current = System.currentTimeMillis();
@@ -244,23 +230,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     }
 
     ConcurrentHashMap<String, IQueue> queueCache = new ConcurrentHashMap<>();
-
-    public IQueue getQueueIfInitialized(HazelcastInstance hzInstance, String name) {
-
-        IQueue queue = (IQueue) queueCache.get(name);
-        if (queue != null) {
-            return queue;
-        }
-
-        for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
-            if ((distributedObject instanceof IQueue) && name.equals(distributedObject.getName())) {
-                queue = (IQueue) distributedObject;
-                return queueCache.putIfAbsent(name, queue);
-            }
-        }
-
-        return null;
-    }
 
     public static String bytesToMb(long bytes) {
         return new Formatter().format("%6.2f", ((double) bytes / 1024 / 1024)).toString();
