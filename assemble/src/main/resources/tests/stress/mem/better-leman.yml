@@ -53,6 +53,9 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
+             \@level: INFO
+        - ru.taskurotta.test.better:
+             key: name
              \@level: DEBUG
         - ru.taskurotta.test.fullfeature:
              key: name
@@ -60,6 +63,9 @@ logback:
         - ru.taskurotta.service.gc:
              key: name
              \@level: DEBUG
+        - com.hazelcast:
+             key: name
+             \@level: ERROR
         - ru.taskurotta.service.hz.gc:
              key: name
              \@level: DEBUG

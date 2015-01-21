@@ -1,11 +1,14 @@
 package ru.taskurotta.test.better;
 
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderClient;
 
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,23 +40,32 @@ public class SimpleTestRunner {
 
 
     public void initAndStart() throws InterruptedException {
-        log.info("I'm initializing!");
-        log.info("Initial size = {}", initialSize);
-        log.info("Bundle size = {}", bundleSize);
-        log.info("Threshold = {}", threshold);
-        log.info("Threads count = {}", threads);
-//        Set<HazelcastInstance> allHazelcastInstances = Hazelcast.getAllHazelcastInstances();
-//        HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ? Hazelcast.getAllHazelcastInstances().iterator().next() : null;
+        Set<HazelcastInstance> allHazelcastInstances = Hazelcast.getAllHazelcastInstances();
+        HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ? Hazelcast.getAllHazelcastInstances().iterator().next() : null;
 
-//        taskCountService = new TaskCountServiceImpl(hazelcastInstance);
+        taskCountService = new TaskCountServiceImpl(hazelcastInstance);
         executorService = Executors.newFixedThreadPool(threads);
         DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
         decider = deciderClientProvider.getDeciderClient(FullFeatureDeciderClient.class);
-        start();
+        Executors.newSingleThreadExecutor().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(10000);
+                    start();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void start() throws InterruptedException {
         log.info("Starting new test...");
+        log.info("Initial size = {}", initialSize);
+        log.info("Bundle size = {}", bundleSize);
+        log.info("Threshold = {}", threshold);
+        log.info("Threads count = {}", threads);
         countDownLatch = new CountDownLatch(threads);
         for (int i = 0; i < threads; i++) {
             Runnable task = new Runnable() {
@@ -83,12 +95,12 @@ public class SimpleTestRunner {
     }
 
     private boolean isConditionToAddMoreTask() {
-//        String deciderQueue = "task_ru.taskurotta.test.fullfeature.decider.FullFeatureDecider#1.0";
-//        String workerQueue = "task_ru.taskurotta.test.fullfeature.worker.FullFeatureWorker#1.0";
-//        int deciderTaskCount = taskCountService.activateTaskCount(deciderQueue);
-//        int workerTaskCount = taskCountService.activateTaskCount(workerQueue);
-//        int maxTasks = Math.max(deciderTaskCount, workerTaskCount);
-        return false;//maxTasks < threshold;
+        String deciderQueue = "task_ru.taskurotta.test.fullfeature.decider.FullFeatureDecider#1.0";
+        String workerQueue = "task_ru.taskurotta.test.fullfeature.worker.FullFeatureWorker#1.0";
+        int deciderTaskCount = taskCountService.activateTaskCount(deciderQueue);
+        int workerTaskCount = taskCountService.activateTaskCount(workerQueue);
+        int maxTasks = Math.max(deciderTaskCount, workerTaskCount);
+        return maxTasks < threshold;
     }
 
     public void setThreshold(int threshold) {
@@ -122,4 +134,6 @@ public class SimpleTestRunner {
     public void setTaskCountService(TaskCountService taskCountService) {
         this.taskCountService = taskCountService;
     }
+
+
 }
