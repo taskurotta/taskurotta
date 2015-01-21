@@ -10,21 +10,16 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
+          - classpath:ru/taskurotta/test/better/SpreaderBeans.xml
         defaultPropertiesLocation: default.properties
         properties:
-          duration: 10 hours
-          timeout: 2 seconds
-          threads: 25
+          duration: 2 minutes
+          threads: 50
+          thredhold: 1000
+          bundleSize: 5000
           gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
-
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.time.LifeTimeProfiler
 
 actor:
   - FFDecider:
@@ -45,14 +40,14 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./target/5logs/leman24.log
+             file: logs/leman24.log
              append: true
              encoder:
                  pattern: \%d \%p [\%t] \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: DEBUG
+             \@level: INFO
         - ru.taskurotta.test.fullfeature:
              key: name
              \@level: ERROR

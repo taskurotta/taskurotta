@@ -10,12 +10,13 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-          - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
+          - classpath:ru/taskurotta/test/better/SpreaderBeans.xml
         defaultPropertiesLocation: default.properties
         properties:
-          duration: 10 hours
-          timeout: 2 seconds
+          duration: 30 minutes
           threads: 25
+          threshold: 1000
+          bundleSize: 2000
           gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
