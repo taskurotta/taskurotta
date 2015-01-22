@@ -1,6 +1,7 @@
 package ru.taskurotta.test.better;
 
 import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
@@ -8,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 /**
  * Created by greg on 20/01/15.
@@ -16,59 +17,34 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class TaskCountServiceImpl implements TaskCountService {
 
-    private Logger log = LoggerFactory.getLogger(TaskCountServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(TaskCountServiceImpl.class);
 
-
-    private ConcurrentHashMap<String, IQueue> queueCache = new ConcurrentHashMap<>();
     private HazelcastInstance hazelcastInstance;
 
-
-    public TaskCountServiceImpl(HazelcastInstance hazelcastInstance) {
-        this.hazelcastInstance = hazelcastInstance;
+    public TaskCountServiceImpl() {
+        Set<HazelcastInstance> allHazelcastInstances = Hazelcast.getAllHazelcastInstances();
+        hazelcastInstance = allHazelcastInstances.size() == 1 ? Hazelcast.getAllHazelcastInstances().iterator().next() : null;
+        if (hazelcastInstance == null) {
+            throw new IllegalArgumentException("Hazelcast instance is null");
+        }
     }
 
-    public IQueue getQueueIfInitialized(HazelcastInstance hzInstance, String name) {
-
-        IQueue queue = queueCache.get(name);
-        if (queue != null) {
-            return queue;
-        }
-
-        for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
-            if ((distributedObject instanceof IQueue) && name.equals(distributedObject.getName())) {
-                queue = (IQueue) distributedObject;
-                return queueCache.putIfAbsent(name, queue);
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxQueuesSize() {
-
         int max = 0;
-
         for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
             if (distributedObject instanceof IQueue) {
                 Queue queue = (IQueue) distributedObject;
                 int size = queue.size();
                 max = Math.max(max, size);
-
             }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("MaxQueuesSize = {}", max);
         }
 
         return max;
     }
 
-    @Override
-    public int activateTaskCount(String queueName) {
-        IQueue queue = getQueueIfInitialized(hazelcastInstance, queueName);
-        if (queue != null) {
-            return queue.size();
-        } else {
-            log.debug("Queue {} still not initialized {}", hazelcastInstance, queueName);
-            return 0;
-        }
-    }
 }
