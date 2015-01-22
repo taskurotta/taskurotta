@@ -32,6 +32,7 @@ public class SimpleTestRunner {
     private long startTime = System.currentTimeMillis();
     private AtomicBoolean isShutdown = new AtomicBoolean(false);
     private AtomicInteger threadCounter = new AtomicInteger(0);
+    private volatile int lastMeasuredMaxQueue = 0;
 
     private CountDownLatch latch;
 
@@ -98,7 +99,9 @@ public class SimpleTestRunner {
                 Thread.currentThread().setName("Producer thread");
                 while (isConditionToRunTrue()) {
                     int maxQueuesSize = taskCountService.getMaxQueuesSize();
-                    if (maxQueuesSize > queueSizeThreshold) {
+
+                    if (GeneralTaskServer.startedProcessesCounter.get() - GeneralTaskServer.finishedProcessesCounter.get() > 1000 || maxQueuesSize > queueSizeThreshold) {
+                        lastMeasuredMaxQueue = maxQueuesSize;
                         continue;
                     }
                     int currSize = queue.size();
@@ -135,6 +138,7 @@ public class SimpleTestRunner {
     }
 
     private void printServerInfoToConsole() {
+        log.info("Max queue = {}", lastMeasuredMaxQueue);
         log.info("Started processes = {}", GeneralTaskServer.startedProcessesCounter.get());
         log.info("Finished processes = {}", GeneralTaskServer.finishedProcessesCounter.get());
         log.info("Broken processes = {}", GeneralTaskServer.brokenProcessesCounter.get());

@@ -16,8 +16,8 @@ spreader:
           duration: 30 minutes
           threshold: 200
           threadSize: 10
-          queueSizeThreshold: 500
-          speed: 40
+          queueSizeThreshold: 1000
+          speed: 4
           gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
@@ -63,13 +63,13 @@ logback:
              \@level: ERROR
         - ru.taskurotta.service.gc:
              key: name
-             \@level: DEBUG
+             \@level: ERROR
         - com.hazelcast:
              key: name
              \@level: ERROR
         - ru.taskurotta.service.hz.gc:
              key: name
-             \@level: DEBUG
+             \@level: ERROR
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF
