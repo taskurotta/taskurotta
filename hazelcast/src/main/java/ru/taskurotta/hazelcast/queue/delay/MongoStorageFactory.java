@@ -93,13 +93,15 @@ public class MongoStorageFactory implements StorageFactory {
                             DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
                             IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                            DBCursor dbCursor = dbCollection.find(query);
-                            while (dbCursor.hasNext()) {
-                                DBObject dbObject = dbCursor.next();
-                                StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+                            // todo: batch size should be parametrized
+                            try (DBCursor dbCursor = dbCollection.find(query).batchSize(100)) {
+                                while (dbCursor.hasNext()) {
+                                    DBObject dbObject = dbCursor.next();
+                                    StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
 
-                                if (iQueue.offer(storageItem.getObject())) {
-                                    dbCollection.remove(dbObject);
+                                    if (iQueue.offer(storageItem.getObject())) {
+                                        dbCollection.remove(dbObject);
+                                    }
                                 }
                             }
                         }

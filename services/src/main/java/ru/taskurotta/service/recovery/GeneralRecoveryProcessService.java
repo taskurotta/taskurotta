@@ -99,47 +99,39 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
             } else {//restart unfinished tasks
 
-                if (!taskContainers.isEmpty()) {
+                final AtomicBoolean boolContainer = new AtomicBoolean();
 
+                logger.trace("#[{}]: try to update graph", processId);
+                boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
+                    @Override
+                    public UUID getProcessId() {
+                        return processId;
+                    }
 
-                    final AtomicBoolean boolContainer = new AtomicBoolean();
-
-                    logger.trace("#[{}]: try to update graph", processId);
-                    boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
-                        @Override
-                        public UUID getProcessId() {
-                            return processId;
+                    @Override
+                    public boolean apply(Graph graph) {
+                        graph.setTouchTimeMillis(System.currentTimeMillis());
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
+                                    new Date(graph.getTouchTimeMillis()));
                         }
 
-                        @Override
-                        public boolean apply(Graph graph) {
-                            graph.setTouchTimeMillis(System.currentTimeMillis());
-                            if (logger.isTraceEnabled()) {
-                                logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
-                                        new Date(graph.getTouchTimeMillis()));
-                            }
+                        int restartResult = restartTasks(taskContainers, processId);
+                        restartedTasksCounter.addAndGet(restartResult);
 
-                            int restartResult = restartTasks(taskContainers, processId);
-                            restartedTasksCounter.addAndGet(restartResult);
+                        boolContainer.set(restartResult > 0);
 
-                            boolContainer.set(restartResult > 0);
+                        // todo: is it really needed?
+                        brokenProcessService.delete(processId);
 
-                            // todo: is it really needed?
-                            brokenProcessService.delete(processId);
+                        return true;
+                    }
+                });
 
-                            return true;
-                        }
-                    });
+                result = boolContainer.get();
 
-                    result = boolContainer.get();
+                logger.debug("#[{}]: has been recovered, graph update result [{}]", processId, graphUpdated);
 
-                    logger.debug("#[{}]: has been recovered, graph update result [{}]", processId, graphUpdated);
-
-                } else {
-
-                    System.err.println("\n\n\n\n\n\n\n\n\n\nVVVVVAAAAAAHHHHHHH!\n\n\n\n\n");
-                    System.exit(-1);
-                }
             }
 
         }

@@ -134,7 +134,7 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="nodeLock" ref="recoveryNodeLock" />
-        <constructor-arg name="limit" value = "${recovery.find-incomplete-process-pack-limit}" />
+        <constructor-arg name="batchSize" value = "${recovery.find-incomplete-process-batch-size}" />
     </bean>
 
     <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
