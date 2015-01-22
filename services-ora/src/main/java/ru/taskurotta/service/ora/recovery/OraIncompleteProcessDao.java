@@ -8,6 +8,7 @@ import ru.taskurotta.service.recovery.IncompleteProcessDao;
 import ru.taskurotta.service.recovery.IncompleteProcessesCursor;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -56,6 +57,11 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
             throw new ServiceCriticalException("Incomplete processes search before time["+timeBefore+"] failed", e);
         }
         return new IncompleteProcessesCursor() {
+            @Override
+            public void close() throws IOException {
+
+            }
+
             @Override
             public Collection<UUID> getNext() {
                 return result;

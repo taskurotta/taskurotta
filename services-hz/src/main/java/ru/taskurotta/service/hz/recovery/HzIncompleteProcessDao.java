@@ -10,12 +10,12 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessDao;
 import ru.taskurotta.service.recovery.IncompleteProcessesCursor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
 /**
- *
  * Date: 13.01.14 12:55
  */
 public class HzIncompleteProcessDao implements IncompleteProcessDao {
@@ -41,7 +41,7 @@ public class HzIncompleteProcessDao implements IncompleteProcessDao {
                 new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));
 
         //PagingPredicate should be available in HZ 3.2
-        final Collection<UUID> result = new ArrayList<>();;
+        final Collection<UUID> result = new ArrayList<>();
         if (limit > 0) {
 
             int cnt = 0;
@@ -56,10 +56,15 @@ public class HzIncompleteProcessDao implements IncompleteProcessDao {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Found [{}] incomplete processes for beforeTime[{]]", (result!=null? result.size(): null), timeBefore);
+            logger.debug("Found [{}] incomplete processes for beforeTime[{]]", (result != null ? result.size() : null), timeBefore);
         }
 
         return new IncompleteProcessesCursor() {
+            @Override
+            public void close() throws IOException {
+
+            }
+
             @Override
             public Collection<UUID> getNext() {
                 return result;

@@ -87,7 +87,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0] : null;
 
         if (hazelcastInstance != null) {
-            new ProcessPusher(hazelcastInstance, 40, 10, 8000, 10000000);
+            new ProcessPusher(hazelcastInstance, 40, 10, 8000, 100000);
         }
 
 

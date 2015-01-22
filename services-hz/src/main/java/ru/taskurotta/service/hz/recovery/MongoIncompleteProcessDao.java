@@ -13,6 +13,7 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessDao;
 import ru.taskurotta.service.recovery.IncompleteProcessesCursor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
@@ -38,39 +39,63 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
     }
 
     @Override
-    public IncompleteProcessesCursor findProcesses(long timeBefore, final int limit) {
+    public IncompleteProcessesCursor findProcesses(long timeBefore, final int batchSize) {
 
-        DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
+        final DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
 
         BasicDBObject query = new BasicDBObject();
         query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", timeBefore));
         query.append(STATE_INDEX_NAME, Process.START);
 
-        final DBCursor dbCursor = dbCollection.find(query);
-        dbCursor.batchSize(limit);
+        return new MongoIncompleteProcessesCursor(dbCollection, query, batchSize);
+    }
 
-        return new IncompleteProcessesCursor() {
-            @Override
-            public Collection<UUID> getNext() {
+    private class MongoIncompleteProcessesCursor implements IncompleteProcessesCursor {
 
-                Collection<UUID> result = new ArrayList<>();
+        DBCollection dbCollection;
+        BasicDBObject query;
+        int batchSize;
 
-                int i = 0;
-                while (i < limit && dbCursor.hasNext()) {
-                    DBObject dbObject = dbCursor.next();
-                    Process process = (Process) converter.toObject(Process.class, dbObject);
-                    UUID processId = process.getProcessId();
-                    result.add(processId);
-                }
+        DBCursor dbCursor;
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Found [{}] incomplete processes", result.size());
-                }
+        public MongoIncompleteProcessesCursor(DBCollection dbCollection, BasicDBObject query, int batchSize) {
+            this.dbCollection = dbCollection;
+            this.query = query;
+            this.batchSize = batchSize;
+        }
 
-                return result;
+        public void open() {
+            dbCursor = dbCollection.find(query).batchSize(batchSize);
+        }
+
+        @Override
+        public void close() throws IOException {
+            dbCursor.close();
+        }
+
+        @Override
+        public Collection<UUID> getNext() {
+
+            if (dbCursor == null) {
+                open();
             }
-        };
 
+            Collection<UUID> result = new ArrayList<>();
+
+            int i = 0;
+            while (i < batchSize && dbCursor.hasNext()) {
+                DBObject dbObject = dbCursor.next();
+                Process process = (Process) converter.toObject(Process.class, dbObject);
+                UUID processId = process.getProcessId();
+                result.add(processId);
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("Found [{}] incomplete processes", result.size());
+            }
+
+            return result;
+        }
     }
 
 }

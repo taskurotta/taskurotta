@@ -30,19 +30,19 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
     private long findIncompleteProcessPeriod;
     private long incompleteTimeOutMillis;
     private AtomicBoolean enabled = new AtomicBoolean(false);
-    private int limit;
+    private int batchSize;
 
     private ScheduledExecutorService scheduledExecutorService;
 
     public DefaultIncompleteProcessFinder(final IncompleteProcessDao dao, final Lock nodeLock, final OperationExecutor operationExecutor, long findIncompleteProcessPeriod,
-                                          final long incompleteTimeOutMillis, boolean enabled, int limit) {
+                                          final long incompleteTimeOutMillis, boolean enabled, int batchSize) {
 
         this.operationExecutor = operationExecutor;
         this.dao = dao;
         this.nodeLock = nodeLock;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
         this.incompleteTimeOutMillis = incompleteTimeOutMillis;
-        this.limit = limit;
+        this.batchSize = this.batchSize;
 
         if (enabled) {
             start();
@@ -88,22 +88,25 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                                 logger.debug("Try to find incomplete processes started before [{}]", new Date(timeBefore));
                             }
 
-                            IncompleteProcessesCursor incompleteProcessesCursor = dao.findProcesses(timeBefore, limit);
+                            try (IncompleteProcessesCursor incompleteProcessesCursor = dao.findProcesses(timeBefore,
+                                    batchSize)) {
 
-                            while (true) {
-                                Collection<UUID> incompleteProcesses = incompleteProcessesCursor.getNext();
+                                while (true) {
+                                    Collection<UUID> incompleteProcesses = incompleteProcessesCursor.getNext();
 
-                                if (incompleteProcesses.isEmpty()) {
-                                    break;
+                                    if (incompleteProcesses.isEmpty()) {
+                                        break;
+                                    }
+
+                                    processesOnTimeoutFoundedCounter.addAndGet(incompleteProcesses.size());
+
+                                    for (UUID ip : incompleteProcesses) {
+                                        toRecovery(ip);
+                                    }
+
+                                    logger.debug("[{}] processes were sent to recovery", incompleteProcesses.size());
                                 }
 
-                                processesOnTimeoutFoundedCounter.addAndGet(incompleteProcesses.size());
-
-                                for (UUID ip : incompleteProcesses) {
-                                    toRecovery(ip);
-                                }
-
-                                logger.debug("[{}] processes were sent to recovery", incompleteProcesses.size());
                             }
 
                         } else {
