@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessDao;
+import ru.taskurotta.service.recovery.IncompleteProcessesCursor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,8 +38,7 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
     }
 
     @Override
-    public Collection<UUID> findProcesses(long timeBefore, int limit) {
-        Collection<UUID> result = new ArrayList<>();
+    public IncompleteProcessesCursor findProcesses(long timeBefore, final int limit) {
 
         DBCollection dbCollection = mongoTemplate.getCollection(processesStorageMapName);
 
@@ -46,19 +46,31 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
         query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", timeBefore));
         query.append(STATE_INDEX_NAME, Process.START);
 
-        try (DBCursor dbCursor = limit>0? dbCollection.find(query).limit(limit): dbCollection.find(query)) {
-            while (dbCursor.hasNext()) {
-                DBObject dbObject = dbCursor.next();
-                Process process = (Process) converter.toObject(Process.class, dbObject);
-                UUID processId = process.getProcessId();
-                result.add(processId);
+        final DBCursor dbCursor = dbCollection.find(query);
+        dbCursor.batchSize(limit);
+
+        return new IncompleteProcessesCursor() {
+            @Override
+            public Collection<UUID> getNext() {
+
+                Collection<UUID> result = new ArrayList<>();
+
+                int i = 0;
+                while (i < limit && dbCursor.hasNext()) {
+                    DBObject dbObject = dbCursor.next();
+                    Process process = (Process) converter.toObject(Process.class, dbObject);
+                    UUID processId = process.getProcessId();
+                    result.add(processId);
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Found [{}] incomplete processes", result.size());
+                }
+
+                return result;
             }
-        }
+        };
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Found [{}] incomplete processes", result.size());
-        }
-
-        return result;
     }
+
 }

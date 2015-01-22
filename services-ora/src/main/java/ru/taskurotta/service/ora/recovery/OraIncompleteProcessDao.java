@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.ServiceCriticalException;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.recovery.IncompleteProcessDao;
+import ru.taskurotta.service.recovery.IncompleteProcessesCursor;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -32,8 +33,8 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
     }
 
     @Override
-    public Collection<UUID> findProcesses(long timeBefore, int limit) {
-        Collection<UUID> result;
+    public IncompleteProcessesCursor findProcesses(long timeBefore, int limit) {
+        final Collection<UUID> result = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(getSql(limit))) {
 
@@ -44,7 +45,7 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
             }
 
             ResultSet resultSet = preparedStatement.executeQuery();
-            result = new ArrayList<>();
+
             while (resultSet.next()) {
                 UUID processId = UUID.fromString(resultSet.getString("process_id"));
                 result.add(processId);
@@ -54,7 +55,12 @@ public class OraIncompleteProcessDao implements IncompleteProcessDao {
             logger.error("Cannot find incomplete before time["+timeBefore+"]processes limit["+limit+"] due to database error", e);
             throw new ServiceCriticalException("Incomplete processes search before time["+timeBefore+"] failed", e);
         }
-        return result;
+        return new IncompleteProcessesCursor() {
+            @Override
+            public Collection<UUID> getNext() {
+                return result;
+            }
+        };
     }
 
     private String getSql(int limit) {

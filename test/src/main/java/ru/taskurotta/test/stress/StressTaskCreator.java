@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import static ru.taskurotta.test.stress.LifetimeProfiler.lastTime;
 import static ru.taskurotta.test.stress.LifetimeProfiler.stabilizationCounter;
 import static ru.taskurotta.test.stress.LifetimeProfiler.startTime;
-import static ru.taskurotta.test.stress.LifetimeProfiler.startedProcessCount;
+import static ru.taskurotta.test.stress.LifetimeProfiler.startedProcessCounter;
 import static ru.taskurotta.test.stress.LifetimeProfiler.stopDecorating;
 import static ru.taskurotta.test.stress.LifetimeProfiler.taskCount;
 import static ru.taskurotta.test.stress.LifetimeProfiler.tasksForStat;
@@ -90,7 +90,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
                         deciderClient.start();
                         cd.countDown();
                         done = true;
-                        startedProcessCount.incrementAndGet();
+                        startedProcessCounter.incrementAndGet();
                     } catch (Exception e) {
                         log.warn("Start task rejected", e);
                     }

@@ -98,4 +98,5 @@ public class Process implements Serializable {
     public void setStartTask(TaskContainer startTask) {
         this.startTask = startTask;
     }
+
 }
