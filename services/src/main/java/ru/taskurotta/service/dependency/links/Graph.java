@@ -213,6 +213,26 @@ public class Graph implements Serializable {
         touchTimeMillis = lastApplyTimeMillis = currentTime;
     }
 
+    public Map<UUID, Long> getAllReadyItems() {
+
+        Map<UUID, Long> readyItems = null;
+
+        for (UUID itemId: notFinishedItems.keySet()) {
+            if (links.get(itemId) != null) {
+                continue;
+            }
+
+            if (readyItems == null) {
+                readyItems = new HashMap<>();
+            }
+
+            readyItems.put(itemId, notFinishedItems.get(itemId));
+        }
+
+
+        return readyItems;
+    }
+
     private List<UUID> applyNewItems() {
         List<UUID> readyItemsList = new LinkedList<>();
 

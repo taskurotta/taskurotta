@@ -18,11 +18,15 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.hazelcast.store.MongoQueueStore;
+import ru.taskurotta.server.GeneralTaskServer;
+import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
+import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 
 import java.util.Formatter;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +38,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
     public static AtomicLong taskCount = new AtomicLong(0);
-    public static AtomicLong startedProcessCount = new AtomicLong(0);
+    public static AtomicLong startedProcessCounter = new AtomicLong(0);
     public static AtomicLong startTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
     public static int tasksForStat = 500;
@@ -79,12 +83,89 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
         Set allHazelcastInstances = Hazelcast.getAllHazelcastInstances();
 
-        final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1?
-                (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0]: null;
+        final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ?
+                (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0] : null;
 
         if (hazelcastInstance != null) {
-            new ProcessPusher(hazelcastInstance, 40, 10, 8000);
+            new ProcessPusher(hazelcastInstance, 40, 10, 8000, 10000000);
         }
+
+
+        // start dump thread
+        new DaemonThread("stat dumper", TimeUnit.SECONDS, 5) {
+
+            @Override
+            public void daemonJob() {
+
+                long totalHeapCost = 0;
+
+                StringBuilder sb = new StringBuilder();
+
+                for (HazelcastInstance hzInstance : Hazelcast.getAllHazelcastInstances()) {
+
+                    sb.append("\n============  ").append(hzInstance.getName()).append("  ===========");
+
+                    for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
+                        sb.append(String.format("\n%22s->%18s", distributedObject.getServiceName(), distributedObject.getName()));
+                        if (distributedObject instanceof IMap) {
+                            IMap map = (IMap) distributedObject;
+                            LocalMapStats stat = map.getLocalMapStats();
+
+                            sb.append("\tsize = " + map.size());
+                            sb.append("\townedEntryMemoryCost = " + bytesToMb(stat.getOwnedEntryMemoryCost()));
+                            sb.append("\theapCost = " + bytesToMb(stat.getHeapCost()));
+                            sb.append("\tdirtyEntryCount = " + stat.getDirtyEntryCount());
+
+                            totalHeapCost += stat.getHeapCost();
+                        }
+                        if (distributedObject instanceof IQueue) {
+                            IQueue queue = (IQueue) distributedObject;
+                            LocalQueueStats stat = queue.getLocalQueueStats();
+
+                            sb.append("\tsize = " + queue.size());
+                            sb.append("\townedItemCount = " + stat.getOwnedItemCount());
+                        }
+                    }
+
+                    sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
+                }
+
+                sb.append("\nMongo Maps statistics:");
+                sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate()));
+                sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate()));
+                sb.append(String.format("\nload success   mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate()));
+                sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
+
+                sb.append("\nMongo Queues statistics:");
+                sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
+                sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
+
+                sb.append("\n startedProcessesCounter = " +
+                        GeneralTaskServer.startedProcessesCounter.get() +
+                        "  finishedProcessesCounter = " +
+                        GeneralTaskServer.finishedProcessesCounter.get() +
+                        "  brokenProcessesCounter = " +
+                        GeneralTaskServer.brokenProcessesCounter.get());
+                sb.append("\n processesOnTimeoutFoundedCounter = " +
+                                DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +
+                                "  restartedProcessesCounter = " +
+                                GeneralRecoveryProcessService.restartedProcessesCounter.get() +
+                                "  restartedTasksCounter = " +
+                                GeneralRecoveryProcessService.restartedTasksCounter
+                );
+
+                logger.info(sb.toString());
+            }
+
+        }.start();
 
         return new TaskSpreader() {
             @Override
@@ -112,65 +193,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 }
 
                 long count = taskCount.incrementAndGet();
-
-                if (count % 5000 == 0) {
-
-                    long totalHeapCost = 0;
-
-                    StringBuilder sb = new StringBuilder();
-
-                    for (HazelcastInstance hzInstance : Hazelcast.getAllHazelcastInstances()) {
-
-                        sb.append("\n============  ").append(hzInstance.getName()).append("  ===========");
-
-                        for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
-                            sb.append(String.format("\n%22s->%18s", distributedObject.getServiceName(), distributedObject.getName()));
-                            if (distributedObject instanceof IMap) {
-                                IMap map = (IMap) distributedObject;
-                                LocalMapStats stat = map.getLocalMapStats();
-
-                                sb.append("\tsize = " + map.size());
-                                sb.append("\townedEntryMemoryCost = " + bytesToMb(stat.getOwnedEntryMemoryCost()));
-                                sb.append("\theapCost = " + bytesToMb(stat.getHeapCost()));
-                                sb.append("\tdirtyEntryCount = " + stat.getDirtyEntryCount());
-
-                                totalHeapCost += stat.getHeapCost();
-                            }
-                            if (distributedObject instanceof IQueue) {
-                                IQueue queue = (IQueue) distributedObject;
-                                LocalQueueStats stat = queue.getLocalQueueStats();
-
-                                sb.append("\tsize = " + queue.size());
-                                sb.append("\townedItemCount = " + stat.getOwnedItemCount());
-                            }
-                        }
-
-                        sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
-                    }
-
-                    sb.append("\nMongo Maps statistics:");
-                    sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate()));
-                    sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate()));
-                    sb.append(String.format("\nload success   mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate()));
-                    sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
-
-                    sb.append("\nMongo Queues statistics:");
-                    sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
-                    sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
-                    sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
-
-                    sb.append("\n startedProcessCount = " + startedProcessCount);
-
-                    logger.info(sb.toString());
-//                    System.err.println(sb);
-                }
 
                 // if server not in the same jvm
                 if (hazelcastInstance == null) {

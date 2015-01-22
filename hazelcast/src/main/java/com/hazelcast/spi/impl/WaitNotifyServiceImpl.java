@@ -98,12 +98,6 @@ class WaitNotifyServiceImpl implements WaitNotifyService {
     public void await(WaitSupport waitSupport) {
         final WaitNotifyKey key = waitSupport.getWaitKey();
 
-        if (mapWaitingOps.size() % 100 == 0) {
-            if (mapWaitingOps.get(key) == null) {
-                logger.severe("mapWaitingOps.size() = " + mapWaitingOps.size());
-            }
-        }
-
         final Queue<WaitingOp> q = ConcurrencyUtil.getOrPutIfAbsent(mapWaitingOps, key, waitQueueConstructor);
         long timeout = waitSupport.getWaitTimeout();
         WaitingOp waitingOp = new WaitingOp(q, waitSupport);

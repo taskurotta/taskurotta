@@ -3,88 +3,64 @@ package ru.taskurotta.test.stress;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
+import ru.taskurotta.server.GeneralTaskServer;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import static ru.taskurotta.test.stress.LifetimeProfiler.startedProcessCounter;
 
-/**
- * todo: add correct shutdown hooks to stop threads
- */
+
 public class ProcessPusher {
 
     // per second
 
     public ProcessPusher(final HazelcastInstance hazelcastInstance, final long speed, final int threadCount, final int
-            queueSizeThreshold) {
+            queueSizeThreshold, final int runningProcessThreshold) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
+        // queue should be fulled up to 1 seconds to future
+        final long maxSizeLimit = speed * 1l;
+
         // start planner thread
-        new Thread() {
+        new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
             @Override
-            public void run() {
-
-                // queue should be fulled up to 10 seconds to future
-                long maxSizeLimit = speed * 10l;
-
-                long timeCursor = System.currentTimeMillis();
-
-                while (true) {
-
-                    int maxQueuesSize = getMaxQueuesSize(hazelcastInstance);
-
-                    if (maxQueuesSize > queueSizeThreshold) {
-                        try {
-                            TimeUnit.SECONDS.sleep(1);
-                        } catch (InterruptedException e) {
-                        }
-
-                        // reset cursor;
-
-                        timeCursor = System.currentTimeMillis();
-
-                        continue;
-                    }
+            public void daemonJob() {
 
 
-                    int currSize = queue.size();
 
-                    if (currSize < maxSizeLimit) {
+                int maxQueuesSize = getMaxQueuesSize(hazelcastInstance);
 
-                        double interval = 1000l / speed;
+                if (maxQueuesSize > queueSizeThreshold ||  startedProcessCounter.get() - GeneralTaskServer
+                        .finishedProcessesCounter.get() > runningProcessThreshold) {
 
-                        for (int i = 0; i < maxSizeLimit - currSize; i++) {
-                            queue.add(timeCursor += interval);
-                        }
+//                    if (startedProcessCounter.get() - GeneralTaskServer
+//                            .finishedProcessesCounter.get() > runningProcessThreshold) {
+//                        throw new DaemonThread.StopSignal();
+//                    }
 
-                        continue;
-                    }
-
-
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException e) {
-                    }
-
-                }
-            }
-
-            private int getMaxQueuesSize(HazelcastInstance hazelcastInstance) {
-
-                int max = 0;
-
-                for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
-                    if (distributedObject instanceof IQueue) {
-                        Queue queue = (IQueue) distributedObject;
-                        int size = queue.size();
-                        max = Math.max(max, size);
-
-                    }
+                    return;
                 }
 
-                return max;
+
+                int currSize = queue.size();
+
+                if (currSize < maxSizeLimit) {
+
+                    double interval = 1000l / speed;
+                    double timeCursor = System.currentTimeMillis();
+
+                    for (int i = 0; i < maxSizeLimit - currSize; i++) {
+                        timeCursor += interval;
+
+                        queue.add((long) (timeCursor));
+                    }
+
+                    return;
+                }
+
             }
 
         }.start();
@@ -93,40 +69,53 @@ public class ProcessPusher {
         // start pusher threads
         for (int i = 0; i < threadCount; i++) {
 
-            new Thread() {
+            new DaemonThread("process pusher " + i, null, 0) {
+
                 @Override
-                public void run() {
+                public void daemonJob() {
 
+                    Long timeToStart = (Long) queue.poll();
 
-                    while (true) {
-
-                        Long timeToStart = (Long) queue.poll();
-
-                        if (timeToStart == null) {
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(100);
-                            } catch (InterruptedException e) {
-                            }
-
-                            continue;
+                    if (timeToStart == null) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(100);
+                        } catch (InterruptedException e) {
                         }
 
-                        long currTime = System.currentTimeMillis();
-
-                        if (currTime < timeToStart) {
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(timeToStart - currTime);
-                            } catch (InterruptedException e) {
-                            }
-                        }
-
-                        StressTaskCreator.sendOneTask();
+                        return;
                     }
+
+                    long currTime = System.currentTimeMillis();
+
+                    if (currTime < timeToStart.longValue()) {
+
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(timeToStart.longValue() - currTime);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+
+                    StressTaskCreator.sendOneTask();
                 }
             }.start();
+
+        }
+    }
+
+    private static int getMaxQueuesSize(HazelcastInstance hazelcastInstance) {
+
+        int max = 0;
+
+        for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
+            if (distributedObject instanceof IQueue) {
+                Queue queue = (IQueue) distributedObject;
+                int size = queue.size();
+                max = Math.max(max, size);
+
+            }
         }
 
-
+        return max;
     }
 
 }
