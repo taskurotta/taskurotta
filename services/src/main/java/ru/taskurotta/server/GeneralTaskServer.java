@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * User: romario
@@ -41,6 +42,10 @@ import java.util.UUID;
 public class GeneralTaskServer implements TaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+
+    public static final AtomicInteger startedProcessesCounter = new AtomicInteger();
+    public static final AtomicInteger finishedProcessesCounter = new AtomicInteger();
+    public static final AtomicInteger brokenProcessesCounter = new AtomicInteger();
 
     protected ProcessService processService;
     protected TaskService taskService;
@@ -102,6 +107,8 @@ public class GeneralTaskServer implements TaskServer {
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
+
+        startedProcessesCounter.incrementAndGet();
     }
 
 
@@ -233,6 +240,8 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         if (dependencyDecision.isProcessFinished()) {
+            finishedProcessesCounter.incrementAndGet();
+
             processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
             garbageCollectorService.collect(processId);
@@ -319,6 +328,9 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private void saveBrokenProcess(DecisionContainer taskDecision) {
+
+        brokenProcessesCounter.incrementAndGet();
+
         UUID processId = taskDecision.getProcessId();
         BrokenProcess brokenProcess = new BrokenProcess();
         brokenProcess.setTime(System.currentTimeMillis());
