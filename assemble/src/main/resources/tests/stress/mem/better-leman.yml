@@ -14,9 +14,8 @@ spreader:
         defaultPropertiesLocation: default.properties
         properties:
           duration: 30 minutes
-          threads: 25
-          threshold: 1000
-          bundleSize: 2000
+          threshold: 200
+          bundleSize: 800
           gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true

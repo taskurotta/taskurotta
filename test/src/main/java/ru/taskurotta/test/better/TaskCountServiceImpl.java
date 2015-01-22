@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -41,6 +42,23 @@ public class TaskCountServiceImpl implements TaskCountService {
         }
 
         return null;
+    }
+
+    @Override
+    public int getMaxQueuesSize() {
+
+        int max = 0;
+
+        for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
+            if (distributedObject instanceof IQueue) {
+                Queue queue = (IQueue) distributedObject;
+                int size = queue.size();
+                max = Math.max(max, size);
+
+            }
+        }
+
+        return max;
     }
 
     @Override

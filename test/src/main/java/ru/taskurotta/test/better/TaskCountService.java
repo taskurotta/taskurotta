@@ -5,6 +5,8 @@ package ru.taskurotta.test.better;
  */
 public interface TaskCountService {
 
+    int getMaxQueuesSize();
+
     int activateTaskCount(String queueName);
 
 }

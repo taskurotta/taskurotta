@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by greg on 20/01/15.
@@ -21,18 +20,13 @@ public class SimpleTestRunner {
 
     private Logger log = LoggerFactory.getLogger(SimpleTestRunner.class);
     private FullFeatureDeciderClient decider;
-    private int threads;
 
-    private int initialSize;
     private int bundleSize;
     private long duration;
     private int threshold;
     private ExecutorService executorService;
     private TaskCountService taskCountService;
     private ClientServiceManager clientServiceManager;
-
-    private final AtomicInteger counter = new AtomicInteger(0);
-
 
     private long startTime = System.currentTimeMillis();
 
@@ -44,7 +38,7 @@ public class SimpleTestRunner {
         HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ? Hazelcast.getAllHazelcastInstances().iterator().next() : null;
 
         taskCountService = new TaskCountServiceImpl(hazelcastInstance);
-        executorService = Executors.newFixedThreadPool(threads);
+        executorService = Executors.newFixedThreadPool(1);
         DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
         decider = deciderClientProvider.getDeciderClient(FullFeatureDeciderClient.class);
         Executors.newSingleThreadExecutor().submit(new Runnable() {
@@ -62,30 +56,27 @@ public class SimpleTestRunner {
 
     public void start() throws InterruptedException {
         log.info("Starting new test...");
-        log.info("Initial size = {}", initialSize);
         log.info("Bundle size = {}", bundleSize);
         log.info("Threshold = {}", threshold);
-        log.info("Threads count = {}", threads);
-        countDownLatch = new CountDownLatch(threads);
-        for (int i = 0; i < threads; i++) {
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
-                    while (isConditionToRunTrue()) {
-                        int count = counter.getAndIncrement();
-                        if (bundleSize > count || isConditionToAddMoreTask()) {
-                            if (count % threshold == 0) {
-                                log.info("Tasks already started {}", count);
+        countDownLatch = new CountDownLatch(1);
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                while (isConditionToRunTrue()) {
+                    if (isConditionToAddMoreTask()) {
+                        for (int i = 0; i < bundleSize; i++) {
+                            if (i % threshold == 0) {
+                                log.info("Process to start {}", i);
                             }
                             decider.start();
                         }
                     }
-                    log.info("Thread finished");
-                    countDownLatch.countDown();
                 }
-            };
-            executorService.execute(task);
-        }
+                log.info("Test finished");
+                countDownLatch.countDown();
+            }
+        };
+        executorService.execute(task);
         countDownLatch.await();
         System.exit(0);
     }
@@ -95,11 +86,7 @@ public class SimpleTestRunner {
     }
 
     private boolean isConditionToAddMoreTask() {
-        String deciderQueue = "task_ru.taskurotta.test.fullfeature.decider.FullFeatureDecider#1.0";
-        String workerQueue = "task_ru.taskurotta.test.fullfeature.worker.FullFeatureWorker#1.0";
-        int deciderTaskCount = taskCountService.activateTaskCount(deciderQueue);
-        int workerTaskCount = taskCountService.activateTaskCount(workerQueue);
-        int maxTasks = Math.max(deciderTaskCount, workerTaskCount);
+        int maxTasks = taskCountService.getMaxQueuesSize();
         return maxTasks < threshold;
     }
 
@@ -113,14 +100,6 @@ public class SimpleTestRunner {
 
     public void setClientServiceManager(ClientServiceManager clientServiceManager) {
         this.clientServiceManager = clientServiceManager;
-    }
-
-    public void setThreads(int threads) {
-        this.threads = threads;
-    }
-
-    public void setInitialSize(int initialSize) {
-        this.initialSize = initialSize;
     }
 
     public void setBundleSize(int bundleSize) {
