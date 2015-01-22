@@ -6,7 +6,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.Queue;
 import java.util.Set;
@@ -14,7 +13,6 @@ import java.util.Set;
 /**
  * Created by greg on 20/01/15.
  */
-@Component
 public class TaskCountServiceImpl implements TaskCountService {
 
     private static final Logger log = LoggerFactory.getLogger(TaskCountServiceImpl.class);
