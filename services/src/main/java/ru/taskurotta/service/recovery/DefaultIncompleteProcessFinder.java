@@ -32,8 +32,6 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
     private AtomicBoolean enabled = new AtomicBoolean(false);
     private int batchSize;
 
-    private ScheduledExecutorService scheduledExecutorService;
-
     public DefaultIncompleteProcessFinder(final IncompleteProcessDao dao, final Lock nodeLock, final OperationExecutor operationExecutor, long findIncompleteProcessPeriod,
                                           final long incompleteTimeOutMillis, boolean enabled, int batchSize) {
 
@@ -42,7 +40,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
         this.nodeLock = nodeLock;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
         this.incompleteTimeOutMillis = incompleteTimeOutMillis;
-        this.batchSize = this.batchSize;
+        this.batchSize = batchSize;
 
         if (enabled) {
             start();
