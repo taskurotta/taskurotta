@@ -6,7 +6,7 @@
             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <context:annotation-config />
+    <context:annotation-config/>
 
     <context:property-placeholder/>
 
@@ -16,9 +16,10 @@
 
 
     <bean id="taskCreator" class="ru.taskurotta.test.better.SimpleTestRunner" init-method="initAndStart">
-        <property name="threads" value="${threads}"/>
         <property name="bundleSize" value="${bundleSize}"/>
         <property name="threshold" value="${threshold}"/>
+        <property name="threadSize" value="${threadSize}"/>
+        <property name="speed" value="${speed} "/>
         <property name="duration">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${duration}"/>

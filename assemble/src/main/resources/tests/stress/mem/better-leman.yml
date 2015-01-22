@@ -15,6 +15,7 @@ spreader:
         properties:
           duration: 30 minutes
           threshold: 200
+          threadSize: 10
           bundleSize: 800
           gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
