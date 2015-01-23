@@ -85,7 +85,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0] : null;
 
         if (hazelcastInstance != null && isReady.compareAndSet(false, true)) {
-            new ProcessPusher(hazelcastInstance, maxProcessQuantity, 80, 10, 8000, 10000);
+            new ProcessPusher(hazelcastInstance, maxProcessQuantity, 50, 10, 4000, 8000);
         }
 
 
@@ -146,19 +146,23 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
                         MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
 
-                sb.append("\n startedProcessesCounter = " +
-                        GeneralTaskServer.startedProcessesCounter.get() +
+                int pushedCount = ProcessPusher.counter.get();
+                int startedCount = GeneralTaskServer.startedProcessesCounter.get();
+
+                sb.append("\n pushedProcessCounter = " + pushedCount +
+                        "  startedProcessesCounter = " + startedCount +
+                        "  delta = " + (pushedCount - startedCount) +
                         "  finishedProcessesCounter = " +
                         GeneralTaskServer.finishedProcessesCounter.get() +
                         "  brokenProcessesCounter = " +
                         GeneralTaskServer.brokenProcessesCounter.get());
+
                 sb.append("\n processesOnTimeoutFoundedCounter = " +
-                                DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +
-                                "  restartedProcessesCounter = " +
-                                GeneralRecoveryProcessService.restartedProcessesCounter.get() +
-                                "  restartedTasksCounter = " +
-                                GeneralRecoveryProcessService.restartedTasksCounter
-                );
+                        DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +
+                        "  restartedProcessesCounter = " +
+                        GeneralRecoveryProcessService.restartedProcessesCounter.get() +
+                        "  restartedTasksCounter = " +
+                        GeneralRecoveryProcessService.restartedTasksCounter);
 
 
                 logger.info(sb.toString());

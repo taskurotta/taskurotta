@@ -3,7 +3,8 @@ package ru.taskurotta.test.stress;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
-import ru.taskurotta.server.GeneralTaskServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -13,49 +14,64 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProcessPusher {
 
+    private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
+
+    public static AtomicInteger counter = new AtomicInteger(0);
+
     // per second
 
-    public ProcessPusher(final HazelcastInstance hazelcastInstance, final int maxProcessQuantity, final long
-            startProcessPresSecond, final int threadCount, final int queueSizesThreshold, final int
-            runningProcessThreshold) {
+    public ProcessPusher(final HazelcastInstance hazelcastInstance, final int maxProcessQuantity, final int
+            startProcessPresSecond, final int threadCount, final int minQueuesSize, final int maxQueuesSize) {
 
         final Queue queue = new ConcurrentLinkedQueue();
-
-        // queue should be fulled up to 1 seconds to future
-        final long maxSizeLimit = startProcessPresSecond * 1l;
 
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
-            AtomicInteger counter = new AtomicInteger(0);
+            int currentSpeedPerSecond = startProcessPresSecond;
 
             @Override
             public void daemonJob() {
 
+
                 int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
 
                 // should waiting to prevent overload
-                if (sumQueuesSize > queueSizesThreshold || counter.get() - GeneralTaskServer
-                        .finishedProcessesCounter.get() > runningProcessThreshold) {
+                if (sumQueuesSize > maxQueuesSize) {
 
+                    // go slowly
+                    currentSpeedPerSecond --;
                     return;
+                }
+
+
+                if (sumQueuesSize < minQueuesSize) {
+
+                    // go faster
+                    currentSpeedPerSecond++;
                 }
 
 
                 int currSize = queue.size();
 
-                if (currSize < maxSizeLimit) {
+                if (currSize < currentSpeedPerSecond) {
 
-                    double interval = 1000l / startProcessPresSecond;
+                    int actualSpeed = currentSpeedPerSecond;
+
+                    int needToPush = actualSpeed - currSize;
+
+                    logger.info("Speed pps = " + actualSpeed);
+
+                    double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
 
-                    for (int i = 0; i < maxSizeLimit - currSize; i++) {
+                    for (int i = 0; i < needToPush; i++) {
                         timeCursor += interval;
 
                         queue.add((long) (timeCursor));
 
                         if (counter.incrementAndGet() == maxProcessQuantity) {
-                            throw new DaemonThread.StopSignal();
+                            throw new StopSignal();
                         }
                     }
 
