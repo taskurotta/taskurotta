@@ -83,9 +83,9 @@ public class SerializationTest {
                 setImplementation(new RecoveryOperationStreamSerializer()).
                 setTypeClass(RecoveryOperation.class).
                 setImplementation(new ActorPreferencesStreamSerializer()).
-                setTypeClass(ActorPreferences.class)/*.
+                setTypeClass(ActorPreferences.class).
                 setImplementation(new ProcessDecisionUnitOfWorkStreamSerializer()).
-                setTypeClass(ProcessDecisionUnitOfWork.class)*/;
+                setTypeClass(ProcessDecisionUnitOfWork.class);
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
@@ -317,7 +317,6 @@ public class SerializationTest {
         assertEquals(actorPreferences, getted);
     }
 
-    @Ignore
     @Test
     public void processDecisionUnitOfWorkSerializerTest() {
         List<ArgContainer> containerList = new ArrayList<>();
