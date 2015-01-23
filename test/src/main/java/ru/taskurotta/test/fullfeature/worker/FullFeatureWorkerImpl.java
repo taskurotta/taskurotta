@@ -19,6 +19,7 @@ public class FullFeatureWorkerImpl implements FullFeatureWorker {
     public double sqrt(double a) {
         //log.info("FullFeatureWorkerImpl.sqrt({})", a);
         if (a < 0) {
+
             throw new IllegalArgumentException("Argument can not be less than 0: " + a);
         }
         return Math.sqrt(a);

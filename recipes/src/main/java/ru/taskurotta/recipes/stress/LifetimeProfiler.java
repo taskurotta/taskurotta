@@ -44,7 +44,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double previousRate = 0;
     private boolean timeIsZero = true;
     private int deltaShot = 2000;
-    private int maxTaskQuantity = -1;
+    private int maxProcessQuantity = -1;
     private double previousCountTotalRate = 0;
     private double targetTolerance = 4.0;
     private AtomicInteger nullPoll = new AtomicInteger(0);
@@ -68,8 +68,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             targetTolerance = (Double) properties.get("targetTolerance");
         }
 
-        if (properties.containsKey("maxTaskQuantity")) {
-            maxTaskQuantity = (Integer) properties.get("maxTaskQuantity");
+        if (properties.containsKey("maxProcessQuantity")) {
+            maxProcessQuantity = (Integer) properties.get("maxProcessQuantity");
         }
 
         if (properties.containsKey("taskPerProcess")) {
@@ -195,7 +195,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     previousRate = rate;
                     lastTime.set(curTime);
 
-                    if ((maxTaskQuantity > 0 && maxTaskQuantity < count) || (maxTaskQuantity == -1 &&
+                    if ((maxProcessQuantity > 0 && maxProcessQuantity < count) || (maxProcessQuantity == -1 &&
                             currentTolerance < targetTolerance)) {
 
                         stabilizationCounter.incrementAndGet();

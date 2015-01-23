@@ -25,7 +25,6 @@ import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 import java.util.Formatter;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,22 +36,19 @@ import java.util.concurrent.atomic.AtomicLong;
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
 
     private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
+
+    private final static String MAX_PROCESS_QUANTITY = "maxProcessQuantity";
+    private final static String TASKS_FOR_STAT = "tasksForStat";
+
+
     public static AtomicLong taskCount = new AtomicLong(0);
     public static AtomicLong startedProcessCounter = new AtomicLong(0);
     public static AtomicLong startTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
-    public static int tasksForStat = 500;
-    public static double totalDelta = 0;
-    public static AtomicInteger stabilizationCounter = new AtomicInteger(0);
-    public static AtomicBoolean stopDecorating = new AtomicBoolean(false);
-    //    private long nextShot = 0;
-    private double deltaRate = 0;
-    private double previousRate = 0;
-    private boolean timeIsZero = true;
-    private int deltaShot = 2000;
-    private int maxTaskQuantity = -1;
-    private double previousCountTotalRate = 0;
-    private double targetTolerance = 4.0;
+
+    public static int tasksForStat = 1000;
+    private boolean isFirstPoll = true;
+    private int maxProcessQuantity = -1;
     private AtomicInteger nullPoll = new AtomicInteger(0);
 
     public LifetimeProfiler() {
@@ -60,23 +56,25 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     public LifetimeProfiler(Class actorClass, Properties properties) {
 
-        if (properties.containsKey("tasksForStat")) {
-            tasksForStat = (Integer) properties.get("tasksForStat");
+        String sys = null;
+
+        if (properties.containsKey(TASKS_FOR_STAT)) {
+            tasksForStat = (Integer) properties.get(TASKS_FOR_STAT);
         }
 
-        if (properties.containsKey("deltaShot")) {
-            deltaShot = (Integer) properties.get("deltaShot");
-        }
-
-        if (properties.containsKey("targetTolerance")) {
-            targetTolerance = (Double) properties.get("targetTolerance");
-        }
-
-        if (properties.containsKey("maxTaskQuantity")) {
-            maxTaskQuantity = (Integer) properties.get("maxTaskQuantity");
+        sys = System.getProperty(MAX_PROCESS_QUANTITY);
+        if (sys != null) {
+            maxProcessQuantity = Integer.valueOf(sys);
+        } else {
+            if (properties.containsKey(MAX_PROCESS_QUANTITY)) {
+                maxProcessQuantity = (Integer) properties.get(MAX_PROCESS_QUANTITY);
+            }
         }
 
     }
+
+
+    public static AtomicBoolean isReady = new AtomicBoolean(false);
 
     @Override
     public TaskSpreader decorate(final TaskSpreader taskSpreader) {
@@ -86,8 +84,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ?
                 (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0] : null;
 
-        if (hazelcastInstance != null) {
-            new ProcessPusher(hazelcastInstance, 40, 10, 8000, 100000);
+        if (hazelcastInstance != null && isReady.compareAndSet(false, true)) {
+            new ProcessPusher(hazelcastInstance, maxProcessQuantity, 80, 10, 8000, 10000);
         }
 
 
@@ -162,6 +160,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                                 GeneralRecoveryProcessService.restartedTasksCounter
                 );
 
+
                 logger.info(sb.toString());
             }
 
@@ -170,16 +169,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return new TaskSpreader() {
             @Override
             public Task poll() {
-                if (stopDecorating.get()) {
-                    return null;
-                }
-
-                try {
-                    StressTaskCreator.cd.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
 
                 Task task = taskSpreader.poll();
                 if (task == null) {
@@ -206,39 +195,23 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 }
 
 
-                if (timeIsZero) {
+                if (isFirstPoll) {
                     long current = System.currentTimeMillis();
                     lastTime.set(current);
                     startTime.set(current);
-                    timeIsZero = false;
+                    isFirstPoll = false;
                 }
+
                 long curTime = System.currentTimeMillis();
                 if (count % tasksForStat == 0) {
                     double time = 0.001 * (curTime - lastTime.get());
                     double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
-                    if (previousRate != 0) {
-                        deltaRate = Math.abs(rate - previousRate);
-                        totalDelta += deltaRate;
-                    }
                     double totalRate = 1000.0 * count / (double) (curTime - LifetimeProfiler.startTime.get());
-                    double currentCountTotalRate = count / totalRate;
-                    double currentTolerance = ((currentCountTotalRate * 100) / previousCountTotalRate) - 100;
-                    previousCountTotalRate = currentCountTotalRate;
-                    previousRate = rate;
                     lastTime.set(curTime);
 
-                    if ((maxTaskQuantity > 0 && maxTaskQuantity < count) || (maxTaskQuantity == -1 &&
-                            currentTolerance < targetTolerance)) {
-
-                        stabilizationCounter.incrementAndGet();
-                    } else {
-                        if (stabilizationCounter.get() > 0) {
-                            stabilizationCounter.set(0);
-                        }
-                    }
-                    logger.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; deltaRate: %8.3f; " +
-                                    "totalRate: %8.3f; tolerance: %8.3f; freeMemory: %6d;\n", count, time, rate,
-                            deltaRate, totalRate, currentTolerance, Runtime.getRuntime().freeMemory() / 1024 / 1024));
+                    logger.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; " +
+                                    "totalRate: %8.3f; freeMemory: %6d;\n", count, time, rate,
+                            totalRate, Runtime.getRuntime().freeMemory() / 1024 / 1024));
                 }
 
                 return task;
@@ -251,14 +224,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         };
     }
 
-    ConcurrentHashMap<String, IQueue> queueCache = new ConcurrentHashMap<>();
-
     public static String bytesToMb(long bytes) {
         return new Formatter().format("%6.2f", ((double) bytes / 1024 / 1024)).toString();
-    }
-
-    public void setTargetTolerance(double targetTolerance) {
-        this.targetTolerance = targetTolerance;
     }
 
     public void setTasksForStat(int tasksForStat) {

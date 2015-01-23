@@ -54,17 +54,17 @@ public class MongoStorageFactory implements StorageFactory {
 
     private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
         final ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new
-                                                                                                                     ThreadFactory() {
-            private int counter = 0;
+                                                                                                                          ThreadFactory() {
+                                                                                                                              private int counter = 0;
 
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName("MongoStorageFactory-" + counter++);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+                                                                                                                              @Override
+                                                                                                                              public Thread newThread(Runnable r) {
+                                                                                                                                  Thread thread = new Thread(r);
+                                                                                                                                  thread.setName("MongoStorageFactory-" + counter++);
+                                                                                                                                  thread.setDaemon(true);
+                                                                                                                                  return thread;
+                                                                                                                              }
+                                                                                                                          });
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -191,9 +191,9 @@ public class MongoStorageFactory implements StorageFactory {
         };
     }
 
-    private String removePrefix (String target) {
+    private String removePrefix(String target) {
         String result = target;
-        if (target != null && storagePrefix!= null && target.startsWith(storagePrefix)) {
+        if (target != null && storagePrefix != null && target.startsWith(storagePrefix)) {
             result = target.substring(storagePrefix.length(), target.length());
         }
         return result;
