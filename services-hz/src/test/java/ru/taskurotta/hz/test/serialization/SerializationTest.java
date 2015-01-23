@@ -16,6 +16,7 @@ import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
 import ru.taskurotta.service.hz.serialization.*;
+import ru.taskurotta.service.recovery.RecoveryOperation;
 import ru.taskurotta.transport.model.*;
 
 import java.io.IOException;
@@ -35,7 +36,6 @@ public class SerializationTest {
 
     @Before
     public void init() {
-
         Config config = new Config();
 
         SerializerConfig sc = new SerializerConfig().
@@ -52,15 +52,15 @@ public class SerializationTest {
                 setImplementation(new ErrorContainerStreamSerializer()).
                 setTypeClass(ErrorContainer.class).
                 setImplementation(new TaskContainerStreamSerializer()).
-                setTypeClass(TaskContainer.class);
-
+                setTypeClass(TaskContainer.class).
+                setImplementation(new RecoveryOperationStreamSerializer()).
+                setTypeClass(RecoveryOperation.class);
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
         HazelcastInstance hz = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(config));
 
         hzMap = hz.getMap("testMap");
-
     }
 
     @After
@@ -258,7 +258,17 @@ public class SerializationTest {
         assertEquals(taskOptionsContainer.getTaskConfigContainer().getRetryPolicyConfigContainer().getType(), getted.getTaskConfigContainer().getRetryPolicyConfigContainer().getType()
         );
         assertEquals(taskOptionsContainer.getArgTypes()[1], getted.getArgTypes()[1]);
+    }
 
+    @Test
+    public void recoveryOperationSerializationTest() {
+        String key = "recoveryOperation";
+
+        RecoveryOperation recoveryOperation = new RecoveryOperation(UUID.randomUUID());
+        hzMap.put(key, recoveryOperation);
+
+        RecoveryOperation getted = (RecoveryOperation) hzMap.get(key);
+        assertEquals(recoveryOperation, getted);
     }
 
     private TaskOptionsContainer getTaskOptionsContainer() {

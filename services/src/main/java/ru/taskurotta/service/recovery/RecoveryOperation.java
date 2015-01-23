@@ -28,4 +28,23 @@ public class RecoveryOperation implements Operation {
     public void run() {
         recoveryProcessService.restartProcess(processId);
     }
+
+    public UUID getProcessId() {
+        return processId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RecoveryOperation that = (RecoveryOperation) o;
+
+        return !(processId != null ? !processId.equals(that.processId) : that.processId != null);
+    }
+
+    @Override
+    public int hashCode() {
+        return processId != null ? processId.hashCode() : 0;
+    }
 }
