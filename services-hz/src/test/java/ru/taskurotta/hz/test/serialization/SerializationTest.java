@@ -12,6 +12,7 @@ import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.core.RetryPolicyConfig;
+import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
@@ -54,7 +55,9 @@ public class SerializationTest {
                 setImplementation(new TaskContainerStreamSerializer()).
                 setTypeClass(TaskContainer.class).
                 setImplementation(new RecoveryOperationStreamSerializer()).
-                setTypeClass(RecoveryOperation.class);
+                setTypeClass(RecoveryOperation.class).
+                setImplementation(new ActorPreferencesStreamSerializer()).
+                setTypeClass(ActorPreferences.class);
 
         config.getSerializationConfig().addSerializerConfig(sc);
 
@@ -269,6 +272,21 @@ public class SerializationTest {
 
         RecoveryOperation getted = (RecoveryOperation) hzMap.get(key);
         assertEquals(recoveryOperation, getted);
+    }
+
+    @Test
+    public void actorPreferencesSerializationTest() {
+        ActorPreferences actorPreferences = new ActorPreferences();
+        actorPreferences.setId(UUID.randomUUID().toString());
+        actorPreferences.setBlocked(false);
+        actorPreferences.setQueueName("queueName");
+        actorPreferences.setKeepTime(1000l);
+
+        String key = "actorPreferences";
+        hzMap.put(key, actorPreferences);
+
+        ActorPreferences getted = (ActorPreferences) hzMap.get(key);
+        assertEquals(actorPreferences, getted);
     }
 
     private TaskOptionsContainer getTaskOptionsContainer() {
