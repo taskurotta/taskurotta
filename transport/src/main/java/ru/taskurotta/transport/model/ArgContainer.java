@@ -236,6 +236,39 @@ public class ArgContainer implements Cloneable, Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ArgContainer that = (ArgContainer) o;
+
+        if (isReady != that.isReady) return false;
+        if (promise != that.promise) return false;
+        if (JSONValue != null ? !JSONValue.equals(that.JSONValue) : that.JSONValue != null) return false;
+        if (!Arrays.equals(compositeValue, that.compositeValue)) return false;
+        if (dataType != null ? !dataType.equals(that.dataType) : that.dataType != null) return false;
+        if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
+            return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (valueType != that.valueType) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dataType != null ? dataType.hashCode() : 0;
+        result = 31 * result + (taskId != null ? taskId.hashCode() : 0);
+        result = 31 * result + (isReady ? 1 : 0);
+        result = 31 * result + (JSONValue != null ? JSONValue.hashCode() : 0);
+        result = 31 * result + (valueType != null ? valueType.hashCode() : 0);
+        result = 31 * result + (compositeValue != null ? Arrays.hashCode(compositeValue) : 0);
+        result = 31 * result + (promise ? 1 : 0);
+        result = 31 * result + (errorContainer != null ? errorContainer.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "ArgContainer{" +
                 "dataType='" + dataType + '\'' +
