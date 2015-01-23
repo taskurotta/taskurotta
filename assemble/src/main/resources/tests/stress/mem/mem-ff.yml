@@ -41,10 +41,8 @@ profiler:
       instance:
         class: ru.taskurotta.test.stress.LifetimeProfiler
         properties:
-          exitAfterAll: false
           tasksForStat: 1000
-          maxTaskQuantity: 100000000
-          taskPerProcess: 12
+          maxProcessQuantity: 1900
 
 actor:
   - FFDecider:

@@ -184,6 +184,7 @@ public class Graph implements Serializable {
      * @param modification - diff object to apply
      */
     public void apply(Modification modification) {
+
         long currentTime = System.currentTimeMillis();
         logger.debug("apply() modification = [{}]", modification);
 
@@ -211,6 +212,7 @@ public class Graph implements Serializable {
         }
 
         touchTimeMillis = lastApplyTimeMillis = currentTime;
+
     }
 
     public Map<UUID, Long> getAllReadyItems() {
@@ -248,11 +250,37 @@ public class Graph implements Serializable {
             // add all new items without links to readyItemsList
             Map<UUID, Set<UUID>> newLinks = modification.getLinks();
             for (UUID newItem : newItems) {
-                if (newLinks == null || newLinks.get(newItem) == null) {
+                if (newLinks == null) {
                     logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
 
                     readyItemsList.add(newItem);
+                    continue;
                 }
+
+                Set<UUID> itemDependencies = newLinks.get(newItem);
+
+                if (itemDependencies == null) {
+                    logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
+
+                    readyItemsList.add(newItem);
+                    continue;
+                }
+
+                // may be some promises already resolved?
+                boolean isReady = true;
+                for (UUID promiseItem: itemDependencies) {
+                    if (newItems.contains(promiseItem) || notFinishedItems.containsKey(promiseItem)) {
+                        isReady = false;
+                        break;
+                    }
+                }
+
+                if (isReady) {
+
+                    readyItemsList.add(newItem);
+                }
+
+
             }
         }
         return readyItemsList;
@@ -264,6 +292,7 @@ public class Graph implements Serializable {
      * @return set of items dependent from finished one
      */
     private Set<UUID> updateLinks() {
+
 
         // update reverse map with new links
         Map<UUID, Set<UUID>> reverseLinks = reverseIt(links);
@@ -280,7 +309,7 @@ public class Graph implements Serializable {
                     // prevent link to already finished item.
                     // it is possible case for @NoWait Promise which are used on deep child task
                     if (!notFinishedItems.containsKey(newItemLink)) {
-                        continue;
+                         continue;
                     }
 
                     Set<UUID> itemLinks = links.get(entry.getKey());

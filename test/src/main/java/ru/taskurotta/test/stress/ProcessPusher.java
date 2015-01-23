@@ -8,38 +8,35 @@ import ru.taskurotta.server.GeneralTaskServer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import static ru.taskurotta.test.stress.LifetimeProfiler.startedProcessCounter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class ProcessPusher {
 
     // per second
 
-    public ProcessPusher(final HazelcastInstance hazelcastInstance, final long speed, final int threadCount, final int
-            queueSizeThreshold, final int runningProcessThreshold) {
+    public ProcessPusher(final HazelcastInstance hazelcastInstance, final int maxProcessQuantity, final long
+            startProcessPresSecond, final int threadCount, final int queueSizesThreshold, final int
+            runningProcessThreshold) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
         // queue should be fulled up to 1 seconds to future
-        final long maxSizeLimit = speed * 1l;
+        final long maxSizeLimit = startProcessPresSecond * 1l;
 
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
+            AtomicInteger counter = new AtomicInteger(0);
+
             @Override
             public void daemonJob() {
 
+                int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
 
-
-                int maxQueuesSize = getMaxQueuesSize(hazelcastInstance);
-
-                if (maxQueuesSize > queueSizeThreshold ||  startedProcessCounter.get() - GeneralTaskServer
+                // should waiting to prevent overload
+                if (sumQueuesSize > queueSizesThreshold || counter.get() - GeneralTaskServer
                         .finishedProcessesCounter.get() > runningProcessThreshold) {
-
-//                    if (startedProcessCounter.get() - GeneralTaskServer
-//                            .finishedProcessesCounter.get() > runningProcessThreshold) {
-//                        throw new DaemonThread.StopSignal();
-//                    }
 
                     return;
                 }
@@ -49,18 +46,36 @@ public class ProcessPusher {
 
                 if (currSize < maxSizeLimit) {
 
-                    double interval = 1000l / speed;
+                    double interval = 1000l / startProcessPresSecond;
                     double timeCursor = System.currentTimeMillis();
 
                     for (int i = 0; i < maxSizeLimit - currSize; i++) {
                         timeCursor += interval;
 
                         queue.add((long) (timeCursor));
+
+                        if (counter.incrementAndGet() == maxProcessQuantity) {
+                            throw new DaemonThread.StopSignal();
+                        }
                     }
 
                     return;
                 }
 
+            }
+
+            private int getSumQueuesSize(HazelcastInstance hazelcastInstance) {
+
+                int sum = 0;
+
+                for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
+                    if (distributedObject instanceof IQueue) {
+                        Queue queue = (IQueue) distributedObject;
+                        sum += queue.size();
+                    }
+                }
+
+                return sum;
             }
 
         }.start();
@@ -102,20 +117,5 @@ public class ProcessPusher {
         }
     }
 
-    private static int getMaxQueuesSize(HazelcastInstance hazelcastInstance) {
-
-        int max = 0;
-
-        for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
-            if (distributedObject instanceof IQueue) {
-                Queue queue = (IQueue) distributedObject;
-                int size = queue.size();
-                max = Math.max(max, size);
-
-            }
-        }
-
-        return max;
-    }
 
 }
