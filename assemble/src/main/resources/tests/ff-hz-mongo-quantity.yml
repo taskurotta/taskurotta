@@ -1,0 +1,102 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: classpath:ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        contexts:
+          - classpath:spring/hz-mongo.xml
+          - classpath:spring/actor-ff.xml
+        defaultPropertiesLocation: default.properties
+        properties:
+          server.poll-delay: 1 seconds
+          hz.nodes: localhost:7777
+          hz.jmx.detailed: true
+          hz.jmx: true
+          mongo.host: localhost
+          mongo.port: 27017
+          gc.enabled: true
+          gc.pool-size: 8
+          gc.time-before-delete: 1 minutes
+          recovery.enabled: false
+          recovery.process.incomplete-timeout: 2 minutes
+          recovery.find-incomplete-process-period: 1 minutes
+          recovery.process.change-timeout: 1 minutes
+          hz.queue.task.memory-limit: 10000
+          hz.map.general.max-size: 4
+
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.stress.LifetimeProfiler
+        properties:
+          tasksForStat: 1000
+          maxProcessQuantity: 1900
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 25
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 25
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/logs/recipes-multiply.log
+             append: false
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.recipes.stress:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.test.monkey:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             key: name
+             \@level: !!!str OFF
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

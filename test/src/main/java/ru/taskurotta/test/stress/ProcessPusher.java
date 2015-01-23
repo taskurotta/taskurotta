@@ -5,6 +5,8 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.test.stress.process.Starter;
+import ru.taskurotta.test.stress.util.DaemonThread;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -20,15 +22,16 @@ public class ProcessPusher {
 
     // per second
 
-    public ProcessPusher(final HazelcastInstance hazelcastInstance, final int maxProcessQuantity, final int
-            startProcessPresSecond, final int threadCount, final int minQueuesSize, final int maxQueuesSize) {
+    public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
+                         final int initialProcessPresSecondPush, final int threadCount, final int minQueuesSize,
+                         final int maxQueuesSize) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
-            int currentSpeedPerSecond = startProcessPresSecond;
+            int currentSpeedPerSecond = initialProcessPresSecondPush;
 
             @Override
             public void daemonJob() {
@@ -126,7 +129,7 @@ public class ProcessPusher {
                         }
                     }
 
-                    StressTaskCreator.sendOneTask();
+                    starter.start();
                 }
             }.start();
 

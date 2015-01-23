@@ -21,6 +21,7 @@ import ru.taskurotta.hazelcast.store.MongoQueueStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.test.stress.util.DaemonThread;
 
 import java.util.Formatter;
 import java.util.Properties;
@@ -84,9 +85,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ?
                 (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0] : null;
 
-        if (hazelcastInstance != null && isReady.compareAndSet(false, true)) {
-            new ProcessPusher(hazelcastInstance, maxProcessQuantity, 50, 10, 4000, 8000);
-        }
+//        if (hazelcastInstance != null && isReady.compareAndSet(false, true)) {
+//            new ProcessPusher(hazelcastInstance, maxProcessQuantity, 50, 10, 4000, 8000);
+//        }
 
 
         // start dump thread
