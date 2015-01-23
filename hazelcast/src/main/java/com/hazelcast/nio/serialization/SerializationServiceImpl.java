@@ -491,15 +491,12 @@ public class SerializationServiceImpl implements SerializationService {
     private ConcurrentHashMap<Class, SerializerAdapter> serializersCache = new ConcurrentHashMap<>();
 
     protected final SerializerAdapter serializerFor(final Class type) {
-
         SerializerAdapter serializer = serializersCache.get(type);
-
         if (serializer != null) {
             return serializer;
         }
 
         serializer = serializerForInternal(type);
-
         if (serializer == null) {
             throw new IllegalStateException("Unknown serializer for class " + type);
         }
@@ -529,6 +526,8 @@ public class SerializationServiceImpl implements SerializationService {
     protected final SerializerAdapter lookupSerializer(Class type) {
         SerializerAdapter serializer = typeMap.get(type);
         if (serializer == null) {
+            logger.error("Can't find serializer for [{}]", type);
+
             // look for super classes
             Class typeSuperclass = type.getSuperclass();
             final Set<Class> interfaces = new LinkedHashSet<Class>(5);
