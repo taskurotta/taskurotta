@@ -1,9 +1,11 @@
 package ru.taskurotta.service.config.model;
 
+import java.io.Serializable;
+
 /**
  * Server-side preferences of registered actor
  */
-public class ActorPreferences {
+public class ActorPreferences implements Serializable {
 
     private String id;
     private boolean blocked = false;
