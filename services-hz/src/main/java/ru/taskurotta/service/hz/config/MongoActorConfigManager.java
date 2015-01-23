@@ -39,18 +39,19 @@ public class MongoActorConfigManager extends HzActorConfigManager {
         long total = 0;
         DBCollection dbColl =  mongoTemplate.getCollection(actorConfigName);
         if(dbColl!=null) {
-            DBCursor cursor = dbColl.find().skip((pageNum-1)*pageSize).limit(pageSize);
-            while (cursor.hasNext()) {
-                DBObject value = cursor.next();
-                ActorVO actorVO = (ActorVO) converter.toObject(ActorVO.class, value);
-                if (metricsDataRetriever!=null) {
-                    actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorVO.getId()));
-                    actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorVO.getId()));
-                }
+            try (DBCursor cursor = dbColl.find().skip((pageNum-1)*pageSize).limit(pageSize)) {
+                while (cursor.hasNext()) {
+                    DBObject value = cursor.next();
+                    ActorVO actorVO = (ActorVO) converter.toObject(ActorVO.class, value);
+                    if (metricsDataRetriever != null) {
+                        actorVO.setLastPoll(metricsDataRetriever.getLastActivityTime(MetricName.POLL.getValue(), actorVO.getId()));
+                        actorVO.setLastRelease(metricsDataRetriever.getLastActivityTime(MetricName.RELEASE.getValue(), actorVO.getId()));
+                    }
 
-                items.add(actorVO);
+                    items.add(actorVO);
+                }
+                total = dbColl.count();
             }
-            total = dbColl.count();
         }
 
         if (logger.isDebugEnabled()) {

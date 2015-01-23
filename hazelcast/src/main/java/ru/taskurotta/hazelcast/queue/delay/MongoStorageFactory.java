@@ -54,17 +54,17 @@ public class MongoStorageFactory implements StorageFactory {
 
     private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
         final ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new
-                                                                                                                     ThreadFactory() {
-            private int counter = 0;
+                                                                                                                          ThreadFactory() {
+                                                                                                                              private int counter = 0;
 
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName("MongoStorageFactory-" + counter++);
-                thread.setDaemon(true);
-                return thread;
-            }
-        });
+                                                                                                                              @Override
+                                                                                                                              public Thread newThread(Runnable r) {
+                                                                                                                                  Thread thread = new Thread(r);
+                                                                                                                                  thread.setName("MongoStorageFactory-" + counter++);
+                                                                                                                                  thread.setDaemon(true);
+                                                                                                                                  return thread;
+                                                                                                                              }
+                                                                                                                          });
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -93,13 +93,15 @@ public class MongoStorageFactory implements StorageFactory {
                             DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
                             IQueue iQueue = hazelcastInstance.getQueue(queueName);
 
-                            DBCursor dbCursor = dbCollection.find(query);
-                            while (dbCursor.hasNext()) {
-                                DBObject dbObject = dbCursor.next();
-                                StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
+                            // todo: batch size should be parametrized
+                            try (DBCursor dbCursor = dbCollection.find(query).batchSize(100)) {
+                                while (dbCursor.hasNext()) {
+                                    DBObject dbObject = dbCursor.next();
+                                    StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
 
-                                if (iQueue.offer(storageItem.getObject())) {
-                                    dbCollection.remove(dbObject);
+                                    if (iQueue.offer(storageItem.getObject())) {
+                                        dbCollection.remove(dbObject);
+                                    }
                                 }
                             }
                         }
@@ -189,9 +191,9 @@ public class MongoStorageFactory implements StorageFactory {
         };
     }
 
-    private String removePrefix (String target) {
+    private String removePrefix(String target) {
         String result = target;
-        if (target != null && storagePrefix!= null && target.startsWith(storagePrefix)) {
+        if (target != null && storagePrefix != null && target.startsWith(storagePrefix)) {
             result = target.substring(storagePrefix.length(), target.length());
         }
         return result;

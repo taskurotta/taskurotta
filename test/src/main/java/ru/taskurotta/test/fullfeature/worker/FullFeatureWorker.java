@@ -11,7 +11,7 @@ public interface FullFeatureWorker {
 
     double sqr(double a);
 
-    @LinearRetry(initialRetryIntervalSeconds = 1, maximumRetryIntervalSeconds = 1, maximumAttempts = 3)
+    @LinearRetry(initialRetryIntervalSeconds = 2, maximumRetryIntervalSeconds = 6, maximumAttempts = 3)
     double sqrt(double a);
 
 }

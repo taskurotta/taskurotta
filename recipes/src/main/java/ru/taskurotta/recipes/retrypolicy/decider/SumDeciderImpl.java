@@ -18,7 +18,7 @@ public class SumDeciderImpl implements SumDecider {
     @Override
     public void calculate(int a, int b) {
         RetryPolicyConfig retryPolicyConfig = new RetryPolicyConfig(RetryPolicyConfig.RetryPolicyType.LINEAR, 1, 10, -1, 2.0, 5);
-        retryPolicyConfig.addExceptionToRetryException(RuntimeException.class);
+        retryPolicyConfig.addExceptionToRetry(RuntimeException.class);
 
         TaskConfig taskConfig = new TaskConfig();
         taskConfig.setRetryPolicyConfig(retryPolicyConfig);

@@ -3,88 +3,79 @@ package ru.taskurotta.test.stress;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
+import ru.taskurotta.server.GeneralTaskServer;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * todo: add correct shutdown hooks to stop threads
- */
+
 public class ProcessPusher {
 
     // per second
 
-    public ProcessPusher(final HazelcastInstance hazelcastInstance, final long speed, final int threadCount, final int
-            queueSizeThreshold) {
+    public ProcessPusher(final HazelcastInstance hazelcastInstance, final int maxProcessQuantity, final long
+            startProcessPresSecond, final int threadCount, final int queueSizesThreshold, final int
+            runningProcessThreshold) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
+        // queue should be fulled up to 1 seconds to future
+        final long maxSizeLimit = startProcessPresSecond * 1l;
+
         // start planner thread
-        new Thread() {
+        new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
+
+            AtomicInteger counter = new AtomicInteger(0);
 
             @Override
-            public void run() {
+            public void daemonJob() {
 
-                // queue should be fulled up to 10 seconds to future
-                long maxSizeLimit = speed * 10l;
+                int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
 
-                long timeCursor = System.currentTimeMillis();
+                // should waiting to prevent overload
+                if (sumQueuesSize > queueSizesThreshold || counter.get() - GeneralTaskServer
+                        .finishedProcessesCounter.get() > runningProcessThreshold) {
 
-                while (true) {
-
-                    int maxQueuesSize = getMaxQueuesSize(hazelcastInstance);
-
-                    if (maxQueuesSize > queueSizeThreshold) {
-                        try {
-                            TimeUnit.SECONDS.sleep(1);
-                        } catch (InterruptedException e) {
-                        }
-
-                        // reset cursor;
-
-                        timeCursor = System.currentTimeMillis();
-
-                        continue;
-                    }
-
-
-                    int currSize = queue.size();
-
-                    if (currSize < maxSizeLimit) {
-
-                        double interval = 1000l / speed;
-
-                        for (int i = 0; i < maxSizeLimit - currSize; i++) {
-                            queue.add(timeCursor += interval);
-                        }
-
-                        continue;
-                    }
-
-
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                    } catch (InterruptedException e) {
-                    }
-
+                    return;
                 }
+
+
+                int currSize = queue.size();
+
+                if (currSize < maxSizeLimit) {
+
+                    double interval = 1000l / startProcessPresSecond;
+                    double timeCursor = System.currentTimeMillis();
+
+                    for (int i = 0; i < maxSizeLimit - currSize; i++) {
+                        timeCursor += interval;
+
+                        queue.add((long) (timeCursor));
+
+                        if (counter.incrementAndGet() == maxProcessQuantity) {
+                            throw new DaemonThread.StopSignal();
+                        }
+                    }
+
+                    return;
+                }
+
             }
 
-            private int getMaxQueuesSize(HazelcastInstance hazelcastInstance) {
+            private int getSumQueuesSize(HazelcastInstance hazelcastInstance) {
 
-                int max = 0;
+                int sum = 0;
 
                 for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
                     if (distributedObject instanceof IQueue) {
                         Queue queue = (IQueue) distributedObject;
-                        int size = queue.size();
-                        max = Math.max(max, size);
-
+                        sum += queue.size();
                     }
                 }
 
-                return max;
+                return sum;
             }
 
         }.start();
@@ -93,40 +84,38 @@ public class ProcessPusher {
         // start pusher threads
         for (int i = 0; i < threadCount; i++) {
 
-            new Thread() {
+            new DaemonThread("process pusher " + i, null, 0) {
+
                 @Override
-                public void run() {
+                public void daemonJob() {
 
+                    Long timeToStart = (Long) queue.poll();
 
-                    while (true) {
-
-                        Long timeToStart = (Long) queue.poll();
-
-                        if (timeToStart == null) {
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(100);
-                            } catch (InterruptedException e) {
-                            }
-
-                            continue;
+                    if (timeToStart == null) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(100);
+                        } catch (InterruptedException e) {
                         }
 
-                        long currTime = System.currentTimeMillis();
-
-                        if (currTime < timeToStart) {
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(timeToStart - currTime);
-                            } catch (InterruptedException e) {
-                            }
-                        }
-
-                        StressTaskCreator.sendOneTask();
+                        return;
                     }
+
+                    long currTime = System.currentTimeMillis();
+
+                    if (currTime < timeToStart.longValue()) {
+
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(timeToStart.longValue() - currTime);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+
+                    StressTaskCreator.sendOneTask();
                 }
             }.start();
+
         }
-
-
     }
+
 
 }

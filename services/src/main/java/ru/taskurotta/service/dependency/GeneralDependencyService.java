@@ -2,13 +2,13 @@ package ru.taskurotta.service.dependency;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.service.console.retriever.GraphInfoRetriever;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -51,7 +51,7 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
 
             public boolean apply(Graph graph) {
 
-                if (null == graph) {
+                if (graph == null) {
                     logger.warn("Can't find graph for process [{}].", processId);
                     return false; // ignore task decision and its tasks
                 }

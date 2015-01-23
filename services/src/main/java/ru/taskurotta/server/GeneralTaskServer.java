@@ -21,6 +21,7 @@ import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
+import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
 import ru.taskurotta.util.ActorDefinition;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * User: romario
@@ -41,6 +43,10 @@ import java.util.UUID;
 public class GeneralTaskServer implements TaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralTaskServer.class);
+
+    public static final AtomicInteger startedProcessesCounter = new AtomicInteger();
+    public static final AtomicInteger finishedProcessesCounter = new AtomicInteger();
+    public static final AtomicInteger brokenProcessesCounter = new AtomicInteger();
 
     protected ProcessService processService;
     protected TaskService taskService;
@@ -102,6 +108,8 @@ public class GeneralTaskServer implements TaskServer {
         // we assume that new process task has no dependencies and it is ready to enqueue.
         // idempotent statement
         enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
+
+        startedProcessesCounter.incrementAndGet();
     }
 
 
@@ -142,6 +150,7 @@ public class GeneralTaskServer implements TaskServer {
         processDecision(taskDecision);
     }
 
+
     /**
      *
      */
@@ -157,38 +166,57 @@ public class GeneralTaskServer implements TaskServer {
 
         if (taskDecision.containsError()) {
 
-            long restartTime = taskDecision.getRestartTime();
+            long restartTime = TaskDecision.NO_RESTART;
 
             TaskContainer task = taskService.getTask(taskId, processId);
             logger.trace("#[{}]/[{}]: after get taskDecision with error again get task = [{}]", processId, taskId, task);
 
-            if (task.getOptions() != null && task.getOptions().getTaskConfigContainer() != null) {
-                RetryPolicyConfigContainer retryPolicyConfig = task.getOptions().getTaskConfigContainer().getRetryPolicyConfigContainer();
+            RetryPolicyConfigContainer deciderRetryPolicyConfig = null;
 
-                if (isErrorMatch(retryPolicyConfig, taskDecision.getErrorContainer())) {
-                    restartTime = getRestartTime(task, retryPolicyConfig);
+            TaskOptionsContainer taskOptionsContainer = task.getOptions();
+            if (taskOptionsContainer != null) {
+                TaskConfigContainer taskConfigContainer = taskOptionsContainer.getTaskConfigContainer();
+                if (taskConfigContainer != null) {
+                    deciderRetryPolicyConfig = taskConfigContainer.getRetryPolicyConfigContainer();
                 }
             }
 
+            if (deciderRetryPolicyConfig != null) {
+                if (isErrorMatch(deciderRetryPolicyConfig, taskDecision
+                        .getErrorContainer())) {
+
+                    restartTime = getRestartTime(task, deciderRetryPolicyConfig);
+                }
+            } else {
+                restartTime = taskDecision.getRestartTime();
+            }
+
             if (restartTime != TaskDecision.NO_RESTART) {
+
                 // enqueue task immediately if needed
-                logger.debug("#[{}]/[{}]: again enqueued error task = [{}]", processId, taskId, task);
+                logger.debug("#[{}]/[{}]: enqueue error task = [{}]", processId, taskId, task);
                 enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
+
                 return;
             }
 
-            if (!task.isUnsafe() || !isErrorMatch(task, taskDecision.getErrorContainer())) {
+            if (!(task.isUnsafe() && isErrorMatch(task, taskDecision.getErrorContainer()))) {
                 saveBrokenProcess(taskDecision);
                 processService.markProcessAsBroken(processId);
+
                 logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
                 return;
             }
-        }
 
-        if (unsafePromiseSentToWorker(taskDecision.getTasks())) {
-            saveBrokenProcess(taskDecision);
-            processService.markProcessAsBroken(processId);
-            return;
+
+        } else {
+
+            if (unsafePromiseSentToWorker(taskDecision.getTasks())) {
+                saveBrokenProcess(taskDecision);
+                processService.markProcessAsBroken(processId);
+                return;
+            }
+
         }
 
         // idempotent statement
@@ -196,6 +224,7 @@ public class GeneralTaskServer implements TaskServer {
         logger.trace("#[{}]/[{}]: after apply taskDecision, get dependencyDecision = [{}]", processId, taskId, dependencyDecision);
 
         if (dependencyDecision.isFail()) {
+
             logger.debug("#[{}]/[{}]: failed dependencyDecision = [{}]", processId, taskId, dependencyDecision);
             return;
         }
@@ -207,38 +236,31 @@ public class GeneralTaskServer implements TaskServer {
                 TaskContainer task = taskService.getTask(readyTaskId, processId);
                 if (task == null) {
 
-                    // may be task not stored to collection yet.
-                    // this is ugly and should be fixed
-                    for (TaskContainer taskC: taskDecision.getTasks()) {
-                        if (taskC.getTaskId().equals(readyTaskId)) {
-                            task = taskC;
-                            break;
-                        }
-                    }
-
                     if (task == null) {
-                        logger.error("#[{}]/[{}]: failed to enqueue task. task not found into taskService. " +
-                                        "dependencyDecision = [{}]",
-                                processId,
-                                taskId,
-                                dependencyDecision);
+                        logger.error("#[{}]/[{}]: failed to enqueue task. ready task not found in the taskService" +
+                                        ". dependencyDecision = [{}]",
+                                processId, taskId, dependencyDecision);
 
                         // wait recovery for this process
                         // todo: throw exception?
-                        return;
+                        continue;
                     }
                 }
+
                 enqueueTask(readyTaskId, task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
             }
         }
 
         if (dependencyDecision.isProcessFinished()) {
+            finishedProcessesCounter.incrementAndGet();
+
             processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
             garbageCollectorService.collect(processId);
         }
 
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
+
     }
 
     private long getRestartTime(TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
@@ -319,6 +341,9 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private void saveBrokenProcess(DecisionContainer taskDecision) {
+
+        brokenProcessesCounter.incrementAndGet();
+
         UUID processId = taskDecision.getProcessId();
         BrokenProcess brokenProcess = new BrokenProcess();
         brokenProcess.setTime(System.currentTimeMillis());

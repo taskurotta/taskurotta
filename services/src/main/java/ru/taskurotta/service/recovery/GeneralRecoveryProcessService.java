@@ -18,10 +18,13 @@ import ru.taskurotta.transport.utils.TransportUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * User: stukushin
@@ -31,6 +34,9 @@ import java.util.UUID;
 public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralRecoveryProcessService.class);
+
+    public static AtomicInteger restartedProcessesCounter = new AtomicInteger();
+    public static AtomicInteger restartedTasksCounter = new AtomicInteger();
 
     private QueueService queueService;
     private DependencyService dependencyService;
@@ -42,7 +48,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     private long recoveryProcessChangeTimeout;
     private long findIncompleteProcessPeriod;
 
-    public GeneralRecoveryProcessService() {}
+    public GeneralRecoveryProcessService() {
+    }
 
     public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService,
                                          ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
@@ -57,6 +64,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
     }
+
 
     @Override
     public boolean restartProcess(final UUID processId) {
@@ -83,41 +91,49 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         } else {// require restart => try to find process's tasks for restart
 
-            Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
+            final Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
             if (taskContainers == null) {//there is a problem in task store => restart process
 
                 logger.warn("#[{}]: task containers were not found (possible data loss?), try to restart process from start task", processId);
                 result = restartProcessFromBeginning(processId);
 
             } else {//restart unfinished tasks
-                result = restartTasks(taskContainers, processId) > 0;
-            }
 
-        }
+                final AtomicBoolean boolContainer = new AtomicBoolean();
 
-        if (result) {//has some tasks restarted -> mark graph as touched
-
-            logger.trace("#[{}]: try to update graph", processId);
-            boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
-                @Override
-                public UUID getProcessId() {
-                    return processId;
-                }
-
-                @Override
-                public boolean apply(Graph graph) {
-                    graph.setTouchTimeMillis(System.currentTimeMillis());
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
-                                new Date(graph.getTouchTimeMillis()));
+                logger.trace("#[{}]: try to update graph", processId);
+                boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
+                    @Override
+                    public UUID getProcessId() {
+                        return processId;
                     }
 
-                    return true;
-                }
-            });
+                    @Override
+                    public boolean apply(Graph graph) {
+                        graph.setTouchTimeMillis(System.currentTimeMillis());
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
+                                    new Date(graph.getTouchTimeMillis()));
+                        }
 
-            brokenProcessService.delete(processId);
-            logger.debug("#[{}]: has been recovered, graph update result [{}]", processId, graphUpdated);
+                        int restartResult = restartTasks(taskContainers, processId);
+                        restartedTasksCounter.addAndGet(restartResult);
+
+                        boolContainer.set(restartResult > 0);
+
+                        // todo: is it really needed?
+                        brokenProcessService.delete(processId);
+
+                        return true;
+                    }
+                });
+
+                result = boolContainer.get();
+
+                logger.debug("#[{}]: has been recovered, graph update result [{}]", processId, graphUpdated);
+
+            }
+
         }
 
         return result;
@@ -200,27 +216,46 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 logger.debug("#[{}]/[{}]: must be started later at [{}]", processId, taskId, new Date(startTime));
             }
 
-            result = false;
+            return false;
 
-        } else {//task is OK but it should be checked if queue is ready
-            String queueName = queueService.createQueueName(actorId, taskList);
-            long lastEnqueueTime = queueService.getLastPolledTaskEnqueueTime(queueName);
+        }
 
-            if (lastEnqueueTime <= 0l) { //never polled => not ready
+        //task is OK but it should be checked if queue is ready
+        String queueName = queueService.createQueueName(actorId, taskList);
+        long lastEnqueueTime = queueService.getLastPolledTaskEnqueueTime(queueName);
 
-                logger.debug("#[{}]/[{}]: skip process restart, because queue [{}] is not polled by any actor", processId, taskId, queueName);
+        // is never polled? => not ready
+        if (lastEnqueueTime <= 0l) {
 
-                result = false;
+            logger.debug("#[{}]/[{}]: skip process restart, because queue [{}] is not polled by any actor", processId, taskId, queueName);
 
-            } else if (lastEnqueueTime < lastRecoveryStartTime) {//still filled with old tasks => not ready
+            return false;
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("#[{}]/[{}]: skip process restart, because earlier tasks in queue [{}] (last enqueue time [{}], last recovery start time [{}])",
-                            processId, taskId, queueName, lastEnqueueTime, lastRecoveryStartTime);
-                }
+        }
 
-                result = false;
+        // not polled since last recovery? => has no wokers
+        if (lastEnqueueTime < lastRecoveryStartTime) {//still filled with old tasks => not ready
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("#[{}]/[{}]: skip process restart, because queue not polled since last recovery " +
+                                "activity, queue [{}] " +
+                                "(last enqueue time [{}], last recovery start time [{}])",
+                        processId, taskId, queueName, lastEnqueueTime, lastRecoveryStartTime);
             }
+
+            return false;
+        }
+
+        //still filled with older tasks => this task already in queue
+        if (lastEnqueueTime < startTime) {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("#[{}]/[{}]: skip process restart, because earlier tasks in queue [{}] (last enqueue " +
+                                "time [{}], last task start time [{}])",
+                        processId, taskId, queueName, lastEnqueueTime, startTime);
+            }
+
+            return false;
         }
 
         return result;
@@ -232,11 +267,27 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             return null;
         }
 
-        UUID processId = graph.getGraphId();
+        final UUID processId = graph.getGraphId();
 
         logger.trace("#[{}]: try to find incomplete tasks", processId);
 
-        Map<UUID, Long> notFinishedItems = graph.getNotFinishedItems();
+        final Map<UUID, Long> notFinishedItems = new HashMap<>();
+
+        dependencyService.changeGraph(new GraphDao.Updater() {
+            @Override
+            public UUID getProcessId() {
+                return processId;
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+
+                notFinishedItems.putAll(graph.getAllReadyItems());
+
+                return false;
+            }
+        });
+
         if (logger.isDebugEnabled()) {
             logger.debug("#[{}]: found [{}] not finished taskIds", processId, notFinishedItems.size());
         }
@@ -278,8 +329,14 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         logger.debug("#[{}]: restart process from start task [{}]", processId, startTaskContainer);
 
-        return queueService.enqueueItem(startTaskContainer.getActorId(), startTaskContainer.getTaskId(), processId,
+        boolean result = queueService.enqueueItem(startTaskContainer.getActorId(), startTaskContainer.getTaskId(), processId,
                 startTaskContainer.getStartTime(), TransportUtils.getTaskList(startTaskContainer));
+
+        if (result) {
+            restartedProcessesCounter.incrementAndGet();
+        }
+
+        return result;
     }
 
     private void finishProcess(UUID processId, UUID startTaskId, Collection<UUID> finishedTaskIds) {

@@ -22,5 +22,8 @@ public class ObjectTypes {
     public static final int BROKEN_PROCESS = 13;
     public static final int STORAGE_ITEM = 14;
     public static final int RETRY_POLICY_SETTINGS = 15;
+    public static final int RECOVERY_OPERATION = 16;
+    public static final int ACTOR_PREFERENCES = 17;
+    public static final int PROCESS_DECISION_UNIT_OF_WORK = 18;
 
 }

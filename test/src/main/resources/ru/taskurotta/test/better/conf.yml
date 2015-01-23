@@ -8,35 +8,18 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-stress.xml
-        properties:          
-          endpoint: "http://localhost:8811"
-          threadPoolSize: 20
-          readTimeout: 0
-          connectTimeout: 3000
-          shotSize: 1000          
-          needRun: true
-
-policy:
-  - MainPolicyConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultRetryPolicyFactory
-      instance:
-        class: ru.taskurotta.policy.retry.LinearRetryPolicy
+        contexts:
+          - classpath:spring/hz-mongo.xml
+          - classpath:ru/taskurotta/test/better/SpreaderBeans.xml
+        defaultPropertiesLocation: default.properties
         properties:
-          initialRetryIntervalSeconds: 1
-          maximumRetryIntervalSeconds: 1
-          maximumAttempts: 3
-
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
-        properties:
-          exitAfterAll: true
-          tasksForStat: 1000
-          maxProcessQuantity: 1000000
-          taskPerProcess: 12
+          duration: 2 minutes
+          threads: 50
+          thredhold: 1000
+          bundleSize: 5000
+          gc.time-before-delete: 1 minutes
+          hz.jmx.detailed: true
+          hz.jmx: true
 
 actor:
   - FFDecider:
@@ -57,17 +40,23 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./target/logs/ff-stress.log
+             file: logs/leman24.log
              append: true
              encoder:
                  pattern: \%d \%p [\%t] \%c - \%m\%n
     logger:
         - ru.taskurotta:
              key: name
-             \@level: INFO        
+             \@level: INFO
         - ru.taskurotta.test.fullfeature:
              key: name
              \@level: ERROR
+        - ru.taskurotta.service.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
         - ru.taskurotta.internal.GeneralRuntimeProcessor:
              key: name
              \@level: !!!str OFF

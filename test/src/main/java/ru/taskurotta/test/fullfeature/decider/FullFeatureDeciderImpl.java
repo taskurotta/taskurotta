@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.annotation.Asynchronous;
 import ru.taskurotta.annotation.NoWait;
 import ru.taskurotta.annotation.Wait;
-import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.core.Fail;
 import ru.taskurotta.core.Promise;
-import ru.taskurotta.policy.PolicyConstants;
 import ru.taskurotta.core.RetryPolicyConfig;
+import ru.taskurotta.core.TaskConfig;
+import ru.taskurotta.policy.PolicyConstants;
 import ru.taskurotta.test.fullfeature.worker.FullFeatureWorkerClient;
 
 import java.util.ArrayList;
@@ -27,7 +27,8 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Override
     public void start() {
-        double[] data = {2,3,4,5};
+
+        double[] data = {2, 3, 4, 5};
 
         TaskConfig options = new TaskConfig().setStartTime(System.currentTimeMillis() + 100l);
 
@@ -40,18 +41,20 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
         Promise<Double> res1 = async.step1(p11, p12);
 
         List<Promise<Double>> list = new ArrayList<>(Arrays.asList(res0, res1));
-        Promise <Double> result = async.step4(list);
+        Promise<Double> result = async.step4(list);
         Promise<Boolean> resultOk = async.isResultOk(data, result);
         async.logResult(resultOk);
     }
 
     @Asynchronous
     public Promise<Double> step1(Promise<Double> p1, @NoWait Promise<Double> p2) {
+
         return async.step2(p1.get(), p2);
     }
 
     @Asynchronous
     public Promise<Double> step2(double p1, Promise<Double> p2) {
+
         RetryPolicyConfig retryPolicyConfig = new RetryPolicyConfig();
         retryPolicyConfig.setMaximumAttempts(3);
         retryPolicyConfig.setInitialRetryIntervalSeconds(5);
@@ -67,6 +70,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Double> step3(Promise<Double> arg, Promise<Double> answer) {
+
         try {
             Double v = answer.get();
             return Promise.asPromise(v);

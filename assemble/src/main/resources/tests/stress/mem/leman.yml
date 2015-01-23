@@ -14,8 +14,8 @@ spreader:
         defaultPropertiesLocation: default.properties
         properties:
           duration: 10 hours
-          timeout: 1 seconds
-          threads: 50
+          timeout: 2 seconds
+          threads: 25
           gc.time-before-delete: 1 minutes
           hz.jmx.detailed: true
           hz.jmx: true
@@ -52,7 +52,7 @@ logback:
     logger:
         - ru.taskurotta:
              key: name
-             \@level: INFO
+             \@level: DEBUG
         - ru.taskurotta.test.fullfeature:
              key: name
              \@level: ERROR

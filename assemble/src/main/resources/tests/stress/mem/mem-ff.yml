@@ -15,9 +15,9 @@ spreader:
         properties:
           cycles: 10
           initialCount: 7
-          shotSize: 1000
+          shotSize: 0
           needRun: true
-          pollDelay: 10
+          pollDelay: 1
           pollDelayUnit: "SECONDS"
           hz.nodes: localhost:7777
           hz.jmx.detailed: true
@@ -27,9 +27,12 @@ spreader:
           gc.enabled: true
           gc.pool-size: 8
           gc.time-before-delete: 1 minutes
-          recovery.enabled: true
+          recovery.enabled: false
+          recovery.process.incomplete-timeout: 2 minutes
+          recovery.find-incomplete-process-period: 1 minutes
+          recovery.process.change-timeout: 1 minutes
           hz.queue.task.memory-limit: 10000
-          hz.map.general.max-size: 8
+          hz.map.general.max-size: 4
 
 
 profiler:
@@ -38,10 +41,8 @@ profiler:
       instance:
         class: ru.taskurotta.test.stress.LifetimeProfiler
         properties:
-          exitAfterAll: false
           tasksForStat: 1000
-          maxTaskQuantity: 10000000
-          taskPerProcess: 12
+          maxProcessQuantity: 1900
 
 actor:
   - FFDecider:
