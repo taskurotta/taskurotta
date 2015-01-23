@@ -1,11 +1,10 @@
-package ru.taskurotta.dropwizard.server.core;
+package ru.taskurotta.dropwizard.server.application;
 
-import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
-import com.yammer.dropwizard.Service;
-import com.yammer.dropwizard.assets.AssetsBundle;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
-import com.yammer.metrics.core.HealthCheck;
+import com.codahale.metrics.health.HealthCheck;
+import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -25,32 +24,37 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
-public class SpringTaskService extends Service<TaskServerConfig> {
+/**
+ * Created on 22.01.2015.
+ */
+public class SpringApplication extends Application<TaskServerConfig> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringTaskService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpringApplication.class);
+
     public static final String SYSTEM_PROP_PREFIX = "ts.";
     public static final String ASSETS_MODE_PROPERTY_NAME = "assetsMode";
+    public static final String DEFAULT_PROPERTIES_FILE_NAME = "default.properties";
 
     @Override
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
-        bootstrap.setName("task-queue-service");
-
         if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
-            bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/"));
+
         } else {
             bootstrap.addBundle(new AssetsBundle("/assets", "/"));
         }
-
     }
 
     @Override
-    public void run(final TaskServerConfig configuration, Environment environment)
-            throws Exception {
+    public void run(TaskServerConfig configuration, Environment environment) throws Exception {
+        registerEnvironmentBeans(configuration, environment);
+    }
 
+
+    protected void registerEnvironmentBeans(final TaskServerConfig configuration, Environment environment) throws Exception {
         String contextLocation = configuration.getContextLocation();
         AbstractApplicationContext appContext = new ClassPathXmlApplicationContext(contextLocation.split(","), false);
         final Properties props = getMergedProperties(configuration);
-        logger.debug("TaskServer properties getted are [{}]", props);
+        logger.debug("TaskServer properties got are [{}]", props);
 
         appContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", props));
 
@@ -98,7 +102,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
             if (resources != null && !resources.isEmpty()) {
                 for (String resourceBeanName : resources.keySet()) {
                     Object resourceSingleton = appContext.getBean(resourceBeanName);
-                    environment.addResource(resourceSingleton);
+                    environment.jersey().register(resourceSingleton);
                     resourcesCount++;
                 }
 
@@ -107,7 +111,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
         } else {//configured in external file
             for (String beanName : configuration.getResourceBeans()) {
                 Object resourceSingleton = appContext.getBean(beanName);
-                environment.addResource(resourceSingleton);
+                environment.jersey().register(resourceSingleton);
                 resourcesCount++;
             }
         }
@@ -122,20 +126,19 @@ public class SpringTaskService extends Service<TaskServerConfig> {
             if (healthChecks != null && !healthChecks.isEmpty()) {
                 for (String hcBeanName : healthChecks.keySet()) {
                     HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
-                    environment.addHealthCheck(healthCheck);
+                    environment.healthChecks().register(healthCheck.getClass().getSimpleName(), healthCheck);
                     healthChecksCount++;
                 }
             }
         } else {
             for (String hcBeanName : configuration.getHealthCheckBeans()) {
                 HealthCheck healthCheck = appContext.getBean(hcBeanName, HealthCheck.class);
-                environment.addHealthCheck(healthCheck);
+                environment.healthChecks().register(healthCheck.getClass().getSimpleName(), healthCheck);
                 healthChecksCount++;
             }
         }
         logger.info("Registered[{}] healthChecks from application context location [{}]", healthChecksCount, contextLocation);
         //----- /Register healthchecks ------------------
-
     }
 
     /**
@@ -145,7 +148,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
         Properties result = new Properties();
 
         //1. defaults from classpath file
-        Resource res = new ClassPathResource("default.properties");
+        Resource res = new ClassPathResource(DEFAULT_PROPERTIES_FILE_NAME);
         if (res.exists()) {
             result.load(res.getInputStream());
         }
@@ -155,11 +158,6 @@ public class SpringTaskService extends Service<TaskServerConfig> {
 
         //3. Override/extend them with system properties
         result = extendProps(result, System.getProperties(), SYSTEM_PROP_PREFIX);
-
-        //4. Internal pool feature props (if present)
-        if (configuration.getInternalPoolConfig() != null) {
-            result = extendProps(result, configuration.getInternalPoolConfig().asProperties(), null);
-        }
 
         return result;
     }
@@ -184,7 +182,7 @@ public class SpringTaskService extends Service<TaskServerConfig> {
     }
 
     public static void main(String[] args) throws Exception {
-        new SpringTaskService().run(args);
+        new SpringApplication().run(args);
     }
 
 }

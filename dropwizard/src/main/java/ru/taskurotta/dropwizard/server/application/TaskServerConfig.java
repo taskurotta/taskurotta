@@ -1,16 +1,15 @@
-package ru.taskurotta.dropwizard.server.core;
+package ru.taskurotta.dropwizard.server.application;
 
-import com.bazaarvoice.dropwizard.assets.AssetsBundleConfiguration;
-import com.bazaarvoice.dropwizard.assets.AssetsConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yammer.dropwizard.config.Configuration;
-import org.hibernate.validator.constraints.NotEmpty;
+import io.dropwizard.Configuration;
 import ru.taskurotta.service.config.impl.MemoryConfigService;
-import ru.taskurotta.dropwizard.server.pooling.InternalPoolConfig;
 
 import java.util.Properties;
 
-public class TaskServerConfig extends Configuration implements AssetsBundleConfiguration {
+/**
+ * Created on 22.01.2015.
+ */
+public class TaskServerConfig extends Configuration {
 
     @JsonProperty
     private Properties properties;
@@ -19,14 +18,7 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
     private MemoryConfigService actorConfig;
 
     @JsonProperty
-    private InternalPoolConfig internalPoolConfig;
-
-    @NotEmpty
-    @JsonProperty
     private String contextLocation;
-
-    @JsonProperty
-    private AssetsConfiguration assets;
 
     @JsonProperty
     private String[] resourceBeans;
@@ -50,14 +42,6 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
         this.contextLocation = contextLocation;
     }
 
-    public InternalPoolConfig getInternalPoolConfig() {
-        return internalPoolConfig;
-    }
-
-    public void setInternalPoolConfig(InternalPoolConfig internalPoolConfig) {
-        this.internalPoolConfig = internalPoolConfig;
-    }
-
     public MemoryConfigService getActorConfig() {
         return actorConfig;
     }
@@ -74,8 +58,4 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
         return healthCheckBeans;
     }
 
-    @Override
-    public AssetsConfiguration getAssetsConfiguration() {
-        return assets;
-    }
 }

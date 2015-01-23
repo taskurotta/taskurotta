@@ -15,7 +15,7 @@
     <name>Taskurotta :: Dropwizard (REST) transport implementation</name>
 
     <properties>
-        <dropwizard.version>0.6.1</dropwizard.version>
+        <dropwizard.version>0.7.1</dropwizard.version>
     </properties>
 
     <dependencies>
@@ -27,39 +27,35 @@
         </dependency>
 
         <dependency>
-            <groupId>com.yammer.dropwizard</groupId>
+            <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>com.yammer.dropwizard</groupId>
-            <artifactId>dropwizard-client</artifactId>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-assets</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-validation</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-jackson</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>4.3.0.Final</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.bazaarvoice.dropwizard</groupId>
-            <artifactId>dropwizard-configurable-assets-bundle</artifactId>
-            <version>0.1.9</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>cglib</groupId>-->
+            <!--<artifactId>cglib-nodep</artifactId>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>junit</groupId>
