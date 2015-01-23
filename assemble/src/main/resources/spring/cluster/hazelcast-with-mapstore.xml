@@ -102,6 +102,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.config.model.ActorPreferences"
                                    class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.hz.server.HazelcastTaskServer.ProcessDecisionUnitOfWork"
+                                   class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
         </hz:config>
