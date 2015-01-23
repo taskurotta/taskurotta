@@ -28,7 +28,7 @@
         <hazelcast.version>3.4</hazelcast.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
-
+        <dropwizard.version>0.7.1</dropwizard.version>
         <skip.integration.tests>true</skip.integration.tests>
         <recipesEnv />
         <endpoint />

@@ -14,10 +14,6 @@
     <packaging>jar</packaging>
     <name>Taskurotta :: Dropwizard (REST) transport implementation</name>
 
-    <properties>
-        <dropwizard.version>0.7.1</dropwizard.version>
-    </properties>
-
     <dependencies>
 
         <dependency>

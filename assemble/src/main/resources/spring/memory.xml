@@ -89,7 +89,6 @@
     <!-- /Backends -->
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server" />
         <property name="taskServer" ref="taskServer" />
     </bean>
 

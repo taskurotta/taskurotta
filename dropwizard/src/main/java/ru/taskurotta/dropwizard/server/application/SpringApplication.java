@@ -51,7 +51,7 @@ public class SpringApplication extends Application<TaskServerConfig> {
 
     @Override
     public void run(TaskServerConfig configuration, Environment environment) throws Exception {
-        environment.jersey().setUrlPattern("/rest/*");
+        environment.jersey().setUrlPattern(configuration.getJerseyUrlPattern());
         registerEnvironmentBeans(configuration, environment);
     }
 

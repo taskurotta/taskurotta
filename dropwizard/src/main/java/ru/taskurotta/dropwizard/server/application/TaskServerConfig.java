@@ -31,6 +31,9 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
     @JsonProperty
     private String[] healthCheckBeans;
 
+    @JsonProperty
+    private String jerseyUrlPattern = "/rest/*";
+
     public Properties getProperties() {
         return properties;
     }
@@ -61,6 +64,10 @@ public class TaskServerConfig extends Configuration implements AssetsBundleConfi
 
     public String[] getHealthCheckBeans() {
         return healthCheckBeans;
+    }
+
+    public String getJerseyUrlPattern() {
+        return jerseyUrlPattern;
     }
 
     @Override
