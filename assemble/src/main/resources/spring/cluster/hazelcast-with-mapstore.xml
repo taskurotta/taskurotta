@@ -98,6 +98,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.TaskQueueItemSteamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.StorageItem"
                                    class-name="ru.taskurotta.service.hz.serialization.StorageItemStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.recovery.RecoveryOperation"
+                                   class-name="ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
         </hz:config>
