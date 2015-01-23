@@ -1,10 +1,9 @@
 package ru.taskurotta.transport.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import ru.taskurotta.transport.model.serialization.StringToJsonSerializer;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import ru.taskurotta.server.json.KeepAsJsonDeserialzier;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -48,29 +47,6 @@ public class ArgContainer implements Cloneable, Serializable {
     private boolean promise = false;
     private ErrorContainer errorContainer;
 
-
-    @JsonProperty("jsonvalue")  //workaround for Jackson rawJson deserialization feature absence
-    public void setJsonValue(JsonNode jsonValue) {
-        this.JSONValue = jsonValue !=null? jsonValue.toString(): null;
-    }
-
-    //deserialization feature is not implementet at Jackson: JACKSON-781, JACKSON-596
-    @JsonSerialize(using = StringToJsonSerializer.class, contentUsing = StringToJsonSerializer.class, keyUsing = StringToJsonSerializer.class)
-    @JsonProperty("jsonvalue")
-    public String getJsonValue() {
-        return JSONValue;
-    }
-
-    @JsonIgnore
-    public String getJSONValue() {
-        return JSONValue;
-    }
-
-    @JsonIgnore
-    public void setJSONValue(String JSONValue) {
-        this.JSONValue = JSONValue;
-    }
-
     public ArgContainer() {
     }
 
@@ -101,6 +77,16 @@ public class ArgContainer implements Cloneable, Serializable {
         this.compositeValue = source.compositeValue;
         this.promise = source.promise;
         this.errorContainer = source.errorContainer;
+    }
+
+    @JsonRawValue
+    public String getJSONValue() {
+        return JSONValue;
+    }
+
+    @JsonDeserialize(using = KeepAsJsonDeserialzier.class)
+    public void setJSONValue(String JSONValue) {
+        this.JSONValue = JSONValue;
     }
 
     public String getDataType() {

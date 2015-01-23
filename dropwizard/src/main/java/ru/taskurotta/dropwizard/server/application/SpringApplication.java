@@ -37,15 +37,17 @@ public class SpringApplication extends Application<TaskServerConfig> {
 
     @Override
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
-        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
-
-        } else {
-            bootstrap.addBundle(new AssetsBundle("/assets", "/"));
-        }
+//        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
+//
+//        } else {
+//
+//        }
+        bootstrap.addBundle(new AssetsBundle("/assets", "/", "index.html"));
     }
 
     @Override
     public void run(TaskServerConfig configuration, Environment environment) throws Exception {
+        environment.jersey().setUrlPattern("/rest/*");
         registerEnvironmentBeans(configuration, environment);
     }
 
