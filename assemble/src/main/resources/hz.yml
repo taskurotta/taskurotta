@@ -7,6 +7,10 @@ actorConfig:
   actorPreferences:
     - id: "default"
 
+assets:
+  overrides:
+    /: ../dropwizard/src/main/resources/assets/
+
 #Task server common properties (will be available as placeholders in spring context):
 properties:
   pollDelay: 10

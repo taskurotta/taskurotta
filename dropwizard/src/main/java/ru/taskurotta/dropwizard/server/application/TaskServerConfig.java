@@ -1,5 +1,7 @@
 package ru.taskurotta.dropwizard.server.application;
 
+import com.bazaarvoice.dropwizard.assets.AssetsBundleConfiguration;
+import com.bazaarvoice.dropwizard.assets.AssetsConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import ru.taskurotta.service.config.impl.MemoryConfigService;
@@ -9,7 +11,10 @@ import java.util.Properties;
 /**
  * Created on 22.01.2015.
  */
-public class TaskServerConfig extends Configuration {
+public class TaskServerConfig extends Configuration implements AssetsBundleConfiguration {
+
+    @JsonProperty
+    private final AssetsConfiguration assets = new AssetsConfiguration();
 
     @JsonProperty
     private Properties properties;
@@ -56,6 +61,11 @@ public class TaskServerConfig extends Configuration {
 
     public String[] getHealthCheckBeans() {
         return healthCheckBeans;
+    }
+
+    @Override
+    public AssetsConfiguration getAssetsConfiguration() {
+        return assets;
     }
 
 }

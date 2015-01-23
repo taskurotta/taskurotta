@@ -1,5 +1,6 @@
 package ru.taskurotta.dropwizard.server.application;
 
+import com.bazaarvoice.dropwizard.assets.ConfiguredAssetsBundle;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -37,12 +38,15 @@ public class SpringApplication extends Application<TaskServerConfig> {
 
     @Override
     public void initialize(Bootstrap<TaskServerConfig> bootstrap) {
-//        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
-//
-//        } else {
-//
-//        }
-        bootstrap.addBundle(new AssetsBundle("/assets", "/", "index.html"));
+        if (System.getProperties().get(ASSETS_MODE_PROPERTY_NAME) != null && System.getProperties().get(ASSETS_MODE_PROPERTY_NAME).toString().equalsIgnoreCase("dev")) {
+            bootstrap.addBundle(new ConfiguredAssetsBundle("/assets", "/", "index.html"));
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n");
+            System.out.println("WARNING! Assets DEVELOPMENT MODE is enabled. It is not recommended for production environment.");
+            System.out.println("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        } else {
+            bootstrap.addBundle(new AssetsBundle("/assets", "/", "index.html"));
+        }
+
     }
 
     @Override
