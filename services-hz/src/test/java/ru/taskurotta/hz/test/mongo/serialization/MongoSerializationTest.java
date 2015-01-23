@@ -1,6 +1,7 @@
 package ru.taskurotta.hz.test.mongo.serialization;
 
 import com.mongodb.*;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONEncoder;
@@ -8,6 +9,7 @@ import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,9 +24,7 @@ public class MongoSerializationTest {
 
     }
 
-    @Test
-    public void testWithoutCustom() throws Exception {
-
+    private MongoTemplate getMongoTemplate() throws UnknownHostException {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
         MongoClient mongoClient = new MongoClient(serverAddress);
 
@@ -32,6 +32,14 @@ public class MongoSerializationTest {
 
         MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, "test-mongo");
         mongoTemplate.setWriteConcern(writeConcern);
+        return mongoTemplate;
+    }
+
+    @Test
+    @Ignore
+    public void testWithoutCustom() throws Exception {
+
+        MongoTemplate mongoTemplate = getMongoTemplate();
 
         DBCollection withoutCol = mongoTemplate.createCollection("without-col");
 
@@ -43,7 +51,10 @@ public class MongoSerializationTest {
         }
     }
 
+
+
     @Test
+    @Ignore
     public void testWithCustom() throws Exception {
 
         DBEncoderFactory customDbEncoderFactory = new DBEncoderFactory() {
@@ -55,13 +66,7 @@ public class MongoSerializationTest {
 
         DefaultDBEncoder.FACTORY = customDbEncoderFactory;
 
-        ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
-        MongoClient mongoClient = new MongoClient(serverAddress);
-
-        WriteConcern writeConcern = new WriteConcern(1, 0, false, true);
-
-        MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, "test-mongo");
-        mongoTemplate.setWriteConcern(writeConcern);
+        MongoTemplate mongoTemplate = getMongoTemplate();
 
         DBCollection withoutCol = mongoTemplate.createCollection("without-col");
 
