@@ -32,32 +32,50 @@ properties:
 #  recovery.enabled: true
 #  hz.queue.task.memory-limit: 5
 
+server:
+  type: simple
+  applicationContextPath: /
+  adminContextPath: /admin
+  connector:
+    type: http
+    port: 8811
+  requestLog:
+    timeZone: UTC
+    appenders:
+    - type: file
+      currentLogFilename: "./target/logs/request.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "./target/logs/requests-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
 #Http server configuration:
 logging:
-    level: WARN
+    level: INFO
     loggers:
         com.hazelcast: INFO
-        ru.taskurotta: INFO
         com.yammer: INFO
-#        ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder: DEBUG
-    file:
-        enabled: true
-        archive: true
-        currentLogFilename: ./target/logs/service.log
-        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
-        logFormat: "%-4r %d [%t] %-5p %c - %m%n"
-
-http:
-    rootPath: "/rest/*"
-    gzip:
-        enabled: false
-    requestLog:
-        file:
-            enabled: false
-            archive: true
-            currentLogFilename: ./target/logs/requests.log
-            archivedLogFilenamePattern: ./target/logs/requests-%d.log.gz
-
-
-#config can be extended here
-#http://dropwizard.codahale.com/manual/core/#configuration-defaults
+        ru.taskurotta: INFO
+        ru.taskurotta.dropwizard.resources.console: DEBUG
+        ru.taskurotta.service.hz.console: DEBUG
+    appenders:
+    - type: file
+      currentLogFilename: "./target/logs/service.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "./target/logs/service-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"

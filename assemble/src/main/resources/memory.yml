@@ -4,7 +4,7 @@ contextLocation: "classpath*:spring/memory.xml"
 #Used for static resource serving in development mode
 assets:
   overrides:
-    /: ../../wf-dropwizard/src/main/resources/assets/
+    /: ../dropwizard/src/main/resources/assets/
 
 #Configuration of actors served by this server:
 actorConfig:
@@ -21,31 +21,50 @@ properties:
   recovery.timeStep: 1
   recovery.timeStep.unit: "DAYS"
 
+server:
+  type: simple
+  applicationContextPath: /
+  adminContextPath: /admin
+  connector:
+    type: http
+    port: 8811
+  requestLog:
+    timeZone: UTC
+    appenders:
+    - type: file
+      currentLogFilename: "./target/logs/request.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "./target/logs/requests-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
 #Http server configuration:
 logging:
-    level: WARN
+    level: INFO
     loggers:
-        ru.taskurotta: INFO
-#        ru.taskurotta.dropwizard.resources.console: DEBUG
-#        ru.taskurotta.service.dependency.graph: DEBUG
-#        ru.taskurotta.service.queue: DEBUG
-#        ru.taskurotta.service: INFO
-#        ru.taskurotta.server.recovery: DEBUG
+        com.hazelcast: INFO
         com.yammer: INFO
-    file:
-        enabled: true
-        archive: true
-        currentLogFilename: ./target/logs/service.log
-        archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
-http:
-    rootPath: "/rest/*"
-    gzip:
-        enabled: false
-    requestLog:
-        file:
-            enabled: true
-            archive: true
-            currentLogFilename: ./target/logs/requests.log
-            archivedLogFilenamePattern: ./target/logs/service-%d.log.gz
-#config can be extended here
-#http://dropwizard.codahale.com/manual/core/#configuration-defaults
+        ru.taskurotta: INFO
+        ru.taskurotta.dropwizard.resources.console: DEBUG
+        ru.taskurotta.service.hz.console: DEBUG
+    appenders:
+    - type: file
+      currentLogFilename: "./target/logs/service.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "./target/logs/service-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
