@@ -41,13 +41,13 @@ public class QueueTest {
 
         QueueStoreConfig queueStoreConfig = new QueueStoreConfig();
 
-        queueStoreConfig.setProperty("binary", "false");
-        queueStoreConfig.setProperty("memory-limit", "1000");
-        queueStoreConfig.setProperty("bulk-load", "100");
-        queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
-        queueStoreConfig.setEnabled(true);
-
-        qc.setQueueStoreConfig(createQueueStoreConfig(queueName));
+//        queueStoreConfig.setProperty("binary", "false");
+//        queueStoreConfig.setProperty("memory-limit", "1000");
+//        queueStoreConfig.setProperty("bulk-load", "100");
+//        queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
+//        queueStoreConfig.setEnabled(true);
+//
+//        qc.setQueueStoreConfig(createQueueStoreConfig(queueName));
 
         queueServiceConfig.setConfigObject(qc);
 
