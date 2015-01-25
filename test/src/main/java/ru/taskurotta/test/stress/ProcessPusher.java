@@ -5,6 +5,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.test.stress.process.Starter;
 import ru.taskurotta.test.stress.util.DaemonThread;
 
@@ -54,7 +55,6 @@ public class ProcessPusher {
                     currentSpeedPerSecond++;
                 }
 
-
                 int currSize = queue.size();
 
                 if (currSize < currentSpeedPerSecond) {
@@ -95,6 +95,29 @@ public class ProcessPusher {
                 }
 
                 return sum;
+            }
+
+        }.start();
+
+
+        // start terminator thread
+        new DaemonThread("test terminator", TimeUnit.SECONDS, 1) {
+
+            int currentSpeedPerSecond = initialProcessPresSecondPush;
+
+            @Override
+            public void daemonJob() {
+
+                if (counter.get() >= maxProcessQuantity &&
+                GeneralTaskServer.finishedProcessesCounter.get() >= maxProcessQuantity) {
+                    // stop JVM
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                    System.exit(0);
+                }
             }
 
         }.start();

@@ -21,9 +21,12 @@ import java.util.concurrent.TimeUnit;
 public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     protected static final Logger logger = LoggerFactory.getLogger(MongoQueueStore.class);
+
     public static Timer storeTimer = Metrics.newTimer(MongoQueueStore.class, "store",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer loadTimer = Metrics.newTimer(MongoQueueStore.class, "load",
+            TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+    public static Timer loadAllTimer = Metrics.newTimer(MongoQueueStore.class, "loadAll",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer deleteTimer = Metrics.newTimer(MongoQueueStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
@@ -117,28 +120,67 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
     @Override
     public Map<Long, Object> loadAll(Collection<Long> longs) {
+
+        long startTime = System.nanoTime();
+
         Map<Long, Object> map = new HashMap<>();
-        BasicDBList dbo = new BasicDBList();
-        for (Long key : longs) {
-            dbo.add(new BasicDBObject("_id", key));
-        }
-        BasicDBObject dbb = new BasicDBObject("$or", dbo);
-        try (DBCursor cursor = coll.find(dbb)) {
-            while (cursor.hasNext()) {
-                try {
-                    DBObject obj = cursor.next();
-                    Class clazz = Class.forName(obj.get("_class").toString());
-                    map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
-                } catch (ClassNotFoundException e) {
-                    logger.error(e.getMessage(), e);
+
+        try {
+
+            // new stuff
+
+            // arguments should always contain only 2 longs. One is "greater or equal" and
+            // second is "less or equal";
+
+            if (longs.size() != 2) {
+                throw new IllegalStateException("arguments should always contain only 2 longs. One is \"greater or " +
+                        "equal\" + and second is \"less or equal\"");
+            }
+
+            Iterator it = longs.iterator();
+            long one = (long) it.next();
+            long two = (long) it.next();
+
+            // swap if needed
+            if (one > two) {
+                long tmp = one;
+                one = two;
+                two = tmp;
+            }
+
+            BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", one).append("$lte", two));
+            try (DBCursor cursor = coll.find(query).batchSize(200)) {
+                while (cursor.hasNext()) {
+                    try {
+                        DBObject obj = cursor.next();
+                        Class clazz = Class.forName(obj.get("_class").toString());
+                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
+                    } catch (ClassNotFoundException e) {
+                        logger.error(e.getMessage(), e);
+                    }
                 }
             }
-        }
 
-//        duplicates check in QueueContainer#load
-//        if (map.size() != longs.size()) {
-//            logger.warn("Cannot load all items from store, loaded [{}] out of [{}]", map.size(), longs.size());
-//        }
+//            BasicDBList dbo = new BasicDBList();
+//            for (Long key : longs) {
+//                dbo.add(new BasicDBObject("_id", key));
+//            }
+//            BasicDBObject dbb = new BasicDBObject("$or", dbo);
+//            try (DBCursor cursor = coll.find(dbb).batchSize(200)) {
+//                while (cursor.hasNext()) {
+//                    try {
+//                        DBObject obj = cursor.next();
+//                        Class clazz = Class.forName(obj.get("_class").toString());
+//                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
+//                    } catch (ClassNotFoundException e) {
+//                        logger.error(e.getMessage(), e);
+//                    }
+//                }
+//            }
+
+        } finally {
+            loadAllTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+        }
 
         return map;
     }

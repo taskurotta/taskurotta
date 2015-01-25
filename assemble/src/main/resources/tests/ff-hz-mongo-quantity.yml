@@ -26,7 +26,7 @@ spreader:
           recovery.process.incomplete-timeout: 2 minutes
           recovery.find-incomplete-process-period: 1 minutes
           recovery.process.change-timeout: 1 minutes
-          hz.queue.task.memory-limit: 10000
+          hz.queue.task.memory-limit: 1000
           hz.map.general.max-size: 4
 
 
@@ -69,6 +69,9 @@ logback:
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
+        - com.hazelcast:
+             key: name
+             \@level: ERROR
         - ru.taskurotta:
              key: name
              \@level: INFO

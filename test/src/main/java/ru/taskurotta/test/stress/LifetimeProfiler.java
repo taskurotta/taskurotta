@@ -144,6 +144,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
                 sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
                         MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                sb.append(String.format("\nload all   mean: %8.3f oneMinuteRate: %8.3f",
+                        MongoQueueStore.loadAllTimer.mean(), MongoQueueStore.loadAllTimer.oneMinuteRate()));
                 sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
                         MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
 
