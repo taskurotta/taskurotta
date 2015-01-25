@@ -275,7 +275,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
             } catch (InterruptedException e) {
                 // ignore
             }
-            System.exit(-1);
         }
 
         if (maxBufferSize == newSize) {

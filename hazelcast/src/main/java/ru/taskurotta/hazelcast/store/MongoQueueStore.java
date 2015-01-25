@@ -118,6 +118,7 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
         }
     }
 
+
     @Override
     public Map<Long, Object> loadAll(Collection<Long> longs) {
 
@@ -127,46 +128,30 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 
         try {
 
-            // new stuff
-
-            // arguments should always contain only 2 longs. One is "greater or equal" and
-            // second is "less or equal";
-
-            if (longs.size() != 2) {
-                throw new IllegalStateException("arguments should always contain only 2 longs. One is \"greater or " +
-                        "equal\" + and second is \"less or equal\"");
-            }
-
-            Iterator it = longs.iterator();
-            long one = (long) it.next();
-            long two = (long) it.next();
-
-            // swap if needed
-            if (one > two) {
-                long tmp = one;
-                one = two;
-                two = tmp;
-            }
-
-            BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", one).append("$lte", two));
-            try (DBCursor cursor = coll.find(query).batchSize(200)) {
-                while (cursor.hasNext()) {
-                    try {
-                        DBObject obj = cursor.next();
-                        Class clazz = Class.forName(obj.get("_class").toString());
-                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
-                    } catch (ClassNotFoundException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            }
-
-//            BasicDBList dbo = new BasicDBList();
-//            for (Long key : longs) {
-//                dbo.add(new BasicDBObject("_id", key));
+//            // new version to support fastest load
+//            // new stuff
+//
+//            // arguments should always contain only 2 longs. One is "greater or equal" and
+//            // second is "less or equal";
+//
+//            if (longs.size() != 2) {
+//                throw new IllegalStateException("arguments should always contain only 2 longs. One is \"greater or " +
+//                        "equal\" + and second is \"less or equal\"");
 //            }
-//            BasicDBObject dbb = new BasicDBObject("$or", dbo);
-//            try (DBCursor cursor = coll.find(dbb).batchSize(200)) {
+//
+//            Iterator it = longs.iterator();
+//            long one = (long) it.next();
+//            long two = (long) it.next();
+//
+//            // swap if needed
+//            if (one > two) {
+//                long tmp = one;
+//                one = two;
+//                two = tmp;
+//            }
+//
+//            BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", one).append("$lte", two));
+//            try (DBCursor cursor = coll.find(query).batchSize(200)) {
 //                while (cursor.hasNext()) {
 //                    try {
 //                        DBObject obj = cursor.next();
@@ -177,6 +162,23 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
 //                    }
 //                }
 //            }
+
+            BasicDBList dbo = new BasicDBList();
+            for (Long key : longs) {
+                dbo.add(new BasicDBObject("_id", key));
+            }
+            BasicDBObject dbb = new BasicDBObject("$or", dbo);
+            try (DBCursor cursor = coll.find(dbb).batchSize(200)) {
+                while (cursor.hasNext()) {
+                    try {
+                        DBObject obj = cursor.next();
+                        Class clazz = Class.forName(obj.get("_class").toString());
+                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
+                    } catch (ClassNotFoundException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            }
 
         } finally {
             loadAllTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
