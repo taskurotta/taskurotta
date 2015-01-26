@@ -61,7 +61,7 @@ public class CachedQueueTest {
         }
 
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
-        queue = hazelcastInstance.getDistributedObject(QueueService.SERVICE_NAME, "testQueue");
+        queue = hazelcastInstance.getDistributedObject(QueueService.SERVICE_NAME, QUEUE_NAME);
     }
 
     @Test
