@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
-import ru.taskurotta.hazelcast.queue.impl.QueueService;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory;
 
 import java.net.UnknownHostException;
@@ -61,7 +60,7 @@ public class CachedQueueTest {
         }
 
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
-        queue = hazelcastInstance.getDistributedObject(QueueService.SERVICE_NAME, QUEUE_NAME);
+        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
     }
 
     @Test

@@ -42,6 +42,7 @@ import com.hazelcast.util.ConstructorFunction;
 import com.hazelcast.util.scheduler.EntryTaskScheduler;
 import com.hazelcast.util.scheduler.EntryTaskSchedulerFactory;
 import com.hazelcast.util.scheduler.ScheduleType;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.QueueItemListener;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
@@ -69,7 +70,8 @@ public class QueueService implements ManagedService, MigrationAwareService,
     /**
      * Service name.
      */
-    public static final String SERVICE_NAME = "taskurotta:impl:queueService";
+    public static final String SERVICE_NAME = CachedQueue.class.getName();
+
     private final EntryTaskScheduler queueEvictionScheduler;
     private final NodeEngine nodeEngine;
     private final ConcurrentMap<String, QueueContainer> containerMap
