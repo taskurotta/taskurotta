@@ -17,13 +17,13 @@ public class CustomDBObject implements DBObject {
 
     private ObjectId objectId;
     private TaskContainer taskContainer;
-    private Set<String> hashSet = new HashSet<>();
+    private Set<String> keySet = new HashSet<>();
     private boolean _isPartialObject;
 
 
     public CustomDBObject() {
-        hashSet.add("_id");
-        hashSet.add("taskContainer");
+        keySet.add("_id");
+        keySet.add("taskContainer");
     }
 
     public ObjectId getObjectId() {
@@ -35,6 +35,9 @@ public class CustomDBObject implements DBObject {
     }
 
     public TaskContainer getTaskContainer() {
+        if (taskContainer == null) {
+            taskContainer = new TaskContainer();
+        }
         return taskContainer;
     }
 
@@ -45,12 +48,16 @@ public class CustomDBObject implements DBObject {
     @Override
     public Object put(String key, Object v) {
         switch (key) {
-            case "taskContainer":
-                taskContainer = (TaskContainer) v;
-                return taskContainer;
             case "_id":
                 objectId = (ObjectId) v;
-                return objectId;
+                return v;
+            case "taskContainer.method":
+                getTaskContainer().setMethod((String) v);
+                return v;
+
+            case "taskContainer.actorId":
+                getTaskContainer().setActorId((String) v);
+                return v;
         }
         return null;
     }
@@ -95,12 +102,12 @@ public class CustomDBObject implements DBObject {
 
     @Override
     public boolean containsField(String s) {
-        return hashSet.contains(s);
+        return keySet.contains(s);
     }
 
     @Override
     public Set<String> keySet() {
-        return hashSet;
+        return keySet;
     }
 
     @Override

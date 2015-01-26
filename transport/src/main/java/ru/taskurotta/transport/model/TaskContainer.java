@@ -93,6 +93,15 @@ public class TaskContainer implements Serializable {
         errorAttempts++;
     }
 
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
+    }
+
     @Override
     public String toString() {
         return "TaskContainer [taskId=" + taskId

@@ -15,7 +15,6 @@ public class CustomBasicBSONEncoder extends BasicBSONEncoder implements DBEncode
 
     @Override
     protected void _putObjectField(String name, Object val) {
-        System.out.println(name + "=" + val);
         if (val.getClass().getName().equals("ru.taskurotta.transport.model.TaskContainer")) {
             _putTaskContainer(name, (TaskContainer) val);
         } else {
@@ -25,15 +24,13 @@ public class CustomBasicBSONEncoder extends BasicBSONEncoder implements DBEncode
 
     @Override
     protected void putObjectId(String name, ObjectId oid) {
-        System.out.println(name + "=" + oid);
         super.putObjectId(name, oid);
     }
 
     private void _putTaskContainer(String name, TaskContainer val) {
         val = (TaskContainer) BSON.applyEncodingHooks(val);
-        putString("_classId", val.getClass().getName());
-        putString("actorId", val.getActorId());
-        putString("method", val.getMethod());
+        putString(name+".actorId", val.getActorId());
+        putString(name+".method", val.getMethod());
     }
 
     @Override

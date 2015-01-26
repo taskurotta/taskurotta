@@ -41,12 +41,9 @@ public class MongoSerializationTest {
     @Test
     @Ignore
     public void testWithoutCustom() throws Exception {
-
         MongoTemplate mongoTemplate = getMongoTemplate();
-
-        DBCollection withoutCol = mongoTemplate.createCollection("without-col");
-
-        for (int i = 0; i < 500000; i++) {
+        DBCollection withoutCol = mongoTemplate.getCollection("without-col");
+        for (int i = 0; i < 5; i++) {
             TaskContainer taskContainer = createTaskContainer();
             DBObject dbObject = new BasicDBObject();
             mongoTemplate.getConverter().write(taskContainer, dbObject);
@@ -71,11 +68,14 @@ public class MongoSerializationTest {
             }
         };
         MongoTemplate mongoTemplate = getMongoTemplate();
+
         DBCollection withCol = mongoTemplate.getCollection("with-col");
+
+        withCol.setObjectClass(CustomDBObject.class);
         withCol.setDBEncoderFactory(customDbEncoderFactory);
         withCol.setDBDecoderFactory(customDbDecoderFactory);
+
         List<ObjectId> list = new ArrayList<>();
-        System.out.println("Populating");
         for (int i = 0; i < 5; i++) {
             TaskContainer taskContainer = createTaskContainer();
             CustomDBObject dbObject = new CustomDBObject();
@@ -85,17 +85,14 @@ public class MongoSerializationTest {
             withCol.save(dbObject);
             list.add(id);
         }
-        System.out.println("End");
 
-        System.out.println("Looking for");
         for (ObjectId objectId : list) {
             BasicDBObject query = new BasicDBObject();
-            System.out.println("Search by id: " + objectId);
             query.put("_id", objectId);
-            DBObject dbObj = withCol.findOne(query);
+            CustomDBObject dbObj = (CustomDBObject) withCol.findOne(query);
             if (dbObj != null){
-                System.out.println(dbObj);
-                System.out.println(dbObj.get("method"));
+                System.out.println("dbObj.getObjectId() = " + dbObj.getObjectId());
+                System.out.println("dbObj.getTaskContainer().getActorId() = " + dbObj.getTaskContainer().getActorId());
             }
         }
     }
@@ -103,7 +100,7 @@ public class MongoSerializationTest {
     private TaskContainer createTaskContainer() {
         UUID taskId = UUID.randomUUID();
         String method = "method";
-        String actorId = "actorId";
+        String actorId = "actorId#"+taskId.toString();
         TaskType type = TaskType.DECIDER_START;
         long startTime = 15121234;
         int errorAttempts = 2;
