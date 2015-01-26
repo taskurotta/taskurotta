@@ -19,7 +19,6 @@ package ru.taskurotta.hazelcast.queue.impl;
 import com.hazelcast.nio.serialization.ArrayDataSerializableFactory;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.DataSerializerHook;
-import com.hazelcast.nio.serialization.FactoryIdHelper;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.util.ConstructorFunction;
 import ru.taskurotta.hazelcast.queue.impl.operations.AddAllOperation;
@@ -43,7 +42,7 @@ import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
  */
 public final class QueueDataSerializerHook implements DataSerializerHook {
 
-    public static final int F_ID = FactoryIdHelper.getFactoryId(FactoryIdHelper.QUEUE_DS_FACTORY, -11);
+    public static final int F_ID = 1;
 
     public static final int OFFER = 0;
     public static final int POLL = 1;

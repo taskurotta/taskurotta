@@ -42,6 +42,9 @@ import com.hazelcast.util.ConstructorFunction;
 import com.hazelcast.util.scheduler.EntryTaskScheduler;
 import com.hazelcast.util.scheduler.EntryTaskSchedulerFactory;
 import com.hazelcast.util.scheduler.ScheduleType;
+import ru.taskurotta.hazelcast.queue.QueueItemListener;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.impl.operations.QueueReplicationOperation;
 import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
@@ -62,7 +65,7 @@ import java.util.logging.Level;
  * such as {@link ru.taskurotta.hazelcast.queue.impl.QueueEvictionProcessor }
  */
 public class QueueService implements ManagedService, MigrationAwareService,
-        RemoteService, EventPublishingService<QueueEvent, ItemListener> {
+        RemoteService, EventPublishingService<QueueEvent, QueueItemListener> {
     /**
      * Service name.
      */
@@ -121,7 +124,7 @@ public class QueueService implements ManagedService, MigrationAwareService,
             return container;
         }
 
-        container = new QueueContainer(name, nodeEngine.getConfig().findQueueConfig(name), nodeEngine, this);
+        container = new QueueContainer(name, findQueueConfig(name), nodeEngine, this);
         QueueContainer existing = containerMap.putIfAbsent(name, container);
         if (existing != null) {
             container = existing;
@@ -129,6 +132,13 @@ public class QueueService implements ManagedService, MigrationAwareService,
             container.init(fromBackup);
         }
         return container;
+    }
+
+    public CachedQueueConfig findQueueConfig(String name) {
+        CachedQueueServiceConfig cachedQueueServiceConfig = (CachedQueueServiceConfig) nodeEngine.getConfig()
+                .getServicesConfig().getServiceConfig(QueueService.SERVICE_NAME);
+
+        return cachedQueueServiceConfig.findQueueConfig(name);
     }
 
     public void addContainer(String name, QueueContainer container) {
@@ -153,10 +163,10 @@ public class QueueService implements ManagedService, MigrationAwareService,
             int partitionId = partitionService.getPartitionId(StringPartitioningStrategy.getPartitionKey(name));
             QueueContainer container = entry.getValue();
 
-            if (partitionId == event.getPartitionId()
-                    && container.getConfig().getTotalBackupCount() >= event.getReplicaIndex()) {
-                migrationData.put(name, container);
-            }
+//            if (partitionId == event.getPartitionId()
+//                    && container.getConfig().getTotalBackupCount() >= event.getReplicaIndex()) {
+//                migrationData.put(name, container);
+//            }
         }
 
         if (migrationData.isEmpty()) {
@@ -201,7 +211,7 @@ public class QueueService implements ManagedService, MigrationAwareService,
     }
 
     @Override
-    public void dispatchEvent(QueueEvent event, ItemListener listener) {
+    public void dispatchEvent(QueueEvent event, QueueItemListener listener) {
         final MemberImpl member = nodeEngine.getClusterService().getMember(event.caller);
         ItemEvent itemEvent = new DataAwareItemEvent(event.name, event.eventType, event.data,
                 member, nodeEngine.getSerializationService());
@@ -264,7 +274,6 @@ public class QueueService implements ManagedService, MigrationAwareService,
             stats.setOwnedItemCount(container.size());
         }
 
-        container.setStats(stats);
         return stats;
     }
 

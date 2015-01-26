@@ -50,12 +50,8 @@ public final class OfferOperation extends QueueOperation
     @Override
     public void run() {
         QueueContainer container = getOrCreateContainer();
-        if (container.hasEnoughCapacity()) {
-            itemId = container.offer(data);
-            response = true;
-        } else {
-            response = false;
-        }
+        itemId = container.offer(data);
+        response = true;
     }
 
     @Override
@@ -86,8 +82,7 @@ public final class OfferOperation extends QueueOperation
 
     @Override
     public boolean shouldWait() {
-        QueueContainer container = getOrCreateContainer();
-        return getWaitTimeout() != 0 && !container.hasEnoughCapacity();
+        return false;
     }
 
     @Override

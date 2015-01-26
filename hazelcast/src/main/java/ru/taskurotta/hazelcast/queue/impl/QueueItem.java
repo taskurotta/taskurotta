@@ -20,7 +20,6 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
-import com.hazelcast.util.Clock;
 
 import java.io.IOException;
 
@@ -31,24 +30,16 @@ public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueIt
 
     protected long itemId;
     protected Data data;
-    protected final long creationTime;
-    protected QueueContainer container;
 
     public QueueItem() {
-        this.creationTime = Clock.currentTimeMillis();
     }
 
-    public QueueItem(QueueContainer container, long itemId, Data data) {
-        this();
-        this.container = container;
+    public QueueItem(long itemId, Data data) {
         this.itemId = itemId;
         this.data = data;
     }
 
     public Data getData() {
-        if (data == null && container != null) {
-            data = container.getDataFromMap(itemId);
-        }
         return data;
     }
 
@@ -62,10 +53,6 @@ public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueIt
 
     public void setItemId(long itemId) {
         this.itemId = itemId;
-    }
-
-    public long getCreationTime() {
-        return creationTime;
     }
 
     @Override

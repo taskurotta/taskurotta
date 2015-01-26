@@ -14,9 +14,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Date: 17.02.14 12:04
  */
@@ -76,47 +73,5 @@ public class MongoQueueStoreTest {
         logger.info("Min id after: " + minId);
         Assert.assertEquals(20, minId);
     }
-
-
-    @Test
-    public void testIO() throws InterruptedException {
-
-        AtomicInteger counter = new AtomicInteger(0);
-
-        System.err.println("Add");
-        addToQueue(iQueue, counter, 19);
-        TimeUnit.SECONDS.sleep(3);
-
-        System.err.println("Poll");
-        pollFromQueue(iQueue, counter, 18);
-        TimeUnit.SECONDS.sleep(3);
-
-        System.err.println("Add");
-        addToQueue(iQueue, counter, 21);
-        TimeUnit.SECONDS.sleep(3);
-
-        System.err.println("Poll");
-        pollFromQueue(iQueue, counter, 22);
-    }
-
-    private void addToQueue(IQueue queue, AtomicInteger counter, int quantity) {
-        for (int i = 0; i < quantity; i++) {
-            String item = "" + counter.getAndIncrement();
-
-            System.err.println("add() " + item);
-            iQueue.add(item);
-        }
-    }
-
-
-    private void pollFromQueue(IQueue queue, AtomicInteger counter, int quantity) {
-        for (int i = 0; i < quantity; i++) {
-
-            String item = (String) iQueue.poll();
-            System.err.println("poll() " + item);
-            Assert.assertNotNull(item);
-        }
-    }
-
 
 }

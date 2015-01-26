@@ -17,12 +17,12 @@
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.QueueConfig;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.spi.AbstractOperation;
 import com.hazelcast.spi.NodeEngine;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
@@ -55,7 +55,7 @@ public class QueueReplicationOperation extends AbstractOperation implements Iden
         for (Map.Entry<String, QueueContainer> entry : migrationData.entrySet()) {
             String name = entry.getKey();
             QueueContainer container = entry.getValue();
-            QueueConfig conf = config.findQueueConfig(name);
+            CachedQueueConfig conf = service.findQueueConfig(name);
             container.setConfig(conf, nodeEngine, service);
             service.addContainer(name, container);
         }

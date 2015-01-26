@@ -16,10 +16,7 @@
 
 package ru.taskurotta.hazelcast.queue.impl;
 
-import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.HazelcastException;
-import com.hazelcast.core.QueueStore;
-import com.hazelcast.core.QueueStoreFactory;
 import com.hazelcast.nio.BufferObjectDataOutput;
 import com.hazelcast.nio.ClassLoaderUtil;
 import com.hazelcast.nio.IOUtil;
@@ -28,6 +25,9 @@ import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.util.EmptyStatement;
 import com.hazelcast.util.QuickMath;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
+import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
+import ru.taskurotta.hazelcast.queue.store.CachedQueueStoreFactory;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -42,28 +42,16 @@ import static com.hazelcast.util.ValidationUtil.checkNotNull;
  * Wrapper for the Queue Store.
  */
 @SuppressWarnings("unchecked")
-public final class QueueStoreWrapper implements QueueStore<Data> {
+public final class QueueStoreWrapper implements CachedQueueStore<Data> {
 
-    private static final int DEFAULT_MEMORY_LIMIT = 1000;
-    private static final int DEFAULT_BULK_LOAD = 250;
     private static final int OUTPUT_SIZE = 1024;
     private static final int BUFFER_SIZE_FACTOR = 8;
-
-    private static final String STORE_BINARY = "binary";
-
-    private static final String STORE_MEMORY_LIMIT = "memory-limit";
-
-    private static final String STORE_BULK_LOAD = "bulk-load";
-
-    private int memoryLimit = DEFAULT_MEMORY_LIMIT;
-
-    private int bulkLoad = DEFAULT_BULK_LOAD;
 
     private boolean enabled;
 
     private boolean binary;
 
-    private QueueStore store;
+    private CachedQueueStore store;
 
     private SerializationService serializationService;
 
@@ -78,7 +66,8 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
      * @param serializationService serialization service.
      * @return returns a new instance of {@link QueueStoreWrapper}
      */
-    public static QueueStoreWrapper create(String name, QueueStoreConfig storeConfig, SerializationService serializationService) {
+    public static QueueStoreWrapper create(String name, CachedQueueStoreConfig storeConfig, SerializationService
+            serializationService) {
         checkNotNull(name, "name should not be null");
         checkNotNull(serializationService, "serializationService should not be null");
 
@@ -89,20 +78,19 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
         }
         // create queue store.
         final ClassLoader classLoader = serializationService.getClassLoader();
-        final QueueStore queueStore = createQueueStore(name, storeConfig, classLoader);
+        final CachedQueueStore queueStore = createQueueStore(name, storeConfig, classLoader);
         if (queueStore != null) {
             storeWrapper.setEnabled(storeConfig.isEnabled());
-            storeWrapper.setBinary(Boolean.parseBoolean(storeConfig.getProperty(STORE_BINARY)));
-            storeWrapper.setMemoryLimit(parseInt(STORE_MEMORY_LIMIT, DEFAULT_MEMORY_LIMIT, storeConfig));
-            storeWrapper.setBulkLoad(parseInt(STORE_BULK_LOAD, DEFAULT_BULK_LOAD, storeConfig));
+            storeWrapper.setBinary(storeConfig.isBinary());
             storeWrapper.setStore(queueStore);
         }
         return storeWrapper;
     }
 
-    private static QueueStore createQueueStore(String name, QueueStoreConfig storeConfig, ClassLoader classLoader) {
+    private static CachedQueueStore createQueueStore(String name, CachedQueueStoreConfig storeConfig, ClassLoader
+            classLoader) {
         // 1. Try to create store from `store impl.` class.
-        QueueStore store = getQueueStore(storeConfig, classLoader);
+        CachedQueueStore store = getQueueStore(storeConfig, classLoader);
         // 2. Try to create store from `store factory impl.` class.
         if (store == null) {
             store = getQueueStoreFactory(name, storeConfig, classLoader);
@@ -110,11 +98,11 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
         return store;
     }
 
-    private static QueueStore getQueueStore(QueueStoreConfig storeConfig, ClassLoader classLoader) {
+    private static CachedQueueStore getQueueStore(CachedQueueStoreConfig storeConfig, ClassLoader classLoader) {
         if (storeConfig == null) {
             return null;
         }
-        QueueStore store = storeConfig.getStoreImplementation();
+        CachedQueueStore store = storeConfig.getStoreImplementation();
         if (store != null) {
             return store;
         }
@@ -127,11 +115,12 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
 
     }
 
-    private static QueueStore getQueueStoreFactory(String name, QueueStoreConfig storeConfig, ClassLoader classLoader) {
+    private static CachedQueueStore getQueueStoreFactory(String name, CachedQueueStoreConfig storeConfig, ClassLoader
+            classLoader) {
         if (storeConfig == null) {
             return null;
         }
-        QueueStoreFactory factory = storeConfig.getFactoryImplementation();
+        CachedQueueStoreFactory factory = storeConfig.getFactoryImplementation();
         if (factory == null) {
             try {
                 factory = ClassLoaderUtil.newInstance(classLoader,
@@ -240,6 +229,23 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
         }
 
         final Map<Long, ?> map = store.loadAll(keys);
+
+        return serializeToData(map);
+    }
+
+    @Override
+    public Map<Long, Data> loadAll(long from, long to) {
+
+        if (!enabled) {
+            return null;
+        }
+
+        final Map<Long, ?> map = store.loadAll(from, to);
+
+        return serializeToData(map);
+    }
+
+    private Map<Long, Data> serializeToData(Map<Long, ?> map) {
         if (map == null) {
             return Collections.emptyMap();
         }
@@ -272,7 +278,7 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
         return null;
     }
 
-    private static int parseInt(String name, int defaultValue, QueueStoreConfig storeConfig) {
+    private static int parseInt(String name, int defaultValue, CachedQueueStoreConfig storeConfig) {
         final String val = storeConfig.getProperty(name);
         if (val == null || val.trim().isEmpty()) {
             return defaultValue;
@@ -292,35 +298,16 @@ public final class QueueStoreWrapper implements QueueStore<Data> {
         return binary;
     }
 
-    public int getMemoryLimit() {
-        return memoryLimit;
-    }
-
-    public int getBulkLoad() {
-        return bulkLoad;
-    }
-
     void setSerializationService(SerializationService serializationService) {
         this.serializationService = serializationService;
     }
 
-    void setStore(QueueStore store) {
+    void setStore(CachedQueueStore store) {
         this.store = store;
     }
 
     void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    void setMemoryLimit(int memoryLimit) {
-        this.memoryLimit = memoryLimit;
-    }
-
-    void setBulkLoad(int bulkLoad) {
-        if (bulkLoad < 1) {
-            bulkLoad = 1;
-        }
-        this.bulkLoad = bulkLoad;
     }
 
     void setBinary(boolean binary) {

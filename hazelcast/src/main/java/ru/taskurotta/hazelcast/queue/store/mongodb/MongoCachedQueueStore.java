@@ -1,24 +1,34 @@
-package ru.taskurotta.hazelcast.store;
+package ru.taskurotta.hazelcast.queue.store.mongodb;
 
-import com.hazelcast.core.QueueStore;
 import com.hazelcast.spring.mongodb.MongoDBConverter;
 import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
-import com.mongodb.*;
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.ItemIdAware;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
+import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
+import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
  * User: moroz
  * Date: 16.08.13
  */
-public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
+public class MongoCachedQueueStore implements CachedQueueStore<Object>, ItemIdAware {
 
     protected static final Logger logger = LoggerFactory.getLogger(MongoQueueStore.class);
 
@@ -35,12 +45,14 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
     private MongoDBConverter converter;
     private DBCollection coll;
 
-    public MongoQueueStore(String storageName, MongoTemplate mongoTemplate) {
+    private int batchSize;
+
+    public MongoCachedQueueStore(String storageName, MongoTemplate mongoTemplate, CachedQueueStoreConfig config) {
         this.storageName = storageName;
         this.mongoTemplate = mongoTemplate;
+        this.batchSize = config.getBatchLoadSize();
         this.coll = mongoTemplate.getCollection(this.storageName);
-        this.converter = new SpringMongoDBConverter(mongoTemplate);
-    }
+        this.converter = new SpringMongoDBConverter(mongoTemplate);    }
 
     public MongoTemplate getMongoTemplate() {
         return mongoTemplate;
@@ -133,7 +145,37 @@ public class MongoQueueStore implements QueueStore<Object>, ItemIdAware {
                 dbo.add(new BasicDBObject("_id", key));
             }
             BasicDBObject dbb = new BasicDBObject("$or", dbo);
-            try (DBCursor cursor = coll.find(dbb).batchSize(200)) {
+            try (DBCursor cursor = coll.find(dbb).batchSize(batchSize)) {
+                while (cursor.hasNext()) {
+                    try {
+                        DBObject obj = cursor.next();
+                        Class clazz = Class.forName(obj.get("_class").toString());
+                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
+                    } catch (ClassNotFoundException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            }
+
+        } finally {
+            loadAllTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+        }
+
+        return map;
+    }
+
+
+    @Override
+    public Map<Long, Object> loadAll(long from, long to) {
+
+        long startTime = System.nanoTime();
+
+        Map<Long, Object> map = new HashMap<>();
+
+        try {
+
+            BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", from).append("$lte", to));
+            try (DBCursor cursor = coll.find(query).batchSize(batchSize)) {
                 while (cursor.hasNext()) {
                     try {
                         DBObject obj = cursor.next();

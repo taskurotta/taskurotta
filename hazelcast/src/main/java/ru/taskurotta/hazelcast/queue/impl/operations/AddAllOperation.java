@@ -50,12 +50,8 @@ public class AddAllOperation extends QueueOperation implements Notifier {
     @Override
     public void run() {
         QueueContainer container = getOrCreateContainer();
-        if (container.hasEnoughCapacity()) {
-            dataMap = container.addAll(dataList);
-            response = true;
-        } else {
-            response = false;
-        }
+        dataMap = container.addAll(dataList);
+        response = true;
     }
 
     @Override
