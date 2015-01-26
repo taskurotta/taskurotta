@@ -1,10 +1,13 @@
 package ru.taskurotta.hz.test.mongo.serialization;
 
 import com.mongodb.*;
+import org.bson.types.ObjectId;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONDecoder;
 import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONEncoder;
+import ru.taskurotta.hz.test.mongo.serialization.custom.CustomDBObject;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -52,29 +55,48 @@ public class MongoSerializationTest {
     }
 
 
-
     @Test
     @Ignore
     public void testWithCustom() throws Exception {
-
         DBEncoderFactory customDbEncoderFactory = new DBEncoderFactory() {
             @Override
             public DBEncoder create() {
                 return new CustomBasicBSONEncoder();
             }
         };
-
-        DefaultDBEncoder.FACTORY = customDbEncoderFactory;
-
+        DBDecoderFactory customDbDecoderFactory = new DBDecoderFactory() {
+            @Override
+            public DBDecoder create() {
+                return new CustomBasicBSONDecoder();
+            }
+        };
         MongoTemplate mongoTemplate = getMongoTemplate();
-
-        DBCollection withoutCol = mongoTemplate.createCollection("without-col");
-
+        DBCollection withCol = mongoTemplate.getCollection("with-col");
+        withCol.setDBEncoderFactory(customDbEncoderFactory);
+        withCol.setDBDecoderFactory(customDbDecoderFactory);
+        List<ObjectId> list = new ArrayList<>();
+        System.out.println("Populating");
         for (int i = 0; i < 5; i++) {
             TaskContainer taskContainer = createTaskContainer();
-            DBObject dbObject = new BasicDBObject();
-            dbObject.put("task-container", taskContainer);
-            withoutCol.save(dbObject);
+            CustomDBObject dbObject = new CustomDBObject();
+            ObjectId id = new ObjectId();
+            dbObject.setObjectId(id);
+            dbObject.setTaskContainer(taskContainer);
+            withCol.save(dbObject);
+            list.add(id);
+        }
+        System.out.println("End");
+
+        System.out.println("Looking for");
+        for (ObjectId objectId : list) {
+            BasicDBObject query = new BasicDBObject();
+            System.out.println("Search by id: " + objectId);
+            query.put("_id", objectId);
+            DBObject dbObj = withCol.findOne(query);
+            if (dbObj != null){
+                System.out.println(dbObj);
+                System.out.println(dbObj.get("method"));
+            }
         }
     }
 
