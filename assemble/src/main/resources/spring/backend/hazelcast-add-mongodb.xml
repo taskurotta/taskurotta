@@ -20,16 +20,13 @@
     <!-- Queues persistence support -->
     <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-        <constructor-arg name="maxSize" value="${hz.queue.task.max-size}"/>
-        <constructor-arg name="backupCount" value="${hz.queue.task.backup-count}"/>
-        <constructor-arg name="asyncBackupsCount" value="${hz.queue.task.async-backup-count}"/>
-        <constructor-arg name="memoryLimit" value="${hz.queue.task.memory-limit}"/>
+        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
+        <constructor-arg name="cacheSize" value="${hz.queue.task.cache-size}"/>
         <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
-        <constructor-arg name="bulkLoad" value="${hz.queue.task.bulk-load}"/>
+        <constructor-arg name="batchLoadSize" value="${hz.queue.task.batch-load-size}"/>
     </bean>
 
-    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
         <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
@@ -44,16 +41,13 @@
 
     <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-        <constructor-arg name="maxSize" value="${gc.queue.max-size}"/>
-        <constructor-arg name="backupCount" value="${gc.queue.backup-count}"/>
-        <constructor-arg name="asyncBackupsCount" value="${gc.queue.async-backup-count}"/>
-        <constructor-arg name="memoryLimit" value="${gc.queue.memory-limit}"/>
+        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
+        <constructor-arg name="cacheSize" value="${gc.queue.cache-size}"/>
         <constructor-arg name="binary" value="${gc.queue.binary}"/>
-        <constructor-arg name="bulkLoad" value="${gc.queue.bulk-load}"/>
+        <constructor-arg name="batchLoadSize" value="${gc.queue.batch-load-size}"/>
     </bean>
 
-    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
         <constructor-arg name="hzQueueConfigSupport" ref="gcQueueConfigSupport"/>
@@ -61,13 +55,10 @@
 
     <bean id="recoveryQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory"/>
-        <constructor-arg name="maxSize" value="${recovery.queue.max-size}"/>
-        <constructor-arg name="backupCount" value="${recovery.queue.backup-count}"/>
-        <constructor-arg name="asyncBackupsCount" value="${recovery.queue.async-backup-count}"/>
-        <constructor-arg name="memoryLimit" value="${recovery.queue.memory-limit}"/>
+        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
+        <constructor-arg name="cacheSize" value="${recovery.queue.cache-size}"/>
         <constructor-arg name="binary" value="${recovery.queue.binary}"/>
-        <constructor-arg name="bulkLoad" value="${recovery.queue.bulk-load}"/>
+        <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
     </bean>
     <!-- /Queues persistence support -->
 
@@ -81,6 +72,7 @@
                 <constructor-arg name="duration" value="${dq.schedule}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
     </bean>
 
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
@@ -92,6 +84,7 @@
                 <constructor-arg name="duration" value="${gc.dq.schedule}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
     </bean>
     <!-- /Delay queue support -->
 

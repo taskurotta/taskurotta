@@ -129,7 +129,7 @@ public final class QueueStoreWrapper implements CachedQueueStore<Data> {
                 EmptyStatement.ignore(ignored);
             }
         }
-        return factory == null ? null : factory.newQueueStore(name, storeConfig.getProperties());
+        return factory == null ? null : factory.newQueueStore(name, storeConfig);
     }
 
     @Override

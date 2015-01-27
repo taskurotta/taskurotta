@@ -1,10 +1,10 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -14,43 +14,43 @@ import java.util.concurrent.locks.ReentrantLock;
  * Date: 12/4/13
  * Time: 9:19 AM
  */
-public class BaseQueueFactory implements QueueFactory {
+public class DefaultQueueFactory implements QueueFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(BaseQueueFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultQueueFactory.class);
 
     private HazelcastInstance hazelcastInstance;
     private StorageFactory storageFactory;
     private HzQueueConfigSupport hzQueueConfigSupport;
 
     private transient final ReentrantLock lock = new ReentrantLock();
-    private ConcurrentHashMap<String, DelayIQueue> queueMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CachedDelayQueue> queueMap = new ConcurrentHashMap<>();
 
 
-    public BaseQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory) {
+    public DefaultQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory) {
         this.hazelcastInstance = hazelcastInstance;
         this.storageFactory = storageFactory;
     }
 
-    public BaseQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory, HzQueueConfigSupport hzQueueConfigSupport) {
+    public DefaultQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory, HzQueueConfigSupport hzQueueConfigSupport) {
         this.hazelcastInstance = hazelcastInstance;
         this.storageFactory = storageFactory;
         this.hzQueueConfigSupport = hzQueueConfigSupport;
     }
 
     @Override
-    public DelayIQueue create(String queueName) {
+    public CachedDelayQueue create(String queueName) {
 
-        DelayIQueue delayIQueue = queueMap.get(queueName);
+        CachedDelayQueue cachedDelayQueue = queueMap.get(queueName);
 
-        if (delayIQueue == null) {
+        if (cachedDelayQueue == null) {
 
             final ReentrantLock lock = this.lock;
             lock.lock();
 
             try {
-                delayIQueue = queueMap.get(queueName);
-                if (delayIQueue != null) {
-                    return delayIQueue;
+                cachedDelayQueue = queueMap.get(queueName);
+                if (cachedDelayQueue != null) {
+                    return cachedDelayQueue;
                 }
 
                 if (hzQueueConfigSupport != null) {
@@ -59,10 +59,10 @@ public class BaseQueueFactory implements QueueFactory {
                     logger.warn("HzQueueConfigSupport is not configured");
                 }
 
-                IQueue iQueue = hazelcastInstance.getQueue(queueName);
+                CachedQueue cQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), queueName);
                 Storage storage = storageFactory.createStorage(queueName);
 
-                delayIQueue = new DelayIQueue(iQueue, storage);
+                cachedDelayQueue = new CachedDelayQueueImpl(cQueue, storage);
 
                 // Do not remove commented code! This is example of deadlock for future analyze
 //                try {
@@ -71,12 +71,12 @@ public class BaseQueueFactory implements QueueFactory {
 //                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //                }
 
-                queueMap.put(queueName, delayIQueue);
+                queueMap.put(queueName, cachedDelayQueue);
             } finally {
                 lock.unlock();
             }
         }
 
-        return delayIQueue;
+        return cachedDelayQueue;
     }
 }

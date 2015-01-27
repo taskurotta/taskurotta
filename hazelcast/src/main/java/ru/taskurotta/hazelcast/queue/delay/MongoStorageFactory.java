@@ -1,7 +1,6 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.spring.mongodb.MongoDBConverter;
 import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.BasicDBObject;
@@ -11,6 +10,7 @@ import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.util.ClusterUtils;
 
 import java.util.Map;
@@ -31,6 +31,9 @@ public class MongoStorageFactory implements StorageFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
 
+    public static final String OBJECT_NAME = "object";
+    public static final String ENQUEUE_TIME_NAME = "enqueueTime";
+
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
 
@@ -39,32 +42,34 @@ public class MongoStorageFactory implements StorageFactory {
     private transient final ReentrantLock lock = new ReentrantLock();
     private ConcurrentHashMap<String, String> dbCollectionNamesMap = new ConcurrentHashMap<>();
 
-    public static final String OBJECT_NAME = "object";
-    public static final String ENQUEUE_TIME_NAME = "enqueueTime";
+
+    private int batchLoadSize;
 
     public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final MongoTemplate mongoTemplate,
-                               String storagePrefix, long scheduleDelayMillis) {
+                               String storagePrefix, long scheduleDelayMillis, int batchLoadSize) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
         this.converter = new SpringMongoDBConverter(mongoTemplate);
+        this.batchLoadSize = batchLoadSize;
 
         fireStorageScanTask(hazelcastInstance, scheduleDelayMillis);
 
     }
 
     private void fireStorageScanTask(final HazelcastInstance hazelcastInstance, final long scheduleDelayMillis) {
-        final ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new
-                                                                                                                          ThreadFactory() {
-                                                                                                                              private int counter = 0;
+        final ScheduledExecutorService singleThreadScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+                new
+                        ThreadFactory() {
+                            private int counter = 0;
 
-                                                                                                                              @Override
-                                                                                                                              public Thread newThread(Runnable r) {
-                                                                                                                                  Thread thread = new Thread(r);
-                                                                                                                                  thread.setName("MongoStorageFactory-" + counter++);
-                                                                                                                                  thread.setDaemon(true);
-                                                                                                                                  return thread;
-                                                                                                                              }
-                                                                                                                          });
+                            @Override
+                            public Thread newThread(Runnable r) {
+                                Thread thread = new Thread(r);
+                                thread.setName("MongoStorageFactory-" + counter++);
+                                thread.setDaemon(true);
+                                return thread;
+                            }
+                        });
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -89,17 +94,19 @@ public class MongoStorageFactory implements StorageFactory {
                         String dbCollectionName = entry.getValue();
                         String queueName = entry.getKey();
 
-                        if (ClusterUtils.isLocalQueue(queueName, hazelcastInstance)) {//Node should serve only local queues
-                            DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
-                            IQueue iQueue = hazelcastInstance.getQueue(queueName);
+                        CachedQueue cachedQueue = hazelcastInstance.getDistributedObject(CachedQueue.class
+                                .getName(), queueName);
 
-                            // todo: batch size should be parametrized
-                            try (DBCursor dbCursor = dbCollection.find(query).batchSize(100)) {
+                        if (ClusterUtils.isLocalCachedQueue(hazelcastInstance, cachedQueue)) {//Node should serve only
+                        // local queues
+                            DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+
+                            try (DBCursor dbCursor = dbCollection.find(query).batchSize(batchLoadSize)) {
                                 while (dbCursor.hasNext()) {
                                     DBObject dbObject = dbCursor.next();
                                     StorageItem storageItem = (StorageItem) converter.toObject(StorageItem.class, dbObject);
 
-                                    if (iQueue.offer(storageItem.getObject())) {
+                                    if (cachedQueue.offer(storageItem.getObject())) {
                                         dbCollection.remove(dbObject);
                                     }
                                 }

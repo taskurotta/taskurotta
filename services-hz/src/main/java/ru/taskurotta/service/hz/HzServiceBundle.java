@@ -1,8 +1,8 @@
 package ru.taskurotta.service.hz;
 
 import com.hazelcast.core.HazelcastInstance;
-import ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory;
-import ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory;
+import ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory;
+import ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 import ru.taskurotta.hazelcast.queue.delay.StorageFactory;
 import ru.taskurotta.service.ServiceBundle;
@@ -43,8 +43,8 @@ public class HzServiceBundle implements ServiceBundle {
 
         this.processService = new HzProcessService(hazelcastInstance, "Process");
         this.taskService = new GeneralTaskService(taskDao);
-        StorageFactory storageFactory = new CommonStorageFactory(hazelcastInstance, "storageName", 100l);
-        QueueFactory queueFactory = new BaseQueueFactory(hazelcastInstance, storageFactory);
+        StorageFactory storageFactory = new DefaultStorageFactory(hazelcastInstance, "storageName", 100l);
+        QueueFactory queueFactory = new DefaultQueueFactory(hazelcastInstance, storageFactory);
         this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay);
 
         this.graphDao = new HzGraphDao(hazelcastInstance);

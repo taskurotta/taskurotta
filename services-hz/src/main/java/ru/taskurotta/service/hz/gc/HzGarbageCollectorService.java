@@ -7,7 +7,7 @@ import ru.taskurotta.service.gc.AbstractGCTask;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
-import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
     private long timeBeforeDelete;
     private boolean enabled;
 
-    private DelayIQueue<UUID> garbageCollectorQueue;
+    private CachedDelayQueue<UUID> garbageCollectorQueue;
 
     private volatile boolean notInShutdown = true;
 
@@ -89,7 +89,11 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
         if (!enabled) {
             return;
         }
-        garbageCollectorQueue.add(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
+        try {
+            garbageCollectorQueue.delayOffer(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override

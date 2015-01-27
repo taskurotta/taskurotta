@@ -16,13 +16,25 @@ public class CachedQueueServiceConfig extends ServiceConfig {
     private final Map<String, CachedQueueConfig> queueConfigs = new ConcurrentHashMap<String, CachedQueueConfig>();
 
     /**
-     * WARN: not thread safe!
+     * WARNING: not thread safe!
      *
      * @param config
      * @param name
      * @return
      */
     public static CachedQueueConfig getQueueConfig(Config config, String name) {
+        CachedQueueServiceConfig queueServiceConfig = getServiceConfig(config);
+
+        return queueServiceConfig.getQueueConfig(name);
+    }
+
+    /**
+     * WARNING: not thread safe!
+     *
+     * @param config
+     * @return
+     */
+    public static CachedQueueServiceConfig getServiceConfig(Config config) {
         CachedQueueServiceConfig queueServiceConfig = (CachedQueueServiceConfig) config.getServicesConfig()
                 .getServiceConfig(QueueService.SERVICE_NAME);
 
@@ -34,7 +46,7 @@ public class CachedQueueServiceConfig extends ServiceConfig {
             config.getServicesConfig().addServiceConfig(queueServiceConfig);
         }
 
-        return queueServiceConfig.getQueueConfig(name);
+        return queueServiceConfig;
     }
 
     public CachedQueueConfig getQueueConfig(String name) {

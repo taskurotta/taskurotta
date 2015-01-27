@@ -102,7 +102,7 @@
     <!-- /Actor config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
@@ -112,12 +112,12 @@
         <constructor-arg name="commonStorageName" value="commonStorageForQueueBackend"/>
     </bean>
 
-    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
-    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
@@ -127,7 +127,7 @@
         <constructor-arg name="commonStorageName" value="commonStorageForGC"/>
     </bean>
 
-    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>

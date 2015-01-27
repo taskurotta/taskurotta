@@ -55,7 +55,7 @@ java -Xmx64m -Xms64m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=~/tmp -cp 
 -Dts.recovery.enabled=true Ensure recovery is here - it is a recovery test after all
 -Dts.recovery.process.incomplete-timeout="5 SECONDS" fast processes expire fast
 -Dts.recovery.find-incomplete-process-period="5 SECONDS" rapid process search means test would finish fast
--Dts.hz.queue.task.memory-limit=5 To ensure that only 5 tasks in the queue would survive mongo crash
+-Dts.hz.queue.task.cache-size=5 To ensure that only 5 tasks in the queue would survive mongo crash
 
 java -Xmx128m -Xms128m -server -Ddw.http.port=8811 -Dts.gc.enabled=false -Dts.recovery.enabled=true -Dts.recovery.process.incomplete-timeout="5 SECONDS" -Dts.recovery.find-incomplete-process-period="5 SECONDS" -Dts.hz.queue.task.memory-limit=5 -jar assemble/target/assemble-0.8.0-SNAPSHOT.jar server assemble/src/main/resources/hz-ora-mongo.yml
 

@@ -1,22 +1,26 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.ItemListener;
-import com.hazelcast.monitor.LocalQueueStats;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-public class DelayIQueue<E> implements IQueue<E> {
+public class CachedDelayQueueImpl<E> implements CachedDelayQueue<E> {
 
     private final Storage<E> storage;
-    private IQueue<E> queue;
+    private CachedQueue<E> queue;
 
-    protected DelayIQueue(IQueue<E> queue, Storage<E> storage) {
+    protected CachedDelayQueueImpl(CachedQueue<E> queue, Storage<E> storage) {
         this.queue = queue;
         this.storage = storage;
+    }
+
+    @Override
+    public boolean delayOffer(E e, long delayTime, TimeUnit unit) {
+        return delayTime > 0 ? storage.add(e, delayTime, unit) : offer(e);
     }
 
     @Override
@@ -24,18 +28,9 @@ public class DelayIQueue<E> implements IQueue<E> {
         return offer(e);
     }
 
-    public boolean add(E e, long delayTime, TimeUnit unit) {
-        return delayTime > 0 ? storage.add(e, delayTime, unit) : offer(e);
-    }
-
     @Override
     public boolean offer(E e) {
         return queue.offer(e) || storage.add(e, 0l, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public void put(E e) throws InterruptedException {
-        queue.put(e);
     }
 
     @Override
@@ -54,11 +49,6 @@ public class DelayIQueue<E> implements IQueue<E> {
     }
 
     @Override
-    public int remainingCapacity() {
-        return queue.remainingCapacity();
-    }
-
-    @Override
     public boolean remove(Object o) {
         return queue.remove(o) || storage.remove((E) o);
     }
@@ -66,16 +56,6 @@ public class DelayIQueue<E> implements IQueue<E> {
     @Override
     public boolean contains(Object o) {
         throw new NotImplementedException();
-    }
-
-    @Override
-    public int drainTo(Collection<? super E> c) {
-        return queue.drainTo(c);
-    }
-
-    @Override
-    public int drainTo(Collection<? super E> c, int maxElements) {
-        return queue.drainTo(c, maxElements);
     }
 
     @Override
@@ -155,16 +135,6 @@ public class DelayIQueue<E> implements IQueue<E> {
     }
 
     @Override
-    public String addItemListener(ItemListener<E> listener, boolean includeValue) {
-        return queue.addItemListener(listener, includeValue);
-    }
-
-    @Override
-    public boolean removeItemListener(String registrationId) {
-        return queue.removeItemListener(registrationId);
-    }
-
-    @Override
     public Object getId() {
         return queue.getId();
     }
@@ -190,7 +160,4 @@ public class DelayIQueue<E> implements IQueue<E> {
         queue.destroy();
     }
 
-    public long getStorageSize() {
-        return storage.size();
-    }
 }

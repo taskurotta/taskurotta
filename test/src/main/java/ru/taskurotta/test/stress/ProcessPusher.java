@@ -2,9 +2,9 @@ package ru.taskurotta.test.stress;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.test.stress.process.Starter;
 import ru.taskurotta.test.stress.util.DaemonThread;
@@ -88,8 +88,8 @@ public class ProcessPusher {
                 int sum = 0;
 
                 for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
-                    if (distributedObject instanceof IQueue) {
-                        Queue queue = (IQueue) distributedObject;
+                    if (distributedObject instanceof CachedQueue) {
+                        Queue queue = (CachedQueue) distributedObject;
                         sum += queue.size();
                     }
                 }

@@ -39,7 +39,7 @@ public class CachedQueueTest {
         Config cfg = new Config();
 
         CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
-        cachedQueueConfig.setCacheSize(Integer.MAX_VALUE);
+        cachedQueueConfig.setCacheSize(5);
 
         {
             CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();

@@ -16,6 +16,7 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.hazelcast.store.MongoQueueStore;
 import ru.taskurotta.server.GeneralTaskServer;
@@ -105,7 +106,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     sb.append("\n============  ").append(hzInstance.getName()).append("  ===========");
 
                     for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
-                        sb.append(String.format("\n%22s->%18s", distributedObject.getServiceName(), distributedObject.getName()));
+                        sb.append(String.format("\n%22s -> %18s", distributedObject.getServiceName(),
+                                distributedObject.getName()));
                         if (distributedObject instanceof IMap) {
                             IMap map = (IMap) distributedObject;
                             LocalMapStats stat = map.getLocalMapStats();
@@ -123,6 +125,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                             sb.append("\tsize = " + queue.size());
                             sb.append("\townedItemCount = " + stat.getOwnedItemCount());
+                        }
+
+                        if (distributedObject instanceof CachedQueue) {
+                            CachedQueue queue = (CachedQueue) distributedObject;
+
+                            sb.append("\tsize = " + queue.size());
                         }
                     }
 

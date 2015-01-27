@@ -31,7 +31,7 @@ spreader:
           recovery.process.incomplete-timeout: 2 minutes
           recovery.find-incomplete-process-period: 1 minutes
           recovery.process.change-timeout: 1 minutes
-          hz.queue.task.memory-limit: 10000
+          hz.queue.task.cache-size: 10000
           hz.map.general.max-size: 4
 
 

@@ -16,9 +16,9 @@
 
 package ru.taskurotta.hazelcast.queue.store;
 
-import java.util.Properties;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 
 public interface CachedQueueStoreFactory<T> {
 
-    CachedQueueStore<T> newQueueStore(String name, Properties properties);
+    CachedQueueStore<T> newQueueStore(String name, CachedQueueStoreConfig config);
 }

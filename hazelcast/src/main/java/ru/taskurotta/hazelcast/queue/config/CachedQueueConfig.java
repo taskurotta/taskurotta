@@ -17,12 +17,6 @@
 package ru.taskurotta.hazelcast.queue.config;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Contains the configuration for an {@link com.hazelcast.core.IQueue}
- */
 public class CachedQueueConfig {
 
     /**
@@ -43,7 +37,6 @@ public class CachedQueueConfig {
     public static final int DEFAULT_EMPTY_QUEUE_TTL = -1;
 
     private String name;
-    private List<CachedQueueItemListenerConfig> listenerConfigs;
     private int backupCount = DEFAULT_SYNC_BACKUP_COUNT;
     private int asyncBackupCount = DEFAULT_ASYNC_BACKUP_COUNT;
     private int cacheSize = DEFAULT_CACHE_SIZE;
@@ -64,7 +57,6 @@ public class CachedQueueConfig {
         this.statisticsEnabled = config.statisticsEnabled;
         this.queueStoreConfig = config.queueStoreConfig != null ? new CachedQueueStoreConfig(config.queueStoreConfig) :
                 null;
-        this.listenerConfigs = new ArrayList<CachedQueueItemListenerConfig>(config.getItemListenerConfigs());
     }
 
     public int getEmptyQueueTtl() {
@@ -118,28 +110,10 @@ public class CachedQueueConfig {
         return this;
     }
 
-    public CachedQueueConfig addItemListenerConfig(CachedQueueItemListenerConfig listenerConfig) {
-        getItemListenerConfigs().add(listenerConfig);
-        return this;
-    }
-
-    public List<CachedQueueItemListenerConfig> getItemListenerConfigs() {
-        if (listenerConfigs == null) {
-            listenerConfigs = new ArrayList<CachedQueueItemListenerConfig>();
-        }
-        return listenerConfigs;
-    }
-
-    public CachedQueueConfig setItemListenerConfigs(List<CachedQueueItemListenerConfig> listenerConfigs) {
-        this.listenerConfigs = listenerConfigs;
-        return this;
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("QueueConfig{");
         sb.append("name='").append(name).append('\'');
-        sb.append(", listenerConfigs=").append(listenerConfigs);
         sb.append(", backupCount=").append(backupCount);
         sb.append(", asyncBackupCount=").append(asyncBackupCount);
         sb.append(", cacheSize=").append(cacheSize);

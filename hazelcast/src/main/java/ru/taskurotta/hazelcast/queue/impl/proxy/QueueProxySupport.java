@@ -16,11 +16,7 @@
 
 package ru.taskurotta.hazelcast.queue.impl.proxy;
 
-import com.hazelcast.config.ItemListenerConfig;
 import com.hazelcast.config.QueueConfig;
-import com.hazelcast.core.HazelcastInstanceAware;
-import com.hazelcast.core.ItemListener;
-import com.hazelcast.nio.ClassLoaderUtil;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.AbstractDistributedObject;
 import com.hazelcast.spi.InitializingObject;
@@ -65,25 +61,6 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
 
     @Override
     public void initialize() {
-        final NodeEngine nodeEngine = getNodeEngine();
-        final List<ItemListenerConfig> itemListenerConfigs = config.getItemListenerConfigs();
-        for (ItemListenerConfig itemListenerConfig : itemListenerConfigs) {
-            ItemListener listener = itemListenerConfig.getImplementation();
-            if (listener == null && itemListenerConfig.getClassName() != null) {
-                try {
-                    listener = ClassLoaderUtil.newInstance(nodeEngine.getConfigClassLoader(),
-                            itemListenerConfig.getClassName());
-                } catch (Exception e) {
-                    throw ExceptionUtil.rethrow(e);
-                }
-            }
-            if (listener != null) {
-                if (listener instanceof HazelcastInstanceAware) {
-                    ((HazelcastInstanceAware) listener).setHazelcastInstance(nodeEngine.getHazelcastInstance());
-                }
-                addItemListener(listener, itemListenerConfig.isIncludeValue());
-            }
-        }
     }
 
     boolean offerInternal(Data data, long timeout) throws InterruptedException {
@@ -208,10 +185,6 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
     @Override
     public final String getName() {
         return name;
-    }
-
-    public String addItemListener(ItemListener listener, boolean includeValue) {
-        return getService().addItemListener(name, listener, includeValue);
     }
 
     public boolean removeItemListener(String registrationId) {

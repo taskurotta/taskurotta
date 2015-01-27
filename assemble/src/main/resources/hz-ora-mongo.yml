@@ -30,7 +30,6 @@ properties:
 #  hz.nodes: "localhost:7777,localhost:7778"
 #  gc.enabled: false
 #  recovery.enabled: true
-#  hz.queue.task.memory-limit: 5
 
 server:
   type: simple

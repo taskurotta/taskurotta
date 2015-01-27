@@ -44,15 +44,18 @@
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
 
-    <bean id="hzQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="queueStoreFactory" ref="queueStoreFactory" />
-        <constructor-arg name="maxSize" value="0" />
-        <constructor-arg name="backupCount" value="0" />
-        <constructor-arg name="asyncBackupsCount" value="0" />
-        <constructor-arg name="memoryLimit" value="5" />
-        <constructor-arg name="binary" value="false" />
-        <constructor-arg name="bulkLoad" value="250" />
+    <bean id="cachedQueueStoreFactory"
+          class="ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <!-- /Mongo -->
+
+    <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
+        <constructor-arg name="cacheSize" value="5"/>
+        <constructor-arg name="binary" value="false"/>
+        <constructor-arg name="batchLoadSize" value="250"/>
     </bean>
 
 </beans>

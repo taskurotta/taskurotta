@@ -16,19 +16,12 @@
 
 package ru.taskurotta.hazelcast.queue.impl;
 
-import com.hazelcast.collection.common.DataAwareItemEvent;
-import com.hazelcast.core.ItemEvent;
-import com.hazelcast.core.ItemEventType;
-import com.hazelcast.core.ItemListener;
-import com.hazelcast.instance.MemberImpl;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.nio.Address;
 import com.hazelcast.partition.InternalPartition;
 import com.hazelcast.partition.InternalPartitionService;
 import com.hazelcast.partition.MigrationEndpoint;
 import com.hazelcast.partition.strategy.StringPartitioningStrategy;
-import com.hazelcast.spi.EventPublishingService;
-import com.hazelcast.spi.EventRegistration;
 import com.hazelcast.spi.EventService;
 import com.hazelcast.spi.ManagedService;
 import com.hazelcast.spi.MigrationAwareService;
@@ -43,7 +36,6 @@ import com.hazelcast.util.scheduler.EntryTaskScheduler;
 import com.hazelcast.util.scheduler.EntryTaskSchedulerFactory;
 import com.hazelcast.util.scheduler.ScheduleType;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
-import ru.taskurotta.hazelcast.queue.QueueItemListener;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.impl.operations.QueueReplicationOperation;
@@ -59,14 +51,12 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.logging.Level;
 
 /**
  * Provides important services via methods for the the Queue
  * such as {@link ru.taskurotta.hazelcast.queue.impl.QueueEvictionProcessor }
  */
-public class QueueService implements ManagedService, MigrationAwareService,
-        RemoteService, EventPublishingService<QueueEvent, QueueItemListener> {
+public class QueueService implements ManagedService, MigrationAwareService, RemoteService {
     /**
      * Service name.
      */
@@ -77,7 +67,7 @@ public class QueueService implements ManagedService, MigrationAwareService,
     private final ConcurrentMap<String, QueueContainer> containerMap
             = new ConcurrentHashMap<String, QueueContainer>();
     private final ConcurrentMap<String, LocalQueueStatsImpl> statsMap
-            = new ConcurrentHashMap<String, LocalQueueStatsImpl>(1000);
+            = new ConcurrentHashMap<>(1000);
     private final ConstructorFunction<String, LocalQueueStatsImpl> localQueueStatsConstructorFunction
             = new ConstructorFunction<String, LocalQueueStatsImpl>() {
         @Override
@@ -213,26 +203,6 @@ public class QueueService implements ManagedService, MigrationAwareService,
     }
 
     @Override
-    public void dispatchEvent(QueueEvent event, QueueItemListener listener) {
-        final MemberImpl member = nodeEngine.getClusterService().getMember(event.caller);
-        ItemEvent itemEvent = new DataAwareItemEvent(event.name, event.eventType, event.data,
-                member, nodeEngine.getSerializationService());
-        if (member == null) {
-            if (logger.isLoggable(Level.INFO)) {
-                logger.info("Dropping event " + itemEvent + " from unknown address:" + event.caller);
-            }
-            return;
-        }
-
-        if (event.eventType.equals(ItemEventType.ADDED)) {
-            listener.itemAdded(itemEvent);
-        } else {
-            listener.itemRemoved(itemEvent);
-        }
-        getLocalQueueStatsImpl(event.name).incrementReceivedEvents();
-    }
-
-    @Override
     public QueueProxyImpl createDistributedObject(String objectId) {
         return new QueueProxyImpl(objectId, this, nodeEngine);
     }
@@ -241,14 +211,6 @@ public class QueueService implements ManagedService, MigrationAwareService,
     public void destroyDistributedObject(String name) {
         containerMap.remove(name);
         nodeEngine.getEventService().deregisterAllListeners(SERVICE_NAME, name);
-    }
-
-    public String addItemListener(String name, ItemListener listener, boolean includeValue) {
-        EventService eventService = nodeEngine.getEventService();
-        QueueEventFilter filter = new QueueEventFilter(includeValue);
-        EventRegistration registration = eventService.registerListener(
-                QueueService.SERVICE_NAME, name, filter, listener);
-        return registration.getId();
     }
 
     public boolean removeItemListener(String name, String registrationId) {

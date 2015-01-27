@@ -1,11 +1,12 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.query.Predicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 
 import java.util.Map;
 import java.util.Set;
@@ -20,15 +21,15 @@ import java.util.concurrent.TimeUnit;
  * Date: 04.12.13
  * Time: 17:33
  */
-public class CommonStorageFactory implements StorageFactory {
+public class DefaultStorageFactory implements StorageFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(CommonStorageFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultStorageFactory.class);
 
     private final IMap<UUID, StorageItem> iMap;
 
     public static final String ENQUEUE_TIME_NAME = "enqueueTime";
 
-    public CommonStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, long scheduleDelayMillis) {
+    public DefaultStorageFactory(final HazelcastInstance hazelcastInstance, String commonStorageName, long scheduleDelayMillis) {
         this.iMap = hazelcastInstance.getMap(commonStorageName);
         this.iMap.addIndex(ENQUEUE_TIME_NAME, true);
 
@@ -59,16 +60,20 @@ public class CommonStorageFactory implements StorageFactory {
                         return;
                     }
 
+                    logger.debug("find new {} items to queue", keys.size());
+
                     for (UUID key : keys) {
                         StorageItem storageItem = iMap.get(key);
                         String queueName = storageItem.getQueueName();
 
-                        IQueue iQueue = hazelcastInstance.getQueue(queueName);
+                        CachedQueue cQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(),
+                                queueName);
 
-                        if (iQueue.offer(storageItem.getObject())) {
+                        if (cQueue.offer(storageItem.getObject())) {
                             iMap.delete(key);
                         }
                     }
+                } catch (HazelcastInstanceNotActiveException ignored) {
                 } catch (Throwable e) {
                     logger.error(e.getLocalizedMessage(), e);
                 }
@@ -104,7 +109,7 @@ public class CommonStorageFactory implements StorageFactory {
                 int result = 0;
 
                 for (StorageItem st : iMap.values()) {
-                    if (st!=null && st.getQueueName().equals(queueName)) {
+                    if (st != null && st.getQueueName().equals(queueName)) {
                         result++;
                     }
                 }
