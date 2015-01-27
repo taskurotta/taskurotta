@@ -1,18 +1,25 @@
 package ru.taskurotta.hz.test;
 
+import com.hazelcast.config.Config;
+import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory;
+
+import java.net.UnknownHostException;
 
 /**
  * Javadoc should be here
@@ -28,16 +35,35 @@ public class QueueStoreFailureTest {
 
     protected String queueName = "QueueStoreFailure";
 
+    private static String MONGO_DB_NAME = "test";
+
     protected HzQueueConfigSupport queueConfigSupport;
 
     public static final int COUNT = 20;
 
     @Before
-    public void init() {
-        ApplicationContext appContext = new ClassPathXmlApplicationContext("queuestore-fail-test-mongo.xml");
-        hzInstance = appContext.getBean("hzInstance", HazelcastInstance.class);
-        queueConfigSupport = appContext.getBean("queueConfigSupport", HzQueueConfigSupport.class);
-        mongoTemplate = appContext.getBean("mongoTemplate", MongoTemplate.class);
+    public void init() throws UnknownHostException {
+
+
+        Config cfg = new Config();
+
+        CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, queueName);
+        cachedQueueConfig.setCacheSize(5);
+
+        CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
+        cachedQueueStoreConfig.setEnabled(true);
+        cachedQueueStoreConfig.setBinary(false);
+        cachedQueueStoreConfig.setBatchLoadSize(250);
+
+        mongoTemplate = new MongoTemplate(new MongoClient("127.0.0.1"), MONGO_DB_NAME);
+        MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
+                MongoCachedQueueStorageFactory(mongoTemplate);
+
+        cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
+                (queueName, cachedQueueStoreConfig));
+        cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
+
+        hzInstance = Hazelcast.newHazelcastInstance(cfg);
         dataDrop();
     }
 
@@ -54,9 +80,8 @@ public class QueueStoreFailureTest {
 
     @Test
     public void testOnMongoStore() {
-        queueConfigSupport.createQueueConfig(queueName);
 
-        IQueue testQueue = hzInstance.getQueue(queueName);
+        CachedQueue testQueue = hzInstance.getDistributedObject(CachedQueue.class.getName(), queueName);
 
         Assert.assertEquals(0, testQueue.size());
         logger.info("Init: hz queueSize [{}], mongo size [{}]", testQueue.size(), mongoTemplate.getCollection(queueName).count());
@@ -85,8 +110,8 @@ public class QueueStoreFailureTest {
     public void testQueueStoreCons() {
         String name = "yetAnotherQueue";
         int loaded = 1000;
-        queueConfigSupport.createQueueConfig(name);
-        IQueue testQueue = hzInstance.getQueue(name);
+//        queueConfigSupport.createQueueConfig(name);
+        CachedQueue testQueue = hzInstance.getDistributedObject(CachedQueue.class.getName(), name);
         DBCollection testQueueColl = mongoTemplate.getCollection(name);
         for (int i = 1; i <= loaded; i++) {
             testQueue.add("key-" + i);

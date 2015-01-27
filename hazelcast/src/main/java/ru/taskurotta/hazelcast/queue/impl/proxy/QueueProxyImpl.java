@@ -16,6 +16,7 @@
 
 package ru.taskurotta.hazelcast.queue.impl.proxy;
 
+import com.hazelcast.core.IQueue;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.InitializingObject;
 import com.hazelcast.spi.NodeEngine;
@@ -40,6 +41,9 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
 
     public QueueProxyImpl(String name, QueueService queueService, NodeEngine nodeEngine) {
         super(name, queueService, nodeEngine);
+        if (queueService instanceof IQueue){
+            throw new IllegalArgumentException("don't use this old stuff, try CachedQueue");
+        }
     }
 
     @Override

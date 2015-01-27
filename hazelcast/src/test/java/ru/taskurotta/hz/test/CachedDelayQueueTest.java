@@ -24,7 +24,7 @@ public class CachedDelayQueueTest {
     public void CommonDelayIQueueTest() throws InterruptedException {
 
         Config config = ConfigUtil.disableMulticast(new Config());
-        CachedQueueServiceConfig.getServiceConfig(config);
+        CachedQueueServiceConfig.registerServiceConfig(config);
 
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(config);
 

@@ -102,7 +102,7 @@ public final class HazelcastInstanceFactory {
         }
 
         try {
-            CachedQueueServiceConfig.getServiceConfig(config);
+            CachedQueueServiceConfig.registerServiceConfig(config);
 
             return constructHazelcastInstance(config, name, new DefaultNodeContext(), future);
         } catch (Throwable t) {
@@ -144,7 +144,7 @@ public final class HazelcastInstanceFactory {
 
             // patch on: spring config has no support of custom distributed service implementation
             // this is config registration of CachedQueueService
-            CachedQueueServiceConfig.getServiceConfig(config);
+            CachedQueueServiceConfig.registerServiceConfig(config);
             // patch off
 
             return constructHazelcastInstance(config, name, nodeContext, future);
