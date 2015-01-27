@@ -4,9 +4,7 @@ import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.monitor.LocalMapStats;
-import com.hazelcast.monitor.LocalQueueStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -119,12 +117,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                             totalHeapCost += stat.getHeapCost();
                         }
-                        if (distributedObject instanceof IQueue) {
-                            IQueue queue = (IQueue) distributedObject;
-                            LocalQueueStats stat = queue.getLocalQueueStats();
-
+                        if (distributedObject instanceof CachedQueue) {
+                            CachedQueue queue = (CachedQueue) distributedObject;
                             sb.append("\tsize = " + queue.size());
-                            sb.append("\townedItemCount = " + stat.getOwnedItemCount());
+                            sb.append("\townedItemCount = " + queue.getLocalQueueStats().getOwnedItemCount());
                         }
 
                         if (distributedObject instanceof CachedQueue) {

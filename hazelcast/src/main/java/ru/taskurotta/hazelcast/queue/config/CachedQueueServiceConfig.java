@@ -23,7 +23,7 @@ public class CachedQueueServiceConfig extends ServiceConfig {
      * @return
      */
     public static CachedQueueConfig getQueueConfig(Config config, String name) {
-        CachedQueueServiceConfig queueServiceConfig = getServiceConfig(config);
+        CachedQueueServiceConfig queueServiceConfig = registerServiceConfig(config);
 
         return queueServiceConfig.getQueueConfig(name);
     }
@@ -34,7 +34,7 @@ public class CachedQueueServiceConfig extends ServiceConfig {
      * @param config
      * @return
      */
-    public static CachedQueueServiceConfig getServiceConfig(Config config) {
+    public static CachedQueueServiceConfig registerServiceConfig(Config config) {
         CachedQueueServiceConfig queueServiceConfig = (CachedQueueServiceConfig) config.getServicesConfig()
                 .getServiceConfig(QueueService.SERVICE_NAME);
 
