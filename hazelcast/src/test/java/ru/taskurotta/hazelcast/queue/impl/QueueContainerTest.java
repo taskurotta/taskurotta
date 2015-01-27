@@ -1,39 +1,39 @@
-package ru.taskurotta.hazelcast.queue;
+package ru.taskurotta.hazelcast.queue.impl;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.mongodb.MongoClient;
+import com.hazelcast.spi.impl.NodeEngineImpl;
 import junit.framework.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
-import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory;
+import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
 
-import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
-@Ignore
-public class CachedQueueTest {
+/**
+ */
+public class QueueContainerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(CachedQueueTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(QueueContainerTest.class);
 
     private static String QUEUE_NAME = "testQueue";
-    private static String MONGO_DB_NAME = "test";
 
     CachedQueue queue;
+    QueueContainer container;
+    MockCachedQueueStore store;
 
     @Before
-    public void initCtx() throws UnknownHostException {
+    public void initCtx() throws Exception {
 
         Config cfg = new Config();
 
@@ -47,12 +47,8 @@ public class CachedQueueTest {
             cachedQueueStoreConfig.setBatchLoadSize(100);
 
             {
-                MongoTemplate mongoTemplate = new MongoTemplate(new MongoClient("127.0.0.1"), MONGO_DB_NAME);
-                MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
-                        MongoCachedQueueStorageFactory(mongoTemplate);
-
-                cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
-                        (QUEUE_NAME, cachedQueueStoreConfig));
+                store = new MockCachedQueueStore();
+                cachedQueueStoreConfig.setStoreImplementation(store);
             }
 
             cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
@@ -60,52 +56,43 @@ public class CachedQueueTest {
 
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
         queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+
+        QueueService queueService = (QueueService) ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine())
+                .getService(CachedQueue.class.getName());
+
+        container = queueService.getOrCreateContainer(QUEUE_NAME, false);
+
+        assertNotNull(queue);
+        assertNotNull(container);
     }
 
     @Test
-    public void testDataLoss() {
-
-        String item = "testItem";
-
-        assertNull(queue.poll());
-
-        queue.offer(item);
-
-        String polledItem = (String) queue.poll();
-
-        assertNotNull(polledItem);
-        assertNull(queue.poll());
-
-    }
-
-
-    @Test
-    public void testMongo() {
-
-        for (int i = 0; i < 1000; i++) {
-            queue.offer(i);
-        }
-    }
-
-    @Test
-    public void testIO() throws InterruptedException {
+    public void test() {
+        logger.debug("Start...");
 
         AtomicInteger counter = new AtomicInteger(0);
 
-        System.err.println("Add");
-        addToQueue(queue, counter, 19);
+        container.resizeBuffer(6);
 
-        System.err.println("Poll");
-        pollFromQueue(queue, counter, 18);
+        assertContainerState(0, -1, false, 6, 0);
 
-        System.err.println("Add");
-        addToQueue(queue, counter, 21);
+        logger.debug("Finish");
+    }
 
-        System.err.println("Poll");
-        pollFromQueue(queue, counter, 22);
+    private void assertContainerState(long headId, long tailId, boolean bufferClosed, int maxBufferSize, int
+            bufferSize) {
+
+        assertEquals(container.headId, headId);
+        assertEquals(container.tailId, tailId);
+        assertEquals(container.bufferClosed, bufferClosed);
+        assertEquals(container.maxBufferSize, maxBufferSize, maxBufferSize);
+        assertEquals(container.buffer.size(), bufferSize);
     }
 
     private void addToQueue(CachedQueue queue, AtomicInteger counter, int quantity) {
+
+        logger.debug("Add new {} items. counter is {}", quantity, counter.get());
+
         for (int i = 0; i < quantity; i++) {
             String item = "" + counter.getAndIncrement();
             queue.add(item);
@@ -120,6 +107,7 @@ public class CachedQueueTest {
             Assert.assertNotNull(item);
         }
     }
+
 
 
 }

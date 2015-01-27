@@ -44,7 +44,9 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     private static final Logger logger = LoggerFactory.getLogger(QueueContainer.class);
 
-    private static final int ID_PROMOTION_OFFSET = 100000;
+    private static final boolean DEBUG_FULL = false;
+    private static final boolean DEBUG_LOAD = false;
+    private static final boolean DEBUG_RESIZE = true;
 
     private CachedQueueConfig config;
     private QueueStoreWrapper store;
@@ -61,13 +63,13 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     // new stuff
 
-    private volatile long headId = 0;
-    private volatile long tailId = -1;
-    private volatile boolean bufferClosed = false;
+    protected volatile long headId = 0;
+    protected volatile long tailId = -1;
+    protected volatile boolean bufferClosed = false;
 
-    private volatile int maxBufferSize;
+    protected volatile int maxBufferSize;
 
-    private Map<Long, QueueItem> buffer = new HashMap<Long, QueueItem>();
+    protected Map<Long, QueueItem> buffer = new HashMap<Long, QueueItem>();
 
 
     public int size() {
@@ -80,21 +82,31 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     public long offer(Data data) {
 
-        long itemId = nextId();
+        if (DEBUG_FULL) logger.debug("offer(): name = {} buffer.size() = {} headId = {} tailId = {} " +
+                "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
 
-//        logger.severe("offer() itemId = " + itemId + " buffer.size() = " + buffer.size() + " headId = " + headId + " " +
-//                "tailId = " + tailId + " bufferClosed = " + bufferClosed);
+        final long itemId = nextId();
+
+        if (DEBUG_FULL) logger.debug("offer(): name = {} next item id = {}", name, itemId);
 
         store.store(itemId, data);
 
         if (!bufferClosed) {
-            if (maxBufferSize > buffer.size()) {
-//                logger.severe("offer() Add to buffer itemId = " + itemId);
+            int bufferSize = buffer.size();
+            if (maxBufferSize > bufferSize) {
+
+                if (DEBUG_FULL) logger.debug("offer(): name = {} add item to buffer. itemId = {}", name, itemId);
 
                 QueueItem item = new QueueItem(itemId, data);
                 buffer.put(itemId, item);
-            } else {
-                bufferClosed = true;
+
+                if (maxBufferSize == bufferSize + 1) {
+
+                    if (DEBUG_FULL) logger.debug("offer(): name = {} close buffer. buffer.size() = {}",
+                            name, buffer.size());
+
+                    bufferClosed = true;
+                }
             }
         }
 
@@ -105,8 +117,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     public QueueItem poll() {
 
-//        System.err.println("poll() headId = " + headId + " tailId = " + tailId + " buffer.size() " + buffer.size() +
-//                " bufferClosed = " + bufferClosed);
+        if (DEBUG_FULL) logger.debug("poll(): name = {} buffer.size() = {} headId = {} tailId = {} " +
+                "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
 
 
         if (isEmpty()) {
@@ -127,29 +139,23 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         long currHeadId = shiftHead();
 
-//        logger.severe("poll() currHeadId = " + currHeadId);
+        if (DEBUG_FULL) logger.debug("poll(): name = {}, currHeadId = {}", name, currHeadId);
 
         store.delete(currHeadId);
 
-//        scheduleEvictionIfEmpty();
+        final QueueItem item = buffer.remove(currHeadId);
 
-//        QueueItem item = buffer.remove(currHeadId);
-//        if (item == null) {
-//            logger.severe("RECEIVED NULL FROM BUFFER!");
-//            try {
-//                TimeUnit.SECONDS.sleep(1);
-//            } catch (InterruptedException e) {
-//                // ignore
-//            }
-//            System.exit(-1);
-//        }
-        return buffer.remove(currHeadId);
+        if (item == null) {
+            logger.warn("poll(): name = {}. Entry {} not found in cache of queue container", name, currHeadId);
+        }
+
+        if (DEBUG_FULL) logger.debug("poll(): name = {}, is null returned? {}", name, item == null);
+
+        return item;
     }
 
 
     public void loadBuffer() {
-
-        logger.trace("loading...");
 
         long maxId = headId + maxBufferSize - 1;
 
@@ -157,14 +163,14 @@ public class QueueContainer implements IdentifiedDataSerializable {
             maxId = tailId;
         }
 
-        logger.trace("maxId = {} ", maxId);
-
         loadAll(headId, maxId);
     }
 
     private void loadAll(long from, long to) {
 
-        logger.trace("before load: buffer size {} from = {} to = {}", buffer.size(), from, to);
+        if (DEBUG_FULL || DEBUG_LOAD) logger.debug("loadAll(): name = {} before load: buffer size = {} from = {} to =" +
+                        " {}", name, buffer.size(), from, to);
+
 
         for (Map.Entry<Long, Data> entry : store.loadAll(from, to).entrySet()) {
             Long itemId = entry.getKey();
@@ -173,7 +179,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
             buffer.put(itemId, item);
         }
 
-        logger.trace("after load: buffer size {} from = {} to = {}", buffer.size(), from, to);
+        if (DEBUG_FULL || DEBUG_LOAD) logger.debug("loadAll(): name = {}, after load: buffer size = {} from = {} to =" +
+                        " {}", name, buffer.size(), from, to);
     }
 
     private int getMaxBufferSize() {
@@ -188,25 +195,9 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         maxBufferSize = config.getCacheSize();
 
-        // may be we have a bug on resize and loose items
-        // more tests needed
         //resizeBuffer();
 
         scheduleEvictionIfEmpty();
-
-//        if (!fromBackup && store.isEnabled()) {
-//            // todo: OOM!
-//            Set<Long> keys = store.loadAllKeys();
-//            if (keys != null) {
-//                long maxId = -1;
-//                for (Long key : keys) {
-//                    QueueItem item = new QueueItem(this, key, null);
-//                    getItemQueue().offer(item);
-//                    maxId = Math.max(maxId, key);
-//                }
-//                idGenerator = maxId + 1;
-//            }
-//        }
     }
 
     long nextId() {
@@ -232,13 +223,13 @@ public class QueueContainer implements IdentifiedDataSerializable {
         return false;
     }
 
-    private void resizeBuffer() {
+    protected void resizeBuffer(int newSize) {
 
         int buffSize = buffer.size();
-        int newSize = getMaxBufferSize();
 
-        logger.debug("resizeBuffer() oldSize = " + maxBufferSize + " newSize = " + newSize + " bufferSize = " +
-                buffSize + " isEmpty = " + isEmpty());
+        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {}, oldSize = {} newSize = {} bufferSize" +
+                " = {} isEmpty = {} bufferClosed = {}, size() = {}, headId = {}, tailId = {}", name, maxBufferSize,
+                newSize, buffSize, isEmpty(), bufferClosed, size(), headId, tailId);
 
         if (buffSize > maxBufferSize) {
             try {
@@ -249,7 +240,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         }
 
         if (maxBufferSize == newSize) {
-            logger.debug("resizeBuffer() nothing to do");
+            if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} nothing to do", name);
             return;
         }
 
@@ -259,7 +250,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
                 if (newSize < buffSize) {
 
-                    logger.debug("resizeBuffer() drain open buffer and close it");
+                    if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} drain open buffer and close it", name);
 
                     long to = tailId;
                     long from = to - (buffSize - newSize);
@@ -270,10 +261,10 @@ public class QueueContainer implements IdentifiedDataSerializable {
                 } else {
 
                     if (buffer.size() == newSize) {
-                        logger.debug("resizeBuffer() close opened buffer");
+                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} close opened buffer", name);
                         bufferClosed = true;
                     } else {
-                        logger.debug("resizeBuffer() nothing to do at this moment");
+                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} nothing to do at this moment", name);
                     }
                 }
 
@@ -281,7 +272,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
                 if (newSize < buffSize) {
 
-                    logger.debug("resizeBuffer() drain closed buffer");
+                    if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} drain closed buffer", name);
 
                     long to = headId + buffSize - 1;
                     long from = headId + newSize;
@@ -291,24 +282,30 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
                     int needMaximumToLoad = newSize - buffSize;
 
-                    if (headId + needMaximumToLoad < tailId) {
-                        logger.debug("resizeBuffer() need load " + (needMaximumToLoad + 1) + " and NOT open buffer. " +
-                                "queue size = " + size());
+                    if (tailId > headId + needMaximumToLoad) {
+                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} need load {} and NOT open buffer. " +
+                                "queue size = {} buffer.size() = {}", name, needMaximumToLoad + 1, size(), buffer.size());
 
+                        // todo: should load from (headId + buffSize)
                         loadAll(headId, headId + needMaximumToLoad);
-                        logger.debug("resizeBuffer() after load buffer.size() = " + buffer.size());
-                    } else {
-                        logger.debug("resizeBuffer() need load " + (tailId - headId + 1) + " and open buffer. " +
-                                "queue size = " + size());
 
+                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
+                                name, buffer.size());
+                    } else {
+                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} need load {} and OPEN buffer. " +
+                                "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
+
+                        // todo: should load from (headId + buffSize)
                         loadAll(headId, tailId);
-                        logger.debug("resizeBuffer() after load buffer.size() = " + buffer.size());
                         bufferClosed = false;
+
+                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
+                                name, buffer.size());
                     }
                 }
             }
         } else {
-            logger.debug("resizeBuffer() nothing to do with empty queue");
+            if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} nothing to do with empty queue", name);
         }
 
 
@@ -317,7 +314,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     private void removeFromBuffer(long from, long to) {
 
-        logger.debug("removeFromBuffer() from = " + from + " to = " + to + " q = " + (to - from + 1));
+        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("removeFromBuffer(): name = {} from = {} to = {} quantity  = ",
+                name, from, to, to - from + 1);
 
         int j = 0;
 
@@ -327,7 +325,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
             }
         }
 
-        logger.debug("removeFromBuffer() removed = " + j + " buffer.size() = " + buffer.size());
+        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("removeFromBuffer(): name = {} removeFromBuffer() removed = " +
+                "{} buffer.size() = {}", j, buffer.size());
     }
 
 
@@ -335,6 +334,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     public QueueContainer(String name) {
         this.name = name;
+
         pollWaitNotifyKey = new QueueWaitNotifyKey(name, "poll");
         offerWaitNotifyKey = new QueueWaitNotifyKey(name, "offer");
     }

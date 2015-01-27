@@ -31,14 +31,12 @@ import ru.taskurotta.hazelcast.queue.impl.operations.AddAllOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.ClearOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.CompareAndRemoveOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.ContainsOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.DrainOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.IsEmptyOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.IteratorOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.OfferOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.PeekOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.PollOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.QueueOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.RemainingCapacityOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.RemoveOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
 
@@ -83,11 +81,6 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
         return (Integer) invokeAndGet(operation);
     }
 
-    public int remainingCapacity() {
-        RemainingCapacityOperation operation = new RemainingCapacityOperation(name);
-        return (Integer) invokeAndGet(operation);
-    }
-
     public void clear() {
         ClearOperation operation = new ClearOperation(name);
         invokeAndGet(operation);
@@ -124,11 +117,6 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
         return (List<Data>) collectionContainer.getCollection();
     }
 
-    Collection<Data> drainInternal(int maxSize) {
-        DrainOperation operation = new DrainOperation(name, maxSize);
-        SerializableCollection collectionContainer = invokeAndGet(operation);
-        return collectionContainer.getCollection();
-    }
 
     boolean addAllInternal(Collection<Data> dataList) {
         AddAllOperation operation = new AddAllOperation(name, dataList);
@@ -187,7 +175,4 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
         return name;
     }
 
-    public boolean removeItemListener(String registrationId) {
-        return getService().removeItemListener(name, registrationId);
-    }
 }

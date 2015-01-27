@@ -69,9 +69,9 @@ logback:
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
-        - u.taskurotta.hazelcast.queue.impl.QueueContainer:
+        - ru.taskurotta.hazelcast.queue.impl.QueueContainer:
              key: name
-             \@level: TRACE
+             \@level: DEBUG
         - com.hazelcast:
              key: name
              \@level: ERROR
