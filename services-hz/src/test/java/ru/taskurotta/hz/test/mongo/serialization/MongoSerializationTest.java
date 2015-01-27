@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONDecoder;
 import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONEncoder;
-import ru.taskurotta.hz.test.mongo.serialization.custom.CustomDBObject;
+import ru.taskurotta.hz.test.mongo.serialization.custom.impl.TaskContainerDbObject;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -69,19 +69,19 @@ public class MongoSerializationTest {
         };
         MongoTemplate mongoTemplate = getMongoTemplate();
 
-        DBCollection withCol = mongoTemplate.getCollection("with-col");
+        DBCollection withCol = mongoTemplate.getCollection("clcustom");
 
-        withCol.setObjectClass(CustomDBObject.class);
+        withCol.setObjectClass(TaskContainerDbObject.class);
         withCol.setDBEncoderFactory(customDbEncoderFactory);
         withCol.setDBDecoderFactory(customDbDecoderFactory);
 
         List<ObjectId> list = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             TaskContainer taskContainer = createTaskContainer();
-            CustomDBObject dbObject = new CustomDBObject();
+            TaskContainerDbObject dbObject = new TaskContainerDbObject();
             ObjectId id = new ObjectId();
             dbObject.setObjectId(id);
-            dbObject.setTaskContainer(taskContainer);
+            dbObject.setObject(taskContainer);
             withCol.save(dbObject);
             list.add(id);
         }
@@ -89,10 +89,10 @@ public class MongoSerializationTest {
         for (ObjectId objectId : list) {
             BasicDBObject query = new BasicDBObject();
             query.put("_id", objectId);
-            CustomDBObject dbObj = (CustomDBObject) withCol.findOne(query);
+            TaskContainerDbObject dbObj = (TaskContainerDbObject) withCol.findOne(query);
             if (dbObj != null){
                 System.out.println("dbObj.getObjectId() = " + dbObj.getObjectId());
-                System.out.println("dbObj.getTaskContainer().getActorId() = " + dbObj.getTaskContainer().getActorId());
+                System.out.println("dbObj.getTaskContainer().getActorId() = " + dbObj.getObject().getActorId());
             }
         }
     }

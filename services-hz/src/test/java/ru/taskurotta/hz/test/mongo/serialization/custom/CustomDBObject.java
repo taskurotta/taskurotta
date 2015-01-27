@@ -3,7 +3,6 @@ package ru.taskurotta.hz.test.mongo.serialization.custom;
 import com.mongodb.DBObject;
 import org.bson.BSONObject;
 import org.bson.types.ObjectId;
-import ru.taskurotta.transport.model.TaskContainer;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.HashSet;
@@ -13,18 +12,19 @@ import java.util.Set;
 /**
  * Created by greg on 26/01/15.
  */
-public class CustomDBObject implements DBObject {
+public abstract class CustomDBObject<T> implements DBObject {
 
-    private ObjectId objectId;
-    private TaskContainer taskContainer;
-    private Set<String> keySet = new HashSet<>();
+    protected ObjectId objectId;
+    protected T object;
+    protected Set<String> keySet = new HashSet<>();
     private boolean _isPartialObject;
 
 
     public CustomDBObject() {
-        keySet.add("_id");
-        keySet.add("taskContainer");
+        initKeySet();
     }
+
+    protected abstract void initKeySet();
 
     public ObjectId getObjectId() {
         return objectId;
@@ -34,33 +34,20 @@ public class CustomDBObject implements DBObject {
         this.objectId = objectId;
     }
 
-    public TaskContainer getTaskContainer() {
-        if (taskContainer == null) {
-            taskContainer = new TaskContainer();
+
+    public T getObject() {
+        if (object == null) {
+            object = createObject();
         }
-        return taskContainer;
+        return object;
     }
 
-    public void setTaskContainer(TaskContainer taskContainer) {
-        this.taskContainer = taskContainer;
+
+    public void setObject(T object) {
+        this.object = object;
     }
 
-    @Override
-    public Object put(String key, Object v) {
-        switch (key) {
-            case "_id":
-                objectId = (ObjectId) v;
-                return v;
-            case "taskContainer.method":
-                getTaskContainer().setMethod((String) v);
-                return v;
-
-            case "taskContainer.actorId":
-                getTaskContainer().setActorId((String) v);
-                return v;
-        }
-        return null;
-    }
+    protected abstract T createObject();
 
     @Override
     public void putAll(BSONObject o) {
@@ -74,16 +61,7 @@ public class CustomDBObject implements DBObject {
         throw new NotImplementedException();
     }
 
-    @Override
-    public Object get(String key) {
-        switch (key) {
-            case "taskContainer":
-                return taskContainer;
-            case "_id":
-                return objectId;
-        }
-        return null;
-    }
+
 
     @Override
     public Map toMap() {

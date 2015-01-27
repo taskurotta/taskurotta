@@ -94,6 +94,14 @@ public class TaskContainer implements Serializable {
     }
 
 
+    public void setArgs(ArgContainer[] args) {
+        this.args = args;
+    }
+
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
+    }
+
     public void setMethod(String method) {
         this.method = method;
     }
