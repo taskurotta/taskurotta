@@ -15,8 +15,8 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
 import java.util.Formatter;
 import java.util.Properties;
@@ -154,11 +154,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     sb.append("\nMongo Queues statistics:");
                     sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
+                            MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate()));
                     sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                            MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate()));
                     sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
+                            MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate()));
                     System.err.println(sb);
                 }
 

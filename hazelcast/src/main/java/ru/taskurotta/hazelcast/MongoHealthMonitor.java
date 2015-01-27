@@ -4,8 +4,8 @@ import com.mongodb.CommandResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
 /**
  * Periodically prints metrics data and/or mongo server status to INFO log
@@ -74,11 +74,12 @@ public class MongoHealthMonitor {
 
         sb.append("\nMongo Queues statistics:");
         sb.append(String.format("\ndelete count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                MongoQueueStore.deleteTimer.count(), MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
+                MongoCachedQueueStore.deleteTimer.count(), MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore
+                        .deleteTimer.oneMinuteRate()));
         sb.append(String.format("\nload count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                MongoQueueStore.deleteTimer.count(), MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                MongoCachedQueueStore.deleteTimer.count(), MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate()));
         sb.append(String.format("\nstore count: %d mean: %8.3f oneMinuteRate: %8.3f",
-                MongoQueueStore.deleteTimer.count(), MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
+                MongoCachedQueueStore.deleteTimer.count(), MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate()));
 
         return sb.toString();
     }

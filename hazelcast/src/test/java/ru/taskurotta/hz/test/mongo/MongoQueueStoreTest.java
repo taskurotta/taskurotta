@@ -12,7 +12,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 
 /**
  * Date: 17.02.14 12:04
@@ -22,7 +22,7 @@ public class MongoQueueStoreTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoQueueStoreTest.class);
 
-    private MongoQueueStore mongoQueueStore;
+    private MongoCachedQueueStore mongoQueueStore;
     private MongoTemplate mongoTemplate;
     private HazelcastInstance hzInstance;
     private HzQueueConfigSupport hzQueueConfigSupport;
@@ -42,7 +42,7 @@ public class MongoQueueStoreTest {
         hzQueueConfigSupport.createQueueConfig(QUEUE_NAME);
         this.iQueue = hzInstance.getQueue(QUEUE_NAME);
 
-        this.mongoQueueStore = (MongoQueueStore) hzInstance.getConfig().getQueueConfig(QUEUE_NAME).getQueueStoreConfig().getStoreImplementation();
+        this.mongoQueueStore = (MongoCachedQueueStore) hzInstance.getConfig().getQueueConfig(QUEUE_NAME).getQueueStoreConfig().getStoreImplementation();
     }
 
 

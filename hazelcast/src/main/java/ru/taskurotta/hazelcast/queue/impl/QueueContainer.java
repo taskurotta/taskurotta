@@ -253,7 +253,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
                     if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} drain open buffer and close it", name);
 
                     long to = tailId;
-                    long from = to - (buffSize - newSize);
+                    long from = to - (buffSize - newSize) + 1;
 
                     removeFromBuffer(from, to);
 
@@ -284,10 +284,9 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
                     if (tailId > headId + needMaximumToLoad) {
                         if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} need load {} and NOT open buffer. " +
-                                "queue size = {} buffer.size() = {}", name, needMaximumToLoad + 1, size(), buffer.size());
+                                "queue size = {} buffer.size() = {}", name, needMaximumToLoad, size(), buffer.size());
 
-                        // todo: should load from (headId + buffSize)
-                        loadAll(headId, headId + needMaximumToLoad);
+                        loadAll(headId + maxBufferSize, headId + maxBufferSize + needMaximumToLoad - 1);
 
                         if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
                                 name, buffer.size());
@@ -296,7 +295,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
                                 "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
 
                         // todo: should load from (headId + buffSize)
-                        loadAll(headId, tailId);
+                        loadAll(headId + maxBufferSize, tailId);
                         bufferClosed = false;
 
                         if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",

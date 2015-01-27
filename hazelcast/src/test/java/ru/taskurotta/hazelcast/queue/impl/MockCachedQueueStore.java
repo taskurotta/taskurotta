@@ -14,6 +14,8 @@ public class MockCachedQueueStore implements CachedQueueStore {
 
     protected Map<Long, Object> storeMap = new ConcurrentHashMap();
 
+    protected int lastLoadedCount = 0;
+
     @Override
     public void store(Long key, Object value) {
         storeMap.put(key, value);
@@ -32,12 +34,18 @@ public class MockCachedQueueStore implements CachedQueueStore {
     @Override
     public Map loadAll(long from, long to) {
 
+        lastLoadedCount = 0;
+
         Map resultMap = new HashMap();
 
         for (Long key: storeMap.keySet()) {
-            Object value = storeMap.get(key);
-            if (value != null) {
-                resultMap.put(key, value);
+
+            if (key >= from && key <= to) {
+                Object value = storeMap.get(key);
+                if (value != null) {
+                    lastLoadedCount++;
+                    resultMap.put(key, value);
+                }
             }
         }
 

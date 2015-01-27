@@ -15,7 +15,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.ItemIdAware;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,15 +29,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class MongoCachedQueueStore implements CachedQueueStore<Object>, ItemIdAware {
 
-    protected static final Logger logger = LoggerFactory.getLogger(MongoQueueStore.class);
+    protected static final Logger logger = LoggerFactory.getLogger(MongoCachedQueueStore.class);
 
-    public static Timer storeTimer = Metrics.newTimer(MongoQueueStore.class, "store",
+    public static Timer storeTimer = Metrics.newTimer(MongoCachedQueueStore.class, "store",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
-    public static Timer loadTimer = Metrics.newTimer(MongoQueueStore.class, "load",
+    public static Timer loadTimer = Metrics.newTimer(MongoCachedQueueStore.class, "load",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
-    public static Timer loadAllTimer = Metrics.newTimer(MongoQueueStore.class, "loadAll",
+    public static Timer loadAllTimer = Metrics.newTimer(MongoCachedQueueStore.class, "loadAll",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
-    public static Timer deleteTimer = Metrics.newTimer(MongoQueueStore.class, "delete",
+    public static Timer deleteTimer = Metrics.newTimer(MongoCachedQueueStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     private String storageName;
     private MongoTemplate mongoTemplate;

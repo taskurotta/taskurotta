@@ -40,7 +40,7 @@
         <constructor-arg name="j" value="true"/>
     </bean>
 
-    <bean id="queueStoreFactory" class="ru.taskurotta.hazelcast.store.MongoQueueStorageFactory">
+    <bean id="queueStoreFactory" class="ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
 

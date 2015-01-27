@@ -15,8 +15,8 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
@@ -120,14 +120,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         if (distributedObject instanceof CachedQueue) {
                             CachedQueue queue = (CachedQueue) distributedObject;
                             sb.append("\tsize = " + queue.size());
-                            sb.append("\townedItemCount = " + queue.getLocalQueueStats().getOwnedItemCount());
                         }
 
-                        if (distributedObject instanceof CachedQueue) {
-                            CachedQueue queue = (CachedQueue) distributedObject;
-
-                            sb.append("\tsize = " + queue.size());
-                        }
                     }
 
                     sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
@@ -145,13 +139,13 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 sb.append("\nMongo Queues statistics:");
                 sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
-                        MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
+                        MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate()));
                 sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
-                        MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                        MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate()));
                 sb.append(String.format("\nload all   mean: %8.3f oneMinuteRate: %8.3f",
-                        MongoQueueStore.loadAllTimer.mean(), MongoQueueStore.loadAllTimer.oneMinuteRate()));
+                        MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()));
                 sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
-                        MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
+                        MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate()));
 
                 int pushedCount = ProcessPusher.counter.get();
                 int startedCount = GeneralTaskServer.startedProcessesCounter.get();
