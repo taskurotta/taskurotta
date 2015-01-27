@@ -40,9 +40,7 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements IQueue<E>, I
 
     public QueueProxyImpl(String name, QueueService queueService, NodeEngine nodeEngine) {
         super(name, queueService, nodeEngine);
-        if (queueService instanceof IQueue){
-            throw new IllegalArgumentException("IQueue service deprecated! Please use CachedQueue.");
-        }
+        throw new IllegalStateException("IQueue service deprecated! Please use CachedQueue.");
     }
 
     @Override
