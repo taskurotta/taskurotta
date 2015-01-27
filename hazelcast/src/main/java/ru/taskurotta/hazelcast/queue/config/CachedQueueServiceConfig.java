@@ -2,6 +2,7 @@ package ru.taskurotta.hazelcast.queue.config;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ServiceConfig;
+import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
 
 import java.util.Map;
@@ -44,6 +45,8 @@ public class CachedQueueServiceConfig extends ServiceConfig {
             queueServiceConfig.setName(QueueService.SERVICE_NAME);
             queueServiceConfig.setClassName(QueueService.class.getName());
             config.getServicesConfig().addServiceConfig(queueServiceConfig);
+            config.getSerializationConfig().addDataSerializableFactory(QueueDataSerializerHook.F_ID, new
+                    QueueDataSerializerHook().createFactory());
         }
 
         return queueServiceConfig;

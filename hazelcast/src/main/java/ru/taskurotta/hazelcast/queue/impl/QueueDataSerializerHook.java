@@ -18,7 +18,6 @@ package ru.taskurotta.hazelcast.queue.impl;
 
 import com.hazelcast.nio.serialization.ArrayDataSerializableFactory;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
-import com.hazelcast.nio.serialization.DataSerializerHook;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.util.ConstructorFunction;
 import ru.taskurotta.hazelcast.queue.impl.operations.AddAllOperation;
@@ -40,7 +39,7 @@ import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
 /**
  * A {@link com.hazelcast.nio.serialization.DataSerializerHook} for the queue operations and support structures.
  */
-public final class QueueDataSerializerHook implements DataSerializerHook {
+public final class QueueDataSerializerHook {
 
     public static final int F_ID = 1;
 
@@ -66,11 +65,7 @@ public final class QueueDataSerializerHook implements DataSerializerHook {
     public static final int REMAINING_CAPACITY = 18;
 
 
-    public int getFactoryId() {
-        return F_ID;
-    }
-
-    public DataSerializableFactory createFactory() {
+    public static DataSerializableFactory createFactory() {
 
         ConstructorFunction<Integer, IdentifiedDataSerializable>[] constructors = new ConstructorFunction[REMAINING_CAPACITY + 1];
         constructors[OFFER] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
