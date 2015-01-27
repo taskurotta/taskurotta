@@ -27,7 +27,8 @@ public class TaskContainerDbObject extends CustomDBObject<TaskContainer> {
                 getObject().setActorId((String) v);
                 return v;
             case "args":
-                getObject().setArgs(ArgContainerDbObject.fromArray((ArgContainerDbObject[]) v));
+                System.out.println("v = " + v);
+//                getObject().setArgs(ArgContainerDbObject.fromArray((ArgContainerDbObject[]) v));
                 return v;
         }
         return null;
@@ -45,7 +46,7 @@ public class TaskContainerDbObject extends CustomDBObject<TaskContainer> {
             case "actorId":
                 return getObject().getActorId();
             case "args":
-                return ArgContainerDbObject.toArray(getObject().getArgs());
+                return ArgContainerDbObject.toList(getObject().getArgs());
         }
         return null;
     }

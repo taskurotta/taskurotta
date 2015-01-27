@@ -15,7 +15,7 @@ public class CustomBasicBSONDecoder extends BasicBSONDecoder implements DBDecode
     @Override
     public DBCallback getDBCallback(DBCollection collection) {
         // brand new callback every time
-        return new DefaultDBCallback(collection);
+        return new CustomDBCallback(collection);
     }
 
     @Override
