@@ -193,7 +193,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
         //resizeBuffer();
 
         scheduleEvictionIfEmpty();
-
 //        if (!fromBackup && store.isEnabled()) {
 //            // todo: OOM!
 //            Set<Long> keys = store.loadAllKeys();

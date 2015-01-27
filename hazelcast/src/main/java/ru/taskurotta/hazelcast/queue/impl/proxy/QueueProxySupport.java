@@ -18,41 +18,23 @@ package ru.taskurotta.hazelcast.queue.impl.proxy;
 
 import com.hazelcast.config.QueueConfig;
 import com.hazelcast.nio.serialization.Data;
-import com.hazelcast.spi.AbstractDistributedObject;
-import com.hazelcast.spi.InitializingObject;
-import com.hazelcast.spi.InternalCompletableFuture;
-import com.hazelcast.spi.NodeEngine;
-import com.hazelcast.spi.Operation;
-import com.hazelcast.spi.OperationService;
+import com.hazelcast.spi.*;
 import com.hazelcast.spi.impl.SerializableCollection;
 import com.hazelcast.util.ExceptionUtil;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
-import ru.taskurotta.hazelcast.queue.impl.operations.AddAllOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.ClearOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.CompareAndRemoveOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.ContainsOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.DrainOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.IsEmptyOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.IteratorOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.OfferOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.PeekOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.PollOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.QueueOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.RemainingCapacityOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.RemoveOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
+import ru.taskurotta.hazelcast.queue.impl.operations.*;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
-abstract class QueueProxySupport extends AbstractDistributedObject<QueueService> implements InitializingObject {
+public abstract class QueueProxySupport extends AbstractDistributedObject<QueueService> implements InitializingObject {
 
-    final String name;
-    final int partitionId;
-    final QueueConfig config;
+   protected final String name;
+   protected final int partitionId;
+   protected final QueueConfig config;
 
-    QueueProxySupport(final String name, final QueueService queueService, NodeEngine nodeEngine) {
+   protected QueueProxySupport(final String name, final QueueService queueService, NodeEngine nodeEngine) {
         super(nodeEngine, queueService);
         this.name = name;
         this.partitionId = nodeEngine.getPartitionService().getPartitionId(getNameAsPartitionAwareData());
@@ -63,7 +45,7 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
     public void initialize() {
     }
 
-    boolean offerInternal(Data data, long timeout) throws InterruptedException {
+    protected boolean offerInternal(Data data, long timeout) throws InterruptedException {
         throwExceptionIfNull(data);
         OfferOperation operation = new OfferOperation(name, timeout, data);
         try {
@@ -93,12 +75,12 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
         invokeAndGet(operation);
     }
 
-    Object peekInternal() {
+    protected Object peekInternal() {
         PeekOperation operation = new PeekOperation(name);
         return invokeAndGetData(operation);
     }
 
-    Object pollInternal(long timeout) throws InterruptedException {
+   protected Object pollInternal(long timeout) throws InterruptedException {
         PollOperation operation = new PollOperation(name, timeout);
         try {
             return invokeAndGet(operation);
@@ -107,35 +89,35 @@ abstract class QueueProxySupport extends AbstractDistributedObject<QueueService>
         }
     }
 
-    boolean removeInternal(Data data) {
+    protected boolean removeInternal(Data data) {
         throwExceptionIfNull(data);
         RemoveOperation operation = new RemoveOperation(name, data);
         return (Boolean) invokeAndGet(operation);
     }
 
-    boolean containsInternal(Collection<Data> dataList) {
+    protected boolean containsInternal(Collection<Data> dataList) {
         ContainsOperation operation = new ContainsOperation(name, dataList);
         return (Boolean) invokeAndGet(operation);
     }
 
-    List<Data> listInternal() {
+    protected List<Data> listInternal() {
         IteratorOperation operation = new IteratorOperation(name);
         SerializableCollection collectionContainer = invokeAndGet(operation);
         return (List<Data>) collectionContainer.getCollection();
     }
 
-    Collection<Data> drainInternal(int maxSize) {
+    protected Collection<Data> drainInternal(int maxSize) {
         DrainOperation operation = new DrainOperation(name, maxSize);
         SerializableCollection collectionContainer = invokeAndGet(operation);
         return collectionContainer.getCollection();
     }
 
-    boolean addAllInternal(Collection<Data> dataList) {
+    protected boolean addAllInternal(Collection<Data> dataList) {
         AddAllOperation operation = new AddAllOperation(name, dataList);
         return (Boolean) invokeAndGet(operation);
     }
 
-    boolean compareAndRemove(Collection<Data> dataList, boolean retain) {
+    protected boolean compareAndRemove(Collection<Data> dataList, boolean retain) {
         CompareAndRemoveOperation operation = new CompareAndRemoveOperation(name, dataList, retain);
         return (Boolean) invokeAndGet(operation);
     }

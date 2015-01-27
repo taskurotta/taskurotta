@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.taskurotta.hazelcast.queue.impl.proxy;
+package com.hazelcast.queue.impl.proxy;
 
 import com.hazelcast.core.IQueue;
 import com.hazelcast.nio.serialization.Data;
@@ -23,6 +23,8 @@ import com.hazelcast.spi.NodeEngine;
 import com.hazelcast.util.ValidationUtil;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
+import ru.taskurotta.hazelcast.queue.impl.proxy.*;
+import ru.taskurotta.hazelcast.queue.impl.proxy.QueueIterator;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
 
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <E>
  */
-public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<E>, InitializingObject {
+public class QueueProxyImpl<E> extends ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxySupport implements CachedQueue<E>, InitializingObject {
 
     public QueueProxyImpl(String name, QueueService queueService, NodeEngine nodeEngine) {
         super(name, queueService, nodeEngine);

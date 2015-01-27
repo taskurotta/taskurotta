@@ -39,7 +39,7 @@ import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.impl.operations.QueueReplicationOperation;
-import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
+import com.hazelcast.queue.impl.proxy.QueueProxyImpl;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
 
