@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package ru.taskurotta.hazelcast.queue.impl.proxy;
+package com.hazelcast.queue.impl.proxy;
 
 import com.hazelcast.core.IQueue;
+import com.hazelcast.monitor.LocalQueueStats;
 import com.hazelcast.nio.serialization.Data;
+import com.hazelcast.queue.impl.QueueService;
 import com.hazelcast.spi.InitializingObject;
 import com.hazelcast.spi.NodeEngine;
 import com.hazelcast.util.ValidationUtil;
-import ru.taskurotta.hazelcast.queue.CachedQueue;
-import ru.taskurotta.hazelcast.queue.impl.QueueService;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <E>
  */
-public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<E>, InitializingObject {
+public class QueueProxyImpl<E> extends QueueProxySupport implements IQueue<E>, InitializingObject {
 
     public QueueProxyImpl(String name, QueueService queueService, NodeEngine nodeEngine) {
         super(name, queueService, nodeEngine);
@@ -68,6 +67,10 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
         }
     }
 
+    @Override
+    public void put(E e) throws InterruptedException {
+        offer(e, -1, TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public boolean offer(E e, long timeout, TimeUnit timeUnit) throws InterruptedException {
@@ -102,6 +105,26 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
         List<Data> dataSet = new ArrayList<Data>(1);
         dataSet.add(data);
         return containsInternal(dataSet);
+    }
+
+    @Override
+    public int drainTo(Collection<? super E> objects) {
+        return drainTo(objects, -1);
+    }
+
+    @Override
+    public int drainTo(Collection<? super E> objects, int i) {
+        ValidationUtil.checkNotNull(objects, "Collection is null");
+        if (this.equals(objects)) {
+            throw new IllegalArgumentException("Can not drain to same Queue");
+        }
+        final NodeEngine nodeEngine = getNodeEngine();
+        Collection<Data> dataList = drainInternal(i);
+        for (Data data : dataList) {
+            E e = nodeEngine.toObject(data);
+            objects.add(e);
+        }
+        return dataList.size();
     }
 
     @Override
@@ -214,7 +237,7 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CachedQueue");
+        sb.append("IQueue");
         sb.append("{name='").append(name).append('\'');
         sb.append('}');
         return sb.toString();
