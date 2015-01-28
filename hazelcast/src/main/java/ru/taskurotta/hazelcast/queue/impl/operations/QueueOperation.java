@@ -16,26 +16,18 @@
 
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
-import com.hazelcast.core.ItemEventType;
-import com.hazelcast.nio.Address;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.spi.BackupOperation;
-import com.hazelcast.spi.EventRegistration;
-import com.hazelcast.spi.EventService;
 import com.hazelcast.spi.Operation;
 import com.hazelcast.spi.PartitionAwareOperation;
 import com.hazelcast.spi.exception.RetryableHazelcastException;
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.QueueEvent;
-import ru.taskurotta.hazelcast.queue.impl.QueueEventFilter;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
 
 import java.io.IOException;
-import java.util.Collection;
 
 /**
  * This class contains methods for Queue operations
@@ -101,22 +93,6 @@ public abstract class QueueOperation extends Operation
         return true;
     }
 
-    public boolean hasListener() {
-        EventService eventService = getNodeEngine().getEventService();
-        Collection<EventRegistration> registrations = eventService.getRegistrations(getServiceName(), name);
-        return registrations.size() > 0;
-    }
-
-    public void publishEvent(ItemEventType eventType, Data data) {
-        EventService eventService = getNodeEngine().getEventService();
-        Collection<EventRegistration> registrations = eventService.getRegistrations(getServiceName(), name);
-        Address thisAddress = getNodeEngine().getThisAddress();
-        for (EventRegistration registration : registrations) {
-            QueueEventFilter filter = (QueueEventFilter) registration.getFilter();
-            QueueEvent event = new QueueEvent(name, filter.isIncludeValue() ? data : null, eventType, thisAddress);
-            eventService.publishEvent(getServiceName(), registration, event, name.hashCode());
-        }
-    }
 
     @Override
     protected void writeInternal(ObjectDataOutput out) throws IOException {

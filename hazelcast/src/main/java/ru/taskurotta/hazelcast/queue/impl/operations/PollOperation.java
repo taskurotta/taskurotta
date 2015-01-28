@@ -16,7 +16,6 @@
 
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
-import com.hazelcast.core.ItemEventType;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.spi.Notifier;
 import com.hazelcast.spi.WaitNotifyKey;
@@ -53,7 +52,6 @@ public final class PollOperation extends QueueOperation
         LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         if (response != null) {
             stats.incrementPolls();
-            publishEvent(ItemEventType.REMOVED, item.getData());
         } else {
             stats.incrementEmptyPolls();
         }
