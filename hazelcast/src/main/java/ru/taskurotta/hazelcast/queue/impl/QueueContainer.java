@@ -127,7 +127,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
     }
 
     public QueueItem poll() {
-
+//todo
         if (DEBUG_FULL) logger.debug("poll(): name = {} buffer.size() = {} headId = {} tailId = {} " +
                 "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
 
@@ -218,6 +218,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         tailId = store.getMaxItemId();
         headId = store.getMinItemId();
 
+        loadBuffer();
         //resizeBuffer();
 
         scheduleEvictionIfEmpty();

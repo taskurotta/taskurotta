@@ -81,20 +81,39 @@ public class LoadInfoFromMongoTest {
         Hazelcast.shutdownAll();
     }
 
+    @Test
+    public void testOfferWhenLoadFromMongo() throws InterruptedException {
+        cleanAndPopulateData();
+        HazelcastInstance hazelcastInstance = getHazelcastInstance();
+        CachedQueue queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        queue.offer("testData15");
+        Assert.assertEquals(true, isOrderRight(queue, 16, 0));
+        Hazelcast.shutdownAll();
+    }
+
+    @Test //todo fixme this test broken
+    public void testWhenBrokenStore() throws InterruptedException {
+        cleanAndPopulateData();
+        HazelcastInstance hazelcastInstance = getHazelcastInstance();
+        CachedQueue queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        DBObject dbObject = new BasicDBObject();
+        dbObject.put("_id", 7L);
+        mongoTemplate.getCollection(QUEUE_NAME).remove(dbObject);
+        System.out.println("isOrderRight(queue,15,0) = " + isOrderRight(queue, 15, 0));
+        Hazelcast.shutdownAll();
+    }
+
     private boolean isOrderRight(CachedQueue<String> cachedQueue, long expectedSize, long startFrom) {
         long counter = startFrom;
         while (counter != expectedSize) {
             String val = cachedQueue.poll();
-            if (!val.equals("testData" + counter)) {
-                return false;
-            }
+            Assert.assertEquals("testData" + counter, val);
             counter++;
         }
         return true;
     }
 
     private void cleanAndPopulateData() {
-
         dataDrop();
         //adding a test data directly to mongo
         for (long i = 0; i < 15; i++) {
