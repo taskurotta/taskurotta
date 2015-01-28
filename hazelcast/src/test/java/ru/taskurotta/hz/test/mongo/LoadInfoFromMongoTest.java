@@ -3,6 +3,7 @@ package ru.taskurotta.hz.test.mongo;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.Partition;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
@@ -51,15 +52,28 @@ public class LoadInfoFromMongoTest {
         cleanAndPopulateData();
         //Starting first node
         HazelcastInstance nodeOne = getHazelcastInstance();
-        CachedQueue<String> queueFromNodeOne = nodeOne.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
-        Assert.assertEquals(queueFromNodeOne.size(), 15);
         //Starting second node
         HazelcastInstance nodeTwo = getHazelcastInstance();
-        //polling 5 elements from node one
+        String partitionKey = nodeOne.getPartitionService().randomPartitionKey();
+        HazelcastInstance ownerInstance;
+        HazelcastInstance secondInstance;
+        Partition partition = nodeOne.getPartitionService().getPartition(partitionKey);
+        if (nodeOne.getCluster().getLocalMember().equals(partition.getOwner())) {
+            ownerInstance = nodeOne;
+            secondInstance = nodeTwo;
+        } else {
+            ownerInstance = nodeOne;
+            secondInstance = nodeTwo;
+        }
+        String queueNameNodeOne = QUEUE_NAME + "@" + partitionKey;
+        CachedQueue<String> queueFromNodeOne = ownerInstance.getDistributedObject(CachedQueue.class.getName(), queueNameNodeOne);
+        Assert.assertEquals(queueFromNodeOne.size(), 15);
+        //polling 5 elements
         Assert.assertTrue(isOrderRight(queueFromNodeOne, 5, 0));
         //shutdown first node
-        nodeOne.shutdown();
-        CachedQueue<String> queueFromNodeTwo = nodeTwo.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        ownerInstance.shutdown();
+
+        CachedQueue<String> queueFromNodeTwo = secondInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         //checking size of queue
         Assert.assertEquals(queueFromNodeTwo.size(), 10);
         //checking order of data in queue
