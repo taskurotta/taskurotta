@@ -16,7 +16,6 @@
 
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
-import com.hazelcast.core.ItemEventType;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
@@ -55,9 +54,6 @@ public class RemoveOperation extends QueueOperation implements Notifier {
     public void afterRun() throws Exception {
         LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
-        if (itemId != -1) {
-            publishEvent(ItemEventType.REMOVED, data);
-        }
     }
 
     @Override
