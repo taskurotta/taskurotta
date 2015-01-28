@@ -5,14 +5,15 @@ import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  */
 public class MockCachedQueueStore implements CachedQueueStore {
 
-    protected Map<Long, Object> storeMap = new ConcurrentHashMap();
+    protected NavigableMap<Long, Object> storeMap = new ConcurrentSkipListMap<>();
 
     protected int lastLoadedCount = 0;
 
@@ -38,7 +39,7 @@ public class MockCachedQueueStore implements CachedQueueStore {
 
         Map resultMap = new HashMap();
 
-        for (Long key: storeMap.keySet()) {
+        for (Long key : storeMap.keySet()) {
 
             if (key >= from && key <= to) {
                 Object value = storeMap.get(key);
@@ -54,18 +55,19 @@ public class MockCachedQueueStore implements CachedQueueStore {
 
     @Override
     public Set<Long> loadAllKeys() {
-
         return storeMap.keySet();
     }
 
     @Override
     public long getMinItemId() {
-        return 0;
+        if (storeMap.size() == 0) return 0;
+        return storeMap.firstKey();
     }
 
     @Override
     public long getMaxItemId() {
-        return -1;
+        if (storeMap.size() == 0) return -1;
+        return storeMap.lastKey();
     }
 
     @Override

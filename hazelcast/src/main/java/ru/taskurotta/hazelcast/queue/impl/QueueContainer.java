@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
-import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -57,9 +56,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
     private final QueueWaitNotifyKey offerWaitNotifyKey;
 
     private String name;
-
-    private CachedQueueStore cachedQueueStore;
-
 
     // new stuff
 
@@ -195,8 +191,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         maxBufferSize = config.getCacheSize();
 
-        tailId = cachedQueueStore.getMaxItemId();
-        headId = cachedQueueStore.getMinItemId();
+        tailId = store.getMaxItemId();
+        headId = store.getMinItemId();
 
         //resizeBuffer();
 
@@ -403,9 +399,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
         final SerializationService serializationService = nodeEngine.getSerializationService();
         this.store = QueueStoreWrapper.create(name, storeConfig, serializationService);
 
-        if (store.isEnabled()) {
-            this.cachedQueueStore = storeConfig.getStoreImplementation();
-        }
     }
 
 
