@@ -16,21 +16,16 @@
 
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
-import com.hazelcast.core.ItemEventType;
-import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.Notifier;
 import com.hazelcast.spi.WaitNotifyKey;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
-
-import java.util.Map;
 
 /**
  * Clears items stored by Queue.
  */
 public class ClearOperation extends QueueOperation implements Notifier {
 
-    private Map<Long, Data> dataMap;
 
     public ClearOperation() {
     }
@@ -41,7 +36,7 @@ public class ClearOperation extends QueueOperation implements Notifier {
 
     @Override
     public void run() {
-        dataMap = getOrCreateContainer().clear();
+        getOrCreateContainer().clear();
         response = true;
     }
 
@@ -49,14 +44,12 @@ public class ClearOperation extends QueueOperation implements Notifier {
     public void afterRun() throws Exception {
         LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
-        for (Data data : dataMap.values()) {
-            publishEvent(ItemEventType.REMOVED, data);
-        }
+
     }
 
     @Override
     public boolean shouldNotify() {
-        return Boolean.TRUE.equals(!dataMap.isEmpty());
+        return false;
     }
 
     @Override

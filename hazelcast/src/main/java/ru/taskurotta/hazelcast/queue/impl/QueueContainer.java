@@ -28,6 +28,7 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -55,13 +56,13 @@ public class QueueContainer implements IdentifiedDataSerializable {
     private final QueueWaitNotifyKey offerWaitNotifyKey;
 
     private String name;
-     // new stuff
+    // new stuff
 
     protected long headId = 0;
     protected long tailId = -1;
     protected boolean bufferClosed = false;
 
-    protected Map<Long, QueueItem> buffer = new HashMap<Long, QueueItem>();
+    protected Map<Long, QueueItem> buffer = new HashMap<>();
 
     protected int maxBufferSize;
     protected long heapCost = 0;
@@ -388,8 +389,16 @@ public class QueueContainer implements IdentifiedDataSerializable {
         throw new IllegalStateException("Not implemented yet!");
     }
 
-    public Map<Long, Data> clear() {
-        throw new IllegalStateException("Not implemented yet!");
+    public void clear() {
+        List<Long> keysToDelete = new ArrayList<>();
+        for (long i = headId; i <= tailId; i++) {
+            keysToDelete.add(i);
+        }
+        store.deleteAll(keysToDelete);
+        headId = 0;
+        tailId = -1;
+        heapCost = 0;
+        buffer.clear();
     }
 
     // todo: not needed. should be removed
