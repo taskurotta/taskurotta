@@ -27,8 +27,8 @@ spreader:
           recovery.find-incomplete-process-period: 1 minutes
           recovery.process.change-timeout: 1 minutes
           hz.queue.task.cache-size: 10000
-          hz.queue.task.batch-load-size: 1000
-          hz.queue.delay.batch-load-size: 1000
+          hz.queue.task.batch-load-size: 500
+          hz.queue.delay.batch-load-size: 500
           hz.map.general.max-size: 4
 
 

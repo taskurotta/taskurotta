@@ -126,7 +126,7 @@ public final class QueueDataSerializerHook {
         };
         constructors[QUEUE_ITEM] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
             public IdentifiedDataSerializable createNew(Integer arg) {
-                return new QueueItem();
+                return new QueueItem(null);
             }
         };
         constructors[QUEUE_REPLICATION] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {

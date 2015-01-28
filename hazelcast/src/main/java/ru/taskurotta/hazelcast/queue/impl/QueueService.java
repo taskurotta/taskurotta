@@ -40,8 +40,8 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.impl.operations.QueueReplicationOperation;
 import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,13 +66,13 @@ public class QueueService implements ManagedService, MigrationAwareService, Remo
     private final NodeEngine nodeEngine;
     private final ConcurrentMap<String, QueueContainer> containerMap
             = new ConcurrentHashMap<String, QueueContainer>();
-    private final ConcurrentMap<String, LocalQueueStatsImpl> statsMap
+    private final ConcurrentMap<String, LocalCachedQueueStatsImpl> statsMap
             = new ConcurrentHashMap<>(1000);
-    private final ConstructorFunction<String, LocalQueueStatsImpl> localQueueStatsConstructorFunction
-            = new ConstructorFunction<String, LocalQueueStatsImpl>() {
+    private final ConstructorFunction<String, LocalCachedQueueStatsImpl> localQueueStatsConstructorFunction
+            = new ConstructorFunction<String, LocalCachedQueueStatsImpl>() {
         @Override
-        public LocalQueueStatsImpl createNew(String key) {
-            return new LocalQueueStatsImpl();
+        public LocalCachedQueueStatsImpl createNew(String key) {
+            return new LocalCachedQueueStatsImpl();
         }
     };
 
@@ -222,9 +222,8 @@ public class QueueService implements ManagedService, MigrationAwareService, Remo
         return nodeEngine;
     }
 
-    public LocalQueueStats createLocalQueueStats(String name, int partitionId) {
-        LocalQueueStatsImpl stats = getLocalQueueStatsImpl(name);
-        stats.setOwnedItemCount(0);
+    public LocalCachedQueueStats createLocalQueueStats(String name, int partitionId) {
+        LocalCachedQueueStatsImpl stats = getLocalQueueStatsImpl(name);
         QueueContainer container = containerMap.get(name);
         if (container == null) {
             return stats;
@@ -235,13 +234,15 @@ public class QueueService implements ManagedService, MigrationAwareService, Remo
 
         Address owner = partition.getOwnerOrNull();
         if (thisAddress.equals(owner)) {
-            stats.setOwnedItemCount(container.size());
+            stats.setCacheMaxSize(container.getCacheMaxSize());
+            stats.setHeapCost(container.getHeapCost());
+            stats.setCacheSize(container.getCacheSize());
         }
 
         return stats;
     }
 
-    public LocalQueueStatsImpl getLocalQueueStatsImpl(String name) {
+    public LocalCachedQueueStatsImpl getLocalQueueStatsImpl(String name) {
         return ConcurrencyUtil.getOrPutIfAbsent(statsMap, name, localQueueStatsConstructorFunction);
     }
 

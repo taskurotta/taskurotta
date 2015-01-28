@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,16 +55,16 @@ public class QueueContainer implements IdentifiedDataSerializable {
     private final QueueWaitNotifyKey offerWaitNotifyKey;
 
     private String name;
+     // new stuff
 
-    // new stuff
-
-    protected volatile long headId = 0;
-    protected volatile long tailId = -1;
-    protected volatile boolean bufferClosed = false;
-
-    protected volatile int maxBufferSize;
+    protected long headId = 0;
+    protected long tailId = -1;
+    protected boolean bufferClosed = false;
 
     protected Map<Long, QueueItem> buffer = new HashMap<Long, QueueItem>();
+
+    protected int maxBufferSize;
+    protected long heapCost = 0;
 
 
     public int size() {
@@ -93,8 +92,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
                 if (DEBUG_FULL) logger.debug("offer(): name = {} add item to buffer. itemId = {}", name, itemId);
 
-                QueueItem item = new QueueItem(itemId, data);
-                buffer.put(itemId, item);
+                QueueItem item = new QueueItem(data);
+                addItemToBuffer(itemId, item);
 
                 if (maxBufferSize == bufferSize + 1) {
 
@@ -110,6 +109,22 @@ public class QueueContainer implements IdentifiedDataSerializable {
         return itemId;
     }
 
+    private void addItemToBuffer(long key, QueueItem item) {
+
+        heapCost += item.headCost;
+
+        buffer.put(key, item);
+    }
+
+    private QueueItem removeItemFromBuffer(long key) {
+
+        final QueueItem item = buffer.remove(key);
+
+        if (item != null) {
+            heapCost -= item.headCost;
+        }
+        return item;
+    }
 
     public QueueItem poll() {
 
@@ -139,7 +154,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         store.delete(currHeadId);
 
-        final QueueItem item = buffer.remove(currHeadId);
+        final QueueItem item = removeItemFromBuffer(currHeadId);
 
         if (item == null) {
             logger.warn("poll(): name = {}. Entry {} not found in cache of queue container", name, currHeadId);
@@ -170,17 +185,26 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         for (Map.Entry<Long, Data> entry : store.loadAll(from, to).entrySet()) {
             Long itemId = entry.getKey();
-            QueueItem item = new QueueItem(itemId, entry.getValue());
+            QueueItem item = new QueueItem(entry.getValue());
 
-            buffer.put(itemId, item);
+            addItemToBuffer(itemId, item);
         }
 
         if (DEBUG_FULL || DEBUG_LOAD) logger.debug("loadAll(): name = {}, after load: buffer size = {} from = {} to =" +
                 " {}", name, buffer.size(), from, to);
     }
 
-    private int getMaxBufferSize() {
-        return ThreadLocalRandom.current().nextInt(config.getCacheSize()) + 1;
+    public long getHeapCost() {
+        return heapCost;
+    }
+
+    public long getCacheSize() {
+        return buffer.size();
+    }
+
+
+    public long getCacheMaxSize() {
+        return maxBufferSize;
     }
 
     /**
@@ -299,7 +323,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
                             logger.debug("resizeBuffer(): name = {} need load {} and OPEN buffer. " +
                                     "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
 
-                        // todo: should load from (headId + buffSize)
                         loadAll(headId + maxBufferSize, tailId);
                         bufferClosed = false;
 
@@ -326,7 +349,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         int j = 0;
 
         for (long i = from; i <= to; i++) {
-            if (buffer.remove(i) != null) {
+            if (removeItemFromBuffer(i) != null) {
                 j++;
             }
         }

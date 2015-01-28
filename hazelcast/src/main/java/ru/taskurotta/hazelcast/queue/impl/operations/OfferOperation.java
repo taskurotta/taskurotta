@@ -26,7 +26,7 @@ import com.hazelcast.spi.WaitNotifyKey;
 import com.hazelcast.spi.WaitSupport;
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 import java.io.IOException;
 
@@ -56,7 +56,7 @@ public final class OfferOperation extends QueueOperation
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         if (Boolean.TRUE.equals(response)) {
             stats.incrementOffers();
             publishEvent(ItemEventType.ADDED, data);

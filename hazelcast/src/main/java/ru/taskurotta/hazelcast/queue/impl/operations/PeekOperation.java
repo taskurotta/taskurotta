@@ -19,7 +19,7 @@ package ru.taskurotta.hazelcast.queue.impl.operations;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.QueueItem;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 /**
  * Peek operation for Queue.
@@ -41,7 +41,7 @@ public final class PeekOperation extends QueueOperation implements IdentifiedDat
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
     }
 

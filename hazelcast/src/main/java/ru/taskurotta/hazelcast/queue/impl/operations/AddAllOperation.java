@@ -24,7 +24,7 @@ import com.hazelcast.spi.Notifier;
 import com.hazelcast.spi.WaitNotifyKey;
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class AddAllOperation extends QueueOperation implements Notifier {
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
         if (Boolean.TRUE.equals(response)) {
             for (Data data : dataList) {

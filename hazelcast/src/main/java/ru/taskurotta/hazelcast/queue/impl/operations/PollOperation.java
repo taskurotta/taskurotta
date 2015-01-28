@@ -23,7 +23,7 @@ import com.hazelcast.spi.WaitNotifyKey;
 import com.hazelcast.spi.WaitSupport;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.QueueItem;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 /**
  * Pool operation for Queue.
@@ -50,7 +50,7 @@ public final class PollOperation extends QueueOperation
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         if (response != null) {
             stats.incrementPolls();
             publishEvent(ItemEventType.REMOVED, item.getData());

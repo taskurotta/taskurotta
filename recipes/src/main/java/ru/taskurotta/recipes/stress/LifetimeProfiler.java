@@ -134,8 +134,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                             if (distributedObject instanceof CachedQueue) {
                                 CachedQueue queue = (CachedQueue) distributedObject;
-                                sb.append("\townedItemCount = " + queue.getLocalQueueStats().getOwnedItemCount());
                                 sb.append("\tsize = " + queue.size());
+                                sb.append("\tcacheSize = " + queue.getLocalQueueStats().getCacheSize());
+                                sb.append("\tcacheMaxSize = " + queue.getLocalQueueStats().getCacheMaxSize());
+                                sb.append("\theapCost = " + queue.getLocalQueueStats().getHeapCost());
                             }
                         }
 

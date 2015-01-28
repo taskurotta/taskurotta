@@ -20,23 +20,31 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import ru.taskurotta.hazelcast.queue.impl.stats.StatsUtil;
 
 import java.io.IOException;
 
 /**
  * Queue Item.
  */
-public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueItem> {
+public class QueueItem implements IdentifiedDataSerializable {
 
-    protected long itemId;
+
     protected Data data;
 
-    public QueueItem() {
-    }
+    // calculated value for statistics
+    protected long headCost;
 
-    public QueueItem(long itemId, Data data) {
-        this.itemId = itemId;
+    public QueueItem(Data data) {
         this.data = data;
+
+        final int numberOfLongs = 1;
+
+        headCost = StatsUtil.OBJ_REF_IN_BYTES +                   // add key references
+                StatsUtil.LONG_SIZE_IN_BYTES +                    // add key cost
+                StatsUtil.OBJ_REF_IN_BYTES +                      // add value references
+                numberOfLongs * StatsUtil.LONG_SIZE_IN_BYTES +    // + qItem.heapCost
+                data.getHeapCost();                                     // + qItem.data
     }
 
     public Data getData() {
@@ -47,34 +55,14 @@ public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueIt
         this.data = data;
     }
 
-    public long getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(long itemId) {
-        this.itemId = itemId;
-    }
-
     @Override
     public void writeData(ObjectDataOutput out) throws IOException {
-        out.writeLong(itemId);
         out.writeData(data);
     }
 
     @Override
     public void readData(ObjectDataInput in) throws IOException {
-        itemId = in.readLong();
         data = in.readData();
-    }
-
-    @Override
-    public int compareTo(QueueItem o) {
-        if (itemId < o.getItemId()) {
-            return -1;
-        } else if (itemId > o.getItemId()) {
-            return 1;
-        }
-        return 0;
     }
 
     @Override
@@ -98,9 +86,6 @@ public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueIt
 
         QueueItem item = (QueueItem) o;
 
-        if (itemId != item.itemId) {
-            return false;
-        }
         if (data != null ? !data.equals(item.data) : item.data != null) {
             return false;
         }
@@ -110,8 +95,6 @@ public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueIt
 
     @Override
     public int hashCode() {
-        int result = (int) (itemId ^ (itemId >>> 32));
-        result = 31 * result + (data != null ? data.hashCode() : 0);
-        return result;
+        return data.hashCode();
     }
 }
