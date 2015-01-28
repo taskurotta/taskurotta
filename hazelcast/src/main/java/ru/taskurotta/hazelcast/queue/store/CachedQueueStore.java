@@ -95,4 +95,15 @@ public interface CachedQueueStore<T> {
      * @return all the keys from the store
      */
     Set<Long> loadAllKeys();
+
+    /**
+     * @return min Id of the stored items
+     */
+    public long getMinItemId();
+
+    /**
+     *
+     * @return max Id of the stored items
+     */
+    public long getMaxItemId();
 }

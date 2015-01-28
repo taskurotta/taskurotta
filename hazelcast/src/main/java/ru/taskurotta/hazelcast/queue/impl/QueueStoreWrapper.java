@@ -278,6 +278,16 @@ public final class QueueStoreWrapper implements CachedQueueStore<Data> {
         return null;
     }
 
+    @Override
+    public long getMinItemId() {
+        return store.getMinItemId();
+    }
+
+    @Override
+    public long getMaxItemId() {
+        return store.getMaxItemId();
+    }
+
     private static int parseInt(String name, int defaultValue, CachedQueueStoreConfig storeConfig) {
         final String val = storeConfig.getProperty(name);
         if (val == null || val.trim().isEmpty()) {

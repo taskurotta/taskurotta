@@ -29,7 +29,7 @@ import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.spi.NodeEngine;
 import com.hazelcast.transaction.TransactionException;
 import com.hazelcast.util.Clock;
-import ru.taskurotta.hazelcast.ItemIdAware;
+import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     private boolean isEvictionScheduled;
 
-    private ItemIdAware itemIdAware;
+    private CachedQueueStore cachedQueueStore;
 
     public QueueContainer(String name) {
         this.name = name;
@@ -596,8 +596,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
     }
 
     private void triggerCleanup() {
-        if (itemIdAware != null) {
-            long minId = itemIdAware.getMinItemId();
+        if (cachedQueueStore != null) {
+            long minId = cachedQueueStore.getMinItemId();
             logger.warning("Store cleanup: current queue id[" + idGenerator + "], min stored id[" + minId + "]");
             int cnt = 0;
             if (minId < 0) {//there are no backing collection
@@ -675,8 +675,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
         final SerializationService serializationService = nodeEngine.getSerializationService();
         this.store = QueueStoreWrapper.create(name, storeConfig, serializationService);
 
-        if (store.isEnabled() && storeConfig.getStoreImplementation() instanceof ItemIdAware) {
-            this.itemIdAware = (ItemIdAware) storeConfig.getStoreImplementation();
+        if (store.isEnabled() && storeConfig.getStoreImplementation() instanceof CachedQueueStore) {
+            this.cachedQueueStore = (CachedQueueStore) storeConfig.getStoreImplementation();
         }
     }
 

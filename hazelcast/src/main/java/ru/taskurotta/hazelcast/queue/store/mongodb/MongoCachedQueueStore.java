@@ -12,7 +12,6 @@ import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import ru.taskurotta.hazelcast.ItemIdAware;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * User: moroz
  * Date: 16.08.13
  */
-public class MongoCachedQueueStore implements CachedQueueStore<Object>, ItemIdAware {
+public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
     protected static final Logger logger = LoggerFactory.getLogger(MongoCachedQueueStore.class);
 
@@ -51,7 +50,8 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object>, ItemIdAw
         this.mongoTemplate = mongoTemplate;
         this.batchSize = config.getBatchLoadSize();
         this.coll = mongoTemplate.getCollection(this.storageName);
-        this.converter = new SpringMongoDBConverter(mongoTemplate);    }
+        this.converter = new SpringMongoDBConverter(mongoTemplate);
+    }
 
     public MongoTemplate getMongoTemplate() {
         return mongoTemplate;
@@ -194,21 +194,30 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object>, ItemIdAw
     }
 
     /**
-     * @return min Id of an item stored
+     * @return min Id of the stored items
      */
     public long getMinItemId() {
+        return getFirstItemIdByAscDesc(true);
+    }
+
+    /**
+     *
+     * @return max Id of the stored items
+     */
+    public long getMaxItemId() {
+        return getFirstItemIdByAscDesc(false);
+    }
+
+    private long getFirstItemIdByAscDesc(boolean asc) {
         long result = -1l;
-
-        DBObject sortCommand = new BasicDBObject();
-        sortCommand.put("_id", 1);//by _id asc(min first)
-
-        DBObject val;
+        final DBObject sortCommand = new BasicDBObject();
+        sortCommand.put("_id", (asc) ? 1 : -1);
+        final DBObject val;
         try (DBCursor cursor = coll.find().sort(sortCommand).limit(1)) {
             if (cursor.hasNext() && (val = cursor.next()) != null) {
-                result = Long.valueOf(val.get("_id").toString());
+                result = (Long) val.get("_id");
             }
         }
-
         return result;
     }
 

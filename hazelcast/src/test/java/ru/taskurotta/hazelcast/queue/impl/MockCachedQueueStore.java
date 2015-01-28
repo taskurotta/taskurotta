@@ -59,6 +59,16 @@ public class MockCachedQueueStore implements CachedQueueStore {
     }
 
     @Override
+    public long getMinItemId() {
+        return 0;
+    }
+
+    @Override
+    public long getMaxItemId() {
+        return -1;
+    }
+
+    @Override
     public Map loadAll(Collection keys) {
 
         Map resultMap = new HashMap();

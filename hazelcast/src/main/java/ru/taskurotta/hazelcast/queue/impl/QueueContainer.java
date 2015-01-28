@@ -24,9 +24,9 @@ import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.spi.NodeEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.ItemIdAware;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
+import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -58,7 +58,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     private String name;
 
-    private ItemIdAware itemIdAware;
+    private CachedQueueStore cachedQueueStore;
 
 
     // new stuff
@@ -169,7 +169,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
     private void loadAll(long from, long to) {
 
         if (DEBUG_FULL || DEBUG_LOAD) logger.debug("loadAll(): name = {} before load: buffer size = {} from = {} to =" +
-                        " {}", name, buffer.size(), from, to);
+                " {}", name, buffer.size(), from, to);
 
 
         for (Map.Entry<Long, Data> entry : store.loadAll(from, to).entrySet()) {
@@ -180,7 +180,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         }
 
         if (DEBUG_FULL || DEBUG_LOAD) logger.debug("loadAll(): name = {}, after load: buffer size = {} from = {} to =" +
-                        " {}", name, buffer.size(), from, to);
+                " {}", name, buffer.size(), from, to);
     }
 
     private int getMaxBufferSize() {
@@ -194,6 +194,9 @@ public class QueueContainer implements IdentifiedDataSerializable {
     public void init(boolean fromBackup) {
 
         maxBufferSize = config.getCacheSize();
+
+        tailId = cachedQueueStore.getMaxItemId();
+        headId = cachedQueueStore.getMinItemId();
 
         //resizeBuffer();
 
@@ -228,7 +231,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         int buffSize = buffer.size();
 
         if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {}, oldSize = {} newSize = {} bufferSize" +
-                " = {} isEmpty = {} bufferClosed = {}, size() = {}, headId = {}, tailId = {}", name, maxBufferSize,
+                        " = {} isEmpty = {} bufferClosed = {}, size() = {}, headId = {}, tailId = {}", name, maxBufferSize,
                 newSize, buffSize, isEmpty(), bufferClosed, size(), headId, tailId);
 
         if (buffSize > maxBufferSize) {
@@ -250,7 +253,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
                 if (newSize < buffSize) {
 
-                    if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} drain open buffer and close it", name);
+                    if (DEBUG_FULL || DEBUG_RESIZE)
+                        logger.debug("resizeBuffer(): name = {} drain open buffer and close it", name);
 
                     long to = tailId;
                     long from = to - (buffSize - newSize) + 1;
@@ -261,10 +265,12 @@ public class QueueContainer implements IdentifiedDataSerializable {
                 } else {
 
                     if (buffer.size() == newSize) {
-                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} close opened buffer", name);
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} close opened buffer", name);
                         bufferClosed = true;
                     } else {
-                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} nothing to do at this moment", name);
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} nothing to do at this moment", name);
                     }
                 }
 
@@ -283,28 +289,33 @@ public class QueueContainer implements IdentifiedDataSerializable {
                     int needMaximumToLoad = newSize - buffSize;
 
                     if (tailId > headId + needMaximumToLoad) {
-                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} need load {} and NOT open buffer. " +
-                                "queue size = {} buffer.size() = {}", name, needMaximumToLoad, size(), buffer.size());
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} need load {} and NOT open buffer. " +
+                                    "queue size = {} buffer.size() = {}", name, needMaximumToLoad, size(), buffer.size());
 
                         loadAll(headId + maxBufferSize, headId + maxBufferSize + needMaximumToLoad - 1);
 
-                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
-                                name, buffer.size());
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
+                                    name, buffer.size());
                     } else {
-                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} need load {} and OPEN buffer. " +
-                                "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} need load {} and OPEN buffer. " +
+                                    "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
 
                         // todo: should load from (headId + buffSize)
                         loadAll(headId + maxBufferSize, tailId);
                         bufferClosed = false;
 
-                        if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
-                                name, buffer.size());
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
+                                    name, buffer.size());
                     }
                 }
             }
         } else {
-            if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} nothing to do with empty queue", name);
+            if (DEBUG_FULL || DEBUG_RESIZE)
+                logger.debug("resizeBuffer(): name = {} nothing to do with empty queue", name);
         }
 
 
@@ -392,9 +403,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
         final SerializationService serializationService = nodeEngine.getSerializationService();
         this.store = QueueStoreWrapper.create(name, storeConfig, serializationService);
 
-        // todo: needed methods should be added to CachedQueueStore directly
-        if (store.isEnabled() && storeConfig.getStoreImplementation() instanceof ItemIdAware) {
-            this.itemIdAware = (ItemIdAware) storeConfig.getStoreImplementation();
+        if (store.isEnabled()) {
+            this.cachedQueueStore = storeConfig.getStoreImplementation();
         }
     }
 
