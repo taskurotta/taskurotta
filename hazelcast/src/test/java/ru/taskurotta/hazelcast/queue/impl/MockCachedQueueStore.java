@@ -28,6 +28,11 @@ public class MockCachedQueueStore implements CachedQueueStore {
     }
 
     @Override
+    public void clear() {
+        storeMap.clear();
+    }
+
+    @Override
     public Object load(Long key) {
         return storeMap.get(key);
     }

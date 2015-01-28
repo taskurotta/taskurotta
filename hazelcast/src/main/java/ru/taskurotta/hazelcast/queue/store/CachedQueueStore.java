@@ -56,6 +56,8 @@ public interface CachedQueueStore<T> {
      */
     void deleteAll(Collection<Long> keys);
 
+    void clear();
+
     /**
      * Loads the value of a given key. If distributed map does not contain the value
      * for the given key, then Hazelcast will call the implementation load (key) method

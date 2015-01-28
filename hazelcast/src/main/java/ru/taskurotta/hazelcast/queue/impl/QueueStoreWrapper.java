@@ -202,6 +202,11 @@ public final class QueueStoreWrapper implements CachedQueueStore<Data> {
     }
 
     @Override
+    public void clear() {
+        store.clear();
+    }
+
+    @Override
     public Data load(Long key) {
         if (!enabled) {
             return null;

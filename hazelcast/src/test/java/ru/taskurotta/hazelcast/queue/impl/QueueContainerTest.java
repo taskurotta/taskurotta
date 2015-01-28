@@ -160,11 +160,9 @@ public class QueueContainerTest {
         assertEquals(0, container.size());
 
         // clear queue
-        addToQueue(offerCounter, 2);
+        addToQueue(offerCounter, 4);
         container.clear();
-        assertEquals(0, container.size());
-        addToQueue(offerCounter, 2);
-        assertEquals(2, container.size());
+        assertContainerState(0, -1, false, 4, 0, 0);
         logger.debug("Finish");
     }
 

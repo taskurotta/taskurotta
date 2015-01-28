@@ -104,6 +104,10 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
         coll.remove(dbb);
     }
 
+    @Override
+    public void clear() {
+        coll.drop();
+    }
 
     @Override
     public Object load(Long aLong) {
@@ -202,7 +206,6 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
     }
 
     /**
-     *
      * @return max Id of the stored items
      */
     public long getMaxItemId() {

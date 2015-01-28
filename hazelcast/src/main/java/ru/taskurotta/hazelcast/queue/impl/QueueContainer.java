@@ -28,7 +28,6 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -390,15 +389,12 @@ public class QueueContainer implements IdentifiedDataSerializable {
     }
 
     public void clear() {
-        List<Long> keysToDelete = new ArrayList<>();
-        for (long i = headId; i <= tailId; i++) {
-            keysToDelete.add(i);
-        }
-        store.deleteAll(keysToDelete);
+        store.clear();
         headId = 0;
         tailId = -1;
         heapCost = 0;
         buffer.clear();
+        bufferClosed = false;
     }
 
     // todo: not needed. should be removed
