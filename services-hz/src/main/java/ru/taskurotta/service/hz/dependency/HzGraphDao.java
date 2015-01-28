@@ -92,9 +92,6 @@ public class HzGraphDao implements GraphDao {
 
         try {
             graphs.lock(graphId);
-            if (graphs.get(graphId) != null) {
-                return;
-            }
 
             Graph graph = new Graph(graphId, taskId);
 

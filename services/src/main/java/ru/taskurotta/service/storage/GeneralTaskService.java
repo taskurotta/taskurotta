@@ -76,6 +76,14 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
                 ArgType argType = argTypes == null ? null : argTypes[i];
 
+                // don't try to calculate @NoWait promise.
+                // there are so many cases when it is really needed
+                // and we can introduce new annotation to mark that promices
+                // with new type, for example: NO_WAIT_TRY.
+                if (argType == ArgType.NO_WAIT) {
+                    continue;
+                }
+
                 if (arg.isPromise()) {
                     args[i] = processPromiseArgValue(arg, processId, task, argType);
                 } else if (arg.isCollection()) {//can be collection of promises, case should be checked

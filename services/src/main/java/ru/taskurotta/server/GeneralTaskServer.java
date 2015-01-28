@@ -308,13 +308,13 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private boolean unsafePromiseSentToWorker(TaskContainer[] tasks) {
-        if (null == tasks) {
+        if (tasks == null) {
             return false;
         }
 
-        HashMap<UUID, TaskContainer> tasksMap = new HashMap<>(tasks.length);
+        HashMap<UUID, TaskContainer> id2taskMap = new HashMap<>(tasks.length);
         for (TaskContainer newTask : tasks) {
-            tasksMap.put(newTask.getTaskId(), newTask);
+            id2taskMap.put(newTask.getTaskId(), newTask);
         }
 
         for (TaskContainer newTask : tasks) {
@@ -323,16 +323,21 @@ public class GeneralTaskServer implements TaskServer {
             }
 
             ArgContainer[] args = newTask.getArgs();
-            if (null != args) {
-                for (ArgContainer arg : args) {
-                    if (arg.isPromise()) {
-                        TaskContainer argTask = tasksMap.get(arg.getTaskId());
+            if (args == null) {
+                continue;
+            }
+
+            for (ArgContainer arg : args) {
+                if (arg.isPromise() && !arg.isReady()) {
+                    TaskContainer argTask = id2taskMap.get(arg.getTaskId());
+                    if (argTask == null) {
+                        argTask = taskService.getTask(arg.getTaskId(), newTask.getProcessId());
                         if (argTask == null) {
-                            argTask = taskService.getTask(arg.getTaskId(), newTask.getProcessId());
+                            System.err.println("Task with null argTask : " + newTask);
                         }
-                        if (null != argTask && argTask.isUnsafe()) {
-                            return true;
-                        }
+                    }
+                    if (argTask != null && argTask.isUnsafe()) {
+                        return true;
                     }
                 }
             }
