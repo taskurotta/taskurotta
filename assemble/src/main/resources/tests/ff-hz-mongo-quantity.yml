@@ -29,7 +29,7 @@ spreader:
           hz.queue.task.cache-size: 10000
           hz.queue.task.batch-load-size: 500
           hz.queue.delay.batch-load-size: 500
-          hz.map.general.max-size: 4
+          hz.map.general.max-size: 7
 
 
 profiler:
