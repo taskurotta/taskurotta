@@ -126,7 +126,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                             sb.append("\tsize = " + queue.size());
                             sb.append("\tcacheSize = " + stat.getCacheSize());
                             sb.append("\tcacheMaxSize = " + stat.getCacheMaxSize());
-                            sb.append("\theapCost = " + stat.getHeapCost());
+                            sb.append("\theapCost = " + bytesToMb(stat.getHeapCost()));
 
                             totalHeapCost += stat.getHeapCost();
                         }

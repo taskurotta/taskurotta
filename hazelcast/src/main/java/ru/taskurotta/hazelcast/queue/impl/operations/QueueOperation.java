@@ -19,7 +19,6 @@ package ru.taskurotta.hazelcast.queue.impl.operations;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
-import com.hazelcast.spi.BackupOperation;
 import com.hazelcast.spi.Operation;
 import com.hazelcast.spi.PartitionAwareOperation;
 import com.hazelcast.spi.exception.RetryableHazelcastException;
@@ -58,7 +57,7 @@ public abstract class QueueOperation extends Operation
         if (container == null) {
             QueueService queueService = getService();
             try {
-                container = queueService.getOrCreateContainer(name, this instanceof BackupOperation);
+                container = queueService.getOrCreateContainer(name);
             } catch (Exception e) {
                 throw new RetryableHazelcastException(e);
             }
