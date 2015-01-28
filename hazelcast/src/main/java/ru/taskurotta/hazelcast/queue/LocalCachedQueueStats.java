@@ -14,43 +14,36 @@
  * limitations under the License.
  */
 
-package ru.taskurotta.hazelcast.queue.impl.stats;
+package ru.taskurotta.hazelcast.queue;
 
 import com.hazelcast.monitor.LocalInstanceStats;
 
 /**
  * Local queue statistics.
  */
-public interface LocalQueueStats extends LocalInstanceStats {
+public interface LocalCachedQueueStats extends LocalInstanceStats {
+
+    /**
+     * Returns memory cost (number of bytes) of owned entries in this member.
+     *
+     * @return memory cost (number of bytes) of owned entries in this member.
+     */
+    public long getHeapCost();
 
     /**
      * Returns the number of owned items in this member.
      *
      * @return number of owned items.
      */
-    long getOwnedItemCount();
+    public long getCacheSize();
 
 
     /**
-     * Returns the min age of the items in this member.
+     * Returns the maximum of possible number of owned items in this member.
      *
-     * @return min age
+     * @return number of owned items.
      */
-    long getMinAge();
-
-    /**
-     * Returns the max age of the items in this member.
-     *
-     * @return max age
-     */
-    long getMaxAge();
-
-    /**
-     * Returns the average age of the items in this member.
-     *
-     * @return average age
-     */
-    long getAvgAge();
+    public long getCacheMaxSize();
 
     /**
      * Returns the number of offer/put/add operations.

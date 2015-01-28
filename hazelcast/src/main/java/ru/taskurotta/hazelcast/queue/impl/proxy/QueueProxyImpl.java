@@ -22,7 +22,7 @@ import com.hazelcast.spi.NodeEngine;
 import com.hazelcast.util.ValidationUtil;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +43,7 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
     }
 
     @Override
-    public LocalQueueStats getLocalQueueStats() {
+    public LocalCachedQueueStats getLocalQueueStats() {
         return getService().createLocalQueueStats(name, partitionId);
     }
 

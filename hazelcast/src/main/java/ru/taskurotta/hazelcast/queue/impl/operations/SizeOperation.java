@@ -17,7 +17,7 @@
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 /**
  * Notify size of the queue.
@@ -38,7 +38,7 @@ public class SizeOperation extends QueueOperation {
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
     }
 

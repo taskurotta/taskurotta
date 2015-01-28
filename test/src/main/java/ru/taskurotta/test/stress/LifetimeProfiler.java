@@ -15,6 +15,7 @@ import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
@@ -117,11 +118,18 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                             totalHeapCost += stat.getHeapCost();
                         }
+
                         if (distributedObject instanceof CachedQueue) {
                             CachedQueue queue = (CachedQueue) distributedObject;
-                            sb.append("\tsize = " + queue.size());
-                        }
+                            LocalCachedQueueStats stat = queue.getLocalQueueStats();
 
+                            sb.append("\tsize = " + queue.size());
+                            sb.append("\tcacheSize = " + stat.getCacheSize());
+                            sb.append("\tcacheMaxSize = " + stat.getCacheMaxSize());
+                            sb.append("\theapCost = " + stat.getHeapCost());
+
+                            totalHeapCost += stat.getHeapCost();
+                        }
                     }
 
                     sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));

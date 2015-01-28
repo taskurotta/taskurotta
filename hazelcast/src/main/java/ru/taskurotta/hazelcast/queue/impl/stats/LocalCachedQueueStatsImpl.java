@@ -18,32 +18,32 @@ package ru.taskurotta.hazelcast.queue.impl.stats;
 
 import com.hazelcast.com.eclipsesource.json.JsonObject;
 import com.hazelcast.util.Clock;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
-import static com.hazelcast.util.JsonUtil.getInt;
 import static com.hazelcast.util.JsonUtil.getLong;
 
-public class LocalQueueStatsImpl
-        implements LocalQueueStats {
+public class LocalCachedQueueStatsImpl implements LocalCachedQueueStats {
 
-    private static final AtomicLongFieldUpdater<LocalQueueStatsImpl> NUMBER_OF_OFFERS_UPDATER = AtomicLongFieldUpdater
-            .newUpdater(LocalQueueStatsImpl.class, "numberOfOffers");
-    private static final AtomicLongFieldUpdater<LocalQueueStatsImpl> NUMBER_OF_REJECTED_OFFERS_UPDATER = AtomicLongFieldUpdater
-            .newUpdater(LocalQueueStatsImpl.class, "numberOfRejectedOffers");
-    private static final AtomicLongFieldUpdater<LocalQueueStatsImpl> NUMBER_OF_POLLS_UPDATER = AtomicLongFieldUpdater
-            .newUpdater(LocalQueueStatsImpl.class, "numberOfPolls");
-    private static final AtomicLongFieldUpdater<LocalQueueStatsImpl> NUMBER_OF_EMPTY_POLLS_UPDATER = AtomicLongFieldUpdater
-            .newUpdater(LocalQueueStatsImpl.class, "numberOfEmptyPolls");
-    private static final AtomicLongFieldUpdater<LocalQueueStatsImpl> NUMBER_OF_OTHER_OPERATIONS_UPDATER = AtomicLongFieldUpdater
-            .newUpdater(LocalQueueStatsImpl.class, "numberOfOtherOperations");
-    private static final AtomicLongFieldUpdater<LocalQueueStatsImpl> NUMBER_OF_EVENTS_UPDATER = AtomicLongFieldUpdater
-            .newUpdater(LocalQueueStatsImpl.class, "numberOfEvents");
-    private int ownedItemCount;
-    private long minAge;
-    private long maxAge;
-    private long aveAge;
+    private static final AtomicLongFieldUpdater<LocalCachedQueueStatsImpl> NUMBER_OF_OFFERS_UPDATER = AtomicLongFieldUpdater
+            .newUpdater(LocalCachedQueueStatsImpl.class, "numberOfOffers");
+    private static final AtomicLongFieldUpdater<LocalCachedQueueStatsImpl> NUMBER_OF_REJECTED_OFFERS_UPDATER = AtomicLongFieldUpdater
+            .newUpdater(LocalCachedQueueStatsImpl.class, "numberOfRejectedOffers");
+    private static final AtomicLongFieldUpdater<LocalCachedQueueStatsImpl> NUMBER_OF_POLLS_UPDATER = AtomicLongFieldUpdater
+            .newUpdater(LocalCachedQueueStatsImpl.class, "numberOfPolls");
+    private static final AtomicLongFieldUpdater<LocalCachedQueueStatsImpl> NUMBER_OF_EMPTY_POLLS_UPDATER = AtomicLongFieldUpdater
+            .newUpdater(LocalCachedQueueStatsImpl.class, "numberOfEmptyPolls");
+    private static final AtomicLongFieldUpdater<LocalCachedQueueStatsImpl> NUMBER_OF_OTHER_OPERATIONS_UPDATER = AtomicLongFieldUpdater
+            .newUpdater(LocalCachedQueueStatsImpl.class, "numberOfOtherOperations");
+    private static final AtomicLongFieldUpdater<LocalCachedQueueStatsImpl> NUMBER_OF_EVENTS_UPDATER = AtomicLongFieldUpdater
+            .newUpdater(LocalCachedQueueStatsImpl.class, "numberOfEvents");
+
     private long creationTime;
+
+    private long heapCost;
+    private long cacheSize;
+    private long cacheMaxSize;
 
     // These fields are only accessed through the updater
     private volatile long numberOfOffers;
@@ -53,18 +53,17 @@ public class LocalQueueStatsImpl
     private volatile long numberOfOtherOperations;
     private volatile long numberOfEvents;
 
-    public LocalQueueStatsImpl() {
+    public LocalCachedQueueStatsImpl() {
         creationTime = Clock.currentTimeMillis();
     }
 
     @Override
     public JsonObject toJson() {
         JsonObject root = new JsonObject();
-        root.add("ownedItemCount", ownedItemCount);
-        root.add("minAge", minAge);
-        root.add("maxAge", maxAge);
-        root.add("aveAge", aveAge);
         root.add("creationTime", creationTime);
+        root.add("heapCost", heapCost);
+        root.add("cacheSize", cacheSize);
+        root.add("cacheMaxSize", cacheMaxSize);
         root.add("numberOfOffers", numberOfOffers);
         root.add("numberOfPolls", numberOfPolls);
         root.add("numberOfRejectedOffers", numberOfRejectedOffers);
@@ -76,11 +75,10 @@ public class LocalQueueStatsImpl
 
     @Override
     public void fromJson(JsonObject json) {
-        ownedItemCount = getInt(json, "ownedItemCount", -1);
-        minAge = getLong(json, "minAge", -1L);
-        maxAge = getLong(json, "maxAge", -1L);
-        aveAge = getLong(json, "aveAge", -1L);
         creationTime = getLong(json, "creationTime", -1L);
+        heapCost = getLong(json, "heapCost", -1L);
+        cacheSize = getLong(json, "cacheSize", -1L);
+        cacheMaxSize = getLong(json, "cacheMaxSize", -1L);
         NUMBER_OF_OFFERS_UPDATER.set(this, getLong(json, "numberOfOffers", -1L));
         NUMBER_OF_POLLS_UPDATER.set(this, getLong(json, "numberOfPolls", -1L));
         NUMBER_OF_REJECTED_OFFERS_UPDATER.set(this, getLong(json, "numberOfRejectedOffers", -1L));
@@ -90,39 +88,30 @@ public class LocalQueueStatsImpl
     }
 
     @Override
-    public long getMinAge() {
-        return minAge;
-    }
-
-    public void setMinAge(long minAge) {
-        this.minAge = minAge;
+    public long getHeapCost() {
+        return heapCost;
     }
 
     @Override
-    public long getMaxAge() {
-        return maxAge;
-    }
-
-    public void setMaxAge(long maxAge) {
-        this.maxAge = maxAge;
+    public long getCacheSize() {
+        return cacheSize;
     }
 
     @Override
-    public long getAvgAge() {
-        return aveAge;
+    public long getCacheMaxSize() {
+        return cacheMaxSize;
     }
 
-    public void setAveAge(long aveAge) {
-        this.aveAge = aveAge;
+    public void setHeapCost(long heapCost) {
+        this.heapCost = heapCost;
     }
 
-    @Override
-    public long getOwnedItemCount() {
-        return ownedItemCount;
+    public void setCacheSize(long cacheSize) {
+        this.cacheSize = cacheSize;
     }
 
-    public void setOwnedItemCount(int ownedItemCount) {
-        this.ownedItemCount = ownedItemCount;
+    public void setCacheMaxSize(long cacheMaxSize) {
+        this.cacheMaxSize = cacheMaxSize;
     }
 
     @Override

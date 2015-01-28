@@ -1,7 +1,7 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
 import ru.taskurotta.hazelcast.queue.CachedQueue;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
@@ -130,7 +130,7 @@ public class CachedDelayQueueImpl<E> implements CachedDelayQueue<E> {
     }
 
     @Override
-    public LocalQueueStats getLocalQueueStats() {
+    public LocalCachedQueueStats getLocalQueueStats() {
         return queue.getLocalQueueStats();
     }
 

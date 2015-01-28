@@ -21,7 +21,7 @@ import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.Notifier;
 import com.hazelcast.spi.WaitNotifyKey;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class ClearOperation extends QueueOperation implements Notifier {
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
         for (Data data : dataMap.values()) {
             publishEvent(ItemEventType.REMOVED, data);

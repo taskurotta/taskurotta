@@ -3,7 +3,7 @@ package ru.taskurotta.hazelcast.queue.impl.operations;
 
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 /**
  * Returns the remaining capacity of the queue based on config max-size
@@ -25,7 +25,7 @@ public class RemainingCapacityOperation extends QueueOperation {
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
     }
 

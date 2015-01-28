@@ -1,7 +1,6 @@
 package ru.taskurotta.hazelcast.queue;
 
 import com.hazelcast.core.DistributedObject;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats;
 
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
@@ -87,5 +86,5 @@ public interface CachedQueue<E> extends Queue<E>, DistributedObject {
      *
      * @return this queue's local statistics.
      */
-    public LocalQueueStats getLocalQueueStats();
+    public LocalCachedQueueStats getLocalQueueStats();
 }

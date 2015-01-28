@@ -18,7 +18,7 @@ package ru.taskurotta.hazelcast.queue.impl.operations;
 
 import com.hazelcast.spi.impl.SerializableCollection;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
-import ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStatsImpl;
+import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
 /**
  * Provides iterator functionality for Queue.
@@ -39,7 +39,7 @@ public class IteratorOperation extends QueueOperation {
 
     @Override
     public void afterRun() throws Exception {
-        LocalQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
+        LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         stats.incrementOtherOperations();
     }
 

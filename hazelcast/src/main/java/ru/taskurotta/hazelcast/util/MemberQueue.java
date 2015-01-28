@@ -2,6 +2,7 @@ package ru.taskurotta.hazelcast.util;
 
 import com.hazelcast.core.*;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -196,7 +197,7 @@ public class MemberQueue<E> implements CachedQueue<E> {
     }
 
     @Override
-    public ru.taskurotta.hazelcast.queue.impl.stats.LocalQueueStats getLocalQueueStats() {
+    public LocalCachedQueueStats getLocalQueueStats() {
         return null;
     }
 
