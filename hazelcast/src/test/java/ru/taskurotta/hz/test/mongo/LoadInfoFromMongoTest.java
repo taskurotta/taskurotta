@@ -29,57 +29,92 @@ public class LoadInfoFromMongoTest {
     private static String QUEUE_NAME = "testQueue";
     private static String MONGO_DB_NAME = "test";
 
-    private CachedQueue queue;
+
     private MongoTemplate mongoTemplate;
 
     @Before
-    public void initCtx() throws UnknownHostException, InterruptedException {
+    public void init() throws UnknownHostException {
+        mongoTemplate = new MongoTemplate(new MongoClient("127.0.0.1"), MONGO_DB_NAME);
+    }
 
+    @Test
+    public void testLoad() throws InterruptedException {
+        cleanAndPopulateData();
+        HazelcastInstance hazelcastInstance = getHazelcastInstance();
+        CachedQueue queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        Assert.assertEquals("Queue size", 15, queue.size());
+        Hazelcast.shutdownAll();
+    }
+
+    @Test
+    public void testLoadInCluster() throws InterruptedException {
+        cleanAndPopulateData();
+        //Starting first node
+        HazelcastInstance nodeOne = getHazelcastInstance();
+        CachedQueue<String> queueFromNodeOne = nodeOne.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        Assert.assertEquals(queueFromNodeOne.size(), 15);
+        //Starting second node
+        HazelcastInstance nodeTwo = getHazelcastInstance();
+        //polling 5 elements from node one
+        Assert.assertTrue(isOrderRight(queueFromNodeOne, 5, 0));
+        //shutdown first node
+        nodeOne.shutdown();
+        CachedQueue<String> queueFromNodeTwo = nodeTwo.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        //checking size of queue
+        Assert.assertEquals(queueFromNodeTwo.size(), 10);
+        //checking order of data in queue
+        Assert.assertTrue(isOrderRight(queueFromNodeTwo, 10, 5));
+        Hazelcast.shutdownAll();
+    }
+
+    private boolean isOrderRight(CachedQueue<String> cachedQueue, long expectedSize, long startFrom) {
+        long counter = startFrom;
+        while (counter != expectedSize) {
+            String val = cachedQueue.poll();
+            if (!val.equals("testData" + counter)) {
+                return false;
+            }
+            counter++;
+        }
+        return true;
+    }
+
+    private void cleanAndPopulateData() {
+
+        dataDrop();
+        //adding a test data directly to mongo
+        for (long i = 0; i < 15; i++) {
+            DBObject dbObject = new BasicDBObject();
+            dbObject.put("_id", i);
+            dbObject.put("_class", "com.hazelcast.spring.mongodb.ValueWrapper");
+            dbObject.put("value", "testData" + i);
+            mongoTemplate.getCollection(QUEUE_NAME).insert(dbObject);
+
+        }
+    }
+
+    private HazelcastInstance getHazelcastInstance() throws InterruptedException {
         Config cfg = new Config();
 
         CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
         cachedQueueConfig.setCacheSize(5);
 
-        {
-            CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
-            cachedQueueStoreConfig.setEnabled(true);
-            cachedQueueStoreConfig.setBinary(false);
-            cachedQueueStoreConfig.setBatchLoadSize(100);
+        CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
+        cachedQueueStoreConfig.setEnabled(true);
+        cachedQueueStoreConfig.setBinary(false);
+        cachedQueueStoreConfig.setBatchLoadSize(100);
 
-            {
-                mongoTemplate = new MongoTemplate(new MongoClient("127.0.0.1"), MONGO_DB_NAME);
-                dataDrop();
-                //adding a test data directly to mongo
-                for (long i = 0; i < 15; i++) {
-                    DBObject dbObject = new BasicDBObject();
-                    dbObject.put("_id", i);
-                    dbObject.put("_class", "com.hazelcast.spring.mongodb.ValueWrapper");
-                    dbObject.put("value", "testData");
-                    mongoTemplate.getCollection(QUEUE_NAME).insert(dbObject);
 
-                }
-                TimeUnit.SECONDS.sleep(1);
-                MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
-                        MongoCachedQueueStorageFactory(mongoTemplate);
+        TimeUnit.SECONDS.sleep(1);
+        MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
+                MongoCachedQueueStorageFactory(mongoTemplate);
 
-                cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
-                        (QUEUE_NAME, cachedQueueStoreConfig));
-            }
+        cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
+                (QUEUE_NAME, cachedQueueStoreConfig));
 
-            cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
-        }
-
-        HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
-        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
-
+        cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
+        return Hazelcast.newHazelcastInstance(cfg);
     }
-
-
-    @Test
-    public void testLoad() {
-        Assert.assertEquals("Queue size", 15, queue.size());
-    }
-
 
     private void dataDrop() {
         mongoTemplate.getDb().dropDatabase();
