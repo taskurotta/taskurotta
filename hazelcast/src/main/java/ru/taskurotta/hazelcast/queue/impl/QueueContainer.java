@@ -294,7 +294,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
                         if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} need load {} and OPEN buffer. " +
                                 "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
 
-                        // todo: should load from (headId + buffSize)
                         loadAll(headId + maxBufferSize, tailId);
                         bufferClosed = false;
 

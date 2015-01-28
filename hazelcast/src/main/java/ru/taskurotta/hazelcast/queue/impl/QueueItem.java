@@ -28,6 +28,7 @@ import java.io.IOException;
  */
 public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueItem> {
 
+
     protected long itemId;
     protected Data data;
 
@@ -37,6 +38,17 @@ public class QueueItem implements IdentifiedDataSerializable, Comparable<QueueIt
     public QueueItem(long itemId, Data data) {
         this.itemId = itemId;
         this.data = data;
+    }
+
+    public long getCost() {
+
+        long cost = 0;
+
+        final int numberOfLongs = 1;
+        cost += numberOfLongs * (Long.SIZE / Byte.SIZE);
+        cost += data.getHeapCost();
+
+        return cost;
     }
 
     public Data getData() {
