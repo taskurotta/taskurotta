@@ -60,7 +60,7 @@ public class QueueContainerTest {
         QueueService queueService = (QueueService) ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine())
                 .getService(CachedQueue.class.getName());
 
-        container = queueService.getOrCreateContainer(QUEUE_NAME, false);
+        container = queueService.getOrCreateContainer(QUEUE_NAME);
 
         assertNotNull(queue);
         assertNotNull(container);

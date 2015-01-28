@@ -24,21 +24,11 @@ public class CachedQueueConfig {
      */
     public static final int DEFAULT_CACHE_SIZE = 0;
     /**
-     * Default value of sycronous backup count
-     */
-    public static final int DEFAULT_SYNC_BACKUP_COUNT = 1;
-    /**
-     * Default value of asynchronous backup count
-     */
-    public static final int DEFAULT_ASYNC_BACKUP_COUNT = 0;
-    /**
      * Default value of time to live for empty Queue
      */
     public static final int DEFAULT_EMPTY_QUEUE_TTL = -1;
 
     private String name;
-    private int backupCount = DEFAULT_SYNC_BACKUP_COUNT;
-    private int asyncBackupCount = DEFAULT_ASYNC_BACKUP_COUNT;
     private int cacheSize = DEFAULT_CACHE_SIZE;
     private int emptyQueueTtl = DEFAULT_EMPTY_QUEUE_TTL;
     private CachedQueueStoreConfig queueStoreConfig;
@@ -50,8 +40,6 @@ public class CachedQueueConfig {
     public CachedQueueConfig(CachedQueueConfig config) {
         this();
         this.name = config.name;
-        this.backupCount = config.backupCount;
-        this.asyncBackupCount = config.asyncBackupCount;
         this.cacheSize = config.cacheSize;
         this.emptyQueueTtl = config.emptyQueueTtl;
         this.statisticsEnabled = config.statisticsEnabled;
@@ -114,8 +102,6 @@ public class CachedQueueConfig {
     public String toString() {
         final StringBuilder sb = new StringBuilder("QueueConfig{");
         sb.append("name='").append(name).append('\'');
-        sb.append(", backupCount=").append(backupCount);
-        sb.append(", asyncBackupCount=").append(asyncBackupCount);
         sb.append(", cacheSize=").append(cacheSize);
         sb.append(", emptyQueueTtl=").append(emptyQueueTtl);
         sb.append(", queueStoreConfig=").append(queueStoreConfig);

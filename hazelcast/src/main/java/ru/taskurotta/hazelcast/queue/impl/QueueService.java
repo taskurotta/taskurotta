@@ -110,7 +110,7 @@ public class QueueService implements ManagedService, MigrationAwareService, Remo
         reset();
     }
 
-    public QueueContainer getOrCreateContainer(final String name, boolean fromBackup) throws Exception {
+    public QueueContainer getOrCreateContainer(final String name) throws Exception {
         QueueContainer container = containerMap.get(name);
         if (container != null) {
             return container;
@@ -121,7 +121,7 @@ public class QueueService implements ManagedService, MigrationAwareService, Remo
         if (existing != null) {
             container = existing;
         } else {
-            container.init(fromBackup);
+            container.init();
         }
         return container;
     }

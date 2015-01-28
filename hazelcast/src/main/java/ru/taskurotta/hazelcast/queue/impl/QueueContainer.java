@@ -211,7 +211,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
      * initialization of head and tail id.
      * load date to the buffer
      */
-    public void init(boolean fromBackup) {
+    public void init() {
 
         maxBufferSize = config.getCacheSize();
 
