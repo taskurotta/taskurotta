@@ -138,11 +138,12 @@ public class QueueContainer implements IdentifiedDataSerializable {
         }
 
         if (buffer.isEmpty()) {
+
             loadBuffer();
 
             // open buffer if it is not full
-            // todo: store may be broken and return no all set of items
-            if (buffer.size() != maxBufferSize) {
+
+            if (buffer.size() != maxBufferSize && size() < maxBufferSize) {
                 bufferClosed = false;
             }
         }
@@ -158,11 +159,20 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         if (item == null) {
             logger.warn("poll(): name = {}. Entry {} not found in cache of queue container", name, currHeadId);
+            reset();
+            return poll();
         }
 
         if (DEBUG_FULL) logger.debug("poll(): name = {}, is null returned? {}", name, item == null);
 
         return item;
+    }
+
+    private void reset() {
+        tailId = store.getMaxItemId();
+        headId = store.getMinItemId();
+        buffer.clear();
+        heapCost = 0;
     }
 
 

@@ -67,17 +67,16 @@ public class LoadInfoFromMongoTest {
         }
         String queueNameNodeOne = QUEUE_NAME + "@" + partitionKey;
         CachedQueue<String> queueFromNodeOne = ownerInstance.getDistributedObject(CachedQueue.class.getName(), queueNameNodeOne);
-        Assert.assertEquals(queueFromNodeOne.size(), 15);
+        Assert.assertEquals(15, queueFromNodeOne.size());
         //polling 5 elements
-        Assert.assertTrue(isOrderRight(queueFromNodeOne, 5, 0));
+        Assert.assertTrue(isOrderRight(queueFromNodeOne, 5, 0, -1));
         //shutdown first node
         ownerInstance.shutdown();
-
         CachedQueue<String> queueFromNodeTwo = secondInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         //checking size of queue
-        Assert.assertEquals(queueFromNodeTwo.size(), 10);
+        Assert.assertEquals(9, queueFromNodeTwo.size());
         //checking order of data in queue
-        Assert.assertTrue(isOrderRight(queueFromNodeTwo, 10, 5));
+        Assert.assertTrue(isOrderRight(queueFromNodeTwo, 10, 6, -1));
         Hazelcast.shutdownAll();
     }
 
@@ -85,28 +84,32 @@ public class LoadInfoFromMongoTest {
     public void testOfferWhenLoadFromMongo() throws InterruptedException {
         cleanAndPopulateData();
         HazelcastInstance hazelcastInstance = getHazelcastInstance();
-        CachedQueue queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        CachedQueue<String> queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         queue.offer("testData15");
-        Assert.assertEquals(true, isOrderRight(queue, 16, 0));
+        Assert.assertEquals(true, isOrderRight(queue, 15, 0, -1));
         Hazelcast.shutdownAll();
     }
 
-    @Test //todo fixme this test broken
+    @Test
     public void testWhenBrokenStore() throws InterruptedException {
         cleanAndPopulateData();
         HazelcastInstance hazelcastInstance = getHazelcastInstance();
-        CachedQueue queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        CachedQueue<String> queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         DBObject dbObject = new BasicDBObject();
-        dbObject.put("_id", 7L);
+        dbObject.put("_id", 9L);
         mongoTemplate.getCollection(QUEUE_NAME).remove(dbObject);
-        System.out.println("isOrderRight(queue,15,0) = " + isOrderRight(queue, 15, 0));
+        queue.offer("testData15");
+        isOrderRight(queue, 15, 0, 9L);
         Hazelcast.shutdownAll();
     }
 
-    private boolean isOrderRight(CachedQueue<String> cachedQueue, long expectedSize, long startFrom) {
+    private boolean isOrderRight(CachedQueue<String> cachedQueue, long expectedSize, long startFrom, long skippedElement) {
         long counter = startFrom;
-        while (counter != expectedSize) {
+        while (counter <= expectedSize) {
             String val = cachedQueue.poll();
+            if (counter == skippedElement) {
+                counter++;
+            }
             Assert.assertEquals("testData" + counter, val);
             counter++;
         }
