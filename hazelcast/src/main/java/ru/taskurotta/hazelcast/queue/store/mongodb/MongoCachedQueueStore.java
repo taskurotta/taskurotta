@@ -213,7 +213,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
     }
 
     private long getFirstItemIdByAscDesc(boolean asc) {
-        long result = -1l;
+        long result = (asc) ? 0 : -1;
         final DBObject sortCommand = new BasicDBObject();
         sortCommand.put("_id", (asc) ? 1 : -1);
         final DBObject val;

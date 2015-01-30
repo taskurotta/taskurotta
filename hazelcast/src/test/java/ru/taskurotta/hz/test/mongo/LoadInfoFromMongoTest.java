@@ -48,6 +48,16 @@ public class LoadInfoFromMongoTest {
     }
 
     @Test
+    public void testQueueEmpty() throws InterruptedException {
+        dataDrop();
+        HazelcastInstance hazelcastInstance = getHazelcastInstance();
+        CachedQueue queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        Assert.assertNull(queue.poll());
+        Hazelcast.shutdownAll();
+
+    }
+
+    @Test
     public void testLoadInCluster() throws InterruptedException {
         cleanAndPopulateData();
         //Starting first node

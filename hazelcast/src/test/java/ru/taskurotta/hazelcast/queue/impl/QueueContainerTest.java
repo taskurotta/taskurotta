@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  */
@@ -219,6 +220,19 @@ public class QueueContainerTest {
         store.delete(8L);
         assertIterateWithoutNull(queue, 7);
         Hazelcast.shutdownAll();
+    }
+
+
+    @Test
+    public void testQueueEmpty() throws Exception {
+        HazelcastInstance hazelcastInstance;
+        QueueService queueService;
+        store.clear();
+        hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
+        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        queueService = ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine()).getService(CachedQueue.class.getName());
+        container = queueService.getOrCreateContainer(QUEUE_NAME);
+        assertNull(container.poll());
     }
 
 
