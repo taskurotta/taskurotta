@@ -230,11 +230,11 @@ public class QueueContainer implements IdentifiedDataSerializable {
         tailId = store.getMaxItemId();
         headId = store.getMinItemId();
 
+        loadBuffer();
+
         if (size() >= maxBufferSize) {
-            loadBuffer();
             bufferClosed = true;
         } else {
-            loadBuffer();
             bufferClosed = false;
         }
         // todo: may be we should close buffer after loading?
