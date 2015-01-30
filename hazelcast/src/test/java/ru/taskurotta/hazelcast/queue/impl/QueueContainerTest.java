@@ -207,7 +207,7 @@ public class QueueContainerTest {
     public void testBrokenStore() throws Exception {
         AtomicInteger storeAddCounter = new AtomicInteger(0);
         HazelcastInstance hazelcastInstance;
-        QueueService queueService;//broken store
+        QueueService queueService;
         store.clear();
         addToStore(storeAddCounter, 10);
         hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
