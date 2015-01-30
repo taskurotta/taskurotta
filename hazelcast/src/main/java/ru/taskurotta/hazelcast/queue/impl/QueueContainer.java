@@ -127,42 +127,54 @@ public class QueueContainer implements IdentifiedDataSerializable {
     }
 
     public QueueItem poll() {
-
         if (DEBUG_FULL) logger.debug("poll(): name = {} buffer.size() = {} headId = {} tailId = {} " +
                 "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
 
-
-        if (isEmpty()) {
-            bufferClosed = false;
-            return null;
-        }
-
-        if (buffer.isEmpty()) {
-            loadBuffer();
-
-            // open buffer if it is not full
-            // todo: store may be broken and return no all set of items
-            if (buffer.size() != maxBufferSize) {
+        while(true) {
+            if (isEmpty()) {
                 bufferClosed = false;
+                return null;
+            }
+
+            if (buffer.isEmpty()) {
+                loadBuffer();
+                // open buffer if it is not full
+                if (size() <= maxBufferSize) {
+                    bufferClosed = false;
+                } else {
+                    bufferClosed = true;
+                }
+            }
+
+            long currHeadId = shiftHead();
+            if (DEBUG_FULL) logger.debug("poll(): name = {}, currHeadId = {}", name, currHeadId);
+            store.delete(currHeadId);
+            QueueItem item = removeItemFromBuffer(currHeadId);
+
+            if (item == null) {
+                logger.warn("poll(): name = {}. Entry {} not found in cache of queue container", name, currHeadId);
+                while (buffer.size() != 0 && item == null) {
+                    currHeadId = shiftHead();
+                    store.delete(currHeadId);
+                    item = removeItemFromBuffer(currHeadId);
+                }
+                if (item == null) {
+                    reset();
+                } else {
+                    return item;
+                }
+            } else {
+                if (DEBUG_FULL) logger.debug("poll(): name = {}", name);
+                return item;
             }
         }
+    }
 
-
-        long currHeadId = shiftHead();
-
-        if (DEBUG_FULL) logger.debug("poll(): name = {}, currHeadId = {}", name, currHeadId);
-
-        store.delete(currHeadId);
-
-        final QueueItem item = removeItemFromBuffer(currHeadId);
-
-        if (item == null) {
-            logger.warn("poll(): name = {}. Entry {} not found in cache of queue container", name, currHeadId);
-        }
-
-        if (DEBUG_FULL) logger.debug("poll(): name = {}, is null returned? {}", name, item == null);
-
-        return item;
+    private void reset() {
+        tailId = store.getMaxItemId();
+        headId = store.getMinItemId();
+        buffer.clear();
+        heapCost = 0;
     }
 
 
@@ -218,8 +230,12 @@ public class QueueContainer implements IdentifiedDataSerializable {
         tailId = store.getMaxItemId();
         headId = store.getMinItemId();
 
-        if (size() > 0) {
+        if (size() >= maxBufferSize) {
             loadBuffer();
+            bufferClosed = true;
+        } else {
+            loadBuffer();
+            bufferClosed = false;
         }
         // todo: may be we should close buffer after loading?
         //resizeBuffer();

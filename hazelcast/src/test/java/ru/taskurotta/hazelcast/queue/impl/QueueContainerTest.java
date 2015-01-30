@@ -31,11 +31,14 @@ public class QueueContainerTest {
     CachedQueue queue;
     QueueContainer container;
     MockCachedQueueStore store;
+    private Config cfg;
+    HazelcastInstance hazelcastInstance;
+    QueueService queueService;
 
     @Before
     public void initCtx() throws Exception {
 
-        Config cfg = new Config();
+        cfg = new Config();
 
         CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
         cachedQueueConfig.setCacheSize(5);
@@ -54,24 +57,19 @@ public class QueueContainerTest {
             cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
         }
 
-        HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
-        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
-
-        QueueService queueService = (QueueService) ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine())
-                .getService(CachedQueue.class.getName());
-
-        container = queueService.getOrCreateContainer(QUEUE_NAME);
+        initEnvironment();
 
         assertNotNull(queue);
         assertNotNull(container);
     }
 
     @Test
-    public void test() {
+    public void test() throws Exception {
         logger.debug("Start...");
 
         AtomicInteger offerCounter = new AtomicInteger(0);
         AtomicInteger pollCounter = new AtomicInteger(0);
+        AtomicInteger storeAddCounter = new AtomicInteger(0);
 
         // check initial state
         assertContainerState(0, -1, false, 5, 0, 0);
@@ -163,7 +161,76 @@ public class QueueContainerTest {
         addToQueue(offerCounter, 4);
         container.clear();
         assertContainerState(0, -1, false, 4, 0, 0);
+
+        //init when store contains the same as a buffer size
+        Hazelcast.shutdownAll();
+        store.clear();
+        addToStore(storeAddCounter, 5);
+        initEnvironment();
+
+        addToQueue(storeAddCounter, 2);
+        assertContainerState(0, 6, true, 5, 5, 7);
+
+        //init when store contains greater than a buffer size
+        storeAddCounter.set(0);
+        Hazelcast.shutdownAll();
+        store.clear();
+        addToStore(storeAddCounter, 8);
+        initEnvironment();
+        addToQueue(storeAddCounter, 2);
+        assertContainerState(0, 9, true, 5, 5, 10);
+
+        //init when store contains less than a buffer size
+        storeAddCounter.set(0);
+        Hazelcast.shutdownAll();
+        store.clear();
+        addToStore(storeAddCounter, 4);
+        initEnvironment();
+        assertContainerState(0, 3, false, 5, 4, 4);
+        addToQueue(storeAddCounter, 2);
+        assertContainerState(0, 5, true, 5, 5, 6);
+        Hazelcast.shutdownAll();
         logger.debug("Finish");
+
+    }
+
+    public void initEnvironment() throws Exception {
+        hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
+        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        queueService = ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine())
+                .getService(CachedQueue.class.getName());
+        container = queueService.getOrCreateContainer(QUEUE_NAME);
+    }
+
+
+    @Test
+    public void testBrokenStore() throws Exception {
+        AtomicInteger storeAddCounter = new AtomicInteger(0);
+        HazelcastInstance hazelcastInstance;
+        QueueService queueService;//broken store
+        store.clear();
+        addToStore(storeAddCounter, 10);
+        hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
+        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        queueService = ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine()).getService(CachedQueue.class.getName());
+        container = queueService.getOrCreateContainer(QUEUE_NAME);
+        store.delete(5L);
+        store.delete(7L);
+        store.delete(8L);
+        assertIterateWithoutNull(queue, 7);
+        Hazelcast.shutdownAll();
+    }
+
+
+    private void assertIterateWithoutNull(CachedQueue<String> cachedQueue, int expectedIterationCount) {
+        int counter = 0;
+        while (cachedQueue.size() != 0) {
+            String val = cachedQueue.poll();
+            assertNotNull(val);
+            counter++;
+        }
+        assertEquals(expectedIterationCount, counter);
+
     }
 
     private void assertContainerState(long headId, long tailId, boolean bufferClosed, int maxBufferSize, int
@@ -184,6 +251,16 @@ public class QueueContainerTest {
         for (int i = 0; i < quantity; i++) {
             String item = "" + counter.incrementAndGet();
             queue.add(item);
+        }
+    }
+
+    private void addToStore(AtomicInteger counter, int quantity) {
+
+        logger.debug("Add new {} items to store counter is {}", quantity, counter.get());
+
+        for (long i = 0; i < quantity; i++) {
+            String item = "" + counter.incrementAndGet();
+            store.store(i, item);
         }
     }
 
