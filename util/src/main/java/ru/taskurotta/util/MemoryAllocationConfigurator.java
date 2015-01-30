@@ -82,11 +82,11 @@ public class MemoryAllocationConfigurator {
         int percentage = (int) (1D * size / collectionsMemory * 100);
         percentage = percentage == 0 ? 1 : percentage;
 
-        long actualSize = (long) (1D * collectionsMemory / percentage * 100);
+        long actualSize = (long) (1D * Runtime.getRuntime().totalMemory() / 100 * percentage);
         properties.setProperty(propertyName, "" + percentage);
 
-        logger.info("Add property \"{}\" with value {}% ({} parts: {}Mb)", propertyName, percentage, parts,
-                bytesToMb(size));
+        logger.info("Add property \"{}\" with value {}% = {} Mb ({} parts)", propertyName, percentage, bytesToMb
+                        (actualSize), parts);
     }
 
     private static String bytesToMb(long bytes) {
