@@ -3,6 +3,8 @@ package ru.taskurotta.spring.configs;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import ru.taskurotta.util.MemoryAllocationConfigurator;
+import ru.taskurotta.util.PropertiesUtil;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -31,9 +33,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                 applicationContext = new ClassPathXmlApplicationContext(contexts, false);
             }
 
-            if (properties != null && !properties.isEmpty()) {
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
-            }
+            Properties result = properties != null? properties: new Properties();
 
             if (defaultPropertiesLocation != null) {
                 Properties defaultProperties;
@@ -43,8 +43,13 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                     throw new IllegalStateException("Can not load default properties", e);
                 }
 
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("defaultProperties", defaultProperties));
+                result = PropertiesUtil.addProperties(defaultProperties, result, null);
             }
+
+            result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result), null);
+
+            applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
+                    ("customProperties", result));
 
             applicationContext.refresh();
         }

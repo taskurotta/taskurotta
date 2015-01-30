@@ -17,11 +17,17 @@
         <!--<property name="maxSizePolicy" value="PER_NODE"/>-->
     <!--</bean>-->
 
+    <bean id="cachedQueueServiceConfigurator"
+          class="ru.taskurotta.hazelcast.queue.config.util.CachedQueueServiceConfigurator">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="maxPercentageOfHeapSize" value="${hz.queue.memory.max-size}"/>
+    </bean>
+
     <!-- Queues persistence support -->
     <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="${hz.queue.task.cache-size}"/>
+        <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
         <constructor-arg name="batchLoadSize" value="${hz.queue.task.batch-load-size}"/>
     </bean>
@@ -42,7 +48,7 @@
     <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="${gc.queue.cache-size}"/>
+        <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${gc.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${gc.queue.batch-load-size}"/>
     </bean>
@@ -56,7 +62,7 @@
     <bean id="recoveryQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="${recovery.queue.cache-size}"/>
+        <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${recovery.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
     </bean>

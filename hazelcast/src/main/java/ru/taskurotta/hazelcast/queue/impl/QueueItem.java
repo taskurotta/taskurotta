@@ -16,18 +16,13 @@
 
 package ru.taskurotta.hazelcast.queue.impl;
 
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
-import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import ru.taskurotta.hazelcast.queue.impl.stats.StatsUtil;
-
-import java.io.IOException;
 
 /**
  * Queue Item.
  */
-public class QueueItem implements IdentifiedDataSerializable {
+public class QueueItem {
 
 
     protected Data data;
@@ -53,26 +48,6 @@ public class QueueItem implements IdentifiedDataSerializable {
 
     public void setData(Data data) {
         this.data = data;
-    }
-
-    @Override
-    public void writeData(ObjectDataOutput out) throws IOException {
-        out.writeData(data);
-    }
-
-    @Override
-    public void readData(ObjectDataInput in) throws IOException {
-        data = in.readData();
-    }
-
-    @Override
-    public int getFactoryId() {
-        return QueueDataSerializerHook.F_ID;
-    }
-
-    @Override
-    public int getId() {
-        return QueueDataSerializerHook.QUEUE_ITEM;
     }
 
     @Override
