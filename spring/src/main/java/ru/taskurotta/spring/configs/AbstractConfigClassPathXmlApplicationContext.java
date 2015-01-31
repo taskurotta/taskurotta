@@ -24,6 +24,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
     protected String[] contexts;
     protected Properties properties;
     protected String defaultPropertiesLocation;
+    protected String[] defaultPropertiesLocations;
 
     public void init() {
         if (applicationContext == null) {
@@ -37,10 +38,20 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
             Properties result = properties != null? properties: new Properties();
 
             if (StringUtils.hasText(defaultPropertiesLocation)) {
+                Properties defaultProperties;
+                try {
+                    defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Can not load default properties", e);
+                }
+
+                result = PropertiesUtil.addProperties(defaultProperties, result, null);
+            }
+
+            if (defaultPropertiesLocations != null) {
                 Properties defaultProperties = new Properties();
 
-                String[] locations = StringUtils.commaDelimitedListToStringArray(defaultPropertiesLocation);
-                for (String location : locations) {
+                for (String location : defaultPropertiesLocations) {
                     Properties props;
                     try {
                         props = PropertiesLoaderUtils.loadAllProperties(location.trim());
@@ -75,5 +86,9 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
 
     public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
         this.defaultPropertiesLocation = defaultPropertiesLocation;
+    }
+
+    public void setDefaultPropertiesLocations(String[] defaultPropertiesLocations) {
+        this.defaultPropertiesLocations = defaultPropertiesLocations;
     }
 }
