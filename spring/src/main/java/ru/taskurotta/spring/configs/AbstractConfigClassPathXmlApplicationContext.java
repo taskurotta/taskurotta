@@ -23,7 +23,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
     protected String context;
     protected String[] contexts;
     protected Properties properties;
-    protected String defaultPropertiesLocation;
+    protected String defaultPropertiesLocations;
 
     public void init() {
         if (applicationContext == null) {
@@ -36,10 +36,10 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
 
             Properties result = properties != null? properties: new Properties();
 
-            if (StringUtils.hasText(defaultPropertiesLocation)) {
+            if (StringUtils.hasText(defaultPropertiesLocations)) {
                 Properties defaultProperties = new Properties();
 
-                String[] locations = StringUtils.commaDelimitedListToStringArray(defaultPropertiesLocation);
+                String[] locations = StringUtils.commaDelimitedListToStringArray(defaultPropertiesLocations);
                 for (String location : locations) {
                     Properties props;
                     try {
@@ -73,7 +73,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
         this.properties = properties;
     }
 
-    public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
-        this.defaultPropertiesLocation = defaultPropertiesLocation;
+    public void setDefaultPropertiesLocations(String defaultPropertiesLocations) {
+        this.defaultPropertiesLocations = defaultPropertiesLocations;
     }
 }

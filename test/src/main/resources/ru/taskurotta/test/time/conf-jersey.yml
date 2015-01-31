@@ -9,7 +9,7 @@ spreader:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
         context: ru/taskurotta/test/time/SpreaderBeans-jersey.xml
-        defaultPropertiesLocation: default.properties
+        defaultPropertiesLocations: default.properties
         properties:
           endpoint: "http://localhost:8081"
           threadPoolSize: 100

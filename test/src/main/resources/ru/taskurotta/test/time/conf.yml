@@ -11,7 +11,7 @@ spreader:
         contexts:
           - classpath:spring/hz-mongo.xml
           - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
-        defaultPropertiesLocation: default.properties
+        defaultPropertiesLocations: default.properties
         properties:
           duration: 10 hours
           timeout: 1 seconds

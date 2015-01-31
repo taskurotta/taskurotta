@@ -10,7 +10,7 @@ spreader:
       instance:
         contexts:
           - classpath:spring/hz-mongo.xml
-        defaultPropertiesLocation: default.properties
+        defaultPropertiesLocations: default.properties
         properties:
           cycles: 10
           initialCount: 7
