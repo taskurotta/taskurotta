@@ -47,13 +47,13 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                     } catch (IOException e) {
                         throw new IllegalStateException("Can not load properties from [" + location + "]", e);
                     }
-                    defaultProperties = PropertiesUtil.addProperties(defaultProperties, props, null);
+                    defaultProperties = PropertiesUtil.addProperties(defaultProperties, props);
                 }
 
-                result = PropertiesUtil.addProperties(defaultProperties, result, null);
+                result = PropertiesUtil.addProperties(defaultProperties, result);
             }
 
-            result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result), null);
+            result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result));
             applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
                     ("customProperties", result));
 

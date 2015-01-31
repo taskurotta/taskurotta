@@ -7,7 +7,6 @@ import java.util.Properties;
 public class PropertiesUtil {
 
     public static Properties addProperties(Properties mergeTo, Properties mergeFrom, String prefix) {
-
         if (mergeTo == null) {
             return mergeFrom;
         }
@@ -25,6 +24,10 @@ public class PropertiesUtil {
         }
 
         return mergeTo;
+    }
+
+    public static Properties addProperties(Properties mergeTo, Properties mergeFrom) {
+        return addProperties(mergeTo, mergeFrom, null);
     }
 
 }
