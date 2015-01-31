@@ -3,6 +3,7 @@ package ru.taskurotta.spring.configs;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.util.StringUtils;
 import ru.taskurotta.util.MemoryAllocationConfigurator;
 import ru.taskurotta.util.PropertiesUtil;
 
@@ -35,19 +36,24 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
 
             Properties result = properties != null? properties: new Properties();
 
-            if (defaultPropertiesLocation != null) {
-                Properties defaultProperties;
-                try {
-                    defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
-                } catch (IOException e) {
-                    throw new IllegalStateException("Can not load default properties", e);
+            if (StringUtils.hasText(defaultPropertiesLocation)) {
+                Properties defaultProperties = new Properties();
+
+                String[] locations = StringUtils.commaDelimitedListToStringArray(defaultPropertiesLocation);
+                for (String location : locations) {
+                    Properties props;
+                    try {
+                        props = PropertiesLoaderUtils.loadAllProperties(location.trim());
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Can not load properties from [" + location + "]", e);
+                    }
+                    defaultProperties = PropertiesUtil.addProperties(defaultProperties, props, null);
                 }
 
                 result = PropertiesUtil.addProperties(defaultProperties, result, null);
             }
 
             result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result), null);
-
             applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
                     ("customProperties", result));
 

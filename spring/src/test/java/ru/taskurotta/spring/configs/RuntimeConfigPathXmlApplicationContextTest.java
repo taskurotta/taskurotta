@@ -29,7 +29,7 @@ public class RuntimeConfigPathXmlApplicationContextTest {
         runtimeConfigPathXmlApplicationContext = new RuntimeConfigPathXmlApplicationContext();
         runtimeConfigPathXmlApplicationContext.setContext(pathToXmlContext);
         runtimeConfigPathXmlApplicationContext.setProperties(properties);
-        runtimeConfigPathXmlApplicationContext.setDefaultPropertiesLocation("default.properties");
+        runtimeConfigPathXmlApplicationContext.setDefaultPropertiesLocation("default1.properties, default2.properties");
         runtimeConfigPathXmlApplicationContext.init();
     }
 
@@ -42,7 +42,8 @@ public class RuntimeConfigPathXmlApplicationContextTest {
         AbstractApplicationContext applicationContext = (AbstractApplicationContext) field.get(runtimeConfigPathXmlApplicationContext);
 
         TestActorImpl testActor = applicationContext.getBean(TestActorImpl.class);
-        assertEquals("defaultValue", testActor.getDefaultValue());
+        assertEquals("defaultValue1", testActor.getDefaultValue1());
+        assertEquals("defaultValue2", testActor.getDefaultValue2());
         assertEquals("replacedValue", testActor.getReplacedValue());
     }
 }
