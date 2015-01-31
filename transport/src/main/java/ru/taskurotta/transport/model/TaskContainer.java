@@ -93,6 +93,23 @@ public class TaskContainer implements Serializable {
         errorAttempts++;
     }
 
+
+    public void setArgs(ArgContainer[] args) {
+        this.args = args;
+    }
+
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
