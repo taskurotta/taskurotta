@@ -10,7 +10,7 @@ spreader:
       instance:
         contexts:
           - classpath:ru/taskurotta/recipes/stress/SpreaderBeans-mock.xml
-        defaultPropertiesLocations: default.properties
+        defaultPropertiesLocation: default.properties
         properties:
           cycles: 10
           initialCount: 8

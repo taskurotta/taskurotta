@@ -29,7 +29,7 @@ public class RuntimeConfigPathXmlApplicationContextTest {
         runtimeConfigPathXmlApplicationContext = new RuntimeConfigPathXmlApplicationContext();
         runtimeConfigPathXmlApplicationContext.setContext(pathToXmlContext);
         runtimeConfigPathXmlApplicationContext.setProperties(properties);
-        runtimeConfigPathXmlApplicationContext.setDefaultPropertiesLocations("default1.properties, default2.properties");
+        runtimeConfigPathXmlApplicationContext.setDefaultPropertiesLocation("default1.properties, default2.properties");
         runtimeConfigPathXmlApplicationContext.init();
     }
 
