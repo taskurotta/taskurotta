@@ -3,6 +3,7 @@ package ru.taskurotta.spring.configs;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.util.StringUtils;
 import ru.taskurotta.util.MemoryAllocationConfigurator;
 import ru.taskurotta.util.PropertiesUtil;
 
@@ -23,6 +24,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
     protected String[] contexts;
     protected Properties properties;
     protected String defaultPropertiesLocation;
+    protected String[] defaultPropertiesLocations;
 
     public void init() {
         if (applicationContext == null) {
@@ -35,7 +37,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
 
             Properties result = properties != null? properties: new Properties();
 
-            if (defaultPropertiesLocation != null) {
+            if (StringUtils.hasText(defaultPropertiesLocation)) {
                 Properties defaultProperties;
                 try {
                     defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
@@ -46,8 +48,23 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                 result = PropertiesUtil.addProperties(defaultProperties, result, null);
             }
 
-            result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result), null);
+            if (defaultPropertiesLocations != null) {
+                Properties defaultProperties = new Properties();
 
+                for (String location : defaultPropertiesLocations) {
+                    Properties props;
+                    try {
+                        props = PropertiesLoaderUtils.loadAllProperties(location.trim());
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Can not load properties from [" + location + "]", e);
+                    }
+                    defaultProperties = PropertiesUtil.addProperties(defaultProperties, props);
+                }
+
+                result = PropertiesUtil.addProperties(defaultProperties, result);
+            }
+
+            result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result));
             applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
                     ("customProperties", result));
 
@@ -69,5 +86,9 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
 
     public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
         this.defaultPropertiesLocation = defaultPropertiesLocation;
+    }
+
+    public void setDefaultPropertiesLocations(String[] defaultPropertiesLocations) {
+        this.defaultPropertiesLocations = defaultPropertiesLocations;
     }
 }

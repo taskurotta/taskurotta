@@ -162,13 +162,13 @@ public class SpringApplication extends Application<TaskServerConfig> {
         }
 
         //2. Override/extend them with properties from external configuration file
-        result = PropertiesUtil.addProperties(result, configuration.getProperties(), null);
+        result = PropertiesUtil.addProperties(result, configuration.getProperties());
 
         //3. Override/extend them with system properties
         result = PropertiesUtil.addProperties(result, System.getProperties(), SYSTEM_PROP_PREFIX);
 
         //4. Add calculated at runtime properties
-        result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result), null);
+        result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result));
 
         return result;
     }

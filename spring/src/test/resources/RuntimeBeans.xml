@@ -13,7 +13,8 @@
 
     <bean id="testActor" class="ru.taskurotta.spring.configs.TestActorImpl">
         <property name="replacedValue" value="${replacedValue}"/>
-        <property name="defaultValue" value="${defaultValue}"/>
+        <property name="defaultValue1" value="${defaultValue1}"/>
+        <property name="defaultValue2" value="${defaultValue2}"/>
     </bean>
 
 </beans>
