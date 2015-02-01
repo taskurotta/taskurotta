@@ -38,6 +38,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer deleteTimer = Metrics.newTimer(MongoCachedQueueStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+
     private String storageName;
     private MongoTemplate mongoTemplate;
     private MongoDBConverter converter;
