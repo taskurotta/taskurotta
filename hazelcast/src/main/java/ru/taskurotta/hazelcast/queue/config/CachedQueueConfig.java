@@ -26,11 +26,9 @@ public class CachedQueueConfig {
     /**
      * Default value of time to live for empty Queue
      */
-    public static final int DEFAULT_EMPTY_QUEUE_TTL = -1;
 
     private String name;
     private int cacheSize = DEFAULT_CACHE_SIZE;
-    private int emptyQueueTtl = DEFAULT_EMPTY_QUEUE_TTL;
     private CachedQueueStoreConfig queueStoreConfig;
     private boolean statisticsEnabled = true;
 
@@ -41,14 +39,9 @@ public class CachedQueueConfig {
         this();
         this.name = config.name;
         this.cacheSize = config.cacheSize;
-        this.emptyQueueTtl = config.emptyQueueTtl;
         this.statisticsEnabled = config.statisticsEnabled;
         this.queueStoreConfig = config.queueStoreConfig != null ? new CachedQueueStoreConfig(config.queueStoreConfig) :
                 null;
-    }
-
-    public int getEmptyQueueTtl() {
-        return emptyQueueTtl;
     }
 
     public int getCacheSize() {
@@ -103,7 +96,6 @@ public class CachedQueueConfig {
         final StringBuilder sb = new StringBuilder("QueueConfig{");
         sb.append("name='").append(name).append('\'');
         sb.append(", cacheSize=").append(cacheSize);
-        sb.append(", emptyQueueTtl=").append(emptyQueueTtl);
         sb.append(", queueStoreConfig=").append(queueStoreConfig);
         sb.append(", statisticsEnabled=").append(statisticsEnabled);
         sb.append('}');

@@ -17,9 +17,7 @@ import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  */
@@ -221,7 +219,6 @@ public class QueueContainerTest {
         assertIterateWithoutNull(queue, 7);
         Hazelcast.shutdownAll();
     }
-
 
     @Test
     public void testQueueEmpty() throws Exception {
