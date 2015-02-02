@@ -1,14 +1,11 @@
 package ru.taskurotta.hazelcast.queue.impl;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.core.DistributedObjectEvent;
-import com.hazelcast.core.DistributedObjectListener;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import junit.framework.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +15,9 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  */
@@ -48,7 +41,6 @@ public class QueueContainerTest {
 
         CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
         cachedQueueConfig.setCacheSize(5);
-        cachedQueueConfig.setEmptyQueueTtl(2);
 
         {
             CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
@@ -227,30 +219,6 @@ public class QueueContainerTest {
         assertIterateWithoutNull(queue, 7);
         Hazelcast.shutdownAll();
     }
-
-    @Test
-    @Ignore //todo fixme
-    public void testTTL() throws Exception {
-        final CountDownLatch counter = new CountDownLatch(3);
-        hazelcastInstance.addDistributedObjectListener(new DistributedObjectListener() {
-            @Override
-            public void distributedObjectCreated(DistributedObjectEvent event) {
-                counter.countDown();
-            }
-
-            @Override
-            public void distributedObjectDestroyed(DistributedObjectEvent event) {
-                counter.countDown();
-            }
-        });
-        queue.destroy();
-        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
-        queue.offer("item");
-        queue.poll();
-        counter.await(4, TimeUnit.SECONDS);
-        assertEquals("TTL feature not working", 0, counter.getCount());
-    }
-
 
     @Test
     public void testQueueEmpty() throws Exception {
