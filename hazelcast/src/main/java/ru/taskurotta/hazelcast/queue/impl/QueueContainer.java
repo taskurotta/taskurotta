@@ -24,6 +24,7 @@ import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.spi.NodeEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 
@@ -66,6 +67,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
     protected int maxBufferSize;
     protected long heapCost = 0;
 
+    private boolean isEvictionScheduled = false;
+
 
     public int size() {
         return (int) (tailId - headId + 1);
@@ -105,7 +108,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
             }
         }
 
-        //cancelEvictionIfExists();
+        cancelEvictionIfExists();
         return itemId;
     }
 
@@ -133,6 +136,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         while(true) {
             if (isEmpty()) {
                 bufferClosed = false;
+                scheduleEvictionIfEmpty();
                 return null;
             }
 
@@ -161,10 +165,12 @@ public class QueueContainer implements IdentifiedDataSerializable {
                 if (item == null) {
                     reset();
                 } else {
+                    scheduleEvictionIfEmpty();
                     return item;
                 }
             } else {
                 if (DEBUG_FULL) logger.debug("poll(): name = {}", name);
+                scheduleEvictionIfEmpty();
                 return item;
             }
         }
@@ -252,12 +258,35 @@ public class QueueContainer implements IdentifiedDataSerializable {
     }
 
 
+//    private void scheduleEvictionIfEmpty() {
+//
+//        service.scheduleEviction(name, 5000);
+//    }
+
     private void scheduleEvictionIfEmpty() {
-        service.scheduleEviction(name, 5000);
+        final int emptyQueueTtl = config.getEmptyQueueTtl();
+        if (emptyQueueTtl < 0) {
+            return;
+        }
+        if (isEmpty() && !isEvictionScheduled) {
+            if (emptyQueueTtl == 0) {
+                nodeEngine.getProxyService().destroyDistributedObject(CachedQueue.class.getName(), name);
+            } else if (emptyQueueTtl > 0) {
+                logger.debug("Scheduling eviction emptyQueueTtl = {} seconds", emptyQueueTtl);
+                service.scheduleEviction(name, TimeUnit.SECONDS.toMillis(emptyQueueTtl));
+                isEvictionScheduled = true;
+            }
+        }
     }
 
     public void cancelEvictionIfExists() {
+        if (isEvictionScheduled) {
+            service.cancelEviction(name);
+            logger.debug("Scheduling eviction canceled");
+            isEvictionScheduled = false;
+        }
     }
+
 
     public boolean isEvictable() {
         service.scheduleEviction(name, 5000);
@@ -415,6 +444,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         heapCost = 0;
         buffer.clear();
         bufferClosed = false;
+        scheduleEvictionIfEmpty();
     }
 
     // todo: not needed. should be removed

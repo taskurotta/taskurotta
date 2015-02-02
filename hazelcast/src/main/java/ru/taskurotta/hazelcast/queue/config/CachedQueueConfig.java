@@ -51,6 +51,10 @@ public class CachedQueueConfig {
         return emptyQueueTtl;
     }
 
+    public void setEmptyQueueTtl(int emptyQueueTtl) {
+        this.emptyQueueTtl = emptyQueueTtl;
+    }
+
     public int getCacheSize() {
         return cacheSize == 0 ? Integer.MAX_VALUE : cacheSize;
     }
