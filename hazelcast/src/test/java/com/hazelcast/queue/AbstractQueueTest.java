@@ -2,7 +2,6 @@ package com.hazelcast.queue;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.test.HazelcastTestSupport;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
@@ -13,10 +12,7 @@ import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 
 public abstract class AbstractQueueTest extends HazelcastTestSupport {
 
-    protected IQueue newQueue() {
-        HazelcastInstance instance = createHazelcastInstance();
-        return instance.getQueue(randomString());
-    }
+
 
     protected CachedQueue newCachedQueue() {
         final Config cfg = new Config();
@@ -34,11 +30,5 @@ public abstract class AbstractQueueTest extends HazelcastTestSupport {
         return instance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
     }
 
-    protected IQueue newQueue_WithMaxSizeConfig(int maxSize) {
-        Config config = new Config();
-        final String name = randomString();
-        config.getQueueConfig(name).setMaxSize(maxSize);
-        HazelcastInstance instance = createHazelcastInstance(config);
-        return instance.getQueue(name);
-    }
+
 }
