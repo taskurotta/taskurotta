@@ -20,19 +20,12 @@ import com.hazelcast.nio.serialization.ArrayDataSerializableFactory;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.util.ConstructorFunction;
-import ru.taskurotta.hazelcast.queue.impl.operations.AddAllOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.CheckAndEvictOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.ClearOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.CompareAndRemoveOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.ContainsOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.DrainOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.IsEmptyOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.IteratorOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.OfferOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.PeekOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.PollOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.RemainingCapacityOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.RemoveOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
 
 /**
@@ -41,20 +34,11 @@ import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
 public final class QueueDataSerializerHook {
 
     public static final int F_ID = 1;
-
     public static final int OFFER = 0;
     public static final int POLL = 1;
-    public static final int PEEK = 2;
-
-    public static final int ADD_ALL = 3;
     public static final int CLEAR = 4;
-    public static final int COMPARE_AND_REMOVE = 5;
-    public static final int CONTAINS = 6;
-    public static final int DRAIN = 7;
-    public static final int ITERATOR = 8;
     public static final int QUEUE_EVENT = 9;
     public static final int QUEUE_EVENT_FILTER = 10;
-    public static final int REMOVE = 11;
     public static final int SIZE = 12;
     public static final int CHECK_EVICT = 13;
     public static final int IS_EMPTY = 14;
@@ -75,39 +59,9 @@ public final class QueueDataSerializerHook {
                 return new PollOperation();
             }
         };
-        constructors[PEEK] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new PeekOperation();
-            }
-        };
-        constructors[ADD_ALL] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new AddAllOperation();
-            }
-        };
         constructors[CLEAR] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
             public IdentifiedDataSerializable createNew(Integer arg) {
                 return new ClearOperation();
-            }
-        };
-        constructors[COMPARE_AND_REMOVE] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new CompareAndRemoveOperation();
-            }
-        };
-        constructors[CONTAINS] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new ContainsOperation();
-            }
-        };
-        constructors[DRAIN] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new DrainOperation();
-            }
-        };
-        constructors[ITERATOR] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new IteratorOperation();
             }
         };
         constructors[QUEUE_EVENT] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
@@ -118,11 +72,6 @@ public final class QueueDataSerializerHook {
         constructors[QUEUE_EVENT_FILTER] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
             public IdentifiedDataSerializable createNew(Integer arg) {
                 return new QueueEventFilter();
-            }
-        };
-        constructors[REMOVE] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new RemoveOperation();
             }
         };
         constructors[SIZE] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {

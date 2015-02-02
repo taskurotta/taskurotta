@@ -7,6 +7,7 @@ import com.hazelcast.query.Predicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.delay.impl.StorageItem;
 
 import java.util.Map;
 import java.util.Set;

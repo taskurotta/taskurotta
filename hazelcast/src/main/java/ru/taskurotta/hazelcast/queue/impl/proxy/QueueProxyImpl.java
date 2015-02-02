@@ -19,16 +19,12 @@ package ru.taskurotta.hazelcast.queue.impl.proxy;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.spi.InitializingObject;
 import com.hazelcast.spi.NodeEngine;
-import com.hazelcast.util.ValidationUtil;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
-import ru.taskurotta.hazelcast.queue.impl.QueueService;
 import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
+import ru.taskurotta.hazelcast.queue.impl.QueueService;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,12 +52,27 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
     }
 
     @Override
+    public boolean remove(Object o) {
+        throw new IllegalStateException("Not implemented yet!");
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        throw new IllegalStateException("Not implemented yet!");
+    }
+
+    @Override
     public boolean offer(E e) {
         try {
             return offer(e, 0, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             return false;
         }
+    }
+
+    @Override
+    public E remove() {
+        throw new IllegalStateException("Not implemented yet!");
     }
 
 
@@ -84,30 +95,6 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
         return nodeEngine.toObject(data);
     }
 
-    @Override
-    public boolean remove(Object o) {
-        final NodeEngine nodeEngine = getNodeEngine();
-        final Data data = nodeEngine.toData(o);
-        return removeInternal(data);
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        final NodeEngine nodeEngine = getNodeEngine();
-        final Data data = nodeEngine.toData(o);
-        List<Data> dataSet = new ArrayList<Data>(1);
-        dataSet.add(data);
-        return containsInternal(dataSet);
-    }
-
-    @Override
-    public E remove() {
-        final E res = poll();
-        if (res == null) {
-            throw new NoSuchElementException("Queue is empty!");
-        }
-        return res;
-    }
 
     @Override
     public E poll() {
@@ -121,90 +108,49 @@ public class QueueProxyImpl<E> extends QueueProxySupport implements CachedQueue<
 
     @Override
     public E element() {
-        final E res = peek();
-        if (res == null) {
-            throw new NoSuchElementException("Queue is empty!");
-        }
-        return res;
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override
     public E peek() {
-        final NodeEngine nodeEngine = getNodeEngine();
-        final Object data = peekInternal();
-        return nodeEngine.toObject(data);
+        throw new IllegalStateException("Not implemented yet!");
+    }
+
+
+    @Override
+    public boolean contains(Object o) {
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override
     public Iterator<E> iterator() {
-        final NodeEngine nodeEngine = getNodeEngine();
-        return new QueueIterator<E>(listInternal().iterator(), nodeEngine.getSerializationService(), false);
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override
     public Object[] toArray() {
-        final NodeEngine nodeEngine = getNodeEngine();
-        List<Data> list = listInternal();
-        int size = list.size();
-        Object[] array = new Object[size];
-        for (int i = 0; i < size; i++) {
-            array[i] = nodeEngine.toObject(list.get(i));
-        }
-        return array;
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override
-    public <T> T[] toArray(T[] ts) {
-        T[] tsParam = ts;
-        final NodeEngine nodeEngine = getNodeEngine();
-        List<Data> list = listInternal();
-        int size = list.size();
-        if (tsParam.length < size) {
-            tsParam = (T[]) java.lang.reflect.Array.newInstance(tsParam.getClass().getComponentType(), size);
-        }
-        for (int i = 0; i < size; i++) {
-            tsParam[i] = nodeEngine.toObject(list.get(i));
-        }
-        return tsParam;
+    public <T> T[] toArray(T[] a) {
+        throw new IllegalStateException("Not implemented yet!");
     }
 
-    @Override
-    public boolean containsAll(Collection<?> objects) {
-        return containsInternal(getDataList(objects));
-    }
 
     @Override
     public boolean addAll(Collection<? extends E> es) {
-        return addAllInternal(toDataList(es));
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override
-    public boolean removeAll(Collection<?> objects) {
-        return compareAndRemove(getDataList(objects), false);
+    public boolean removeAll(Collection<?> c) {
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override
-    public boolean retainAll(Collection<?> objects) {
-        return compareAndRemove(getDataList(objects), true);
-    }
-
-    private List<Data> getDataList(Collection<?> objects) {
-        final NodeEngine nodeEngine = getNodeEngine();
-        List<Data> dataList = new ArrayList<Data>(objects.size());
-        for (Object o : objects) {
-            dataList.add(nodeEngine.toData(o));
-        }
-        return dataList;
-    }
-
-    private List<Data> toDataList(Collection<?> objects) {
-        final NodeEngine nodeEngine = getNodeEngine();
-        List<Data> dataList = new ArrayList<Data>(objects.size());
-        for (Object o : objects) {
-            ValidationUtil.checkNotNull(o, "Object is null");
-            dataList.add(nodeEngine.toData(o));
-        }
-        return dataList;
+    public boolean retainAll(Collection<?> c) {
+        throw new IllegalStateException("Not implemented yet!");
     }
 
     @Override

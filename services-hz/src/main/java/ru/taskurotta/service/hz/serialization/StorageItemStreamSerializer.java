@@ -3,7 +3,7 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.hazelcast.queue.delay.StorageItem;
+import ru.taskurotta.hazelcast.queue.delay.impl.StorageItem;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package ru.taskurotta.hazelcast.queue.delay;
+package ru.taskurotta.hazelcast.queue.delay.impl;
 
 import java.io.Serializable;
 
