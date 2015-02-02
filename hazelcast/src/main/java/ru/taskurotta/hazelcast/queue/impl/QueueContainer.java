@@ -26,9 +26,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -126,7 +124,6 @@ public class QueueContainer {
             }
         }
 
-        //cancelEvictionIfExists();
         return itemId;
     }
 
@@ -282,9 +279,6 @@ public class QueueContainer {
         service.scheduleEviction(name, 5000);
     }
 
-    public void cancelEvictionIfExists() {
-    }
-
     public boolean isEvictable() {
         service.scheduleEviction(name, 5000);
 
@@ -405,23 +399,6 @@ public class QueueContainer {
     }
 
 
-    // old stuff
-
-
-
-    public Map<Long, Data> addAll(Collection<Data> dataList) {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
-    public QueueItem peek() {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
-    // todo: not needed. should be removed
-    public Map<Long, Data> drain(int maxSize) {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
     public void clear() {
         store.clear();
         headId = 0;
@@ -431,25 +408,6 @@ public class QueueContainer {
         bufferClosed = false;
     }
 
-    // todo: not needed. should be removed
-    public long remove(Data data) {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
-    // todo: not needed. should be removed
-    public boolean contains(Collection<Data> dataSet) {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
-    // todo: not needed. should be removed
-    public List<Data> getAsDataList() {
-        throw new IllegalStateException("Not implemented yet!");
-    }
-
-    // todo: not needed. should be removed
-    public Map<Long, Data> compareAndRemove(Collection<Data> dataList, boolean retain) {
-        throw new IllegalStateException("Not implemented yet!");
-    }
 
     public void setConfig(CachedQueueConfig config, NodeEngine nodeEngine, QueueService service) {
         this.nodeEngine = nodeEngine;

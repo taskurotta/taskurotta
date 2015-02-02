@@ -1,6 +1,9 @@
 package ru.taskurotta.hazelcast.queue.impl;
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.JoinConfig;
+import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.impl.NodeEngineImpl;
@@ -41,6 +44,14 @@ public class QueueContainerTest {
 
         CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
         cachedQueueConfig.setCacheSize(5);
+
+        MulticastConfig multicastConfig = new MulticastConfig();
+        multicastConfig.setEnabled(false);
+        JoinConfig joinConfig = new JoinConfig();
+        joinConfig.setMulticastConfig(multicastConfig);
+        NetworkConfig networkConfig = new NetworkConfig();
+        networkConfig.setJoin(joinConfig);
+        cfg.setNetworkConfig(networkConfig);
 
         {
             CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();

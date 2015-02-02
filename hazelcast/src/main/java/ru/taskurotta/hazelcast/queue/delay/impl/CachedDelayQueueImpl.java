@@ -1,7 +1,9 @@
-package ru.taskurotta.hazelcast.queue.delay;
+package ru.taskurotta.hazelcast.queue.delay.impl;
 
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
+import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
+import ru.taskurotta.hazelcast.queue.delay.Storage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
@@ -13,7 +15,7 @@ public class CachedDelayQueueImpl<E> implements CachedDelayQueue<E> {
     private final Storage<E> storage;
     private CachedQueue<E> queue;
 
-    protected CachedDelayQueueImpl(CachedQueue<E> queue, Storage<E> storage) {
+    public CachedDelayQueueImpl(CachedQueue<E> queue, Storage<E> storage) {
         this.queue = queue;
         this.storage = storage;
     }

@@ -81,22 +81,4 @@ public class BasicQueueTest extends AbstractQueueTest {
         assertNull(queue.poll());
     }
 
-
-
-    @Test
-    public void testRemoveAll_whenCollectionNull() {
-        CachedQueue<String> queue = newCachedQueue();
-        queue.add("item3");
-        queue.add("item4");
-        queue.add("item5");
-
-        try {
-            queue.removeAll(null);
-            fail();
-        } catch (NullPointerException expected) {
-        }
-
-        assertEquals(3, queue.size());
-    }
-
 }
