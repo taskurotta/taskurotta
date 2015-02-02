@@ -1,7 +1,7 @@
 package ru.taskurotta.mongodb.io;
 
-import com.hazelcast.nio.ObjectDataInput;
 import ru.taskurotta.mongodb.domain.InnerPojo;
+import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
@@ -22,7 +22,13 @@ public class InnerPojoStreamBSerializer  implements StreamBSerializer<InnerPojo>
     }
 
     @Override
-    public InnerPojo read(ObjectDataInput in) {
-        return null;
+    public InnerPojo read(BDataInput in) {
+
+        InnerPojo innerObj = new InnerPojo();
+
+        innerObj.setId(in.readUUID(ID));
+        innerObj.setName(in.readString(NAME));
+
+        return innerObj;
     }
 }

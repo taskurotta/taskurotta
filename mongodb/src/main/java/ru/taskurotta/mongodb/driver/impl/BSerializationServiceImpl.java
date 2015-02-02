@@ -1,6 +1,8 @@
 package ru.taskurotta.mongodb.driver.impl;
 
+import com.mongodb.DBDecoderFactory;
 import com.mongodb.DBEncoder;
+import com.mongodb.DBEncoderFactory;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
@@ -16,11 +18,25 @@ public class BSerializationServiceImpl  implements BSerializationService {
 
     private BEncoder encoder;
 
+
+    private DBEncoderFactory dbEncoderFactory;
+
     public BSerializationServiceImpl() {
+
         encoder = new BEncoder(this);
+
+        dbEncoderFactory = new DBEncoderFactory() {
+
+            @Override
+            public DBEncoder create() {
+                // todo create pool of DBEncoder objects
+                return encoder;
+            }
+        };
+
     }
 
-    public void registerSerializers(Class clazz, StreamBSerializer serializer) {
+    public void registerSerializer(Class clazz, StreamBSerializer serializer) {
         serializersMap.put(clazz, serializer);
     }
 
@@ -37,14 +53,16 @@ public class BSerializationServiceImpl  implements BSerializationService {
     }
 
     protected StreamBSerializer getSerializer(Class clazz) {
-
         return serializersMap.get(clazz);
     }
 
 
-    // todo create pool of DBEncoder objects
-    @Override
-    public DBEncoder create() {
-        return encoder;
+    public DBEncoderFactory getEncoderFactory() {
+        return dbEncoderFactory;
     }
+
+    public DBDecoderFactory getDecoderFactory(Class rootObjectClass) {
+        return new BDecoderFactory(this, serializersMap.get(rootObjectClass));
+    }
+
 }

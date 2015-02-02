@@ -1,7 +1,5 @@
 package ru.taskurotta.mongodb.driver;
 
-import com.hazelcast.nio.ObjectDataInput;
-
 /**
  */
 public interface StreamBSerializer<T> {
@@ -10,5 +8,5 @@ public interface StreamBSerializer<T> {
 
     void write(BDataOutput out, T object);
 
-    T read(ObjectDataInput in);
+    T read(BDataInput in);
 }

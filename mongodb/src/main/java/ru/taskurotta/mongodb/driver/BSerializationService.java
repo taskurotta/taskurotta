@@ -1,10 +1,15 @@
 package ru.taskurotta.mongodb.driver;
 
+import com.mongodb.DBDecoderFactory;
 import com.mongodb.DBEncoderFactory;
 
 /**
  */
-public interface BSerializationService extends DBEncoderFactory {
+public interface BSerializationService {
 
-    public void registerSerializers(Class clazz, StreamBSerializer serializer);
+    public void registerSerializer(Class clazz, StreamBSerializer serializer);
+
+    public DBEncoderFactory getEncoderFactory();
+
+    public DBDecoderFactory getDecoderFactory(Class rootObjectClass);
 }

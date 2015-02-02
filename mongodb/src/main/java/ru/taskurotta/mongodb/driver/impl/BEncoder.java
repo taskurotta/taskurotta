@@ -8,10 +8,12 @@ import ru.taskurotta.mongodb.driver.CString;
 import java.util.Date;
 import java.util.UUID;
 
+import static org.bson.BSON.ARRAY;
 import static org.bson.BSON.BINARY;
 import static org.bson.BSON.B_UUID;
 import static org.bson.BSON.DATE;
 import static org.bson.BSON.EOO;
+import static org.bson.BSON.NUMBER_INT;
 import static org.bson.BSON.NUMBER_LONG;
 import static org.bson.BSON.OBJECT;
 import static org.bson.BSON.STRING;
@@ -19,6 +21,14 @@ import static org.bson.BSON.STRING;
 /**
  */
 public class BEncoder extends DefaultDBEncoder implements BDataOutput {
+
+    public static final int ID_CACHE_SIZE = 1000;
+    public static final CString[] ARRAY_INDEXES = new CString[ID_CACHE_SIZE];
+    static {
+        for (int i = 0; i < ARRAY_INDEXES.length; i++) {
+            ARRAY_INDEXES[i] = new CString(Integer.toString(i));
+        }
+    }
 
     private BSerializationServiceImpl serializationService;
 
@@ -96,6 +106,22 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeLong(int i, long value) {
+        if (i > -1 && i < ID_CACHE_SIZE) {
+            writeLong(ARRAY_INDEXES[i], value);
+        } else {
+            writeLong(new CString(Integer.toString(i)), value);
+        }
+    }
+
+    @Override
+    public void writeInt(CString name, int value) {
+        _buf.write(NUMBER_INT);
+        name.writeCString(_buf);
+        _buf.writeInt(value);
+    }
+
+    @Override
     public void writeDate(CString name, Date value) {
         _buf.write(DATE);
         name.writeCString(_buf);
@@ -108,6 +134,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         name.writeCString(_buf);
 
         final int sizePos = _buf.getPosition();
+        // will be filled by object size in writeObjectStop() method
         _buf.writeInt(0);
 
         return sizePos;
@@ -115,6 +142,24 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeObjectStop(int sizePos) {
+        _buf.write(EOO);
+        _buf.writeInt(sizePos, _buf.getPosition() - sizePos);
+    }
+
+    @Override
+    public int writeArray(CString name) {
+        _buf.write(ARRAY);
+        name.writeCString(_buf);
+
+        final int sizePos = _buf.getPosition();
+        // will be filled by object size in writeArrayStop() method
+        _buf.writeInt(0);
+
+        return sizePos;
+    }
+
+    @Override
+    public void writeArrayStop(int sizePos) {
         _buf.write(EOO);
         _buf.writeInt(sizePos, _buf.getPosition() - sizePos);
     }

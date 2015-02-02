@@ -11,6 +11,7 @@ public class RootPojo {
     String str = "dsdsfdsf";
     Date date = new Date();
     UUID uuid = UUID.randomUUID();
+    long[] longArray = new long[] {10l, 4l, 2l, 4l};
 
     InnerPojo house = new InnerPojo();
 
@@ -56,5 +57,13 @@ public class RootPojo {
 
     public void setHouse(InnerPojo house) {
         this.house = house;
+    }
+
+    public long[] getLongArray() {
+        return longArray;
+    }
+
+    public void setLongArray(long[] longArray) {
+        this.longArray = longArray;
     }
 }

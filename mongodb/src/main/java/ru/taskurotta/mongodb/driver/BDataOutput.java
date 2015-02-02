@@ -11,7 +11,11 @@ public interface BDataOutput {
 
     public void writeUUID(CString name, UUID value);
 
+    public void writeInt(CString name, int value);
+
     public void writeLong(CString name, long value);
+
+    public void writeLong(int i, long value);
 
     public void writeDate(CString name, Date value);
 
@@ -19,4 +23,7 @@ public interface BDataOutput {
 
     public void writeObjectStop(int label);
 
+    public int writeArray(CString name);
+
+    public void writeArrayStop(int label);
 }

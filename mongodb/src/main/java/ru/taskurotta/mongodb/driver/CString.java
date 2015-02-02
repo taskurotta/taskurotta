@@ -2,22 +2,37 @@ package ru.taskurotta.mongodb.driver;
 
 import org.bson.BSONException;
 import org.bson.io.OutputBuffer;
+import ru.taskurotta.mongodb.driver.impl.BDecoderUtil;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  */
 public class CString {
 
-    private String string;
-    private byte[] bytes;
+    protected byte[] bytes;
+    protected int offset = 0;
+    protected int length;
 
-    public CString(String string) {
-        this.string = string;
-        prepareBytes();
+    int hashCode = 0;
+    boolean hashCached = false;
+
+    public CString(int i) {
+        prepareBytes(Integer.toString(i));
     }
 
-    private void prepareBytes() {
+    public CString(String string) {
+        prepareBytes(string);
+    }
+
+    public CString(byte[] bytes, int offset, int length) {
+        this.bytes = bytes;
+        this.offset = offset;
+        this.length = length;
+    }
+
+    private void prepareBytes(String string) {
 
         final int len = string.length();
         final ByteArrayOutputStream out = new ByteArrayOutputStream(len);
@@ -50,6 +65,8 @@ public class CString {
         }
 
         bytes = out.toByteArray();
+
+        length = bytes.length;
     }
 
     public void writeCString(OutputBuffer out) {
@@ -58,4 +75,77 @@ public class CString {
         out.write((byte) 0);
     }
 
+    @Override
+    public String toString() {
+
+        boolean isAscii = true;
+
+        final int max = offset + length;
+        for (int i = offset; i < max; i++) {
+            isAscii = isAscii && _isAscii(bytes[i]);
+        }
+
+        if (isAscii) {
+            return new String(bytes, offset, length);
+        } else {
+            try {
+                return new String(bytes, offset, length, BDecoderUtil.DEFAULT_ENCODING);
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+
+    private static boolean _isAscii(byte b) {
+        return b >= 0 && b <= 127;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CString cString = (CString) o;
+
+        int thisPos = offset;
+        int thatPos = cString.offset;
+
+        int max = offset + length;
+        for (int i = offset; i < max; i++) {
+            if (bytes[thisPos++] != cString.bytes[thatPos++]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+
+        if (hashCached) {
+            return hashCode;
+        }
+
+        int result = 1;
+
+        int max = offset + length;
+        for (int i = offset; i < max; i++) {
+            result = 31 * result + bytes[i];
+        }
+
+        hashCode = result;
+        hashCached = true;
+
+        return result;
+    }
 }
