@@ -33,7 +33,7 @@ public class ProcessPusher {
     // per second
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
-                         final int initialProcessPresSecondPush, final int threadCount, final int minQueuesSize,
+                         final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
                          final int maxQueuesSize) {
 
         final Queue queue = new ConcurrentLinkedQueue();
@@ -41,7 +41,7 @@ public class ProcessPusher {
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
-            int currentSpeedPerSecond = initialProcessPresSecondPush;
+            int currentSpeedPerSecond = startSpeedPerSecond;
 
             @Override
             public void daemonJob() {
@@ -111,8 +111,6 @@ public class ProcessPusher {
 
         // start terminator thread
         new DaemonThread("test terminator", TimeUnit.SECONDS, 1) {
-
-            int currentSpeedPerSecond = initialProcessPresSecondPush;
 
             @Override
             public void daemonJob() {

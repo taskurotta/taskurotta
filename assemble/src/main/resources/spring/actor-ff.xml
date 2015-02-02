@@ -23,7 +23,7 @@
         <constructor-arg name="starter" ref="processStarter"/>
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="maxProcessQuantity" value="${test.ff.maxProcessQuantity}"/>
-        <constructor-arg name="initialProcessPresSecondPush" value="${test.ff.initialProcessPresSecondPush}"/>
+        <constructor-arg name="startSpeedPerSecond" value="${test.ff.startSpeedPerSecond}"/>
         <constructor-arg name="threadCount" value="${test.ff.threadCount}"/>
         <constructor-arg name="minQueuesSize" value="${test.ff.minQueuesSize}"/>
         <constructor-arg name="maxQueuesSize" value="${test.ff.maxQueuesSize}"/>

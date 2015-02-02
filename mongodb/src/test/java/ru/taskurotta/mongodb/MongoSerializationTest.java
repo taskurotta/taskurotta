@@ -19,6 +19,7 @@ import ru.taskurotta.mongodb.driver.impl.DBObjectСheat;
 import ru.taskurotta.mongodb.io.RootPojoStreamBSerializer;
 
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 @Ignore
 public class MongoSerializationTest {
@@ -53,6 +54,8 @@ public class MongoSerializationTest {
 
         final WriteConcern writeConcern = coll.getWriteConcern();
 
+        TimeUnit.SECONDS.sleep(60);
+
         long startTime = System.currentTimeMillis();
 
         logger.debug("Start to insert {} elements...", COLLECTION_SIZE);
@@ -86,7 +89,11 @@ public class MongoSerializationTest {
             }
         }
 
+        // 4358
         logger.debug("Done read {} elements: {} milliseconds", i, (System.currentTimeMillis() - startTime));
+
+        // memory up from 56 to 393 mb
+        TimeUnit.SECONDS.sleep(20);
     }
 
     @Test
@@ -94,7 +101,7 @@ public class MongoSerializationTest {
     public void testCustomEncoder() throws Exception {
 
         final MongoTemplate mongoTemplate = getMongoTemplate();
-//        mongoTemplate.getDb().dropDatabase();
+        mongoTemplate.getDb().dropDatabase();
 
         BSerializationService serializationService = BSerializationServiceFactory.newInstance();
         serializationService.registerSerializer(RootPojo.class, new RootPojoStreamBSerializer());
@@ -104,18 +111,20 @@ public class MongoSerializationTest {
         coll.setDBEncoderFactory(serializationService.getEncoderFactory());
         coll.setDBDecoderFactory(serializationService.getDecoderFactory(RootPojo.class));
 
+        TimeUnit.SECONDS.sleep(60);
+
         long startTime = System.currentTimeMillis();
 
         logger.debug("Start to insert {} elements...", COLLECTION_SIZE);
 
-//        for (int i = 0; i < COLLECTION_SIZE; i++) {
-//
-//            DBObjectСheat document = new DBObjectСheat(new RootPojo(i));
-//
-//            coll.insert(document);
-//        }
+        for (int i = 0; i < COLLECTION_SIZE; i++) {
 
-        // 19605
+            DBObjectСheat document = new DBObjectСheat(new RootPojo(i));
+
+            coll.insert(document);
+        }
+
+        // 18837
         logger.debug("Done: {} milliseconds", (System.currentTimeMillis() - startTime));
 
         startTime = System.currentTimeMillis();
@@ -132,7 +141,11 @@ public class MongoSerializationTest {
             }
         }
 
+        // 1092
         logger.debug("Done read {} elements: {} milliseconds", i, (System.currentTimeMillis() - startTime));
+
+        TimeUnit.SECONDS.sleep(20);
+
     }
 
 }

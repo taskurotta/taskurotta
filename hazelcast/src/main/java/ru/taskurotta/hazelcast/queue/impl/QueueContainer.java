@@ -170,7 +170,9 @@ public class QueueContainer {
             QueueItem item = removeItemFromBuffer(currHeadId);
 
             if (item == null) {
-                logger.warn("poll(): name = {}. Entry {} not found in cache of queue container", name, currHeadId);
+                logger.warn("poll(): name = {}. Entry {} not found in cache of queue container. buffer.size() = {}, " +
+                                "bufferClosed = {}, size() = {}, maxBufferSize = {}, headId = {}, tailId = {}",
+                        name, currHeadId, buffer.size(), bufferClosed, size(), maxBufferSize, headId, tailId);
                 while (buffer.size() != 0 && item == null) {
                     currHeadId = shiftHead();
                     store.delete(currHeadId);
@@ -217,8 +219,14 @@ public class QueueContainer {
         if (DEBUG_FULL || DEBUG_LOAD) logger.debug("loadAll(): name = {} before load: buffer size = {} from = {} to =" +
                 " {}", name, buffer.size(), from, to);
 
+        Map<Long, Data> loadedData = store.loadAll(from, to);
+        if (loadedData.size() != to - from + 1) {
+            logger.warn("loadAll(): name = {} Store returns less than expected quantity of items. expected = {}, " +
+                    "actual = {}, from = {}, to = {}, headId = {}, tailId = {} ", name, (to - from + 1), loadedData.size
+                    (), from, to, headId, tailId);
+        }
 
-        for (Map.Entry<Long, Data> entry : store.loadAll(from, to).entrySet()) {
+        for (Map.Entry<Long, Data> entry : loadedData.entrySet()) {
             Long itemId = entry.getKey();
             QueueItem item = new QueueItem(entry.getValue());
 
@@ -309,6 +317,7 @@ public class QueueContainer {
 
         if (!isEmpty()) {
 
+            // buffer opened
             if (!bufferClosed) {
 
                 if (newSize < buffSize) {
@@ -334,26 +343,37 @@ public class QueueContainer {
                     }
                 }
 
+                // buffer closed
             } else {
 
-                if (newSize < buffSize) {
+                if (newSize < maxBufferSize) {
 
-                    if (DEBUG_FULL || DEBUG_RESIZE) logger.debug("resizeBuffer(): name = {} drain closed buffer", name);
+                    if (newSize < buffSize) {
 
-                    long to = headId + buffSize - 1;
-                    long from = headId + newSize;
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} drain closed buffer", name);
 
-                    removeFromBuffer(from, to);
+                        long to = headId + buffSize - 1;
+                        long from = headId + newSize;
+
+                        removeFromBuffer(from, to);
+                    } else {
+
+                        if (DEBUG_FULL || DEBUG_RESIZE)
+                            logger.debug("resizeBuffer(): name = {} new buffer size less then old, but closed buffer " +
+                                    "still less then new buffer size. Nothing to drain. Full polled buffer will be " +
+                                    "loaded automatically", name);
+                    }
                 } else {
 
-                    int needMaximumToLoad = newSize - buffSize;
+                    long needMaximumToLoad = headId + buffSize + (newSize - maxBufferSize) - 1;
 
-                    if (tailId > headId + needMaximumToLoad) {
+                    if (tailId >= needMaximumToLoad) {
                         if (DEBUG_FULL || DEBUG_RESIZE)
                             logger.debug("resizeBuffer(): name = {} need load {} and NOT open buffer. " +
                                     "queue size = {} buffer.size() = {}", name, needMaximumToLoad, size(), buffer.size());
 
-                        loadAll(headId + maxBufferSize, headId + maxBufferSize + needMaximumToLoad - 1);
+                        loadAll(headId + buffSize, needMaximumToLoad);
 
                         if (DEBUG_FULL || DEBUG_RESIZE)
                             logger.debug("resizeBuffer(): name = {} after load buffer.size() = {}",
@@ -363,7 +383,7 @@ public class QueueContainer {
                             logger.debug("resizeBuffer(): name = {} need load {} and OPEN buffer. " +
                                     "queue size = {} buffer.size() = {}", name, tailId - headId + 1, size(), buffer.size());
 
-                        loadAll(headId + maxBufferSize, tailId);
+                        loadAll(headId + buffSize, tailId);
                         bufferClosed = false;
 
                         if (DEBUG_FULL || DEBUG_RESIZE)
