@@ -31,7 +31,6 @@ import ru.taskurotta.hazelcast.queue.impl.operations.IteratorOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.OfferOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.PeekOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.PollOperation;
-import ru.taskurotta.hazelcast.queue.impl.operations.QueueReplicationOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.RemainingCapacityOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.RemoveOperation;
 import ru.taskurotta.hazelcast.queue.impl.operations.SizeOperation;
@@ -55,14 +54,11 @@ public final class QueueDataSerializerHook {
     public static final int ITERATOR = 8;
     public static final int QUEUE_EVENT = 9;
     public static final int QUEUE_EVENT_FILTER = 10;
-    public static final int QUEUE_ITEM = 11;
-    public static final int QUEUE_REPLICATION = 12;
-    public static final int REMOVE = 13;
-    public static final int SIZE = 14;
-    public static final int CHECK_EVICT = 15;
-    public static final int QUEUE_CONTAINER = 16;
-    public static final int IS_EMPTY = 17;
-    public static final int REMAINING_CAPACITY = 18;
+    public static final int REMOVE = 11;
+    public static final int SIZE = 12;
+    public static final int CHECK_EVICT = 13;
+    public static final int IS_EMPTY = 14;
+    public static final int REMAINING_CAPACITY = 15;
 
 
     public static DataSerializableFactory createFactory() {
@@ -124,16 +120,6 @@ public final class QueueDataSerializerHook {
                 return new QueueEventFilter();
             }
         };
-        constructors[QUEUE_ITEM] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new QueueItem(null);
-            }
-        };
-        constructors[QUEUE_REPLICATION] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new QueueReplicationOperation();
-            }
-        };
         constructors[REMOVE] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
             public IdentifiedDataSerializable createNew(Integer arg) {
                 return new RemoveOperation();
@@ -147,11 +133,6 @@ public final class QueueDataSerializerHook {
         constructors[CHECK_EVICT] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
             public IdentifiedDataSerializable createNew(Integer arg) {
                 return new CheckAndEvictOperation();
-            }
-        };
-        constructors[QUEUE_CONTAINER] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {
-            public IdentifiedDataSerializable createNew(Integer arg) {
-                return new QueueContainer(null);
             }
         };
         constructors[IS_EMPTY] = new ConstructorFunction<Integer, IdentifiedDataSerializable>() {

@@ -16,6 +16,8 @@ public class CachedQueueServiceConfig extends ServiceConfig {
 
     private final Map<String, CachedQueueConfig> queueConfigs = new ConcurrentHashMap<String, CachedQueueConfig>();
 
+    private CachedQueueSizeConfig sizeConfig = new CachedQueueSizeConfig();
+
     /**
      * WARNING: not thread safe!
      *
@@ -50,6 +52,15 @@ public class CachedQueueServiceConfig extends ServiceConfig {
         }
 
         return queueServiceConfig;
+    }
+
+    public CachedQueueSizeConfig getSizeConfig() {
+        return sizeConfig;
+    }
+
+    public CachedQueueServiceConfig setSizeConfig(CachedQueueSizeConfig sizeConfig) {
+        this.sizeConfig = sizeConfig;
+        return this;
     }
 
     public CachedQueueConfig getQueueConfig(String name) {

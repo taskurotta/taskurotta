@@ -127,7 +127,7 @@ public class HzGraphDao implements GraphDao {
         Modification modification = modifiedGraph.getModification();
 
         if (modification != null) {
-            DecisionRow decisionRow = new DecisionRow(modifiedGraph.getModification().getCompletedItem(), modification, modifiedGraph.getReadyItems());
+            DecisionRow decisionRow = new DecisionRow(modification.getCompletedItem(), modification, modifiedGraph.getReadyItems());
 
             decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
         }

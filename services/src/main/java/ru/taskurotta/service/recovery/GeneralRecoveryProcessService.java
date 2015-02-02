@@ -70,34 +70,42 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     public boolean restartProcess(final UUID processId) {
         logger.trace("#[{}]: try to restart process", processId);
 
-        boolean result = false;//val=true if some tasks have been placed to queue
+        // val=true if some tasks have been placed to queue
+        boolean result = false;
 
         Graph graph = dependencyService.getGraph(processId);
 
-        if (graph == null) {//have only process service info => restart whole process
+
+        if (graph == null) {
+            // have only process service info => restart whole process
 
             logger.warn("#[{}]: graph was not found (possible data loss?), try to restart process from start task", processId);
             result = restartProcessFromBeginning(processId);
 
-        } else if (graph.isFinished()) {// process is already finished => just mark process as finished
+        } else if (graph.isFinished()) {
+            // process is already finished => just mark process as finished
 
             logger.debug("#[{}]: isn't finished, but graph is finished, force finish process", processId);
             TaskContainer startTaskContainer = processService.getStartTask(processId);
             finishProcess(processId, startTaskContainer.getTaskId(), graph.getProcessTasks());
 
-        } else if (hasRecentActivity(graph)) {//was restarted or updated recently  => leave it alone for now
+        } else if (hasRecentActivity(graph)) {
+            // was restarted or updated recently  => leave it alone for now
 
             logger.debug("#[{}]: graph was recently applied or recovered, skip it", processId);
 
-        } else {// require restart => try to find process's tasks for restart
+        } else {
+            // require restart => try to find process's tasks for restart
 
             final Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
-            if (taskContainers == null) {//there is a problem in task store => restart process
+            if (taskContainers == null) {
+                // there is a problem in task store => restart process
 
                 logger.warn("#[{}]: task containers were not found (possible data loss?), try to restart process from start task", processId);
                 result = restartProcessFromBeginning(processId);
 
-            } else {//restart unfinished tasks
+            } else {
+                // restart unfinished tasks
 
                 final AtomicBoolean boolContainer = new AtomicBoolean();
 
@@ -111,6 +119,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                     @Override
                     public boolean apply(Graph graph) {
                         graph.setTouchTimeMillis(System.currentTimeMillis());
+
                         if (logger.isTraceEnabled()) {
                             logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
                                     new Date(graph.getTouchTimeMillis()));
@@ -148,9 +157,16 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         boolean result = false;
 
         long lastChange = Math.max(graph.getLastApplyTimeMillis(), graph.getTouchTimeMillis());
-        if (lastChange > 0) {//has some modifications, check if they expired
+        if (lastChange > 0) {
+            //has some modifications, check if they expired
+
             long changeTimeout = System.currentTimeMillis() - lastChange;
             logger.debug("#[{}]: activity check for graph: change timeout[{}], last change[{}]", graph.getGraphId(), changeTimeout, lastChange);
+
+            // todo: may be we not need "recoveryProcessChangeTimeout" property?
+            // we can have two properties: process-finish-timeout and process-idle-timeout.
+            // And have different recovery strategies for each other.
+            // to find processes of process-idle-timeout we can use mongodb Graph collection
             result = changeTimeout < recoveryProcessChangeTimeout;
         }
 
@@ -282,6 +298,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             @Override
             public boolean apply(Graph graph) {
 
+                // todo:should create new method on Graph with Set<UUID> return type
+                // Set is enough for this needs
                 notFinishedItems.putAll(graph.getAllReadyItems());
 
                 return false;

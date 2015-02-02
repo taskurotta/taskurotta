@@ -16,19 +16,16 @@
 
 package ru.taskurotta.hazelcast.queue.impl;
 
-import com.hazelcast.nio.ObjectDataInput;
-import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
-import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 import com.hazelcast.nio.serialization.SerializationService;
 import com.hazelcast.spi.NodeEngine;
+import com.yammer.metrics.core.Meter;
+import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * This class contains methods be notable for the Queue.
  * such as pool,peek,clear..
  */
-public class QueueContainer implements IdentifiedDataSerializable {
+public class QueueContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(QueueContainer.class);
 
@@ -67,7 +64,26 @@ public class QueueContainer implements IdentifiedDataSerializable {
     protected int maxBufferSize;
     protected long heapCost = 0;
 
-    private boolean isEvictionScheduled = false;
+    private Meter pollNotNullMeter;
+    private Timer offerTimer;
+    private SizeAdviser sizeAdviser;
+
+    QueueContainer(String queueName, CachedQueueConfig config, NodeEngine nodeEngine, QueueService service) throws
+            Exception {
+
+        this.name = queueName;
+
+        pollWaitNotifyKey = new QueueWaitNotifyKey(name, "poll");
+        offerWaitNotifyKey = new QueueWaitNotifyKey(name, "offer");
+
+        setConfig(config, nodeEngine, service);
+
+        final String hzInstanceName = nodeEngine.getHazelcastInstance().getName();
+
+        this.pollNotNullMeter = SizeAdviser.getPollNotNullMeter(hzInstanceName, queueName);
+        this.offerTimer = SizeAdviser.getOfferTimer(hzInstanceName, queueName);
+        this.sizeAdviser = service.getSizeAdviser();
+    }
 
 
     public int size() {
@@ -82,6 +98,8 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
         if (DEBUG_FULL) logger.debug("offer(): name = {} buffer.size() = {} headId = {} tailId = {} " +
                 "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
+
+        offerTimer.update(data.getHeapCost(), TimeUnit.NANOSECONDS);
 
         final long itemId = nextId();
 
@@ -108,7 +126,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
             }
         }
 
-        cancelEvictionIfExists();
+        //cancelEvictionIfExists();
         return itemId;
     }
 
@@ -136,7 +154,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
         while(true) {
             if (isEmpty()) {
                 bufferClosed = false;
-                scheduleEvictionIfEmpty();
                 return null;
             }
 
@@ -165,12 +182,15 @@ public class QueueContainer implements IdentifiedDataSerializable {
                 if (item == null) {
                     reset();
                 } else {
-                    scheduleEvictionIfEmpty();
+                    if (DEBUG_FULL) logger.debug("poll(): name = {}", name);
+
+                    pollNotNullMeter.mark();
                     return item;
                 }
             } else {
                 if (DEBUG_FULL) logger.debug("poll(): name = {}", name);
-                scheduleEvictionIfEmpty();
+
+                pollNotNullMeter.mark();
                 return item;
             }
         }
@@ -258,40 +278,17 @@ public class QueueContainer implements IdentifiedDataSerializable {
     }
 
 
-//    private void scheduleEvictionIfEmpty() {
-//
-//        service.scheduleEviction(name, 5000);
-//    }
-
     private void scheduleEvictionIfEmpty() {
-        final int emptyQueueTtl = config.getEmptyQueueTtl();
-        if (emptyQueueTtl < 0) {
-            return;
-        }
-        if (isEmpty() && !isEvictionScheduled) {
-            if (emptyQueueTtl == 0) {
-                nodeEngine.getProxyService().destroyDistributedObject(CachedQueue.class.getName(), name);
-            } else if (emptyQueueTtl > 0) {
-                logger.debug("Scheduling eviction emptyQueueTtl = {} seconds", emptyQueueTtl);
-                service.scheduleEviction(name, TimeUnit.SECONDS.toMillis(emptyQueueTtl));
-                isEvictionScheduled = true;
-            }
-        }
+        service.scheduleEviction(name, 5000);
     }
 
     public void cancelEvictionIfExists() {
-        if (isEvictionScheduled) {
-            service.cancelEviction(name);
-            logger.debug("Scheduling eviction canceled");
-            isEvictionScheduled = false;
-        }
     }
-
 
     public boolean isEvictable() {
         service.scheduleEviction(name, 5000);
 
-        //resizeBuffer();
+        resizeBuffer(sizeAdviser.getRecommendedSize(name));
         return false;
     }
 
@@ -410,18 +407,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
 
     // old stuff
 
-    public QueueContainer(String name) {
-        this.name = name;
-
-        pollWaitNotifyKey = new QueueWaitNotifyKey(name, "poll");
-        offerWaitNotifyKey = new QueueWaitNotifyKey(name, "offer");
-    }
-
-    QueueContainer(String name, CachedQueueConfig config, NodeEngine nodeEngine, QueueService service) throws
-            Exception {
-        this(name);
-        setConfig(config, nodeEngine, service);
-    }
 
 
     public Map<Long, Data> addAll(Collection<Data> dataList) {
@@ -444,7 +429,6 @@ public class QueueContainer implements IdentifiedDataSerializable {
         heapCost = 0;
         buffer.clear();
         bufferClosed = false;
-        scheduleEvictionIfEmpty();
     }
 
     // todo: not needed. should be removed
@@ -492,25 +476,7 @@ public class QueueContainer implements IdentifiedDataSerializable {
         return config;
     }
 
-    // todo: not needed. should be removed
-    @Override
-    public void writeData(ObjectDataOutput out) throws IOException {
-    }
-
-    @Override
-    public void readData(ObjectDataInput in) throws IOException {
-    }
-
     public void destroy() {
     }
 
-    @Override
-    public int getFactoryId() {
-        return QueueDataSerializerHook.F_ID;
-    }
-
-    @Override
-    public int getId() {
-        return QueueDataSerializerHook.QUEUE_CONTAINER;
-    }
 }

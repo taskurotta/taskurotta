@@ -213,6 +213,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         logger.debug("lastPolledTaskEnqueueTimes updated for queue[{}] with new value [{}]", queueName, lastPolledTaskEnqueueTime);
     }
 
+    // todo: should be removed
     private TaskQueueItem getValueAfterNullDrain(String queueName, CachedDelayQueue<TaskQueueItem> queue) {
         TaskQueueItem result = null;
         if (drainLock.tryLock()) {

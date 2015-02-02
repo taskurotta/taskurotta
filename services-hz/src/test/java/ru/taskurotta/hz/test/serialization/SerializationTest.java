@@ -366,7 +366,7 @@ public class SerializationTest {
         assertEquals(processDecisionUnitOfWork, getted);
     }
 
-    private TaskOptionsContainer getTaskOptionsContainer() {
+    public static TaskOptionsContainer getTaskOptionsContainer() {
         TaskConfigContainer container = new TaskConfigContainer();
         container.setCustomId("customId");
         container.setStartTime(new Date().getTime());
@@ -414,7 +414,7 @@ public class SerializationTest {
         return new TaskOptionsContainer(new ArgType[]{ArgType.NO_WAIT, ArgType.WAIT}, container, array);
     }
 
-    private static Graph newRandomGraph() {
+    public static Graph newRandomGraph() {
 
         Map<UUID, Long> notFinishedItems = new HashMap<>();
         notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());

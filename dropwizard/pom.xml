@@ -21,6 +21,11 @@
             <artifactId>services</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.dropwizard</groupId>

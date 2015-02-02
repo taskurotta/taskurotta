@@ -19,6 +19,7 @@ import java.lang.management.ManagementFactory;
 public class Main {
 
     public static void main(String[] args) throws IOException, ArgumentParserException, ClassNotFoundException {
+
         Bootstrap bootstrap = new Bootstrap(args);
         bootstrap.start();
 

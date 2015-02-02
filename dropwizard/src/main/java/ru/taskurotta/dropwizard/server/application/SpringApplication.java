@@ -19,6 +19,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import ru.taskurotta.dropwizard.server.ServerPropertiesAware;
 import ru.taskurotta.service.config.impl.MemoryConfigService;
+import ru.taskurotta.util.MemoryAllocationConfigurator;
+import ru.taskurotta.util.PropertiesUtil;
 
 import javax.ws.rs.Path;
 import java.io.IOException;
@@ -160,34 +162,19 @@ public class SpringApplication extends Application<TaskServerConfig> {
         }
 
         //2. Override/extend them with properties from external configuration file
-        result = extendProps(result, configuration.getProperties(), null);
+        result = PropertiesUtil.addProperties(result, configuration.getProperties());
 
         //3. Override/extend them with system properties
-        result = extendProps(result, System.getProperties(), SYSTEM_PROP_PREFIX);
+        result = PropertiesUtil.addProperties(result, System.getProperties(), SYSTEM_PROP_PREFIX);
+
+        //4. Add calculated at runtime properties
+        result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result));
 
         return result;
     }
 
-    private Properties extendProps(Properties mergeTo, Properties mergeFrom, String prefix) {
-        if (mergeTo == null) {
-            return mergeFrom;
-        }
-        if (mergeFrom != null) {
-            for (Map.Entry<Object, Object> entry : mergeFrom.entrySet()) {
-                if (prefix != null) {//filter only prefixed properties
-                    String stringKey = entry.getKey().toString();
-                    if (stringKey.startsWith(prefix)) {
-                        mergeTo.put(stringKey.substring(prefix.length()), entry.getValue());
-                    }
-                } else {
-                    mergeTo.put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        return mergeTo;
-    }
-
     public static void main(String[] args) throws Exception {
+
         new SpringApplication().run(args);
     }
 
