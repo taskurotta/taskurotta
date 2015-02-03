@@ -9,6 +9,8 @@ public interface BDataOutput {
 
     public void writeString(CString name, String value);
 
+    public void writeString(int i, String value);
+
     public void writeUUID(CString name, UUID value);
 
     public void writeInt(CString name, int value);

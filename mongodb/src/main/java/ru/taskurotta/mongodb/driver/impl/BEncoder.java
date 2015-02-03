@@ -8,15 +8,7 @@ import ru.taskurotta.mongodb.driver.CString;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.bson.BSON.ARRAY;
-import static org.bson.BSON.BINARY;
-import static org.bson.BSON.B_UUID;
-import static org.bson.BSON.DATE;
-import static org.bson.BSON.EOO;
-import static org.bson.BSON.NUMBER_INT;
-import static org.bson.BSON.NUMBER_LONG;
-import static org.bson.BSON.OBJECT;
-import static org.bson.BSON.STRING;
+import static org.bson.BSON.*;
 
 /**
  */
@@ -24,6 +16,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     public static final int ID_CACHE_SIZE = 1000;
     public static final CString[] ARRAY_INDEXES = new CString[ID_CACHE_SIZE];
+
     static {
         for (int i = 0; i < ARRAY_INDEXES.length; i++) {
             ARRAY_INDEXES[i] = new CString(Integer.toString(i));
@@ -86,6 +79,15 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         _buf.write(STRING);
         name.writeCString(_buf);
         _buf.writeString(value);
+    }
+
+    @Override
+    public void writeString(int i, String value) {
+        if (i > -1 && i < ID_CACHE_SIZE) {
+            writeString(ARRAY_INDEXES[i], value);
+        } else {
+            writeString(new CString(Integer.toString(i)), value);
+        }
     }
 
     @Override

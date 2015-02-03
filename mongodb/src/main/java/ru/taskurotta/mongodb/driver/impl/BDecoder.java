@@ -15,27 +15,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.UUID;
 
-import static org.bson.BSON.ARRAY;
-import static org.bson.BSON.BINARY;
-import static org.bson.BSON.BOOLEAN;
-import static org.bson.BSON.CODE;
-import static org.bson.BSON.CODE_W_SCOPE;
-import static org.bson.BSON.DATE;
-import static org.bson.BSON.EOO;
-import static org.bson.BSON.MAXKEY;
-import static org.bson.BSON.MINKEY;
-import static org.bson.BSON.NULL;
-import static org.bson.BSON.NUMBER;
-import static org.bson.BSON.NUMBER_INT;
-import static org.bson.BSON.NUMBER_LONG;
-import static org.bson.BSON.OBJECT;
-import static org.bson.BSON.OID;
-import static org.bson.BSON.REF;
-import static org.bson.BSON.REGEX;
-import static org.bson.BSON.STRING;
-import static org.bson.BSON.SYMBOL;
-import static org.bson.BSON.TIMESTAMP;
-import static org.bson.BSON.UNDEFINED;
+import static org.bson.BSON.*;
 
 /**
  */
@@ -139,7 +119,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
             namesMap.put(name, name);
 
             if (DEBUG)
-            System.err.println("CString is [" + name + "] offset = " + name.getOffset() + " length = " + name.getLength());
+                System.err.println("CString is [" + name + "] offset = " + name.getOffset() + " length = " + name.getLength());
 
             // skip CStr bytes
             pos += name.getLength() + 1;
@@ -168,7 +148,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
                 case NUMBER_LONG:
                     if (DEBUG)
-                    System.err.println("LONG!!!! ]" + name + "[");
+                        System.err.println("LONG!!!! ]" + name + "[");
                     pos += 8;
                     break;
 
@@ -312,6 +292,19 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         }
 
         return BDecoderUtil.readString(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
+    }
+
+    @Override
+    public String readString(int i) {
+        CString id;
+
+        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
+            id = BEncoder.ARRAY_INDEXES[i];
+        } else {
+            id = new CString(i);
+        }
+
+        return readString(id);
     }
 
     @Override

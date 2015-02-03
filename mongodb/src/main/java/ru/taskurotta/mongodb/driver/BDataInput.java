@@ -13,6 +13,8 @@ public interface BDataInput {
 
     public String readString(CString name);
 
+    public String readString(int i);
+
     public Date readDate(CString name);
 
     public UUID readUUID(CString name);
