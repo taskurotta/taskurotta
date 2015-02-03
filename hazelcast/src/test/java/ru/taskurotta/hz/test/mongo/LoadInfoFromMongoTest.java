@@ -153,7 +153,7 @@ public class LoadInfoFromMongoTest {
 
         TimeUnit.SECONDS.sleep(1);
         MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
-                MongoCachedQueueStorageFactory(mongoTemplate);
+                MongoCachedQueueStorageFactory(mongoTemplate, null);
 
         cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
                 (QUEUE_NAME, cachedQueueStoreConfig));

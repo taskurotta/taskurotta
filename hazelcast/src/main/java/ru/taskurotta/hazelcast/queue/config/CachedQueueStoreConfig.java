@@ -32,6 +32,7 @@ public class CachedQueueStoreConfig {
     private boolean enabled = true;
     private boolean binary = false;
     private int batchLoadSize = DEFAULT_BATCH_LOAD_SIZE;
+    private String objectClassName;
     private String className;
     private String factoryClassName;
     private Properties properties = new Properties();
@@ -132,13 +133,27 @@ public class CachedQueueStoreConfig {
         return this;
     }
 
+    public String getObjectClassName() {
+        return objectClassName;
+    }
+
+    public CachedQueueStoreConfig setObjectClassName(String objectClassName) {
+        this.objectClassName = objectClassName;
+        return this;
+    }
+
+    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("QueueStoreConfig");
-        sb.append("{enabled=").append(enabled);
-        sb.append(", className='").append(className).append('\'');
-        sb.append(", properties=").append(properties);
-        sb.append('}');
-        return sb.toString();
+        return "CachedQueueStoreConfig{" +
+                "enabled=" + enabled +
+                ", binary=" + binary +
+                ", batchLoadSize=" + batchLoadSize +
+                ", objectClassName='" + objectClassName + '\'' +
+                ", className='" + className + '\'' +
+                ", factoryClassName='" + factoryClassName + '\'' +
+                ", properties=" + properties +
+                ", storeImplementation=" + storeImplementation +
+                ", factoryImplementation=" + factoryImplementation +
+                '}';
     }
 }

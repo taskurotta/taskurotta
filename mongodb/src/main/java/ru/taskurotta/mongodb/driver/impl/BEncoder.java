@@ -4,6 +4,8 @@ import com.mongodb.DefaultDBEncoder;
 import org.bson.BSONObject;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
+import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.StreamBSerializer;
 
 import java.util.Date;
 import java.util.UUID;
@@ -24,16 +26,17 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     public static final int ID_CACHE_SIZE = 1000;
     public static final CString[] ARRAY_INDEXES = new CString[ID_CACHE_SIZE];
+
     static {
         for (int i = 0; i < ARRAY_INDEXES.length; i++) {
             ARRAY_INDEXES[i] = new CString(Integer.toString(i));
         }
     }
 
-    private BSerializationServiceImpl serializationService;
+    private StreamBSerializer streamBSerializer;
 
-    protected BEncoder(BSerializationServiceImpl serializationService) {
-        this.serializationService = serializationService;
+    protected BEncoder(StreamBSerializer streamBSerializer) {
+        this.streamBSerializer = streamBSerializer;
     }
 
     protected boolean handleSpecialObjects(String name, BSONObject o) {
@@ -47,7 +50,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         final int sizePos = _buf.getPosition();
         _buf.writeInt(0); // leaving space for this.  set it at the end
 
-        serializationService.writeObject(this, ((DBObjectСheat) o).getObject());
+        streamBSerializer.write(this, ((DBObjectСheat) o).getObject());
 
         _buf.write(EOO);
         _buf.writeInt(sizePos, _buf.getPosition() - sizePos);

@@ -1,6 +1,6 @@
-package ru.taskurotta.mongodb.io;
+package ru.taskurotta.mongodb.driver.io;
 
-import ru.taskurotta.mongodb.domain.RootPojo;
+import ru.taskurotta.mongodb.driver.domain.RootPojo;
 import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
@@ -18,6 +18,11 @@ public class RootPojoStreamBSerializer implements StreamBSerializer<RootPojo> {
     public static final CString LONG_ARRAY = new CString("longArray");
 
     InnerPojoStreamBSerializer innerSerializer = new InnerPojoStreamBSerializer();
+
+    @Override
+    public Class<RootPojo> getObjectClass() {
+        return RootPojo.class;
+    }
 
     @Override
     public void write(BDataOutput out, RootPojo rootObj) {

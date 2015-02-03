@@ -34,7 +34,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static com.hazelcast.util.ValidationUtil.checkNotNull;
 
@@ -228,17 +227,6 @@ public final class QueueStoreWrapper implements CachedQueueStore<Data> {
     }
 
     @Override
-    public Map<Long, Data> loadAll(Collection<Long> keys) {
-        if (!enabled) {
-            return null;
-        }
-
-        final Map<Long, ?> map = store.loadAll(keys);
-
-        return serializeToData(map);
-    }
-
-    @Override
     public Map<Long, Data> loadAll(long from, long to) {
 
         if (!enabled) {
@@ -273,14 +261,6 @@ public final class QueueStoreWrapper implements CachedQueueStore<Data> {
             }
         }
         return dataMap;
-    }
-
-    @Override
-    public Set<Long> loadAllKeys() {
-        if (enabled) {
-            return store.loadAllKeys();
-        }
-        return null;
     }
 
     @Override

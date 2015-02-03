@@ -12,12 +12,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
             <version>${spring.version}</version>

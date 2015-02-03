@@ -30,6 +30,7 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
         <constructor-arg name="batchLoadSize" value="${hz.queue.task.batch-load-size}"/>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.queue.TaskQueueItem"/>
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
@@ -51,6 +52,7 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${gc.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${gc.queue.batch-load-size}"/>
+        <constructor-arg name="objectClassName"><null/></constructor-arg>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
@@ -65,6 +67,7 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${recovery.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
+        <constructor-arg name="objectClassName"><null/></constructor-arg>
     </bean>
     <!-- /Queues persistence support -->
 
@@ -79,6 +82,8 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
+        <constructor-arg name="bSerializationService" ref="bSerializationService" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.queue.TaskQueueItem"/>
     </bean>
 
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
@@ -91,6 +96,8 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
+        <constructor-arg name="bSerializationService"><null/></constructor-arg>
+        <constructor-arg name="objectClassName"><null/></constructor-arg>
     </bean>
     <!-- /Delay queue support -->
 

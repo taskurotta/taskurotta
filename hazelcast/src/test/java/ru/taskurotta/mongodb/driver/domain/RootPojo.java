@@ -1,4 +1,4 @@
-package ru.taskurotta.mongodb.domain;
+package ru.taskurotta.mongodb.driver.domain;
 
 import java.util.Date;
 import java.util.UUID;
