@@ -1,5 +1,6 @@
 package ru.taskurotta.mongodb.driver.io;
 
+import ru.taskurotta.mongodb.driver.domain.InnerPojo;
 import ru.taskurotta.mongodb.driver.domain.RootPojo;
 import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
@@ -32,14 +33,18 @@ public class RootPojoStreamBSerializer implements StreamBSerializer<RootPojo> {
         out.writeDate(DATE, rootObj.getDate());
         out.writeUUID(UUID, rootObj.getUuid());
 
-        int label = out.writeObject(HOUSE);
-        innerSerializer.write(out, rootObj.getHouse());
-        out.writeObjectStop(label);
+        InnerPojo house = rootObj.getHouse();
+
+        if (house != null) {
+            final int label = out.writeObject(HOUSE);
+            innerSerializer.write(out, rootObj.getHouse());
+            out.writeObjectStop(label);
+        }
 
         long[] longs = rootObj.getLongArray();
 
         if (longs != null) {
-            label = out.writeArray(LONG_ARRAY);
+            final int label = out.writeArray(LONG_ARRAY);
             for (int i = 0; i < longs.length; i++) {
                 out.writeLong(i, longs[i]);
             }
@@ -51,7 +56,8 @@ public class RootPojoStreamBSerializer implements StreamBSerializer<RootPojo> {
     @Override
     public RootPojo read(BDataInput in) {
 
-        RootPojo obj = new RootPojo(in.readInt(_ID));
+        RootPojo obj = new RootPojo();
+        obj.setI(in.readInt(_ID));
 
         obj.setDate(in.readDate(DATE));
 

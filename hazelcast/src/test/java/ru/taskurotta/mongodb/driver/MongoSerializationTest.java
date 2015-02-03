@@ -1,6 +1,7 @@
 package ru.taskurotta.mongodb.driver;
 
 import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -61,7 +62,7 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < COLLECTION_SIZE; i++) {
 
-            DBObject dbo = converter.toDBObject(new RootPojo(i));
+            DBObject dbo = converter.toDBObject(new RootPojo(i, "hehehe"));
             dbo.put("_id", i);
 
             coll.insert(dbo);
@@ -93,6 +94,32 @@ public class MongoSerializationTest {
 
         // memory up from 56 to 393 mb
 //        TimeUnit.SECONDS.sleep(20);
+
+        startTime = System.currentTimeMillis();
+
+        logger.debug("Start to remove {} elements ...", COLLECTION_SIZE);
+
+        int j = 0;
+
+        BasicDBList idList = new BasicDBList();
+
+
+        for (j = 0; j < COLLECTION_SIZE + 1; j++) {
+
+            idList.add(j);
+//            System.err.println("added " + (j + 1 % 100));
+            if (j > 0 && j % 100 == 0) {
+                BasicDBObject inListObj = new BasicDBObject("$in", idList);
+                coll.remove(new BasicDBObject("_id", inListObj));
+                idList.clear();;
+//                System.err.println("REMOVE!!");
+            }
+
+        }
+
+        // 15860
+        logger.debug("Done remove {} elements: {} milliseconds", j, (System.currentTimeMillis() - startTime));
+
     }
 
     @Test
@@ -116,7 +143,7 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < COLLECTION_SIZE; i++) {
 
-            DBObjectСheat document = new DBObjectСheat(new RootPojo(i));
+            DBObjectСheat document = new DBObjectСheat(new RootPojo(i, "hahaha"));
 
             coll.insert(document);
         }
@@ -142,28 +169,23 @@ public class MongoSerializationTest {
         logger.debug("Done read {} elements: {} milliseconds", i, (System.currentTimeMillis() - startTime));
 
 
-        // find by query
-        BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", Integer.MIN_VALUE).append("$lte",
-                Integer.MAX_VALUE));
-
         startTime = System.currentTimeMillis();
 
-        logger.debug("Start to load {} elements with simple query...", COLLECTION_SIZE);
+        logger.debug("Start to remove {} elements ...", COLLECTION_SIZE);
 
         int j = 0;
-        try (DBCursor cursor = coll.find(query).batchSize(100)) {
-            while (cursor.hasNext()) {
 
-                DBObject obj = cursor.next();
+        DBObjectID objectID = new DBObjectID(null);
+        WriteConcern writeConcern = new WriteConcern(0, 0, false, true);
 
-                RootPojo rootPojo = (RootPojo) ((DBObjectСheat) obj).getObject();
-                if (rootPojo != null) {
-                    j++;
-                }
-            }
+        for (j = 0; j < COLLECTION_SIZE; j++) {
+
+            objectID.setId(j);
+            coll.remove(objectID, writeConcern);
         }
 
-        logger.debug("Done read {} elements: {} milliseconds", j, (System.currentTimeMillis() - startTime));
+
+        logger.debug("Done remove {} elements: {} milliseconds", j, (System.currentTimeMillis() - startTime));
 
 
 //        TimeUnit.SECONDS.sleep(20);

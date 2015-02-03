@@ -86,6 +86,8 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeString(CString name, String value) {
+        if (value == null) return;
+
         _buf.write(STRING);
         name.writeCString(_buf);
         _buf.writeString(value);
@@ -93,6 +95,8 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeUUID(CString name, UUID value) {
+        if (value == null) return;
+
         _buf.write(BINARY);
         name.writeCString(_buf);
         _buf.writeInt(16);
@@ -126,6 +130,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeDate(CString name, Date value) {
+        if (value == null) return;
         _buf.write(DATE);
         name.writeCString(_buf);
         _buf.writeLong(value.getTime());

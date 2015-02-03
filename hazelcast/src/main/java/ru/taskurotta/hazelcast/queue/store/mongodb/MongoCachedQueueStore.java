@@ -7,6 +7,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
@@ -42,6 +43,8 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer deleteTimer = Metrics.newTimer(MongoCachedQueueStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+
+    private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
 
     private String storageName;
     private MongoTemplate mongoTemplate;
@@ -97,7 +100,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
         try {
             DBObject dbo = new BasicDBObject();
             dbo.put("_id", aLong);
-            coll.remove(dbo);
+            coll.remove(dbo, noWaitWriteConcern);
         } finally {
             deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
@@ -137,12 +140,24 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
     @Override
     public void deleteAll(Collection<Long> longs) {
-        BasicDBList dbo = new BasicDBList();
-        for (Long key : longs) {
-            dbo.add(new BasicDBObject("_id", key));
+
+        int j = 0;
+        int size = longs.size();
+
+        BasicDBList idList = new BasicDBList();
+
+        for (long id: longs) {
+            j ++;
+
+            idList.add(id);
+
+            if (j % 100 == 0 && j == size) {
+                BasicDBObject inListObj = new BasicDBObject("$in", idList);
+                coll.remove(new BasicDBObject("_id", inListObj), noWaitWriteConcern);
+                idList.clear();;
+            }
         }
-        BasicDBObject dbb = new BasicDBObject("$or", dbo);
-        coll.remove(dbb);
+
     }
 
     @Override

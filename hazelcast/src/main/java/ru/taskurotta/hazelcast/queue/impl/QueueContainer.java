@@ -29,6 +29,7 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class contains methods be notable for the Queue.
@@ -37,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 public class QueueContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(QueueContainer.class);
+
+    public static AtomicInteger addedTaskToQueue = new AtomicInteger();
 
     private static final boolean DEBUG_FULL = false;
     private static final boolean DEBUG_LOAD = false;
@@ -92,6 +95,7 @@ public class QueueContainer {
         return headId > tailId;
     }
 
+    // todo: why it returns data?
     public long offer(Data data) {
 
         if (DEBUG_FULL) logger.debug("offer(): name = {} buffer.size() = {} headId = {} tailId = {} " +
@@ -124,6 +128,7 @@ public class QueueContainer {
             }
         }
 
+        addedTaskToQueue.incrementAndGet();
         return itemId;
     }
 

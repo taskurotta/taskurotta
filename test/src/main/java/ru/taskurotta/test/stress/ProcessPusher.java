@@ -9,9 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
+import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
+import ru.taskurotta.service.hz.queue.HzQueueService;
 import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 import ru.taskurotta.test.stress.process.Starter;
@@ -221,13 +223,13 @@ public class ProcessPusher {
                         MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate()));
 
                 sb.append("\nMongo Queues statistics:");
-                sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
+                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f",
                         MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate()));
-                sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
+                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f",
                         MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate()));
-                sb.append(String.format("\nload all   mean: %8.3f oneMinuteRate: %8.3f",
+                sb.append(String.format("\nload all   mean: %8.3f rate: %8.3f",
                         MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()));
-                sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
+                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f",
                         MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate()));
 
                 int pushedCount = ProcessPusher.counter.get();
@@ -248,6 +250,13 @@ public class ProcessPusher {
                         "  restartedTasksCounter = " +
                         GeneralRecoveryProcessService.restartedTasksCounter);
 
+                sb.append("\n startedDistributedTasks = " + GeneralTaskServer.startedDistributedTasks.get() +
+                        "  pending = " + (GeneralTaskServer.startedDistributedTasks.get()
+                        - GeneralTaskServer.finishedDistributedTasks.get()));
+
+                sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
+                        "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
+                        ()));
 
                 logger.info(sb.toString());
 

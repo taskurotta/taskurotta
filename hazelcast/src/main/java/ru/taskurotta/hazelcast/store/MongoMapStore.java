@@ -24,6 +24,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
@@ -50,6 +51,9 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer deleteTimer = Metrics.newTimer(MongoMapStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+
+    private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
+
     private String mapName;
     private MongoDBConverter converter;
     private DBCollection coll;
@@ -87,19 +91,30 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         try {
             DBObject dbo = new BasicDBObject();
             dbo.put("_id", key);
-            coll.remove(dbo);
+            coll.remove(dbo, noWaitWriteConcern);
         } finally {
             deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
     }
 
     public void deleteAll(Collection keys) {
-        BasicDBList dbo = new BasicDBList();
-        for (Object key : keys) {
-            dbo.add(new BasicDBObject("_id", key));
+
+        int j = 0;
+        int size = keys.size();
+
+        BasicDBList idList = new BasicDBList();
+
+        for (Object id: keys) {
+            j ++;
+
+            idList.add(id);
+
+            if (j % 100 == 0 && j == size) {
+                BasicDBObject inListObj = new BasicDBObject("$in", idList);
+                coll.remove(new BasicDBObject("_id", inListObj), noWaitWriteConcern);
+                idList.clear();;
+            }
         }
-        BasicDBObject dbb = new BasicDBObject("$or", dbo);
-        coll.remove(dbb);
     }
 
 

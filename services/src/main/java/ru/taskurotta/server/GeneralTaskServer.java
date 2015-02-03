@@ -48,6 +48,9 @@ public class GeneralTaskServer implements TaskServer {
     public static final AtomicInteger finishedProcessesCounter = new AtomicInteger();
     public static final AtomicInteger brokenProcessesCounter = new AtomicInteger();
 
+    public static final AtomicInteger startedDistributedTasks = new AtomicInteger();
+    public static final AtomicInteger finishedDistributedTasks = new AtomicInteger();
+
     protected ProcessService processService;
     protected TaskService taskService;
     protected QueueService queueService;
