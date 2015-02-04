@@ -58,7 +58,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 //    }
 //
 //
-//    protected void addLong(CString name, long n) {
+//    protected void addLoong(CString name, long n) {
 //        _buf.write(NUMBER_LONG);
 //        name.writeCString(_buf);
 //        _buf.writeLong(n);

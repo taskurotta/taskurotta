@@ -24,14 +24,21 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
     private ErrorContainerSerializer errorContainerSerializer = new ErrorContainerSerializer();
 
     @Override
+    public Class<ArgContainer> getObjectClass() {
+        return ArgContainer.class;
+    }
+
+    @Override
     public void write(BDataOutput out, ArgContainer object) {
         out.writeUUID(TASK_ID, object.getTaskId());
         out.writeString(DATA_TYPE, object.getDataType());
         writeArgContainersArray(COMPOSITE_VALUE, out, object.getCompositeValue());
         out.writeString(JSON_VALUE, object.getJSONValue());
-        int errorContainerLabel = out.writeObject(ERROR_CONTAINER);
-        errorContainerSerializer.write(out, object.getErrorContainer());
-        out.writeObjectStop(errorContainerLabel);
+        if (object.getErrorContainer() != null) {
+            int errorContainerLabel = out.writeObject(ERROR_CONTAINER);
+            errorContainerSerializer.write(out, object.getErrorContainer());
+            out.writeObjectStop(errorContainerLabel);
+        }
         out.writeInt(VALUE_TYPE, object.getValueType().getValue());
     }
 
@@ -42,10 +49,12 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
         ArgContainer[] args = readArgContainersArray(COMPOSITE_VALUE, in);
         String jsonValue = in.readString(JSON_VALUE);
         int errorContainerLabel = in.readObject(ERROR_CONTAINER);
-        ErrorContainer errorContainer = errorContainerSerializer.read(in);
-        in.readObjectStop(errorContainerLabel);
+        ErrorContainer errorContainer = null;
+        if (errorContainerLabel != -1) {
+            errorContainer = errorContainerSerializer.read(in);
+            in.readObjectStop(errorContainerLabel);
+        }
         int valueType = in.readInt(VALUE_TYPE);
-
         ArgContainer argContainer = new ArgContainer();
         argContainer.setTaskId(taskId);
         argContainer.setDataType(dataType);
@@ -57,29 +66,37 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
     }
 
 
-    public ArgContainer[] readArgContainersArray(CString name, BDataInput in){
+    public ArgContainer[] readArgContainersArray(CString name, BDataInput in) {
         int arrayLabel = in.readArray(name);
+        if (arrayLabel == -1) {
+            return null;
+        }
         int arraySize = in.readArraySize();
-        ArgContainer[] args = new ArgContainer[arraySize];
-        for (int i = 0; i < arraySize; i++) {
-            int readObjLabel = in.readObject(new CString(Integer.toString(i)));
-            ArgContainer argCont = read(in);
-            args[i] = argCont;
-            in.readObjectStop(readObjLabel);
+        ArgContainer[] args = null;
+        if (arrayLabel > 0) {
+            args = new ArgContainer[arraySize];
+            for (int i = 0; i < arraySize; i++) {
+                int readObjLabel = in.readObject(new CString(Integer.toString(i)));
+                ArgContainer argCont = read(in);
+                args[i] = argCont;
+                in.readObjectStop(readObjLabel);
+            }
         }
         in.readArrayStop(arrayLabel);
         return args;
     }
 
     public void writeArgContainersArray(CString arrayName, BDataOutput out, ArgContainer[] argContainers) {
-        int arrayLabel = out.writeArray(arrayName);
-        for (int i = 0; i < argContainers.length; i++) {
-            int objectStart = out.writeObject(new CString(Integer.toString(i))); //todo optimize that
-            ArgContainer argContainer = argContainers[i];
-            write(out, argContainer);
-            out.writeObjectStop(objectStart);
+        if (argContainers != null) {
+            int arrayLabel = out.writeArray(arrayName);
+            for (int i = 0; i < argContainers.length; i++) {
+                int objectStart = out.writeObject(new CString(Integer.toString(i))); //todo optimize that
+                ArgContainer argContainer = argContainers[i];
+                write(out, argContainer);
+                out.writeObjectStop(objectStart);
+            }
+            out.writeArrayStop(arrayLabel);
         }
-        out.writeArrayStop(arrayLabel);
     }
 
 }

@@ -19,6 +19,12 @@ public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConf
 
     RetryPolicyConfigContainerSerializer retryPolicyConfigContainerSerializer = new RetryPolicyConfigContainerSerializer();
 
+
+    @Override
+    public Class<TaskConfigContainer> getObjectClass() {
+        return TaskConfigContainer.class;
+    }
+
     @Override
     public void write(BDataOutput out, TaskConfigContainer object) {
         out.writeString(CUSTOM_ID, object.getCustomId());
@@ -36,8 +42,11 @@ public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConf
         long startTime = in.readLong(START_TIME);
         String taskList = in.readString(TASK_LIST);
         int retryContainerLabel = in.readObject(RETRY_POLICY_CONFIG_CONTAINER);
-        RetryPolicyConfigContainer configContainer = retryPolicyConfigContainerSerializer.read(in);
-        in.readObjectStop(retryContainerLabel);
+        RetryPolicyConfigContainer configContainer = null;
+        if (retryContainerLabel != -1) {
+            configContainer = retryPolicyConfigContainerSerializer.read(in);
+            in.readObjectStop(retryContainerLabel);
+        }
         TaskConfigContainer taskConfigContainer = new TaskConfigContainer();
         taskConfigContainer.setCustomId(customId);
         taskConfigContainer.setStartTime(startTime);

@@ -33,6 +33,11 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
     private TaskOptionsContainerSerializer taskOptionsContainerSerializer = new TaskOptionsContainerSerializer();
 
     @Override
+    public Class<TaskContainer> getObjectClass() {
+        return TaskContainer.class;
+    }
+
+    @Override
     public void write(BDataOutput out, TaskContainer object) {
         out.writeUUID(TASK_ID, object.getTaskId());
         out.writeUUID(PROCESS_ID, object.getProcessId());
@@ -49,9 +54,11 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
         }
         out.writeArrayStop(failTypesLabel);
         argContainerSerializer.writeArgContainersArray(ARG_CONTAINERS, out, object.getArgs());
-        int taskOptionsContainerLabel = out.writeObject(TASK_OPTIONS_CONTAINER);
-        taskOptionsContainerSerializer.write(out, object.getOptions());
-        out.writeObjectStop(taskOptionsContainerLabel);
+        if (object.getOptions() != null) {
+            int taskOptionsContainerLabel = out.writeObject(TASK_OPTIONS_CONTAINER);
+            taskOptionsContainerSerializer.write(out, object.getOptions());
+            out.writeObjectStop(taskOptionsContainerLabel);
+        }
     }
 
     @Override
@@ -74,9 +81,11 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
         ArgContainer[] argContainers = argContainerSerializer.readArgContainersArray(ARG_CONTAINERS, in);
 
         int taskOptionsContainerLabel = in.readObject(TASK_OPTIONS_CONTAINER);
-        TaskOptionsContainer taskOptionsContainer = taskOptionsContainerSerializer.read(in);
-        in.readObjectStop(taskOptionsContainerLabel);
-
+        TaskOptionsContainer taskOptionsContainer = null;
+        if (taskOptionsContainerLabel != -1) {
+            taskOptionsContainer = taskOptionsContainerSerializer.read(in);
+            in.readObjectStop(taskOptionsContainerLabel);
+        }
 
         return new TaskContainer(
                 taskId,

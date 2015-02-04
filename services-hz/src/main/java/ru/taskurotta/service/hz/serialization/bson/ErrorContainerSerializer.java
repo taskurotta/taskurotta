@@ -16,8 +16,13 @@ public class ErrorContainerSerializer implements StreamBSerializer<ErrorContaine
     private CString STACK = new CString("stack");
 
     @Override
+    public Class<ErrorContainer> getObjectClass() {
+        return ErrorContainer.class;
+    }
+
+    @Override
     public void write(BDataOutput out, ErrorContainer object) {
-        out.writeString(MESSAGE, object.getMessage());
+        if (object.getMessage() != null) out.writeString(MESSAGE, object.getMessage());
         int arrayClassNamesLabel = out.writeArray(CLASSNAMES);
         for (int i = 0; i < object.getClassNames().length; i++) {
             String cl = object.getClassNames()[i];
@@ -33,12 +38,14 @@ public class ErrorContainerSerializer implements StreamBSerializer<ErrorContaine
         errorContainer.setMessage(in.readString(MESSAGE));
         int arrayClassNamesLabel = in.readArray(CLASSNAMES);
         int arrayCNsize = in.readArraySize();
-        String[] strings = new String[arrayCNsize];
-        for (int i = 0; i< arrayCNsize; i++){
-           strings[i] = in.readString(i);
+        if (arrayClassNamesLabel != -1 && arrayCNsize>0) {
+            String[] strings = new String[arrayCNsize];
+            for (int i = 0; i < arrayCNsize; i++) {
+                strings[i] = in.readString(i);
+            }
+            in.readArrayStop(arrayClassNamesLabel);
+            errorContainer.setClassNames(strings);
         }
-        in.readArrayStop(arrayClassNamesLabel);
-        errorContainer.setClassNames(strings);
         errorContainer.setStackTrace(in.readString(STACK));
         return errorContainer;
     }

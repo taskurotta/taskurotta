@@ -26,6 +26,11 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
     public static final CString TYPE = new CString("type");
 
     @Override
+    public Class<RetryPolicyConfigContainer> getObjectClass() {
+        return RetryPolicyConfigContainer.class;
+    }
+
+    @Override
     public void write(BDataOutput out, RetryPolicyConfigContainer object) {
         writeArrayOfString(EXCEPTIONS_TO_EXCLUDE, (String[]) object.getExceptionsToExclude().toArray(), out);
         writeArrayOfString(EXCEPTIONS_TO_RETRY, (String[]) object.getExceptionsToRetry().toArray(), out);
@@ -47,8 +52,8 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
         RetryPolicyConfig.RetryPolicyType policyType = RetryPolicyConfig.RetryPolicyType.build(in.readInt(TYPE));
 
         RetryPolicyConfigContainer retryPolicyConfigContainer = new RetryPolicyConfigContainer();
-        retryPolicyConfigContainer.setExceptionsToExclude(Arrays.asList(exceptionsToExclude));
-        retryPolicyConfigContainer.setExceptionsToRetry(Arrays.asList(exceptionsToRetry));
+        retryPolicyConfigContainer.setExceptionsToExclude((exceptionsToExclude != null) ? Arrays.asList(exceptionsToExclude) : null);
+        retryPolicyConfigContainer.setExceptionsToRetry((exceptionsToRetry != null) ? Arrays.asList(exceptionsToRetry) : null);
         retryPolicyConfigContainer.setInitialRetryIntervalSeconds(initialRetryIntervalSeconds);
         retryPolicyConfigContainer.setMaximumAttempts(maximumAttempts);
         retryPolicyConfigContainer.setMaximumRetryIntervalSeconds(maximumRetryIntervalSeconds);

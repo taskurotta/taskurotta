@@ -9,15 +9,15 @@ import java.util.Set;
 
 /**
  */
-public class DBObjectСheat implements DBObject {
+public class DBObjectСheat<T> implements DBObject {
 
-    final private Object obj;
+    final private T obj;
 
-    public DBObjectСheat(Object obj) {
+    public DBObjectСheat(T obj) {
         this.obj = obj;
     }
 
-    public Object getObject() {
+    public T getObject() {
         return obj;
     }
 

@@ -1,14 +1,21 @@
 package ru.taskurotta.hz.test.mongo.serialization;
 
-import com.mongodb.*;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.MongoClient;
+import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONDecoder;
-import ru.taskurotta.hz.test.mongo.serialization.custom.CustomBasicBSONEncoder;
 import ru.taskurotta.hz.test.mongo.serialization.custom.impl.TaskContainerDbObject;
 import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
+import ru.taskurotta.service.hz.serialization.bson.TaskContainerSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -20,12 +27,8 @@ import java.util.UUID;
 /**
  * Created by greg on 23/01/15.
  */
+@Ignore
 public class MongoSerializationTest {
-
-
-    public void init() {
-
-    }
 
     private MongoTemplate getMongoTemplate() throws UnknownHostException {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
@@ -40,59 +43,30 @@ public class MongoSerializationTest {
 
     @Test
     @Ignore
-    public void testWithoutCustom() throws Exception {
-        MongoTemplate mongoTemplate = getMongoTemplate();
-        DBCollection withoutCol = mongoTemplate.getCollection("without-col");
-        for (int i = 0; i < 5; i++) {
-            TaskContainer taskContainer = createTaskContainer();
-            DBObject dbObject = new BasicDBObject();
-            mongoTemplate.getConverter().write(taskContainer, dbObject);
-            withoutCol.save(dbObject);
-        }
-    }
-
-
-    @Test
-    @Ignore
     public void testWithCustom() throws Exception {
-        DBEncoderFactory customDbEncoderFactory = new DBEncoderFactory() {
-            @Override
-            public DBEncoder create() {
-                return new CustomBasicBSONEncoder();
-            }
-        };
-        DBDecoderFactory customDbDecoderFactory = new DBDecoderFactory() {
-            @Override
-            public DBDecoder create() {
-                return new CustomBasicBSONDecoder();
-            }
-        };
+
         MongoTemplate mongoTemplate = getMongoTemplate();
 
         DBCollection withCol = mongoTemplate.getCollection("clcustom");
 
+        TaskContainerSerializer taskContainerSerializer = new TaskContainerSerializer();
+
         withCol.setObjectClass(TaskContainerDbObject.class);
-        withCol.setDBEncoderFactory(customDbEncoderFactory);
-        withCol.setDBDecoderFactory(customDbDecoderFactory);
+        withCol.setDBEncoderFactory(new BEncoderFactory(taskContainerSerializer));
+        withCol.setDBDecoderFactory(new BDecoderFactory(taskContainerSerializer));
 
         List<ObjectId> list = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             TaskContainer taskContainer = createTaskContainer();
-            TaskContainerDbObject dbObject = new TaskContainerDbObject();
-            ObjectId id = new ObjectId();
-            dbObject.setObjectId(id);
-            dbObject.setObject(taskContainer);
-            withCol.save(dbObject);
-            list.add(id);
+            DBObjectСheat dbObject = new DBObjectСheat(taskContainer);
+            WriteResult writeResult = withCol.insert(dbObject);
+            list.add((ObjectId) writeResult.getUpsertedId());
         }
 
-        for (ObjectId objectId : list) {
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", objectId);
-            TaskContainerDbObject dbObj = (TaskContainerDbObject) withCol.findOne(query);
-            if (dbObj != null){
-                System.out.println("dbObj.getObjectId() = " + dbObj.getObjectId());
-                System.out.println("dbObj.getTaskContainer().getActorId() = " + dbObj.getObject().getActorId());
+        try (DBCursor cursor = withCol.find()) {
+            while (cursor.hasNext()) {
+                DBObjectСheat obj = (DBObjectСheat) cursor.next();
+                System.out.println("actorId = " + ((TaskContainer) obj.getObject()).getActorId());
             }
         }
     }
@@ -100,7 +74,7 @@ public class MongoSerializationTest {
     private TaskContainer createTaskContainer() {
         UUID taskId = UUID.randomUUID();
         String method = "method";
-        String actorId = "actorId#"+taskId.toString();
+        String actorId = "actorId#" + taskId.toString();
         TaskType type = TaskType.DECIDER_START;
         long startTime = 15121234;
         int errorAttempts = 2;

@@ -23,13 +23,15 @@ public final class SerializerTools {
         int label = in.readArray(name);
         int size = in.readArraySize();
         String[] array = null;
-        if (size > 0) {
-            array = new String[size];
-            for (int i = 0; i < size; i++) {
-                array[i] = in.readString(i);
+        if (label != -1) {
+            if (size > 0) {
+                array = new String[size];
+                for (int i = 0; i < size; i++) {
+                    array[i] = in.readString(i);
+                }
             }
+            in.readArrayStop(label);
         }
-        in.readArrayStop(label);
         return array;
     }
 
