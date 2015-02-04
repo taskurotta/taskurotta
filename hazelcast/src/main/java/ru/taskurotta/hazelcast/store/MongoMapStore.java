@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
 
     private final static Logger logger = LoggerFactory.getLogger(MongoMapStore.class);
+
     public static Timer storeTimer = Metrics.newTimer(MongoMapStore.class, "store",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer loadTimer = Metrics.newTimer(MongoMapStore.class, "load",

@@ -20,6 +20,10 @@ public class BDecoderUtil {
         return org.bson.io.Bits.readLong(bytes, offset);
     }
 
+    public static double readDouble(byte[] bytes, int offset) {
+        return Double.longBitsToDouble(org.bson.io.Bits.readLong(bytes, offset));
+    }
+
     public static int readInt(byte[] bytes, int offset) {
         return org.bson.io.Bits.readInt(bytes, offset);
     }

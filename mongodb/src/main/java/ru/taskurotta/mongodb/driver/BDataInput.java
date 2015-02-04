@@ -31,4 +31,7 @@ public interface BDataInput {
 
     public void readArrayStop(int label);
 
+    public double readDouble(CString name);
+
+    public double readDouble(int i);
 }

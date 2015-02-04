@@ -10,7 +10,16 @@ import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.bson.BSON.*;
+import static org.bson.BSON.ARRAY;
+import static org.bson.BSON.BINARY;
+import static org.bson.BSON.B_UUID;
+import static org.bson.BSON.DATE;
+import static org.bson.BSON.EOO;
+import static org.bson.BSON.NUMBER;
+import static org.bson.BSON.NUMBER_INT;
+import static org.bson.BSON.NUMBER_LONG;
+import static org.bson.BSON.OBJECT;
+import static org.bson.BSON.STRING;
 
 /**
  */
@@ -58,7 +67,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 //    }
 //
 //
-//    protected void addLoong(CString name, long n) {
+//    protected void addLong(CString name, long n) {
 //        _buf.write(NUMBER_LONG);
 //        name.writeCString(_buf);
 //        _buf.writeLong(n);
@@ -119,6 +128,22 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
             writeLong(ARRAY_INDEXES[i], value);
         } else {
             writeLong(new CString(Integer.toString(i)), value);
+        }
+    }
+
+    @Override
+    public void writeDouble(CString name, double value) {
+        _buf.write(NUMBER);
+        name.writeCString(_buf);
+        _buf.writeDouble(value);
+    }
+
+    @Override
+    public void writeDouble(int i, double value) {
+        if (i > -1 && i < ID_CACHE_SIZE) {
+            writeDouble(ARRAY_INDEXES[i], value);
+        } else {
+            writeDouble(new CString(Integer.toString(i)), value);
         }
     }
 
