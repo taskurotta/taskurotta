@@ -309,7 +309,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     public long readLong(CString name) {
         CString parsedName = currNamesMap.get(name);
         if (parsedName == null) {
-            return 0;
+            return 0L;
         }
 
         return BDecoderUtil.readLong(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
@@ -422,6 +422,29 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
                     " actual = " + label);
         }
         popStack();
+    }
+
+    @Override
+    public double readDouble(CString name) {
+        CString parsedName = currNamesMap.get(name);
+        if (parsedName == null) {
+            return 0D;
+        }
+
+        return BDecoderUtil.readDouble(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
+    }
+
+    @Override
+    public double readDouble(int i) {
+        CString id;
+
+        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
+            id = BEncoder.ARRAY_INDEXES[i];
+        } else {
+            id = new CString(i);
+        }
+
+        return readDouble(id);
     }
 
 }

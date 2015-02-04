@@ -17,6 +17,10 @@ public interface BDataOutput {
 
     public void writeLong(int i, long value);
 
+    public void writeDouble(CString name, double value);
+
+    public void writeDouble(int i, double value);
+
     public void writeDate(CString name, Date value);
 
     public int writeObject(CString name);
