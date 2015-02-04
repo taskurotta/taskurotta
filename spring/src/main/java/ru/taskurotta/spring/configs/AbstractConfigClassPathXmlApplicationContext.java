@@ -1,5 +1,7 @@
 package ru.taskurotta.spring.configs;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -18,6 +20,8 @@ import java.util.Properties;
 
 abstract class AbstractConfigClassPathXmlApplicationContext {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractConfigClassPathXmlApplicationContext.class);
+
     protected ClassPathXmlApplicationContext applicationContext;
 
     protected String context;
@@ -35,22 +39,24 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                 applicationContext = new ClassPathXmlApplicationContext(contexts, false);
             }
 
-            Properties result = properties != null? properties: new Properties();
+            Properties result = new Properties();
+            Properties traceSource = new Properties();
 
             if (StringUtils.hasText(defaultPropertiesLocation)) {
                 Properties defaultProperties;
                 try {
                     defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
+
                 } catch (IOException e) {
                     throw new IllegalStateException("Can not load default properties", e);
                 }
 
-                result = PropertiesUtil.addProperties(defaultProperties, result, null);
+                result = PropertiesUtil.mergeProperties(result, defaultProperties, traceSource, "default");
             }
 
             if (defaultPropertiesLocations != null) {
-                Properties defaultProperties = new Properties();
 
+                int i = 0;
                 for (String location : defaultPropertiesLocations) {
                     Properties props;
                     try {
@@ -58,13 +64,20 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                     } catch (IOException e) {
                         throw new IllegalStateException("Can not load properties from [" + location + "]", e);
                     }
-                    defaultProperties = PropertiesUtil.addProperties(defaultProperties, props);
+                    result = PropertiesUtil.mergeProperties(result, props, traceSource,
+                            "default[" + ++i + "]");
                 }
-
-                result = PropertiesUtil.addProperties(defaultProperties, result);
             }
 
-            result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result));
+            result = PropertiesUtil.mergeProperties(result, properties, traceSource, "yaml");
+
+            result = PropertiesUtil.mergeProperties(result, MemoryAllocationConfigurator.calculate(result), traceSource,
+                    "memory");
+
+            result = PropertiesUtil.mergeProperties(result, System.getProperties(), traceSource, "system");
+
+            PropertiesUtil.dumpProperties(result, traceSource);
+
             applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
                     ("customProperties", result));
 
@@ -91,4 +104,6 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
     public void setDefaultPropertiesLocations(String[] defaultPropertiesLocations) {
         this.defaultPropertiesLocations = defaultPropertiesLocations;
     }
+
+
 }

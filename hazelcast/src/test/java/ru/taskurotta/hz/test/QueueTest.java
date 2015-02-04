@@ -44,7 +44,7 @@ public class QueueTest {
 
         MongoTemplate mongoTemplate = getMongoTemplate();
         MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
-                MongoCachedQueueStorageFactory(mongoTemplate);
+                MongoCachedQueueStorageFactory(mongoTemplate, null);
         cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
                 (QUEUE_NAME, cachedQueueStoreConfig));
         cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);

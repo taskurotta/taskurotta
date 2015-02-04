@@ -154,6 +154,7 @@ public class SpringApplication extends Application<TaskServerConfig> {
      */
     protected Properties getMergedProperties(TaskServerConfig configuration) throws IOException {
         Properties result = new Properties();
+        Properties traceSource = new Properties();
 
         //1. defaults from classpath file
         Resource res = new ClassPathResource(DEFAULT_PROPERTIES_FILE_NAME);
@@ -162,13 +163,18 @@ public class SpringApplication extends Application<TaskServerConfig> {
         }
 
         //2. Override/extend them with properties from external configuration file
-        result = PropertiesUtil.addProperties(result, configuration.getProperties());
+        result = PropertiesUtil.mergeProperties(result, configuration.getProperties(), traceSource, "config");
 
-        //3. Override/extend them with system properties
-        result = PropertiesUtil.addProperties(result, System.getProperties(), SYSTEM_PROP_PREFIX);
 
-        //4. Add calculated at runtime properties
-        result = PropertiesUtil.addProperties(result, MemoryAllocationConfigurator.calculate(result));
+        //3. Add calculated at runtime properties
+        result = PropertiesUtil.mergeProperties(result, MemoryAllocationConfigurator.calculate(result), traceSource,
+                "memory");
+
+        //4. Override/extend them with system properties
+        result = PropertiesUtil.mergeProperties(result, System.getProperties(), traceSource,
+                "system", SYSTEM_PROP_PREFIX);
+
+        PropertiesUtil.dumpProperties(result, traceSource);
 
         return result;
     }

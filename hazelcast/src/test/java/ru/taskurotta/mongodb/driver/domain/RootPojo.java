@@ -1,4 +1,4 @@
-package ru.taskurotta.mongodb.domain;
+package ru.taskurotta.mongodb.driver.domain;
 
 import java.util.Date;
 import java.util.UUID;
@@ -8,15 +8,23 @@ import java.util.UUID;
 public class RootPojo {
 
     int i;
-    String str = "dsdsfdsf";
-    Date date = new Date();
-    UUID uuid = UUID.randomUUID();
+    String str;
+    Date date;
+    UUID uuid;
     long[] longArray = new long[] {10l, 4l, 2l, 4l};
 
     InnerPojo house = new InnerPojo();
 
-    public RootPojo(int i) {
+    public RootPojo() {
+    }
+
+    public RootPojo(int i, String str) {
         this.i = i;
+        this.str = "dsdsfdsf";
+        this.date = new Date();
+        this.uuid = UUID.randomUUID();
+        this.longArray = new long[] {10l, 4l, 2l, 4l};
+        this.house = new InnerPojo();
     }
 
     public int getI() {

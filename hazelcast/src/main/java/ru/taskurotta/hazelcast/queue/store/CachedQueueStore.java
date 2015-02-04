@@ -18,7 +18,6 @@ package ru.taskurotta.hazelcast.queue.store;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * QueueStore makes a queue backed by a central data store; such as database, disk, etc.
@@ -69,15 +68,6 @@ public interface CachedQueueStore<T> {
      */
     T load(Long key);
 
-    /**
-     * Loads the given keys. This is a batch load operation so that implementation can
-     * optimize the multiple loads.
-     *
-     * @param keys keys of the value entries to load
-     * @return map of loaded key-value pairs.
-     */
-    Map<Long, T> loadAll(Collection<Long> keys);
-
 
     /**
      * Loads all entries from specified interval. This is a batch load operation so that implementation can
@@ -90,13 +80,6 @@ public interface CachedQueueStore<T> {
 
     Map<Long, T> loadAll(long from, long to);
 
-
-    /**
-     * Loads all of the keys from the store.
-     *
-     * @return all the keys from the store
-     */
-    Set<Long> loadAllKeys();
 
     /**
      * @return min Id of the stored items

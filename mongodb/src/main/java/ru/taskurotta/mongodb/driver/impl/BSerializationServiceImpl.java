@@ -1,8 +1,6 @@
 package ru.taskurotta.mongodb.driver.impl;
 
 import com.mongodb.DBDecoderFactory;
-import com.mongodb.DBEncoder;
-import com.mongodb.DBEncoderFactory;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
@@ -16,28 +14,25 @@ public class BSerializationServiceImpl  implements BSerializationService {
 
     private Map<Class, StreamBSerializer> serializersMap = new ConcurrentHashMap<>();
 
-    private BEncoder encoder;
+    public BSerializationServiceImpl(StreamBSerializer[] streamBSerializers) {
 
-
-    private DBEncoderFactory dbEncoderFactory;
-
-    public BSerializationServiceImpl() {
-
-        encoder = new BEncoder(this);
-
-        dbEncoderFactory = new DBEncoderFactory() {
-
-            @Override
-            public DBEncoder create() {
-                // todo create pool of DBEncoder objects
-                return encoder;
-            }
-        };
-
+        for (StreamBSerializer serializer: streamBSerializers) {
+            registerSerializer(serializer);
+        }
     }
 
-    public void registerSerializer(Class clazz, StreamBSerializer serializer) {
-        serializersMap.put(clazz, serializer);
+    public void registerSerializer(StreamBSerializer serializer) {
+        serializersMap.put(serializer.getObjectClass(), serializer);
+    }
+
+    @Override
+    public StreamBSerializer getSerializer(String objectClassName) {
+
+        try {
+            return getSerializer(Class.forName(objectClassName));
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Can not found class for name [" + objectClassName + "]", e);
+        }
     }
 
     protected void writeObject(BDataOutput out, Object obj) {
@@ -52,17 +47,35 @@ public class BSerializationServiceImpl  implements BSerializationService {
                 "registered for this type of object");
     }
 
-    protected StreamBSerializer getSerializer(Class clazz) {
+    public StreamBSerializer getSerializer(Class clazz) {
+
+        final StreamBSerializer serializer = serializersMap.get(clazz);
+
+        if (serializer == null) {
+            throw new IllegalArgumentException("Can not found serializer for class [" + clazz.getName() + "]");
+        }
         return serializersMap.get(clazz);
     }
 
 
-    public DBEncoderFactory getEncoderFactory() {
-        return dbEncoderFactory;
+    @Override
+    public DBDecoderFactory getDecoderFactory(String objectClassName) {
+
+        try {
+            final Class clazz = Class.forName(objectClassName);
+            return getDecoderFactory(clazz);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Can not found class for name [" + objectClassName + "]", e);
+        }
     }
 
-    public DBDecoderFactory getDecoderFactory(Class rootObjectClass) {
-        return new BDecoderFactory(this, serializersMap.get(rootObjectClass));
+    public DBDecoderFactory getDecoderFactory(Class objectClass) {
+        return new BDecoderFactory(getSerializer(objectClass));
+    }
+
+    @Override
+    public DBDecoderFactory getDecoderFactory(StreamBSerializer streamBSerializer) {
+        return new BDecoderFactory(streamBSerializer);
     }
 
 }

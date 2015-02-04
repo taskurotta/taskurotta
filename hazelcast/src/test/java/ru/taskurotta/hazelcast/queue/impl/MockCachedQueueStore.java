@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -59,11 +58,6 @@ public class MockCachedQueueStore implements CachedQueueStore {
     }
 
     @Override
-    public Set<Long> loadAllKeys() {
-        return storeMap.keySet();
-    }
-
-    @Override
     public long getMinItemId() {
         if (storeMap.size() == 0) return 0;
         return storeMap.firstKey();
@@ -73,15 +67,6 @@ public class MockCachedQueueStore implements CachedQueueStore {
     public long getMaxItemId() {
         if (storeMap.size() == 0) return -1;
         return storeMap.lastKey();
-    }
-
-    @Override
-    public Map loadAll(Collection keys) {
-
-        Map resultMap = new HashMap();
-        resultMap.putAll(storeMap);
-
-        return resultMap;
     }
 
     @Override

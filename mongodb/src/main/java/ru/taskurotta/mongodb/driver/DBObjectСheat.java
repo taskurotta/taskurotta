@@ -1,4 +1,4 @@
-package ru.taskurotta.mongodb.driver.impl;
+package ru.taskurotta.mongodb.driver;
 
 import com.mongodb.DBObject;
 import org.bson.BSONObject;
@@ -56,6 +56,11 @@ public class DBObjectСheat implements DBObject {
     public Object get(String key) {
         if (key.equals("_id")) {
             return "";
+        }
+
+        // BDecoder detects error objects self
+        if (key.equals("$err") || key.equals("err") || key.equals("errmsg")) {
+            return null;
         }
 
         throw new IllegalStateException("Not supported!");

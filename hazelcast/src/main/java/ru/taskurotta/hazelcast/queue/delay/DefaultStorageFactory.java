@@ -7,7 +7,7 @@ import com.hazelcast.query.Predicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
-import ru.taskurotta.hazelcast.queue.delay.impl.StorageItem;
+import ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer;
 
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class DefaultStorageFactory implements StorageFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultStorageFactory.class);
 
-    private final IMap<UUID, StorageItem> iMap;
+    private final IMap<UUID, StorageItemContainer> iMap;
 
     public static final String ENQUEUE_TIME_NAME = "enqueueTime";
 
@@ -64,13 +64,13 @@ public class DefaultStorageFactory implements StorageFactory {
                     logger.debug("find new {} items to queue", keys.size());
 
                     for (UUID key : keys) {
-                        StorageItem storageItem = iMap.get(key);
-                        String queueName = storageItem.getQueueName();
+                        StorageItemContainer storageItemContainer = iMap.get(key);
+                        String queueName = storageItemContainer.getQueueName();
 
                         CachedQueue cQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(),
                                 queueName);
 
-                        if (cQueue.offer(storageItem.getObject())) {
+                        if (cQueue.offer(storageItemContainer.getObject())) {
                             iMap.delete(key);
                         }
                     }
@@ -109,7 +109,7 @@ public class DefaultStorageFactory implements StorageFactory {
             public long size() {
                 int result = 0;
 
-                for (StorageItem st : iMap.values()) {
+                for (StorageItemContainer st : iMap.values()) {
                     if (st != null && st.getQueueName().equals(queueName)) {
                         result++;
                     }
@@ -122,9 +122,9 @@ public class DefaultStorageFactory implements StorageFactory {
 
     private boolean save(Object o, long delayTime, TimeUnit unit, String queueName) {
         long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
-        StorageItem storageItem = new StorageItem(o, enqueueTime, queueName);
+        StorageItemContainer storageItemContainer = new StorageItemContainer(o, enqueueTime, queueName);
 
-        while (iMap.putIfAbsent(UUID.randomUUID(), storageItem) != null) {
+        while (iMap.putIfAbsent(UUID.randomUUID(), storageItemContainer) != null) {
             // Better safe than sorry! :)
         }
 
@@ -134,7 +134,7 @@ public class DefaultStorageFactory implements StorageFactory {
     private boolean delete(Object o) {
         UUID key = null;
 
-        for (Map.Entry<UUID, StorageItem> entry : iMap.entrySet()) {
+        for (Map.Entry<UUID, StorageItemContainer> entry : iMap.entrySet()) {
             if (entry.getValue().equals(o)) {
                 key = entry.getKey();
                 break;

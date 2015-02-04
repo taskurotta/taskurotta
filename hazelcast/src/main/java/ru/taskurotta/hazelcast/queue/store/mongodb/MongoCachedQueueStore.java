@@ -7,6 +7,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
@@ -14,12 +15,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
+import ru.taskurotta.hazelcast.queue.store.mongodb.bson.QueueItemContainerStreamBSerializer;
+import ru.taskurotta.mongodb.driver.BSerializationService;
+import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,19 +44,45 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
     public static Timer deleteTimer = Metrics.newTimer(MongoCachedQueueStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
 
+    private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
+
     private String storageName;
     private MongoTemplate mongoTemplate;
     private MongoDBConverter converter;
     private DBCollection coll;
 
+    private String objectClassName;
+
     private int batchSize;
 
-    public MongoCachedQueueStore(String storageName, MongoTemplate mongoTemplate, CachedQueueStoreConfig config) {
+    public MongoCachedQueueStore(String storageName, MongoTemplate mongoTemplate, CachedQueueStoreConfig config,
+                                 BSerializationService serializationService) {
         this.storageName = storageName;
         this.mongoTemplate = mongoTemplate;
         this.batchSize = config.getBatchLoadSize();
         this.coll = mongoTemplate.getCollection(this.storageName);
         this.converter = new SpringMongoDBConverter(mongoTemplate);
+
+        // todo: throw exception if it is null
+        if (serializationService == null) {
+            return;
+        }
+
+        objectClassName = config.getObjectClassName();
+        if (objectClassName == null) {
+            logger.warn("Name of object class not found in queue store config. Storage name is" +
+                    " [" + storageName + "]. Queue are in legacy mode...");
+            return;
+        }
+
+
+        StreamBSerializer objectSerializer = serializationService.getSerializer(objectClassName);
+        QueueItemContainerStreamBSerializer containerStreamBSerializer = new QueueItemContainerStreamBSerializer
+                (objectSerializer);
+
+
+        coll.setDBDecoderFactory(new BDecoderFactory(containerStreamBSerializer));
+        coll.setDBEncoderFactory(new BEncoderFactory(containerStreamBSerializer));
     }
 
     public MongoTemplate getMongoTemplate() {
@@ -69,24 +100,36 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
         try {
             DBObject dbo = new BasicDBObject();
             dbo.put("_id", aLong);
-            coll.remove(dbo);
+            coll.remove(dbo, noWaitWriteConcern);
         } finally {
             deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
     }
 
     @Override
-    public void store(Long aLong, Object taskQueueItem) {
+    public void store(Long id, Object taskQueueItem) {
         long startTime = System.nanoTime();
 
         try {
-            DBObject dbo = converter.toDBObject(taskQueueItem);
-            dbo.put("_id", aLong);
-            coll.save(dbo);
+
+            if (objectClassName == null) {
+                DBObject dbo = converter.toDBObject(taskQueueItem);
+                dbo.put("_id", id);
+                coll.save(dbo);
+            } else {
+                QueueItemContainer queueItemContainer = new QueueItemContainer();
+                queueItemContainer.setId(id);
+                queueItemContainer.setQueueItem(taskQueueItem);
+
+                DBObjectСheat document = new DBObjectСheat(queueItemContainer);
+
+                coll.insert(document);
+            }
         } finally {
             storeTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
     }
+
 
     @Override
     public void storeAll(Map<Long, Object> longTaskQueueItemMap) {
@@ -97,12 +140,24 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
     @Override
     public void deleteAll(Collection<Long> longs) {
-        BasicDBList dbo = new BasicDBList();
-        for (Long key : longs) {
-            dbo.add(new BasicDBObject("_id", key));
+
+        int j = 0;
+        int size = longs.size();
+
+        BasicDBList idList = new BasicDBList();
+
+        for (long id: longs) {
+            j ++;
+
+            idList.add(id);
+
+            if (j % 100 == 0 && j == size) {
+                BasicDBObject inListObj = new BasicDBObject("$in", idList);
+                coll.remove(new BasicDBObject("_id", inListObj), noWaitWriteConcern);
+                idList.clear();;
+            }
         }
-        BasicDBObject dbb = new BasicDBObject("$or", dbo);
-        coll.remove(dbb);
+
     }
 
     @Override
@@ -110,63 +165,37 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
         coll.drop();
     }
 
+    // todo: should be removed
     @Override
     public Object load(Long aLong) {
         long startTime = System.nanoTime();
 
         try {
 
+
             DBObject dbo = new BasicDBObject();
             dbo.put("_id", aLong);
             DBObject obj = coll.findOne(dbo);
+
             if (obj == null)
                 return null;
 
-            try {
-                Class clazz = Class.forName(obj.get("_class").toString());
-                return converter.toObject(clazz, obj);
-            } catch (ClassNotFoundException e) {
-                logger.error(e.getMessage(), e);
+            if (objectClassName == null) {
+                try {
+                    Class clazz = Class.forName(obj.get("_class").toString());
+                    return converter.toObject(clazz, obj);
+                } catch (ClassNotFoundException e) {
+                    logger.error(e.getMessage(), e);
+                }
+                return null;
+
+            } else {
+                return ((QueueItemContainer) ((DBObjectСheat) obj).getObject()).getQueueItem();
             }
-            return null;
 
         } finally {
             loadTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
-    }
-
-
-    @Override
-    public Map<Long, Object> loadAll(Collection<Long> longs) {
-
-        long startTime = System.nanoTime();
-
-        Map<Long, Object> map = new HashMap<>();
-
-        try {
-
-            BasicDBList dbo = new BasicDBList();
-            for (Long key : longs) {
-                dbo.add(new BasicDBObject("_id", key));
-            }
-            BasicDBObject dbb = new BasicDBObject("$or", dbo);
-            try (DBCursor cursor = coll.find(dbb).batchSize(batchSize)) {
-                while (cursor.hasNext()) {
-                    try {
-                        DBObject obj = cursor.next();
-                        Class clazz = Class.forName(obj.get("_class").toString());
-                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
-                    } catch (ClassNotFoundException e) {
-                        logger.error(e.getMessage(), e);
-                    }
-                }
-            }
-
-        } finally {
-            loadAllTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
-        }
-
-        return map;
     }
 
 
@@ -182,12 +211,19 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
             BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$gte", from).append("$lte", to));
             try (DBCursor cursor = coll.find(query).batchSize(batchSize)) {
                 while (cursor.hasNext()) {
-                    try {
-                        DBObject obj = cursor.next();
-                        Class clazz = Class.forName(obj.get("_class").toString());
-                        map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
-                    } catch (ClassNotFoundException e) {
-                        logger.error(e.getMessage(), e);
+
+                    DBObject obj = cursor.next();
+
+                    if (objectClassName == null) {
+                        try {
+                            Class clazz = Class.forName(obj.get("_class").toString());
+                            map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
+                        } catch (ClassNotFoundException e) {
+                            logger.error(e.getMessage(), e);
+                        }
+                    } else {
+                        QueueItemContainer queueItemContainer = (QueueItemContainer) ((DBObjectСheat) obj).getObject();
+                        map.put(queueItemContainer.getId(), queueItemContainer.getQueueItem());
                     }
                 }
             }
@@ -215,27 +251,21 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
     private long getFirstItemIdByAscDesc(boolean asc) {
         long result = (asc) ? 0 : -1;
+
         final DBObject sortCommand = new BasicDBObject();
         sortCommand.put("_id", (asc) ? 1 : -1);
         final DBObject val;
+
         try (DBCursor cursor = coll.find().sort(sortCommand).limit(1)) {
             if (cursor.hasNext() && (val = cursor.next()) != null) {
-                result = (Long) val.get("_id");
+                if (objectClassName == null) {
+                    return (Long) val.get("_id");
+                } else {
+                    return ((QueueItemContainer) ((DBObjectСheat) val).getObject()).getId();
+                }
             }
         }
         return result;
     }
 
-    @Override
-    public Set<Long> loadAllKeys() {
-        Set<Long> keySet = new HashSet<>();
-        BasicDBList dbo = new BasicDBList();
-        dbo.add("_id");
-        try (DBCursor cursor = coll.find(null, dbo)) {
-            while (cursor.hasNext()) {
-                keySet.add((Long) cursor.next().get("_id"));
-            }
-        }
-        return keySet;
-    }
 }

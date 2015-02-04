@@ -29,16 +29,18 @@ public class HzQueueConfigSupport {
     private int cacheSize;
     private Boolean binary;
     private Integer batchLoadSize;
+    private String objectClassName;
 
     private ILock queueConfigLock;
 
     public HzQueueConfigSupport(HazelcastInstance hzInstance, CachedQueueStoreFactory cachedQueueStoreFactory,
-                                int cacheSize, boolean binary, int batchLoadSize) {
+                                int cacheSize, boolean binary, int batchLoadSize, String objectClassName) {
         this.hzInstance = hzInstance;
         this.cachedQueueStoreFactory = cachedQueueStoreFactory;
         this.cacheSize = cacheSize;
         this.binary = binary;
         this.batchLoadSize = batchLoadSize;
+        this.objectClassName = objectClassName;
 
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
 
@@ -76,6 +78,7 @@ public class HzQueueConfigSupport {
         cachedQueueStoreConfig.setEnabled(true);
         cachedQueueStoreConfig.setBinary(binary);
         cachedQueueStoreConfig.setBatchLoadSize(batchLoadSize);
+        cachedQueueStoreConfig.setObjectClassName(objectClassName);
 
         cachedQueueStoreConfig.setStoreImplementation(cachedQueueStoreFactory.newQueueStore(queueName, cachedQueueStoreConfig));
 

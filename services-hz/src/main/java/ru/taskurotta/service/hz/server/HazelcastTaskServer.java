@@ -105,6 +105,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         // send process call
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision);
         hzInstance.getExecutorService(decisionProcessingExecutorService).submit(call);
+        startedDistributedTasks.incrementAndGet();
     }
 
     protected DecisionContainer getDecision(UUID taskId, UUID processId) {
@@ -150,6 +151,8 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                 } finally {
                     taskServer.lockProcessMap.unlock(processId);
                 }
+
+                finishedDistributedTasks.incrementAndGet();
 
             } catch (HazelcastInstanceNotActiveException e) {
                 // reduce exception rain

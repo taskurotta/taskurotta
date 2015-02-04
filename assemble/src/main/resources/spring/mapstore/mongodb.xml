@@ -65,9 +65,27 @@
         <property name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
 
+    <!-- fastest serializers to BSON -->
+
+    <bean id="taskQueueItemStreamBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.TaskQueueItemStreamBSerializer">
+    </bean>
+
+
+    <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
+          factory-method="newInstance">
+        <constructor-arg>
+            <list>
+                <ref bean="taskQueueItemStreamBSerializer" />
+            </list>
+        </constructor-arg>
+    </bean>
+    <!--- /serializers> -->
+
     <bean id="cachedQueueStoreFactory"
           class="ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService" />
     </bean>
     <!-- /Mongo -->
 

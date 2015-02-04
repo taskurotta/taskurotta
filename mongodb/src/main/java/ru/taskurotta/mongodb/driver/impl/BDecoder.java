@@ -5,6 +5,7 @@ import com.mongodb.DBObject;
 import com.mongodb.DefaultDBDecoder;
 import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.CString;
+import ru.taskurotta.mongodb.driver.DBObjectСheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 
 import java.io.IOException;
@@ -21,9 +22,12 @@ import static org.bson.BSON.*;
  */
 public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
+    private static final CString err = new CString("$err");
+    private static final CString err1 = new CString("err");
+    private static final CString err2 = new CString("errmsg");
+
     private static final boolean DEBUG = false;
 
-    private BSerializationServiceImpl serializationService;
     private StreamBSerializer streamBSerializer;
 
     private int currPosition;
@@ -36,8 +40,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     private Object rootObj;
 
     // todo: instead of rootObjectClass there should be
-    protected BDecoder(BSerializationServiceImpl serializationService, StreamBSerializer streamBSerializer) {
-        this.serializationService = serializationService;
+    protected BDecoder(StreamBSerializer streamBSerializer) {
         this.streamBSerializer = streamBSerializer;
     }
 
@@ -61,7 +64,12 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     }
 
     public DBObject decode(InputStream in, DBCollection collection) throws IOException {
-        decodeInternal(readDocumentByteArray(in));
+        boolean isError = decodeInternal(readDocumentByteArray(in));
+
+        if (!isError) {
+            return super.decode(in, collection);
+        }
+
         try {
             return new DBObjectСheat(rootObj);
         } finally {
@@ -89,7 +97,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         return x;
     }
 
-    private void decodeInternal(byte[] bytes) {
+    private boolean decodeInternal(byte[] bytes) {
 
         if (bytes == null) {
             throw new IllegalStateException("not ready");
@@ -99,7 +107,12 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         currPosition = 0;
         currNamesMap = getPairNames();
 
+        if (currNamesMap == null) {
+            return false;
+        }
+
         rootObj = streamBSerializer.read(this);
+        return true;
     }
 
     private Map<CString, CString> getPairNames() {
@@ -116,6 +129,14 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
             }
 
             CString name = readCString(bytes, pos);
+
+            // error detected! should be parsed in legacy mode
+            // see com.mongodb.ServerError.getMsg() and
+            //
+            if (pos == 1 && (name.equals(err) || name.equals(err1) || name.equals(err2))) {
+                return null;
+            }
+
             namesMap.put(name, name);
 
             if (DEBUG)

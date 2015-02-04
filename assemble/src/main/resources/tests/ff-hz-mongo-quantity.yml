@@ -26,8 +26,8 @@ spreader:
           recovery.process.incomplete-timeout: 2 minutes
           recovery.find-incomplete-process-period: 1 minutes
           recovery.process.change-timeout: 1 minutes
-          hz.queue.task.batch-load-size: 500
-          hz.queue.delay.batch-load-size: 500
+          hz.queue.task.batch-load-size: 10000
+          hz.queue.delay.batch-load-size: 10000
           taskurotta.memory.auto: true
           taskurotta.memory.config: k:48Mb f:70% (p:20 g:20 gd:20 t:20 td:20 q:1)
           test.ff.maxProcessQuantity: 2000

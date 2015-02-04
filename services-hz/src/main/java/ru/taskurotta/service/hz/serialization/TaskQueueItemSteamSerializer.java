@@ -1,12 +1,12 @@
 package ru.taskurotta.service.hz.serialization;
 
-import java.io.IOException;
-import java.util.Date;
-
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.service.queue.TaskQueueItem;
+
+import java.io.IOException;
+import java.util.Date;
 
 public class TaskQueueItemSteamSerializer implements StreamSerializer<TaskQueueItem> {
 

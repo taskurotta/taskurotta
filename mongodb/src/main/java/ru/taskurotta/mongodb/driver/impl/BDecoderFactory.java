@@ -8,17 +8,15 @@ import ru.taskurotta.mongodb.driver.StreamBSerializer;
  */
 public class BDecoderFactory implements DBDecoderFactory {
 
-    private Class rootObjectClass;
-    private BDecoder decoder;
+    private StreamBSerializer streamBSerializer;
 
-    public BDecoderFactory(BSerializationServiceImpl serializationService, StreamBSerializer streamBSerializer) {
-        this.rootObjectClass = rootObjectClass;
-
-        decoder = new BDecoder(serializationService, streamBSerializer);
+    public BDecoderFactory(StreamBSerializer streamBSerializer) {
+        this.streamBSerializer = streamBSerializer;
     }
 
+    // todo: consider to use pool of BDecoder objects
     @Override
     public DBDecoder create() {
-        return decoder;
+        return new BDecoder(streamBSerializer);
     }
 }
