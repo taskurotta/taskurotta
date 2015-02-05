@@ -44,7 +44,7 @@
         <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
-    </bean>
+    </bean>use
 
     <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>

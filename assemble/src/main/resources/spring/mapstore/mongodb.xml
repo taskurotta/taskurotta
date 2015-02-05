@@ -68,15 +68,29 @@
     <!-- fastest serializers to BSON -->
 
     <bean id="taskQueueItemStreamBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.TaskQueueItemStreamBSerializer">
-    </bean>
+          class="ru.taskurotta.service.hz.serialization.bson.TaskQueueItemStreamBSerializer"/>
 
+    <bean id="grapStreamBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.GraphSerializer"/>
+
+    <bean id="taskContainerBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.TaskContainerSerializer"/>
+
+    <bean id="decisionRowBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.DecisionRowSerializer"/>
+
+    <bean id="processBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.ProcessSerializer"/>
 
     <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
           factory-method="newInstance">
         <constructor-arg>
             <list>
                 <ref bean="taskQueueItemStreamBSerializer" />
+                <ref bean="grapStreamBSerializer"/>
+                <ref bean="decisionRowBSerializer"/>
+                <ref bean="taskContainerBSerializer"/>
+                <ref bean="processBSerializer"/>
             </list>
         </constructor-arg>
     </bean>

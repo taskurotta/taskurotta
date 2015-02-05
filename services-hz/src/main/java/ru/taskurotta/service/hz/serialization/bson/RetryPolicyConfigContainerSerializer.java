@@ -24,6 +24,7 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
     public static final CString MAXIMUM_RETRY_INTERVAL_SECONDS = new CString("maximumRetryIntervalSecons");
     public static final CString RETRY_EXPIRATION_INTERVAL_SECONDS = new CString("retryExpirationIntervalSeconds");
     public static final CString TYPE = new CString("type");
+    public static final CString BACKOFF_COEFFICIENT = new CString("backoffCoefficient");
 
     @Override
     public Class<RetryPolicyConfigContainer> getObjectClass() {
@@ -34,6 +35,7 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
     public void write(BDataOutput out, RetryPolicyConfigContainer object) {
         writeArrayOfString(EXCEPTIONS_TO_EXCLUDE, (String[]) object.getExceptionsToExclude().toArray(), out);
         writeArrayOfString(EXCEPTIONS_TO_RETRY, (String[]) object.getExceptionsToRetry().toArray(), out);
+        out.writeDouble(BACKOFF_COEFFICIENT, object.getBackoffCoefficient());
         out.writeLong(INITIAL_RETRY_INTERVAL_SECONDS, object.getInitialRetryIntervalSeconds());
         out.writeInt(MAXIMUM_ATTEMPTS, object.getMaximumAttempts());
         out.writeLong(MAXIMUM_RETRY_INTERVAL_SECONDS, object.getMaximumRetryIntervalSeconds());
@@ -45,6 +47,7 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
     public RetryPolicyConfigContainer read(BDataInput in) {
         String[] exceptionsToExclude = readArrayOfString(EXCEPTIONS_TO_EXCLUDE, in);
         String[] exceptionsToRetry = readArrayOfString(EXCEPTIONS_TO_RETRY, in);
+        double backoff = in.readDouble(BACKOFF_COEFFICIENT);
         long initialRetryIntervalSeconds = in.readLong(INITIAL_RETRY_INTERVAL_SECONDS);
         int maximumAttempts = in.readInt(MAXIMUM_ATTEMPTS);
         long maximumRetryIntervalSeconds = in.readLong(MAXIMUM_RETRY_INTERVAL_SECONDS);
@@ -54,6 +57,7 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
         RetryPolicyConfigContainer retryPolicyConfigContainer = new RetryPolicyConfigContainer();
         retryPolicyConfigContainer.setExceptionsToExclude((exceptionsToExclude != null) ? Arrays.asList(exceptionsToExclude) : null);
         retryPolicyConfigContainer.setExceptionsToRetry((exceptionsToRetry != null) ? Arrays.asList(exceptionsToRetry) : null);
+        retryPolicyConfigContainer.setBackoffCoefficient(backoff);
         retryPolicyConfigContainer.setInitialRetryIntervalSeconds(initialRetryIntervalSeconds);
         retryPolicyConfigContainer.setMaximumAttempts(maximumAttempts);
         retryPolicyConfigContainer.setMaximumRetryIntervalSeconds(maximumRetryIntervalSeconds);
