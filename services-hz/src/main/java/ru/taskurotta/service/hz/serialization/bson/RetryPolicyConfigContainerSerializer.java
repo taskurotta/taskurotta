@@ -7,10 +7,10 @@ import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
 
-import java.util.Arrays;
+import java.util.List;
 
-import static ru.taskurotta.service.hz.serialization.bson.SerializerTools.readArrayOfString;
-import static ru.taskurotta.service.hz.serialization.bson.SerializerTools.writeArrayOfString;
+import static ru.taskurotta.service.hz.serialization.bson.SerializerTools.readListOfString;
+import static ru.taskurotta.service.hz.serialization.bson.SerializerTools.writeListOfString;
 
 /**
  * Created by greg on 03/02/15.
@@ -34,10 +34,10 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
     @Override
     public void write(BDataOutput out, RetryPolicyConfigContainer object) {
         if (object.getExceptionsToExclude() != null) {
-            writeArrayOfString(EXCEPTIONS_TO_EXCLUDE, (String[]) object.getExceptionsToExclude().toArray(), out);
+            writeListOfString(EXCEPTIONS_TO_EXCLUDE, object.getExceptionsToExclude(), out);
         }
         if (object.getExceptionsToRetry() != null) {
-            writeArrayOfString(EXCEPTIONS_TO_RETRY, (String[]) object.getExceptionsToRetry().toArray(), out);
+            writeListOfString(EXCEPTIONS_TO_RETRY, object.getExceptionsToRetry(), out);
         }
         out.writeDouble(BACKOFF_COEFFICIENT, object.getBackoffCoefficient());
         out.writeLong(INITIAL_RETRY_INTERVAL_SECONDS, object.getInitialRetryIntervalSeconds());
@@ -49,8 +49,8 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
 
     @Override
     public RetryPolicyConfigContainer read(BDataInput in) {
-        String[] exceptionsToExclude = readArrayOfString(EXCEPTIONS_TO_EXCLUDE, in);
-        String[] exceptionsToRetry = readArrayOfString(EXCEPTIONS_TO_RETRY, in);
+        List<String> exceptionsToExclude = readListOfString(EXCEPTIONS_TO_EXCLUDE, in);
+        List<String> exceptionsToRetry = readListOfString(EXCEPTIONS_TO_RETRY, in);
         double backoff = in.readDouble(BACKOFF_COEFFICIENT);
         long initialRetryIntervalSeconds = in.readLong(INITIAL_RETRY_INTERVAL_SECONDS);
         int maximumAttempts = in.readInt(MAXIMUM_ATTEMPTS);
@@ -59,8 +59,8 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
         RetryPolicyConfig.RetryPolicyType policyType = RetryPolicyConfig.RetryPolicyType.build(in.readInt(TYPE));
 
         RetryPolicyConfigContainer retryPolicyConfigContainer = new RetryPolicyConfigContainer();
-        retryPolicyConfigContainer.setExceptionsToExclude((exceptionsToExclude != null) ? Arrays.asList(exceptionsToExclude) : null);
-        retryPolicyConfigContainer.setExceptionsToRetry((exceptionsToRetry != null) ? Arrays.asList(exceptionsToRetry) : null);
+        retryPolicyConfigContainer.setExceptionsToExclude(exceptionsToExclude);
+        retryPolicyConfigContainer.setExceptionsToRetry(exceptionsToRetry);
         retryPolicyConfigContainer.setBackoffCoefficient(backoff);
         retryPolicyConfigContainer.setInitialRetryIntervalSeconds(initialRetryIntervalSeconds);
         retryPolicyConfigContainer.setMaximumAttempts(maximumAttempts);

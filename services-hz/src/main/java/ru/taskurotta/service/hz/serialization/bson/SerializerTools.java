@@ -4,6 +4,9 @@ import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by greg on 03/02/15.
  */
@@ -19,36 +22,37 @@ public final class SerializerTools {
     }
 
 
-    public static void writeArrayOfString(CString name, String[] array, BDataOutput out) {
+
+    public static void writeListOfString(CString name, List<String> list, BDataOutput out) {
         int label = out.writeArray(name);
-        for (int i = 0; i < array.length; i++) {
-            String s = array[i];
+        for (int i = 0; i < list.size(); i++) {
+            String s = list.get(i);
             out.writeString(i, s);
         }
         out.writeArrayStop(label);
     }
 
-    public static CString createCString(int i){
-        if (i>=1000) {
+    public static CString createCString(int i) {
+        if (i >= 1000) {
             return new CString(Integer.toString(i));
         } else
             return ARRAY_INDEXES[i];
     }
 
-    public static String[] readArrayOfString(CString name, BDataInput in) {
+    public static List<String> readListOfString(CString name, BDataInput in) {
         int label = in.readArray(name);
         int size = in.readArraySize();
-        String[] array = null;
+        List<String> list = null;
         if (label != -1) {
             if (size > 0) {
-                array = new String[size];
+                list = new ArrayList<>(size);
                 for (int i = 0; i < size; i++) {
-                    array[i] = in.readString(i);
+                    list.add(in.readString(i));
                 }
             }
             in.readArrayStop(label);
         }
-        return array;
+        return list;
     }
 
 }
