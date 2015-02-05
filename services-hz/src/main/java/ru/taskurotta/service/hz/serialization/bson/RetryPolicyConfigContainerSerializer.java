@@ -17,14 +17,14 @@ import static ru.taskurotta.service.hz.serialization.bson.SerializerTools.writeL
  */
 public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<RetryPolicyConfigContainer> {
 
-    public static final CString EXCEPTIONS_TO_EXCLUDE = new CString("exceptionsToExclude");
-    public static final CString EXCEPTIONS_TO_RETRY = new CString("exceptionToRetry");
-    public static final CString INITIAL_RETRY_INTERVAL_SECONDS = new CString("initialRetryIntervalSeconds");
-    public static final CString MAXIMUM_ATTEMPTS = new CString("maximumAttempts");
-    public static final CString MAXIMUM_RETRY_INTERVAL_SECONDS = new CString("maximumRetryIntervalSecons");
-    public static final CString RETRY_EXPIRATION_INTERVAL_SECONDS = new CString("retryExpirationIntervalSeconds");
+    public static final CString EXCEPTIONS_TO_EXCLUDE = new CString("exToEx");
+    public static final CString EXCEPTIONS_TO_RETRY = new CString("exToRe");
+    public static final CString INITIAL_RETRY_INTERVAL_SECONDS = new CString("inReIntSec");
+    public static final CString MAXIMUM_ATTEMPTS = new CString("maxAtt");
+    public static final CString MAXIMUM_RETRY_INTERVAL_SECONDS = new CString("maxIntSec");
+    public static final CString RETRY_EXPIRATION_INTERVAL_SECONDS = new CString("reExIntSe");
     public static final CString TYPE = new CString("type");
-    public static final CString BACKOFF_COEFFICIENT = new CString("backoffCoefficient");
+    public static final CString BACKOFF_COEFFICIENT = new CString("backCoef");
 
     @Override
     public Class<RetryPolicyConfigContainer> getObjectClass() {

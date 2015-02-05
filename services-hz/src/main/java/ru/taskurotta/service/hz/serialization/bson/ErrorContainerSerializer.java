@@ -11,9 +11,9 @@ import ru.taskurotta.transport.model.ErrorContainer;
  */
 public class ErrorContainerSerializer implements StreamBSerializer<ErrorContainer> {
 
-    private CString MESSAGE = new CString("message");
-    private CString CLASSNAMES = new CString("classNames");
-    private CString STACK = new CString("stack");
+    private CString MESSAGE = new CString("mes");
+    private CString CLASSNAMES = new CString("clNa");
+    private CString STACK = new CString("st");
 
     @Override
     public Class<ErrorContainer> getObjectClass() {

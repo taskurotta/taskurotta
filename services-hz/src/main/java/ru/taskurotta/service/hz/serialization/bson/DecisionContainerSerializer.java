@@ -91,8 +91,8 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
                 int objLabel = in.readObject(SerializerTools.createCString(i));
                 tasks[i] = taskContainerSerializer.read(in);
                 in.readObjectStop(objLabel);
-
             }
+            in.readArrayStop(tasksLabel);
         }
 
         return new DecisionContainer(

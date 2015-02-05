@@ -12,10 +12,10 @@ import ru.taskurotta.transport.model.TaskConfigContainer;
  */
 public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConfigContainer> {
 
-    private static final CString CUSTOM_ID = new CString("customId");
-    private static final CString START_TIME = new CString("startTime");
-    private static final CString TASK_LIST = new CString("taskList");
-    private static final CString RETRY_POLICY_CONFIG_CONTAINER = new CString("retryPolicyConfigContainer");
+    private static final CString CUSTOM_ID = new CString("cId");
+    private static final CString START_TIME = new CString("sTi");
+    private static final CString TASK_LIST = new CString("tLst");
+    private static final CString RETRY_POLICY_CONFIG_CONTAINER = new CString("rePolConCon");
 
     RetryPolicyConfigContainerSerializer retryPolicyConfigContainerSerializer = new RetryPolicyConfigContainerSerializer();
 

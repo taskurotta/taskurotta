@@ -75,8 +75,8 @@ public class MongoSerializationTest {
 
         try (DBCursor cursor = withCol.find()) {
             while (cursor.hasNext()) {
-                DBObjectСheat obj = (DBObjectСheat) cursor.next();
-                System.out.println("actorId = " + ((TaskContainer) obj.getObject()).getActorId());
+                DBObjectСheat<TaskContainer> obj = (DBObjectСheat) cursor.next();
+                System.out.println("actorId = " + obj.getObject().getActorId());
             }
         }
     }

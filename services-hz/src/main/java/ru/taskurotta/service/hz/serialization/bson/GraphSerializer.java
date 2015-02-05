@@ -90,6 +90,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
             for (int i = 0; i < finishedSize; i++) {
                 finishedItems.add(in.readUUID(SerializerTools.createCString(i)));
             }
+            in.readArrayStop(finishedLabel);
         }
         long lastApplyTimeMillis = in.readLong(LAST_APPLY_TIME);
         return new Graph(version, graphId, notFinishedItems, links, finishedItems, lastApplyTimeMillis);
