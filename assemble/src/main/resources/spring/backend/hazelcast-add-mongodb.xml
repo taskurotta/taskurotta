@@ -52,7 +52,7 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${gc.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${gc.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName"><null/></constructor-arg>
+        <constructor-arg name="objectClassName" value="java.util.UUID"/>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
@@ -67,7 +67,7 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${recovery.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName"><null/></constructor-arg>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.RecoveryOperation"/>
     </bean>
     <!-- /Queues persistence support -->
 

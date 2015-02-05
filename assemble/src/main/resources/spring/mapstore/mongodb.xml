@@ -12,7 +12,7 @@
         <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
     </bean>
 
-    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder" />
+    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder"/>
     <bean factory-bean="mongoClientOptionsBuilder" factory-method="minConnectionsPerHost">
         <constructor-arg value="${mongo.options.min-connections-per-host}"/>
     </bean>
@@ -82,15 +82,27 @@
     <bean id="processBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.ProcessSerializer"/>
 
+    <bean id="decisionContainerBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.DecisionContainerSerializer"/>
+
+    <bean id="uuidSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.UUIDSerializer"/>
+
+    <bean id="recoveryOperationSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.RecoveryOperationSerializer"/>
+
     <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
           factory-method="newInstance">
         <constructor-arg>
             <list>
-                <ref bean="taskQueueItemStreamBSerializer" />
+                <ref bean="taskQueueItemStreamBSerializer"/>
                 <ref bean="grapStreamBSerializer"/>
-                <ref bean="decisionRowBSerializer"/>
                 <ref bean="taskContainerBSerializer"/>
+                <ref bean="decisionRowBSerializer"/>
                 <ref bean="processBSerializer"/>
+                <ref bean="decisionContainerBSerializer"/>
+                <ref bean="uuidSerializer"/>
+                <ref bean="recoveryOperationSerializer"/>
             </list>
         </constructor-arg>
     </bean>
@@ -99,18 +111,18 @@
     <bean id="cachedQueueStoreFactory"
           class="ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
     </bean>
     <!-- /Mongo -->
 
-    <bean id="debugMonitor" class="ru.taskurotta.hazelcast.MongoHealthMonitor" >
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
+    <bean id="debugMonitor" class="ru.taskurotta.hazelcast.MongoHealthMonitor">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
         <constructor-arg name="metricsPeriodMs">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${health.mongo.metrics.log-period}"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="mongoStatPeriodMs" >
+        <constructor-arg name="mongoStatPeriodMs">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${health.mongo.stat.log-period}"/>
             </bean>
