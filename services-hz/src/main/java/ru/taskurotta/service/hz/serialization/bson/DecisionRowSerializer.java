@@ -32,22 +32,23 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
     @Override
     public void write(BDataOutput out, HzGraphDao.DecisionRow decisionRow) {
         out.writeUUID(ITEM_ID, decisionRow.getItemId());
-        int modObjectLabel = out.writeObject(MODIFICATION);
         Modification modification = decisionRow.getModification();
-        out.writeUUID(COMPLETED_ITEM, modification.getCompletedItem());
-        out.writeUUID(WAIT_FOR_AFTER_RELEASE, modification.getWaitForAfterRelease());
-        Set<UUID> newItems = modification.getNewItems();
-        int newItemsLabel = out.writeArray(NEW_ITEMS);
         int i = 0;
-        for (UUID item : newItems) {
-            out.writeUUID(SerializerTools.createCString(i), item);
-            i++;
+        if (modification !=null) {
+            int modObjectLabel = out.writeObject(MODIFICATION);
+            out.writeUUID(COMPLETED_ITEM, modification.getCompletedItem());
+            out.writeUUID(WAIT_FOR_AFTER_RELEASE, modification.getWaitForAfterRelease());
+            Set<UUID> newItems = modification.getNewItems();
+            int newItemsLabel = out.writeArray(NEW_ITEMS);
+            for (UUID item : newItems) {
+                out.writeUUID(SerializerTools.createCString(i), item);
+                i++;
+            }
+            out.writeArrayStop(newItemsLabel);
+            Map<UUID, Set<UUID>> links = modification.getLinks();
+            GraphSerializer.serializeLinks(out, links);
+            out.writeObjectStop(modObjectLabel);
         }
-        out.writeArrayStop(newItemsLabel);
-
-        Map<UUID, Set<UUID>> links = modification.getLinks();
-        GraphSerializer.serializeLinks(out, links);
-        out.writeObjectStop(modObjectLabel);
 
         int readyItemsCount = (decisionRow.getReadyItems() != null) ? decisionRow.getReadyItems().length : 0;
 

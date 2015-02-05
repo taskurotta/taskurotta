@@ -101,7 +101,7 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
         if (argContainers != null) {
             int arrayLabel = out.writeArray(arrayName);
             for (int i = 0; i < argContainers.length; i++) {
-                int objectStart = out.writeObject(SerializerTools.createCString(i)); //todo optimize that
+                int objectStart = out.writeObject(SerializerTools.createCString(i));
                 ArgContainer argContainer = argContainers[i];
                 write(out, argContainer);
                 out.writeObjectStop(objectStart);

@@ -28,23 +28,29 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
 
     @Override
     public void write(BDataOutput out, TaskOptionsContainer object) {
-        int argTypesLabel = out.writeArray(ARG_TYPES);
-        for (int i = 0; i < object.getArgTypes().length; i++) {
-            ArgType argType = object.getArgTypes()[i];
-            out.writeLong(i, argType.getValue());
+        if (object.getArgTypes() != null) {
+            int argTypesLabel = out.writeArray(ARG_TYPES);
+            for (int i = 0; i < object.getArgTypes().length; i++) {
+                ArgType argType = object.getArgTypes()[i];
+                out.writeLong(i, argType.getValue());
+            }
+            out.writeArrayStop(argTypesLabel);
         }
-        out.writeArrayStop(argTypesLabel);
-        int argContainersLabel = out.writeArray(ARG_CONTAINERS);
-        for (int i = 0; i < object.getPromisesWaitFor().length; i++) {
-            int writeObjectLabel = out.writeObject(SerializerTools.createCString(i));
-            ArgContainer argContainer = object.getPromisesWaitFor()[i];
-            argContainerSerializer.write(out, argContainer);
-            out.writeObjectStop(writeObjectLabel);
+        if (object.getPromisesWaitFor() != null) {
+            int argContainersLabel = out.writeArray(ARG_CONTAINERS);
+            for (int i = 0; i < object.getPromisesWaitFor().length; i++) {
+                int writeObjectLabel = out.writeObject(SerializerTools.createCString(i));
+                ArgContainer argContainer = object.getPromisesWaitFor()[i];
+                argContainerSerializer.write(out, argContainer);
+                out.writeObjectStop(writeObjectLabel);
+            }
+            out.writeArrayStop(argContainersLabel);
         }
-        out.writeArrayStop(argContainersLabel);
-        int taskConfigContainerLabel = out.writeObject(TASK_CONFIG_CONTAINER);
-        taskConfigContainerSerializer.write(out, object.getTaskConfigContainer());
-        out.writeObjectStop(taskConfigContainerLabel);
+        if (object.getTaskConfigContainer() != null) {
+            int taskConfigContainerLabel = out.writeObject(TASK_CONFIG_CONTAINER);
+            taskConfigContainerSerializer.write(out, object.getTaskConfigContainer());
+            out.writeObjectStop(taskConfigContainerLabel);
+        }
     }
 
     @Override

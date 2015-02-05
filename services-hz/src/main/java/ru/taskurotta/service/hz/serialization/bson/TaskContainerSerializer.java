@@ -47,12 +47,14 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
         out.writeLong(START_TIME, object.getStartTime());
         out.writeInt(TYPE, object.getType().getValue());
         out.writeInt(UNSAFE, (object.isUnsafe() ? 1 : 0));
-        int failTypesLabel = out.writeArray(FAIL_TYPES);
-        for (int i = 0; i < object.getFailTypes().length; i++) {
-            String s = object.getFailTypes()[i];
-            out.writeString(i, s);
+        if (object.getFailTypes() != null) {
+            int failTypesLabel = out.writeArray(FAIL_TYPES);
+            for (int i = 0; i < object.getFailTypes().length; i++) {
+                String s = object.getFailTypes()[i];
+                out.writeString(i, s);
+            }
+            out.writeArrayStop(failTypesLabel);
         }
-        out.writeArrayStop(failTypesLabel);
         argContainerSerializer.writeArgContainersArray(ARG_CONTAINERS, out, object.getArgs());
         if (object.getOptions() != null) {
             int taskOptionsContainerLabel = out.writeObject(TASK_OPTIONS_CONTAINER);
@@ -72,12 +74,15 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
         int type = in.readInt(TYPE);
         boolean unsafe = in.readInt(UNSAFE) == 1;
         int failTypesLabel = in.readArray(FAIL_TYPES);
-        int failTypesSize = in.readArraySize();
-        String[] failTypes = new String[failTypesSize];
-        for (int i = 0; i < failTypesSize; i++) {
-            failTypes[i] = in.readString(i);
+        String[] failTypes = null;
+        if (failTypesLabel>0) {
+            int failTypesSize = in.readArraySize();
+            failTypes = new String[failTypesSize];
+            for (int i = 0; i < failTypesSize; i++) {
+                failTypes[i] = in.readString(i);
+            }
+            in.readArrayStop(failTypesLabel);
         }
-        in.readArrayStop(failTypesLabel);
         ArgContainer[] argContainers = argContainerSerializer.readArgContainersArray(ARG_CONTAINERS, in);
 
         int taskOptionsContainerLabel = in.readObject(TASK_OPTIONS_CONTAINER);
