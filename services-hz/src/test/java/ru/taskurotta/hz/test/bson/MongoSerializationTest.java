@@ -9,6 +9,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.core.RetryPolicyConfig;
+import ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer;
+import ru.taskurotta.hazelcast.queue.delay.impl.mongodb.StorageItemContainerBSerializer;
 import ru.taskurotta.hz.test.serialization.SerializationTest;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
@@ -20,6 +22,7 @@ import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.hz.serialization.bson.GraphSerializer;
 import ru.taskurotta.service.hz.serialization.bson.ProcessSerializer;
 import ru.taskurotta.service.hz.serialization.bson.TaskContainerSerializer;
+import ru.taskurotta.service.hz.serialization.bson.UUIDSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
 import ru.taskurotta.transport.model.TaskConfigContainer;
@@ -97,6 +100,24 @@ public class MongoSerializationTest {
                 System.out.println("actorId = " + obj.getObject().getStartTask().getActorId());
             }
         }
+    }
+
+    @Test
+    public void testStorageItemSerializer() throws Exception {
+        MongoTemplate mongoTemplate = getMongoTemplate();
+
+        DBCollection withCol = mongoTemplate.getCollection("storage");
+
+        UUIDSerializer uuidSerializer = new UUIDSerializer();
+        StorageItemContainerBSerializer storageItemContainerBSerializer = new StorageItemContainerBSerializer(uuidSerializer);
+
+        withCol.setDBEncoderFactory(new BEncoderFactory(storageItemContainerBSerializer));
+        withCol.setDBDecoderFactory(new BDecoderFactory(storageItemContainerBSerializer));
+
+        UUID uuid = UUID.randomUUID();
+        StorageItemContainer storageItemContainer = new StorageItemContainer(uuid, 755757, "queName1");
+        DBObjectСheat<StorageItemContainer> dbObjectСheat = new DBObjectСheat<>(storageItemContainer);
+        withCol.save(dbObjectСheat);
     }
 
     @Test

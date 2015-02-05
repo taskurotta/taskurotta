@@ -10,8 +10,11 @@ import ru.taskurotta.mongodb.driver.StreamBSerializer;
  */
 public class StorageItemContainerBSerializer implements StreamBSerializer<StorageItemContainer> {
 
+
+
     public static final CString ENQUEUE_TIME = new CString("eTime");
     public static final CString OBJ = new CString("o");
+    public static final CString ITEM_ID = new CString("itid");
 
     StreamBSerializer objectSerializer;
 
@@ -27,7 +30,7 @@ public class StorageItemContainerBSerializer implements StreamBSerializer<Storag
 
     @Override
     public void write(BDataOutput out, StorageItemContainer storageItemContainer) {
-        out.writeUUID(_ID, storageItemContainer.getId());
+        out.writeUUID(ITEM_ID, storageItemContainer.getId());
         out.writeLong(ENQUEUE_TIME, storageItemContainer.getEnqueueTime());
 
         int label = out.writeObject(OBJ);
@@ -42,7 +45,7 @@ public class StorageItemContainerBSerializer implements StreamBSerializer<Storag
 
         StorageItemContainer storageItemContainer = new StorageItemContainer();
 
-        storageItemContainer.setId(in.readUUID(_ID));
+        storageItemContainer.setId(in.readUUID(ITEM_ID));
         storageItemContainer.setEnqueueTime(in.readLong(ENQUEUE_TIME));
 
         int label = in.readObject(OBJ);

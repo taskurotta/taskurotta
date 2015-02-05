@@ -96,8 +96,8 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
-        <constructor-arg name="bSerializationService"><null/></constructor-arg>
-        <constructor-arg name="objectClassName"><null/></constructor-arg>
+        <constructor-arg name="bSerializationService" ref="bSerializationService"/>
+        <constructor-arg name="objectClassName" value="java.util.UUID" />
     </bean>
     <!-- /Delay queue support -->
 
