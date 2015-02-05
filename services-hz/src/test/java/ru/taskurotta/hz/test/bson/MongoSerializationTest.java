@@ -245,7 +245,7 @@ public class MongoSerializationTest {
 
         taskConfigContainer.setRetryPolicyConfigContainer(retryPolicyConfigContainer);
 
-        ArgType[] argTypes = {ArgType.NO_WAIT, ArgType.NONE};
+        ArgType[] argTypes = {ArgType.NO_WAIT, null, ArgType.NONE};
 
         ArgContainer[] args = new ArgContainer[containerList.size()];
         containerList.toArray(args);

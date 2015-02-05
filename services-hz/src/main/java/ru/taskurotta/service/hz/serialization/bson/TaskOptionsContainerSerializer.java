@@ -32,7 +32,11 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
             int argTypesLabel = out.writeArray(ARG_TYPES);
             for (int i = 0; i < object.getArgTypes().length; i++) {
                 ArgType argType = object.getArgTypes()[i];
-                out.writeLong(i, argType.getValue());
+                if (argType != null) {
+                    out.writeInt(i, argType.getValue());
+                } else {
+                    out.writeInt(i, -1);
+                }
             }
             out.writeArrayStop(argTypesLabel);
         }
@@ -61,7 +65,9 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
             int argTypesSize = in.readArraySize();
             argTypes = new ArgType[argTypesSize];
             for (int i = 0; i < argTypesSize; i++) {
-                argTypes[i] = ArgType.fromInt((int) in.readLong(i));
+                int id = in.readInt(i, -1);
+                ArgType argType = (id == -1) ? null : ArgType.fromInt(id);
+                argTypes[i] = argType;
             }
             in.readArrayStop(argTypesLabel);
         }
