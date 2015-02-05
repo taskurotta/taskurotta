@@ -24,6 +24,7 @@
     </bean>
 
     <!-- Queues persistence support -->
+
     <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
@@ -31,6 +32,21 @@
         <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
         <constructor-arg name="batchLoadSize" value="${hz.queue.task.batch-load-size}"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.queue.TaskQueueItem"/>
+    </bean>
+
+    <bean id="pendingDecisionsQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
+        <constructor-arg name="cacheSize" value="100"/>
+        <constructor-arg name="binary" value="${hz.executor-service.decisions.queue.binary}"/>
+        <constructor-arg name="batchLoadSize" value="${hz.executor-service.decisions.queue.batch-load-size}"/>
+        <constructor-arg name="objectClassName"><null /></constructor-arg>
+        <!--<constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.DecisionContainer" />-->
+    </bean>
+
+    <bean id="pendingQueueConfigurator" factory-bean="pendingDecisionsQueueConfigSupport"
+          factory-method="createQueueConfig">
+        <constructor-arg name="queueName" value="${hz.executor-service.decisions.queue.name}" />
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">

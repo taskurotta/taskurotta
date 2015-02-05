@@ -16,7 +16,27 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.UUID;
 
-import static org.bson.BSON.*;
+import static org.bson.BSON.ARRAY;
+import static org.bson.BSON.BINARY;
+import static org.bson.BSON.BOOLEAN;
+import static org.bson.BSON.CODE;
+import static org.bson.BSON.CODE_W_SCOPE;
+import static org.bson.BSON.DATE;
+import static org.bson.BSON.EOO;
+import static org.bson.BSON.MAXKEY;
+import static org.bson.BSON.MINKEY;
+import static org.bson.BSON.NULL;
+import static org.bson.BSON.NUMBER;
+import static org.bson.BSON.NUMBER_INT;
+import static org.bson.BSON.NUMBER_LONG;
+import static org.bson.BSON.OBJECT;
+import static org.bson.BSON.OID;
+import static org.bson.BSON.REF;
+import static org.bson.BSON.REGEX;
+import static org.bson.BSON.STRING;
+import static org.bson.BSON.SYMBOL;
+import static org.bson.BSON.TIMESTAMP;
+import static org.bson.BSON.UNDEFINED;
 
 /**
  */
@@ -286,23 +306,78 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
      */
 
     @Override
-    public long readLong(CString name) {
+    public int readInt(CString name) {
+        return readInt(name, 0);
+    }
+
+    @Override
+    public int readInt(CString name, int defValue) {
         CString parsedName = currNamesMap.get(name);
         if (parsedName == null) {
-            return 0L;
+            return defValue;
+        }
+
+        return BDecoderUtil.readInt(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
+    }
+
+    @Override
+    public int readInt(int i) {
+        return readInt(BEncoder.getIndexName(i), 0);
+    }
+
+    @Override
+    public int readInt(int i, int defValue) {
+        return readInt(BEncoder.getIndexName(i), defValue);
+    }
+
+    @Override
+    public long readLong(CString name) {
+        return readLong(name, 0L);
+    }
+
+    @Override
+    public long readLong(CString name, long defValue) {
+        CString parsedName = currNamesMap.get(name);
+        if (parsedName == null) {
+            return defValue;
         }
 
         return BDecoderUtil.readLong(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
     }
 
     @Override
-    public int readInt(CString name) {
+    public long readLong(int i) {
+        return readLong(BEncoder.getIndexName(i), 0L);
+    }
+
+    @Override
+    public long readLong(int i, long defValue) {
+        return readLong(BEncoder.getIndexName(i), defValue);
+    }
+
+    @Override
+    public double readDouble(CString name) {
+        return readDouble(name, 0D);
+    }
+
+    @Override
+    public double readDouble(CString name, double defValue) {
         CString parsedName = currNamesMap.get(name);
         if (parsedName == null) {
-            return 0;
+            return defValue;
         }
 
-        return BDecoderUtil.readInt(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
+        return BDecoderUtil.readDouble(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
+    }
+
+    @Override
+    public double readDouble(int i) {
+        return readDouble(BEncoder.getIndexName(i), 0D);
+    }
+
+    @Override
+    public double readDouble(int i, double defValue) {
+        return readDouble(BEncoder.getIndexName(i), defValue);
     }
 
     @Override
@@ -317,15 +392,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public String readString(int i) {
-        CString id;
-
-        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
-            id = BEncoder.ARRAY_INDEXES[i];
-        } else {
-            id = new CString(i);
-        }
-
-        return readString(id);
+        return readString(BEncoder.getIndexName(i));
     }
 
     @Override
@@ -336,6 +403,11 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         }
 
         return new Date(BDecoderUtil.readLong(bytes, parsedName.getOffset() + parsedName.getLength() + 1));
+    }
+
+    @Override
+    public Date readDate(int i) {
+        return readDate(BEncoder.getIndexName(i));
     }
 
     @Override
@@ -352,6 +424,11 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     }
 
     @Override
+    public UUID readUUID(int i) {
+        return readUUID(BEncoder.getIndexName(i));
+    }
+
+    @Override
     public int readObject(CString name) {
         CString parsedName = currNamesMap.get(name);
         if (parsedName == null) {
@@ -364,6 +441,11 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         currNamesMap = getPairNames();
 
         return currPosition;
+    }
+
+    @Override
+    public int readObject(int i) {
+        return readObject(BEncoder.getIndexName(i));
     }
 
     @Override
@@ -391,22 +473,15 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     }
 
     @Override
+    public int readArray(int i) {
+        return readArray(BEncoder.getIndexName(i));
+    }
+
+    @Override
     public int readArraySize() {
         return currNamesMap.size();
     }
 
-    @Override
-    public long readLong(int i) {
-        CString id;
-
-        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
-            id = BEncoder.ARRAY_INDEXES[i];
-        } else {
-            id = new CString(i);
-        }
-
-        return readLong(id);
-    }
 
     @Override
     public void readArrayStop(int label) {
@@ -417,27 +492,5 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         popStack();
     }
 
-    @Override
-    public double readDouble(CString name) {
-        CString parsedName = currNamesMap.get(name);
-        if (parsedName == null) {
-            return 0D;
-        }
-
-        return BDecoderUtil.readDouble(bytes, parsedName.getOffset() + parsedName.getLength() + 1);
-    }
-
-    @Override
-    public double readDouble(int i) {
-        CString id;
-
-        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
-            id = BEncoder.ARRAY_INDEXES[i];
-        } else {
-            id = new CString(i);
-        }
-
-        return readDouble(id);
-    }
 
 }

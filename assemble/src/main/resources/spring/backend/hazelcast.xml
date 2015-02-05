@@ -177,8 +177,14 @@
     </bean>
     <!-- /Backends -->
 
+    <!-- Mock pending queue configurator for hazelcast without stores -->
+    <bean id="pendingQueueConfigurator" class="java.lang.Object">
+    </bean>
+    <!--/pending queue configurator -->
+
     <!-- Task server -->
-    <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HazelcastTaskServer">
+    <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HazelcastTaskServer"
+          depends-on="pendingQueueConfigurator">
         <constructor-arg name="configService" ref="configService"/>
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
@@ -189,6 +195,13 @@
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nodeCustomName" value="${node.custom-name}"/>
         <constructor-arg name="decisionProcessingExecutorService" value="${hz.executor-service.decisions.service-name}"/>
+        <constructor-arg name="maxPendingWorkers" value="${hz.executor-service.decisions.pending-workers}"/>
+        <constructor-arg name="maxPendingLimit" value="${hz.executor-service.decisions.pending-limit}"/>
+        <constructor-arg name="sleepOnOverloadMls">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${hz.executor-service.decisions.sleep-on-overload}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="taskServer" class="ru.taskurotta.assemble.ProxyTaskServer">

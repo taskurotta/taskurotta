@@ -2,6 +2,8 @@ package ru.taskurotta.hazelcast.queue.config;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ServiceConfig;
+import com.hazelcast.core.HazelcastInstance;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.QueueService;
 
@@ -29,6 +31,10 @@ public class CachedQueueServiceConfig extends ServiceConfig {
         CachedQueueServiceConfig queueServiceConfig = registerServiceConfig(config);
 
         return queueServiceConfig.getQueueConfig(name);
+    }
+
+    public static CachedQueue getCachedQueue(HazelcastInstance hazelcastInstance, String name) {
+        return hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), name);
     }
 
     /**

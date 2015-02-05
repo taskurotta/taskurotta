@@ -37,7 +37,6 @@ spreader:
           test.ff.maxQueuesSize: 10000
 
 
-
 profiler:
   - MainProfilerConfig:
       class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
@@ -79,7 +78,7 @@ logback:
     logger:
         - com.hazelcast:
              key: name
-             \@level: ERROR
+             \@level: INFO
         - ru.taskurotta:
              key: name
              \@level: INFO

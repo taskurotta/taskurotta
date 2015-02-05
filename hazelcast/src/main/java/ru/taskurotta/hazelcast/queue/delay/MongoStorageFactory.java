@@ -19,6 +19,7 @@ import ru.taskurotta.mongodb.driver.DBObjectСheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
+import ru.taskurotta.util.Shutdown;
 
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +52,6 @@ public class MongoStorageFactory implements StorageFactory {
     private BEncoderFactory encoderFactory;
     private BDecoderFactory decoderFactory;
 
-
     public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final MongoTemplate mongoTemplate,
                                String storagePrefix, long scheduleDelayMillis, int batchLoadSize,
                                BSerializationService bSerializationService, String objectClassName) {
@@ -80,7 +80,7 @@ public class MongoStorageFactory implements StorageFactory {
             @Override
             public void run() {
 
-                while (!Thread.currentThread().isInterrupted()) {
+                while (!Shutdown.isTrue() && !Thread.currentThread().isInterrupted()) {
 
                     boolean shouldSleep = true;
 
@@ -131,6 +131,10 @@ public class MongoStorageFactory implements StorageFactory {
                             }
                         }
                     } catch (Throwable e) {
+                        if (Shutdown.isTrue()) {
+                            return;
+                        }
+
                         logger.error("MongoDB storage scan iteration failed. Try to resume in [" + scheduleDelayMillis + "]ms...", e);
                         // ToDo: repair index on dbCollection
                         shouldSleep = true;

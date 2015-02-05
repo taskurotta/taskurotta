@@ -52,21 +52,24 @@ public class SizeAdviser {
                     }
 
 
-                    int sumNotNullRate = 0;
+                    long sumRateInBytes = 0;
 
                     for (QueueStats queueStats : name2QueueStatsMap.values()) {
-                        sumNotNullRate += queueStats.pollNotNullMeter.fiveMinuteRate();
+                        sumRateInBytes +=
+                                queueStats.pollNotNullMeter.oneMinuteRate() * (long) queueStats.offerTimer.mean();
                     }
 
-                    if (sumNotNullRate == 0) {
+                    if (sumRateInBytes == 0) {
                         continue;
                     }
 
+
                     int size = sizeConfig.getSize();
                     long totalBytesQuota = (long) (1D * Runtime.getRuntime().totalMemory() / 100 * size);
+                    double realK = 1D * totalBytesQuota / sumRateInBytes;
 
                     for (QueueStats queueStats : name2QueueStatsMap.values()) {
-                        int queueRate = (int) queueStats.pollNotNullMeter.fiveMinuteRate();
+                        int queueRate = (int) queueStats.pollNotNullMeter.oneMinuteRate();
 
                         queueRate = queueRate == 0 ? 1 : queueRate;
 
@@ -77,7 +80,12 @@ public class SizeAdviser {
                             continue;
                         }
 
-                        queueStats.recommendedSize = (int) (1D * queueRate / sumNotNullRate * totalBytesQuota / itemSize);
+                        int recommendedSize = (int) (realK * queueRate);
+                        if (recommendedSize < DEFAULT_SIZE) {
+                            recommendedSize = DEFAULT_SIZE;
+                        }
+
+                        queueStats.recommendedSize = recommendedSize;
                     }
 
                 }
@@ -113,4 +121,34 @@ public class SizeAdviser {
         name2QueueStatsMap.remove(queueName);
     }
 
+
+    // algorithm
+    public static void main(String[] args) {
+
+        long totalBytesQuota = 10 * 1024 * 1024;
+
+        int[] queueRate = new int[]{1200, 200, 500};
+        int[] itemBytes = new int[]{350, 86, 86};
+        int[] queueSize = new int[queueRate.length];
+
+        long sumRateInBytes = 0;
+        for (int i = 0; i < queueRate.length; i++) {
+            sumRateInBytes += queueRate[i] * itemBytes[i];
+        }
+
+        double realK = 1D * totalBytesQuota / sumRateInBytes;
+
+        long totalBytesOfNewQueues = 0;
+        for (int i = 0; i < queueRate.length; i++) {
+
+            queueSize[i] = (int) (queueRate[i] * realK);
+            totalBytesOfNewQueues += queueSize[i]* itemBytes[i];
+
+            System.err.println("queue [" + i + "] should have size " + queueSize[i]);
+
+        }
+
+        System.err.println("Total new size = " + totalBytesOfNewQueues);
+
+    }
 }

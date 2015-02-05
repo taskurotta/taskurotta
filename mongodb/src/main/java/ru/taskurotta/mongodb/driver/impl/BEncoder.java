@@ -85,6 +85,57 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 //        _buf.writeString(n);
 //    }
 
+    static CString getIndexName(int i) {
+
+        CString id;
+
+        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
+            id = BEncoder.ARRAY_INDEXES[i];
+        } else {
+            id = new CString(i);
+        }
+
+        return id;
+    }
+
+
+    @Override
+    public void writeInt(CString name, int value) {
+        _buf.write(NUMBER_INT);
+        name.writeCString(_buf);
+        _buf.writeInt(value);
+    }
+
+    @Override
+    public void writeInt(int i, int value) {
+        writeInt(getIndexName(i), value);
+    }
+
+    @Override
+    public void writeLong(CString name, long value) {
+        _buf.write(NUMBER_LONG);
+        name.writeCString(_buf);
+        _buf.writeLong(value);
+    }
+
+    @Override
+    public void writeLong(int i, long value) {
+        writeLong(getIndexName(i), value);
+    }
+
+    @Override
+    public void writeDouble(CString name, double value) {
+        _buf.write(NUMBER);
+        name.writeCString(_buf);
+        _buf.writeDouble(value);
+    }
+
+    @Override
+    public void writeDouble(int i, double value) {
+        writeDouble(getIndexName(i), value);
+    }
+
+
     @Override
     public void writeString(CString name, String value) {
         if (value == null) return;
@@ -96,11 +147,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeString(int i, String value) {
-        if (i > -1 && i < ID_CACHE_SIZE) {
-            writeString(ARRAY_INDEXES[i], value);
-        } else {
-            writeString(new CString(Integer.toString(i)), value);
-        }
+        writeString(getIndexName(i), value);
     }
 
     @Override
@@ -116,43 +163,10 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
-    public void writeLong(CString name, long value) {
-        _buf.write(NUMBER_LONG);
-        name.writeCString(_buf);
-        _buf.writeLong(value);
+    public void writeUUID(int i, UUID value) {
+        writeUUID(getIndexName(i), value);
     }
 
-    @Override
-    public void writeLong(int i, long value) {
-        if (i > -1 && i < ID_CACHE_SIZE) {
-            writeLong(ARRAY_INDEXES[i], value);
-        } else {
-            writeLong(new CString(Integer.toString(i)), value);
-        }
-    }
-
-    @Override
-    public void writeDouble(CString name, double value) {
-        _buf.write(NUMBER);
-        name.writeCString(_buf);
-        _buf.writeDouble(value);
-    }
-
-    @Override
-    public void writeDouble(int i, double value) {
-        if (i > -1 && i < ID_CACHE_SIZE) {
-            writeDouble(ARRAY_INDEXES[i], value);
-        } else {
-            writeDouble(new CString(Integer.toString(i)), value);
-        }
-    }
-
-    @Override
-    public void writeInt(CString name, int value) {
-        _buf.write(NUMBER_INT);
-        name.writeCString(_buf);
-        _buf.writeInt(value);
-    }
 
     @Override
     public void writeDate(CString name, Date value) {
@@ -160,6 +174,11 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         _buf.write(DATE);
         name.writeCString(_buf);
         _buf.writeLong(value.getTime());
+    }
+
+    @Override
+    public void writeDate(int i, Date value) {
+        writeDate(getIndexName(i), value);
     }
 
     @Override
@@ -172,6 +191,11 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         _buf.writeInt(0);
 
         return sizePos;
+    }
+
+    @Override
+    public int writeObject(int i) {
+        return writeObject(getIndexName(i));
     }
 
     @Override
@@ -190,6 +214,11 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         _buf.writeInt(0);
 
         return sizePos;
+    }
+
+    @Override
+    public int writeArray(int i) {
+        return writeArray(getIndexName(i));
     }
 
     @Override
