@@ -54,11 +54,13 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
 
     private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
+//    private static WriteConcern waitWriteConcern = new WriteConcern(1, 0, false, true);
 
     private String mapName;
     private MongoDBConverter converter;
     private DBCollection coll;
     private MongoTemplate mongoTemplate;
+
 
     public MongoTemplate getMongoTemplate() {
         return mongoTemplate;

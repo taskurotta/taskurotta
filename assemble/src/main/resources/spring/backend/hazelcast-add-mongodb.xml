@@ -40,8 +40,8 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${hz.executor-service.decisions.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${hz.executor-service.decisions.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName"><null /></constructor-arg>
-        <!--<constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.DecisionContainer" />-->
+        <!--<constructor-arg name="objectClassName"><null /></constructor-arg>-->
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.TaskKey" />
     </bean>
 
     <bean id="pendingQueueConfigurator" factory-bean="pendingDecisionsQueueConfigSupport"

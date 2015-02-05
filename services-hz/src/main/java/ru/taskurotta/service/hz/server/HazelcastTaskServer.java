@@ -16,6 +16,7 @@ import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.gc.GarbageCollectorService;
+import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
@@ -126,18 +127,23 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         logger.debug("HZ server release for decision [{}]", taskDecision);
         long startTime = clock.tick();
 
+        // save it firstly
+        taskService.addDecision(taskDecision);
+
+        TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId());
+
         if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
-            pendingDecisionQueueProxy.stash(taskDecision);
+            pendingDecisionQueueProxy.stash(taskKey);
         } else {
-            sendToClusterMember(taskDecision);
+            sendToClusterMember(taskKey);
         }
 
         startedDistributedTasks.incrementAndGet();
         statRelease.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
     }
 
-    protected void sendToClusterMember(DecisionContainer taskDecision) {
-        ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision);
+    protected void sendToClusterMember(TaskKey taskKey) {
+        ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskKey);
         distributedExeService.submit(call);
     }
 
@@ -146,15 +152,15 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     }
 
 
-    public static void lockAndProcessDecision(DecisionContainer taskDecision, HazelcastTaskServer taskServer) {
+    public static void lockAndProcessDecision(TaskKey taskKey, HazelcastTaskServer taskServer) {
 
-        logger.debug("ProcessDecisionUnitOfWork decision is[{}], taskId[{}], processId[{]]", taskDecision,
-                taskDecision.getTaskId(), taskDecision.getProcessId());
+        UUID taskId = taskKey.getTaskId();
+        UUID processId = taskKey.getProcessId();
+
+        logger.debug("ProcessDecisionUnitOfWork taskId[{}], processId[{]]", taskId, processId);
         long startTime = clock.tick(), fullTime = clock.tick();
 
         try {
-
-            UUID processId = taskDecision.getProcessId();
 
             taskServer.lockProcessMap.lock(processId);
 
@@ -162,7 +168,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             startTime = clock.tick();
 
             try {
-                taskServer.processDecision(taskDecision);
+                taskServer.processDecision(taskId, processId);
 
                 statPdWork.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
                 startTime = clock.tick();
@@ -185,14 +191,14 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
         private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
 
-        DecisionContainer taskDecision;
+        TaskKey taskKey;
         HazelcastTaskServer taskServer;
 
         public ProcessDecisionUnitOfWork() {
         }
 
-        public ProcessDecisionUnitOfWork(DecisionContainer taskDecision) {
-            this.taskDecision = taskDecision;
+        public ProcessDecisionUnitOfWork(TaskKey TaskKey) {
+            this.taskKey = TaskKey;
         }
 
         @Autowired
@@ -202,19 +208,23 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         @Override
         public Object call() throws Exception {
-
-            lockAndProcessDecision(taskDecision, taskServer);
+            try {
+                lockAndProcessDecision(taskKey, taskServer);
+            } catch (RuntimeException ex) {
+                logger.error("Can not process task decision", ex);
+                throw ex;
+            }
 
             return null;
         }
 
         @Override
         public Object getPartitionKey() {
-            return taskDecision.getProcessId();
+            return taskKey.getProcessId();
         }
 
-        public DecisionContainer getTaskDecision() {
-            return taskDecision;
+        public TaskKey getTaskKey() {
+            return taskKey;
         }
 
         @Override
@@ -224,7 +234,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
             ProcessDecisionUnitOfWork that = (ProcessDecisionUnitOfWork) o;
 
-            if (taskDecision != null ? !taskDecision.equals(that.taskDecision) : that.taskDecision != null)
+            if (taskKey != null ? !taskKey.equals(that.taskKey) : that.taskKey != null)
                 return false;
 
             return true;
@@ -232,7 +242,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         @Override
         public int hashCode() {
-            return taskDecision != null ? taskDecision.hashCode() : 0;
+            return taskKey != null ? taskKey.hashCode() : 0;
         }
     }
 

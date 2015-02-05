@@ -41,7 +41,7 @@
         <constructor-arg value="${mongo.options.socket-keep-alive}"/>
     </bean>
     <bean factory-bean="mongoClientOptionsBuilder" factory-method="writeConcern">
-        <constructor-arg value="writeConcern"/>
+        <constructor-arg ref="writeConcern"/>
     </bean>
 
     <bean id="mongo" class="com.mongodb.MongoClient">
@@ -70,7 +70,7 @@
     <bean id="taskQueueItemStreamBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.TaskQueueItemStreamBSerializer"/>
 
-    <bean id="grapStreamBSerializer"
+    <bean id="graphStreamBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.GraphSerializer"/>
 
     <bean id="taskContainerBSerializer"
@@ -91,18 +91,22 @@
     <bean id="recoveryOperationSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.RecoveryOperationSerializer"/>
 
+    <bean id="taskKeyBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.TaskKeyBSerializer"/>
+
     <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
           factory-method="newInstance">
         <constructor-arg>
             <list>
                 <ref bean="taskQueueItemStreamBSerializer"/>
-                <ref bean="grapStreamBSerializer"/>
+                <ref bean="graphStreamBSerializer"/>
                 <ref bean="taskContainerBSerializer"/>
                 <ref bean="decisionRowBSerializer"/>
                 <ref bean="processBSerializer"/>
                 <ref bean="decisionContainerBSerializer"/>
                 <ref bean="uuidSerializer"/>
                 <ref bean="recoveryOperationSerializer"/>
+                <ref bean="taskKeyBSerializer" />
             </list>
         </constructor-arg>
     </bean>

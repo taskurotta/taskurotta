@@ -46,6 +46,7 @@ public class ProcessPusher {
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
+            boolean fixedPushRate = false;
             int currentSpeedPerSecond = startSpeedPerSecond;
 //            int currentSpeedPerSecond = 10000;
             final long startTime = System.currentTimeMillis();
@@ -57,7 +58,7 @@ public class ProcessPusher {
                 int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
 
                 // should waiting to prevent overload
-                if (sumQueuesSize > maxQueuesSize) {
+                if (!fixedPushRate && sumQueuesSize > maxQueuesSize) {
 
                     // go slowly
                     currentSpeedPerSecond--;
@@ -65,7 +66,7 @@ public class ProcessPusher {
                 }
 
 
-                if (sumQueuesSize < minQueuesSize) {
+                if (!fixedPushRate && sumQueuesSize < minQueuesSize) {
 
                     // go faster
                     currentSpeedPerSecond++;

@@ -7,7 +7,6 @@ import com.hazelcast.core.HazelcastInstance;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.hazelcast.util.ConfigUtil;
@@ -16,6 +15,7 @@ import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
+import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
 import ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer;
 import ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer;
@@ -30,7 +30,6 @@ import ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer;
 import ru.taskurotta.service.hz.server.HazelcastTaskServer.ProcessDecisionUnitOfWork;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
 import ru.taskurotta.transport.model.TaskConfigContainer;
@@ -354,12 +353,10 @@ public class SerializationTest {
         String[] failTypes = {"java.lang.RuntimeException"};
         TaskContainer taskContainer = new TaskContainer(taskId, processId, method, actorId, type, startTime, errorAttempts, args, getTaskOptionsContainer(), true, failTypes);
 
-        DecisionContainer decisionContainer = new DecisionContainer(
-                UUID.randomUUID(), UUID.randomUUID(), argContainer1, new ErrorContainer(new RuntimeException("test")), 0l,
-                new TaskContainer[]{taskContainer}, "actorId", 1000l);
+        TaskKey taskKey = new TaskKey(UUID.randomUUID(), UUID.randomUUID());
 
         String key = "processDecisionUnitOfWork";
-        ProcessDecisionUnitOfWork processDecisionUnitOfWork = new ProcessDecisionUnitOfWork(decisionContainer);
+        ProcessDecisionUnitOfWork processDecisionUnitOfWork = new ProcessDecisionUnitOfWork(taskKey);
         hzMap.put(key, processDecisionUnitOfWork);
 
         ProcessDecisionUnitOfWork getted = (ProcessDecisionUnitOfWork) hzMap.get(key);

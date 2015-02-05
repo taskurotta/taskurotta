@@ -154,13 +154,30 @@ public class GeneralTaskServer implements TaskServer {
     }
 
 
-    /**
-     *
-     */
-    public void processDecision(DecisionContainer taskDecision) {
+    public void processDecision(UUID taskId, UUID processId) {
 
-        // save it in task service
-        taskService.addDecision(taskDecision);
+        DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
+
+        if (taskDecision == null) {
+//            try {
+//                TimeUnit.SECONDS.sleep(10);
+//            } catch (InterruptedException ignore) {
+//
+//            }
+//
+//            taskDecision = taskService.getDecision(taskId, processId);
+//
+//            if (taskDecision == null) {
+                throw new IllegalStateException("Task decision not found. taskId = " + taskId + " processId = " +
+                        processId);
+//            }
+        }
+
+
+        processDecision(taskDecision);
+    }
+
+    public void processDecision(DecisionContainer taskDecision) {
 
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();

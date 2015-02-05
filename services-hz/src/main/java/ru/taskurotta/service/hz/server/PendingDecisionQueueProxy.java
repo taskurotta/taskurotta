@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
-import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.service.hz.TaskKey;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -29,7 +29,7 @@ public class PendingDecisionQueueProxy {
     private final int maxPendingLimit;
     private final long sleepOnOverloadMls;
 
-    private final CachedQueue<DecisionContainer> desTaskQueue;
+    private final CachedQueue<TaskKey> desTaskQueue;
     private final ExecutorService cachedExecutorService;
 
     private volatile int size;
@@ -48,9 +48,9 @@ public class PendingDecisionQueueProxy {
     }
 
 
-    public boolean stash(DecisionContainer taskDecision) {
+    public boolean stash(TaskKey taskKey) {
 
-        final boolean result = desTaskQueue.offer(taskDecision);
+        final boolean result = desTaskQueue.offer(taskKey);
         addNewWorkerIfRequired();
         return result;
     }
@@ -80,17 +80,17 @@ public class PendingDecisionQueueProxy {
         @Override
         public void run() {
             try {
-                DecisionContainer decisionContainer = null;
+                TaskKey taskKey = null;
                 do {
-                    decisionContainer = desTaskQueue.poll();
-                    if (decisionContainer == null) {
+                    taskKey = desTaskQueue.poll();
+                    if (taskKey == null) {
                         break;
                     }
 
                     if (taskServer.localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
                         TimeUnit.MILLISECONDS.sleep(sleepOnOverloadMls);
                     }
-                    taskServer.sendToClusterMember(decisionContainer);
+                    taskServer.sendToClusterMember(taskKey);
                 }
                 while (true);
 

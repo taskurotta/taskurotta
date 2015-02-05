@@ -15,16 +15,16 @@ import java.io.IOException;
 
 public class ProcessDecisionUnitOfWorkStreamSerializer implements StreamSerializer<ProcessDecisionUnitOfWork> {
 
-    private DecisionContainerStreamSerializer decisionContainerStreamSerializer = new DecisionContainerStreamSerializer();
+    private TaskKeyStreamSerializer taskKeyStreamSerializer = new TaskKeyStreamSerializer();
 
     @Override
     public void write(ObjectDataOutput out, ProcessDecisionUnitOfWork object) throws IOException {
-        decisionContainerStreamSerializer.write(out, object.getTaskDecision());
+        taskKeyStreamSerializer.write(out, object.getTaskKey());
     }
 
     @Override
     public ProcessDecisionUnitOfWork read(ObjectDataInput in) throws IOException {
-        return new ProcessDecisionUnitOfWork(decisionContainerStreamSerializer.read(in));
+        return new ProcessDecisionUnitOfWork(taskKeyStreamSerializer.read(in));
     }
 
     @Override

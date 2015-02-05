@@ -84,9 +84,16 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     }
 
     public DBObject decode(InputStream in, DBCollection collection) throws IOException {
-        boolean isError = decodeInternal(readDocumentByteArray(in));
+        byte[] loadedBytes = readDocumentByteArray(in);
 
-        if (!isError) {
+        if (loadedBytes == null) {
+            new DBObjectСheat(null);
+        }
+
+        boolean good = decodeInternal(loadedBytes);
+
+        if (!good) {
+            // todo: put 4 bytes of stream length back to stream head
             return super.decode(in, collection);
         }
 
@@ -102,7 +109,12 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         byte[] bytes4Int = new byte[4];
         in.read(bytes4Int);
 
-        byte[] allStreamInBytes = new byte[readInt(bytes4Int, 0) - 4];
+        int size = readInt(bytes4Int, 0);
+        if (size == -1) {
+            return null;
+        }
+
+        byte[] allStreamInBytes = new byte[size - 4];
         in.read(allStreamInBytes);
 
         return allStreamInBytes;

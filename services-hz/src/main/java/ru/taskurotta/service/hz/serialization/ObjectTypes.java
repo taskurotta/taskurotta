@@ -16,7 +16,7 @@ public class ObjectTypes {
     public static final int ERROR_CONTAINER = 7;
     public static final int DECISION_CONTAINER = 8;
     public static final int UUID = 9;
-    public static final int TASK_KEY = 10;
+    public static final int FAT_TASK_KEY = 10;
     public static final int PROCESS = 11;
     public static final int TASK_QUEUE_ITEM = 12;
     public static final int BROKEN_PROCESS = 13;
@@ -25,5 +25,6 @@ public class ObjectTypes {
     public static final int RECOVERY_OPERATION = 16;
     public static final int ACTOR_PREFERENCES = 17;
     public static final int PROCESS_DECISION_UNIT_OF_WORK = 18;
+    public static final int TASK_KEY = 19;
 
 }

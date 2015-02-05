@@ -13,7 +13,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
-import ru.taskurotta.service.hz.TaskKey;
+import ru.taskurotta.service.hz.TaskFatKey;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
 import java.util.UUID;
@@ -155,7 +155,7 @@ public class MapStoreTest {
     @Test
     public void testPojoKeyMapStore() {
         String testMapName = PURE_POJO_MAPSTORE_MAP;
-        IMap<TaskKey, UUID> hzMap = hzInstance.getMap(testMapName);
+        IMap<TaskFatKey, UUID> hzMap = hzInstance.getMap(testMapName);
 
         logger.info("POJO MAPSTORE: initial hzMap size is [{}]", hzMap.size());
 
@@ -164,7 +164,7 @@ public class MapStoreTest {
 
         for (int i = 0; i < size; i++) {
             UUID taskId = UUID.randomUUID();
-            hzMap.put(new TaskKey(processId, taskId), taskId);
+            hzMap.put(new TaskFatKey(processId, taskId), taskId);
         }
 
         DBCollection mongoMap = mongoTemplate.getCollection(testMapName);

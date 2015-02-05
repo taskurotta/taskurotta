@@ -54,7 +54,12 @@ public class DBObjectСheat<T> implements DBObject {
     @Deprecated
     @Override
     public Object get(String key) {
+
         if (key.equals("_id")) {
+
+            if (obj == null) {
+                return null;
+            }
             return "";
         }
 
