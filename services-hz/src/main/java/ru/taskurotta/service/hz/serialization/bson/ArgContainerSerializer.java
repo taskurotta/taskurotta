@@ -76,7 +76,7 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
         if (arrayLabel > 0) {
             args = new ArgContainer[arraySize];
             for (int i = 0; i < arraySize; i++) {
-                int readObjLabel = in.readObject(new CString(Integer.toString(i)));
+                int readObjLabel = in.readObject(SerializerTools.createCString(i));
                 ArgContainer argCont = read(in);
                 args[i] = argCont;
                 in.readObjectStop(readObjLabel);
@@ -90,7 +90,7 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
         if (argContainers != null) {
             int arrayLabel = out.writeArray(arrayName);
             for (int i = 0; i < argContainers.length; i++) {
-                int objectStart = out.writeObject(new CString(Integer.toString(i))); //todo optimize that
+                int objectStart = out.writeObject(SerializerTools.createCString(i)); //todo optimize that
                 ArgContainer argContainer = argContainers[i];
                 write(out, argContainer);
                 out.writeObjectStop(objectStart);

@@ -40,7 +40,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
         int newItemsLabel = out.writeArray(NEW_ITEMS);
         int i = 0;
         for (UUID item : newItems) {
-            out.writeUUID(new CString(Integer.toString(i)), item);
+            out.writeUUID(SerializerTools.createCString(i), item);
             i++;
         }
         out.writeArrayStop(newItemsLabel);
@@ -54,7 +54,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
         if (readyItemsCount > 0) {
             int readyItemsLabel = out.writeArray(READY_ITEMS);
             for (i = 0; i < readyItemsCount; i++) {
-                out.writeUUID(new CString(Integer.toString(i)), decisionRow.getReadyItems()[i]);
+                out.writeUUID(SerializerTools.createCString(i), decisionRow.getReadyItems()[i]);
             }
             out.writeArrayStop(readyItemsLabel);
         }
@@ -73,7 +73,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
             int newItemsSize = in.readArraySize();
             newItems = new HashSet<>(newItemsSize);
             for (int i = 0; i < newItemsSize; i++) {
-                newItems.add(in.readUUID(new CString(Integer.toString(i))));
+                newItems.add(in.readUUID(SerializerTools.createCString(i)));
             }
             in.readArrayStop(newItemsLabel);
         }
@@ -93,7 +93,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
             int readyItemsSize = in.readArraySize();
             readyItems = new UUID[readyItemsSize];
             for (int i = 0; i < readyItemsSize; i++) {
-                readyItems[i] = in.readUUID(new CString(Integer.toString(i)));
+                readyItems[i] = in.readUUID(SerializerTools.createCString(i));
             }
         }
 

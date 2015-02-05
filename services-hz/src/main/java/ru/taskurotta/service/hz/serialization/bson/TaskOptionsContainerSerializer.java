@@ -36,7 +36,7 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
         out.writeArrayStop(argTypesLabel);
         int argContainersLabel = out.writeArray(ARG_CONTAINERS);
         for (int i = 0; i < object.getPromisesWaitFor().length; i++) {
-            int writeObjectLabel = out.writeObject(new CString(Integer.toString(i)));
+            int writeObjectLabel = out.writeObject(SerializerTools.createCString(i));
             ArgContainer argContainer = object.getPromisesWaitFor()[i];
             argContainerSerializer.write(out, argContainer);
             out.writeObjectStop(writeObjectLabel);

@@ -43,19 +43,24 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
         int valueLabel = out.writeObject(VALUE);
         argContainerSerializer.write(out, object.getValue());
         out.writeObjectStop(valueLabel);
-        int errorLabel = out.writeObject(ERROR_CONTAINER);
-        errorContainerSerializer.write(out, object.getErrorContainer());
-        out.writeObjectStop(errorLabel);
+        if (object.getErrorContainer() != null) {
+            int errorLabel = out.writeObject(ERROR_CONTAINER);
+            errorContainerSerializer.write(out, object.getErrorContainer());
+            out.writeObjectStop(errorLabel);
+        }
         out.writeLong(RESTART_TIME, object.getRestartTime());
         out.writeLong(EXECUTION_TIME, object.getExecutionTime());
-        int tasksLabel = out.writeArray(TASKS);
-        for (int i = 0; i < object.getTasks().length; i++) {
-            TaskContainer taskContainer = object.getTasks()[i];
-            int objLabel = out.writeObject(new CString(Integer.toString(i)));
-            taskContainerSerializer.write(out, taskContainer);
-            out.writeObjectStop(objLabel);
+        if (object.getTasks() != null) {
+            int tasksLabel = out.writeArray(TASKS);
+            for (int i = 0; i < object.getTasks().length; i++) {
+                TaskContainer taskContainer = object.getTasks()[i];
+                int objLabel = out.writeObject(SerializerTools.createCString(i));
+                taskContainerSerializer.write(out, taskContainer);
+                out.writeObjectStop(objLabel);
+            }
+
+            out.writeArrayStop(tasksLabel);
         }
-        out.writeArrayStop(tasksLabel);
     }
 
     @Override
@@ -83,7 +88,7 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
             int arraySize = in.readArraySize();
             tasks = new TaskContainer[arraySize];
             for (int i = 0; i < arraySize; i++) {
-                int objLabel = in.readObject(new CString(Integer.toString(i)));
+                int objLabel = in.readObject(SerializerTools.createCString(i));
                 tasks[i] = taskContainerSerializer.read(in);
                 in.readObjectStop(objLabel);
 

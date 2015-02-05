@@ -9,6 +9,15 @@ import ru.taskurotta.mongodb.driver.CString;
  */
 public final class SerializerTools {
 
+    private static final int ID_CACHE_SIZE = 1000;
+    private static final CString[] ARRAY_INDEXES = new CString[ID_CACHE_SIZE];
+
+    static {
+        for (int i = 0; i < ARRAY_INDEXES.length; i++) {
+            ARRAY_INDEXES[i] = new CString(Integer.toString(i));
+        }
+    }
+
 
     public static void writeArrayOfString(CString name, String[] array, BDataOutput out) {
         int label = out.writeArray(name);
@@ -17,6 +26,13 @@ public final class SerializerTools {
             out.writeString(i, s);
         }
         out.writeArrayStop(label);
+    }
+
+    public static CString createCString(int i){
+        if (i>=1000) {
+            return new CString(Integer.toString(i));
+        } else
+            return ARRAY_INDEXES[i];
     }
 
     public static String[] readArrayOfString(CString name, BDataInput in) {

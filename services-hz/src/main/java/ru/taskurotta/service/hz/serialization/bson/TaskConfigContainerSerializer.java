@@ -30,9 +30,11 @@ public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConf
         out.writeString(CUSTOM_ID, object.getCustomId());
         out.writeLong(START_TIME, object.getStartTime());
         out.writeString(TASK_LIST, object.getTaskList());
-        int retryPolicyConfigContainerObject = out.writeObject(RETRY_POLICY_CONFIG_CONTAINER);
-        retryPolicyConfigContainerSerializer.write(out, object.getRetryPolicyConfigContainer());
-        out.writeObjectStop(retryPolicyConfigContainerObject);
+        if (object.getRetryPolicyConfigContainer() != null) {
+            int retryPolicyConfigContainerObject = out.writeObject(RETRY_POLICY_CONFIG_CONTAINER);
+            retryPolicyConfigContainerSerializer.write(out, object.getRetryPolicyConfigContainer());
+            out.writeObjectStop(retryPolicyConfigContainerObject);
+        }
 
     }
 

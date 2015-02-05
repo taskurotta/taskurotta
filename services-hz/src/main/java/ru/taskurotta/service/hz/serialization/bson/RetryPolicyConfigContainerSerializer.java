@@ -33,8 +33,12 @@ public class RetryPolicyConfigContainerSerializer implements StreamBSerializer<R
 
     @Override
     public void write(BDataOutput out, RetryPolicyConfigContainer object) {
-        writeArrayOfString(EXCEPTIONS_TO_EXCLUDE, (String[]) object.getExceptionsToExclude().toArray(), out);
-        writeArrayOfString(EXCEPTIONS_TO_RETRY, (String[]) object.getExceptionsToRetry().toArray(), out);
+        if (object.getExceptionsToExclude() != null) {
+            writeArrayOfString(EXCEPTIONS_TO_EXCLUDE, (String[]) object.getExceptionsToExclude().toArray(), out);
+        }
+        if (object.getExceptionsToRetry() != null) {
+            writeArrayOfString(EXCEPTIONS_TO_RETRY, (String[]) object.getExceptionsToRetry().toArray(), out);
+        }
         out.writeDouble(BACKOFF_COEFFICIENT, object.getBackoffCoefficient());
         out.writeLong(INITIAL_RETRY_INTERVAL_SECONDS, object.getInitialRetryIntervalSeconds());
         out.writeInt(MAXIMUM_ATTEMPTS, object.getMaximumAttempts());

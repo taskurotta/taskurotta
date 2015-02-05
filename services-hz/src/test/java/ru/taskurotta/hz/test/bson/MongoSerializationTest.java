@@ -19,11 +19,14 @@ import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.links.Graph;
+import ru.taskurotta.service.hz.serialization.bson.DecisionContainerSerializer;
 import ru.taskurotta.service.hz.serialization.bson.GraphSerializer;
 import ru.taskurotta.service.hz.serialization.bson.ProcessSerializer;
 import ru.taskurotta.service.hz.serialization.bson.TaskContainerSerializer;
 import ru.taskurotta.service.hz.serialization.bson.UUIDSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
 import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -146,8 +149,56 @@ public class MongoSerializationTest {
         }
     }
 
+    @Test
+    public void testDecisionContainer() throws UnknownHostException {
 
-    private TaskContainer createTaskContainer() {
+        DecisionContainer decisionContainer = createDecisionContainer();
+
+
+
+        MongoTemplate mongoTemplate = getMongoTemplate();
+
+        DecisionContainerSerializer decisionContainerSerializer = new DecisionContainerSerializer();
+
+        DBCollection withCol = mongoTemplate.getCollection("decisions");
+        withCol.setDBEncoderFactory(new BEncoderFactory(decisionContainerSerializer));
+        withCol.setDBDecoderFactory(new BDecoderFactory(decisionContainerSerializer));
+
+        DBObjectСheat<DecisionContainer> obj = new DBObjectСheat<>(decisionContainer);
+
+        withCol.save(obj);
+
+        try (DBCursor cursor = withCol.find()) {
+            while (cursor.hasNext()) {
+                DBObjectСheat<DecisionContainer> ret = (DBObjectСheat) cursor.next();
+                System.out.println("finished = " + ret.getObject().getTasks());
+            }
+        }
+    }
+
+    public static DecisionContainer createDecisionContainer() {
+        ArgContainer argContainer1 = new ArgContainer();
+        argContainer1.setTaskId(UUID.randomUUID());
+        argContainer1.setDataType("simple1");
+        argContainer1.setJSONValue("jsonData1");
+        argContainer1.setPromise(false);
+        argContainer1.setReady(true);
+        argContainer1.setValueType(ArgContainer.ValueType.COLLECTION);
+
+        TaskContainer[] taskContainers = new TaskContainer[2];
+        taskContainers[0] = createTaskContainer();
+        taskContainers[1] = createTaskContainer();
+
+        ErrorContainer errorContainer =new ErrorContainer( );
+        errorContainer.setClassNames(new String[]{"test", "test1"});
+        errorContainer.setMessage("messageErr");
+        errorContainer.setStackTrace("stack");
+
+        return new DecisionContainer(UUID.randomUUID(),UUID.randomUUID(),argContainer1, errorContainer, 6666, taskContainers, "act4", 7777);
+    }
+
+
+    public static TaskContainer createTaskContainer() {
         UUID taskId = UUID.randomUUID();
         String method = "method";
         String actorId = "actorId#" + taskId.toString();
