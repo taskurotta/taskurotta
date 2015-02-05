@@ -22,7 +22,6 @@ public final class SerializerTools {
     }
 
 
-
     public static void writeListOfString(CString name, List<String> list, BDataOutput out) {
         int label = out.writeArray(name);
         for (int i = 0; i < list.size(); i++) {
@@ -51,6 +50,8 @@ public final class SerializerTools {
                 }
             }
             in.readArrayStop(label);
+        } else {
+            list = new ArrayList<>(0);
         }
         return list;
     }

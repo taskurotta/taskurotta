@@ -123,6 +123,7 @@ public class MongoSerializationTest {
         withCol.save(dbObjectСheat);
     }
 
+
     @Test
     public void testGraph() throws Exception {
 
