@@ -59,25 +59,21 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
         ArgType[] argTypes = null;
         if (argTypesLabel != -1) {
             int argTypesSize = in.readArraySize();
-            if (argTypesSize > 0) {
-                argTypes = new ArgType[argTypesSize];
-                for (int i = 0; i < argTypesSize; i++) {
-                    argTypes[i] = ArgType.fromInt((int) in.readLong(i));
-                }
+            argTypes = new ArgType[argTypesSize];
+            for (int i = 0; i < argTypesSize; i++) {
+                argTypes[i] = ArgType.fromInt((int) in.readLong(i));
             }
             in.readArrayStop(argTypesLabel);
         }
         ArgContainer[] argContainers = null;
         int argContainersLabel = in.readArray(ARG_CONTAINERS);
-        int argContainersSize = in.readArraySize();
         if (argContainersLabel != -1) {
-            if (argContainersSize > 0) {
-                argContainers = new ArgContainer[argContainersSize];
-                for (int i = 0; i < argContainersSize; i++) {
-                    int objectLabel = in.readObject(new CString(i));
-                    argContainers[i] = argContainerSerializer.read(in);
-                    in.readObjectStop(objectLabel);
-                }
+            int argContainersSize = in.readArraySize();
+            argContainers = new ArgContainer[argContainersSize];
+            for (int i = 0; i < argContainersSize; i++) {
+                int objectLabel = in.readObject(new CString(i));
+                argContainers[i] = argContainerSerializer.read(in);
+                in.readObjectStop(objectLabel);
             }
             in.readArrayStop(argContainersLabel);
         }
