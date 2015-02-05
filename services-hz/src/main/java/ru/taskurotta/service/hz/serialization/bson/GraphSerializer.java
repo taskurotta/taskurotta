@@ -35,31 +35,30 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
     public void write(BDataOutput out, Graph object) {
         out.writeInt(VERSION, object.getVersion());
         out.writeUUID(GRAPH_ID, object.getGraphId());
-
         Map<UUID, Long> notFinishedItems = object.getNotFinishedItems();
-
-        int notFinishedLabel = out.writeArray(NOT_FINISHED);
         int i = 0;
-        for (Map.Entry<UUID, Long> entry : notFinishedItems.entrySet()) {
-            int entryLabel = out.writeObject(SerializerTools.createCString(i));
-            out.writeUUID(KEY, entry.getKey());
-            out.writeLong(VALUE, entry.getValue());
-            out.writeObjectStop(entryLabel);
-            i++;
+        if (notFinishedItems != null) {
+            int notFinishedLabel = out.writeArray(NOT_FINISHED);
+            for (Map.Entry<UUID, Long> entry : notFinishedItems.entrySet()) {
+                int entryLabel = out.writeObject(SerializerTools.createCString(i));
+                out.writeUUID(KEY, entry.getKey());
+                out.writeLong(VALUE, entry.getValue());
+                out.writeObjectStop(entryLabel);
+                i++;
+            }
+            out.writeArrayStop(notFinishedLabel);
         }
-        out.writeArrayStop(notFinishedLabel);
-
         serializeLinks(out, object.getLinks());
-
         Set<UUID> finishedItems = object.getFinishedItems();
-        int finishedArrayLabel = out.writeArray(FINISHED);
-        i = 0;
-        for (UUID uuid : finishedItems) {
-            out.writeUUID(SerializerTools.createCString(i), uuid);
-            i++;
+        if (finishedItems != null) {
+            int finishedArrayLabel = out.writeArray(FINISHED);
+            i = 0;
+            for (UUID uuid : finishedItems) {
+                out.writeUUID(SerializerTools.createCString(i), uuid);
+                i++;
+            }
+            out.writeArrayStop(finishedArrayLabel);
         }
-        out.writeArrayStop(finishedArrayLabel);
-
         out.writeLong(LAST_APPLY_TIME, object.getLastApplyTimeMillis());
 
     }

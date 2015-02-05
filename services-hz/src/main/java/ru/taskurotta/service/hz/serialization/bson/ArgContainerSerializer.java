@@ -14,12 +14,12 @@ import java.util.UUID;
  */
 public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
 
-    private final CString TASK_ID = new CString("taskId");
-    private final CString DATA_TYPE = new CString("dataType");
-    private final CString COMPOSITE_VALUE = new CString("compositeValue");
-    private final CString JSON_VALUE = new CString("jsonValue");
-    private final CString ERROR_CONTAINER = new CString("errorContainer");
-    private final CString VALUE_TYPE = new CString("valueType");
+    private final CString TASK_ID = new CString("tId");
+    private final CString DATA_TYPE = new CString("dTy");
+    private final CString COMPOSITE_VALUE = new CString("coVal");
+    private final CString JSON_VALUE = new CString("jVal");
+    private final CString ERROR_CONTAINER = new CString("erCo");
+    private final CString VALUE_TYPE = new CString("vTy");
 
     private ErrorContainerSerializer errorContainerSerializer = new ErrorContainerSerializer();
 
@@ -39,7 +39,11 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
             errorContainerSerializer.write(out, object.getErrorContainer());
             out.writeObjectStop(errorContainerLabel);
         }
-        out.writeInt(VALUE_TYPE, object.getValueType().getValue());
+        if (object.getValueType() != null) {
+            int valueLabel = out.writeObject(VALUE_TYPE);
+            out.writeInt(VALUE_TYPE, object.getValueType().getValue());
+            out.writeObjectStop(valueLabel);
+        }
     }
 
     @Override
@@ -54,14 +58,21 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
             errorContainer = errorContainerSerializer.read(in);
             in.readObjectStop(errorContainerLabel);
         }
-        int valueType = in.readInt(VALUE_TYPE);
+        int valueType = -1;
+        int valueLabel = in.readObject(VALUE_TYPE);
+        if (valueLabel > 0) {
+            valueType = in.readInt(VALUE_TYPE);
+            in.readObjectStop(valueLabel);
+        }
         ArgContainer argContainer = new ArgContainer();
         argContainer.setTaskId(taskId);
         argContainer.setDataType(dataType);
         argContainer.setCompositeValue(args);
         argContainer.setJSONValue(jsonValue);
         argContainer.setErrorContainer(errorContainer);
-        argContainer.setValueType(ArgContainer.ValueType.fromInt(valueType));
+        if (valueType != -1) {
+            argContainer.setValueType(ArgContainer.ValueType.fromInt(valueType));
+        }
         return argContainer;
     }
 
