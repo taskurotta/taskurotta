@@ -39,7 +39,7 @@
                     max-idle-seconds="0"
                     max-size="${hz.map.decision.memory.max-size}" eviction-percentage="25"
                     max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="decisionMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.graph.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"

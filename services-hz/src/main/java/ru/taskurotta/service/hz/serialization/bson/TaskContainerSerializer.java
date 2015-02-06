@@ -20,8 +20,8 @@ import static ru.taskurotta.service.hz.serialization.bson.BSerializerTools.write
  * Created by greg on 03/02/15.
  */
 public class TaskContainerSerializer implements StreamBSerializer<TaskContainer> {
-    private static final CString TASK_ID = new CString("tId");
-    private static final CString PROCESS_ID = new CString("pId");
+    private static final CString TASK_ID = new CString("taskId");
+    private static final CString PROCESS_ID = new CString("processId");
     private static final CString ACTOR_ID = new CString("aId");
     private static final CString METHOD = new CString("me");
     private static final CString ERROR_ATTEMPTS = new CString("eAtt");
@@ -30,7 +30,7 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
     private static final CString FAIL_TYPES = new CString("fTy");
     private static final CString ARG_CONTAINERS = new CString("aCon");
     private static final CString UNSAFE = new CString("uSa");
-    public static final CString TASK_OPTIONS_CONTAINER = new CString("tOptCon");
+    private static final CString TASK_OPTIONS_CONTAINER = new CString("tOptCon");
 
     private ArgContainerSerializer argContainerSerializer = new ArgContainerSerializer();
     private TaskOptionsContainerSerializer taskOptionsContainerSerializer = new TaskOptionsContainerSerializer();
@@ -42,7 +42,11 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
 
     @Override
     public void write(BDataOutput out, TaskContainer object) {
+        int idLabel = out.writeObject(_ID);
+        out.writeUUID(PROCESS_ID, object.getProcessId());
         out.writeUUID(TASK_ID, object.getTaskId());
+        out.writeObjectStop(idLabel);
+
         out.writeString(METHOD, object.getMethod());
         out.writeString(ACTOR_ID, object.getActorId());
         out.writeInt(TYPE, object.getType().getValue());
@@ -56,12 +60,14 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
         }
         out.writeInt(UNSAFE, (object.isUnsafe() ? 1 : 0));
         writeArrayOfString(FAIL_TYPES, object.getFailTypes(), out);
-        out.writeUUID(PROCESS_ID, object.getProcessId());
     }
 
     @Override
     public TaskContainer read(BDataInput in) {
+        int idLabel = in.readObject(_ID);
+        UUID processId = in.readUUID(PROCESS_ID);
         UUID taskId = in.readUUID(TASK_ID);
+        in.readObjectStop(idLabel);
         String method = in.readString(METHOD);
         String actorId = in.readString(ACTOR_ID);
         TaskType type = TaskType.fromInt(in.readInt(TYPE));
@@ -76,7 +82,6 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
         }
         boolean unsafe = in.readInt(UNSAFE) == 1;
         String[] failTypes = readArrayOfString(FAIL_TYPES, in);
-        UUID processId = in.readUUID(PROCESS_ID);
         return new TaskContainer(
                 taskId,
                 processId,

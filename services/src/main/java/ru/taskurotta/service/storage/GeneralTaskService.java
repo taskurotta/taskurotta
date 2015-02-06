@@ -168,7 +168,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 // leave it in peace...
                 return null;
             }
-            throw new IllegalArgumentException("Decision not found for not @NoWait task [" + taskId + "]");
+            throw new IllegalArgumentException("Decision not found for not @NoWait process ["+processId+"] task [" + taskId + "]");
         }
 
         logger.debug("taskDecision of taskId [{}] is [{}]", taskId, taskDecision);

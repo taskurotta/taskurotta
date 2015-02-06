@@ -4,7 +4,6 @@ import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
 import ru.taskurotta.hazelcast.queue.delay.Storage;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -57,7 +56,7 @@ public class CachedDelayQueueImpl<E> implements CachedDelayQueue<E> {
 
     @Override
     public boolean contains(Object o) {
-        throw new NotImplementedException();
+        throw new IllegalStateException("Not implemented!!!");
     }
 
     @Override

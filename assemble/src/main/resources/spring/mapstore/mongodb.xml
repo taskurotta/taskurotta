@@ -59,9 +59,15 @@
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongo"/>
         <constructor-arg name="databaseName" value="${mongo.db.name}"/>
+        <property name="writeConcern" ref="writeConcern"/>
     </bean>
 
     <bean id="mapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+    <bean id="decisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.DecisionContainer"/>
         <property name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
 
@@ -106,7 +112,7 @@
                 <ref bean="decisionContainerBSerializer"/>
                 <ref bean="uuidSerializer"/>
                 <ref bean="recoveryOperationSerializer"/>
-                <ref bean="taskKeyBSerializer" />
+                <ref bean="taskKeyBSerializer"/>
             </list>
         </constructor-arg>
     </bean>
