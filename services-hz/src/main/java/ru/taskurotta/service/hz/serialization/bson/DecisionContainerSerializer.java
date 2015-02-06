@@ -4,12 +4,16 @@ import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.mongodb.driver.impl.BEncoder;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.UUID;
+
+import static ru.taskurotta.service.hz.serialization.bson.BSerializerTools.readObject;
+import static ru.taskurotta.service.hz.serialization.bson.BSerializerTools.writeObjectIfNotNull;
 
 /**
  * Created by greg on 04/02/15.
@@ -37,28 +41,19 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
 
     @Override
     public void write(BDataOutput out, DecisionContainer object) {
-        out.writeUUID(PROCESS_ID, object.getProcessId());
         out.writeUUID(TASK_ID, object.getTaskId());
-        out.writeString(ACTOR_ID, object.getActorId());
-        int valueLabel = out.writeObject(VALUE);
-        argContainerSerializer.write(out, object.getValue());
-        out.writeObjectStop(valueLabel);
-        if (object.getErrorContainer() != null) {
-            int errorLabel = out.writeObject(ERROR_CONTAINER);
-            errorContainerSerializer.write(out, object.getErrorContainer());
-            out.writeObjectStop(errorLabel);
-        }
+        out.writeUUID(PROCESS_ID, object.getProcessId());
+        writeObjectIfNotNull(VALUE, object.getValue(), argContainerSerializer, out);
+        writeObjectIfNotNull(ERROR_CONTAINER, object.getErrorContainer(), errorContainerSerializer, out);
         out.writeLong(RESTART_TIME, object.getRestartTime());
         out.writeLong(EXECUTION_TIME, object.getExecutionTime());
+        out.writeString(ACTOR_ID, object.getActorId());
         if (object.getTasks() != null) {
             int tasksLabel = out.writeArray(TASKS);
             for (int i = 0; i < object.getTasks().length; i++) {
                 TaskContainer taskContainer = object.getTasks()[i];
-                int objLabel = out.writeObject(SerializerTools.createCString(i));
-                taskContainerSerializer.write(out, taskContainer);
-                out.writeObjectStop(objLabel);
+                writeObjectIfNotNull(BEncoder.getIndexName(i), taskContainer, taskContainerSerializer, out);
             }
-
             out.writeArrayStop(tasksLabel);
         }
     }
@@ -67,30 +62,18 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
     public DecisionContainer read(BDataInput in) {
         UUID processId = in.readUUID(PROCESS_ID);
         UUID taskId = in.readUUID(TASK_ID);
-        String actorId = in.readString(ACTOR_ID);
-        int valueLabel = in.readObject(VALUE);
-        ArgContainer value = null;
-        if (valueLabel != -1) {
-            value = argContainerSerializer.read(in);
-            in.readObjectStop(valueLabel);
-        }
-        int errorLabel = in.readObject(ERROR_CONTAINER);
-        ErrorContainer errorContainer = null;
-        if (errorLabel != -1) {
-            errorContainer = errorContainerSerializer.read(in);
-            in.readObjectStop(errorLabel);
-        }
+        ArgContainer value = readObject(VALUE, argContainerSerializer, in);
+        ErrorContainer errorContainer = readObject(ERROR_CONTAINER, errorContainerSerializer, in);
         long restartTime = in.readLong(RESTART_TIME);
         long executionTime = in.readLong(EXECUTION_TIME);
+        String actorId = in.readString(ACTOR_ID);
         TaskContainer[] tasks = null;
         int tasksLabel = in.readArray(TASKS);
         if (tasksLabel != -1) {
             int arraySize = in.readArraySize();
             tasks = new TaskContainer[arraySize];
             for (int i = 0; i < arraySize; i++) {
-                int objLabel = in.readObject(SerializerTools.createCString(i));
-                tasks[i] = taskContainerSerializer.read(in);
-                in.readObjectStop(objLabel);
+                tasks[i] = readObject(BEncoder.getIndexName(i), taskContainerSerializer, in);
             }
             in.readArrayStop(tasksLabel);
         }

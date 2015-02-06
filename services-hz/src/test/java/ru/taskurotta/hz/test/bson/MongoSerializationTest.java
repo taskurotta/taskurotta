@@ -35,6 +35,7 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,19 +67,14 @@ public class MongoSerializationTest {
 
         withCol.setDBEncoderFactory(new BEncoderFactory(taskContainerSerializer));
         withCol.setDBDecoderFactory(new BDecoderFactory(taskContainerSerializer));
-
-        for (int i = 0; i < 5; i++) {
+        long startTime = new Date().getTime();
+        for (int i = 0; i < 100000; i++) {
             TaskContainer taskContainer = createTaskContainer();
             DBObjectСheat dbObject = new DBObjectСheat(taskContainer);
             withCol.insert(dbObject);
         }
-
-        try (DBCursor cursor = withCol.find()) {
-            while (cursor.hasNext()) {
-                DBObjectСheat<TaskContainer> obj = (DBObjectСheat) cursor.next();
-                System.out.println("actorId = " + obj.getObject().getActorId());
-            }
-        }
+        long diff = new Date().getTime() - startTime;
+        System.out.println("took in ms = " + diff);
     }
 
     @Test

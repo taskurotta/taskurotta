@@ -17,7 +17,7 @@ public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConf
     private static final CString TASK_LIST = new CString("tLst");
     private static final CString RETRY_POLICY_CONFIG_CONTAINER = new CString("rePolConCon");
 
-    RetryPolicyConfigContainerSerializer retryPolicyConfigContainerSerializer = new RetryPolicyConfigContainerSerializer();
+    RetryPolicyConfigContainerBSerializer retryPolicyConfigContainerBSerializer = new RetryPolicyConfigContainerBSerializer();
 
 
     @Override
@@ -32,7 +32,7 @@ public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConf
         out.writeString(TASK_LIST, object.getTaskList());
         if (object.getRetryPolicyConfigContainer() != null) {
             int retryPolicyConfigContainerObject = out.writeObject(RETRY_POLICY_CONFIG_CONTAINER);
-            retryPolicyConfigContainerSerializer.write(out, object.getRetryPolicyConfigContainer());
+            retryPolicyConfigContainerBSerializer.write(out, object.getRetryPolicyConfigContainer());
             out.writeObjectStop(retryPolicyConfigContainerObject);
         }
 
@@ -46,7 +46,7 @@ public class TaskConfigContainerSerializer implements StreamBSerializer<TaskConf
         int retryContainerLabel = in.readObject(RETRY_POLICY_CONFIG_CONTAINER);
         RetryPolicyConfigContainer configContainer = null;
         if (retryContainerLabel != -1) {
-            configContainer = retryPolicyConfigContainerSerializer.read(in);
+            configContainer = retryPolicyConfigContainerBSerializer.read(in);
             in.readObjectStop(retryContainerLabel);
         }
         TaskConfigContainer taskConfigContainer = new TaskConfigContainer();

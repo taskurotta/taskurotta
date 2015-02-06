@@ -12,6 +12,9 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
 
 import java.util.UUID;
 
+import static ru.taskurotta.service.hz.serialization.bson.BSerializerTools.readArrayOfString;
+import static ru.taskurotta.service.hz.serialization.bson.BSerializerTools.writeArrayOfString;
+
 
 /**
  * Created by greg on 03/02/15.
@@ -40,64 +43,46 @@ public class TaskContainerSerializer implements StreamBSerializer<TaskContainer>
     @Override
     public void write(BDataOutput out, TaskContainer object) {
         out.writeUUID(TASK_ID, object.getTaskId());
-        out.writeUUID(PROCESS_ID, object.getProcessId());
-        out.writeString(ACTOR_ID, object.getActorId());
         out.writeString(METHOD, object.getMethod());
-        out.writeInt(ERROR_ATTEMPTS, object.getErrorAttempts());
-        out.writeLong(START_TIME, object.getStartTime());
+        out.writeString(ACTOR_ID, object.getActorId());
         out.writeInt(TYPE, object.getType().getValue());
-        out.writeInt(UNSAFE, (object.isUnsafe() ? 1 : 0));
-        if (object.getFailTypes() != null) {
-            int failTypesLabel = out.writeArray(FAIL_TYPES);
-            for (int i = 0; i < object.getFailTypes().length; i++) {
-                String s = object.getFailTypes()[i];
-                out.writeString(i, s);
-            }
-            out.writeArrayStop(failTypesLabel);
-        }
+        out.writeLong(START_TIME, object.getStartTime());
+        out.writeInt(ERROR_ATTEMPTS, object.getErrorAttempts());
         argContainerSerializer.writeArgContainersArray(ARG_CONTAINERS, out, object.getArgs());
         if (object.getOptions() != null) {
             int taskOptionsContainerLabel = out.writeObject(TASK_OPTIONS_CONTAINER);
             taskOptionsContainerSerializer.write(out, object.getOptions());
             out.writeObjectStop(taskOptionsContainerLabel);
         }
+        out.writeInt(UNSAFE, (object.isUnsafe() ? 1 : 0));
+        writeArrayOfString(FAIL_TYPES, object.getFailTypes(), out);
+        out.writeUUID(PROCESS_ID, object.getProcessId());
     }
 
     @Override
     public TaskContainer read(BDataInput in) {
         UUID taskId = in.readUUID(TASK_ID);
-        UUID processId = in.readUUID(PROCESS_ID);
-        String actorId = in.readString(ACTOR_ID);
         String method = in.readString(METHOD);
-        int errorAttempts = in.readInt(ERROR_ATTEMPTS);
+        String actorId = in.readString(ACTOR_ID);
+        TaskType type = TaskType.fromInt(in.readInt(TYPE));
         long startTime = in.readLong(START_TIME);
-        int type = in.readInt(TYPE);
-        boolean unsafe = in.readInt(UNSAFE) == 1;
-        int failTypesLabel = in.readArray(FAIL_TYPES);
-        String[] failTypes = null;
-        if (failTypesLabel>0) {
-            int failTypesSize = in.readArraySize();
-            failTypes = new String[failTypesSize];
-            for (int i = 0; i < failTypesSize; i++) {
-                failTypes[i] = in.readString(i);
-            }
-            in.readArrayStop(failTypesLabel);
-        }
+        int errorAttempts = in.readInt(ERROR_ATTEMPTS);
         ArgContainer[] argContainers = argContainerSerializer.readArgContainersArray(ARG_CONTAINERS, in);
-
         int taskOptionsContainerLabel = in.readObject(TASK_OPTIONS_CONTAINER);
         TaskOptionsContainer taskOptionsContainer = null;
         if (taskOptionsContainerLabel != -1) {
             taskOptionsContainer = taskOptionsContainerSerializer.read(in);
             in.readObjectStop(taskOptionsContainerLabel);
         }
-
+        boolean unsafe = in.readInt(UNSAFE) == 1;
+        String[] failTypes = readArrayOfString(FAIL_TYPES, in);
+        UUID processId = in.readUUID(PROCESS_ID);
         return new TaskContainer(
                 taskId,
                 processId,
                 method,
                 actorId,
-                TaskType.fromInt(type),
+                type,
                 startTime,
                 errorAttempts, argContainers, taskOptionsContainer, unsafe, failTypes);
     }

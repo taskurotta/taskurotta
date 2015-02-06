@@ -4,6 +4,7 @@ import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.mongodb.driver.impl.BEncoder;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 
@@ -30,8 +31,8 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
 
     @Override
     public void write(BDataOutput out, ArgContainer object) {
-        out.writeUUID(TASK_ID, object.getTaskId());
         out.writeString(DATA_TYPE, object.getDataType());
+        out.writeUUID(TASK_ID, object.getTaskId());
         writeArgContainersArray(COMPOSITE_VALUE, out, object.getCompositeValue());
         out.writeString(JSON_VALUE, object.getJSONValue());
         if (object.getErrorContainer() != null) {
@@ -87,7 +88,7 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
         if (arrayLabel > 0) {
             args = new ArgContainer[arraySize];
             for (int i = 0; i < arraySize; i++) {
-                int readObjLabel = in.readObject(SerializerTools.createCString(i));
+                int readObjLabel = in.readObject(BEncoder.getIndexName(i));
                 ArgContainer argCont = read(in);
                 args[i] = argCont;
                 in.readObjectStop(readObjLabel);
@@ -101,7 +102,7 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
         if (argContainers != null) {
             int arrayLabel = out.writeArray(arrayName);
             for (int i = 0; i < argContainers.length; i++) {
-                int objectStart = out.writeObject(SerializerTools.createCString(i));
+                int objectStart = out.writeObject(BEncoder.getIndexName(i));
                 ArgContainer argContainer = argContainers[i];
                 write(out, argContainer);
                 out.writeObjectStop(objectStart);

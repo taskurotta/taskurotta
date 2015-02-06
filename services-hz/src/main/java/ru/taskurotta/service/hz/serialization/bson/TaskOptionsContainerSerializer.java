@@ -28,6 +28,11 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
 
     @Override
     public void write(BDataOutput out, TaskOptionsContainer object) {
+        if (object.getTaskConfigContainer() != null) {
+            int taskConfigContainerLabel = out.writeObject(TASK_CONFIG_CONTAINER);
+            taskConfigContainerSerializer.write(out, object.getTaskConfigContainer());
+            out.writeObjectStop(taskConfigContainerLabel);
+        }
         if (object.getArgTypes() != null) {
             int argTypesLabel = out.writeArray(ARG_TYPES);
             for (int i = 0; i < object.getArgTypes().length; i++) {
@@ -40,25 +45,18 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
             }
             out.writeArrayStop(argTypesLabel);
         }
-        if (object.getPromisesWaitFor() != null) {
-            int argContainersLabel = out.writeArray(ARG_CONTAINERS);
-            for (int i = 0; i < object.getPromisesWaitFor().length; i++) {
-                int writeObjectLabel = out.writeObject(SerializerTools.createCString(i));
-                ArgContainer argContainer = object.getPromisesWaitFor()[i];
-                argContainerSerializer.write(out, argContainer);
-                out.writeObjectStop(writeObjectLabel);
-            }
-            out.writeArrayStop(argContainersLabel);
-        }
-        if (object.getTaskConfigContainer() != null) {
-            int taskConfigContainerLabel = out.writeObject(TASK_CONFIG_CONTAINER);
-            taskConfigContainerSerializer.write(out, object.getTaskConfigContainer());
-            out.writeObjectStop(taskConfigContainerLabel);
-        }
+        argContainerSerializer.writeArgContainersArray(ARG_CONTAINERS, out, object.getPromisesWaitFor());
+
     }
 
     @Override
     public TaskOptionsContainer read(BDataInput in) {
+        TaskConfigContainer taskConfigContainer = null;
+        int taskConfigContainerLabel = in.readObject(TASK_CONFIG_CONTAINER);
+        if (taskConfigContainerLabel != -1) {
+            taskConfigContainer = taskConfigContainerSerializer.read(in);
+            in.readObjectStop(taskConfigContainerLabel);
+        }
         int argTypesLabel = in.readArray(ARG_TYPES);
         ArgType[] argTypes = null;
         if (argTypesLabel != -1) {
@@ -66,29 +64,11 @@ public class TaskOptionsContainerSerializer implements StreamBSerializer<TaskOpt
             argTypes = new ArgType[argTypesSize];
             for (int i = 0; i < argTypesSize; i++) {
                 int id = in.readInt(i, -1);
-                ArgType argType = (id == -1) ? null : ArgType.fromInt(id);
-                argTypes[i] = argType;
+                argTypes[i] = (id == -1) ? null : ArgType.fromInt(id);
             }
             in.readArrayStop(argTypesLabel);
         }
-        ArgContainer[] argContainers = null;
-        int argContainersLabel = in.readArray(ARG_CONTAINERS);
-        if (argContainersLabel != -1) {
-            int argContainersSize = in.readArraySize();
-            argContainers = new ArgContainer[argContainersSize];
-            for (int i = 0; i < argContainersSize; i++) {
-                int objectLabel = in.readObject(new CString(i));
-                argContainers[i] = argContainerSerializer.read(in);
-                in.readObjectStop(objectLabel);
-            }
-            in.readArrayStop(argContainersLabel);
-        }
-        int taskConfigContainerLabel = in.readObject(TASK_CONFIG_CONTAINER);
-        TaskConfigContainer taskConfigContainer = null;
-        if (taskConfigContainerLabel != -1) {
-            taskConfigContainer = taskConfigContainerSerializer.read(in);
-            in.readObjectStop(taskConfigContainerLabel);
-        }
+        ArgContainer[] argContainers = argContainerSerializer.readArgContainersArray(ARG_CONTAINERS, in);
         return new TaskOptionsContainer(argTypes, taskConfigContainer, argContainers);
     }
 }

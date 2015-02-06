@@ -21,6 +21,7 @@ public class ProcessSerializer implements StreamBSerializer<Process> {
     public static final CString END_TIME = new CString("eTime");
     public static final CString STATE = new CString("state");
     public static final CString START_TASK = new CString("sTask");
+    public static final CString RETURN_VALUE = new CString("retVal");
     private TaskContainerSerializer taskContainerSerializer = new TaskContainerSerializer();
 
     @Override
@@ -36,6 +37,7 @@ public class ProcessSerializer implements StreamBSerializer<Process> {
         out.writeLong(START_TIME, object.getStartTime());
         out.writeLong(END_TIME, object.getEndTime());
         out.writeInt(STATE, object.getState());
+        out.writeString(RETURN_VALUE, object.getReturnValue());
         int startTaskLabel = out.writeObject(START_TASK);
         taskContainerSerializer.write(out, object.getStartTask());
         out.writeObjectStop(startTaskLabel);
@@ -49,6 +51,7 @@ public class ProcessSerializer implements StreamBSerializer<Process> {
         long startTime = in.readLong(START_TIME);
         long endTime = in.readLong(END_TIME);
         int state = in.readInt(STATE);
+        String returnValue = in.readString(RETURN_VALUE);
         int readObject = in.readObject(START_TASK);
         TaskContainer startTask = null;
         if (readObject != -1) {
@@ -63,6 +66,7 @@ public class ProcessSerializer implements StreamBSerializer<Process> {
         process.setStartTime(startTime);
         process.setEndTime(endTime);
         process.setState(state);
+        process.setReturnValue(returnValue);
         process.setStartTask(startTask);
         return process;
     }

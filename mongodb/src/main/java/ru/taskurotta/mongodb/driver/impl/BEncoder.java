@@ -85,7 +85,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 //        _buf.writeString(n);
 //    }
 
-    static CString getIndexName(int i) {
+    public static CString getIndexName(int i) {
 
         CString id;
 

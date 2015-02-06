@@ -4,6 +4,7 @@ import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.mongodb.driver.impl.BEncoder;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
 
@@ -41,7 +42,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
             Set<UUID> newItems = modification.getNewItems();
             int newItemsLabel = out.writeArray(NEW_ITEMS);
             for (UUID item : newItems) {
-                out.writeUUID(SerializerTools.createCString(i), item);
+                out.writeUUID(BEncoder.getIndexName(i), item);
                 i++;
             }
             out.writeArrayStop(newItemsLabel);
@@ -55,7 +56,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
         if (readyItemsCount > 0) {
             int readyItemsLabel = out.writeArray(READY_ITEMS);
             for (i = 0; i < readyItemsCount; i++) {
-                out.writeUUID(SerializerTools.createCString(i), decisionRow.getReadyItems()[i]);
+                out.writeUUID(BEncoder.getIndexName(i), decisionRow.getReadyItems()[i]);
             }
             out.writeArrayStop(readyItemsLabel);
         }
@@ -74,7 +75,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
             int newItemsSize = in.readArraySize();
             newItems = new HashSet<>(newItemsSize);
             for (int i = 0; i < newItemsSize; i++) {
-                newItems.add(in.readUUID(SerializerTools.createCString(i)));
+                newItems.add(in.readUUID(BEncoder.getIndexName(i)));
             }
             in.readArrayStop(newItemsLabel);
         }
@@ -94,7 +95,7 @@ public class DecisionRowSerializer implements StreamBSerializer<HzGraphDao.Decis
             int readyItemsSize = in.readArraySize();
             readyItems = new UUID[readyItemsSize];
             for (int i = 0; i < readyItemsSize; i++) {
-                readyItems[i] = in.readUUID(SerializerTools.createCString(i));
+                readyItems[i] = in.readUUID(BEncoder.getIndexName(i));
             }
         }
 
