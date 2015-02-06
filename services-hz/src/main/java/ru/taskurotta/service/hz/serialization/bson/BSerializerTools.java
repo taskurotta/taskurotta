@@ -22,6 +22,15 @@ public final class BSerializerTools {
         }
     }
 
+    public static <T> Void writeObjectIfNotNull(int index, T object, StreamBSerializer<T> serializer, BDataOutput out) {
+        if (object != null) {
+            int objectLabel = out.writeObject(index);
+            serializer.write(out, object);
+            out.writeObjectStop(objectLabel);
+        }
+        return null;
+    }
+
     public static <T> Void writeObjectIfNotNull(CString name, T object, StreamBSerializer<T> serializer, BDataOutput out) {
         if (object != null) {
             int objectLabel = out.writeObject(name);
@@ -33,6 +42,16 @@ public final class BSerializerTools {
 
     public static <T> T readObject(CString name, StreamBSerializer<T> serializer, BDataInput in){
         int objLabel = in.readObject(name);
+        T obj = null;
+        if (objLabel != -1) {
+            obj = serializer.read(in);
+            in.readObjectStop(objLabel);
+        }
+        return obj;
+    }
+
+    public static <T> T readObject(int index, StreamBSerializer<T> serializer, BDataInput in){
+        int objLabel = in.readObject(index);
         T obj = null;
         if (objLabel != -1) {
             obj = serializer.read(in);
@@ -64,13 +83,6 @@ public final class BSerializerTools {
             in.readArrayStop(arrayLabel);
         }
         return array;
-    }
-
-    public static CString createCString(int i) {
-        if (i >= 1000) {
-            return new CString(Integer.toString(i));
-        } else
-            return ARRAY_INDEXES[i];
     }
 
     public static void writeListOfString(CString name, List<String> list, BDataOutput out) {

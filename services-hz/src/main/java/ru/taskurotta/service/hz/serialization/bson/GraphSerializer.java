@@ -4,7 +4,6 @@ import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.impl.BEncoder;
 import ru.taskurotta.service.dependency.links.Graph;
 
 import java.util.HashMap;
@@ -41,7 +40,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
         if (notFinishedItems != null) {
             int notFinishedLabel = out.writeArray(NOT_FINISHED);
             for (Map.Entry<UUID, Long> entry : notFinishedItems.entrySet()) {
-                int entryLabel = out.writeObject(BEncoder.getIndexName(i));
+                int entryLabel = out.writeObject(i);
                 out.writeUUID(KEY, entry.getKey());
                 out.writeLong(VALUE, entry.getValue());
                 out.writeObjectStop(entryLabel);
@@ -55,7 +54,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
             int finishedArrayLabel = out.writeArray(FINISHED);
             i = 0;
             for (UUID uuid : finishedItems) {
-                out.writeUUID(BEncoder.getIndexName(i), uuid);
+                out.writeUUID(i, uuid);
                 i++;
             }
             out.writeArrayStop(finishedArrayLabel);
@@ -74,7 +73,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
             int notFinishedArraySize = in.readArraySize();
             notFinishedItems = new HashMap<>(notFinishedArraySize);
             for (int i = 0; i < notFinishedArraySize; i++) {
-                int objRead = in.readObject(BEncoder.getIndexName(i));
+                int objRead = in.readObject(i);
                 UUID key = in.readUUID(KEY);
                 Long value = in.readLong(VALUE);
                 notFinishedItems.put(key, value);
@@ -89,7 +88,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
             int finishedSize = in.readArraySize();
             finishedItems = new HashSet<>(finishedSize);
             for (int i = 0; i < finishedSize; i++) {
-                finishedItems.add(in.readUUID(BEncoder.getIndexName(i)));
+                finishedItems.add(in.readUUID(i));
             }
             in.readArrayStop(finishedLabel);
         }
@@ -102,7 +101,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
             int rootArrayLabel = out.writeArray(LINKS);
             int i = 0;
             for (Map.Entry<UUID, Set<UUID>> entry : links.entrySet()) {
-                int rootObjLabel = out.writeObject(BEncoder.getIndexName(i));
+                int rootObjLabel = out.writeObject(i);
                 out.writeUUID(KEY, entry.getKey());
                 Set<UUID> set = entry.getValue();
                 int valueLabel = out.writeArray(VALUE);
@@ -127,7 +126,7 @@ public class GraphSerializer implements StreamBSerializer<Graph> {
             int mapSize = in.readArraySize();
             links = new HashMap<>(mapSize);
             for (int i = 0; i < mapSize; i++) {
-                int rootObjLabel = in.readObject(BEncoder.getIndexName(i));
+                int rootObjLabel = in.readObject(i);
                 UUID key = in.readUUID(KEY);
                 Set<UUID> set = null;
                 int valueLabel = in.readArray(VALUE);

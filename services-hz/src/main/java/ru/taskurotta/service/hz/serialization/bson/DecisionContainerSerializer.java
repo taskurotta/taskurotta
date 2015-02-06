@@ -4,7 +4,6 @@ import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.impl.BEncoder;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
@@ -20,8 +19,8 @@ import static ru.taskurotta.service.hz.serialization.bson.BSerializerTools.write
  */
 public class DecisionContainerSerializer implements StreamBSerializer<DecisionContainer> {
 
-    public static final CString PROCESS_ID = new CString("pId");
-    public static final CString TASK_ID = new CString("tId");
+    public static final CString PROCESS_ID = new CString("processId");
+    public static final CString TASK_ID = new CString("taskId");
     public static final CString ACTOR_ID = new CString("aId");
     public static final CString VALUE = new CString("val");
     public static final CString ERROR_CONTAINER = new CString("eCont");
@@ -41,8 +40,11 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
 
     @Override
     public void write(BDataOutput out, DecisionContainer object) {
-        out.writeUUID(TASK_ID, object.getTaskId());
+        int writeIdLabel = out.writeObject(_ID);
         out.writeUUID(PROCESS_ID, object.getProcessId());
+        out.writeUUID(TASK_ID, object.getTaskId());
+        out.writeObjectStop(writeIdLabel);
+
         writeObjectIfNotNull(VALUE, object.getValue(), argContainerSerializer, out);
         writeObjectIfNotNull(ERROR_CONTAINER, object.getErrorContainer(), errorContainerSerializer, out);
         out.writeLong(RESTART_TIME, object.getRestartTime());
@@ -52,7 +54,7 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
             int tasksLabel = out.writeArray(TASKS);
             for (int i = 0; i < object.getTasks().length; i++) {
                 TaskContainer taskContainer = object.getTasks()[i];
-                writeObjectIfNotNull(BEncoder.getIndexName(i), taskContainer, taskContainerSerializer, out);
+                writeObjectIfNotNull(i, taskContainer, taskContainerSerializer, out);
             }
             out.writeArrayStop(tasksLabel);
         }
@@ -60,8 +62,11 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
 
     @Override
     public DecisionContainer read(BDataInput in) {
+        int readIdLabel = in.readObject(_ID);
         UUID processId = in.readUUID(PROCESS_ID);
         UUID taskId = in.readUUID(TASK_ID);
+        in.readObjectStop(readIdLabel);
+
         ArgContainer value = readObject(VALUE, argContainerSerializer, in);
         ErrorContainer errorContainer = readObject(ERROR_CONTAINER, errorContainerSerializer, in);
         long restartTime = in.readLong(RESTART_TIME);
@@ -73,7 +78,7 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
             int arraySize = in.readArraySize();
             tasks = new TaskContainer[arraySize];
             for (int i = 0; i < arraySize; i++) {
-                tasks[i] = readObject(BEncoder.getIndexName(i), taskContainerSerializer, in);
+                tasks[i] = readObject(i, taskContainerSerializer, in);
             }
             in.readArrayStop(tasksLabel);
         }
