@@ -3,13 +3,17 @@ package ru.taskurotta.mongodb.driver.impl;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.DefaultDBDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.CString;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +46,8 @@ import static org.bson.BSON.UNDEFINED;
  */
 public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
+    private static final Logger logger = LoggerFactory.getLogger(BDecoder.class);
+
     private static final CString err = new CString("$err");
     private static final CString err1 = new CString("err");
     private static final CString err2 = new CString("errmsg");
@@ -67,7 +73,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     public DBObject decode(byte[] b, DBCollection collection) {
         decodeInternal(b);
         try {
-            return new DBObjectСheat(rootObj);
+            return new DBObjectCheat(rootObj);
         } finally {
             clear();
             // todo: put decoder back to object poll
@@ -87,7 +93,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         byte[] loadedBytes = readDocumentByteArray(in);
 
         if (loadedBytes == null) {
-            new DBObjectСheat(null);
+            return new DBObjectCheat(null);
         }
 
         boolean good = decodeInternal(loadedBytes);
@@ -98,27 +104,27 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         }
 
         try {
-            return new DBObjectСheat(rootObj);
+            return new DBObjectCheat(rootObj);
         } finally {
             clear();
             // todo: put decoder back to object poll
         }
     }
 
-    public static byte[] readDocumentByteArray(InputStream in) throws IOException {
-        byte[] bytes4Int = new byte[4];
-        in.read(bytes4Int);
-
-        int size = readInt(bytes4Int, 0);
-        if (size == -1) {
-            return null;
-        }
-
-        byte[] allStreamInBytes = new byte[size - 4];
-        in.read(allStreamInBytes);
-
-        return allStreamInBytes;
-    }
+//    public static byte[] readDocumentByteArray(InputStream in) throws IOException {
+//        byte[] bytes4Int = new byte[4];
+//        in.read(bytes4Int);
+//
+//        int size = readInt(bytes4Int, 0);
+//        if (size - 4 < 1) {
+//            return null;
+//        }
+//
+//        byte[] allStreamInBytes = new byte[size - 4];
+//        in.read(allStreamInBytes);
+//
+//        return allStreamInBytes;
+//    }
 
     public static int readInt(byte[] data, int offset) {
         int x = 0;
@@ -129,13 +135,13 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         return x;
     }
 
-    private boolean decodeInternal(byte[] bytes) {
+    private boolean decodeInternal(byte[] loadedBytes) {
 
-        if (bytes == null) {
+        if (loadedBytes == null) {
             throw new IllegalStateException("not ready");
         }
 
-        this.bytes = bytes;
+        this.bytes = loadedBytes;
         currPosition = 0;
         currNamesMap = getPairNames();
 
@@ -146,6 +152,190 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         rootObj = streamBSerializer.read(this);
         return true;
     }
+
+    public static void fillByteArray(InputStream in, byte b[], int len) throws IOException {
+
+        int off = 0;
+
+        while (len > 0) {
+            final int x = in.read(b, off, len);
+            if (x == -1) {
+                throw new IllegalStateException("Can not read " + len + " bytes. Read result is " + off);
+            }
+            off += x;
+            len -= x;
+        }
+    }
+
+    private static byte writeByteTo(OutputStream out, InputStream in, byte[] tmp) throws IOException {
+        fillByteArray(in, tmp, 1);
+        out.write(tmp, 0, 1);
+        return tmp[0];
+    }
+
+
+    private static int writeIntTo(OutputStream out, InputStream in, byte[] tmp) throws IOException {
+        fillByteArray(in, tmp, 4);
+        out.write(tmp, 0, 4);
+        return readInt(tmp, 0);
+    }
+
+    private static void writeLess128BytesTo(OutputStream out, int size, InputStream in, byte[] tmp) throws IOException {
+        fillByteArray(in, tmp, size);
+        out.write(tmp, 0, size);
+    }
+
+    private static void writeMore128BytesTo(OutputStream out, int size, InputStream in, byte[] tmp) throws IOException {
+
+        int sum = size;
+
+        do {
+
+            if (sum <= tmp.length) {
+                fillByteArray(in, tmp, sum);
+                out.write(tmp, 0, sum);
+                return;
+            }
+
+            sum -= 128;
+            fillByteArray(in, tmp, 128);
+            out.write(tmp, 0, 128);
+        } while (true);
+
+    }
+
+    public static byte[] readDocumentByteArray(InputStream in) throws IOException {
+        byte[] tmp = new byte[4];
+        fillByteArray(in, tmp, 4);
+
+        int size = readInt(tmp, 0);
+        if (size - 4 < 1) {
+            return null;
+        }
+
+        // try to read whole array at one time
+        if (size < 1000) {
+            byte[] allStreamInBytes = new byte[size - 4];
+            fillByteArray(in, allStreamInBytes, size - 4);
+
+            return allStreamInBytes;
+
+            // some thing wrong: никому верить нелья!
+            // try to read carefully. Some times size has a wrong big value and we are welcome to OOM
+        } else {
+
+            logger.warn("Too big size of array [" + size + "]. Try to read carefully");
+
+            tmp = new byte[128];
+            ByteArrayOutputStream out = new ByteArrayOutputStream(1000);
+
+            while (true) {
+
+                final byte type = writeByteTo(out, in, tmp);
+
+                if (type == EOO) {
+                    break;
+                }
+
+                // skip name
+                while (writeByteTo(out, in, tmp) != 0) ;
+
+                switch (type) {
+                    case NULL:
+                        break;
+
+                    case UNDEFINED:
+                        break;
+
+                    case BOOLEAN:
+                        writeLess128BytesTo(out, 1, in, tmp);
+                        break;
+
+                    case NUMBER:
+                        writeLess128BytesTo(out, 8, in, tmp);
+                        break;
+
+                    case NUMBER_INT:
+                        writeLess128BytesTo(out, 4, in, tmp);
+                        break;
+
+                    case NUMBER_LONG:
+                        writeLess128BytesTo(out, 8, in, tmp);
+                        break;
+
+                    case SYMBOL:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp), in, tmp);
+                        break;
+
+                    case STRING:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp), in, tmp);
+                        break;
+
+                    case OID:
+                        // ObjectId 3 * int
+                        writeLess128BytesTo(out, 12, in, tmp);
+                        break;
+
+                    case REF:
+                        // length of CString that follows
+                        // ObjectId 3 * int
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp) + 12, in, tmp);
+                        break;
+
+                    case DATE:
+                        writeLess128BytesTo(out, 8, in, tmp);
+                        break;
+
+                    case REGEX:
+                        // skip 2 CString
+                        // _callback.gotRegex(name, _in.readCStr(), _in.readCStr());
+                        while (writeByteTo(out, in, tmp) != 0) ;
+                        while (writeByteTo(out, in, tmp) != 0) ;
+                        break;
+
+                    case BINARY:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp) + 1, in, tmp);
+                        break;
+
+                    case CODE:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp), in, tmp);
+                        break;
+
+                    case CODE_W_SCOPE:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp), in, tmp);
+                        break;
+
+                    case ARRAY:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp) - 4, in, tmp);
+                        break;
+
+                    case OBJECT:
+                        writeMore128BytesTo(out, writeIntTo(out, in, tmp) - 4, in, tmp);
+                        break;
+
+                    case TIMESTAMP:
+                        writeLess128BytesTo(out, 8, in, tmp);
+                        break;
+
+                    case MINKEY:
+                        break;
+
+                    case MAXKEY:
+                        break;
+
+                    default:
+                        throw new UnsupportedOperationException("BSONDecoder doesn't understand type : " + type);
+                }
+            }
+
+            if (size - 4 != out.size()) {
+                logger.warn("Ops! Received wrong size of object. Expected " + size + " but actual is " + out.size());
+            }
+            return out.toByteArray();
+        }
+
+    }
+
 
     private Map<CString, CString> getPairNames() {
 
@@ -334,12 +524,12 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public int readInt(int i) {
-        return readInt(BEncoder.getIndexName(i), 0);
+        return readInt(CString.valueOf(i), 0);
     }
 
     @Override
     public int readInt(int i, int defValue) {
-        return readInt(BEncoder.getIndexName(i), defValue);
+        return readInt(CString.valueOf(i), defValue);
     }
 
     @Override
@@ -359,12 +549,12 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public long readLong(int i) {
-        return readLong(BEncoder.getIndexName(i), 0L);
+        return readLong(CString.valueOf(i), 0L);
     }
 
     @Override
     public long readLong(int i, long defValue) {
-        return readLong(BEncoder.getIndexName(i), defValue);
+        return readLong(CString.valueOf(i), defValue);
     }
 
     @Override
@@ -384,12 +574,12 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public double readDouble(int i) {
-        return readDouble(BEncoder.getIndexName(i), 0D);
+        return readDouble(CString.valueOf(i), 0D);
     }
 
     @Override
     public double readDouble(int i, double defValue) {
-        return readDouble(BEncoder.getIndexName(i), defValue);
+        return readDouble(CString.valueOf(i), defValue);
     }
 
     @Override
@@ -404,7 +594,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public String readString(int i) {
-        return readString(BEncoder.getIndexName(i));
+        return readString(CString.valueOf(i));
     }
 
     @Override
@@ -419,7 +609,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public Date readDate(int i) {
-        return readDate(BEncoder.getIndexName(i));
+        return readDate(CString.valueOf(i));
     }
 
     @Override
@@ -437,7 +627,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public UUID readUUID(int i) {
-        return readUUID(BEncoder.getIndexName(i));
+        return readUUID(CString.valueOf(i));
     }
 
     @Override
@@ -457,7 +647,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public int readObject(int i) {
-        return readObject(BEncoder.getIndexName(i));
+        return readObject(CString.valueOf(i));
     }
 
     @Override
@@ -486,7 +676,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
 
     @Override
     public int readArray(int i) {
-        return readArray(BEncoder.getIndexName(i));
+        return readArray(CString.valueOf(i));
     }
 
     @Override

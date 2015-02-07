@@ -6,19 +6,17 @@ import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
-import java.util.Date;
-
 /**
  */
 public class TaskQueueItemStreamBSerializer implements StreamBSerializer<TaskQueueItem> {
 
-    public static final CString TASK_ID = new CString("tId");
-    public static final CString PROCESS_ID = new CString("pId");
-    public static final CString ENQUEUE_TIME = new CString("eTime");
-    public static final CString START_TIME = new CString("sTime");
-    public static final CString QUEUE_NAME = new CString("qName");
-    public static final CString CREATE_DATE = new CString("cDate");
-    public static final CString TASK_LIST = new CString("tList");
+    public static final CString TASK_ID = new CString("t");
+    public static final CString PROCESS_ID = new CString("p");
+    public static final CString ENQUEUE_TIME = new CString("et");
+    public static final CString START_TIME = new CString("st");
+    public static final CString QUEUE_NAME = new CString("q");
+    public static final CString CREATE_DATE = new CString("c");
+    public static final CString TASK_LIST = new CString("l");
 
     @Override
     public Class<TaskQueueItem> getObjectClass() {
@@ -37,20 +35,9 @@ public class TaskQueueItemStreamBSerializer implements StreamBSerializer<TaskQue
             out.writeLong(START_TIME, startTime);
         }
 
-        final String queueName = taskQueueItem.getQueueName();
-        if (queueName != null) {
-            out.writeString(QUEUE_NAME, queueName);
-        }
-
-        final Date createdDate = taskQueueItem.getCreatedDate();
-        if (createdDate != null) {
-            out.writeDate(CREATE_DATE, createdDate);
-        }
-
-        final String taskList = taskQueueItem.getTaskList();
-        if (taskList != null) {
-            out.writeString(TASK_LIST, taskList);
-        }
+        out.writeString(QUEUE_NAME, taskQueueItem.getQueueName());
+        out.writeDate(CREATE_DATE, taskQueueItem.getCreatedDate());
+        out.writeString(TASK_LIST, taskQueueItem.getTaskList());
 
     }
 

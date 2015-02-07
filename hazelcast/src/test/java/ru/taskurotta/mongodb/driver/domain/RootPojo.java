@@ -1,5 +1,6 @@
 package ru.taskurotta.mongodb.driver.domain;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -18,13 +19,13 @@ public class RootPojo {
     public RootPojo() {
     }
 
-    public RootPojo(int i, String str) {
+    public RootPojo(int i, String str, Date date, UUID uuid, String str2, UUID uuid2) {
         this.i = i;
-        this.str = "dsdsfdsf";
-        this.date = new Date();
-        this.uuid = UUID.randomUUID();
+        this.str = str;
+        this.date = date;
+        this.uuid = uuid;
         this.longArray = new long[] {10l, 4l, 2l, 4l};
-        this.house = new InnerPojo();
+        this.house = new InnerPojo(str2, uuid2);
     }
 
     public int getI() {
@@ -73,5 +74,48 @@ public class RootPojo {
 
     public void setLongArray(long[] longArray) {
         this.longArray = longArray;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RootPojo rootPojo = (RootPojo) o;
+
+        if (date != null ? !date.equals(rootPojo.date) : rootPojo.date != null) {
+            System.err.println("E DATE");
+            return false;
+        }
+        if (house != null ? !house.equals(rootPojo.house) : rootPojo.house != null){
+            System.err.println("E house");
+            return false;
+        }
+        if (!Arrays.equals(longArray, rootPojo.longArray)) {
+            System.err.println("E longArray");
+            return false;
+        }
+        if (str != null ? !str.equals(rootPojo.str) : rootPojo.str != null) {
+            System.err.println("E str");
+            return false;
+        }
+        if (uuid != null ? !uuid.equals(rootPojo.uuid) : rootPojo.uuid != null) {
+            System.err.println("E uuid");
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = i;
+        result = 31 * result + (str != null ? str.hashCode() : 0);
+        result = 31 * result + (date != null ? date.hashCode() : 0);
+        result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+        result = 31 * result + (longArray != null ? Arrays.hashCode(longArray) : 0);
+        result = 31 * result + (house != null ? house.hashCode() : 0);
+        return result;
     }
 }

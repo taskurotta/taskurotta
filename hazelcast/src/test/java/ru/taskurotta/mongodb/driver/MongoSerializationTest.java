@@ -20,6 +20,10 @@ import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
 import ru.taskurotta.mongodb.driver.io.RootPojoStreamBSerializer;
 
 import java.net.UnknownHostException;
+import java.util.Date;
+import java.util.UUID;
+
+import static junit.framework.Assert.assertEquals;
 
 @Ignore
 public class MongoSerializationTest {
@@ -27,6 +31,9 @@ public class MongoSerializationTest {
     private static final Logger logger = LoggerFactory.getLogger(MongoSerializationTest.class);
 
     public static final int COLLECTION_SIZE = 100000;
+
+    public static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
+
 
     private MongoTemplate getMongoTemplate() throws UnknownHostException {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
@@ -43,6 +50,13 @@ public class MongoSerializationTest {
     @Test
     @Ignore
     public void testDefaultEncoder() throws Exception {
+
+        String str = "hehehe";
+        Date date = new Date();
+        UUID uuid = UUID.randomUUID();
+        String str2 = "hohoho";
+        UUID uuid2 = UUID.randomUUID();
+
 
         final MongoTemplate mongoTemplate = getMongoTemplate();
         mongoTemplate.getDb().dropDatabase();
@@ -62,13 +76,13 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < COLLECTION_SIZE; i++) {
 
-            DBObject dbo = converter.toDBObject(new RootPojo(i, "hehehe"));
+            DBObject dbo = converter.toDBObject(new RootPojo(i, str, date, uuid, str2, uuid2));
             dbo.put("_id", i);
 
             coll.insert(dbo);
         }
 
-        // 25431
+        // 22515
         logger.debug("Done: {} milliseconds", (System.currentTimeMillis() - startTime));
 
         startTime = System.currentTimeMillis();
@@ -89,7 +103,7 @@ public class MongoSerializationTest {
             }
         }
 
-        // 4358
+        // 3614
         logger.debug("Done read {} elements: {} milliseconds", i, (System.currentTimeMillis() - startTime));
 
         // memory up from 56 to 393 mb
@@ -110,14 +124,14 @@ public class MongoSerializationTest {
 //            System.err.println("added " + (j + 1 % 100));
             if (j > 0 && j % 100 == 0) {
                 BasicDBObject inListObj = new BasicDBObject("$in", idList);
-                coll.remove(new BasicDBObject("_id", inListObj));
+                coll.remove(new BasicDBObject("_id", inListObj), noWaitWriteConcern);
                 idList.clear();;
 //                System.err.println("REMOVE!!");
             }
 
         }
 
-        // 15860
+        // 87
         logger.debug("Done remove {} elements: {} milliseconds", j, (System.currentTimeMillis() - startTime));
 
     }
@@ -125,6 +139,13 @@ public class MongoSerializationTest {
     @Test
     @Ignore
     public void testCustomEncoder() throws Exception {
+
+        String str = "hehehe";
+        Date date = new Date();
+        UUID uuid = UUID.randomUUID();
+        String str2 = "hohoho";
+        UUID uuid2 = UUID.randomUUID();
+
 
         final MongoTemplate mongoTemplate = getMongoTemplate();
         mongoTemplate.getDb().dropDatabase();
@@ -143,15 +164,17 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < COLLECTION_SIZE; i++) {
 
-            DBObjectСheat document = new DBObjectСheat(new RootPojo(i, "hahaha"));
+            DBObjectCheat<RootPojo> document = new DBObjectCheat<>(new RootPojo(i, str, date, uuid, str2, uuid2));
 
             coll.insert(document);
         }
 
-        // 18837
+        // 15132
         logger.debug("Done: {} milliseconds", (System.currentTimeMillis() - startTime));
 
         startTime = System.currentTimeMillis();
+
+        RootPojo rootPojo = null; //new RootPojo(1, str, date, uuid, str2, uuid2);
 
         logger.debug("Start to load {} elements...", COLLECTION_SIZE);
 
@@ -159,13 +182,17 @@ public class MongoSerializationTest {
         try (DBCursor cursor = coll.find()) {
             while (cursor.hasNext()) {
                 DBObject obj = cursor.next();
-                if (obj instanceof DBObjectСheat && ((DBObjectСheat) obj).getObject() != null) {
+                if (obj instanceof DBObjectCheat && ((DBObjectCheat) obj).getObject() != null) {
                     i++;
+
+                    if (rootPojo != null) {
+                        assertEquals(rootPojo, ((DBObjectCheat) obj).getObject());
+                    }
                 }
             }
         }
 
-        // 1092
+        // 577
         logger.debug("Done read {} elements: {} milliseconds", i, (System.currentTimeMillis() - startTime));
 
 
@@ -176,15 +203,15 @@ public class MongoSerializationTest {
         int j = 0;
 
         DBObjectID objectID = new DBObjectID(null);
-        WriteConcern writeConcern = new WriteConcern(0, 0, false, true);
 
         for (j = 0; j < COLLECTION_SIZE; j++) {
 
             objectID.setId(j);
-            coll.remove(objectID, writeConcern);
+            coll.remove(objectID, noWaitWriteConcern);
         }
 
 
+        // 493
         logger.debug("Done remove {} elements: {} milliseconds", j, (System.currentTimeMillis() - startTime));
 
 

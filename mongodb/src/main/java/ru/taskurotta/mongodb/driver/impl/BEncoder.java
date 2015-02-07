@@ -4,7 +4,7 @@ import com.mongodb.DefaultDBEncoder;
 import org.bson.BSONObject;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 
 import java.util.Date;
@@ -25,15 +25,6 @@ import static org.bson.BSON.STRING;
  */
 public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
-    public static final int ID_CACHE_SIZE = 1000;
-    public static final CString[] ARRAY_INDEXES = new CString[ID_CACHE_SIZE];
-
-    static {
-        for (int i = 0; i < ARRAY_INDEXES.length; i++) {
-            ARRAY_INDEXES[i] = new CString(Integer.toString(i));
-        }
-    }
-
     private StreamBSerializer streamBSerializer;
 
     protected BEncoder(StreamBSerializer streamBSerializer) {
@@ -44,14 +35,14 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         if (o == null)
             throw new NullPointerException("can't save a null object");
 
-        if (!(o instanceof DBObjectСheat)) {
+        if (!(o instanceof DBObjectCheat)) {
             return false;
         }
 
         final int sizePos = _buf.getPosition();
         _buf.writeInt(0); // leaving space for this.  set it at the end
 
-        streamBSerializer.write(this, ((DBObjectСheat) o).getObject());
+        streamBSerializer.write(this, ((DBObjectCheat) o).getObject());
 
         _buf.write(EOO);
         _buf.writeInt(sizePos, _buf.getPosition() - sizePos);
@@ -85,20 +76,6 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 //        _buf.writeString(n);
 //    }
 
-    static CString getIndexName(int i) {
-
-        CString id;
-
-        if (i > -1 && i < BEncoder.ID_CACHE_SIZE) {
-            id = BEncoder.ARRAY_INDEXES[i];
-        } else {
-            id = new CString(i);
-        }
-
-        return id;
-    }
-
-
     @Override
     public void writeInt(CString name, int value) {
         _buf.write(NUMBER_INT);
@@ -108,7 +85,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeInt(int i, int value) {
-        writeInt(getIndexName(i), value);
+        writeInt(CString.valueOf(i), value);
     }
 
     @Override
@@ -120,7 +97,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeLong(int i, long value) {
-        writeLong(getIndexName(i), value);
+        writeLong(CString.valueOf(i), value);
     }
 
     @Override
@@ -132,7 +109,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeDouble(int i, double value) {
-        writeDouble(getIndexName(i), value);
+        writeDouble(CString.valueOf(i), value);
     }
 
 
@@ -147,7 +124,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeString(int i, String value) {
-        writeString(getIndexName(i), value);
+        writeString(CString.valueOf(i), value);
     }
 
     @Override
@@ -164,7 +141,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeUUID(int i, UUID value) {
-        writeUUID(getIndexName(i), value);
+        writeUUID(CString.valueOf(i), value);
     }
 
 
@@ -178,7 +155,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public void writeDate(int i, Date value) {
-        writeDate(getIndexName(i), value);
+        writeDate(CString.valueOf(i), value);
     }
 
     @Override
@@ -195,7 +172,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public int writeObject(int i) {
-        return writeObject(getIndexName(i));
+        return writeObject(CString.valueOf(i));
     }
 
     @Override
@@ -218,7 +195,7 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
     @Override
     public int writeArray(int i) {
-        return writeArray(getIndexName(i));
+        return writeArray(CString.valueOf(i));
     }
 
     @Override

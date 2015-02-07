@@ -11,6 +11,15 @@ import java.io.UnsupportedEncodingException;
  */
 public class CString {
 
+    public static final int ID_CACHE_SIZE = 1000;
+    public static final CString[] ARRAY_INDEXES = new CString[ID_CACHE_SIZE];
+
+    static {
+        for (int i = 0; i < ARRAY_INDEXES.length; i++) {
+            ARRAY_INDEXES[i] = new CString(Integer.toString(i));
+        }
+    }
+
     protected byte[] bytes;
     protected int offset = 0;
     protected int length;
@@ -108,6 +117,20 @@ public class CString {
     private static boolean _isAscii(byte b) {
         return b >= 0 && b <= 127;
     }
+
+    public static CString valueOf(int i) {
+
+        CString id;
+
+        if (i > -1 && i < ID_CACHE_SIZE) {
+            id = ARRAY_INDEXES[i];
+        } else {
+            id = new CString(i);
+        }
+
+        return id;
+    }
+
 
     @Override
     public boolean equals(Object o) {

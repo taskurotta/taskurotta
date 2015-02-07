@@ -14,7 +14,7 @@ import ru.taskurotta.hazelcast.queue.delay.impl.mongodb.StorageItemContainerBSer
 import ru.taskurotta.hz.test.serialization.SerializationTest;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
 import ru.taskurotta.service.console.model.Process;
@@ -70,7 +70,7 @@ public class MongoSerializationTest {
         long startTime = new Date().getTime();
         for (int i = 0; i < 100000; i++) {
             TaskContainer taskContainer = createTaskContainer();
-            DBObjectСheat dbObject = new DBObjectСheat(taskContainer);
+            DBObjectCheat dbObject = new DBObjectCheat(taskContainer);
             withCol.insert(dbObject);
         }
         long diff = new Date().getTime() - startTime;
@@ -89,13 +89,13 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < 5; i++) {
             Process process = new Process(createTaskContainer());
-            DBObjectСheat<Process> dbObject = new DBObjectСheat<>(process);
+            DBObjectCheat<Process> dbObject = new DBObjectCheat<>(process);
             withCol.insert(dbObject);
         }
 
         try (DBCursor cursor = withCol.find()) {
             while (cursor.hasNext()) {
-                DBObjectСheat<Process> obj = (DBObjectСheat) cursor.next();
+                DBObjectCheat<Process> obj = (DBObjectCheat) cursor.next();
                 System.out.println("actorId = " + obj.getObject().getStartTask().getActorId());
             }
         }
@@ -115,8 +115,8 @@ public class MongoSerializationTest {
 
         UUID uuid = UUID.randomUUID();
         StorageItemContainer storageItemContainer = new StorageItemContainer(uuid, 755757, "queName1");
-        DBObjectСheat<StorageItemContainer> dbObjectСheat = new DBObjectСheat<>(storageItemContainer);
-        withCol.save(dbObjectСheat);
+        DBObjectCheat<StorageItemContainer> dbObjectCheat = new DBObjectCheat<>(storageItemContainer);
+        withCol.save(dbObjectCheat);
     }
 
 
@@ -134,13 +134,13 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < 5; i++) {
             Graph graph = SerializationTest.newRandomGraph();
-            DBObjectСheat<Graph> dbObject = new DBObjectСheat<>(graph);
+            DBObjectCheat<Graph> dbObject = new DBObjectCheat<>(graph);
             withCol.insert(dbObject);
         }
 
         try (DBCursor cursor = withCol.find()) {
             while (cursor.hasNext()) {
-                DBObjectСheat<Graph> obj = (DBObjectСheat) cursor.next();
+                DBObjectCheat<Graph> obj = (DBObjectCheat) cursor.next();
                 System.out.println("finished = " + obj.getObject().getFinishedItems());
             }
         }
@@ -161,13 +161,13 @@ public class MongoSerializationTest {
         withCol.setDBEncoderFactory(new BEncoderFactory(decisionContainerSerializer));
         withCol.setDBDecoderFactory(new BDecoderFactory(decisionContainerSerializer));
 
-        DBObjectСheat<DecisionContainer> obj = new DBObjectСheat<>(decisionContainer);
+        DBObjectCheat<DecisionContainer> obj = new DBObjectCheat<>(decisionContainer);
 
         withCol.save(obj);
 
         try (DBCursor cursor = withCol.find()) {
             while (cursor.hasNext()) {
-                DBObjectСheat<DecisionContainer> ret = (DBObjectСheat) cursor.next();
+                DBObjectCheat<DecisionContainer> ret = (DBObjectCheat) cursor.next();
                 System.out.println("finished = " + ret.getObject().getTasks());
             }
         }

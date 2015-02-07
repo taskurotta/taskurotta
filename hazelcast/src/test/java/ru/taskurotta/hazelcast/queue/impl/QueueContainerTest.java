@@ -1,9 +1,6 @@
 package ru.taskurotta.hazelcast.queue.impl;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.JoinConfig;
-import com.hazelcast.config.MulticastConfig;
-import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.spi.impl.NodeEngineImpl;
@@ -17,10 +14,13 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  */
@@ -42,16 +42,10 @@ public class QueueContainerTest {
 
         cfg = new Config();
 
+        ConfigUtil.disableMulticast(cfg);
+
         CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
         cachedQueueConfig.setCacheSize(5);
-
-        MulticastConfig multicastConfig = new MulticastConfig();
-        multicastConfig.setEnabled(false);
-        JoinConfig joinConfig = new JoinConfig();
-        joinConfig.setMulticastConfig(multicastConfig);
-        NetworkConfig networkConfig = new NetworkConfig();
-        networkConfig.setJoin(joinConfig);
-        cfg.setNetworkConfig(networkConfig);
 
         {
             CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
@@ -71,6 +65,15 @@ public class QueueContainerTest {
 
         assertNotNull(queue);
         assertNotNull(container);
+    }
+
+
+    public void initEnvironment() throws Exception {
+        hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
+        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
+        queueService = ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine())
+                .getService(CachedQueue.class.getName());
+        container = queueService.getOrCreateContainer(QUEUE_NAME);
     }
 
     @Test
@@ -203,15 +206,6 @@ public class QueueContainerTest {
         logger.debug("Finish");
 
     }
-
-    public void initEnvironment() throws Exception {
-        hazelcastInstance = Hazelcast.newHazelcastInstance(cfg);
-        queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
-        queueService = ((NodeEngineImpl) ((QueueProxyImpl) queue).getNodeEngine())
-                .getService(CachedQueue.class.getName());
-        container = queueService.getOrCreateContainer(QUEUE_NAME);
-    }
-
 
     @Test
     public void testBrokenStore() throws Exception {
