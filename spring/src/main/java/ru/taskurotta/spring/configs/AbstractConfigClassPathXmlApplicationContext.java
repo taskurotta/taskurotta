@@ -1,7 +1,5 @@
 package ru.taskurotta.spring.configs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
@@ -19,8 +17,6 @@ import java.util.Properties;
  */
 
 abstract class AbstractConfigClassPathXmlApplicationContext {
-
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConfigClassPathXmlApplicationContext.class);
 
     protected ClassPathXmlApplicationContext applicationContext;
 
