@@ -71,7 +71,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ./target/logs/recipes-multiply.log
+             file: logs/ff-hz-mongo-quantity.log
              append: false
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
