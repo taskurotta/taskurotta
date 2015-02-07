@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -175,8 +174,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     @Override
     public Collection<UUID> restartProcessCollection(Collection<UUID> processIds) {
-
-        Set<UUID> successfullyRestartedProcesses = new TreeSet<>();
+        Collection<UUID> successfullyRestartedProcesses = new ArrayList<>();
 
         for (UUID processId : processIds) {
             if (restartProcess(processId)) {
