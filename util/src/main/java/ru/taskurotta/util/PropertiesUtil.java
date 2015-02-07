@@ -43,6 +43,10 @@ public class PropertiesUtil {
                 continue;
             }
 
+            if (sourceValue == null) {
+                continue;
+            }
+
             target.setProperty(targetKey, sourceValue.toString());
 
             if (traceSource != null) {
@@ -60,8 +64,11 @@ public class PropertiesUtil {
 
     public static void dumpProperties(Properties properties, Properties traceSource) {
 
-        if (!Boolean.getBoolean(PROP_DUMP_PROPERTIES) ||
-                !Boolean.valueOf(properties.getProperty(PROP_DUMP_PROPERTIES))) {
+        if (properties == null) {
+            return;
+        }
+
+        if (properties.contains(PROP_DUMP_PROPERTIES) && !Boolean.valueOf(properties.getProperty(PROP_DUMP_PROPERTIES))) {
             return;
         }
 
@@ -70,11 +77,11 @@ public class PropertiesUtil {
 
         out.println("\n========= Application properties ==========");
 
-        if (properties == null) {
+        if (properties.isEmpty()) {
             out.println("no properties (null)...");
         } else {
             Set rowKeys = properties.keySet();
-            if (rowKeys == null) {
+            if (rowKeys.isEmpty()) {
                 out.println("no properties...");
             } else {
 
