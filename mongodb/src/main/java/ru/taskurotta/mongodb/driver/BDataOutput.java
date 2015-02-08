@@ -19,6 +19,10 @@ public interface BDataOutput {
 
     public void writeDouble(int i, double value);
 
+    public void writeBoolean(CString name, boolean value);
+
+    public void writeBoolean(int i, boolean value);
+
     public void writeString(CString name, String value);
 
     public void writeString(int i, String value);

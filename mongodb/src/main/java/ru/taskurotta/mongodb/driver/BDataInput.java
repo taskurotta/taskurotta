@@ -1,6 +1,7 @@
 package ru.taskurotta.mongodb.driver;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -31,6 +32,14 @@ public interface BDataInput {
 
     public double readDouble(int i, double defValue);
 
+    public boolean readBoolean(CString name);
+
+    public boolean readBoolean(CString name, boolean defValue);
+
+    public boolean readBoolean(int i);
+
+    public boolean readBoolean(int i, boolean defValue);
+
     public String readString(CString name);
 
     public String readString(int i);
@@ -56,5 +65,7 @@ public interface BDataInput {
     public int readArraySize();
 
     public void readArrayStop(int label);
+
+    public Set<CString> readPairNames();
 
 }

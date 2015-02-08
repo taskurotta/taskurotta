@@ -6,6 +6,7 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.service.hz.TaskKey;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  */
@@ -19,7 +20,9 @@ public class TaskKeyStreamSerializer implements StreamSerializer<TaskKey> {
 
     @Override
     public TaskKey read(ObjectDataInput in) throws IOException {
-        return new TaskKey(UUIDSerializer.read(in), UUIDSerializer.read(in));
+        UUID taskId = UUIDSerializer.read(in);
+        UUID processId = UUIDSerializer.read(in);
+        return new TaskKey(taskId, processId);
     }
 
     @Override

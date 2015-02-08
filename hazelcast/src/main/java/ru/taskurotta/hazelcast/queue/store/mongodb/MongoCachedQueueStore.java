@@ -17,6 +17,7 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.mongodb.bson.QueueItemContainerStreamBSerializer;
 import ru.taskurotta.mongodb.driver.BSerializationService;
+import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
@@ -57,6 +58,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
     public MongoCachedQueueStore(String storageName, MongoTemplate mongoTemplate, CachedQueueStoreConfig config,
                                  BSerializationService serializationService) {
+
         this.storageName = storageName;
         this.mongoTemplate = mongoTemplate;
         this.batchSize = config.getBatchLoadSize();
@@ -80,9 +82,11 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
         QueueItemContainerStreamBSerializer containerStreamBSerializer = new QueueItemContainerStreamBSerializer
                 (objectSerializer);
 
+        BSerializationService mainBSerializationService = BSerializationServiceFactory.newInstance
+                (serializationService, containerStreamBSerializer);
 
         coll.setDBDecoderFactory(new BDecoderFactory(containerStreamBSerializer));
-        coll.setDBEncoderFactory(new BEncoderFactory(containerStreamBSerializer));
+        coll.setDBEncoderFactory(new BEncoderFactory(mainBSerializationService));
     }
 
     public MongoTemplate getMongoTemplate() {

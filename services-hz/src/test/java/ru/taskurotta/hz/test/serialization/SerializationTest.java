@@ -416,6 +416,10 @@ public class SerializationTest {
         Map<UUID, Long> notFinishedItems = new HashMap<>();
         notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());
         notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());
+        notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());
+        notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());
+        notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());
+        notFinishedItems.put(UUID.randomUUID(), System.currentTimeMillis());
 
         Map<UUID, Set<UUID>> links = new HashMap<>();
         Set<UUID> set1 = new HashSet<>();

@@ -24,6 +24,16 @@ public class Modification implements Serializable {
     private Map<UUID, Set<UUID>> links;
     private Set<UUID> newItems;
 
+    public Modification() {
+    }
+
+    public Modification(UUID completedItem, UUID waitForAfterRelease, Map<UUID, Set<UUID>> links, Set<UUID> newItems) {
+        this.completedItem = completedItem;
+        this.waitForAfterRelease = waitForAfterRelease;
+        this.links = links;
+        this.newItems = newItems;
+    }
+
     public void linkItem(UUID thisItem, UUID... waitForItems) {
 
         if (links == null) {

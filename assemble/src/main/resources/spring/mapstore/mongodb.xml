@@ -62,7 +62,39 @@
     </bean>
 
     <bean id="mapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
-        <property name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService"><null/></constructor-arg>
+        <constructor-arg name="objectClassName"><null/></constructor-arg>
+    </bean>
+
+    <bean id="taskDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.DecisionContainer"/>
+    </bean>
+
+    <bean id="graphMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.dependency.links.Graph"/>
+    </bean>
+
+    <bean id="taskMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.TaskContainer"/>
+    </bean>
+
+    <bean id="graphDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.dependency.HzGraphDao$DecisionRow"/>
+    </bean>
+
+    <bean id="processMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.Process"/>
     </bean>
 
     <!-- fastest serializers to BSON -->
@@ -70,23 +102,23 @@
     <bean id="taskQueueItemStreamBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.TaskQueueItemStreamBSerializer"/>
 
-    <bean id="graphStreamBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.GraphSerializer"/>
+    <bean id="graphBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.GraphBSerializer"/>
 
     <bean id="taskContainerBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.TaskContainerSerializer"/>
+          class="ru.taskurotta.service.hz.serialization.bson.TaskContainerBSerializer"/>
 
     <bean id="decisionRowBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.DecisionRowSerializer"/>
+          class="ru.taskurotta.service.hz.serialization.bson.DecisionRowBSerializer"/>
 
     <bean id="processBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.ProcessSerializer"/>
+          class="ru.taskurotta.service.hz.serialization.bson.ProcessBSerializer"/>
 
     <bean id="decisionContainerBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.DecisionContainerSerializer"/>
+          class="ru.taskurotta.service.hz.serialization.bson.DecisionContainerBSerializer"/>
 
     <bean id="uuidSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.UUIDSerializer"/>
+          class="ru.taskurotta.service.hz.serialization.bson.UUIDBSerializer"/>
 
     <bean id="recoveryOperationSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.RecoveryOperationSerializer"/>
@@ -99,7 +131,7 @@
         <constructor-arg>
             <list>
                 <ref bean="taskQueueItemStreamBSerializer"/>
-                <ref bean="graphStreamBSerializer"/>
+                <ref bean="graphBSerializer"/>
                 <ref bean="taskContainerBSerializer"/>
                 <ref bean="decisionRowBSerializer"/>
                 <ref bean="processBSerializer"/>

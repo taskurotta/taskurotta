@@ -22,6 +22,12 @@ public class ErrorContainer implements Serializable {
     public ErrorContainer() {
     }
 
+    public ErrorContainer(String[] classNames, String message, String stackTrace) {
+        this.classNames = classNames;
+        this.message = message;
+        this.stackTrace = stackTrace;
+    }
+
     public ErrorContainer(Throwable throwable) {
         ArrayList<String> namesList = new ArrayList<String>();
         Class parent = throwable.getClass();

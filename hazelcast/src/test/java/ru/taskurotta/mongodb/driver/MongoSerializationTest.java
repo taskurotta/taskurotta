@@ -153,7 +153,8 @@ public class MongoSerializationTest {
         RootPojoStreamBSerializer rootPojoStreamBSerializer = new RootPojoStreamBSerializer();
 
         final DBCollection coll = mongoTemplate.getCollection("new");
-        coll.setDBEncoderFactory(new BEncoderFactory(rootPojoStreamBSerializer));
+        coll.setDBEncoderFactory(new BEncoderFactory(BSerializationServiceFactory.newInstance
+                (rootPojoStreamBSerializer)));
         coll.setDBDecoderFactory(new BDecoderFactory(rootPojoStreamBSerializer));
 
 //        TimeUnit.SECONDS.sleep(60);

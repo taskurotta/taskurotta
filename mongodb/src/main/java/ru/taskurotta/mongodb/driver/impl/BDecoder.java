@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -65,13 +66,17 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     private byte[] bytes;
     private Object rootObj;
 
-    // todo: instead of rootObjectClass there should be
-    protected BDecoder(StreamBSerializer streamBSerializer) {
+    public BDecoder(StreamBSerializer streamBSerializer) {
         this.streamBSerializer = streamBSerializer;
     }
 
     public DBObject decode(byte[] b, DBCollection collection) {
-        decodeInternal(b);
+        boolean good = decodeInternal(b);
+
+        if (!good) {
+            return super.decode(b, collection);
+        }
+
         try {
             return new DBObjectCheat(rootObj);
         } finally {
@@ -214,7 +219,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         }
 
         // try to read whole array at one time
-        if (size < 1000) {
+        if (size < 10000) {
             byte[] allStreamInBytes = new byte[size - 4];
             fillByteArray(in, allStreamInBytes, size - 4);
 
@@ -227,7 +232,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
             logger.warn("Too big size of array [" + size + "]. Try to read carefully");
 
             tmp = new byte[128];
-            ByteArrayOutputStream out = new ByteArrayOutputStream(1000);
+            ByteArrayOutputStream out = new ByteArrayOutputStream(10000);
 
             while (true) {
 
@@ -583,6 +588,31 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     }
 
     @Override
+    public boolean readBoolean(CString name) {
+        return readBoolean(name, false);
+    }
+
+    @Override
+    public boolean readBoolean(CString name, boolean defValue) {
+        CString parsedName = currNamesMap.get(name);
+        if (parsedName == null) {
+            return defValue;
+        }
+
+        return bytes[parsedName.getOffset() + parsedName.getLength() + 1] > 0;
+    }
+
+    @Override
+    public boolean readBoolean(int i) {
+        return readBoolean(CString.valueOf(i), false);
+    }
+
+    @Override
+    public boolean readBoolean(int i, boolean defValue) {
+        return readBoolean(CString.valueOf(i), defValue);
+    }
+
+    @Override
     public String readString(CString name) {
         CString parsedName = currNamesMap.get(name);
         if (parsedName == null) {
@@ -692,6 +722,11 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
                     " actual = " + label);
         }
         popStack();
+    }
+
+    @Override
+    public Set<CString> readPairNames() {
+        return currNamesMap.keySet();
     }
 
 

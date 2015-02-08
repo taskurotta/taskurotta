@@ -10,13 +10,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  */
-public class BSerializationServiceImpl  implements BSerializationService {
+public class BSerializationServiceImpl implements BSerializationService {
 
     private Map<Class, StreamBSerializer> serializersMap = new ConcurrentHashMap<>();
 
-    public BSerializationServiceImpl(StreamBSerializer[] streamBSerializers) {
+    private final BSerializationService childService;
 
-        for (StreamBSerializer serializer: streamBSerializers) {
+    public BSerializationServiceImpl(StreamBSerializer[] streamBSerializers, BSerializationService childService) {
+        this.childService = childService;
+
+        for (StreamBSerializer serializer : streamBSerializers) {
             registerSerializer(serializer);
         }
     }
@@ -49,7 +52,11 @@ public class BSerializationServiceImpl  implements BSerializationService {
 
     public StreamBSerializer getSerializer(Class clazz) {
 
-        final StreamBSerializer serializer = serializersMap.get(clazz);
+        StreamBSerializer serializer = serializersMap.get(clazz);
+
+        if (serializer == null && childService != null) {
+            serializer = childService.getSerializer(clazz);
+        }
 
         if (serializer == null) {
             throw new IllegalArgumentException("Can not found serializer for class [" + clazz.getName() + "]");

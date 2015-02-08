@@ -60,8 +60,6 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.TaskFatKey"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskFatKeyStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.TaskKey"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskKeyStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"

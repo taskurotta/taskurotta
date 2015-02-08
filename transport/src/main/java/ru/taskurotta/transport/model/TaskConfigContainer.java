@@ -1,7 +1,5 @@
 package ru.taskurotta.transport.model;
 
-import ru.taskurotta.core.RetryPolicyConfig;
-
 import java.io.Serializable;
 
 /**
@@ -17,6 +15,13 @@ public class TaskConfigContainer implements Serializable {
     private RetryPolicyConfigContainer retryPolicyConfigContainer;
 
     public TaskConfigContainer() {
+    }
+
+    public TaskConfigContainer(String customId, long startTime, String taskList, RetryPolicyConfigContainer retryPolicyConfigContainer) {
+        this.customId = customId;
+        this.startTime = startTime;
+        this.taskList = taskList;
+        this.retryPolicyConfigContainer = retryPolicyConfigContainer;
     }
 
     public String getCustomId() {

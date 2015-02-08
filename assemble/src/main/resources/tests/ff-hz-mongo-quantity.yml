@@ -78,7 +78,7 @@ logback:
     logger:
         - com.hazelcast:
              key: name
-             \@level: INFO
+             \@level: WARN
         - ru.taskurotta:
              key: name
              \@level: INFO

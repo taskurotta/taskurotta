@@ -70,6 +70,14 @@ public class DecisionContainer implements Serializable {
         return executionTime;
     }
 
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
+    }
+
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
+    }
+
     @Override
     public String toString() {
         return "DecisionContainer{" +
@@ -91,13 +99,13 @@ public class DecisionContainer implements Serializable {
 
         DecisionContainer that = (DecisionContainer) o;
 
+        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
         if (executionTime != that.executionTime) return false;
         if (restartTime != that.restartTime) return false;
         if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
         if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
             return false;
-        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
-        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
         if (!Arrays.equals(tasks, that.tasks)) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 

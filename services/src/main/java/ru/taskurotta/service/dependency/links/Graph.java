@@ -29,23 +29,23 @@ public class Graph implements Serializable {
 
     public final static UUID[] EMPTY_ARRAY = new UUID[0];
 
-    private int version = 0;
+    private int version;
     private UUID graphId;       //should be equal to process ID
 
     /**
      * Map of all not finished items in this process and its time of start in milliseconds.
      * It has 0 value if item is not started yet.
      */
-    private Map<UUID, Long> notFinishedItems = new HashMap<>();
+    private Map<UUID, Long> notFinishedItems;
 
     /**
      * Links map where keys are tasks which depends from value set of other tasks.
      * For example, A(B, C) - A is a key and {B, C} is a set value of map.
      */
-    private Map<UUID, Set<UUID>> links = new HashMap<>();
+    private Map<UUID, Set<UUID>> links;
 
     //todo convention name
-    private Set<UUID> finishedItems = new HashSet<>();
+    private Set<UUID> finishedItems;
 
     // modification stuff.
     private Modification modification;
@@ -59,8 +59,11 @@ public class Graph implements Serializable {
      * generic constructor for deserializer
      */
     public Graph() {
-        touchTimeMillis = System.currentTimeMillis();
-        lastApplyTimeMillis = 0;
+        this.touchTimeMillis = System.currentTimeMillis();
+        this.version = 0;
+        this.notFinishedItems = new HashMap<>();
+        this.links = new HashMap<>();
+        this.finishedItems = new HashSet<>();
     }
 
     /**
@@ -74,14 +77,21 @@ public class Graph implements Serializable {
 
         if (notFinishedItems != null) {
             this.notFinishedItems = notFinishedItems;
+        } else {
+            this.notFinishedItems = new HashMap<>();
+
         }
 
         if (links != null) {
             this.links = links;
+        } else {
+            this.links = new HashMap<>();
         }
 
         if (finishedItems != null) {
             this.finishedItems = finishedItems;
+        } else {
+            this.finishedItems = new HashSet<>();
         }
 
         this.lastApplyTimeMillis = lastApplyTimeMillis;
@@ -94,6 +104,7 @@ public class Graph implements Serializable {
      * @param startItem - ID of the first task in process
      */
     public Graph(UUID graphId, UUID startItem) {
+        this();
         this.graphId = graphId;
         notFinishedItems.put(startItem, 0L);
     }
@@ -219,7 +230,7 @@ public class Graph implements Serializable {
 
         Map<UUID, Long> readyItems = null;
 
-        for (UUID itemId: notFinishedItems.keySet()) {
+        for (UUID itemId : notFinishedItems.keySet()) {
             if (links.get(itemId) != null) {
                 continue;
             }
@@ -268,7 +279,7 @@ public class Graph implements Serializable {
 
                 // may be some promises already resolved?
                 boolean isReady = true;
-                for (UUID promiseItem: itemDependencies) {
+                for (UUID promiseItem : itemDependencies) {
                     if (newItems.contains(promiseItem) || notFinishedItems.containsKey(promiseItem)) {
                         isReady = false;
                         break;
@@ -309,7 +320,7 @@ public class Graph implements Serializable {
                     // prevent link to already finished item.
                     // it is possible case for @NoWait Promise which are used on deep child task
                     if (!notFinishedItems.containsKey(newItemLink)) {
-                         continue;
+                        continue;
                     }
 
                     Set<UUID> itemLinks = links.get(entry.getKey());
@@ -489,6 +500,7 @@ public class Graph implements Serializable {
         }
         if (graphId != null ? !graphId.equals(graph.graphId) : graph.graphId != null) return false;
         if (links != null ? !links.equals(graph.links) : graph.links != null) return false;
+
         if (notFinishedItems != null ? !notFinishedItems.equals(graph.notFinishedItems) : graph.notFinishedItems != null) {
             return false;
         }

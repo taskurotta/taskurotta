@@ -3,6 +3,7 @@ package ru.taskurotta.mongodb.driver.impl;
 import com.mongodb.DefaultDBEncoder;
 import org.bson.BSONObject;
 import ru.taskurotta.mongodb.driver.BDataOutput;
+import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 import static org.bson.BSON.ARRAY;
 import static org.bson.BSON.BINARY;
+import static org.bson.BSON.BOOLEAN;
 import static org.bson.BSON.B_UUID;
 import static org.bson.BSON.DATE;
 import static org.bson.BSON.EOO;
@@ -25,10 +27,10 @@ import static org.bson.BSON.STRING;
  */
 public class BEncoder extends DefaultDBEncoder implements BDataOutput {
 
-    private StreamBSerializer streamBSerializer;
+    private final BSerializationService bSerializationService;
 
-    protected BEncoder(StreamBSerializer streamBSerializer) {
-        this.streamBSerializer = streamBSerializer;
+    public BEncoder(BSerializationService bSerializationService) {
+        this.bSerializationService = bSerializationService;
     }
 
     protected boolean handleSpecialObjects(String name, BSONObject o) {
@@ -39,10 +41,17 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
             return false;
         }
 
+        Object obj = ((DBObjectCheat) o).getObject();
+        if (obj == null) {
+            throw new IllegalArgumentException("DBObjectCheat does not constance (null) object to encode");
+        }
+
+        StreamBSerializer streamBSerializer = bSerializationService.getSerializer(obj.getClass());
+
         final int sizePos = _buf.getPosition();
         _buf.writeInt(0); // leaving space for this.  set it at the end
 
-        streamBSerializer.write(this, ((DBObjectCheat) o).getObject());
+        streamBSerializer.write(this, obj);
 
         _buf.write(EOO);
         _buf.writeInt(sizePos, _buf.getPosition() - sizePos);
@@ -110,6 +119,18 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     @Override
     public void writeDouble(int i, double value) {
         writeDouble(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeBoolean(CString name, boolean value) {
+        _buf.write(BOOLEAN);
+        name.writeCString(_buf);
+        _buf.write(value ? (byte) 0x1 : (byte) 0x0);
+    }
+
+    @Override
+    public void writeBoolean(int i, boolean value) {
+        writeBoolean(CString.valueOf(i), value);
     }
 
 

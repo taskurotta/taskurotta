@@ -3,15 +3,20 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.internal.core.TaskType;
 
 import java.io.IOException;
 import java.util.UUID;
 
-import static ru.taskurotta.service.hz.serialization.SerializationTools.*;
+import static ru.taskurotta.service.hz.serialization.SerializationTools.readArgsContainerArray;
+import static ru.taskurotta.service.hz.serialization.SerializationTools.readString;
+import static ru.taskurotta.service.hz.serialization.SerializationTools.readStringArray;
+import static ru.taskurotta.service.hz.serialization.SerializationTools.writeArgsContainerArray;
+import static ru.taskurotta.service.hz.serialization.SerializationTools.writeString;
+import static ru.taskurotta.service.hz.serialization.SerializationTools.writeStringArray;
 
 /**
  * User: greg
@@ -57,7 +62,8 @@ public class TaskContainerStreamSerializer implements StreamSerializer<TaskConta
         boolean unsafe = in.readBoolean();
         String[] failTypes = readStringArray(in);
         UUID processId = UUIDSerializer.read(in);
-        return new TaskContainer(taskId, processId, method, actorId, taskType, startTime, attempts, containers, taskOptionsContainer, unsafe, failTypes);
+        return new TaskContainer(taskId, processId, method, actorId, taskType, startTime, attempts, containers,
+                taskOptionsContainer, unsafe, failTypes);
     }
 
     @Override

@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
-import ru.taskurotta.service.hz.TaskFatKey;
+import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -29,8 +29,8 @@ public class HzTaskDao implements TaskDao {
 
     private static final Logger logger = LoggerFactory.getLogger(HzTaskDao.class);
 
-    private IMap<TaskFatKey, TaskContainer> id2TaskMap;
-    private IMap<TaskFatKey, DecisionContainer> id2TaskDecisionMap;
+    private IMap<TaskKey, TaskContainer> id2TaskMap;
+    private IMap<TaskKey, DecisionContainer> id2TaskDecisionMap;
 
     public HzTaskDao(HazelcastInstance hzInstance, String id2TaskMapName, String id2TaskDecisionMapName) {
 
@@ -41,29 +41,30 @@ public class HzTaskDao implements TaskDao {
     @Override
     public void addDecision(DecisionContainer taskDecision) {
         logger.debug("Storing decision [{}]", taskDecision);
-        id2TaskDecisionMap.set(new TaskFatKey(taskDecision.getProcessId(), taskDecision.getTaskId()), taskDecision);
+        id2TaskDecisionMap.set(new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId()), taskDecision);
     }
 
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
-        return id2TaskMap.get(new TaskFatKey(processId, taskId));
+        return id2TaskMap.get(new TaskKey(taskId, processId));
     }
 
     @Override
     public void addTask(TaskContainer taskContainer) {
-        id2TaskMap.set(new TaskFatKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer, 0, TimeUnit.NANOSECONDS);
+        id2TaskMap.set(new TaskKey(taskContainer.getTaskId(), taskContainer.getProcessId()), taskContainer, 0,
+                TimeUnit.NANOSECONDS);
     }
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        DecisionContainer result =  id2TaskDecisionMap.get(new TaskFatKey(processId, taskId));
+        DecisionContainer result =  id2TaskDecisionMap.get(new TaskKey(taskId, processId));
         logger.debug("Getting decision [{}]", result);
         return result;
     }
 
     @Override
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.containsKey(new TaskFatKey(processId, taskId));
+        return id2TaskDecisionMap.containsKey(new TaskKey(taskId, processId));
     }
 
     @Override
@@ -89,20 +90,20 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public void updateTask(TaskContainer taskContainer) {
-        id2TaskMap.set(new TaskFatKey(taskContainer.getProcessId(), taskContainer.getTaskId()), taskContainer);
+        id2TaskMap.set(new TaskKey(taskContainer.getTaskId(), taskContainer.getProcessId()), taskContainer);
     }
 
     @Override
     public void deleteTasks(Set<UUID> taskIds, UUID processId) {
         for (UUID taskId : taskIds) {
-            id2TaskMap.delete(new TaskFatKey(processId, taskId));
+            id2TaskMap.delete(new TaskKey(taskId, processId));
         }
     }
 
     @Override
     public void deleteDecisions(Set<UUID> decisionsIds, UUID processId) {
         for (UUID decisionId : decisionsIds) {
-            id2TaskDecisionMap.delete(new TaskFatKey(processId, decisionId));
+            id2TaskDecisionMap.delete(new TaskKey(decisionId, processId));
         }
     }
 

@@ -15,6 +15,7 @@ import ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer;
 import ru.taskurotta.hazelcast.queue.delay.impl.mongodb.StorageItemContainerBSerializer;
 import ru.taskurotta.hazelcast.util.ClusterUtils;
 import ru.taskurotta.mongodb.driver.BSerializationService;
+import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
@@ -64,8 +65,12 @@ public class MongoStorageFactory implements StorageFactory {
             StreamBSerializer objectStreamBSerializer = bSerializationService.getSerializer(objectClassName);
             StorageItemContainerBSerializer containerBSerializer = new StorageItemContainerBSerializer
                     (objectStreamBSerializer);
-            encoderFactory = new BEncoderFactory(containerBSerializer);
+
+            BSerializationService mainBSerializationService = BSerializationServiceFactory.newInstance
+                    (bSerializationService, containerBSerializer);
+
             decoderFactory = new BDecoderFactory(containerBSerializer);
+            encoderFactory = new BEncoderFactory(mainBSerializationService);
         } else {
             logger.warn("Cass name of delayed item not found. Mongo delay queue stuff will work in legacy mode...");
         }
@@ -176,6 +181,8 @@ public class MongoStorageFactory implements StorageFactory {
 
         String dbCollectionName = dbCollectionNamesMap.get(queueName);
 
+        DBCollection dbCollection = null;
+
         if (dbCollectionName == null) {
 
             final ReentrantLock lock = this.lock;
@@ -188,35 +195,38 @@ public class MongoStorageFactory implements StorageFactory {
                 }
                 dbCollectionNamesMap.put(queueName, dbCollectionName);
 
-                DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
-                if (encoderFactory != null) {
-                    dbCollection.setDBEncoderFactory(encoderFactory);
-                    dbCollection.setDBDecoderFactory(decoderFactory);
-                }
+                dbCollection = mongoTemplate.getCollection(dbCollectionName);
 
                 dbCollection.ensureIndex(new BasicDBObject(ENQUEUE_TIME_NAME, 1));
             } finally {
                 lock.unlock();
             }
+        } else {
+            dbCollection = mongoTemplate.getCollection(dbCollectionName);
         }
 
-        final DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+        if (encoderFactory != null) {
+            dbCollection.setDBEncoderFactory(encoderFactory);
+            dbCollection.setDBDecoderFactory(decoderFactory);
+        }
+
         final String finalDbCollectionName = dbCollectionName;
+        final DBCollection finalDbCollection = dbCollection;
 
         return new Storage() {
             @Override
             public boolean add(Object o, long delayTime, TimeUnit unit) {
-                return save(o, delayTime, unit, dbCollection);
+                return save(o, delayTime, unit, finalDbCollection);
             }
 
             @Override
             public boolean remove(Object o) {
-                return delete(o, dbCollection);
+                return delete(o, finalDbCollection);
             }
 
             @Override
             public void clear() {
-                dbCollection.drop();
+                finalDbCollection.drop();
             }
 
             @Override
@@ -232,7 +242,7 @@ public class MongoStorageFactory implements StorageFactory {
 
             @Override
             public long size() {
-                return dbCollection.count();
+                return finalDbCollection.count();
             }
         };
     }
