@@ -14,12 +14,15 @@ import java.util.UUID;
  */
 public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
 
+    public static final CString READY = new CString("red");
+    public static final CString PROMISE = new CString("pro");
     private final CString TASK_ID = new CString("tId");
     private final CString DATA_TYPE = new CString("dTy");
     private final CString COMPOSITE_VALUE = new CString("coVal");
     private final CString JSON_VALUE = new CString("jVal");
     private final CString ERROR_CONTAINER = new CString("erCo");
     private final CString VALUE_TYPE = new CString("vTy");
+
 
     private ErrorContainerSerializer errorContainerSerializer = new ErrorContainerSerializer();
 
@@ -44,6 +47,8 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
             out.writeInt(VALUE_TYPE, object.getValueType().getValue());
             out.writeObjectStop(valueLabel);
         }
+        out.writeInt(READY, object.isReady() ? 1 : 0);
+        out.writeInt(PROMISE, object.isPromise() ? 1 : 0);
     }
 
     @Override
@@ -64,15 +69,22 @@ public class ArgContainerSerializer implements StreamBSerializer<ArgContainer> {
             valueType = in.readInt(VALUE_TYPE);
             in.readObjectStop(valueLabel);
         }
+
+        boolean ready = in.readInt(READY)==1;
+        boolean promise = in.readInt(PROMISE)==1;
+
         ArgContainer argContainer = new ArgContainer();
         argContainer.setTaskId(taskId);
         argContainer.setDataType(dataType);
         argContainer.setCompositeValue(args);
         argContainer.setJSONValue(jsonValue);
+        argContainer.setPromise(promise);
+        argContainer.setReady(ready);
         argContainer.setErrorContainer(errorContainer);
         if (valueType != -1) {
             argContainer.setValueType(ArgContainer.ValueType.fromInt(valueType));
         }
+
         return argContainer;
     }
 

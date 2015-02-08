@@ -4,7 +4,7 @@ import com.mongodb.DefaultDBEncoder;
 import org.bson.BSONObject;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 
 import java.util.Date;
@@ -44,14 +44,14 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
         if (o == null)
             throw new NullPointerException("can't save a null object");
 
-        if (!(o instanceof DBObjectСheat)) {
+        if (!(o instanceof DBObjectCheat)) {
             return false;
         }
 
         final int sizePos = _buf.getPosition();
         _buf.writeInt(0); // leaving space for this.  set it at the end
 
-        streamBSerializer.write(this, ((DBObjectСheat) o).getObject());
+        streamBSerializer.write(this, ((DBObjectCheat) o).getObject());
 
         _buf.write(EOO);
         _buf.writeInt(sizePos, _buf.getPosition() - sizePos);

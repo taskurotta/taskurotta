@@ -1,6 +1,7 @@
 package ru.taskurotta.hz.test.bson;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -17,7 +18,7 @@ import ru.taskurotta.hazelcast.queue.delay.impl.mongodb.StorageItemContainerBSer
 import ru.taskurotta.hz.test.serialization.SerializationTest;
 import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
 import ru.taskurotta.service.console.model.Process;
@@ -67,6 +68,12 @@ public class MongoSerializationTest {
         return mongoTemplate;
     }
 
+    private DB getDatabase(String db) throws UnknownHostException {
+        ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
+        MongoClient mongoClient = new MongoClient(serverAddress);
+        return mongoClient.getDB(db);
+    }
+
 
     @Test
     public void testProcess() throws UnknownHostException {
@@ -80,13 +87,13 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < 5; i++) {
             Process process = new Process(createTaskContainer());
-            DBObjectСheat<Process> dbObject = new DBObjectСheat<>(process);
+            DBObjectCheat<Process> dbObject = new DBObjectCheat<>(process);
             withCol.insert(dbObject);
         }
 
         try (DBCursor cursor = withCol.find()) {
             while (cursor.hasNext()) {
-                DBObjectСheat<Process> obj = (DBObjectСheat) cursor.next();
+                DBObjectCheat<Process> obj = (DBObjectCheat) cursor.next();
                 System.out.println("actorId = " + obj.getObject().getStartTask().getActorId());
             }
         }
@@ -106,8 +113,8 @@ public class MongoSerializationTest {
 
         UUID uuid = UUID.randomUUID();
         StorageItemContainer storageItemContainer = new StorageItemContainer(uuid, 755757, "queName1");
-        DBObjectСheat<StorageItemContainer> dbObjectСheat = new DBObjectСheat<>(storageItemContainer);
-        withCol.save(dbObjectСheat);
+        DBObjectCheat<StorageItemContainer> dbObjectCheat = new DBObjectCheat<>(storageItemContainer);
+        withCol.save(dbObjectCheat);
     }
 
 
@@ -125,13 +132,13 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < 5; i++) {
             Graph graph = SerializationTest.newRandomGraph();
-            DBObjectСheat<Graph> dbObject = new DBObjectСheat<>(graph);
+            DBObjectCheat<Graph> dbObject = new DBObjectCheat<>(graph);
             withCol.insert(dbObject);
         }
 
         try (DBCursor cursor = withCol.find()) {
             while (cursor.hasNext()) {
-                DBObjectСheat<Graph> obj = (DBObjectСheat) cursor.next();
+                DBObjectCheat<Graph> obj = (DBObjectCheat) cursor.next();
                 System.out.println("finished = " + obj.getObject().getFinishedItems());
             }
         }
@@ -154,6 +161,7 @@ public class MongoSerializationTest {
     @Test
     public void testDecisionContainer() throws UnknownHostException, InterruptedException {
         MongoTemplate mongoTemplate = getMongoTemplate();
+//        mongoTemplate.setWriteResultChecking(WriteResultChecking.LOG);
         DecisionContainerSerializer decisionContainerSerializer = new DecisionContainerSerializer();
         mongoTemplate.dropCollection("decisions");
         final DBCollection withCol = mongoTemplate.getCollection("decisions");
@@ -170,9 +178,9 @@ public class MongoSerializationTest {
                 for (int i = 0; i < 10000; i++) {
                     DecisionContainer decisionContainer = createDecisionContainer();
                     TaskFatKey taskFatKey = new TaskFatKey(decisionContainer.getProcessId(), decisionContainer.getTaskId());
-                    queue.add(taskFatKey);
-                    DBObjectСheat<DecisionContainer> obj = new DBObjectСheat<>(decisionContainer);
+                    DBObjectCheat<DecisionContainer> obj = new DBObjectCheat<>(decisionContainer);
                     withCol.insert(obj);
+                    queue.add(taskFatKey);
                     if (i == 1000) {
                         lock.countDown();
                     }
@@ -201,6 +209,8 @@ public class MongoSerializationTest {
         });
         lockToExit.await();
     }
+
+
 
     @Test
     public void testDecisionContainerSearch() throws UnknownHostException {

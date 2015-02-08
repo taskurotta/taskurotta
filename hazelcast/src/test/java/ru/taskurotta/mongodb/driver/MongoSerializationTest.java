@@ -143,7 +143,7 @@ public class MongoSerializationTest {
 
         for (int i = 0; i < COLLECTION_SIZE; i++) {
 
-            DBObjectСheat document = new DBObjectСheat(new RootPojo(i, "hahaha"));
+            DBObjectCheat document = new DBObjectCheat(new RootPojo(i, "hahaha"));
 
             coll.insert(document);
         }
@@ -159,7 +159,7 @@ public class MongoSerializationTest {
         try (DBCursor cursor = coll.find()) {
             while (cursor.hasNext()) {
                 DBObject obj = cursor.next();
-                if (obj instanceof DBObjectСheat && ((DBObjectСheat) obj).getObject() != null) {
+                if (obj instanceof DBObjectCheat && ((DBObjectCheat) obj).getObject() != null) {
                     i++;
                 }
             }

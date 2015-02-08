@@ -6,7 +6,7 @@ import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 /**
@@ -14,7 +14,7 @@ import java.util.UUID;
  * User: dimadin
  * Date: 08.07.13 10:08
  */
-public class TaskFatKey extends HashMap implements DataSerializable, PartitionAware {
+public class TaskFatKey extends LinkedHashMap implements DataSerializable, PartitionAware {
     protected static final String TASK_ID = "taskId";
     protected static final String PROCESS_ID = "processId";
 

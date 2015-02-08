@@ -5,7 +5,7 @@ import com.mongodb.DBObject;
 import com.mongodb.DefaultDBDecoder;
 import ru.taskurotta.mongodb.driver.BDataInput;
 import ru.taskurotta.mongodb.driver.CString;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     public DBObject decode(byte[] b, DBCollection collection) {
         decodeInternal(b);
         try {
-            return new DBObjectСheat(rootObj);
+            return new DBObjectCheat(rootObj);
         } finally {
             clear();
             // todo: put decoder back to object poll
@@ -87,7 +87,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         byte[] loadedBytes = readDocumentByteArray(in);
 
         if (loadedBytes == null) {
-            new DBObjectСheat(null);
+            new DBObjectCheat(null);
         }
 
         boolean good = decodeInternal(loadedBytes);
@@ -98,7 +98,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         }
 
         try {
-            return new DBObjectСheat(rootObj);
+            return new DBObjectCheat(rootObj);
         } finally {
             clear();
             // todo: put decoder back to object poll

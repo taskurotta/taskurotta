@@ -15,7 +15,7 @@ import ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer;
 import ru.taskurotta.hazelcast.queue.delay.impl.mongodb.StorageItemContainerBSerializer;
 import ru.taskurotta.hazelcast.util.ClusterUtils;
 import ru.taskurotta.mongodb.driver.BSerializationService;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
@@ -120,7 +120,7 @@ public class MongoStorageFactory implements StorageFactory {
                                         if (encoderFactory == null) {
                                             storageItemContainer = (StorageItemContainer) converter.toObject(StorageItemContainer.class, dbObject);
                                         } else {
-                                            storageItemContainer = (StorageItemContainer) ((DBObjectСheat) dbObject).getObject();
+                                            storageItemContainer = (StorageItemContainer) ((DBObjectCheat) dbObject).getObject();
                                         }
 
                                         if (cachedQueue.offer(storageItemContainer.getObject())) {
@@ -255,7 +255,7 @@ public class MongoStorageFactory implements StorageFactory {
         if (encoderFactory == null) {
             dbObject = converter.toDBObject(storageItemContainer);
         } else {
-            dbObject = new DBObjectСheat(storageItemContainer);
+            dbObject = new DBObjectCheat(storageItemContainer);
         }
 
         dbCollection.save(dbObject);

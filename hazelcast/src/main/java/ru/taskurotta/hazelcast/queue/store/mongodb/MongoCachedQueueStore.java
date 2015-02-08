@@ -17,7 +17,7 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.mongodb.bson.QueueItemContainerStreamBSerializer;
 import ru.taskurotta.mongodb.driver.BSerializationService;
-import ru.taskurotta.mongodb.driver.DBObjectСheat;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
@@ -121,7 +121,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
                 queueItemContainer.setId(id);
                 queueItemContainer.setQueueItem(taskQueueItem);
 
-                DBObjectСheat document = new DBObjectСheat(queueItemContainer);
+                DBObjectCheat document = new DBObjectCheat(queueItemContainer);
 
                 coll.insert(document);
             }
@@ -190,7 +190,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
                 return null;
 
             } else {
-                return ((QueueItemContainer) ((DBObjectСheat) obj).getObject()).getQueueItem();
+                return ((QueueItemContainer) ((DBObjectCheat) obj).getObject()).getQueueItem();
             }
 
         } finally {
@@ -222,7 +222,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
                             logger.error(e.getMessage(), e);
                         }
                     } else {
-                        QueueItemContainer queueItemContainer = (QueueItemContainer) ((DBObjectСheat) obj).getObject();
+                        QueueItemContainer queueItemContainer = (QueueItemContainer) ((DBObjectCheat) obj).getObject();
                         map.put(queueItemContainer.getId(), queueItemContainer.getQueueItem());
                     }
                 }
@@ -261,7 +261,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
                 if (objectClassName == null) {
                     return (Long) val.get("_id");
                 } else {
-                    return ((QueueItemContainer) ((DBObjectСheat) val).getObject()).getId();
+                    return ((QueueItemContainer) ((DBObjectCheat) val).getObject()).getId();
                 }
             }
         }

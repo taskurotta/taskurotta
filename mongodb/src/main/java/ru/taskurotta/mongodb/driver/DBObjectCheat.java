@@ -9,11 +9,11 @@ import java.util.Set;
 
 /**
  */
-public class DBObjectСheat<T> implements DBObject {
+public class DBObjectCheat<T> implements DBObject {
 
     final private T obj;
 
-    public DBObjectСheat(T obj) {
+    public DBObjectCheat(T obj) {
         this.obj = obj;
     }
 

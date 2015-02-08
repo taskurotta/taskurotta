@@ -41,10 +41,9 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
     @Override
     public void write(BDataOutput out, DecisionContainer object) {
         int writeIdLabel = out.writeObject(_ID);
-        out.writeUUID(PROCESS_ID, object.getProcessId());
         out.writeUUID(TASK_ID, object.getTaskId());
+        out.writeUUID(PROCESS_ID, object.getProcessId());
         out.writeObjectStop(writeIdLabel);
-
         writeObjectIfNotNull(VALUE, object.getValue(), argContainerSerializer, out);
         writeObjectIfNotNull(ERROR_CONTAINER, object.getErrorContainer(), errorContainerSerializer, out);
         out.writeLong(RESTART_TIME, object.getRestartTime());
@@ -63,8 +62,8 @@ public class DecisionContainerSerializer implements StreamBSerializer<DecisionCo
     @Override
     public DecisionContainer read(BDataInput in) {
         int readIdLabel = in.readObject(_ID);
-        UUID processId = in.readUUID(PROCESS_ID);
         UUID taskId = in.readUUID(TASK_ID);
+        UUID processId = in.readUUID(PROCESS_ID);
         in.readObjectStop(readIdLabel);
 
         ArgContainer value = readObject(VALUE, argContainerSerializer, in);
