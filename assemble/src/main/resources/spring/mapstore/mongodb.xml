@@ -61,40 +61,46 @@
         <constructor-arg name="databaseName" value="${mongo.db.name}"/>
     </bean>
 
-    <bean id="mapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+    <bean id="taskDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService"><null/></constructor-arg>
-        <constructor-arg name="objectClassName"><null/></constructor-arg>
-    </bean>
-
-    <bean id="taskDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.DecisionContainer"/>
     </bean>
 
-    <bean id="graphMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+    <bean id="graphMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.dependency.links.Graph"/>
     </bean>
 
-    <bean id="taskMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+    <bean id="taskMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.TaskContainer"/>
     </bean>
 
-    <bean id="graphDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+    <bean id="graphDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.dependency.HzGraphDao$DecisionRow"/>
     </bean>
 
-    <bean id="processMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore" scope="prototype">
+    <bean id="processMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
-        <constructor-arg name="serializationService" ref="bSerializationService" />
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.Process"/>
+    </bean>
+
+    <bean id="actorsPrefMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.config.model.ActorPreferences"/>
+    </bean>
+
+    <bean id="brokenProcessMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
+        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="serializationService" ref="bSerializationService"/>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.BrokenProcess"/>
     </bean>
 
     <!-- fastest serializers to BSON -->
@@ -120,11 +126,20 @@
     <bean id="uuidSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.UUIDBSerializer"/>
 
+    <bean id="stringSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.StringBSerializer"/>
+
     <bean id="recoveryOperationSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.RecoveryOperationSerializer"/>
 
     <bean id="taskKeyBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.TaskKeyBSerializer"/>
+
+    <bean id="actorsPreferencesSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.ActorPreferencesBSerializer"/>
+
+    <bean id="brokenProcessSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.BrokenProcessBSerializer"/>
 
     <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
           factory-method="newInstance">
@@ -137,8 +152,11 @@
                 <ref bean="processBSerializer"/>
                 <ref bean="decisionContainerBSerializer"/>
                 <ref bean="uuidSerializer"/>
+                <ref bean="stringSerializer"/>
                 <ref bean="recoveryOperationSerializer"/>
-                <ref bean="taskKeyBSerializer" />
+                <ref bean="taskKeyBSerializer"/>
+                <ref bean="actorsPreferencesSerializer"/>
+                <ref bean="brokenProcessSerializer"/>
             </list>
         </constructor-arg>
     </bean>
