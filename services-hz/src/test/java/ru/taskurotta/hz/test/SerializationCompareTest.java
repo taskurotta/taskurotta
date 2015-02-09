@@ -144,6 +144,7 @@ public class SerializationCompareTest {
         // DBObject serialization
         if ((RUN_TESTS & (1 << 4)) != 0) {
 
+            byteArray = null;
             MongoTemplate mongoTemplate = getMongoTemplate();
             MongoConverter converter = mongoTemplate.getConverter();
 
