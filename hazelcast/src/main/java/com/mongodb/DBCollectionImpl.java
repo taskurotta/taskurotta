@@ -67,13 +67,17 @@ class DBCollectionImpl extends DBCollection {
         DBEncoderFactory factory = getDBEncoderFactory();
         DBEncoder encoder = null;
 
-        if (factory == null) {
-            encoder = DefaultDBEncoder.FACTORY.create();
-        } else {
-            encoder = factory.create();
-        }
+        return find(ref, fields, numToSkip, batchSize, limit, options, readPref, decoder, getCommandEncoder());
+    }
 
-        return find(ref, fields, numToSkip, batchSize, limit, options, readPref, decoder, encoder);
+    private DBEncoder getCommandEncoder() {
+        DBEncoderFactory factory = getDBEncoderFactory();
+
+        if (factory == null) {
+            return DefaultDBEncoder.FACTORY.create();
+        } else {
+            return factory.create();
+        }
     }
 
     @Override
@@ -394,7 +398,7 @@ class DBCollectionImpl extends DBCollection {
         }
 
         BaseWriteCommandMessage message = new InsertCommandMessage(getNamespace(), writeConcern, list,
-                DefaultDBEncoder.FACTORY.create(), encoder,
+                getCommandEncoder(), encoder,
                 getMessageSettings(port));
         return writeWithCommandProtocol(port, INSERT, message, writeConcern);
     }
@@ -414,7 +418,7 @@ class DBCollectionImpl extends DBCollection {
                                                       final WriteConcern writeConcern,
                                                       final DBEncoder encoder, final DBPort port) {
         BaseWriteCommandMessage message = new DeleteCommandMessage(getNamespace(), writeConcern, removeList,
-                DefaultDBEncoder.FACTORY.create(), encoder,
+                getCommandEncoder(), encoder,
                 getMessageSettings(port));
         return writeWithCommandProtocol(port, REMOVE, message, writeConcern);
     }
@@ -424,7 +428,7 @@ class DBCollectionImpl extends DBCollection {
                                                       final WriteConcern writeConcern,
                                                       final DBEncoder encoder, final DBPort port) {
         BaseWriteCommandMessage message = new UpdateCommandMessage(getNamespace(), writeConcern, updates,
-                DefaultDBEncoder.FACTORY.create(), encoder,
+                getCommandEncoder(), encoder,
                 getMessageSettings(port));
         return writeWithCommandProtocol(port, UPDATE, message, writeConcern);
     }
