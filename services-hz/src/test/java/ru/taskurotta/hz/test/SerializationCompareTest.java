@@ -99,7 +99,7 @@ public class SerializationCompareTest {
             TaskContainer container = objectCheat.getObject();
         }
         long deSerializeStop = System.currentTimeMillis() - start;
-        log.info("BSON: Serialization took {} ms | Deserialization took {} ms | Object size {}", result, deserialzationResult, bsonObjectSize);
+        log.info("BSON: Serialization took {} ms | Deserialization took {} ms | Object size {}", result, deSerializeStop, bsonObjectSize);
     }
 
 
