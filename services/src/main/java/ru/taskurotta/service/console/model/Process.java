@@ -141,4 +141,18 @@ public class Process implements Serializable {
         result = 31 * result + startTask.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Process{" +
+                "processId=" + processId +
+                ", startTaskId=" + startTaskId +
+                ", customId='" + customId + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", state=" + state +
+                ", returnValue='" + returnValue + '\'' +
+                ", startTask=" + startTask +
+                '}';
+    }
 }

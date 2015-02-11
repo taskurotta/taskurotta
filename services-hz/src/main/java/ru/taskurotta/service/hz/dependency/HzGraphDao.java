@@ -84,6 +84,15 @@ public class HzGraphDao implements GraphDao {
         public UUID[] getReadyItems() {
             return readyItems;
         }
+
+        @Override
+        public String toString() {
+            return "DecisionRow{" +
+                    "itemId=" + itemId +
+                    ", modification=" + modification +
+                    ", readyItems=" + Arrays.toString(readyItems) +
+                    '}';
+        }
     }
 
 

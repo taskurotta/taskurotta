@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
+import ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory;
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
@@ -275,7 +276,8 @@ public class ProcessPusher {
 
                 sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
                         "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
-                        ()));
+                        ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
+                        MongoStorageFactory.bakedTasks.get());
 
                 {
                     double release = HzTaskServerMetrics.statRelease.mean();

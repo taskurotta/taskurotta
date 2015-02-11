@@ -6,6 +6,7 @@ import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * User: stukushin
@@ -16,6 +17,7 @@ public class StorageItemStreamSerializer implements StreamSerializer<StorageItem
 
     @Override
     public void write(ObjectDataOutput out, StorageItemContainer object) throws IOException {
+        UUIDSerializer.write(out, object.getId());
         out.writeObject(object.getObject());
         out.writeLong(object.getEnqueueTime());
         out.writeUTF(object.getQueueName());
@@ -23,12 +25,12 @@ public class StorageItemStreamSerializer implements StreamSerializer<StorageItem
 
     @Override
     public StorageItemContainer read(ObjectDataInput in) throws IOException {
-
+        UUID id = UUIDSerializer.read(in);
         Object object = in.readObject();
         long enqueueTime = in.readLong();
         String queueName = in.readUTF();
 
-        return new StorageItemContainer(object, enqueueTime, queueName);
+        return new StorageItemContainer(id, object, enqueueTime, queueName);
     }
 
     @Override

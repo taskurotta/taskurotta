@@ -61,7 +61,7 @@ public class BSerializationServiceImpl implements BSerializationService {
         if (serializer == null) {
             throw new IllegalArgumentException("Can not found serializer for class [" + clazz.getName() + "]");
         }
-        return serializersMap.get(clazz);
+        return serializer;
     }
 
 

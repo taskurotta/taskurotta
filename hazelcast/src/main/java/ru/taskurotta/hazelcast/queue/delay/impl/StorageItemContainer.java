@@ -19,8 +19,8 @@ public class StorageItemContainer implements Serializable {
     public StorageItemContainer() {
     }
 
-    public StorageItemContainer(Object object, long enqueueTime, String queueName) {
-        this.id = UUID.randomUUID();
+    public StorageItemContainer(UUID uuid, Object object, long enqueueTime, String queueName) {
+        this.id = uuid;
         this.object = object;
         this.enqueueTime = enqueueTime;
         this.queueName = queueName;
@@ -80,5 +80,15 @@ public class StorageItemContainer implements Serializable {
         result = 31 * result + (int) (enqueueTime ^ (enqueueTime >>> 32));
         result = 31 * result + (queueName != null ? queueName.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "StorageItemContainer{" +
+                "id=" + id +
+                ", object=" + object +
+                ", enqueueTime=" + enqueueTime +
+                ", queueName='" + queueName + '\'' +
+                '}';
     }
 }

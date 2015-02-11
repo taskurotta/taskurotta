@@ -2,6 +2,8 @@ package ru.taskurotta.mongodb.driver.impl;
 
 import com.mongodb.DefaultDBEncoder;
 import org.bson.BSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.CString;
@@ -26,6 +28,8 @@ import static org.bson.BSON.STRING;
 /**
  */
 public class BEncoder extends DefaultDBEncoder implements BDataOutput {
+
+    private static final Logger logger = LoggerFactory.getLogger(BEncoder.class);
 
     private final BSerializationService bSerializationService;
 

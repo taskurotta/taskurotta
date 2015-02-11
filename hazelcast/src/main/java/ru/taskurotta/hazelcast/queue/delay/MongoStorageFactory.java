@@ -24,8 +24,10 @@ import ru.taskurotta.util.Shutdown;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -37,8 +39,8 @@ public class MongoStorageFactory implements StorageFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoStorageFactory.class);
 
-    public static final String OBJECT_NAME = "object";
     public static final String ENQUEUE_TIME_NAME = StorageItemContainerBSerializer.ENQUEUE_TIME.toString();
+    public static final AtomicInteger bakedTasks = new AtomicInteger();
 
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
@@ -129,7 +131,8 @@ public class MongoStorageFactory implements StorageFactory {
                                         }
 
                                         if (cachedQueue.offer(storageItemContainer.getObject())) {
-                                            dbCollection.remove(dbObject);
+                                            bakedTasks.incrementAndGet();
+                                            dbCollection.remove(new DBObjectCheat(storageItemContainer.getId()));
                                         }
                                     }
                                 }
@@ -258,17 +261,17 @@ public class MongoStorageFactory implements StorageFactory {
     private boolean save(Object o, long delayTime, TimeUnit unit, DBCollection dbCollection) {
         long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
 
-        // queueName not used on Mongo Store
-        DBObject dbObject = null;
+        UUID id = UUID.randomUUID();
 
-        final StorageItemContainer storageItemContainer = new StorageItemContainer(o, enqueueTime, null);
+        final StorageItemContainer storageItemContainer = new StorageItemContainer(id, o, enqueueTime,
+                null);
         if (encoderFactory == null) {
-            dbObject = converter.toDBObject(storageItemContainer);
+            DBObject dbObject = converter.toDBObject(storageItemContainer);
+            dbCollection.save(dbObject);
         } else {
-            dbObject = new DBObjectCheat(storageItemContainer);
+            DBObjectCheat dbObject = new DBObjectCheat<StorageItemContainer>(storageItemContainer);
+            dbCollection.update(new DBObjectCheat<UUID>(id), dbObject, true, false);
         }
-
-        dbCollection.save(dbObject);
 
         return true;
     }

@@ -44,6 +44,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     public static AtomicInteger pushedTaskToQueue = new AtomicInteger();
+    public static AtomicInteger pushedTaskToQueueWithDelay = new AtomicInteger();
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueService.class);
     private transient final ReentrantLock lock = new ReentrantLock();
@@ -263,6 +264,10 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         CachedDelayQueue<TaskQueueItem> queue = getQueue(queueName);
 
         long delayTime = startTime - now;
+
+        if (delayTime > 0) {
+            pushedTaskToQueueWithDelay.incrementAndGet();
+        }
 
         try {
             return queue.delayOffer(taskQueueItem, delayTime, TimeUnit.MILLISECONDS);

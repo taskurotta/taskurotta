@@ -122,7 +122,8 @@ public class DefaultStorageFactory implements StorageFactory {
 
     private boolean save(Object o, long delayTime, TimeUnit unit, String queueName) {
         long enqueueTime = System.currentTimeMillis() + unit.toMillis(delayTime);
-        StorageItemContainer storageItemContainer = new StorageItemContainer(o, enqueueTime, queueName);
+        StorageItemContainer storageItemContainer = new StorageItemContainer(UUID.randomUUID(), o, enqueueTime,
+                queueName);
 
         while (iMap.putIfAbsent(UUID.randomUUID(), storageItemContainer) != null) {
             // Better safe than sorry! :)

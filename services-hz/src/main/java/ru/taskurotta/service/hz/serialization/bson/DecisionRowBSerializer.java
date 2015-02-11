@@ -15,8 +15,8 @@ import java.util.UUID;
 public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.DecisionRow> {
 
     public static final CString WAIT_FOR_AFTER_RELEASE = new CString("wait");
-    public static final CString NEW_ITEMS = new CString("newItems");
-    public static final CString READY_ITEMS = new CString("readyItems");
+    public static final CString NEW_ITEMS = new CString("new");
+    public static final CString READY_ITEMS = new CString("ready");
 
     @Override
     public Class<HzGraphDao.DecisionRow> getObjectClass() {
@@ -46,10 +46,9 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
 
         UUID[] readyItems = decisionRow.getReadyItems();
         if (readyItems != null) {
-            int i = 0;
             int readyItemsLabel = out.writeArray(READY_ITEMS);
-            for (i = 0; i < readyItems.length; i++) {
-                out.writeUUID(i, decisionRow.getReadyItems()[i]);
+            for (int i = 0; i < readyItems.length; i++) {
+                out.writeUUID(i, readyItems[i]);
             }
             out.writeArrayStop(readyItemsLabel);
         }
@@ -76,7 +75,7 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
 
         int readyItemsLabel = in.readArray(READY_ITEMS);
         UUID[] readyItems = null;
-        if (readyItemsLabel != 0) {
+        if (readyItemsLabel != -1) {
             int readyItemsSize = in.readArraySize();
             readyItems = new UUID[readyItemsSize];
             for (int i = 0; i < readyItemsSize; i++) {
