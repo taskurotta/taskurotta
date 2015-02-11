@@ -66,11 +66,11 @@
             <hz:map name="${hz.map.broken-process.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
                     max-size="1000" eviction-percentage="25" max-size-policy="PER_NODE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="brokenProcessMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.actor-preferences.name}" backup-count="0">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="actorsPrefMapStore"/>
             </hz:map>
 
             <hz:serialization>
