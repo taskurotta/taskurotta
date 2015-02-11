@@ -270,7 +270,7 @@ public class MongoStorageFactory implements StorageFactory {
             dbCollection.save(dbObject);
         } else {
             DBObjectCheat dbObject = new DBObjectCheat<StorageItemContainer>(storageItemContainer);
-            dbCollection.update(new DBObjectCheat<UUID>(id), dbObject, true, false);
+            dbCollection.insert(dbObject);
         }
 
         return true;
