@@ -97,7 +97,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeInt(CString name, int value, int defValue) {
+        if (value == defValue) {
+            return;
+        }
+        writeInt(name, value);
+    }
+
+    @Override
     public void writeInt(int i, int value) {
+        writeInt(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeInt(int i, int value, int defValue) {
+        if (value == defValue) {
+            return;
+        }
         writeInt(CString.valueOf(i), value);
     }
 
@@ -109,7 +125,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeLong(CString name, long value, long defValue) {
+        if (value == defValue) {
+            return;
+        }
+        writeLong(name, value);
+    }
+
+    @Override
     public void writeLong(int i, long value) {
+        writeLong(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeLong(int i, long value, long defValue) {
+        if (value == defValue) {
+            return;
+        }
         writeLong(CString.valueOf(i), value);
     }
 
@@ -121,7 +153,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeDouble(CString name, double value, double defValue) {
+        if (value == defValue) {
+            return;
+        }
+        writeDouble(name, value);
+    }
+
+    @Override
     public void writeDouble(int i, double value) {
+        writeDouble(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeDouble(int i, double value, double defValue) {
+        if (value == defValue) {
+            return;
+        }
         writeDouble(CString.valueOf(i), value);
     }
 
@@ -133,7 +181,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeBoolean(CString name, boolean value, boolean defValue) {
+        if (value == defValue) {
+            return;
+        }
+        writeBoolean(name, value);
+    }
+
+    @Override
     public void writeBoolean(int i, boolean value) {
+        writeBoolean(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeBoolean(int i, boolean value, boolean defValue) {
+        if (value == defValue) {
+            return;
+        }
         writeBoolean(CString.valueOf(i), value);
     }
 
@@ -148,7 +212,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeString(CString name, String value, String defValue) {
+        if (value == null || (defValue != null && defValue.equals(value))) {
+            return;
+        }
+        writeString(name, value);
+    }
+
+    @Override
     public void writeString(int i, String value) {
+        writeString(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeString(int i, String value, String defValue) {
+        if (value == null || (defValue != null && defValue.equals(value))) {
+            return;
+        }
         writeString(CString.valueOf(i), value);
     }
 
@@ -165,7 +245,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeUUID(CString name, UUID value, UUID defValue) {
+        if (value == null || (defValue != null && defValue.equals(value))) {
+            return;
+        }
+        writeUUID(name, value);
+    }
+
+    @Override
     public void writeUUID(int i, UUID value) {
+        writeUUID(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeUUID(int i, UUID value, UUID defValue) {
+        if (value == null || (defValue != null && defValue.equals(value))) {
+            return;
+        }
         writeUUID(CString.valueOf(i), value);
     }
 
@@ -179,7 +275,23 @@ public class BEncoder extends DefaultDBEncoder implements BDataOutput {
     }
 
     @Override
+    public void writeDate(CString name, Date value, Date defValue) {
+        if (value == null || (defValue != null && defValue.equals(value))) {
+            return;
+        }
+        writeDate(name, value);
+    }
+
+    @Override
     public void writeDate(int i, Date value) {
+        writeDate(CString.valueOf(i), value);
+    }
+
+    @Override
+    public void writeDate(int i, Date value, Date defValue) {
+        if (value == null || (defValue != null && defValue.equals(value))) {
+            return;
+        }
         writeDate(CString.valueOf(i), value);
     }
 

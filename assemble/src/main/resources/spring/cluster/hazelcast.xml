@@ -76,6 +76,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.server.HazelcastTaskServer.ProcessDecisionUnitOfWork"
                                    class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.ApplicationObject"
+                                   class-name="ru.taskurotta.service.hz.serialization.BSONStreamSerializer" />
                 </hz:serializers>
             </hz:serialization>
 

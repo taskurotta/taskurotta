@@ -39,7 +39,7 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
             for (Map.Entry<UUID, Long> entry : notFinishedItems.entrySet()) {
                 int entryLabel = out.writeObject(i);
                 out.writeUUID(KEY, entry.getKey());
-                out.writeLong(VALUE, entry.getValue());
+                out.writeLong(VALUE, entry.getValue(), 0l);
                 out.writeObjectStop(entryLabel);
                 i++;
             }
@@ -76,7 +76,7 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
             for (int i = 0; i < notFinishedArraySize; i++) {
                 int objRead = in.readObject(i);
                 UUID key = in.readUUID(KEY);
-                Long value = in.readLong(VALUE);
+                Long value = in.readLong(VALUE, 0l);
                 notFinishedItems.put(key, value);
                 in.readObjectStop(objRead);
             }
@@ -102,7 +102,7 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
     }
 
     protected static void serializeLinks(BDataOutput out, Map<UUID, Set<UUID>> links) {
-        if (links == null) {
+        if (links == null || links.size() == 0) {
             return;
         }
 
@@ -131,7 +131,7 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
     protected static Map<UUID, Set<UUID>> deserializeLinks(BDataInput in) {
         int rootArrayLabel = in.readArray(LINKS);
         if (rootArrayLabel == -1) {
-            return null;
+            return new HashMap<>();
         }
 
         int mapSize = in.readArraySize();

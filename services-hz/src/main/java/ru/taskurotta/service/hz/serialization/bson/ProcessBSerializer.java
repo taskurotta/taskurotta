@@ -28,9 +28,9 @@ public class ProcessBSerializer implements StreamBSerializer<Process> {
         out.writeUUID(_ID, object.getProcessId());
 
         out.writeString(CUSTOM_ID, object.getCustomId());
-        out.writeLong(START_TIME, object.getStartTime());
-        out.writeLong(END_TIME, object.getEndTime());
-        out.writeInt(STATE, object.getState());
+        out.writeLong(START_TIME, object.getStartTime(), -1l);
+        out.writeLong(END_TIME, object.getEndTime(), -1l);
+        out.writeInt(STATE, object.getState(), 0);
         out.writeString(RETURN_VALUE, object.getReturnValue());
 
         int startTaskLabel = out.writeObject(START_TASK);
@@ -41,9 +41,9 @@ public class ProcessBSerializer implements StreamBSerializer<Process> {
     @Override
     public Process read(BDataInput in) {
         String customId = in.readString(CUSTOM_ID);
-        long startTime = in.readLong(START_TIME);
-        long endTime = in.readLong(END_TIME);
-        int state = in.readInt(STATE);
+        long startTime = in.readLong(START_TIME, -1l);
+        long endTime = in.readLong(END_TIME, -1l);
+        int state = in.readInt(STATE, 0);
         String returnValue = in.readString(RETURN_VALUE);
 
         int readObject = in.readObject(START_TASK);

@@ -17,4 +17,5 @@ public interface BSerializationService {
     public DBDecoderFactory getDecoderFactory(Class objectClass);
 
     public DBDecoderFactory getDecoderFactory(StreamBSerializer streamBSerializer);
+
 }

@@ -71,7 +71,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
     }
 
     public DBObject decode(byte[] b, DBCollection collection) {
-        boolean good = decodeInternal(b);
+        boolean good = decodeInternal(b, 0, true);
 
         if (!good) {
             return super.decode(b, collection);
@@ -101,7 +101,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
             return new DBObjectCheat(null);
         }
 
-        boolean good = decodeInternal(loadedBytes);
+        boolean good = decodeInternal(loadedBytes, 0, true);
 
         if (!good) {
             // todo: put 4 bytes of stream length back to stream head
@@ -140,21 +140,23 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
         return x;
     }
 
-    private boolean decodeInternal(byte[] loadedBytes) {
+    public boolean decodeInternal(byte[] loadedBytes, int startPosition, boolean startSerializer) {
 
         if (loadedBytes == null) {
             throw new IllegalStateException("not ready");
         }
 
         this.bytes = loadedBytes;
-        currPosition = 0;
+        currPosition = startPosition;
         currNamesMap = getPairNames();
 
         if (currNamesMap == null) {
             return false;
         }
 
-        rootObj = streamBSerializer.read(this);
+        if (startSerializer) {
+            rootObj = streamBSerializer.read(this);
+        }
         return true;
     }
 

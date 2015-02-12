@@ -14,7 +14,6 @@ public class BEncoderFactory implements DBEncoderFactory {
         this.bSerializationService = bSerializationService;
     }
 
-    // todo: consider to use pool of BEncoder objects
     @Override
     public DBEncoder create() {
         return new BEncoder(bSerializationService);

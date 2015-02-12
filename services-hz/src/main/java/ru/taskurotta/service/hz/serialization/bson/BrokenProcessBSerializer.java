@@ -6,17 +6,14 @@ import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.service.console.model.BrokenProcess;
 
-/**
- * Created by greg on 09/02/15.
- */
 public class BrokenProcessBSerializer implements StreamBSerializer<BrokenProcess> {
 
-    public static final CString START_ACTOR_ID = new CString("sai");
-    public static final CString BROKEN_STORE_ID = new CString("bai");
-    public static final CString TIME = new CString("t");
-    public static final CString ERROR_MESSAGE = new CString("em");
-    public static final CString ERROR_CLASS_NAME = new CString("ec");
-    public static final CString STACK_TRACE = new CString("st");
+    public static final CString START_ACTOR_ID = new CString("startActorId");
+    public static final CString BROKEN_STORE_ID = new CString("brokenActorId");
+    public static final CString TIME = new CString("time");
+    public static final CString ERROR_MESSAGE = new CString("errorMessage");
+    public static final CString ERROR_CLASS_NAME = new CString("errorClassName");
+    public static final CString STACK_TRACE = new CString("stackTrace");
 
     @Override
     public Class<BrokenProcess> getObjectClass() {

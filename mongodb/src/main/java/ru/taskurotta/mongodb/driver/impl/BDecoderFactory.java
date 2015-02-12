@@ -14,7 +14,6 @@ public class BDecoderFactory implements DBDecoderFactory {
         this.streamBSerializer = streamBSerializer;
     }
 
-    // todo: consider to use pool of BDecoder objects
     @Override
     public DBDecoder create() {
         return new BDecoder(streamBSerializer);

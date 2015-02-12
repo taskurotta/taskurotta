@@ -44,14 +44,14 @@ public class ArgContainerBSerializer implements StreamBSerializer<ArgContainer> 
     private void serializePlain(BDataOutput out, ArgContainer object) {
         out.writeString(DATA_TYPE, object.getDataType());
         out.writeUUID(TASK_ID, object.getTaskId());
-        out.writeBoolean(IS_READY, object.isReady());
+        out.writeBoolean(IS_READY, object.isReady(), true);
         out.writeString(JSON_VALUE, object.getJSONValue());
         writeObjectIfNotNull(ERROR, object.getErrorContainer(), errorContainerBSerializer, out);
         if (object.getValueType() != null) {
-            out.writeInt(VALUE_TYPE, object.getValueType().getValue());
+            out.writeInt(VALUE_TYPE, object.getValueType().getValue(), 0);
         }
 
-        out.writeBoolean(IS_PROMISE, object.isPromise());
+        out.writeBoolean(IS_PROMISE, object.isPromise(), false);
     }
 
     private void compositeWrite(BDataOutput out, ArgContainer object) {
@@ -82,14 +82,12 @@ public class ArgContainerBSerializer implements StreamBSerializer<ArgContainer> 
 
         String dataType = in.readString(DATA_TYPE);
         UUID taskId = in.readUUID(TASK_ID);
-        boolean isReady = in.readBoolean(IS_READY);
+        boolean isReady = in.readBoolean(IS_READY, true);
         String value = in.readString(JSON_VALUE);
         ArgContainer.ValueType valueType = null;
-        int valueTypeInt = in.readInt(VALUE_TYPE, -1);
-        if (valueTypeInt != -1) {
-            valueType = ArgContainer.ValueType.fromInt(valueTypeInt);
-        }
-        boolean promise = in.readBoolean(IS_PROMISE);
+        int valueTypeInt = in.readInt(VALUE_TYPE, 0);
+        valueType = ArgContainer.ValueType.fromInt(valueTypeInt);
+        boolean promise = in.readBoolean(IS_PROMISE, false);
 
         return new ArgContainer(dataType, valueType, taskId, isReady, promise, value);
     }

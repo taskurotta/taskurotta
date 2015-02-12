@@ -47,8 +47,8 @@ public class DecisionContainerBSerializer implements StreamBSerializer<DecisionC
         writeObjectIfNotNull(VALUE, object.getValue(), argContainerBSerializer, out);
         writeObjectIfNotNull(ERROR, object.getErrorContainer(), errorContainerBSerializer, out);
 
-        out.writeLong(EXECUTION_TIME, object.getExecutionTime());
-        out.writeLong(RESTART_TIME, object.getRestartTime());
+        out.writeLong(EXECUTION_TIME, object.getExecutionTime(), 0l);
+        out.writeLong(RESTART_TIME, object.getRestartTime(), -1l);
         out.writeString(ACTOR_ID, object.getActorId());
 
         writeArrayOfObjects(TASKS, object.getTasks(), taskContainerBSerializer, out);
@@ -65,8 +65,8 @@ public class DecisionContainerBSerializer implements StreamBSerializer<DecisionC
         ArgContainer value = readObject(VALUE, argContainerBSerializer, in);
         ErrorContainer errorContainer = readObject(ERROR, errorContainerBSerializer, in);
 
-        long restartTime = in.readLong(RESTART_TIME);
-        long executionTime = in.readLong(EXECUTION_TIME);
+        long restartTime = in.readLong(RESTART_TIME, 0l);
+        long executionTime = in.readLong(EXECUTION_TIME, -1l);
         String actorId = in.readString(ACTOR_ID);
 
         TaskContainer[] tasks = readArrayOfObjects(TASKS, TaskContainerBSerializer.arrayFactory,

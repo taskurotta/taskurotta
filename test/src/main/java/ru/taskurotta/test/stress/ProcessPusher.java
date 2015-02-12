@@ -209,7 +209,6 @@ public class ProcessPusher {
                             LocalCachedQueueStats statQ = queue.getLocalQueueStats();
 
                             sb.append("\tsize = " + queue.size());
-                            sb.append("\tcache: size = " + statQ.getCacheSize());
                             sb.append("\tmax = " + statQ.getCacheMaxSize());
                             sb.append("\tmem = " + bytesToMb(statQ.getHeapCost()));
 
@@ -255,19 +254,19 @@ public class ProcessPusher {
                 int pushedCount = ProcessPusher.counter.get();
                 int startedCount = GeneralTaskServer.startedProcessesCounter.get();
 
-                sb.append("\n pushedProcessCounter = " + pushedCount +
-                        "  startedProcessesCounter = " + startedCount +
+                sb.append("\n Processes: pushed = " + pushedCount +
+                        "  started = " + startedCount +
                         "  delta = " + (pushedCount - startedCount) +
-                        "  finishedProcessesCounter = " +
+                        "  finished = " +
                         GeneralTaskServer.finishedProcessesCounter.get() +
-                        "  brokenProcessesCounter = " +
+                        "  broken = " +
                         GeneralTaskServer.brokenProcessesCounter.get());
 
-                sb.append("\n processesOnTimeoutFoundedCounter = " +
+                sb.append("\n processesOnTimeout = " +
                         DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +
-                        "  restartedProcessesCounter = " +
+                        "  restartedProcesses = " +
                         GeneralRecoveryProcessService.restartedProcessesCounter.get() +
-                        "  restartedTasksCounter = " +
+                        "  restartedTasks = " +
                         GeneralRecoveryProcessService.restartedTasksCounter);
 
                 sb.append("\n startedDistributedTasks = " + GeneralTaskServer.startedDistributedTasks.get() +

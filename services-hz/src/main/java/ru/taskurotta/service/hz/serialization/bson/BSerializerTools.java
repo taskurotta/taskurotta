@@ -62,6 +62,16 @@ public final class BSerializerTools {
         return obj;
     }
 
+    public static <T> Void writeArrayOfObjectsIfNotEmpty(CString name, T[] array, StreamBSerializer<T> serializer,
+                                                         BDataOutput out) {
+
+        if (array == null || array.length == 0) {
+            return null;
+        }
+
+        return writeArrayOfObjects(name, array, serializer, out);
+    }
+
     public static <T> Void writeArrayOfObjects(CString name, T[] array, StreamBSerializer<T> serializer, BDataOutput
             out) {
 

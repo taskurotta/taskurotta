@@ -28,7 +28,7 @@ public class TaskConfigContainerBSerializer implements StreamBSerializer<TaskCon
     @Override
     public void write(BDataOutput out, TaskConfigContainer object) {
         out.writeString(CUSTOM_ID, object.getCustomId());
-        out.writeLong(START_TIME, object.getStartTime());
+        out.writeLong(START_TIME, object.getStartTime(), -1l);
         out.writeString(TASK_LIST, object.getTaskList());
         writeObjectIfNotNull(RETRY_POLICY, object.getRetryPolicyConfigContainer(),
                 retryPolicyConfigContainerBSerializer, out);
@@ -37,7 +37,7 @@ public class TaskConfigContainerBSerializer implements StreamBSerializer<TaskCon
     @Override
     public TaskConfigContainer read(BDataInput in) {
         String customId = in.readString(CUSTOM_ID);
-        long startTime = in.readLong(START_TIME);
+        long startTime = in.readLong(START_TIME, -1l);
         String taskList = in.readString(TASK_LIST);
         RetryPolicyConfigContainer retryPolicyConfigContainer = readObject(RETRY_POLICY,
                 retryPolicyConfigContainerBSerializer, in);
