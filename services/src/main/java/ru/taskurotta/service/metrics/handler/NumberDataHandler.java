@@ -32,7 +32,7 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
     }
 
     @PostConstruct
-    private void init() {
+    public void init() {
         singleton = this;
     }
 

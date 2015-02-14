@@ -1,5 +1,7 @@
 package ru.taskurotta.util;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  */
 public class Shutdown {
@@ -17,5 +19,14 @@ public class Shutdown {
 
     public static boolean isTrue() {
         return isShutdownFlag;
+    }
+
+    public static void addHook(final ExecutorService executorService) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                executorService.shutdown();
+            }
+        });
     }
 }
