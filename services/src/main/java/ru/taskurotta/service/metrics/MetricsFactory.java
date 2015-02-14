@@ -82,7 +82,7 @@ public class MetricsFactory {
     public PeriodicMetric getPeriodicInstance(String name, int periodSeconds) {
 
         //number of points to cover 24 hours period.
-        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(periodSeconds).intValue();
+        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/periodSeconds;
 
         return new PeriodicMetric(name, executorService, numberDataListener, periodSeconds, dataPointsCount);
     }
