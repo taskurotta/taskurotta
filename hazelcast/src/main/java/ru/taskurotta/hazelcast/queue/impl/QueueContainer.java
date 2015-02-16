@@ -98,8 +98,8 @@ public class QueueContainer {
     // todo: why it returns data?
     public long offer(Data data) {
 
-        if (DEBUG_FULL) logger.debug("offer(): name = {} buffer.size() = {} headId = {} tailId = {} " +
-                "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
+        if (DEBUG_FULL) logger.debug("offer(): name = {}#{} buffer.size() = {} headId = {} tailId = {} " +
+                "bufferClosed = {}", name, this.hashCode(), buffer.size(), headId, tailId, bufferClosed);
 
         offerTimer.update(data.getHeapCost(), TimeUnit.NANOSECONDS);
 
@@ -150,10 +150,10 @@ public class QueueContainer {
     }
 
     public QueueItem poll() {
-        if (DEBUG_FULL) logger.debug("poll(): name = {} buffer.size() = {} headId = {} tailId = {} " +
-                "bufferClosed = {}", name, buffer.size(), headId, tailId, bufferClosed);
+        if (DEBUG_FULL) logger.debug("poll(): name = {}#{} buffer.size() = {} headId = {} tailId = {} " +
+                "bufferClosed = {}", name, this.hashCode(), buffer.size(), headId, tailId, bufferClosed);
 
-        while(true) {
+        while (true) {
             if (isEmpty()) {
                 bufferClosed = false;
                 return null;
@@ -300,6 +300,10 @@ public class QueueContainer {
     }
 
     protected void resizeBuffer(int newSize) {
+
+        if (newSize <= 0) {
+            return;
+        }
 
         int buffSize = buffer.size();
 

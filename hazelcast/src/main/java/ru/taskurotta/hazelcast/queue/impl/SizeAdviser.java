@@ -20,6 +20,7 @@ public class SizeAdviser {
     private String hzInstanceName;
     private Map<String, QueueStats> name2QueueStatsMap = new ConcurrentHashMap<>();
 
+    private boolean enabled = true;
 
     public static class QueueStats {
 
@@ -38,6 +39,12 @@ public class SizeAdviser {
 
     public SizeAdviser(String hzInstanceName, final CachedQueueSizeConfig sizeConfig) {
         this.hzInstanceName = hzInstanceName;
+
+        if (sizeConfig.getSizePolicy().equals(CachedQueueSizeConfig.SizePolicy.PER_NODE)) {
+            // todo: this is temporary mechanism to disable automatic queue resizing.
+            enabled = false;
+            return;
+        }
 
 
         new Thread() {
@@ -105,6 +112,10 @@ public class SizeAdviser {
     }
 
     public int getRecommendedSize(String queueName) {
+        if (!enabled) {
+            return -1;
+        }
+
         QueueStats queueStats = name2QueueStatsMap.get(queueName);
         return queueStats.recommendedSize;
     }

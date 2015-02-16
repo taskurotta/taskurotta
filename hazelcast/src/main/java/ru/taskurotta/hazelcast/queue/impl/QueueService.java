@@ -19,9 +19,16 @@ package ru.taskurotta.hazelcast.queue.impl;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.nio.Address;
 import com.hazelcast.partition.InternalPartition;
+import com.hazelcast.partition.InternalPartitionService;
+import com.hazelcast.partition.MigrationEndpoint;
+import com.hazelcast.partition.strategy.StringPartitioningStrategy;
 import com.hazelcast.spi.EventService;
 import com.hazelcast.spi.ManagedService;
+import com.hazelcast.spi.MigrationAwareService;
 import com.hazelcast.spi.NodeEngine;
+import com.hazelcast.spi.Operation;
+import com.hazelcast.spi.PartitionMigrationEvent;
+import com.hazelcast.spi.PartitionReplicationEvent;
 import com.hazelcast.spi.RemoteService;
 import com.hazelcast.util.ConcurrencyUtil;
 import com.hazelcast.util.ConstructorFunction;
@@ -35,6 +42,8 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.impl.proxy.QueueProxyImpl;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,7 +53,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Provides important services via methods for the the Queue
  * such as {@link ru.taskurotta.hazelcast.queue.impl.QueueEvictionProcessor }
  */
-public class QueueService implements ManagedService, RemoteService {
+public class QueueService implements ManagedService, RemoteService, MigrationAwareService {
     /**
      * Service name.
      */
@@ -187,4 +196,47 @@ public class QueueService implements ManagedService, RemoteService {
         return ConcurrencyUtil.getOrPutIfAbsent(statsMap, name, localQueueStatsConstructorFunction);
     }
 
+    @Override
+    public Operation prepareReplicationOperation(PartitionReplicationEvent event) {
+        return null;
+    }
+
+    @Override
+    public void beforeMigration(PartitionMigrationEvent event) {
+
+    }
+
+    @Override
+    public void commitMigration(PartitionMigrationEvent event) {
+        if (event.getMigrationEndpoint() == MigrationEndpoint.SOURCE) {
+            clearMigrationData(event.getPartitionId());
+        }
+    }
+
+    @Override
+    public void rollbackMigration(PartitionMigrationEvent event) {
+        if (event.getMigrationEndpoint() == MigrationEndpoint.DESTINATION) {
+            clearMigrationData(event.getPartitionId());
+        }
+    }
+
+    private void clearMigrationData(int partitionId) {
+        Iterator<Map.Entry<String, QueueContainer>> iterator = containerMap.entrySet().iterator();
+        InternalPartitionService partitionService = nodeEngine.getPartitionService();
+        while (iterator.hasNext()) {
+            final Map.Entry<String, QueueContainer> entry = iterator.next();
+            final String name = entry.getKey();
+            final QueueContainer container = entry.getValue();
+            int containerPartitionId = partitionService.getPartitionId(StringPartitioningStrategy.getPartitionKey(name));
+            if (containerPartitionId == partitionId) {
+                container.destroy();
+                iterator.remove();
+            }
+        }
+    }
+
+    @Override
+    public void clearPartitionReplica(int partitionId) {
+        clearMigrationData(partitionId);
+    }
 }

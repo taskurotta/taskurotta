@@ -89,10 +89,13 @@ public class CachedQueueSizeConfig {
     }
 
     public CachedQueueSizeConfig setMaxSizePolicy(SizePolicy sizePolicy) {
-//        this.sizePolicy = sizePolicy;
-//        return this;
-        throw new IllegalArgumentException("setMaxSizePolicy() not implemented yet");
+        this.sizePolicy = sizePolicy;
 
+        if (!sizePolicy.equals(SizePolicy.PER_NODE) && !sizePolicy.equals(SizePolicy.USED_HEAP_PERCENTAGE) ) {
+            throw new IllegalArgumentException("Size policy " + sizePolicy.toString() + " not implemented yet");
+        }
+
+        return this;
     }
 
 
