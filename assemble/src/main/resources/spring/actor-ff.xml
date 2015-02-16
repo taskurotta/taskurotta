@@ -27,6 +27,7 @@
         <constructor-arg name="threadCount" value="${test.ff.threadCount}"/>
         <constructor-arg name="minQueuesSize" value="${test.ff.minQueuesSize}"/>
         <constructor-arg name="maxQueuesSize" value="${test.ff.maxQueuesSize}"/>
+        <constructor-arg name="waitAfterDoneSeconds" value="${test.ff.waitAfterDoneSeconds}"/>
     </bean>
 
 </beans>

@@ -20,4 +20,6 @@ public interface ProcessService {
     public TaskContainer getStartTask(UUID processId);
 
     public void markProcessAsBroken(UUID processId);
+
+    public ru.taskurotta.service.console.model.Process getProcess(UUID processUUID);
 }

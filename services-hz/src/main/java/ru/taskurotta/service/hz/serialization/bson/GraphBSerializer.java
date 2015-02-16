@@ -21,6 +21,8 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
     public static final CString LINKS = new CString("links");
     public static final CString FINISHED = new CString("finished");
     public static final CString LAST_APPLY_TIME = new CString("lastApplyTime");
+    public static final CString LAST_TOUCH_TIME = new CString("lastTouchTime");
+
 
     @Override
     public Class<Graph> getObjectClass() {
@@ -60,7 +62,7 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
         }
 
         out.writeLong(LAST_APPLY_TIME, object.getLastApplyTimeMillis());
-
+        out.writeLong(LAST_TOUCH_TIME, object.getTouchTimeMillis());
     }
 
     @Override
@@ -97,8 +99,9 @@ public class GraphBSerializer implements StreamBSerializer<Graph> {
         }
 
         long lastApplyTimeMillis = in.readLong(LAST_APPLY_TIME);
+        long lastTouchTimeMillis = in.readLong(LAST_TOUCH_TIME);
 
-        return new Graph(version, graphId, notFinishedItems, links, finishedItems, lastApplyTimeMillis);
+        return new Graph(version, graphId, notFinishedItems, links, finishedItems, lastApplyTimeMillis, lastTouchTimeMillis);
     }
 
     protected static void serializeLinks(BDataOutput out, Map<UUID, Set<UUID>> links) {

@@ -2,6 +2,7 @@ package ru.taskurotta.service.recovery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
@@ -22,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -84,6 +84,14 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         } else if (graph.isFinished()) {
             // process is already finished => just mark process as finished
 
+            // check if Process is finished because Graph are marked as finished before Process
+            ru.taskurotta.service.console.model.Process process = processService.getProcess(graph.getGraphId());
+
+            if (process.getState() == Process.FINISH) {
+                logger.debug("#[{}]: is finished, just skip it", processId);
+                return false;
+            }
+
             logger.debug("#[{}]: isn't finished, but graph is finished, force finish process", processId);
             TaskContainer startTaskContainer = processService.getStartTask(processId);
             finishProcess(processId, startTaskContainer.getTaskId(), graph.getProcessTasks());
@@ -106,9 +114,9 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             } else {
                 // restart unfinished tasks
 
-                final AtomicBoolean boolContainer = new AtomicBoolean();
+                final boolean[] boolContainer = new boolean[1];
 
-                logger.trace("#[{}]: try to update graph", processId);
+                logger.debug("#[{}]: try to update graph", processId);
                 boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
                     @Override
                     public UUID getProcessId() {
@@ -119,15 +127,12 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                     public boolean apply(Graph graph) {
                         graph.setTouchTimeMillis(System.currentTimeMillis());
 
-                        if (logger.isTraceEnabled()) {
-                            logger.trace("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis(),
-                                    new Date(graph.getTouchTimeMillis()));
-                        }
+                        logger.debug("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis());
 
                         int restartResult = restartTasks(taskContainers, processId);
                         restartedTasksCounter.addAndGet(restartResult);
 
-                        boolContainer.set(restartResult > 0);
+                        boolContainer[0] = restartResult > 0;
 
                         // todo: is it really needed?
                         brokenProcessService.delete(processId);
@@ -136,7 +141,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                     }
                 });
 
-                result = boolContainer.get();
+                result = boolContainer[0];
 
                 logger.debug("#[{}]: has been recovered, graph update result [{}]", processId, graphUpdated);
 
@@ -205,7 +210,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 if (isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)
                         && queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
 
-                    logger.trace("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId, taskContainer);
+                    logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
+                            taskContainer);
 
                     restartedTasks++;
                 }
@@ -262,6 +268,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         //still filled with older tasks => this task already in queue
         if (lastEnqueueTime < startTime) {
+
+            // todo: check decision analise time for this queueName
 
             if (logger.isDebugEnabled()) {
                 logger.debug("#[{}]/[{}]: skip process restart, because earlier tasks in queue [{}] (last enqueue " +

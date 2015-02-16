@@ -119,6 +119,7 @@
     <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessDao">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
+        <constructor-arg name="bSerializationService" ref="bSerializationService" />
     </bean>
 
     <!-- Services -->

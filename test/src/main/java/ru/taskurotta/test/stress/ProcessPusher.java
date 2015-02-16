@@ -40,7 +40,7 @@ public class ProcessPusher {
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
-                         final int maxQueuesSize) {
+                         final int maxQueuesSize, final int waitAfterDoneSeconds) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
@@ -128,11 +128,15 @@ public class ProcessPusher {
                 if (counter.get() >= maxProcessQuantity &&
                         GeneralTaskServer.finishedProcessesCounter.get() >= maxProcessQuantity) {
                     // stop JVM
+
+                    logger.info("Done... Waiting before exit {} seconds", waitAfterDoneSeconds);
                     try {
-                        TimeUnit.SECONDS.sleep(5);
+                        TimeUnit.SECONDS.sleep(waitAfterDoneSeconds);
                     } catch (InterruptedException e) {
                         // ignore
                     }
+
+
                     System.exit(0);
                 }
             }

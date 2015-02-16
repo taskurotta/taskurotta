@@ -70,7 +70,7 @@ public class Graph implements Serializable {
      * smart constructor for deserializer
      */
     public Graph(int version, UUID graphId, Map<UUID, Long> notFinishedItems, Map<UUID, Set<UUID>> links,
-                 Set<UUID> finishedItems, long lastApplyTimeMillis) {
+                 Set<UUID> finishedItems, long lastApplyTimeMillis, long touchTimeMillis) {
 
         this.version = version;
         this.graphId = graphId;
@@ -95,6 +95,7 @@ public class Graph implements Serializable {
         }
 
         this.lastApplyTimeMillis = lastApplyTimeMillis;
+        this.touchTimeMillis = touchTimeMillis;
     }
 
     /**

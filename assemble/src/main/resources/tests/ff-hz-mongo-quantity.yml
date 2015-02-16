@@ -19,13 +19,13 @@ spreader:
           hz.jmx: true
           mongo.host: localhost
           mongo.port: 27017
-          gc.enabled: true
+          gc.enabled: false
           gc.pool-size: 8
-          gc.time-before-delete: 1 seconds
+          gc.time-before-delete: 20 seconds
           recovery.enabled: false
-          recovery.process.incomplete-timeout: 2 minutes
-          recovery.find-incomplete-process-period: 1 minutes
-          recovery.process.change-timeout: 1 minutes
+          recovery.process.incomplete-timeout: 30 seconds
+          recovery.find-incomplete-process-period: 5 seconds
+          recovery.process.change-timeout: 30 seconds
           hz.queue.task.batch-load-size: 10000
           hz.queue.delay.batch-load-size: 10000
           taskurotta.memory.auto: true
@@ -33,8 +33,9 @@ spreader:
           test.ff.maxProcessQuantity: 2000
           test.ff.startSpeedPerSecond: 50
           test.ff.threadCount: 10
-          test.ff.minQueuesSize: 5000
-          test.ff.maxQueuesSize: 10000
+          test.ff.minQueuesSize: 3000
+          test.ff.maxQueuesSize: 5000
+          test.ff.waitAfterDoneSeconds: 30
 
 
 profiler:
@@ -44,7 +45,7 @@ profiler:
         class: ru.taskurotta.test.stress.LifetimeProfiler
         properties:
           tasksForStat: 1000
-          maxProcessQuantity: 1900
+          dropTaskDecisionEveryNTasks: 0
 
 actor:
   - FFDecider:
@@ -76,15 +77,18 @@ logback:
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
+        - ru.taskurotta.service.hz.dependency.HzGraphDao2:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.recovery.GeneralRecoveryProcessService2:
+             key: name
+             \@level: DEBUG
         - com.hazelcast:
              key: name
              \@level: WARN
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.recipes.stress:
-             key: name
-             \@level: DEBUG
         - ru.taskurotta.test.monkey:
              key: name
              \@level: DEBUG

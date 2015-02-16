@@ -99,6 +99,8 @@ public class HzGraphDao implements GraphDao {
     @Override
     public void createGraph(UUID graphId, UUID taskId) {
 
+        logger.debug("Create graph {}", graphId);
+
         try {
             graphs.lock(graphId);
 
@@ -114,7 +116,13 @@ public class HzGraphDao implements GraphDao {
     @Override
     public void deleteGraph(UUID graphId) {
 
+        logger.debug("Delete graph {}", graphId);
+
         Graph graph = graphs.get(graphId);
+        if (graph == null) {
+            logger.warn("Graph {} can not be removed because it is not found", graphId);
+            return;
+        }
 
         Set<UUID> finishedItems = graph.getFinishedItems();
 

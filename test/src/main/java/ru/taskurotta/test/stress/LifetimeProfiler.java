@@ -25,7 +25,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
 
-    private final static String MAX_PROCESS_QUANTITY = "maxProcessQuantity";
+    private final static String DROP_TASK_DECISION_EVERY_N_TASKS = "dropTaskDecisionEveryNTasks";
     private final static String TASKS_FOR_STAT = "tasksForStat";
 
 
@@ -35,8 +35,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public static AtomicLong lastTime = new AtomicLong(0);
 
     public static int tasksForStat = 1000;
+    public static int dropTaskDecisionEveryNTasks = 0;
+
     private boolean isFirstPoll = true;
-    private int maxProcessQuantity = -1;
     private AtomicInteger nullPoll = new AtomicInteger(0);
 
     public LifetimeProfiler() {
@@ -47,16 +48,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         String sys = null;
 
         if (properties.containsKey(TASKS_FOR_STAT)) {
-            tasksForStat = (Integer) properties.get(TASKS_FOR_STAT);
+            tasksForStat = Integer.valueOf((String) properties.getProperty(TASKS_FOR_STAT));
         }
 
-        sys = System.getProperty(MAX_PROCESS_QUANTITY);
-        if (sys != null) {
-            maxProcessQuantity = Integer.valueOf(sys);
-        } else {
-            if (properties.containsKey(MAX_PROCESS_QUANTITY)) {
-                maxProcessQuantity = (Integer) properties.get(MAX_PROCESS_QUANTITY);
-            }
+        if (properties.containsKey(DROP_TASK_DECISION_EVERY_N_TASKS)) {
+            dropTaskDecisionEveryNTasks = Integer.valueOf((String) properties.getProperty(DROP_TASK_DECISION_EVERY_N_TASKS));
         }
 
     }
@@ -130,6 +126,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
             @Override
             public void release(TaskDecision taskDecision) {
+
+                if (dropTaskDecisionEveryNTasks > 0 && taskCount.get() % dropTaskDecisionEveryNTasks == 0) {
+                    return;
+                }
+
                 taskSpreader.release(taskDecision);
             }
         };

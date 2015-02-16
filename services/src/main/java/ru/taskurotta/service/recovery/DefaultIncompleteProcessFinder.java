@@ -3,11 +3,11 @@ package ru.taskurotta.service.recovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.executor.OperationExecutor;
+import ru.taskurotta.util.Shutdown;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,7 +64,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
             @Override
             public void run() {
 
-                while (enabled.get() && !Thread.currentThread().isInterrupted()) {
+                while (!Shutdown.isTrue() && enabled.get() && !Thread.currentThread().isInterrupted()) {
 
                     try {
 
@@ -93,6 +93,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                                     Collection<UUID> incompleteProcesses = incompleteProcessesCursor.getNext();
 
                                     if (incompleteProcesses.isEmpty()) {
+                                        logger.debug("Incomplete processes not found");
                                         break;
                                     }
 
@@ -119,8 +120,6 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
         });
 
         processFinder.setName("IncompleteProcessFinder");
-        processFinder.setDaemon(true);
-
         processFinder.start();
 
     }

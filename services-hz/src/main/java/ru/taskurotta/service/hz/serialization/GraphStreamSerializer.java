@@ -87,6 +87,7 @@ public class GraphStreamSerializer implements StreamSerializer<Graph> {
         }
 
         out.writeLong(graph.getLastApplyTimeMillis());
+        out.writeLong(graph.getTouchTimeMillis());
     }
 
     @Override
@@ -118,8 +119,9 @@ public class GraphStreamSerializer implements StreamSerializer<Graph> {
         }
 
         long lastApplyTimeMillis = in.readLong();
+        long touchTimeMillis = in.readLong();
 
-        return new Graph(version, graphId, notFinishedItems, links, finishedItems, lastApplyTimeMillis);
+        return new Graph(version, graphId, notFinishedItems, links, finishedItems, lastApplyTimeMillis, touchTimeMillis);
     }
 
     @Override

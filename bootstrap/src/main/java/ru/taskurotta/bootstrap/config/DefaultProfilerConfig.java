@@ -1,6 +1,7 @@
 package ru.taskurotta.bootstrap.config;
 
 import ru.taskurotta.bootstrap.profiler.Profiler;
+import ru.taskurotta.util.PropertiesUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
@@ -17,6 +18,10 @@ public class DefaultProfilerConfig implements ProfilerConfig {
 
 	@Override
 	public Profiler getProfiler(Class actorInterface) {
+
+        properties = PropertiesUtil.mergeProperties(new Properties(), properties, null, "yaml");
+        properties = PropertiesUtil.mergeProperties(properties, System.getProperties(), null, "system");
+
 		Profiler profiler;
 
         try {

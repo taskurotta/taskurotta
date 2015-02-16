@@ -132,17 +132,18 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId());
 
-        if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
+//        if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
             pendingDecisionQueueProxy.stash(taskKey);
-        } else {
-            sendToClusterMember(taskKey);
-        }
+//        } else {
+//            sendToClusterMember(taskKey);
+//        }
 
         startedDistributedTasks.incrementAndGet();
         statRelease.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
     }
 
     protected void sendToClusterMember(TaskKey taskKey) {
+
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskKey);
         distributedExeService.submit(call);
     }

@@ -44,7 +44,8 @@ public class ProcessInspector {
     public static void main(String[] args) throws Throwable {
         init();
 
-        UUID processId = getUUID("Ok4hqsQftgiDyQCP00yJmw==");
+//        UUID processId = getUUID("Ok4hqsQftgiDyQCP00yJmw==");
+        UUID processId = UUID.fromString("6b4d2db3-126a-4fea-bd9a-75ef32679a6b");
 
         System.err.println("Process ID = " + processId + "\n");
 

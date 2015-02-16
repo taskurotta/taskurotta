@@ -436,7 +436,8 @@ public class SerializationTest {
         finishedItems.add(UUID.randomUUID());
 
 
-        return new Graph(rnd.nextInt(), UUID.randomUUID(), notFinishedItems, links, finishedItems, System.currentTimeMillis());
+        return new Graph(rnd.nextInt(), UUID.randomUUID(), notFinishedItems, links, finishedItems, System
+                .currentTimeMillis(), System.currentTimeMillis());
     }
 
 }
