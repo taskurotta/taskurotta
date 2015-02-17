@@ -50,7 +50,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: logs/ff-hz-mongo-quantity.log
+             file: ../../../../../target/ff-hz-mongo-quantity.log
              append: false
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
