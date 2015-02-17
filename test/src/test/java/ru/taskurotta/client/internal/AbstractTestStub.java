@@ -126,7 +126,7 @@ public class AbstractTestStub {
     }
 
     public boolean isTaskPresent(UUID taskId, UUID processId) {
-        return null != memoryStorageService.getTask(taskId, processId);
+        return memoryStorageService.getTask(taskId, processId) != null;
     }
 
 

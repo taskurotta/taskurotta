@@ -12,7 +12,7 @@ public interface RecoveryProcessService {
     /**
      * @return result of restart process
      */
-    boolean restartProcess(UUID processId);
+    boolean resurrect(UUID processId);
 
     /**
      * @return UUID's collection of successfully restarted processes

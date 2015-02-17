@@ -26,7 +26,7 @@ public class RecoveryOperation implements Operation {
 
     @Override
     public void run() {
-        recoveryProcessService.restartProcess(processId);
+        recoveryProcessService.resurrect(processId);
     }
 
     public UUID getProcessId() {

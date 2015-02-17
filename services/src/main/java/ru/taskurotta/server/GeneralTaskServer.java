@@ -376,12 +376,12 @@ public class GeneralTaskServer implements TaskServer {
         brokenProcess.setBrokenActorId(taskDecision.getActorId());
 
         TaskContainer startTask = processService.getStartTask(processId);
-        if (null != startTask) {
+        if (startTask != null) {
             brokenProcess.setStartActorId(startTask.getActorId());
         }
 
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
-        if (null != errorContainer) {
+        if (errorContainer != null) {
             brokenProcess.setErrorClassName(errorContainer.getClassName());
             brokenProcess.setErrorMessage(errorContainer.getMessage());
             brokenProcess.setStackTrace(errorContainer.getStackTrace());

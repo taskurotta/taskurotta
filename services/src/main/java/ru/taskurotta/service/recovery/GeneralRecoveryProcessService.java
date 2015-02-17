@@ -64,9 +64,14 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
     }
 
+//    @Override
+    public boolean restartBrokenTasks(final UUID processId) {
+
+        return false;
+    }
 
     @Override
-    public boolean restartProcess(final UUID processId) {
+    public boolean resurrect(final UUID processId) {
         logger.trace("#[{}]: try to restart process", processId);
 
         // val=true if some tasks have been placed to queue
@@ -182,7 +187,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         Collection<UUID> successfullyRestartedProcesses = new ArrayList<>();
 
         for (UUID processId : processIds) {
-            if (restartProcess(processId)) {
+            if (resurrect(processId)) {
                 successfullyRestartedProcesses.add(processId);
             }
         }

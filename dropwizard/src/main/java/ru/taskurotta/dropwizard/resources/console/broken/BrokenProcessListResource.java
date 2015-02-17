@@ -150,7 +150,7 @@ public class BrokenProcessListResource {
 //                    for (UUID processId : processIds) {
 //                        try {
 //                            //TODO: should some transactions be applied here?
-//                            recoveryProcessService.restartProcess(processId);
+//                            recoveryProcessService.resurrect(processId);
 //                            brokenProcessService.delete(processId.toString());
 //                            localResult++;
 //                            logger.debug("Processed processId [{}]", processId);
