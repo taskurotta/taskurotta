@@ -80,6 +80,9 @@ logback:
         - ru.taskurotta.service.hz.dependency.HzGraphDao2:
              key: name
              \@level: DEBUG
+        - ru.taskurotta.server.json.ObjectFactory:
+             key: name
+             \@level: DEBUG
         - ru.taskurotta.service.recovery.GeneralRecoveryProcessService2:
              key: name
              \@level: DEBUG

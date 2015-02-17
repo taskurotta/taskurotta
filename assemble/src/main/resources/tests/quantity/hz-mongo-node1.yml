@@ -23,7 +23,7 @@ properties:
   hz.nodes: localhost:7777, localhost:7778
   mongo.host: localhost
   mongo.port: 27017
-  schedule.job.store.dir=../../../../../target/job_store
+  schedule.job.store.dir: "../../../../../target/job_store"
 
 server:
   type: simple

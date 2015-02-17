@@ -16,14 +16,14 @@ spreader:
           endpoint: "http://localhost:8811"
 
 
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
-        properties:
-          tasksForStat: 1000
-          dropTaskDecisionEveryNTasks: 0
+#profiler:
+#  - MainProfilerConfig:
+#      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+#      instance:
+#        class: ru.taskurotta.test.stress.LifetimeProfiler
+#        properties:
+#          tasksForStat: 1000
+#          dropTaskDecisionEveryNTasks: 0
 
 actor:
   - FFDecider:
@@ -50,7 +50,7 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: ../../../../../target/ff-hz-mongo-quantity.log
+             file: ../../../../../target/logs/ff-actors-quantity.log
              append: false
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
