@@ -1,14 +1,12 @@
 package ru.taskurotta.test.stress;
 
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IExecutorService;
-import com.hazelcast.core.IMap;
+import com.hazelcast.core.*;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.monitor.LocalMapStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 import ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory;
@@ -36,18 +34,22 @@ public class ProcessPusher {
 
     public static AtomicInteger counter = new AtomicInteger(0);
 
-    // per second
+    //with default finished processes counter, only per node
+    public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
+                         final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
+                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate){
+        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize, maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new DefaultFpCounter());
+    }
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
-                         final int maxQueuesSize, final int waitAfterDoneSeconds) {
+                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final FinishedProcessesCounter fpCounter) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
-            boolean fixedPushRate = false;
             int currentSpeedPerSecond = startSpeedPerSecond;
 //            int currentSpeedPerSecond = 10000;
             final long startTime = System.currentTimeMillis();
@@ -55,23 +57,26 @@ public class ProcessPusher {
             @Override
             public void daemonJob() {
 
+                if (!fixedPushRate) {
 
-                int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
+                    int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
 
-                // should waiting to prevent overload
-                if (!fixedPushRate && sumQueuesSize > maxQueuesSize) {
+                    // should be waiting to prevent overload
+                    if (sumQueuesSize > maxQueuesSize) {
 
-                    // go slowly
-                    currentSpeedPerSecond--;
-                    return;
+                        // go slowly
+                        currentSpeedPerSecond--;
+                        return;
+                    }
+
+
+                    if (sumQueuesSize < minQueuesSize) {
+
+                        // go faster
+                        currentSpeedPerSecond++;
+                    }
                 }
 
-
-                if (!fixedPushRate && sumQueuesSize < minQueuesSize) {
-
-                    // go faster
-                    currentSpeedPerSecond++;
-                }
 
                 int currSize = queue.size();
 
@@ -120,13 +125,13 @@ public class ProcessPusher {
 
 
         // start terminator thread
-        new DaemonThread("test terminator", TimeUnit.SECONDS, 1) {
+        new DaemonThread("test terminator", TimeUnit.SECONDS, 5) {
 
             @Override
             public void daemonJob() {
 
                 if (counter.get() >= maxProcessQuantity &&
-                        GeneralTaskServer.finishedProcessesCounter.get() >= maxProcessQuantity) {
+                        fpCounter.getFinishedCount() >= maxProcessQuantity) {
                     // stop JVM
 
                     logger.info("Done... Waiting before exit {} seconds", waitAfterDoneSeconds);
@@ -262,7 +267,7 @@ public class ProcessPusher {
                         "  started = " + startedCount +
                         "  delta = " + (pushedCount - startedCount) +
                         "  finished = " +
-                        GeneralTaskServer.finishedProcessesCounter.get() +
+                        fpCounter.getFinishedCount() +
                         "  broken = " +
                         GeneralTaskServer.brokenProcessesCounter.get());
 
@@ -306,6 +311,16 @@ public class ProcessPusher {
 
     public static String bytesToMb(long bytes) {
         return new Formatter().format("%6.2f", ((double) bytes / 1024 / 1024)).toString();
+    }
+
+
+    public static void main(String[] args) {
+        if (args.length == 0) {
+            System.out.println("Usage: ru.taskurotta.test.stress.ProcessPusher <spring context XML location>");
+        } else {
+            AbstractApplicationContext ctx = new ClassPathXmlApplicationContext(args);
+            logger.info("Pusher application context created");
+        }
     }
 
 }
