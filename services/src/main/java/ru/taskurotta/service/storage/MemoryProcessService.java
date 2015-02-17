@@ -56,8 +56,17 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
 
     @Override
     public void markProcessAsBroken(UUID processId) {
+        setProcessState(processId, Process.BROKEN);
+    }
+
+    @Override
+    public void markProcessAsStarted(UUID processId) {
+        setProcessState(processId, Process.START);
+    }
+
+    public void setProcessState(UUID processId, int state) {
         Process process = processesStorage.get(processId);
-        process.setState(Process.BROKEN);
+        process.setState(state);
         processesStorage.put(processId, process);
     }
 

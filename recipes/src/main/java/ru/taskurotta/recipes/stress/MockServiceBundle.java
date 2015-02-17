@@ -87,6 +87,11 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
+            public void markProcessAsStarted(UUID processId) {
+
+            }
+
+            @Override
             public ru.taskurotta.service.console.model.Process getProcess(UUID processUUID) {
                 return null;
             }

@@ -10,6 +10,7 @@ import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.policy.PolicyConstants;
+import ru.taskurotta.test.fullfeature.RuntimeExceptionHolder;
 import ru.taskurotta.test.fullfeature.worker.FullFeatureWorkerClient;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Override
     public void start() {
+        RuntimeExceptionHolder.beOrNotToBe();
 
         double[] data = {2, 3, 4, 5};
 
@@ -48,17 +50,19 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Double> step1(Promise<Double> p1, @NoWait Promise<Double> p2) {
+        RuntimeExceptionHolder.beOrNotToBe();
 
         return async.step2(p1.get(), p2);
     }
 
     @Asynchronous
     public Promise<Double> step2(double p1, Promise<Double> p2) {
+        RuntimeExceptionHolder.beOrNotToBe();
 
         RetryPolicyConfig retryPolicyConfig = new RetryPolicyConfig();
         retryPolicyConfig.setMaximumAttempts(3);
-        retryPolicyConfig.setInitialRetryIntervalSeconds(5);
-        retryPolicyConfig.setMaximumRetryIntervalSeconds(15);
+        retryPolicyConfig.setInitialRetryIntervalSeconds(1);
+        retryPolicyConfig.setMaximumRetryIntervalSeconds(3);
         retryPolicyConfig.setRetryExpirationIntervalSeconds(PolicyConstants.NONE);
         retryPolicyConfig.setType(RetryPolicyConfig.RetryPolicyType.LINEAR);
         retryPolicyConfig.addExceptionToExclude(java.lang.IllegalArgumentException.class);
@@ -70,6 +74,7 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Double> step3(Promise<Double> arg, Promise<Double> answer) {
+        RuntimeExceptionHolder.beOrNotToBe();
 
         try {
             Double v = answer.get();
@@ -81,6 +86,8 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Double> step4(@Wait List<Promise<Double>> data) {
+        RuntimeExceptionHolder.beOrNotToBe();
+
         double result = 0;
         for (Promise<Double> val : data) {
             result += val.get();
@@ -90,6 +97,8 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public Promise<Boolean> isResultOk(double[] d, Promise<Double> result) {
+        RuntimeExceptionHolder.beOrNotToBe();
+
         double val = Math.sqrt(d[0] * d[0] + d[1] * d[1]) + Math.sqrt(d[2] * d[2] + d[3] * d[3]);
         boolean resultOk = val - result.get() < 1e-6;
         return Promise.asPromise(resultOk);
@@ -97,6 +106,8 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
 
     @Asynchronous
     public void logResult(Promise<Boolean> result) {
+        RuntimeExceptionHolder.beOrNotToBe();
+
         log.debug("is process correct: {}", result.get());
     }
 
@@ -108,4 +119,6 @@ public class FullFeatureDeciderImpl implements FullFeatureDecider {
     public void setWorker(FullFeatureWorkerClient worker) {
         this.worker = worker;
     }
+
+
 }

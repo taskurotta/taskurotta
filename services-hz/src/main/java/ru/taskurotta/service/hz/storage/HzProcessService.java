@@ -79,6 +79,15 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public void markProcessAsBroken(UUID processId) {
+        setProcessState(processId, Process.BROKEN);
+    }
+
+    @Override
+    public void markProcessAsStarted(UUID processId) {
+        setProcessState(processId, Process.START);
+    }
+
+    private void setProcessState(UUID processId, int state) {
         Process process = getProcess(processId);
 
         if (process == null) {
@@ -86,7 +95,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
             return;
         }
 
-        process.setState(Process.BROKEN);
+        process.setState(state);
         processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
 

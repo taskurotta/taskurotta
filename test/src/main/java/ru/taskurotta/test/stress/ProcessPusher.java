@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProcessPusher {
 
-    private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
+    private final static Logger logger = LoggerFactory.getLogger(ProcessPusher.class);
 
     public static AtomicInteger counter = new AtomicInteger(0);
 
@@ -49,7 +49,7 @@ public class ProcessPusher {
 
             boolean fixedPushRate = false;
             int currentSpeedPerSecond = startSpeedPerSecond;
-//            int currentSpeedPerSecond = 10000;
+            //            int currentSpeedPerSecond = 10000;
             final long startTime = System.currentTimeMillis();
 
             @Override
@@ -82,7 +82,7 @@ public class ProcessPusher {
                     int needToPush = actualSpeed - currSize;
 
                     logger.info("Speed pps: planned {}, actual {}. start new {}", actualSpeed,
-                            (int) (1D* counter.get() / ((System.currentTimeMillis() - startTime) / 1000)), needToPush);
+                            (int) (1D * counter.get() / ((System.currentTimeMillis() - startTime) / 1000)), needToPush);
 
                     double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
@@ -264,7 +264,8 @@ public class ProcessPusher {
                         "  finished = " +
                         GeneralTaskServer.finishedProcessesCounter.get() +
                         "  broken = " +
-                        GeneralTaskServer.brokenProcessesCounter.get());
+                        GeneralTaskServer.brokenProcessesCounter.get() +
+                        "  resurrected = " + GeneralRecoveryProcessService.resurrectedProcessesCounter.get());
 
                 sb.append("\n processesOnTimeout = " +
                         DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +

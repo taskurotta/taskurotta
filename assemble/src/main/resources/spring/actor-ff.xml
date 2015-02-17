@@ -30,4 +30,10 @@
         <constructor-arg name="waitAfterDoneSeconds" value="${test.ff.waitAfterDoneSeconds}"/>
     </bean>
 
+
+    <bean id="processResurrectionThread" class="ru.taskurotta.test.stress.AutoResurrectService">
+        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
+    </bean>
+
 </beans>

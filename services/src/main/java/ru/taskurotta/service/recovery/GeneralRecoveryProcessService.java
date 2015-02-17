@@ -36,6 +36,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     public static AtomicInteger restartedProcessesCounter = new AtomicInteger();
     public static AtomicInteger restartedTasksCounter = new AtomicInteger();
+    public static AtomicInteger resurrectedProcessesCounter = new AtomicInteger();
 
     private QueueService queueService;
     private DependencyService dependencyService;
@@ -64,15 +65,58 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
     }
 
-//    @Override
+    //    @Override
     public boolean restartBrokenTasks(final UUID processId) {
 
-        return false;
+        boolean result = false;
+
+        Graph graph = dependencyService.getGraph(processId);
+
+        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, true);
+
+        brokenProcessService.delete(processId);
+        processService.markProcessAsStarted(processId);
+
+        for (Map.Entry<UUID, Long> entry : allReadyTaskIds.entrySet()) {
+
+            UUID taskId = entry.getKey();
+            DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
+
+            if (!taskDecision.containsError()) {
+                continue;
+            }
+
+            TaskContainer taskContainer = taskService.getTask(taskId, processId);
+
+            queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
+                    (taskContainer));
+
+            result = true;
+        }
+
+        if (result) {
+            resurrectedProcessesCounter.incrementAndGet();
+        }
+
+        return result;
     }
+
 
     @Override
     public boolean resurrect(final UUID processId) {
         logger.trace("#[{}]: try to restart process", processId);
+
+
+        // check Broken process
+        Process process = processService.getProcess(processId);
+        if (process.getState() == Process.BROKEN) {
+            if (restartBrokenTasks(processId)) {
+                return true;
+            }
+
+            // else try to resurrect process in general way
+        }
+
 
         // val=true if some tasks have been placed to queue
         boolean result = false;
@@ -90,7 +134,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             // process is already finished => just mark process as finished
 
             // check if Process is finished because Graph are marked as finished before Process
-            ru.taskurotta.service.console.model.Process process = processService.getProcess(graph.getGraphId());
 
             if (process.getState() == Process.FINISH) {
                 logger.debug("#[{}]: is finished, just skip it", processId);
@@ -138,9 +181,6 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                         restartedTasksCounter.addAndGet(restartResult);
 
                         boolContainer[0] = restartResult > 0;
-
-                        // todo: is it really needed?
-                        brokenProcessService.delete(processId);
 
                         return true;
                     }
@@ -288,6 +328,33 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         return result;
     }
 
+    private Map<UUID, Long> getAllReadyTaskIds(final Graph graph, final boolean touchGraph) {
+
+        final Map<UUID, Long> allReadyTaskIds = new HashMap<>();
+
+        dependencyService.changeGraph(new GraphDao.Updater() {
+            @Override
+            public UUID getProcessId() {
+                return graph.getGraphId();
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+
+                allReadyTaskIds.putAll(graph.getAllReadyItems());
+
+                if (touchGraph) {
+                    graph.setTouchTimeMillis(System.currentTimeMillis());
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
+        return allReadyTaskIds;
+    }
+
     private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
 
         if (graph == null) {
@@ -298,32 +365,15 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
         logger.trace("#[{}]: try to find incomplete tasks", processId);
 
-        final Map<UUID, Long> notFinishedItems = new HashMap<>();
-
-        dependencyService.changeGraph(new GraphDao.Updater() {
-            @Override
-            public UUID getProcessId() {
-                return processId;
-            }
-
-            @Override
-            public boolean apply(Graph graph) {
-
-                // todo:should create new method on Graph with Set<UUID> return type
-                // Set is enough for this needs
-                notFinishedItems.putAll(graph.getAllReadyItems());
-
-                return false;
-            }
-        });
+        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, false);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("#[{}]: found [{}] not finished taskIds", processId, notFinishedItems.size());
+            logger.debug("#[{}]: found [{}] not finished taskIds", processId, allReadyTaskIds.size());
         }
 
-        Collection<TaskContainer> taskContainers = new ArrayList<>(notFinishedItems.size());
+        Collection<TaskContainer> taskContainers = new ArrayList<>(allReadyTaskIds.size());
 
-        Set<UUID> keys = notFinishedItems.keySet();
+        Set<UUID> keys = allReadyTaskIds.keySet();
         for (UUID taskId : keys) {
 
             TaskContainer taskContainer = taskService.getTask(taskId, processId);

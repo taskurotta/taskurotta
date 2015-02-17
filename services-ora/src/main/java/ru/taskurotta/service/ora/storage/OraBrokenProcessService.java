@@ -14,8 +14,8 @@ import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.exception.ServiceCriticalException;
 import ru.taskurotta.service.console.model.BrokenProcess;
-import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.storage.BrokenProcessService;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -68,7 +68,7 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
     };
 
     @Override
-    public void save (final BrokenProcess brokenProcess) {
+    public void save(final BrokenProcess brokenProcess) {
 
         try {
             Long id = getJdbcTemplate().execute(SQL_CREATE_BROKEN_PROCESS,
@@ -96,7 +96,7 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
 
             logger.debug("Created BrokenProcess entry with key[{}]", id);
         } catch (DataAccessException e) {
-            String errMessage = "Cannot create BrokenProcess entry["+ brokenProcess +"]";
+            String errMessage = "Cannot create BrokenProcess entry[" + brokenProcess + "]";
             logger.error(errMessage, e);
             throw new ServiceCriticalException(errMessage);
         }
@@ -109,37 +109,37 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
         StringBuilder sb = new StringBuilder(SQL_LIST_ALL);
         boolean first = true;
         if (StringUtils.hasText(searchCommand.getStartActorId())) {
-            sb.append((first? " WHERE ":" AND ")).append("START_ACTOR_ID LIKE ? ");
+            sb.append((first ? " WHERE " : " AND ")).append("START_ACTOR_ID LIKE ? ");
             parameters.add(searchCommand.getStartActorId() + "%");
             first = false;
         }
 
         if (StringUtils.hasText(searchCommand.getBrokenActorId())) {
-            sb.append((first? " WHERE ":" AND ")).append("BROKEN_ACTOR_ID LIKE ? ");
+            sb.append((first ? " WHERE " : " AND ")).append("BROKEN_ACTOR_ID LIKE ? ");
             parameters.add(searchCommand.getBrokenActorId() + "%");
             first = false;
         }
 
         if (StringUtils.hasText(searchCommand.getErrorClassName())) {
-            sb.append((first? " WHERE ":" AND ")).append("ERROR_CLASS_NAME LIKE ? ");
+            sb.append((first ? " WHERE " : " AND ")).append("ERROR_CLASS_NAME LIKE ? ");
             parameters.add(searchCommand.getErrorClassName() + "%");
             first = false;
         }
 
         if (StringUtils.hasText(searchCommand.getErrorMessage())) {
-            sb.append((first? " WHERE ":" AND ")).append("ERROR_MESSAGE LIKE ? ");
+            sb.append((first ? " WHERE " : " AND ")).append("ERROR_MESSAGE LIKE ? ");
             parameters.add(searchCommand.getErrorMessage() + "%");
             first = false;
         }
 
-        if (searchCommand.getEndPeriod()>0) {
-            sb.append((first? " WHERE ":" AND ")).append("TIME < ? ");
+        if (searchCommand.getEndPeriod() > 0) {
+            sb.append((first ? " WHERE " : " AND ")).append("TIME < ? ");
             parameters.add(searchCommand.getEndPeriod());
             first = false;
         }
 
-        if (searchCommand.getStartPeriod()>0) {
-            sb.append((first? " WHERE ":" AND ")).append("TIME > ? ");
+        if (searchCommand.getStartPeriod() > 0) {
+            sb.append((first ? " WHERE " : " AND ")).append("TIME > ? ");
             parameters.add(searchCommand.getStartPeriod());
             first = false;
         }
@@ -149,12 +149,12 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
         long startTime = System.currentTimeMillis();
         try {
             result = getJdbcTemplate().query(searchSql, parameters.toArray(), brokenProcessRowMapper);
-        } catch(EmptyResultDataAccessException e) {
-           result = Collections.emptyList();
+        } catch (EmptyResultDataAccessException e) {
+            result = Collections.emptyList();
         }
 
         logger.trace("SearchSQL getted[{}], params are[{}]", searchSql, parameters);
-        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), searchCommand, (System.currentTimeMillis()-startTime));
+        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), searchCommand, (System.currentTimeMillis() - startTime));
 
         return result;
     }
@@ -164,7 +164,7 @@ public class OraBrokenProcessService extends JdbcDaoSupport implements BrokenPro
         Collection<BrokenProcess> result;
         try {
             result = getJdbcTemplate().query(SQL_LIST_ALL, brokenProcessRowMapper);
-        } catch(EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             result = Collections.emptyList();//nothing found
         }
 

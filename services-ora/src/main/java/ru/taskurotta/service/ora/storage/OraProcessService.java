@@ -138,12 +138,21 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public void markProcessAsBroken(UUID processId) {
-        log.trace("Try to mark process [{}] as broken([{}])", processId, Process.BROKEN);
+        setProcessState(processId, Process.BROKEN);
+    }
+
+    @Override
+    public void markProcessAsStarted(UUID processId) {
+        setProcessState(processId, Process.START);
+    }
+
+    private void setProcessState(UUID processId, int state) {
+        log.trace("Try to mark process [{}] state as ([{}])", processId, state);
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS set STATE = ? WHERE PROCESS_ID = ?")) {
 
-            ps.setInt(1, Process.BROKEN);
+            ps.setInt(1, state);
             ps.setString(2, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
@@ -151,7 +160,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             throw new ServiceCriticalException("Database error", ex);
         }
 
-        log.debug("Process [{}] marked as broken([{}])", processId, Process.BROKEN);
+        log.debug("Process [{}] state marked as ([{}])", processId, state);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.UUID;
@@ -21,5 +22,7 @@ public interface ProcessService {
 
     public void markProcessAsBroken(UUID processId);
 
-    public ru.taskurotta.service.console.model.Process getProcess(UUID processUUID);
+    public void markProcessAsStarted(UUID processId);
+
+    public Process getProcess(UUID processUUID);
 }

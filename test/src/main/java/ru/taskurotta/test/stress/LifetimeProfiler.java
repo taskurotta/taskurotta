@@ -11,6 +11,7 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.test.fullfeature.RuntimeExceptionHolder;
 
 import java.util.Properties;
 import java.util.Set;
@@ -26,6 +27,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
 
     private final static String DROP_TASK_DECISION_EVERY_N_TASKS = "dropTaskDecisionEveryNTasks";
+    private final static String BREAK_PROCESS_EVERY_N_TASKS = "breakProcessEveryNTasks";
     private final static String TASKS_FOR_STAT = "tasksForStat";
 
 
@@ -36,6 +38,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     public static int tasksForStat = 1000;
     public static int dropTaskDecisionEveryNTasks = 0;
+    public static int breakProcessEveryNTasks = 0;
 
     private boolean isFirstPoll = true;
     private AtomicInteger nullPoll = new AtomicInteger(0);
@@ -55,6 +58,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             dropTaskDecisionEveryNTasks = Integer.valueOf((String) properties.getProperty(DROP_TASK_DECISION_EVERY_N_TASKS));
         }
 
+        if (properties.containsKey(BREAK_PROCESS_EVERY_N_TASKS)) {
+            breakProcessEveryNTasks = Integer.valueOf((String) properties.getProperty(BREAK_PROCESS_EVERY_N_TASKS));
+        }
     }
 
 
@@ -67,10 +73,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
         final HazelcastInstance hazelcastInstance = allHazelcastInstances.size() == 1 ?
                 (HazelcastInstance) Hazelcast.getAllHazelcastInstances().toArray()[0] : null;
-
-//        if (hazelcastInstance != null && isReady.compareAndSet(false, true)) {
-//            new ProcessPusher(hazelcastInstance, maxProcessQuantity, 50, 10, 4000, 8000);
-//        }
 
 
         return new TaskSpreader() {
@@ -90,17 +92,10 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 long count = taskCount.incrementAndGet();
 
-                // if server not in the same jvm
-                if (hazelcastInstance == null) {
-
-                    if (task.getTarget().getName().equals(ru.taskurotta.test.fullfeature.decider.FullFeatureDecider.class
-                            .getName()) &&
-                            task.getTarget().getMethod().equals("logResult")) {
-
-                        StressTaskCreator.sendOneTask();
-                    }
+                // set exception for actor
+                if (breakProcessEveryNTasks > 0 && count % breakProcessEveryNTasks == 0) {
+                    RuntimeExceptionHolder.exceptionToThrow.set(new NullPointerException("Bad day...."));
                 }
-
 
                 if (isFirstPoll) {
                     long current = System.currentTimeMillis();
@@ -132,6 +127,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 }
 
                 taskSpreader.release(taskDecision);
+
+                // clean thread local container
+                RuntimeExceptionHolder.exceptionToThrow.set(null);
             }
         };
     }
