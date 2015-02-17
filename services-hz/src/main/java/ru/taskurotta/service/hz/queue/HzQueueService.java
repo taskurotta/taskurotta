@@ -287,7 +287,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     @Override
     public String createQueueName(String actorId, String taskList) {
         return TransportUtils.createQueueName(actorId, taskList, queueNamePrefix);
-//        StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
+//        StringBuilder result = new StringBuilder(queueNamePrefix != null? queueNamePrefix : "");
 //
 //        result.append(actorId);
 //        if (taskList != null) {

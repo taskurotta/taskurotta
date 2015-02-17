@@ -218,7 +218,7 @@ public class ArgContainer implements Cloneable, Serializable {
     }
 
     public boolean containsError() {
-        return null != errorContainer;
+        return errorContainer != null;
     }
 
     @Override

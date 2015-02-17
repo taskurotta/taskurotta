@@ -59,7 +59,7 @@ public class QueueService implements ManagedService, RemoteService, MigrationAwa
      */
     public static final String SERVICE_NAME = CachedQueue.class.getName();
 
-    private final EntryTaskScheduler queueEvictionScheduler;
+    private final EntryTaskScheduler queueResizingScheduler;
     private final NodeEngine nodeEngine;
     private final ConcurrentMap<String, QueueContainer> containerMap
             = new ConcurrentHashMap<String, QueueContainer>();
@@ -83,7 +83,7 @@ public class QueueService implements ManagedService, RemoteService, MigrationAwa
         ScheduledExecutorService defaultScheduledExecutor
                 = nodeEngine.getExecutionService().getDefaultScheduledExecutor();
         QueueEvictionProcessor entryProcessor = new QueueEvictionProcessor(nodeEngine, this);
-        this.queueEvictionScheduler = EntryTaskSchedulerFactory.newScheduler(
+        this.queueResizingScheduler = EntryTaskSchedulerFactory.newScheduler(
                 defaultScheduledExecutor, entryProcessor, ScheduleType.POSTPONE);
         this.logger = nodeEngine.getLogger(QueueService.class);
 
@@ -94,12 +94,12 @@ public class QueueService implements ManagedService, RemoteService, MigrationAwa
         return sizeAdviser;
     }
 
-    public void scheduleEviction(String name, long delay) {
-        queueEvictionScheduler.schedule(delay, name, null);
+    public void scheduleResizing(String name, long delay) {
+        queueResizingScheduler.schedule(delay, name, null);
     }
 
     public void cancelEviction(String name) {
-        queueEvictionScheduler.cancel(name);
+        queueResizingScheduler.cancel(name);
     }
 
     @Override

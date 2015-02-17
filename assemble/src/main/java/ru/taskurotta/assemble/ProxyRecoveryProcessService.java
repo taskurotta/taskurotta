@@ -17,8 +17,8 @@ public class ProxyRecoveryProcessService implements RecoveryProcessService {
     }
 
     @Override
-    public boolean restartProcess(UUID processId) {
-        return target.restartProcess(processId);
+    public boolean resurrect(UUID processId) {
+        return target.resurrect(processId);
     }
 
     @Override

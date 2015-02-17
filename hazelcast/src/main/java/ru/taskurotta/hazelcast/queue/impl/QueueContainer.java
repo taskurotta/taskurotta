@@ -273,10 +273,8 @@ public class QueueContainer {
         } else {
             bufferClosed = false;
         }
-        // todo: may be we should close buffer after loading?
-        //resizeBuffer();
 
-        scheduleEvictionIfEmpty();
+        scheduleResizing();
     }
 
     long nextId() {
@@ -288,12 +286,12 @@ public class QueueContainer {
     }
 
 
-    private void scheduleEvictionIfEmpty() {
-        service.scheduleEviction(name, 5000);
+    private void scheduleResizing() {
+        service.scheduleResizing(name, 5000);
     }
 
     public boolean isEvictable() {
-        service.scheduleEviction(name, 5000);
+        service.scheduleResizing(name, 5000);
 
         resizeBuffer(sizeAdviser.getRecommendedSize(name));
         return false;

@@ -276,7 +276,7 @@ public class ObjectFactory {
 
         TaskConfigContainer optionsContainer = null;
         TaskConfig taskConfig = taskOptions.getTaskConfig();
-        if (null != taskConfig) {
+        if (taskConfig != null) {
             optionsContainer = new TaskConfigContainer();
             optionsContainer.setStartTime(taskConfig.getStartTime());
             optionsContainer.setCustomId(taskConfig.getCustomId());
@@ -297,7 +297,7 @@ public class ObjectFactory {
 
         ArgContainer promisesWaitForDumped[] = null;
         Promise<?>[] promisesWaitFor = taskOptions.getPromisesWaitFor();
-        if (null != promisesWaitFor) {
+        if (promisesWaitFor != null) {
             promisesWaitForDumped = new ArgContainer[promisesWaitFor.length];
             for (int i = 0; i < promisesWaitFor.length; i++) {
                 promisesWaitForDumped[i] = dumpArg(promisesWaitFor[i]);

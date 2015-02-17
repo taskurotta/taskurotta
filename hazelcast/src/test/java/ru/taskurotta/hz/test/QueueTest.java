@@ -82,7 +82,7 @@ public class QueueTest {
         long start = System.currentTimeMillis();
 
         int count = 0;
-        while (null != testQueue.poll()) {
+        while (testQueue.poll() != null) {
             count ++;
         }
 
