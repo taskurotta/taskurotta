@@ -1,0 +1,72 @@
+#Location of Spring application context:
+#Hazelcast without mongo mapstore
+contextLocation: "classpath*:spring/hz-mongo.xml"
+
+#Used for static resource serving in development mode
+assets:
+  overrides:
+    /: ../dropwizard/src/main/resources/assets/
+
+#Configuration of actors served by this server:
+actorConfig:
+  actorPreferences:
+    - id: "default"
+
+#Task server common properties (will be available as placeholders in spring context):
+properties:
+  pollDelay: 10
+  pollDelayUnit: "SECONDS"
+  hz.mancenter.enabled: false
+  hz.jmx.detailed: true
+  hz.jmx: true
+  hz.port: 7778
+  hz.nodes: localhost:7777, localhost:7778
+  mongo.host: localhost
+  mongo.port: 27017
+  schedule.job.store.dir: "../../../../../target/job_store"
+
+server:
+  type: simple
+  applicationContextPath: /
+  adminContextPath: /admin
+  connector:
+    type: http
+    port: 8821
+  requestLog:
+    timeZone: UTC
+    appenders:
+    - type: file
+      currentLogFilename: "../../../../../target/logs/access2.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "../../../../../target/logs/access2-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+
+#Http server configuration:
+logging:
+    level: INFO
+    loggers:
+        com.hazelcast: INFO
+        com.yammer: INFO
+        ru.taskurotta: INFO
+    appenders:
+    - type: file
+      currentLogFilename: "../../../../../target/logs/node2.log"
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: "../../../../../target/logs/node2-%d.log.gz"
+      archivedFileCount: 5
+      timeZone: UTC
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+      logFormat: "%-4r %d [%t] %-5p %c - %m%n"

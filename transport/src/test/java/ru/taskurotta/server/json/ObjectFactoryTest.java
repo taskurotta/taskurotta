@@ -6,10 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.core.TaskConfig;
-import ru.taskurotta.core.Promise;
-import ru.taskurotta.core.Task;
-import ru.taskurotta.core.TaskOptions;
+import ru.taskurotta.core.*;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.test.TestTasks;
@@ -19,13 +16,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * User: romario
@@ -46,6 +37,20 @@ public class ObjectFactoryTest {
     public void argContainerBoolean() {
         Boolean arg = Boolean.FALSE;
         testInternal(arg);
+    }
+
+    @Test
+    public void argContainerPromiseWithFail() {
+        Fail fail = new Fail(IllegalArgumentException.class.getName(), "Test error text");
+        Promise failedPromiseValue = Promise.asPromise(null);
+        ArgContainer argContainer = objectFactory.dumpArg(failedPromiseValue);
+        argContainer.setErrorContainer(objectFactory.dumpError(fail));
+        //argContainer.setValueType(ArgContainer.ValueType.PLAIN);
+        log.info("Straight failPromise[{}]", argContainer);
+
+        Object v = objectFactory.parseArg(argContainer);
+        Assert.assertEquals(v, failedPromiseValue);
+
     }
 
     @Test

@@ -5,6 +5,7 @@ import org.bson.io.BasicOutputBuffer;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.core.Promise;
 import ru.taskurotta.core.RetryPolicyConfig;
 import ru.taskurotta.hz.test.serialization.SerializationTest;
 import ru.taskurotta.internal.core.ArgType;
@@ -14,19 +15,11 @@ import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.mongodb.driver.impl.BDecoder;
 import ru.taskurotta.mongodb.driver.impl.BEncoder;
+import ru.taskurotta.server.json.ObjectFactory;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.links.Graph;
-import ru.taskurotta.service.hz.serialization.bson.DecisionContainerBSerializer;
-import ru.taskurotta.service.hz.serialization.bson.GraphBSerializer;
-import ru.taskurotta.service.hz.serialization.bson.ProcessBSerializer;
-import ru.taskurotta.service.hz.serialization.bson.TaskContainerBSerializer;
-import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
-import ru.taskurotta.transport.model.TaskConfigContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.service.hz.serialization.bson.*;
+import ru.taskurotta.transport.model.*;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -41,6 +34,16 @@ public class BsonSerializationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(BsonSerializationTest.class);
 
+    ObjectFactory factory = new ObjectFactory();
+
+    @Test
+    public void testPromiseWithFailSerialization() throws Exception {
+        ArgContainer argContainer = factory.dumpArg(Promise.asPromise(null));
+        argContainer.setErrorContainer(factory.dumpError(new IllegalArgumentException("test exception")));
+        int bytesLength = testBSerializer(new ArgContainerBSerializer(), argContainer);
+
+        logger.debug("ArgContainer size is {}", bytesLength);
+    }
 
     @Test
     public void testTaskContainer() throws Exception {

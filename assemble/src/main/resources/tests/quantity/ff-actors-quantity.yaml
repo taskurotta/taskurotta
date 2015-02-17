@@ -8,44 +8,22 @@ spreader:
   - MainTaskSpreaderConfig:
       class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
       instance:
-        contexts:
-          - classpath:spring/hz-mongo.xml
-          - classpath:spring/actor-ff.xml
-        defaultPropertiesLocation: default.properties
+        context: classpath:tests/quantity/ff-actor-spreader.xml
         properties:
-          server.poll-delay: 1 seconds
-          hz.nodes: localhost:7777
-          hz.jmx.detailed: true
-          hz.jmx: true
-          mongo.host: localhost
-          mongo.port: 27017
-          gc.enabled: false
-          gc.pool-size: 8
-          gc.time-before-delete: 20 seconds
-          recovery.enabled: false
-          recovery.process.incomplete-timeout: 30 seconds
-          recovery.find-incomplete-process-period: 5 seconds
-          recovery.process.change-timeout: 30 seconds
-          hz.queue.task.batch-load-size: 10000
-          hz.queue.delay.batch-load-size: 10000
-          taskurotta.memory.auto: true
-          taskurotta.memory.config: k:48Mb f:70% (p:20 g:20 gd:20 t:20 td:20 q:1)
-          test.ff.maxProcessQuantity: 2000
-          test.ff.startSpeedPerSecond: 50
-          test.ff.threadCount: 10
-          test.ff.minQueuesSize: 3000
-          test.ff.maxQueuesSize: 5000
-          test.ff.waitAfterDoneSeconds: 30
+          connectTimeout: 5000
+          readTimeout: 0
+          threadPoolSize: 50
+          endpoint: "http://localhost:8811"
 
 
-profiler:
-  - MainProfilerConfig:
-      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
-      instance:
-        class: ru.taskurotta.test.stress.LifetimeProfiler
-        properties:
-          tasksForStat: 1000
-          dropTaskDecisionEveryNTasks: 0
+#profiler:
+#  - MainProfilerConfig:
+#      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+#      instance:
+#        class: ru.taskurotta.test.stress.LifetimeProfiler
+#        properties:
+#          tasksForStat: 1000
+#          dropTaskDecisionEveryNTasks: 0
 
 actor:
   - FFDecider:
@@ -72,15 +50,12 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.FileAppender
-             file: logs/ff-hz-mongo-quantity.log
+             file: ../../../../../target/logs/ff-actors-quantity.log
              append: false
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
         - ru.taskurotta.service.hz.dependency.HzGraphDao2:
-             key: name
-             \@level: DEBUG
-        - ru.taskurotta.server.json.ObjectFactory:
              key: name
              \@level: DEBUG
         - ru.taskurotta.service.recovery.GeneralRecoveryProcessService2:
@@ -116,4 +91,3 @@ logback:
                 key: ref
             - FILE:
                 key: ref
-

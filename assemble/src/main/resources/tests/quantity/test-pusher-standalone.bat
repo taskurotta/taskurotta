@@ -1,0 +1,1 @@
+start java -Xmx64m -Xms64m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=target -Dlogback.configurationFile=pusher-log.xml -cp ../../../../../target/assemble-0.8.0-SNAPSHOT.jar ru.taskurotta.test.stress.ProcessPusher classpath:tests/quantity/pusher-ff-standalone.xml

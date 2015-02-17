@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:tests/quantity/pusher.properties"/>
+    <context:annotation-config/>
+
+    <bean id="processStarter" class="ru.taskurotta.test.stress.process.FullFeatureStarter">
+        <constructor-arg name="clientServiceManager" ref="clientServiceManager"/>
+    </bean>
+
+    <bean id="processPusher" class="ru.taskurotta.test.stress.ProcessPusher">
+        <constructor-arg name="starter" ref="processStarter" />
+        <constructor-arg name="hazelcastInstance">
+            <bean factory-bean="hzClientProvider" factory-method="provideClient"/>
+        </constructor-arg>
+        <constructor-arg name="maxProcessQuantity" value="${test.ff.maxProcessQuantity}"/>
+        <constructor-arg name="startSpeedPerSecond" value="${test.ff.startSpeedPerSecond}"/>
+        <constructor-arg name="threadCount" value="${test.ff.threadCount}"/>
+        <constructor-arg name="minQueuesSize" value="${test.ff.minQueuesSize}"/>
+        <constructor-arg name="maxQueuesSize" value="${test.ff.maxQueuesSize}"/>
+        <constructor-arg name="waitAfterDoneSeconds" value="${test.ff.waitAfterDoneSeconds}"/>
+        <constructor-arg name="fixedPushRate" value="${test.ff.fixedPushRate}" />
+        <constructor-arg name="fpCounter" ref="fpCounter"/>
+
+    </bean>
+
+    <!-- Jersey native ws client. Uses new thread for each connection -->
+    <bean id = "taskServer" class="ru.taskurotta.client.jersey.JerseyTaskServerProxy" >
+        <property name="connectTimeout" value="3000" />
+        <property name="readTimeout" value = "0" />
+        <property name="threadPoolSize" value = "10" />
+        <property name="endpoint" value = "${tsk.endpoint}" />
+    </bean>
+
+    <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
+        <constructor-arg name="taskServer" ref="taskServer"/>
+    </bean>
+
+    <bean id="fpCounter" class="ru.taskurotta.test.stress.mongo.MongoFpCounter" init-method="init">
+        <property name="collectionName" value="Process"/>
+        <property name="mongoTemplate" ref="mongoTemplate"/>
+    </bean>
+
+    <bean id="hzClientProvider" class="ru.taskurotta.test.stress.HazelcastClientProvider">
+        <constructor-arg value="${hz.nodes}" />
+    </bean>
+
+    <!-- Mongo -->
+    <bean id="writeConcern" class="com.mongodb.WriteConcern">
+        <constructor-arg name="w" value="${mongo.options.write-concern.w}"/>
+        <constructor-arg name="wtimeout" value="${mongo.options.write-concern.wtimeout}"/>
+        <constructor-arg name="fsync" value="${mongo.options.write-concern.fsync}"/>
+        <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
+    </bean>
+
+    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder"/>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="minConnectionsPerHost">
+        <constructor-arg value="${mongo.options.min-connections-per-host}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectionsPerHost">
+        <constructor-arg value="${mongo.options.connections-per-host}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="threadsAllowedToBlockForConnectionMultiplier">
+        <constructor-arg value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxWaitTime">
+        <constructor-arg value="${mongo.options.max-wait-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionIdleTime">
+        <constructor-arg value="${mongo.options.max-connection-idle-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionLifeTime">
+        <constructor-arg value="${mongo.options.max-connection-life-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectTimeout">
+        <constructor-arg value="${mongo.options.connect-timeout}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketTimeout">
+        <constructor-arg value="${mongo.options.socket-timeout}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketKeepAlive">
+        <constructor-arg value="${mongo.options.socket-keep-alive}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="writeConcern">
+        <constructor-arg ref="writeConcern"/>
+    </bean>
+
+    <bean id="mongo" class="com.mongodb.MongoClient">
+        <constructor-arg name="addr">
+            <bean class="com.mongodb.ServerAddress">
+                <constructor-arg name="host" value="${mongo.host}"/>
+                <constructor-arg name="port" value="${mongo.port}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="options">
+            <bean factory-bean="mongoClientOptionsBuilder" factory-method="build"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+        <constructor-arg ref="mongo"/>
+        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
+    </bean>
+    <!-- /Mongo -->
+
+</beans>

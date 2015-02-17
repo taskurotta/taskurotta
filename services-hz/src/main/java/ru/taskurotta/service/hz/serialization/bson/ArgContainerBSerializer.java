@@ -5,6 +5,7 @@ import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
 
 import java.util.UUID;
 
@@ -85,11 +86,20 @@ public class ArgContainerBSerializer implements StreamBSerializer<ArgContainer> 
         boolean isReady = in.readBoolean(IS_READY, true);
         String value = in.readString(JSON_VALUE);
         ArgContainer.ValueType valueType = null;
-        int valueTypeInt = in.readInt(VALUE_TYPE, 0);
-        valueType = ArgContainer.ValueType.fromInt(valueTypeInt);
+        int valueTypeInt = in.readInt(VALUE_TYPE, -1);
+        if (valueTypeInt != -1) {
+            valueType = ArgContainer.ValueType.fromInt(valueTypeInt);
+        }
+        ErrorContainer errorContainer = null;
+        int errorContainerLabel = in.readObject(ERROR);
+        if (errorContainerLabel != -1) {
+            errorContainer = errorContainerBSerializer.read(in);
+            in.readObjectStop(errorContainerLabel);
+        }
         boolean promise = in.readBoolean(IS_PROMISE, false);
-
-        return new ArgContainer(dataType, valueType, taskId, isReady, promise, value);
+        ArgContainer result = new ArgContainer(dataType, valueType, taskId, isReady, promise, value);
+        result.setErrorContainer(errorContainer);
+        return result;
     }
 
     private ArgContainer compositeRead(BDataInput in, ArgContainer argContainer) {
