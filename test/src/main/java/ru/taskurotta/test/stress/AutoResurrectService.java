@@ -28,7 +28,10 @@ public class AutoResurrectService {
                 logger.debug("Find {} broken processes", allBrokenProcesses.size());
 
                 for (BrokenProcess brokenProcess: allBrokenProcesses) {
-                    operationExecutor.enqueue(new RecoveryOperation(brokenProcess.getProcessId()));
+
+                    if (brokenProcess.getErrorClassName().equals(BrokenProcessException.class.getName())) {
+                        operationExecutor.enqueue(new RecoveryOperation(brokenProcess.getProcessId()));
+                    }
                 }
             }
         }.start();

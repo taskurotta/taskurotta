@@ -19,10 +19,10 @@ spreader:
           hz.jmx: true
           mongo.host: localhost
           mongo.port: 27017
-          gc.enabled: false
+          gc.enabled: true
           gc.pool-size: 8
           gc.time-before-delete: 20 seconds
-          recovery.enabled: false
+          recovery.enabled: true
           recovery.process.incomplete-timeout: 30 seconds
           recovery.find-incomplete-process-period: 5 seconds
           recovery.process.change-timeout: 30 seconds
@@ -30,7 +30,7 @@ spreader:
           hz.queue.delay.batch-load-size: 10000
           taskurotta.memory.auto: true
           taskurotta.memory.config: k:48Mb f:70% (p:20 g:20 gd:20 t:20 td:20 q:1)
-          test.ff.maxProcessQuantity: 2000
+          test.ff.maxProcessQuantity: 50000
           test.ff.startSpeedPerSecond: 50
           test.ff.threadCount: 10
           test.ff.minQueuesSize: 3000
@@ -45,7 +45,8 @@ profiler:
         class: ru.taskurotta.test.stress.LifetimeProfiler
         properties:
           tasksForStat: 1000
-          dropTaskDecisionEveryNTasks: 0
+          dropTaskDecisionEveryNTasks: 100
+          breakProcessEveryNTasks: 100
 
 actor:
   - FFDecider:

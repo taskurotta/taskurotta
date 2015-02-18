@@ -94,7 +94,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 // set exception for actor
                 if (breakProcessEveryNTasks > 0 && count % breakProcessEveryNTasks == 0) {
-                    RuntimeExceptionHolder.exceptionToThrow.set(new NullPointerException("Bad day...."));
+                    RuntimeExceptionHolder.exceptionToThrow.set(new BrokenProcessException("Bad day...."));
                 }
 
                 if (isFirstPoll) {
