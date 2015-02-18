@@ -49,7 +49,7 @@ public class ArgContainerBSerializer implements StreamBSerializer<ArgContainer> 
         out.writeString(JSON_VALUE, object.getJSONValue());
         writeObjectIfNotNull(ERROR, object.getErrorContainer(), errorContainerBSerializer, out);
         if (object.getValueType() != null) {
-            out.writeInt(VALUE_TYPE, object.getValueType().getValue(), 0);
+            out.writeInt(VALUE_TYPE, object.getValueType().getValue());
         }
 
         out.writeBoolean(IS_PROMISE, object.isPromise(), false);

@@ -20,8 +20,6 @@ public class FullFeatureWorkerImpl implements FullFeatureWorker {
 
     @Override
     public double sqrt(double a) {
-        RuntimeExceptionHolder.beOrNotToBe();
-
         //log.info("FullFeatureWorkerImpl.sqrt({})", a);
         if (a < 0) {
 

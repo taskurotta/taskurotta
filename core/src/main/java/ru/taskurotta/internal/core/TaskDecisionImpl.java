@@ -16,28 +16,28 @@ public class TaskDecisionImpl implements TaskDecision {
 
     private UUID uuid;
     private UUID processId;
-	private Object value;
+    private Object value;
     private Task[] tasks;
     private Throwable exception;
     private boolean error;
     private long restartTime = NO_RESTART;
     private long executionTime;
 
-	public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks, long executionTime) {
+    public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks, long executionTime) {
         this.uuid = uuid;
         this.processId = processId;
         this.value = value;
         this.tasks = tasks;
         this.error = false;
         this.executionTime = executionTime;
-	}
+    }
 
     public TaskDecisionImpl(UUID uuid, UUID processId, Throwable exception, Task[] tasks) {
         this.uuid = uuid;
         this.exception = exception;
         this.processId = processId;
         this.tasks = tasks;
-        this.error = exception!=null;
+        this.error = exception != null;
     }
 
     public TaskDecisionImpl(UUID uuid, UUID processId, Throwable exception, Task[] tasks, long restartTime) {
@@ -45,7 +45,7 @@ public class TaskDecisionImpl implements TaskDecision {
         this.exception = exception;
         this.processId = processId;
         this.tasks = tasks;
-        this.error = exception!=null;
+        this.error = exception != null;
         this.restartTime = restartTime;
     }
 
