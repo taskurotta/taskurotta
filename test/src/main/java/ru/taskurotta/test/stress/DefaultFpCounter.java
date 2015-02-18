@@ -5,10 +5,10 @@ import ru.taskurotta.server.GeneralTaskServer;
 /**
  * Created on 16.02.2015.
  */
-public class DefaultFpCounter implements FinishedProcessesCounter {
+public class DefaultFpCounter implements ProcessesCounter {
 
     @Override
-    public long getFinishedCount() {
+    public long getCount() {
         return GeneralTaskServer.finishedProcessesCounter.get();
     }
 

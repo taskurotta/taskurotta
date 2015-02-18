@@ -24,6 +24,8 @@ properties:
   mongo.host: localhost
   mongo.port: 27017
   schedule.job.store.dir: "../../../../../target/job_store"
+  gc.enabled: false
+  recovery.enabled: false
 
 server:
   type: simple

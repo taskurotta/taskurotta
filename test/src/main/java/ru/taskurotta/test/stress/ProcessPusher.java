@@ -43,7 +43,7 @@ public class ProcessPusher {
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
-                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final FinishedProcessesCounter fpCounter) {
+                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final ProcessesCounter fpCounter) {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
@@ -131,7 +131,7 @@ public class ProcessPusher {
             public void daemonJob() {
 
                 if (counter.get() >= maxProcessQuantity &&
-                        fpCounter.getFinishedCount() >= maxProcessQuantity) {
+                        fpCounter.getCount() >= maxProcessQuantity) {
                     // stop JVM
 
                     logger.info("Done... Waiting before exit {} seconds", waitAfterDoneSeconds);
@@ -267,7 +267,7 @@ public class ProcessPusher {
                         "  started = " + startedCount +
                         "  delta = " + (pushedCount - startedCount) +
                         "  finished = " +
-                        fpCounter.getFinishedCount() +
+                        fpCounter.getCount() +
                         "  broken = " +
                         GeneralTaskServer.brokenProcessesCounter.get());
 
