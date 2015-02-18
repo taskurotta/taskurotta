@@ -37,6 +37,13 @@ public class BsonSerializationTest {
     ObjectFactory factory = new ObjectFactory();
 
     @Test
+    public void testArgContainer() {
+        ArgContainer argContainer = factory.dumpArg(Promise.asPromise(2d*2d));
+        int bytesLength = testBSerializer(new ArgContainerBSerializer(), argContainer);
+        logger.debug("ArgContainer size is {}", bytesLength);
+    }
+
+    @Test
     public void testPromiseWithFailSerialization() throws Exception {
         ArgContainer argContainer = factory.dumpArg(Promise.asPromise(null));
         argContainer.setErrorContainer(factory.dumpError(new IllegalArgumentException("test exception")));

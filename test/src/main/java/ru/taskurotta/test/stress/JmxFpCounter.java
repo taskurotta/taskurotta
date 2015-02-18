@@ -15,7 +15,7 @@ import java.util.concurrent.*;
 /**
  * Created on 16.02.2015.
  */
-public class JmxFpCounter implements FinishedProcessesCounter {
+public class JmxFpCounter implements ProcessesCounter {
 
     private static final Logger logger = LoggerFactory.getLogger(JmxFpCounter.class);
 
@@ -34,7 +34,7 @@ public class JmxFpCounter implements FinishedProcessesCounter {
     }
 
     @Override
-    public long getFinishedCount() {
+    public long getCount() {
         logger.info("Try to get data via JMX");
         try {
             long result = 0;
@@ -63,7 +63,7 @@ public class JmxFpCounter implements FinishedProcessesCounter {
 
         @Override
         public Long call() throws Exception {
-            return Long.valueOf(mbsc.getAttribute(new ObjectName("fpCounter"), "FinishedCount").toString());
+            return Long.valueOf(mbsc.getAttribute(new ObjectName("fpCounter"), "Count").toString());
         }
     }
 

@@ -7,12 +7,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.test.stress.ProcessesCounter;
 
 /**
- * Created on 16.02.2015.
- *
- * WARNING! GC should be disabled  for counter to work
+ * Created on 17.02.2015.
  */
-public class MongoFpCounter implements ProcessesCounter {
-
+public class MongoBpCounter implements ProcessesCounter {
     private MongoTemplate mongoTemplate;
 
     private String collectionName;
@@ -25,7 +22,7 @@ public class MongoFpCounter implements ProcessesCounter {
     @Override
     public long getCount() {
         DBCollection processCol = mongoTemplate.getCollection(collectionName);
-        return processCol.count(new BasicDBObject("state", 1));
+        return processCol.count(new BasicDBObject("state", 2));
     }
 
     @Required
@@ -37,5 +34,4 @@ public class MongoFpCounter implements ProcessesCounter {
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
-
 }

@@ -1,6 +1,6 @@
 #Location of Spring application context:
 #Hazelcast without mongo mapstore
-contextLocation: "classpath*:spring/hz-mongo.xml"
+contextLocation: "classpath*:spring/hz-ora-mongo.xml"
 
 #Used for static resource serving in development mode
 assets:
@@ -20,7 +20,10 @@ properties:
   hz.jmx.detailed: true
   hz.jmx: true
   hz.port: 7777
-  hz.nodes: localhost:7777, localhost:7778
+  hz.nodes: localhost:7777
+  oradb.url: "jdbc:oracle:thin:@dev-ora-ext.egron.net:1521:devext" #npgu_cc
+  oradb.user: ""
+  oradb.password: ""
   mongo.host: localhost
   mongo.port: 27017
   schedule.job.store.dir: "../../../../../target/job_store"
@@ -38,10 +41,10 @@ server:
     timeZone: UTC
     appenders:
     - type: file
-      currentLogFilename: "../../../../../target/logs/access1.log"
+      currentLogFilename: "../../../../../target/logs/access-ora.log"
       threshold: ALL
       archive: true
-      archivedLogFilenamePattern: "../../../../../target/logs/access1-%d.log.gz"
+      archivedLogFilenamePattern: "../../../../../target/logs/access-ora-%d.log.gz"
       archivedFileCount: 5
       timeZone: UTC
       logFormat: "%-4r %d [%t] %-5p %c - %m%n"
@@ -60,10 +63,10 @@ logging:
         ru.taskurotta: INFO
     appenders:
     - type: file
-      currentLogFilename: "../../../../../target/logs/node1.log"
+      currentLogFilename: "../../../../../target/logs/node-ora.log"
       threshold: ALL
       archive: true
-      archivedLogFilenamePattern: "../../../../../target/logs/node1-%d.log.gz"
+      archivedLogFilenamePattern: "../../../../../target/logs/node-ora-%d.log.gz"
       archivedFileCount: 5
       timeZone: UTC
       logFormat: "%-4r %d [%t] %-5p %c - %m%n"
