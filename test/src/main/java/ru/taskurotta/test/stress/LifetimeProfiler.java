@@ -144,13 +144,14 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return taskTarget.getName() + '#' + taskTarget.getVersion() + '_' + taskTarget.getMethod();
     }
 
-    private static void updateTimer(TaskTarget taskTarget, ConcurrentMap<TaskTarget, Timer> timers, long milliseconds) {
+    private static void updateTimer(String type, TaskTarget taskTarget, ConcurrentMap<TaskTarget, Timer> timers, long
+            milliseconds) {
         Timer timer = timers.get(taskTarget);
 
         if (timer == null) {
             // task type not used in metricsName. We hope there are no deciders and actors with same name and version
             // values
-            MetricName metricName = new MetricName("ActorProfiler", "execute", taskTarget.getName() + "#" + taskTarget
+            MetricName metricName = new MetricName("ActorProfiler", type, taskTarget.getName() + "#" + taskTarget
                     .getVersion(), taskTarget.getMethod());
 
             timer = Metrics.newTimer(metricName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
@@ -180,7 +181,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 try {
                     return runtimeProcessor.execute(task);
                 } finally {
-                    updateTimer(task.getTarget(), executeTimers, System.currentTimeMillis() - startTime);
+                    updateTimer("execute", task.getTarget(), executeTimers, System.currentTimeMillis() - startTime);
                 }
 
             }
@@ -213,7 +214,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 if (logProfilerSeconds > 0) {
                     final TaskTarget taskTarget = task.getTarget();
-                    updateTimer(taskTarget, pollTimers, System.currentTimeMillis() - startTime);
+                    updateTimer("poll", taskTarget, pollTimers, System.currentTimeMillis() - startTime);
                     currentTaskTarget.set(taskTarget);
                 }
 
@@ -270,7 +271,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 if (logProfilerSeconds > 0) {
                     TaskTarget taskTarget = currentTaskTarget.get();
-                    updateTimer(taskTarget, releaseTimers, System.currentTimeMillis() - startTime);
+                    updateTimer("release", taskTarget, releaseTimers, System.currentTimeMillis() - startTime);
                     currentTaskTarget.set(null);
                 }
 
