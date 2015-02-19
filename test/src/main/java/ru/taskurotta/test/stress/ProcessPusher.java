@@ -18,7 +18,7 @@ import ru.taskurotta.service.hz.queue.HzQueueService;
 import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 import ru.taskurotta.test.stress.process.Starter;
-import ru.taskurotta.test.stress.util.DaemonThread;
+import ru.taskurotta.util.DaemonThread;
 import ru.taskurotta.util.metrics.HzTaskServerMetrics;
 
 import java.util.Formatter;

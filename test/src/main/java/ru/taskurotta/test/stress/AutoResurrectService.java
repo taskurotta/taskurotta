@@ -6,7 +6,7 @@ import ru.taskurotta.service.console.model.BrokenProcess;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.test.stress.util.DaemonThread;
+import ru.taskurotta.util.DaemonThread;
 
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;

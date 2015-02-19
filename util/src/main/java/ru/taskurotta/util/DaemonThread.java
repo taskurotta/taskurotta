@@ -1,4 +1,4 @@
-package ru.taskurotta.test.stress.util;
+package ru.taskurotta.util;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
