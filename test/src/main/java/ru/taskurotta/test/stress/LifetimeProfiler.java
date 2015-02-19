@@ -212,13 +212,6 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 Task task = taskSpreader.poll();
 
-                if (task != null && logProfilerSeconds > 0) {
-                    final TaskTarget taskTarget = task.getTarget();
-                    updateTimer("poll", taskTarget, pollTimers, System.currentTimeMillis() - startTime);
-                    currentTaskTarget.set(taskTarget);
-                }
-
-
                 if (task == null) {
 
                     int localNullPoll = nullPoll.incrementAndGet();
@@ -227,6 +220,12 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         logger.error("Actors still receive empty answer [{}]", localNullPoll + 1);
                     }
                     return null;
+                }
+
+                if (logProfilerSeconds > 0) {
+                    final TaskTarget taskTarget = task.getTarget();
+                    updateTimer("poll", taskTarget, pollTimers, System.currentTimeMillis() - startTime);
+                    currentTaskTarget.set(taskTarget);
                 }
 
                 long count = taskCount.incrementAndGet();
