@@ -48,11 +48,15 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private final static String LOG_PROFILER_SECONDS = "logProfilerSeconds";
 
     private static ConcurrentMap<TaskTarget, Timer> executeTimers = new ConcurrentHashMap<TaskTarget, Timer>();
+    private static ConcurrentMap<TaskTarget, Timer> pollTimers = new ConcurrentHashMap<TaskTarget, Timer>();
+    private static ConcurrentMap<TaskTarget, Timer> releaseTimers = new ConcurrentHashMap<TaskTarget, Timer>();
+
     public static AtomicBoolean isLogProfilerStarted = new AtomicBoolean(false);
 
     public static AtomicLong taskCount = new AtomicLong(0);
-    public static AtomicLong startTime = new AtomicLong(0);
+    public static AtomicLong startTestTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
+    public static ThreadLocal<TaskTarget> currentTaskTarget = new ThreadLocal<>();
 
     private int tasksForStat = 1000;
     private int dropTaskDecisionEveryNTasks = 0;
@@ -98,18 +102,29 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     out.println("\n========= Actors execution metrics ==========");
 
-                    if (executeTimers.isEmpty()) {
+                    addMetrics("POLL", pollTimers, out);
+                    addMetrics("EXECUTE", executeTimers, out);
+                    addMetrics("RELEASE", releaseTimers, out);
+
+                    logger.info(new String(baos.toByteArray()));
+                }
+
+                private void addMetrics(String message, ConcurrentMap<TaskTarget, Timer> timers, PrintStream out) {
+
+                    out.println(message + ":");
+
+                    if (timers.isEmpty()) {
                         out.println("no actor metrics ...");
                     } else {
 
                         TreeMap<String, TaskTarget> orderedTaskTargets = new TreeMap<>();
-                        for (TaskTarget taskTarget: executeTimers.keySet()) {
+                        for (TaskTarget taskTarget: timers.keySet()) {
                             orderedTaskTargets.put(taskTarget.toString(), taskTarget);
                         }
 
                         for (String key : orderedTaskTargets.keySet()) {
                             TaskTarget target = orderedTaskTargets.get(key);
-                            Timer timer = executeTimers.get(target);
+                            Timer timer = timers.get(target);
 
                             out.printf("%1$s\t mean = %2$6.2f\t min = %3$6.2f max = %4$6.2f rate1 = %5$6.2f rate5" +
                                             " = %6$6.2f rate15 = %7$6.2f\n", getTargetName(target), timer.mean(),
@@ -118,9 +133,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                         }
                         out.println();
                     }
-
-                    logger.info(new String(baos.toByteArray()));
                 }
+
             }.start();
         }
 
@@ -130,25 +144,23 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
         return taskTarget.getName() + '#' + taskTarget.getVersion() + '_' + taskTarget.getMethod();
     }
 
-    private static Timer getExecuteTimer(TaskTarget taskTarget) {
-        Timer timer = executeTimers.get(taskTarget);
+    private static void updateTimer(TaskTarget taskTarget, ConcurrentMap<TaskTarget, Timer> timers, long milliseconds) {
+        Timer timer = timers.get(taskTarget);
 
-        if (timer != null) {
-            return timer;
+        if (timer == null) {
+            // task type not used in metricsName. We hope there are no deciders and actors with same name and version
+            // values
+            MetricName metricName = new MetricName("ActorProfiler", "execute", taskTarget.getName() + "#" + taskTarget
+                    .getVersion(), taskTarget.getMethod());
+
+            timer = Metrics.newTimer(metricName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+
+            // we can put and not worry about collisions because Metrics.newTimer should return same instance for same
+            // metricName
+            timers.put(taskTarget, timer);
         }
 
-        // task type not used in metricsName. We hope there are no deciders and actors with same name and version
-        // values
-        MetricName metricName = new MetricName("ActorProfiler", "execute", taskTarget.getName() + "#" + taskTarget
-                .getVersion(), taskTarget.getMethod());
-
-        timer = Metrics.newTimer(metricName, TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
-
-        // we can put and not worry about collisions because Metrics.newTimer should return same instance for same
-        // metricName
-        executeTimers.put(taskTarget, timer);
-
-        return timer;
+        timer.update(milliseconds, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -168,8 +180,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 try {
                     return runtimeProcessor.execute(task);
                 } finally {
-                    getExecuteTimer(task.getTarget()).update(System.currentTimeMillis() - startTime, TimeUnit
-                            .MILLISECONDS);
+                    updateTimer(task.getTarget(), executeTimers, System.currentTimeMillis() - startTime);
                 }
 
             }
@@ -196,7 +207,17 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             @Override
             public Task poll() {
 
+                long startTime = System.currentTimeMillis();
+
                 Task task = taskSpreader.poll();
+
+                if (logProfilerSeconds > 0) {
+                    final TaskTarget taskTarget = task.getTarget();
+                    updateTimer(taskTarget, pollTimers, System.currentTimeMillis() - startTime);
+                    currentTaskTarget.set(taskTarget);
+                }
+
+
                 if (task == null) {
 
                     int localNullPoll = nullPoll.incrementAndGet();
@@ -217,7 +238,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 if (isFirstPoll) {
                     long current = System.currentTimeMillis();
                     lastTime.set(current);
-                    startTime.set(current);
+                    startTestTime.set(current);
                     isFirstPoll = false;
                 }
 
@@ -225,7 +246,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 if (count % tasksForStat == 0) {
                     double time = 0.001 * (curTime - lastTime.get());
                     double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
-                    double totalRate = 1000.0 * count / (double) (curTime - LifetimeProfiler.startTime.get());
+                    double totalRate = 1000.0 * count / (double) (curTime - LifetimeProfiler.startTestTime.get());
                     lastTime.set(curTime);
 
                     logger.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; " +
@@ -243,7 +264,15 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     return;
                 }
 
+                long startTime = System.currentTimeMillis();
+
                 taskSpreader.release(taskDecision);
+
+                if (logProfilerSeconds > 0) {
+                    TaskTarget taskTarget = currentTaskTarget.get();
+                    updateTimer(taskTarget, releaseTimers, System.currentTimeMillis() - startTime);
+                    currentTaskTarget.set(null);
+                }
 
                 // clean thread local container
                 RuntimeExceptionHolder.exceptionToThrow.set(null);
