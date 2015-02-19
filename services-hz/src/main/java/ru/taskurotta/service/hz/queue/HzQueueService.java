@@ -196,12 +196,6 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             }
 
             updateQueueEffectiveTime(queueName, result);
-//            if (result==null && queue.size()>0) {//possible queue store data loss -> apply null values drain
-//                result = getValueAfterNullDrain(queueName, queue);
-//                //do not update effective time if queue is nullified to prevent recovered tasks overflow
-//            } else {
-//                updateQueueEffectiveTime(queueName, result);
-//            }
 
         } catch (InterruptedException e) {
             logger.error("Queue poll operation interrupted", e);
@@ -214,31 +208,6 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         long lastPolledTaskEnqueueTime = (result != null ? result.getEnqueueTime() : System.currentTimeMillis());
         lastPolledTaskEnqueueTimes.put(queueName, lastPolledTaskEnqueueTime);
         logger.debug("lastPolledTaskEnqueueTimes updated for queue[{}] with new value [{}]", queueName, lastPolledTaskEnqueueTime);
-    }
-
-    // todo: should be removed
-    private TaskQueueItem getValueAfterNullDrain(String queueName, CachedDelayQueue<TaskQueueItem> queue) {
-        TaskQueueItem result = null;
-        if (drainLock.tryLock()) {
-            try {
-                logger.warn("Null item polled from not empty queue: possible store data loss? Try to drain null values...");
-                long cnt = 0l;
-                long start = System.currentTimeMillis();
-                do {
-                    cnt++;
-                    result = queue.poll();
-                    if (cnt % 100 == 0) {
-                        logger.warn("[{}] empty values drained away... Still processing", cnt);
-                    }
-                } while (result == null && queue.size() > 0);
-                logger.warn("Total: [{}] empty values drained away in [{}] ms", cnt, System.currentTimeMillis() - start);
-
-            } finally {
-                drainLock.unlock();
-                updateQueueEffectiveTime(queueName, result);//update only when drain is finished
-            }
-        }
-        return result;
     }
 
     @Override
@@ -276,25 +245,14 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         }
     }
 
-    /**
-     * Always return false, ignore this method's result.
-     */
     @Override
     public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
-        return false;
+        throw new UnsupportedOperationException("Only for all-in-memory backend");
     }
 
     @Override
     public String createQueueName(String actorId, String taskList) {
         return TransportUtils.createQueueName(actorId, taskList, queueNamePrefix);
-//        StringBuilder result = new StringBuilder(queueNamePrefix != null? queueNamePrefix : "");
-//
-//        result.append(actorId);
-//        if (taskList != null) {
-//            result.append("#").append(taskList);
-//        }
-//
-//        return result.toString();
     }
 
     @Override
