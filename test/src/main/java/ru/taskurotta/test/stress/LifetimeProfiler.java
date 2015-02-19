@@ -212,7 +212,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 Task task = taskSpreader.poll();
 
-                if (logProfilerSeconds > 0) {
+                if (task != null && logProfilerSeconds > 0) {
                     final TaskTarget taskTarget = task.getTarget();
                     updateTimer("poll", taskTarget, pollTimers, System.currentTimeMillis() - startTime);
                     currentTaskTarget.set(taskTarget);
