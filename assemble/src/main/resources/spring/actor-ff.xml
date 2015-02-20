@@ -28,7 +28,7 @@
         <constructor-arg name="minQueuesSize" value="${test.ff.minQueuesSize}"/>
         <constructor-arg name="maxQueuesSize" value="${test.ff.maxQueuesSize}"/>
         <constructor-arg name="waitAfterDoneSeconds" value="${test.ff.waitAfterDoneSeconds}"/>
-        <constructor-arg name="fixedPushRate" value="false" />
+        <constructor-arg name="fixedPushRate" value="${test.ff.fixedPushRate}" />
     </bean>
 
 

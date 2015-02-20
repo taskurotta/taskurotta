@@ -71,22 +71,22 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
     public LifetimeProfiler(Class actorClass, Properties properties) {
 
-        String sys = null;
 
         if (properties.containsKey(TASKS_FOR_STAT)) {
-            tasksForStat = Integer.valueOf((String) properties.getProperty(TASKS_FOR_STAT));
+            tasksForStat = Integer.valueOf((String) properties.get(TASKS_FOR_STAT).toString());
         }
 
         if (properties.containsKey(DROP_TASK_DECISION_EVERY_N_TASKS)) {
-            dropTaskDecisionEveryNTasks = Integer.valueOf((String) properties.getProperty(DROP_TASK_DECISION_EVERY_N_TASKS));
+            dropTaskDecisionEveryNTasks = Integer.valueOf((String) properties.get
+                    (DROP_TASK_DECISION_EVERY_N_TASKS).toString());
         }
 
         if (properties.containsKey(BREAK_PROCESS_EVERY_N_TASKS)) {
-            breakProcessEveryNTasks = Integer.valueOf((String) properties.getProperty(BREAK_PROCESS_EVERY_N_TASKS));
+            breakProcessEveryNTasks = Integer.valueOf((String) properties.get(BREAK_PROCESS_EVERY_N_TASKS).toString());
         }
 
         if (properties.containsKey(LOG_PROFILER_SECONDS)) {
-            logProfilerSeconds = Integer.valueOf((String) properties.getProperty(LOG_PROFILER_SECONDS));
+            logProfilerSeconds = Integer.valueOf((String) properties.get(LOG_PROFILER_SECONDS).toString());
         }
 
         if (logProfilerSeconds > 0 && isLogProfilerStarted.compareAndSet(false, true)) {

@@ -174,7 +174,7 @@ public class SpringApplication extends Application<TaskServerConfig> {
         result = PropertiesUtil.mergeProperties(result, System.getProperties(), traceSource,
                 "system", SYSTEM_PROP_PREFIX);
 
-        PropertiesUtil.dumpProperties(result, traceSource);
+        PropertiesUtil.dumpProperties(this.getClass().getName(), result, traceSource);
 
         return result;
     }

@@ -72,7 +72,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
 
             result = PropertiesUtil.mergeProperties(result, System.getProperties(), traceSource, "system");
 
-            PropertiesUtil.dumpProperties(result, traceSource);
+            PropertiesUtil.dumpProperties(this.getClass().getName(), result, traceSource);
 
             applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
                     ("customProperties", result));

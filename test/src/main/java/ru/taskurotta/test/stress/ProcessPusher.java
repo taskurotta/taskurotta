@@ -1,6 +1,9 @@
 package ru.taskurotta.test.stress;
 
-import com.hazelcast.core.*;
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.IMap;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.monitor.LocalMapStats;
 import org.slf4j.Logger;
@@ -37,7 +40,7 @@ public class ProcessPusher {
     //with default finished processes counter, only per node
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
-                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate){
+                         final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate) {
         this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize, maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new DefaultFpCounter());
     }
 
@@ -47,12 +50,13 @@ public class ProcessPusher {
 
         final Queue queue = new ConcurrentLinkedQueue();
 
+        final long startTestTime = System.currentTimeMillis();
+
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
             int currentSpeedPerSecond = startSpeedPerSecond;
             //            int currentSpeedPerSecond = 10000;
-            final long startTime = System.currentTimeMillis();
 
             @Override
             public void daemonJob() {
@@ -87,7 +91,7 @@ public class ProcessPusher {
                     int needToPush = actualSpeed - currSize;
 
                     logger.info("Speed pps: planned {}, actual {}. start new {}", actualSpeed,
-                            (int) (1D * counter.get() / ((System.currentTimeMillis() - startTime) / 1000)), needToPush);
+                            (int) (1D * counter.get() / ((System.currentTimeMillis() - startTestTime) / 1000)), needToPush);
 
                     double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
@@ -108,6 +112,10 @@ public class ProcessPusher {
             }
 
             private int getSumQueuesSize(HazelcastInstance hazelcastInstance) {
+
+                if (hazelcastInstance == null) {
+                    return 0;
+                }
 
                 int sum = 0;
 
@@ -134,7 +142,9 @@ public class ProcessPusher {
                         fpCounter.getCount() >= maxProcessQuantity) {
                     // stop JVM
 
-                    logger.info("Done... Waiting before exit {} seconds", waitAfterDoneSeconds);
+                    logger.info("Done... Speed is {} processes per second. Waiting before exit {} seconds",
+                            1f * maxProcessQuantity / (System.currentTimeMillis() - startTestTime) * 1000
+                            , waitAfterDoneSeconds);
                     try {
                         TimeUnit.SECONDS.sleep(waitAfterDoneSeconds);
                     } catch (InterruptedException e) {
@@ -195,11 +205,10 @@ public class ProcessPusher {
 
                 StringBuilder sb = new StringBuilder();
 
-                for (HazelcastInstance hzInstance : Hazelcast.getAllHazelcastInstances()) {
+                if (hazelcastInstance != null) {
+                    sb.append("\n============  ").append(hazelcastInstance.getName()).append("  ===========");
 
-                    sb.append("\n============  ").append(hzInstance.getName()).append("  ===========");
-
-                    for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
+                    for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
                         sb.append(String.format("\n%22s -> %18s", distributedObject.getServiceName(),
                                 distributedObject.getName()));
 

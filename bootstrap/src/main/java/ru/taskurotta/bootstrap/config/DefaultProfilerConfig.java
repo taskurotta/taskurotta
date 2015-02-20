@@ -19,8 +19,11 @@ public class DefaultProfilerConfig implements ProfilerConfig {
 	@Override
 	public Profiler getProfiler(Class actorInterface) {
 
-        properties = PropertiesUtil.mergeProperties(new Properties(), properties, null, "yaml");
-        properties = PropertiesUtil.mergeProperties(properties, System.getProperties(), null, "system");
+        Properties traceSource = new Properties();
+        properties = PropertiesUtil.mergeProperties(new Properties(), properties, traceSource, "yaml");
+        properties = PropertiesUtil.mergeProperties(properties, System.getProperties(), traceSource, "system");
+
+        PropertiesUtil.dumpProperties("profiler: " + actorInterface.getName(), properties, traceSource);
 
 		Profiler profiler;
 
