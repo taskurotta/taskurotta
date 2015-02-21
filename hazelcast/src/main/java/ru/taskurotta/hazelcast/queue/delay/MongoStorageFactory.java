@@ -1,8 +1,6 @@
 package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.spring.mongodb.MongoDBConverter;
-import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -45,8 +43,6 @@ public class MongoStorageFactory implements StorageFactory {
     private MongoTemplate mongoTemplate;
     private String storagePrefix;
 
-    private MongoDBConverter converter;
-
     private transient final ReentrantLock lock = new ReentrantLock();
     private ConcurrentHashMap<String, String> dbCollectionNamesMap = new ConcurrentHashMap<>();
 
@@ -60,7 +56,6 @@ public class MongoStorageFactory implements StorageFactory {
                                BSerializationService bSerializationService, String objectClassName) {
         this.mongoTemplate = mongoTemplate;
         this.storagePrefix = storagePrefix;
-        this.converter = new SpringMongoDBConverter(mongoTemplate);
         this.batchLoadSize = batchLoadSize;
 
         if (objectClassName != null) {
@@ -104,7 +99,7 @@ public class MongoStorageFactory implements StorageFactory {
                             String dbCollectionName = entry.getValue();
                             String queueName = entry.getKey();
 
-                            CachedQueue cachedQueue = hazelcastInstance.getDistributedObject(CachedQueue.class
+                            CachedQueue<Object> cachedQueue = hazelcastInstance.getDistributedObject(CachedQueue.class
                                     .getName(), queueName);
 
                             if (ClusterUtils.isLocalCachedQueue(hazelcastInstance, cachedQueue)) {//Node should serve only
@@ -124,15 +119,11 @@ public class MongoStorageFactory implements StorageFactory {
                                         StorageItemContainer storageItemContainer = null;
                                         DBObject dbObject = dbCursor.next();
 
-                                        if (encoderFactory == null) {
-                                            storageItemContainer = (StorageItemContainer) converter.toObject(StorageItemContainer.class, dbObject);
-                                        } else {
-                                            storageItemContainer = (StorageItemContainer) ((DBObjectCheat) dbObject).getObject();
-                                        }
+                                        storageItemContainer = (StorageItemContainer) ((DBObjectCheat) dbObject).getObject();
 
                                         if (cachedQueue.offer(storageItemContainer.getObject())) {
                                             bakedTasks.incrementAndGet();
-                                            dbCollection.remove(new DBObjectCheat(storageItemContainer.getId()));
+                                            dbCollection.remove(new DBObjectCheat<UUID>(storageItemContainer.getId()));
                                         }
                                     }
                                 }
@@ -265,13 +256,9 @@ public class MongoStorageFactory implements StorageFactory {
 
         final StorageItemContainer storageItemContainer = new StorageItemContainer(id, o, enqueueTime,
                 null);
-        if (encoderFactory == null) {
-            DBObject dbObject = converter.toDBObject(storageItemContainer);
-            dbCollection.save(dbObject);
-        } else {
-            DBObjectCheat dbObject = new DBObjectCheat<StorageItemContainer>(storageItemContainer);
-            dbCollection.insert(dbObject);
-        }
+
+        DBObjectCheat dbObject = new DBObjectCheat<StorageItemContainer>(storageItemContainer);
+        dbCollection.insert(dbObject);
 
         return true;
     }
