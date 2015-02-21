@@ -41,6 +41,8 @@ public class MongoIncompleteProcessDao implements IncompleteProcessDao {
         this.dbCollection = mongoTemplate.getCollection(processesStorageMapName);
 
         dbCollection.setDBDecoderFactory(bSerializationService.getDecoderFactory(Process.class));
+
+        dbCollection.createIndex(new BasicDBObject(START_TIME_INDEX_NAME, 1).append(STATE_INDEX_NAME, 2));
     }
 
     // todo: should return whole Process object instead of its UUID to minimize quantity of queries to database
