@@ -9,7 +9,7 @@ public class FlowArbiterFactory {
 	public FlowArbiter getInstance() {
 		synchronized (FlowArbiterFactory.class) {
 			try {
-				while (null == instance) {
+				while (instance == null) {
 					FlowArbiterFactory.class.wait();
 				}
 			} catch (InterruptedException e) {

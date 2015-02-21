@@ -85,7 +85,7 @@ abstract public class CachedProxyFactory implements ProxyFactory {
     }
 
     protected String[] getFailNames(AcceptFail failAnnotation) {
-        if (null == failAnnotation) {
+        if (failAnnotation == null) {
             return null;
         }
 

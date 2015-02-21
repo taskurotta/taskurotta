@@ -313,7 +313,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         String[] taskFailTypes = task.getFailTypes();
-        if (null == taskFailTypes || taskFailTypes.length == 0) {
+        if (taskFailTypes == null || taskFailTypes.length == 0) {
             return true;    // no restrictions defined. all errors matches
         }
 
