@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Partition;
 import com.hazelcast.core.PartitionAware;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.spring.context.SpringAware;
@@ -130,13 +131,21 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         // save it firstly
         taskService.addDecision(taskDecision);
 
-        TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId());
+        UUID processId = taskDecision.getProcessId();
+        TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), processId);
 
+        // is this a partition owner of process id?
+        Partition partition = hzInstance.getPartitionService().getPartition(processId);
+        if (hzInstance.getCluster().getLocalMember().equals(partition.getOwner())) {
+            lockAndProcessDecision(taskKey, this);
+        } else {
+            // are we overloaded?
 //        if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
-            pendingDecisionQueueProxy.stash(taskKey);
+//            pendingDecisionQueueProxy.stash(taskKey);
 //        } else {
 //            sendToClusterMember(taskKey);
 //        }
+        }
 
         startedDistributedTasks.incrementAndGet();
         statRelease.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
