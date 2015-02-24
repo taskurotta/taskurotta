@@ -35,6 +35,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     public void finishProcess(UUID processId, String returnValue) {
         Process process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
+        process.setState(Process.FINISH);
         process.setReturnValue(returnValue);
         processesStorage.put(processId, process);
     }
