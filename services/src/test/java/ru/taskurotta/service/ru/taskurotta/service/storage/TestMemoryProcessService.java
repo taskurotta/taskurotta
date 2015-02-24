@@ -19,7 +19,8 @@ public class TestMemoryProcessService {
         Assert.assertEquals(0, mps.getFinishedCount(null));
 
         UUID procId = UUID.randomUUID();
-        mps.startProcess(new TaskContainer(procId, procId, "test", "testActor#1.0", TaskType.WORKER, 0l, 0, null, null, false, null));
+        mps.startProcess(new TaskContainer(procId, procId, procId, "test", "testActor#1.0", TaskType.WORKER, 0l, 0,
+                null, null, false, null));
         mps.finishProcess(procId, "value");
 
         Assert.assertEquals(1, mps.getFinishedCount(null));
