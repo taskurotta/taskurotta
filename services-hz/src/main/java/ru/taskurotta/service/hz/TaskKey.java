@@ -1,10 +1,12 @@
 package ru.taskurotta.service.hz;
 
+import com.hazelcast.core.PartitionAware;
+
 import java.util.UUID;
 
 /**
  */
-public class TaskKey {
+public class TaskKey implements PartitionAware {
 
     UUID taskId;
     UUID processId;
@@ -56,5 +58,10 @@ public class TaskKey {
                 "taskId=" + taskId +
                 ", processId=" + processId +
                 '}';
+    }
+
+    @Override
+    public Object getPartitionKey() {
+        return processId;
     }
 }
