@@ -39,7 +39,8 @@ public class PropertiesUtil {
             Object targetValue = target.get(targetKey);
             Object sourceValue = source.get(sourceKey);
 
-            if (targetValue != null && sourceValue != null && targetValue.equals(sourceValue)) {
+            if (targetValue != null && sourceValue != null && sourceValue instanceof String && targetValue.equals
+                    (sourceValue)) {
                 continue;
             }
 
@@ -62,7 +63,7 @@ public class PropertiesUtil {
         return mergeProperties(target, source, traceSource, sourceName, null);
     }
 
-    public static void dumpProperties(Properties properties, Properties traceSource) {
+    public static void dumpProperties(String msg, Properties properties, Properties traceSource) {
 
         if (properties == null) {
             return;
@@ -75,7 +76,7 @@ public class PropertiesUtil {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(baos, true);
 
-        out.println("\n========= Application properties ==========");
+        out.println("\n========= Application properties " + msg + " ==========");
 
         if (properties.isEmpty()) {
             out.println("no properties (null)...");

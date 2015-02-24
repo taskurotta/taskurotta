@@ -137,7 +137,7 @@ public class SerializationTest {
         modification.addNewItem(newItem2);
 
 
-        HzGraphDao.DecisionRow decisionRow = new HzGraphDao.DecisionRow(itemUuid, modification, null);
+        HzGraphDao.DecisionRow decisionRow = new HzGraphDao.DecisionRow(itemUuid, completeUuid, modification, null);
 
         hzMap.put("dec", decisionRow);
 

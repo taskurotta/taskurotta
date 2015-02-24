@@ -1,7 +1,5 @@
 package ru.taskurotta.hazelcast.queue.store.mongodb;
 
-import com.hazelcast.spring.mongodb.MongoDBConverter;
-import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -49,7 +47,6 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
     private String storageName;
     private MongoTemplate mongoTemplate;
-    private MongoDBConverter converter;
     private DBCollection coll;
 
     private String objectClassName;
@@ -63,7 +60,6 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
         this.mongoTemplate = mongoTemplate;
         this.batchSize = config.getBatchLoadSize();
         this.coll = mongoTemplate.getCollection(this.storageName);
-        this.converter = new SpringMongoDBConverter(mongoTemplate);
 
         // todo: throw exception if it is null
         if (serializationService == null) {
@@ -116,19 +112,13 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
         try {
 
-            if (objectClassName == null) {
-                DBObject dbo = converter.toDBObject(taskQueueItem);
-                dbo.put("_id", id);
-                coll.save(dbo);
-            } else {
-                QueueItemContainer queueItemContainer = new QueueItemContainer();
-                queueItemContainer.setId(id);
-                queueItemContainer.setQueueItem(taskQueueItem);
+            QueueItemContainer queueItemContainer = new QueueItemContainer();
+            queueItemContainer.setId(id);
+            queueItemContainer.setQueueItem(taskQueueItem);
 
-                DBObjectCheat document = new DBObjectCheat(queueItemContainer);
+            DBObjectCheat<QueueItemContainer> document = new DBObjectCheat<>(queueItemContainer);
 
-                coll.insert(document);
-            }
+            coll.insert(document);
         } finally {
             storeTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
@@ -150,15 +140,16 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
         BasicDBList idList = new BasicDBList();
 
-        for (long id: longs) {
-            j ++;
+        for (long id : longs) {
+            j++;
 
             idList.add(id);
 
             if (j % 100 == 0 && j == size) {
                 BasicDBObject inListObj = new BasicDBObject("$in", idList);
                 coll.remove(new BasicDBObject("_id", inListObj), noWaitWriteConcern);
-                idList.clear();;
+                idList.clear();
+                ;
             }
         }
 
@@ -176,26 +167,15 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
         try {
 
-
             DBObject dbo = new BasicDBObject();
             dbo.put("_id", aLong);
             DBObject obj = coll.findOne(dbo);
 
-            if (obj == null)
+            if (obj == null) {
                 return null;
-
-            if (objectClassName == null) {
-                try {
-                    Class clazz = Class.forName(obj.get("_class").toString());
-                    return converter.toObject(clazz, obj);
-                } catch (ClassNotFoundException e) {
-                    logger.error(e.getMessage(), e);
-                }
-                return null;
-
-            } else {
-                return ((QueueItemContainer) ((DBObjectCheat) obj).getObject()).getQueueItem();
             }
+
+            return ((QueueItemContainer) ((DBObjectCheat) obj).getObject()).getQueueItem();
 
         } finally {
             loadTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
@@ -218,17 +198,8 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
                     DBObject obj = cursor.next();
 
-                    if (objectClassName == null) {
-                        try {
-                            Class clazz = Class.forName(obj.get("_class").toString());
-                            map.put((Long) obj.get("_id"), converter.toObject(clazz, obj));
-                        } catch (ClassNotFoundException e) {
-                            logger.error(e.getMessage(), e);
-                        }
-                    } else {
-                        QueueItemContainer queueItemContainer = (QueueItemContainer) ((DBObjectCheat) obj).getObject();
-                        map.put(queueItemContainer.getId(), queueItemContainer.getQueueItem());
-                    }
+                    QueueItemContainer queueItemContainer = (QueueItemContainer) ((DBObjectCheat) obj).getObject();
+                    map.put(queueItemContainer.getId(), queueItemContainer.getQueueItem());
                 }
             }
 
@@ -262,11 +233,7 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
         try (DBCursor cursor = coll.find().sort(sortCommand).limit(1)) {
             if (cursor.hasNext() && (val = cursor.next()) != null) {
-                if (objectClassName == null) {
-                    return (Long) val.get("_id");
-                } else {
-                    return ((QueueItemContainer) ((DBObjectCheat) val).getObject()).getId();
-                }
+                return ((QueueItemContainer) ((DBObjectCheat) val).getObject()).getId();
             }
         }
         return result;

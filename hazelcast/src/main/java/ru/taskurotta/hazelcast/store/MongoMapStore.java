@@ -18,8 +18,6 @@ package ru.taskurotta.hazelcast.store;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapLoaderLifecycleSupport;
 import com.hazelcast.core.MapStore;
-import com.hazelcast.spring.mongodb.MongoDBConverter;
-import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -61,7 +59,6 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
     private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
 
     private String mapName;
-    private MongoDBConverter converter;
     private DBCollection coll;
 
     private final MongoTemplate mongoTemplate;
@@ -80,15 +77,9 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         long startTime = System.nanoTime();
 
         try {
-            if (objectClassName == null) {
-                DBObject dbo = converter.toDBObject(value);
-                dbo.put("_id", key);
-                coll.save(dbo);
-            } else {
-                DBObjectCheat documentKey = new DBObjectCheat(key);
-                DBObjectCheat document = new DBObjectCheat(value);
-                coll.update(documentKey, document, true, false);
-            }
+            DBObjectCheat<Object> documentKey = new DBObjectCheat<>(key);
+            DBObjectCheat<Object> document = new DBObjectCheat<>(value);
+            coll.update(documentKey, document, true, false);
         } finally {
             storeTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
@@ -104,14 +95,8 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         long startTime = System.nanoTime();
 
         try {
-            if (objectClassName == null) {
-                DBObject dbo = new BasicDBObject();
-                dbo.put("_id", key);
-                coll.remove(dbo, noWaitWriteConcern);
-            } else {
-                DBObjectCheat objKey = new DBObjectCheat(key);
-                coll.remove(objKey, noWaitWriteConcern);
-            }
+            DBObjectCheat<Object> objKey = new DBObjectCheat<>(key);
+            coll.remove(objKey, noWaitWriteConcern);
         } finally {
             deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
@@ -143,39 +128,14 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
 
         try {
 
-            if (objectClassName == null) {
-                DBObject dbo = new BasicDBObject();
-                dbo.put("_id", key);
-                DBObject obj = coll.findOne(dbo);
-                if (obj == null) {
-                    return null;
-                }
+            DBObjectCheat objKey = new DBObjectCheat(key);
+            DBObject obj = coll.findOne(objKey);
 
-                try {
-                    Class clazz = Class.forName(obj.get("_class").toString());
-                    Object result = converter.toObject(clazz, obj);
-
-                    if (result != null) {
-                        loadSuccessTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
-                    }
-
-                    return result;
-                } catch (ClassNotFoundException e) {
-                    logger.warn(e.getMessage(), e);
-                }
+            if (obj == null) {
                 return null;
-
-            } else {
-
-                DBObjectCheat objKey = new DBObjectCheat(key);
-                DBObject obj = coll.findOne(objKey);
-
-                if (obj == null) {
-                    return null;
-                }
-
-                return ((DBObjectCheat) obj).getObject();
             }
+
+            return ((DBObjectCheat) obj).getObject();
 
         } finally {
             loadTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
@@ -204,17 +164,11 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         }
 
         this.coll = mongoTemplate.getCollection(this.mapName);
-        this.converter = new SpringMongoDBConverter(mongoTemplate);
 
-        if (objectClassName != null) {
-            StreamBSerializer objectSerializer = serializationService.getSerializer(objectClassName);
+        StreamBSerializer objectSerializer = serializationService.getSerializer(objectClassName);
 
-            coll.setDBDecoderFactory(new BDecoderFactory(objectSerializer));
-            coll.setDBEncoderFactory(new BEncoderFactory(serializationService));
-        } else {
-            logger.warn("Name of object class not found in map store config. Storage name is" +
-                    " [" + mapName + "]. Map are in legacy mode...");
-        }
+        coll.setDBDecoderFactory(new BDecoderFactory(objectSerializer));
+        coll.setDBEncoderFactory(new BEncoderFactory(serializationService));
 
         logger.debug("Store for collection [" + mapName + "] initialized");
 

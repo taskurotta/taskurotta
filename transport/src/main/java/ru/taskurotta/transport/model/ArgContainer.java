@@ -118,7 +118,7 @@ public class ArgContainer implements Cloneable, Serializable {
 
     @JsonIgnore
     public boolean isNull() {
-        return null == valueType;
+        return valueType == null;
     }
 
     public ValueType getValueType() {

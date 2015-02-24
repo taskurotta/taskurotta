@@ -18,14 +18,16 @@ public class ErrorContainer implements Serializable {
     private String[] classNames;
     private String message;
     private String stackTrace;
+    private boolean fatalError = false;
 
     public ErrorContainer() {
     }
 
-    public ErrorContainer(String[] classNames, String message, String stackTrace) {
+    public ErrorContainer(String[] classNames, String message, String stackTrace, boolean fatalError) {
         this.classNames = classNames;
         this.message = message;
         this.stackTrace = stackTrace;
+        this.fatalError = fatalError;
     }
 
     public ErrorContainer(Throwable throwable) {
@@ -80,6 +82,14 @@ public class ErrorContainer implements Serializable {
         this.stackTrace = stackTrace;
     }
 
+    public boolean isFatalError() {
+        return fatalError;
+    }
+
+    public void setFatalError(boolean fatalError) {
+        this.fatalError = fatalError;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,13 +97,12 @@ public class ErrorContainer implements Serializable {
 
         ErrorContainer that = (ErrorContainer) o;
 
+        if (fatalError != that.fatalError) return false;
+        if (!Arrays.equals(classNames, that.classNames)) return false;
         if (message != null ? !message.equals(that.message) : that.message != null) return false;
         if (stackTrace != null ? !stackTrace.equals(that.stackTrace) : that.stackTrace != null) return false;
-        if (classNames == null){
-            return that.classNames == null;
-        } else {
-            return Arrays.equals(classNames, that.classNames);
-        }
+
+        return true;
     }
 
     @Override
@@ -101,16 +110,17 @@ public class ErrorContainer implements Serializable {
         int result = classNames != null ? Arrays.hashCode(classNames) : 0;
         result = 31 * result + (message != null ? message.hashCode() : 0);
         result = 31 * result + (stackTrace != null ? stackTrace.hashCode() : 0);
+        result = 31 * result + (fatalError ? 1 : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "ErrorContainer{" +
-                "classNames='" + Arrays.toString(classNames) + '\'' +
+                "classNames=" + Arrays.toString(classNames) +
                 ", message='" + message + '\'' +
                 ", stackTrace='" + stackTrace + '\'' +
-                "} ";
+                ", fatalError=" + fatalError +
+                '}';
     }
-
 }

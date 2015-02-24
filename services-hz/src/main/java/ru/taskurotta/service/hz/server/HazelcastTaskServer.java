@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Partition;
 import com.hazelcast.core.PartitionAware;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.spring.context.SpringAware;
@@ -80,42 +81,42 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                                   String nodeCustomName, String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
                                   long sleepOnOverloadMls) {
         this(new ServiceBundle() {
-            @Override
-            public ProcessService getProcessService() {
-                return processService;
-            }
+                 @Override
+                 public ProcessService getProcessService() {
+                     return processService;
+                 }
 
-            @Override
-            public TaskService getTaskService() {
-                return taskService;
-            }
+                 @Override
+                 public TaskService getTaskService() {
+                     return taskService;
+                 }
 
-            @Override
-            public QueueService getQueueService() {
-                return queueService;
-            }
+                 @Override
+                 public QueueService getQueueService() {
+                     return queueService;
+                 }
 
-            @Override
-            public DependencyService getDependencyService() {
-                return dependencyService;
-            }
+                 @Override
+                 public DependencyService getDependencyService() {
+                     return dependencyService;
+                 }
 
-            @Override
-            public ConfigService getConfigService() {
-                return configService;
-            }
+                 @Override
+                 public ConfigService getConfigService() {
+                     return configService;
+                 }
 
-            @Override
-            public BrokenProcessService getBrokenProcessService() {
-                return brokenProcessService;
-            }
+                 @Override
+                 public BrokenProcessService getBrokenProcessService() {
+                     return brokenProcessService;
+                 }
 
-            @Override
-            public GarbageCollectorService getGarbageCollectorService() {
-                return garbageCollectorService;
-            }
-        }, hzInstance, nodeCustomName, decisionProcessingExecutorService, maxPendingWorkers, maxPendingLimit,
-        sleepOnOverloadMls);
+                 @Override
+                 public GarbageCollectorService getGarbageCollectorService() {
+                     return garbageCollectorService;
+                 }
+             }, hzInstance, nodeCustomName, decisionProcessingExecutorService, maxPendingWorkers, maxPendingLimit,
+                sleepOnOverloadMls);
     }
 
     public void init() {
@@ -130,13 +131,21 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         // save it firstly
         taskService.addDecision(taskDecision);
 
-        TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId());
+        UUID processId = taskDecision.getProcessId();
+        TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), processId);
 
-//        if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
-            pendingDecisionQueueProxy.stash(taskKey);
-//        } else {
-//            sendToClusterMember(taskKey);
-//        }
+        // is this a partition owner of process id?
+        Partition partition = hzInstance.getPartitionService().getPartition(processId);
+        if (hzInstance.getCluster().getLocalMember().equals(partition.getOwner())) {
+            lockAndProcessDecision(taskKey, this);
+        } else {
+            // are we overloaded?
+            if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
+                pendingDecisionQueueProxy.stash(taskKey);
+            } else {
+                sendToClusterMember(taskKey);
+            }
+        }
 
         startedDistributedTasks.incrementAndGet();
         statRelease.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
@@ -165,10 +174,10 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
             taskServer.lockProcessMap.lock(processId);
 
-            statPdLock.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
-            startTime = clock.tick();
-
             try {
+                statPdLock.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
+                startTime = clock.tick();
+
                 taskServer.processDecision(taskId, processId);
 
                 statPdWork.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
@@ -185,6 +194,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
             logger.warn(e.getMessage());
         }
     }
+
     /**
      * Callable task for processing taskDecisions
      */

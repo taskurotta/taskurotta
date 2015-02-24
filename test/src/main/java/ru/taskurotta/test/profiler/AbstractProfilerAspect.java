@@ -59,6 +59,6 @@ public abstract class AbstractProfilerAspect {
 
     private static Pair<Integer, Long> getCounter(String key) {
         Pair<Integer, Long> counter = counters.get(key);
-        return null == counter ? new Pair<>(0, 0L) : counter;
+        return counter == null ? new Pair<>(0, 0L) : counter;
     }
 }

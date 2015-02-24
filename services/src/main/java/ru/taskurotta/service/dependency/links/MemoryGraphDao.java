@@ -1,15 +1,15 @@
 package ru.taskurotta.service.dependency.links;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * User: romario
@@ -162,7 +162,7 @@ public class MemoryGraphDao implements GraphDao {
 
 
     @Override
-    public UUID[] getReadyTasks(UUID finishedTaskId) {
+    public UUID[] getReadyTasks(UUID finishedTaskId, UUID processId) {
 
         DecisionRow decisionRow = decisions.get(finishedTaskId);
         if (decisionRow != null) {

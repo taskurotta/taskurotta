@@ -32,8 +32,9 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
         this.graphDao = graphDao;
     }
 
+
     @Override
-    public DependencyDecision applyDecision(DecisionContainer taskDecision) {
+    public DependencyDecision applyDecision(final DecisionContainer taskDecision) {
 
         logger.debug("applyDecision() taskDecision = [{}]", taskDecision);
 
@@ -78,7 +79,6 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
         }
 
         logger.warn("#[{}]/[{}]: Can't apply graph modification", processId, finishedTaskId);
-        // TODO: should be analyzed at TaskServer
         return resultDecision.withFail();
     }
 
@@ -161,7 +161,7 @@ public class GeneralDependencyService implements DependencyService, GraphInfoRet
                 modification.linkItem(childTaskId, arg.getTaskId());
 
             } else if (arg.isCollection() && argTypes != null && ArgType.WAIT.equals(argTypes[j])) {
-				//should wait for all promises in collection to be ready
+                //should wait for all promises in collection to be ready
 
                 processWaitCollection(modification, childTaskId, arg);
             }

@@ -2,15 +2,15 @@ package ru.taskurotta.service.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.core.ArgType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.internal.core.TaskType;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -168,7 +168,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 // leave it in peace...
                 return null;
             }
-            throw new IllegalArgumentException("Decision not found for not @NoWait task [" + taskId + "]");
+            throw new IllegalStateException("Decision not found for not @NoWait task [" + taskId + "] processId [" +
+                    processId + "]");
         }
 
         logger.debug("taskDecision of taskId [{}] is [{}]", taskId, taskDecision);

@@ -14,7 +14,7 @@ public class Fail extends RuntimeException {
     }
 
     public Fail(String[] types, String message) {
-        if (null == types || types.length < 1) {
+        if (types == null || types.length < 1) {
             throw new IllegalArgumentException("Type of the fail cannot be empty");
         }
         this.types = types;

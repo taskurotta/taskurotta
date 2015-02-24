@@ -42,7 +42,7 @@ public class DArgArbiter extends BasicFlowArbiter {
     public static DArgArbiter getInstance() {
         synchronized (DArgArbiter.class) {
             try {
-                while (null == instance) {
+                while (instance == null) {
                     DArgArbiter.class.wait();
                 }
             } catch (InterruptedException e) {

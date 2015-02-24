@@ -159,18 +159,8 @@ public class GeneralTaskServer implements TaskServer {
         DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
 
         if (taskDecision == null) {
-//            try {
-//                TimeUnit.SECONDS.sleep(10);
-//            } catch (InterruptedException ignore) {
-//
-//            }
-//
-//            taskDecision = taskService.getDecision(taskId, processId);
-//
-//            if (taskDecision == null) {
-                throw new IllegalStateException("Task decision not found. taskId = " + taskId + " processId = " +
-                        processId);
-//            }
+            throw new IllegalStateException("Task decision not found. taskId = " + taskId + " processId = " +
+                    processId);
         }
 
 
@@ -202,8 +192,7 @@ public class GeneralTaskServer implements TaskServer {
             }
 
             if (deciderRetryPolicyConfig != null) {
-                if (isErrorMatch(deciderRetryPolicyConfig, taskDecision
-                        .getErrorContainer())) {
+                if (isErrorMatch(deciderRetryPolicyConfig, taskDecision.getErrorContainer())) {
 
                     restartTime = getRestartTime(task, deciderRetryPolicyConfig);
                 }
@@ -221,8 +210,7 @@ public class GeneralTaskServer implements TaskServer {
             }
 
             if (!(task.isUnsafe() && isErrorMatch(task, taskDecision.getErrorContainer()))) {
-                saveBrokenProcess(taskDecision);
-                processService.markProcessAsBroken(processId);
+                markProcessAsBroken(taskDecision);
 
                 logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
                 return;
@@ -232,8 +220,12 @@ public class GeneralTaskServer implements TaskServer {
         } else {
 
             if (unsafePromiseSentToWorker(taskDecision.getTasks())) {
-                saveBrokenProcess(taskDecision);
-                processService.markProcessAsBroken(processId);
+                ErrorContainer errorContainer = new ErrorContainer(new String[]{"java.lang" +
+                        ".IllegalArgumentException"}, "Unsafe promise sent to worker. Actor decision: " + taskDecision
+                        .getActorId(), "", true);
+                taskDecision.setErrorContainer(errorContainer);
+
+                markProcessAsBroken(taskDecision);
                 return;
             }
 
@@ -283,6 +275,39 @@ public class GeneralTaskServer implements TaskServer {
 
     }
 
+    private void markProcessAsBroken(DecisionContainer taskDecision) {
+        UUID processId = taskDecision.getProcessId();
+
+        // save decision with fatal flag
+        taskDecision.getErrorContainer().setFatalError(true);
+        taskService.addDecision(taskDecision);
+
+        // increments stat counter
+        brokenProcessesCounter.incrementAndGet();
+
+        // save broken process information
+        BrokenProcess brokenProcess = new BrokenProcess();
+        brokenProcess.setTime(System.currentTimeMillis());
+        brokenProcess.setProcessId(processId);
+        brokenProcess.setBrokenActorId(taskDecision.getActorId());
+
+        TaskContainer startTask = processService.getStartTask(processId);
+        if (startTask != null) {
+            brokenProcess.setStartActorId(startTask.getActorId());
+        }
+
+        ErrorContainer errorContainer = taskDecision.getErrorContainer();
+        if (errorContainer != null) {
+            brokenProcess.setErrorClassName(errorContainer.getClassName());
+            brokenProcess.setErrorMessage(errorContainer.getMessage());
+            brokenProcess.setStackTrace(errorContainer.getStackTrace());
+        }
+        brokenProcessService.save(brokenProcess);
+
+        // mark process as broken
+        processService.markProcessAsBroken(processId);
+    }
+
     private long getRestartTime(TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
         if (retryPolicyConfig == null) {
             return PolicyConstants.NONE;
@@ -313,7 +338,7 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         String[] taskFailTypes = task.getFailTypes();
-        if (null == taskFailTypes || taskFailTypes.length == 0) {
+        if (taskFailTypes == null || taskFailTypes.length == 0) {
             return true;    // no restrictions defined. all errors matches
         }
 
@@ -352,9 +377,9 @@ public class GeneralTaskServer implements TaskServer {
                     TaskContainer argTask = id2taskMap.get(arg.getTaskId());
                     if (argTask == null) {
                         argTask = taskService.getTask(arg.getTaskId(), newTask.getProcessId());
-                        if (argTask == null) {
-                            System.err.println("Task with null argTask : " + newTask);
-                        }
+//                        if (argTask == null) {
+//                            System.err.println("Task with null argTask : " + newTask);
+//                        }
                     }
                     if (argTask != null && argTask.isUnsafe()) {
                         return true;
@@ -365,29 +390,6 @@ public class GeneralTaskServer implements TaskServer {
         return false;
     }
 
-    private void saveBrokenProcess(DecisionContainer taskDecision) {
-
-        brokenProcessesCounter.incrementAndGet();
-
-        UUID processId = taskDecision.getProcessId();
-        BrokenProcess brokenProcess = new BrokenProcess();
-        brokenProcess.setTime(System.currentTimeMillis());
-        brokenProcess.setProcessId(processId);
-        brokenProcess.setBrokenActorId(taskDecision.getActorId());
-
-        TaskContainer startTask = processService.getStartTask(processId);
-        if (startTask != null) {
-            brokenProcess.setStartActorId(startTask.getActorId());
-        }
-
-        ErrorContainer errorContainer = taskDecision.getErrorContainer();
-        if (errorContainer != null) {
-            brokenProcess.setErrorClassName(errorContainer.getClassName());
-            brokenProcess.setErrorMessage(errorContainer.getMessage());
-            brokenProcess.setStackTrace(errorContainer.getStackTrace());
-        }
-        brokenProcessService.save(brokenProcess);
-    }
 
     /**
      * Send task to the queue for processing

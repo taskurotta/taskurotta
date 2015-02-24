@@ -149,13 +149,18 @@ public class TaskContainer implements Serializable {
 
     @Override
     public String toString() {
-        return "TaskContainer [taskId=" + taskId
-                + ", actorId=" + actorId + ", method=" + method + ", type=" + type
-                + ", startTime=" + startTime
-                + ", errorAttempts=" + errorAttempts
-                + ", args=" + Arrays.toString(args)
-                + ", options=" + options
-                + ", unsafe=" + unsafe
-                + ", failTypes=" + Arrays.toString(failTypes) +"]";
+        return "TaskContainer{" +
+                "taskId=" + taskId +
+                ", processId=" + processId +
+                ", method='" + method + '\'' +
+                ", actorId='" + actorId + '\'' +
+                ", type=" + type +
+                ", startTime=" + startTime +
+                ", errorAttempts=" + errorAttempts +
+                ", args=" + Arrays.toString(args) +
+                ", options=" + options +
+                ", unsafe=" + unsafe +
+                ", failTypes=" + Arrays.toString(failTypes) +
+                '}';
     }
 }
