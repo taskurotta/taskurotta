@@ -1,8 +1,8 @@
 package ru.taskurotta.hz.test.service;
 
-import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.test.TestHazelcastInstanceFactory;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,8 @@ public class TestHzBrokenProcessService {
 
     @Before
     public void setUp() {
-        hzInstance = Hazelcast.newHazelcastInstance();
+        TestHazelcastInstanceFactory factory = new TestHazelcastInstanceFactory(1);
+        hzInstance = factory.newHazelcastInstance();
         target = new HzBrokenProcessService(hzInstance, targetMapName);
     }
 
