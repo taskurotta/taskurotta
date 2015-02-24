@@ -64,7 +64,7 @@
     <bean id="taskDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.DecisionContainer"/>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.Decision"/>
     </bean>
 
     <bean id="graphMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
@@ -120,8 +120,8 @@
     <bean id="processBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.ProcessBSerializer"/>
 
-    <bean id="decisionContainerBSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.DecisionContainerBSerializer"/>
+    <bean id="decisionBSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.DecisionBSerializer"/>
 
     <bean id="uuidSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.UUIDBSerializer"/>
@@ -150,7 +150,7 @@
                 <ref bean="taskContainerBSerializer"/>
                 <ref bean="decisionRowBSerializer"/>
                 <ref bean="processBSerializer"/>
-                <ref bean="decisionContainerBSerializer"/>
+                <ref bean="decisionBSerializer"/>
                 <ref bean="uuidSerializer"/>
                 <ref bean="stringSerializer"/>
                 <ref bean="recoveryOperationSerializer"/>

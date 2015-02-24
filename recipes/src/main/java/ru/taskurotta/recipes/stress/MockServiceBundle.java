@@ -39,6 +39,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class MockServiceBundle implements ServiceBundle {
 
+    private static final UUID PASS = UUID.randomUUID();
+
     private static TaskContainer createRandomMultiplyTaskContainer() {
         UUID taskId = UUID.randomUUID();
         UUID processId = UUID.randomUUID();
@@ -51,7 +53,7 @@ public class MockServiceBundle implements ServiceBundle {
         String a = Integer.toString(ThreadLocalRandom.current().nextInt());
         String b = Integer.toString(ThreadLocalRandom.current().nextInt());
 
-        return new TaskContainer(taskId, processId, "multiply",
+        return new TaskContainer(taskId, processId, PASS, "multiply",
                 actorId, TaskType.DECIDER_START, 0, 1, new ArgContainer[]{
                 new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, a),
                 new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, b)},
@@ -107,7 +109,7 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
+            public TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate) {
                 return createRandomMultiplyTaskContainer(taskId, processId);
             }
 
@@ -117,8 +119,19 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public void addDecision(DecisionContainer taskDecision) {
+            public boolean finishTask(DecisionContainer taskDecision) {
                 // ignore
+                return true;
+            }
+
+            @Override
+            public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+                return true;
+            }
+
+            @Override
+            public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+                return true;
             }
 
             @Override
@@ -139,6 +152,11 @@ public class MockServiceBundle implements ServiceBundle {
             @Override
             public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds) {
                 // ignore
+            }
+
+            @Override
+            public void updateTaskDecision(DecisionContainer taskDecision) {
+
             }
         };
     }

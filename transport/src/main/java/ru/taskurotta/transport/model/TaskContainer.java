@@ -14,6 +14,8 @@ import java.util.UUID;
 public class TaskContainer implements Serializable {
 
     private UUID taskId;
+    private UUID processId;
+    private UUID pass;
     private String method;
     private String actorId;
     private TaskType type;
@@ -21,7 +23,6 @@ public class TaskContainer implements Serializable {
     private int errorAttempts;
     private ArgContainer[] args;
     private TaskOptionsContainer options;
-    private UUID processId;
     private boolean unsafe;
     private String[] failTypes;
 
@@ -31,11 +32,13 @@ public class TaskContainer implements Serializable {
 
     public TaskContainer() {
     }
-
-    public TaskContainer(UUID taskId, UUID processId, String method, String actorId,
+// todo: change ObjectFactory and serializers
+    public TaskContainer(UUID taskId, UUID processId, UUID pass, String method, String actorId,
                          TaskType type, long startTime, int errorAttempts,
                          ArgContainer[] args, TaskOptionsContainer options, boolean unsafe, String[] failTypes) {
         this.taskId = taskId;
+        this.processId = processId;
+        this.pass = pass;
         this.method = method;
         this.actorId = actorId;
         this.type = type;
@@ -43,7 +46,6 @@ public class TaskContainer implements Serializable {
         this.errorAttempts = errorAttempts;
         this.args = args;
         this.options = options;
-        this.processId = processId;
         this.unsafe = unsafe;
         this.failTypes = failTypes;
     }
@@ -109,6 +111,14 @@ public class TaskContainer implements Serializable {
         this.actorId = actorId;
     }
 
+    public UUID getPass() {
+        return pass;
+    }
+
+    public void setPass(UUID pass) {
+        this.pass = pass;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -124,6 +134,7 @@ public class TaskContainer implements Serializable {
         if (!Arrays.equals(failTypes, that.failTypes)) return false;
         if (method != null ? !method.equals(that.method) : that.method != null) return false;
         if (options != null ? !options.equals(that.options) : that.options != null) return false;
+        if (pass != null ? !pass.equals(that.pass) : that.pass != null) return false;
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
         if (type != that.type) return false;
@@ -134,6 +145,8 @@ public class TaskContainer implements Serializable {
     @Override
     public int hashCode() {
         int result = taskId != null ? taskId.hashCode() : 0;
+        result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (pass != null ? pass.hashCode() : 0);
         result = 31 * result + (method != null ? method.hashCode() : 0);
         result = 31 * result + (actorId != null ? actorId.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
@@ -141,7 +154,6 @@ public class TaskContainer implements Serializable {
         result = 31 * result + errorAttempts;
         result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
         result = 31 * result + (options != null ? options.hashCode() : 0);
-        result = 31 * result + (processId != null ? processId.hashCode() : 0);
         result = 31 * result + (unsafe ? 1 : 0);
         result = 31 * result + (failTypes != null ? Arrays.hashCode(failTypes) : 0);
         return result;
@@ -152,6 +164,7 @@ public class TaskContainer implements Serializable {
         return "TaskContainer{" +
                 "taskId=" + taskId +
                 ", processId=" + processId +
+                ", pass=" + pass +
                 ", method='" + method + '\'' +
                 ", actorId='" + actorId + '\'' +
                 ", type=" + type +

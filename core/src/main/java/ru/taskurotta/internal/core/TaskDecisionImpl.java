@@ -16,6 +16,7 @@ public class TaskDecisionImpl implements TaskDecision {
 
     private UUID uuid;
     private UUID processId;
+    private UUID pass;
     private Object value;
     private Task[] tasks;
     private Throwable exception;
@@ -23,27 +24,31 @@ public class TaskDecisionImpl implements TaskDecision {
     private long restartTime = NO_RESTART;
     private long executionTime;
 
-    public TaskDecisionImpl(UUID uuid, UUID processId, Object value, Task[] tasks, long executionTime) {
+    public TaskDecisionImpl(UUID uuid, UUID processId, UUID pass, Object value, Task[] tasks, long executionTime) {
         this.uuid = uuid;
         this.processId = processId;
+        this.pass = pass;
+        this.uuid = uuid;
         this.value = value;
         this.tasks = tasks;
         this.error = false;
         this.executionTime = executionTime;
     }
 
-    public TaskDecisionImpl(UUID uuid, UUID processId, Throwable exception, Task[] tasks) {
+    public TaskDecisionImpl(UUID uuid, UUID processId, UUID pass, Throwable exception, Task[] tasks) {
         this.uuid = uuid;
-        this.exception = exception;
         this.processId = processId;
+        this.pass = pass;
+        this.exception = exception;
         this.tasks = tasks;
         this.error = exception != null;
     }
 
-    public TaskDecisionImpl(UUID uuid, UUID processId, Throwable exception, Task[] tasks, long restartTime) {
+    public TaskDecisionImpl(UUID uuid, UUID processId, UUID pass, Throwable exception, Task[] tasks, long restartTime) {
         this.uuid = uuid;
-        this.exception = exception;
         this.processId = processId;
+        this.pass = pass;
+        this.exception = exception;
         this.tasks = tasks;
         this.error = exception != null;
         this.restartTime = restartTime;
@@ -88,6 +93,11 @@ public class TaskDecisionImpl implements TaskDecision {
     }
 
     @Override
+    public UUID getPass() {
+        return pass;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -97,6 +107,7 @@ public class TaskDecisionImpl implements TaskDecision {
         if (error != that.error) return false;
         if (restartTime != that.restartTime) return false;
         if (exception != null ? !exception.equals(that.exception) : that.exception != null) return false;
+        if (pass != null ? !pass.equals(that.pass) : that.pass != null) return false;
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         if (!Arrays.equals(tasks, that.tasks)) return false;
         if (uuid != null ? !uuid.equals(that.uuid) : that.uuid != null) return false;
@@ -109,6 +120,7 @@ public class TaskDecisionImpl implements TaskDecision {
     public int hashCode() {
         int result = uuid != null ? uuid.hashCode() : 0;
         result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (pass != null ? pass.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (tasks != null ? Arrays.hashCode(tasks) : 0);
         result = 31 * result + (exception != null ? exception.hashCode() : 0);
@@ -122,12 +134,13 @@ public class TaskDecisionImpl implements TaskDecision {
         return "TaskDecisionImpl{" +
                 "uuid=" + uuid +
                 ", processId=" + processId +
+                ", pass=" + pass +
                 ", value=" + value +
                 ", tasks=" + Arrays.toString(tasks) +
                 ", exception=" + exception +
                 ", error=" + error +
                 ", restartTime=" + restartTime +
                 ", executionTime=" + executionTime +
-                "} " + super.toString();
+                '}';
     }
 }

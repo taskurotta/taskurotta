@@ -20,6 +20,7 @@ public class SerializationTest {
     public static TaskContainer createTaskContainer() {
         UUID originalUuid = UUID.randomUUID();
         UUID processUuid = UUID.randomUUID();
+        UUID pass = UUID.randomUUID();
         TaskType originalTaskType = TaskType.WORKER;
         String originalName = "test.me.worker";
         String originalVersion = "7.6.5";
@@ -43,7 +44,9 @@ public class SerializationTest {
         TaskOptionsContainer originalOptions = new TaskOptionsContainer(argTypes, actorSchedulingOptions, null);
         String[] failTypes = {"java.lang.RuntimeException"};
 
-        return new TaskContainer(originalUuid, processUuid, originalMethod, originalActorId, originalTaskType, originalStartTime, originalErrorAttempts, new ArgContainer[]{originalArg1, originalArg2}, originalOptions, true, failTypes);
+        return new TaskContainer(originalUuid, processUuid, pass, originalMethod, originalActorId, originalTaskType,
+                originalStartTime, originalErrorAttempts, new ArgContainer[]{originalArg1, originalArg2},
+                originalOptions, true, failTypes);
     }
 
     public static DecisionContainer createDecisionContainer(boolean isError, UUID taskId) {
@@ -53,9 +56,11 @@ public class SerializationTest {
         tasks[0] = createTaskContainer();
         tasks[1] = createTaskContainer();
         if (isError) {
-            return new DecisionContainer(taskId, processId, null, createErrorContainer(), System.currentTimeMillis() + 9000l, tasks, "test", 1);
+            return new DecisionContainer(taskId, processId, null, null, createErrorContainer(), System
+                    .currentTimeMillis() + 9000l, tasks, "test", 1);
         } else {
-            return new DecisionContainer(taskId, processId, createArgSimpleValue(taskId), null, TaskDecision.NO_RESTART, tasks, "test", 1);
+            return new DecisionContainer(taskId, processId, null, createArgSimpleValue(taskId), null, TaskDecision
+                    .NO_RESTART, tasks, "test", 1);
         }
 
     }

@@ -26,5 +26,6 @@ public class ObjectTypes {
     public static final int PROCESS_DECISION_UNIT_OF_WORK = 17;
     public static final int TASK_KEY = 18;
     public static final int BSON = 19;
+    public static final int DECISION = 20;
 
 }

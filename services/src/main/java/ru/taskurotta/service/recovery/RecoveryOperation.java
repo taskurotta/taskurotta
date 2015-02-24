@@ -1,5 +1,7 @@
 package ru.taskurotta.service.recovery;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.executor.Operation;
 
 import java.util.UUID;
@@ -10,6 +12,8 @@ import java.util.UUID;
  * Time: 12:29
  */
 public class RecoveryOperation implements Operation {
+
+    private static final Logger logger = LoggerFactory.getLogger(RecoveryOperation.class);
 
     private UUID processId;
 
@@ -26,7 +30,12 @@ public class RecoveryOperation implements Operation {
 
     @Override
     public void run() {
-        recoveryProcessService.resurrect(processId);
+
+        try {
+            recoveryProcessService.resurrect(processId);
+        } catch (Throwable e) {
+            logger.error("Error on recovery operation: " + processId, e);
+        }
     }
 
     public UUID getProcessId() {

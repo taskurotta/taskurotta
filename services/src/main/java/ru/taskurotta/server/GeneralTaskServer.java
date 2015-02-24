@@ -126,18 +126,21 @@ public class GeneralTaskServer implements TaskServer {
             return null;
         }
 
-        // atomic statement
-        TaskQueueItem item = queueService.poll(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList());
-        if (item == null) {
-            return null;
-        }
+        while (true) {
 
-        // idempotent statement
-        TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId());
-        if (result == null) {
-            logger.error("Failed to get task for queue item [" + item + "] from store. Inconsistent state: possible data loss?");
+            TaskQueueItem item = queueService.poll(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList());
+            if (item == null) {
+                return null;
+            }
+
+            TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId(), false);
+            if (result == null) {
+                logger.warn("Failed to get task for queue item [" + item + "] from store");
+                continue;
+            }
+
+            return result;
         }
-        return result;
     }
 
     @Override
@@ -149,7 +152,11 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         // save it firstly
-        taskService.addDecision(taskDecision);
+        if (!taskService.finishTask(taskDecision)) {
+            logger.warn("{}/{} Task decision can not be saved", taskDecision.getTaskId(), taskDecision.getProcessId());
+            return;
+        }
+
         processDecision(taskDecision);
     }
 
@@ -204,7 +211,13 @@ public class GeneralTaskServer implements TaskServer {
 
                 // enqueue task immediately if needed
                 logger.debug("#[{}]/[{}]: enqueue error task = [{}]", processId, taskId, task);
-                enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
+
+                if (taskService.retryTask(taskId, processId, restartTime)) {
+                    enqueueTask(taskId, processId, task.getActorId(), restartTime, getTaskList(task));
+                } else {
+                    logger.warn("{}/{} Can not prepare task to retry. Operation taskService.retryTask() return is " +
+                            "false.", processId, taskId);
+                }
 
                 return;
             }
@@ -280,7 +293,7 @@ public class GeneralTaskServer implements TaskServer {
 
         // save decision with fatal flag
         taskDecision.getErrorContainer().setFatalError(true);
-        taskService.addDecision(taskDecision);
+        taskService.updateTaskDecision(taskDecision);
 
         // increments stat counter
         brokenProcessesCounter.incrementAndGet();

@@ -38,7 +38,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
     public static AtomicInteger restartedProcessesCounter = new AtomicInteger();
     public static AtomicInteger restartedTasksCounter = new AtomicInteger();
-    public static AtomicInteger resurrectedProcessesCounter = new AtomicInteger();
+    public static AtomicInteger resurrectedTasksCounter = new AtomicInteger();
 
     private QueueService queueService;
     private DependencyService dependencyService;
@@ -70,41 +70,61 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     //    @Override
     public boolean restartBrokenTasks(final UUID processId) {
 
+
         boolean result = false;
 
         Graph graph = dependencyService.getGraph(processId);
 
         final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, true);
 
-        brokenProcessService.delete(processId);
-        processService.markProcessAsStarted(processId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("restartBrokenTasks({}) getAllReadyTaskIds.size() = {}", processId, allReadyTaskIds.size());
+        }
 
         for (Map.Entry<UUID, Long> entry : allReadyTaskIds.entrySet()) {
 
             UUID taskId = entry.getKey();
+            logger.debug("restartBrokenTasks({}) analise task = {}", processId, taskId);
+
             DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
+
+            // skip tasks without decision
+            if (taskDecision == null) {
+                continue;
+            }
 
             // skip decisions without error
             if (!taskDecision.containsError()) {
+                logger.debug("{}/{} Can not resurrect task. Task has no error", taskId, processId);
                 continue;
             }
 
             // skip not fatal errors
             ErrorContainer errorContainer = taskDecision.getErrorContainer();
             if (!errorContainer.isFatalError()) {
+                logger.debug("{}/{} Can not resurrect task. Task has not fatal error", taskId, processId);
                 continue;
             }
 
             TaskContainer taskContainer = taskService.getTask(taskId, processId);
 
-            queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
-                    (taskContainer));
+            if (taskService.retryTask(taskId, processId, System.currentTimeMillis())) {
+                queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
+                        (taskContainer));
+                result = true;
 
-            result = true;
+                logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
+                resurrectedTasksCounter.incrementAndGet();
+            } else {
+                logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
+            }
+
         }
 
         if (result) {
-            resurrectedProcessesCounter.incrementAndGet();
+            brokenProcessService.delete(processId);
+            // todo: process can receive new broken tasks before this point
+            processService.markProcessAsStarted(processId);
         }
 
         return result;
@@ -263,6 +283,17 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 String taskList = TransportUtils.getTaskList(taskContainer);
                 String actorId = taskContainer.getActorId();
 
+                DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
+                if (decisionContainer != null) {
+                    ErrorContainer errorContainer = decisionContainer.getErrorContainer();
+                    if (errorContainer != null && errorContainer.isFatalError()) {
+
+                        // process is broken now. Skip it.
+                        taskContainers = null;
+                        continue;
+                    }
+                }
+
                 if (!isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)) {
 
                     // remove not ready task from collection
@@ -273,7 +304,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                 // try to prepare task
                 boolean result = true;
                 try {
-                    if (taskService.getTaskToExecute(taskId, processId) == null) {
+                    if (taskService.getTaskToExecute(taskId, processId, true) == null) {
                         result = false;
                     }
                 } catch (IllegalStateException ex) {
@@ -304,15 +335,22 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
                     String taskList = TransportUtils.getTaskList(taskContainer);
                     String actorId = taskContainer.getActorId();
 
-                    if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
+                    boolean restartResult = taskService.restartTask(taskId, processId, System.currentTimeMillis(),
+                            false);
+                    if (restartResult) {
+                        if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
 
-                        logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
-                                taskContainer);
+                            logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
+                                    taskContainer);
 
-                        restartedTasks++;
+                            restartedTasks++;
+                        } else {
+                            logger.debug("#[{}]/[{}]: can not restart task. enqueue operation is false", processId,
+                                    taskId, taskContainer);
+                        }
                     } else {
-                        logger.debug("#[{}]/[{}]: can not restart task. enqueue operation is false", processId,
-                                taskId, taskContainer);
+                        logger.debug("#[{}]/[{}]: can not restart task. taskService.restartTask() operation is false",
+                                processId, taskId, taskContainer);
                     }
                 }
             }
@@ -458,12 +496,16 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         TaskContainer startTaskContainer = processService.getStartTask(processId);
 
         // emulate TaskServer.startProcess()
+        UUID taskId = startTaskContainer.getTaskId();
+        taskService.restartTask(taskId, processId, System.currentTimeMillis(), true);
+
         dependencyService.startProcess(startTaskContainer);
         taskService.startProcess(startTaskContainer);
 
         logger.debug("#[{}]: restart process from start task [{}]", processId, startTaskContainer);
 
-        boolean result = queueService.enqueueItem(startTaskContainer.getActorId(), startTaskContainer.getTaskId(), processId,
+
+        boolean result = queueService.enqueueItem(startTaskContainer.getActorId(), taskId, processId,
                 startTaskContainer.getStartTime(), TransportUtils.getTaskList(startTaskContainer));
 
         if (result) {

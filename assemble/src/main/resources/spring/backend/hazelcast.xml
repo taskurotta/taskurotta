@@ -83,6 +83,12 @@
 
     <bean id="taskService" class="ru.taskurotta.service.storage.GeneralTaskService">
         <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="workerTimeoutMilliseconds">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.process.incomplete-timeout}"/>
+            </bean>
+        </constructor-arg>
+
     </bean>
 
     <bean id="dependencyService" class="ru.taskurotta.service.hz.dependency.HzDependencyService"
@@ -133,13 +139,13 @@
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="nodeLock" ref="recoveryNodeLock" />
-        <constructor-arg name="batchSize" value = "${recovery.find-incomplete-process-batch-size}" />
+        <constructor-arg name="nodeLock" ref="recoveryNodeLock"/>
+        <constructor-arg name="batchSize" value="${recovery.find-incomplete-process-batch-size}"/>
     </bean>
 
     <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
-        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
     </bean>
 
     <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
@@ -194,7 +200,8 @@
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nodeCustomName" value="${node.custom-name}"/>
-        <constructor-arg name="decisionProcessingExecutorService" value="${hz.executor-service.decisions.service-name}"/>
+        <constructor-arg name="decisionProcessingExecutorService"
+                         value="${hz.executor-service.decisions.service-name}"/>
         <constructor-arg name="maxPendingWorkers" value="${hz.executor-service.decisions.pending-workers}"/>
         <constructor-arg name="maxPendingLimit" value="${hz.executor-service.decisions.pending-limit}"/>
         <constructor-arg name="sleepOnOverloadMls">
@@ -211,7 +218,8 @@
 
     <!-- Metrics data support -->
     <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
-    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler"
+          init-method="init"/>
     <!-- Metrics data support -->
 
 </beans>

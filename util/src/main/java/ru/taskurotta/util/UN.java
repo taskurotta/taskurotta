@@ -14,24 +14,28 @@ public class UN {
 
     private static final Logger logger = LoggerFactory.getLogger(UN.class);
 
-    public static ConcurrentHashMap<UUID, List<Throwable>> tasksToQueue = new ConcurrentHashMap<UUID, List<Throwable>>(200);
-    public static ConcurrentHashMap<UUID, Object> tasksToResurrect = new ConcurrentHashMap<UUID, Object>(200);
+    public static ConcurrentHashMap<UUID, List<Throwable>> putRegistry = new ConcurrentHashMap<UUID, List<Throwable>>(200);
 
-    public static void put(UUID taskId) {
+    public static void put(UUID id) {
         List<Throwable> list = new ArrayList<Throwable>();
-        List<Throwable> oldList = UN.tasksToQueue.putIfAbsent(taskId, list);
+        List<Throwable> oldList = UN.putRegistry.putIfAbsent(id, list);
         if (oldList != null) {
             list = oldList;
         }
         list.add(new Throwable("" + System.currentTimeMillis()));
     }
 
-    public static void print(UUID taskId) {
-        List<Throwable> throwableList = UN.tasksToQueue.get(taskId);
+    public static void print(UUID id) {
+        List<Throwable> throwableList = UN.putRegistry.get(id);
+
+        if (throwableList == null) {
+            logger.error("UUID " + id + " has no registered put operation");
+            return;
+        }
 
         int i = 0;
         for (Throwable th: throwableList) {
-            logger.error("Task " + taskId + " enqueue + " + (++i) + " is", th);
+            logger.error("UUID " + id + " put + " + (++i) + " from", th);
         }
     }
 

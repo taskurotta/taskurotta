@@ -11,6 +11,7 @@ public class SerializationException extends RuntimeException {
 
     UUID taskId;
     UUID processId;
+    UUID pass;
 
     public SerializationException() {
     }
@@ -41,5 +42,13 @@ public class SerializationException extends RuntimeException {
 
     public void setProcessId(UUID processId) {
         this.processId = processId;
+    }
+
+    public UUID getPass() {
+        return pass;
+    }
+
+    public void setPass(UUID pass) {
+        this.pass = pass;
     }
 }

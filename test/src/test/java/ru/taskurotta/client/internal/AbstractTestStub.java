@@ -47,6 +47,8 @@ import static junit.framework.Assert.assertTrue;
  */
 public class AbstractTestStub {
 
+    private static final UUID PASS = UUID.randomUUID();
+
     protected MemoryQueueService memoryQueueService;
     protected GeneralTaskService memoryStorageService;
     protected DependencyService dependencyService;
@@ -202,12 +204,12 @@ public class AbstractTestStub {
     }
 
     public void release(UUID taskAId, Object value, Task... newTasks) {
-        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, PASS, value, newTasks, 0l);
         release(taskDecision);
     }
 
     public void release(UUID taskAId, Throwable error) {
-        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, error, null);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, PASS, error, null);
         release(taskDecision);
     }
 

@@ -19,7 +19,7 @@ public class AutoResurrectService {
 
     public AutoResurrectService(final BrokenProcessService brokenProcessService, final OperationExecutor operationExecutor) {
 
-        new DaemonThread("process resurrection thread", TimeUnit.SECONDS, 15) {
+        new DaemonThread("process resurrection thread", TimeUnit.SECONDS, 1) {
 
             @Override
             public void daemonJob() {

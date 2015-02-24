@@ -79,24 +79,42 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public void markProcessAsBroken(UUID processId) {
-        setProcessState(processId, Process.BROKEN);
+        setProcessState(processId, Process.START, Process.BROKEN);
     }
 
     @Override
     public void markProcessAsStarted(UUID processId) {
-        setProcessState(processId, Process.START);
+        setProcessState(processId, Process.BROKEN, Process.START);
     }
 
-    private void setProcessState(UUID processId, int state) {
-        Process process = getProcess(processId);
+    private void setProcessState(UUID processId, int oldState, int newState) {
 
-        if (process == null) {
-            logger.error("#[{}]: can't mark process as broken, because process not found in storage", processId);
-            return;
+        processIMap.lock(processId);
+
+        try {
+            Process process = getProcess(processId);
+
+            if (process == null) {
+                logger.warn("#[{}]: can't set process state to {}, because process not found in storage", processId,
+                        newState);
+                return;
+            }
+
+            if (process.getState() == newState) {
+                return;
+            }
+
+            if (process.getState() != oldState) {
+                logger.warn("#[{}]: can't set process state to {}, because process is not in {} state. Its value is " +
+                        "{}", processId, newState, oldState, process.getState());
+                return;
+            }
+
+            process.setState(newState);
+            processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
+        } finally {
+            processIMap.unlock(processId);
         }
-
-        process.setState(state);
-        processIMap.set(processId, process, 0, TimeUnit.NANOSECONDS);
     }
 
     @Override
@@ -105,16 +123,16 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         Collection<Process> values = null;
         if (!processIMap.isEmpty()) {
 
-            if (status>=0 || typeFilter!=null) {
+            if (status >= 0 || typeFilter != null) {
                 values = Collections2.filter(processIMap.values(), new Predicate<Process>() {
                     @Override
                     public boolean apply(Process input) {
                         boolean result = false;
                         if (input != null) {
-                            result = status>=0? (input.getState() == status): true;
+                            result = status >= 0 ? (input.getState() == status) : true;
                             if (result && typeFilter != null) {
-                                String actorType = input.getStartTask()!=null? input.getStartTask().getActorId(): null;
-                                result = actorType!=null && actorType.startsWith(typeFilter);
+                                String actorType = input.getStartTask() != null ? input.getStartTask().getActorId() : null;
+                                result = actorType != null && actorType.startsWith(typeFilter);
                             }
                         }
                         return result;
@@ -124,14 +142,14 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
                 values = processIMap.values();
             }
 
-            if (values!=null && !values.isEmpty()) {
+            if (values != null && !values.isEmpty()) {
                 int pageEnd = Math.min(pageSize * pageNumber, values.size());
                 int pageStart = (pageNumber - 1) * pageSize;
                 result.addAll(new ArrayList<>(values).subList(pageStart, pageEnd));
             }
         }
 
-        return new GenericPage<>(result, pageNumber, pageSize, values!=null? values.size(): 0);
+        return new GenericPage<>(result, pageNumber, pageSize, values != null ? values.size() : 0);
     }
 
     @Override
@@ -141,11 +159,11 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         if (!command.isEmpty()) {
             result.addAll(Collections2.filter(processIMap.values(), new Predicate<Process>() {
 
-                private boolean hasText(String target){
-                    return target != null && target.trim().length()>0;
+                private boolean hasText(String target) {
+                    return target != null && target.trim().length() > 0;
                 }
 
-                private boolean isValid (Process process) {
+                private boolean isValid(Process process) {
                     boolean isValid = true;
                     if (hasText(command.getCustomId())) {
                         isValid = process.getProcessId().toString().startsWith(command.getCustomId());

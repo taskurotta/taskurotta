@@ -70,7 +70,8 @@ public class ActorExecutor implements Runnable {
                         realEx = ex;
                     }
 
-                    TaskDecision errorDecision = new TaskDecisionImpl(taskId, ex.getProcessId(), realEx, null);
+                    TaskDecision errorDecision = new TaskDecisionImpl(taskId, ex.getProcessId(), ex.getPass(), realEx,
+                            null);
 
                     logger.error("Can not deserialize task. Try to release error decision [{}]", errorDecision);
 
@@ -102,7 +103,8 @@ public class ActorExecutor implements Runnable {
                         realEx = ex;
                     }
 
-                    TaskDecision errorDecision = new TaskDecisionImpl(taskId, ex.getProcessId(), realEx, null);
+                    TaskDecision errorDecision = new TaskDecisionImpl(taskId, ex.getProcessId(), ex.getPass(), realEx,
+                            null);
 
                     logger.error("Can not serialize task decision. Try to release error decision [{}]", errorDecision);
 

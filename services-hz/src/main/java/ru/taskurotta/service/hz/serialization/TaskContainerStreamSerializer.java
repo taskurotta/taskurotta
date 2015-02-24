@@ -62,7 +62,7 @@ public class TaskContainerStreamSerializer implements StreamSerializer<TaskConta
         boolean unsafe = in.readBoolean();
         String[] failTypes = readStringArray(in);
         UUID processId = UUIDSerializer.read(in);
-        return new TaskContainer(taskId, processId, method, actorId, taskType, startTime, attempts, containers,
+        return new TaskContainer(taskId, processId, null, method, actorId, taskType, startTime, attempts, containers,
                 taskOptionsContainer, unsafe, failTypes);
     }
 

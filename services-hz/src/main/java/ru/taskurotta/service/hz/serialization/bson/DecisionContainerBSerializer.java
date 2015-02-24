@@ -72,7 +72,7 @@ public class DecisionContainerBSerializer implements StreamBSerializer<DecisionC
         TaskContainer[] tasks = readArrayOfObjects(TASKS, TaskContainerBSerializer.arrayFactory,
                 taskContainerBSerializer, in);
 
-        return new DecisionContainer(taskId, processId, value, errorContainer, restartTime, tasks, actorId,
+        return new DecisionContainer(taskId, processId, null, value, errorContainer, restartTime, tasks, actorId,
                 executionTime);
     }
 }

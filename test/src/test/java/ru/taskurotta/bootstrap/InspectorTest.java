@@ -43,7 +43,7 @@ public class InspectorTest {
         RuntimeProcessor runtimeProcessor = runtimeProvider.getRuntimeProcessor(new TestWorkerImpl());
 
         TaskTarget taskTarget = new TaskTargetImpl(TaskType.WORKER, TestWorker.class.getName(), "1.0", "sum");
-        Task task = new TaskImpl(UUID.randomUUID(), UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1,
+        Task task = new TaskImpl(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), taskTarget, System.currentTimeMillis(), 1,
                 new Object[]{1, 2}, null, false, null);
         TaskDecision taskDecision = runtimeProcessor.execute(task);
 

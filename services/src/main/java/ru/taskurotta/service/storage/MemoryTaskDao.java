@@ -9,7 +9,12 @@ import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -20,13 +25,30 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MemoryTaskDao implements TaskDao {
 
     private final static Logger logger = LoggerFactory.getLogger(MemoryTaskDao.class);
+    private static final UUID PASS = UUID.randomUUID();
 
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<>();
     private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<>();
 
     @Override
-    public void addDecision(DecisionContainer taskDecision) {
+    public boolean finishTask(DecisionContainer taskDecision) {
         id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+        return true;
+    }
+
+    @Override
+    public UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
+        return PASS;
+    }
+
+    @Override
+    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+        return true;
+    }
+
+    @Override
+    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+        return true;
     }
 
     @Override
@@ -115,14 +137,14 @@ public class MemoryTaskDao implements TaskDao {
     @Override
     public List<TaskContainer> findTasks(final TaskSearchCommand command) {
         List<TaskContainer> result = new ArrayList<>();
-        if(command!=null && !command.isEmpty()) {
+        if (command != null && !command.isEmpty()) {
             result.addAll(Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
 
-                private boolean hasText(String target){
-                    return target != null && target.trim().length()>0;
+                private boolean hasText(String target) {
+                    return target != null && target.trim().length() > 0;
                 }
 
-                private boolean isValid (TaskContainer taskContainer) {
+                private boolean isValid(TaskContainer taskContainer) {
                     boolean isValid = true;
                     if (hasText(command.getTaskId())) {
                         isValid = isValid && taskContainer.getTaskId().toString().startsWith(command.getTaskId());
@@ -142,4 +164,10 @@ public class MemoryTaskDao implements TaskDao {
         }
         return result;
     }
+
+    @Override
+    public void updateTaskDecision(DecisionContainer taskDecision) {
+        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+    }
+
 }

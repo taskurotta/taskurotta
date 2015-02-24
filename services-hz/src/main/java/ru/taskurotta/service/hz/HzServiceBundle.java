@@ -14,11 +14,11 @@ import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.hz.config.HzConfigService;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
 import ru.taskurotta.service.hz.queue.HzQueueService;
+import ru.taskurotta.service.hz.storage.HzBrokenProcessService;
 import ru.taskurotta.service.hz.storage.HzProcessService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.GeneralTaskService;
-import ru.taskurotta.service.storage.MemoryBrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;
@@ -39,10 +39,10 @@ public class HzServiceBundle implements ServiceBundle {
     private BrokenProcessService brokenProcessService;
     private GarbageCollectorService garbageCollectorService;
 
-    public HzServiceBundle(int pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
+    public HzServiceBundle(int pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance, long workerTimeoutMilliseconds) {
 
         this.processService = new HzProcessService(hazelcastInstance, "Process");
-        this.taskService = new GeneralTaskService(taskDao);
+        this.taskService = new GeneralTaskService(taskDao, workerTimeoutMilliseconds);
         StorageFactory storageFactory = new DefaultStorageFactory(hazelcastInstance, "storageName", 100l);
         QueueFactory queueFactory = new DefaultQueueFactory(hazelcastInstance, storageFactory);
         this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay);
@@ -50,7 +50,7 @@ public class HzServiceBundle implements ServiceBundle {
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyService = new GeneralDependencyService(graphDao);
         this.configService = new HzConfigService(hazelcastInstance, "actorPreferencesMap");
-        this.brokenProcessService = new MemoryBrokenProcessService();
+        this.brokenProcessService = new HzBrokenProcessService(hazelcastInstance, "BrokenProcess");
     }
 
     @Override

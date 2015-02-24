@@ -129,7 +129,10 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         long startTime = clock.tick();
 
         // save it firstly
-        taskService.addDecision(taskDecision);
+        if (!taskService.finishTask(taskDecision)) {
+            logger.warn("{}/{} Task decision can not be saved", taskDecision.getTaskId(), taskDecision.getProcessId());
+            return;
+        }
 
         UUID processId = taskDecision.getProcessId();
         TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), processId);

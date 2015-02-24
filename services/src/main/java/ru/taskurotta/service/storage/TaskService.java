@@ -19,12 +19,11 @@ public interface TaskService {
 
     /**
      * All resolved promise arguments should be swapped to original value objects.
-     * Task state should be changed to "process"
      *
      * @param taskId - ID of the task
      * @return TaskContainer with the task
      */
-    public TaskContainer getTaskToExecute(UUID taskId, UUID processId);
+    public TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate);
 
 
     /**
@@ -35,7 +34,12 @@ public interface TaskService {
      */
     public TaskContainer getTask(UUID taskId, UUID processId);
 
-    public void addDecision(DecisionContainer taskDecision);
+
+    public boolean finishTask(DecisionContainer taskDecision);
+
+    public boolean retryTask(UUID taskId, UUID processId, long timeToStart);
+
+    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force);
 
     /**
      * Idempotent getter for task decisions
@@ -62,4 +66,5 @@ public interface TaskService {
      */
     public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
 
+    public void updateTaskDecision(DecisionContainer taskDecision);
 }

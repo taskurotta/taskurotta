@@ -28,9 +28,11 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     private final static Logger logger = LoggerFactory.getLogger(GeneralTaskService.class);
 
     private TaskDao taskDao;
+    private long workerTimeoutMilliseconds;
 
-    public GeneralTaskService(TaskDao taskDao) {
+    public GeneralTaskService(TaskDao taskDao, long workerTimeoutMilliseconds) {
         this.taskDao = taskDao;
+        this.workerTimeoutMilliseconds = workerTimeoutMilliseconds;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
+    public TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate) {
         logger.debug("getTaskToExecute(taskId[{}], processId[{}]) started", taskId, processId);
 
         TaskContainer task = getTask(taskId, processId);
@@ -103,6 +105,19 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             if (logger.isDebugEnabled()) {
                 logger.debug("Task id[{}], type[{}], method[{}] args after swap processing [{}]", task.getTaskId(), task.getType(), task.getMethod(), Arrays.asList(args));
             }
+        }
+
+        // todo: timeout should be calculated for every actor
+
+        if (!simulate) {
+            UUID pass = taskDao.startTask(taskId, processId, System.currentTimeMillis() + workerTimeoutMilliseconds, false);
+
+            if (pass == null) {
+                logger.error("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+                return null;
+            }
+
+            task.setPass(pass);
         }
 
         return task;
@@ -227,10 +242,12 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public void addDecision(DecisionContainer taskDecision) {
-        logger.debug("addDecision() taskDecision [{}]", taskDecision);
+    public boolean finishTask(DecisionContainer taskDecision) {
+        logger.debug("finishTask() taskDecision [{}]", taskDecision);
 
-        taskDao.addDecision(taskDecision);
+        if (!taskDao.finishTask(taskDecision)) {
+            return false;
+        }
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
@@ -248,6 +265,18 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 taskDao.addTask(taskContainer);
             }
         }
+
+        return true;
+    }
+
+    @Override
+    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+        return taskDao.retryTask(taskId, processId, timeToStart);
+    }
+
+    @Override
+    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+        return taskDao.restartTask(taskId, processId, timeToStart, force);
     }
 
     @Override
@@ -268,6 +297,11 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     @Override
     public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds) {
         taskDao.archiveProcessData(processId, finishedTaskIds);
+    }
+
+    @Override
+    public void updateTaskDecision(DecisionContainer taskDecision) {
+        taskDao.updateTaskDecision(taskDecision);
     }
 
 

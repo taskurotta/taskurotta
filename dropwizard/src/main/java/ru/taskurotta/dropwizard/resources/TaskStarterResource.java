@@ -47,7 +47,9 @@ public class TaskStarterResource {
         }
         UUID taskId = target.getTaskId() != null ? target.getTaskId() : UUID.randomUUID();
         UUID processId = target.getProcessId() != null ? target.getProcessId() : UUID.randomUUID();
-        return new TaskContainer(taskId, processId, target.getMethod(), target.getActorId(), target.getType(), target.getStartTime(), target.getErrorAttempts(), target.getArgs(), target.getOptions(), target.isUnsafe(), target.getFailTypes());
+        return new TaskContainer(taskId, processId, target.getPass(), target.getMethod(), target.getActorId(), target
+                .getType(), target.getStartTime(), target.getErrorAttempts(), target.getArgs(), target.getOptions(),
+                target.isUnsafe(), target.getFailTypes());
     }
 
     @Required

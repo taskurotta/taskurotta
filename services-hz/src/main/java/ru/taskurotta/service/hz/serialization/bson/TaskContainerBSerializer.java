@@ -87,7 +87,7 @@ public class TaskContainerBSerializer implements StreamBSerializer<TaskContainer
         boolean unsafe = in.readBoolean(UNSAFE, false);
         String[] failTypes = readArrayOfString(FAIL_TYPES, in);
 
-        return new TaskContainer(taskId, processId, method, actorId, type, startTime, errorAttempts, argContainers,
-                taskOptionsContainer, unsafe, failTypes);
+        return new TaskContainer(taskId, processId, null, method, actorId, type, startTime, errorAttempts,
+                argContainers, taskOptionsContainer, unsafe, failTypes);
     }
 }

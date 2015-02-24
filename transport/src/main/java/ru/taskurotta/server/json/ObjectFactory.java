@@ -219,13 +219,14 @@ public class ObjectFactory {
             } catch (SerializationException ex) {
                 ex.setTaskId(taskId);
                 ex.setProcessId(processId);
+                ex.setPass(taskContainer.getPass());
                 throw ex;
             }
         }
 
         TaskOptions opts = parseTaskOptions(taskContainer.getOptions());//TODO: may be parsing options is redundant? Client's ActorExecutor doesn't use them anyway
 
-        return new TaskImpl(taskId, processId, taskTarget, taskContainer.getStartTime(),
+        return new TaskImpl(taskId, processId, taskContainer.getPass(), taskTarget, taskContainer.getStartTime(),
                 taskContainer.getErrorAttempts(), args, opts, taskContainer.isUnsafe(), taskContainer.getFailTypes());
     }
 
@@ -284,8 +285,9 @@ public class ObjectFactory {
 
         TaskOptionsContainer taskOptionsContainer = dumpTaskOptions(task.getTaskOptions());
 
-        return new TaskContainer(taskId, processId, target.getMethod(), ActorUtils.getActorId(target), target.getType(),
-                task.getStartTime(), task.getErrorAttempts(), argContainers, taskOptionsContainer, task.isUnsafe(), task.getFailTypes());
+        return new TaskContainer(taskId, processId, task.getPass(), target.getMethod(), ActorUtils.getActorId(target), target
+                .getType(), task.getStartTime(), task.getErrorAttempts(), argContainers, taskOptionsContainer,
+                task.isUnsafe(), task.getFailTypes());
     }
 
 
@@ -351,13 +353,17 @@ public class ObjectFactory {
 
             }
 
-            DecisionContainer result = new DecisionContainer(taskId, processId, value, errorContainer, taskDecision.getRestartTime(), taskContainers, actorId, taskDecision.getExecutionTime());
+            DecisionContainer result = new DecisionContainer(taskId, processId, taskDecision.getPass(), value,
+                    errorContainer, taskDecision.getRestartTime(), taskContainers, actorId,
+                    taskDecision.getExecutionTime());
+
             logger.debug("DECISION: dumpResult for taskDecision[{}] is [{}]", taskDecision, result);
             return result;
 
         } catch (SerializationException ex) {
             ex.setTaskId(taskId);
             ex.setProcessId(processId);
+            ex.setPass(taskDecision.getPass());
             throw ex;
         }
     }

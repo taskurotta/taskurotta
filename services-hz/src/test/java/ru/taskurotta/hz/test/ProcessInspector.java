@@ -12,7 +12,7 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
-import ru.taskurotta.service.hz.serialization.bson.DecisionContainerBSerializer;
+import ru.taskurotta.service.hz.serialization.bson.DecisionBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.DecisionRowBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.GraphBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.ProcessBSerializer;
@@ -20,6 +20,7 @@ import ru.taskurotta.service.hz.serialization.bson.TaskContainerBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.TaskKeyBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.UUIDBSerializer;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -54,8 +55,8 @@ public class ProcessInspector {
                 getUUID("g0YD7ek9wGsjbGciFJL8sA=="));
 
 
-//        UUID processId = getUUID("qEFyRMzuXnK53BzXFcR1lw==");
-        UUID processId = UUID.fromString("be598a11-b622-4371-9bc8-9ab17dcf3d72");
+        UUID processId = getUUID("I0ieD4Yc1LEHzv3XSCZAnw==");
+//        UUID processId = UUID.fromString("79857526-5a1e-4378-bd32-333d82993053");
 
         System.err.println("Process ID = " + processId + "\n");
 
@@ -70,7 +71,7 @@ public class ProcessInspector {
         Map<UUID, Long> readyItems = graph.getAllReadyItems();
 
         if (readyItems == null) {
-            System.err.println("Graph haz no ready tasks");
+            System.err.println("Graph has no ready tasks");
         } else {
             for (UUID taskId : readyItems.keySet()) {
                 TaskKey taskKey = new TaskKey(taskId, processId);
@@ -99,7 +100,7 @@ public class ProcessInspector {
     }
 
     private static void printAllTaskDecisions(ArgContainer taskArg, UUID processId) {
-        DecisionContainer argTaskDecision = (DecisionContainer) taskDecisionStore.load(new TaskKey
+        Decision argTaskDecision = (Decision) taskDecisionStore.load(new TaskKey
                 (taskArg.getTaskId(), processId));
 
         UUID argTaskId = taskArg.getTaskId();
@@ -119,7 +120,13 @@ public class ProcessInspector {
                 break;
             }
 
-            ArgContainer innerTaskArg = argTaskDecision.getValue();
+            DecisionContainer decisionContainer = argTaskDecision.getDecisionContainer();
+
+            if (decisionContainer == null) {
+                System.err.println("decision container is null");
+            }
+
+            ArgContainer innerTaskArg = decisionContainer.getValue();
 
             if (innerTaskArg == null || !(innerTaskArg.isPromise() && !innerTaskArg
                     .isReady())) {
@@ -127,7 +134,7 @@ public class ProcessInspector {
             }
 
             argTaskId = innerTaskArg.getTaskId();
-            argTaskDecision = (DecisionContainer) taskDecisionStore.load(new
+            argTaskDecision = (Decision) taskDecisionStore.load(new
                     TaskKey(argTaskId, processId));
         }
     }
@@ -172,7 +179,7 @@ public class ProcessInspector {
 
         BSerializationService bSerializationService = BSerializationServiceFactory.newInstance(new UUIDBSerializer(),
                 new ProcessBSerializer(), new GraphBSerializer(), new TaskContainerBSerializer(), new
-                        DecisionContainerBSerializer(), new TaskKeyBSerializer(), new DecisionRowBSerializer());
+                        DecisionBSerializer(), new TaskKeyBSerializer(), new DecisionRowBSerializer());
 
         processStore = new MongoMapStore(mongoTemplate, bSerializationService, Process.class.getName());
         processStore.init(null, new Properties(), COLLECTION_PROCESS);
@@ -186,7 +193,7 @@ public class ProcessInspector {
         taskStore = new MongoMapStore(mongoTemplate, bSerializationService, TaskContainer.class.getName());
         taskStore.init(null, new Properties(), COLLECTION_TASK);
 
-        taskDecisionStore = new MongoMapStore(mongoTemplate, bSerializationService, DecisionContainer.class.getName());
+        taskDecisionStore = new MongoMapStore(mongoTemplate, bSerializationService, Decision.class.getName());
         taskDecisionStore.init(null, new Properties(), COLLECTION_TASK_DECISION);
 
     }

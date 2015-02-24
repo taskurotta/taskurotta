@@ -157,7 +157,8 @@ public class BsonSerializationTest {
         errorContainer.setMessage("messageErr");
         errorContainer.setStackTrace("stack");
 
-        return new DecisionContainer(UUID.randomUUID(), UUID.randomUUID(), argContainer1, errorContainer, 6666, taskContainers, "act4", 7777);
+        return new DecisionContainer(UUID.randomUUID(), UUID.randomUUID(), null, argContainer1, errorContainer, 6666,
+                taskContainers, "act4", 7777);
     }
 
 
@@ -220,7 +221,7 @@ public class BsonSerializationTest {
 
         UUID processId = UUID.randomUUID();
         String[] failTypes = {"java.lang.RuntimeException"};
-        return new TaskContainer(taskId, processId, method, actorId, type, startTime, errorAttempts, args,
+        return new TaskContainer(taskId, processId, null, method, actorId, type, startTime, errorAttempts, args,
                 taskOptionsContainer, true, failTypes);
     }
 

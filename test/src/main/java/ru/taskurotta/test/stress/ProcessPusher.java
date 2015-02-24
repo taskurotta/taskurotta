@@ -277,9 +277,9 @@ public class ProcessPusher {
                         "  delta = " + (pushedCount - startedCount) +
                         "  finished = " +
                         fpCounter.getCount() +
-                        "  broken = " +
+                        "  broken tasks = " +
                         GeneralTaskServer.brokenProcessesCounter.get() +
-                        "  resurrected = " + GeneralRecoveryProcessService.resurrectedProcessesCounter.get());
+                        "  resurrected tasks = " + GeneralRecoveryProcessService.resurrectedTasksCounter.get());
 
                 sb.append("\n processesOnTimeout = " +
                         DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +
