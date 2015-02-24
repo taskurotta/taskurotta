@@ -50,6 +50,10 @@ public class DecisionContainer implements Serializable {
         return errorContainer;
     }
 
+    public void setErrorContainer(ErrorContainer errorContainer) {
+        this.errorContainer = errorContainer;
+    }
+
     public TaskContainer[] getTasks() {
         return tasks;
     }

@@ -44,7 +44,6 @@ public class Graph implements Serializable {
      */
     private Map<UUID, Set<UUID>> links;
 
-    //todo convention name
     private Set<UUID> finishedItems;
 
     // modification stuff.
@@ -367,16 +366,16 @@ public class Graph implements Serializable {
             // update changed dependency
             if (dependencySubstitution != null) {
                 candidateLinks.add(dependencySubstitution);
-            }
+            } else {
+                if (candidateLinks.isEmpty()) {
+                    // GC items without dependencies
+                    links.remove(releaseCandidate);
 
-            if (candidateLinks.isEmpty()) {
-                // GC items without dependencies
-                links.remove(releaseCandidate);
+                    logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to" +
+                            " readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
 
-                logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to" +
-                        " readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
-
-                readyItemsList.add(releaseCandidate);
+                    readyItemsList.add(releaseCandidate);
+                }
             }
         }
     }
@@ -519,6 +518,10 @@ public class Graph implements Serializable {
         result = 31 * result + (int) (touchTimeMillis ^ (touchTimeMillis >>> 32));
         result = 31 * result + (int) (lastApplyTimeMillis ^ (lastApplyTimeMillis >>> 32));
         return result;
+    }
+
+    public void removeModification() {
+        modification = null;
     }
 }
 

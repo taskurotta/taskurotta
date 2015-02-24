@@ -24,7 +24,8 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
     @Override
     public void write(ObjectDataOutput out, HzGraphDao.DecisionRow decisionRow) throws IOException {
 
-        UUIDSerializer.write(out, decisionRow.getItemId());
+        UUIDSerializer.write(out, decisionRow.getTaskId());
+        UUIDSerializer.write(out, decisionRow.getProcessId());
 
         Modification modification = decisionRow.getModification();
         UUIDSerializer.write(out, modification.getCompletedItem());
@@ -65,6 +66,7 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
     @Override
     public HzGraphDao.DecisionRow read(ObjectDataInput in) throws IOException {
         UUID itemId = UUIDSerializer.read(in);
+        UUID processId = UUIDSerializer.read(in);
 
         Modification modification = new Modification();
         modification.setCompletedItem(UUIDSerializer.read(in));
@@ -95,9 +97,9 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
             UUID[] arrayOfUUID = new UUID[list.size()];
             list.toArray(arrayOfUUID);
 
-            return new HzGraphDao.DecisionRow(itemId, modification, arrayOfUUID);
+            return new HzGraphDao.DecisionRow(itemId, processId, modification, arrayOfUUID);
         }
-        return new HzGraphDao.DecisionRow(itemId, modification, null);
+        return new HzGraphDao.DecisionRow(itemId, processId, modification, null);
     }
 
 

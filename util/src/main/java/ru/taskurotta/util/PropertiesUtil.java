@@ -47,7 +47,7 @@ public class PropertiesUtil {
             if (sourceValue == null) {
                 continue;
             }
-            System.err.println("SET SET SET " + targetKey + " = " + sourceValue.toString());
+
             target.setProperty(targetKey, sourceValue.toString());
 
             if (traceSource != null) {

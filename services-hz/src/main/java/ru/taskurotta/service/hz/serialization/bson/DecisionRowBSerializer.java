@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.DecisionRow> {
 
+    public static final CString TASK_ID = new CString("t");
+    public static final CString PROCESS_ID = new CString("p");
     public static final CString WAIT_FOR_AFTER_RELEASE = new CString("wait");
     public static final CString NEW_ITEMS = new CString("new");
     public static final CString READY_ITEMS = new CString("ready");
@@ -25,7 +27,10 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
 
     @Override
     public void write(BDataOutput out, HzGraphDao.DecisionRow decisionRow) {
-        out.writeUUID(_ID, decisionRow.getItemId());
+        int writeIdLabel = out.writeObject(_ID);
+        out.writeUUID(TASK_ID, decisionRow.getTaskId());
+        out.writeUUID(PROCESS_ID, decisionRow.getProcessId());
+        out.writeObjectStop(writeIdLabel);
 
         Modification modification = decisionRow.getModification();
         out.writeUUID(WAIT_FOR_AFTER_RELEASE, modification.getWaitForAfterRelease());
@@ -56,7 +61,10 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
 
     @Override
     public HzGraphDao.DecisionRow read(BDataInput in) {
-        UUID itemId = in.readUUID(_ID);
+        int readIdLabel = in.readObject(_ID);
+        UUID taskId = in.readUUID(TASK_ID);
+        UUID processId = in.readUUID(PROCESS_ID);
+        in.readObjectStop(readIdLabel);
 
         UUID waitForAfterRelease = in.readUUID(WAIT_FOR_AFTER_RELEASE);
         Set<UUID> newItems = null;
@@ -83,8 +91,8 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
             }
         }
 
-        Modification modification = new Modification(itemId, waitForAfterRelease, links, newItems);
+        Modification modification = new Modification(taskId, waitForAfterRelease, links, newItems);
 
-        return new HzGraphDao.DecisionRow(itemId, modification, readyItems);
+        return new HzGraphDao.DecisionRow(taskId, processId, modification, readyItems);
     }
 }

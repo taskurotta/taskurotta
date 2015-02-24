@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.links.Modification;
+import ru.taskurotta.service.hz.TaskKey;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ public class HzGraphDao implements GraphDao {
     private final static Logger logger = LoggerFactory.getLogger(HzGraphDao.class);
 
     protected IMap<UUID, Graph> graphs;
-    private IMap<UUID, DecisionRow> decisions;
+    private IMap<TaskKey, DecisionRow> decisions;
 
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName, String decisionsMapName) {
         this.graphs = hzInstance.getMap(graphsMapName);
@@ -39,12 +40,14 @@ public class HzGraphDao implements GraphDao {
      * Table of row contains decision stuff
      */
     public static class DecisionRow implements Serializable {
-        private UUID itemId;
+        private UUID taskId;
+        private UUID processId;
         private Modification modification;
         private UUID[] readyItems;
 
-        public DecisionRow(UUID itemId, Modification modification, UUID[] readyItems) {
-            this.itemId = itemId;
+        public DecisionRow(UUID taskId, UUID processId, Modification modification, UUID[] readyItems) {
+            this.taskId = taskId;
+            this.processId = processId;
             this.modification = modification;
             this.readyItems = readyItems;
         }
@@ -57,7 +60,8 @@ public class HzGraphDao implements GraphDao {
 
             DecisionRow that = (DecisionRow) o;
 
-            if (itemId != null ? !itemId.equals(that.itemId) : that.itemId != null) return false;
+            if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+            if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
             if (modification != null ? !modification.equals(that.modification) : that.modification != null)
                 return false;
             if (!Arrays.equals(readyItems, that.readyItems)) return false;
@@ -67,14 +71,19 @@ public class HzGraphDao implements GraphDao {
 
         @Override
         public int hashCode() {
-            int result = itemId != null ? itemId.hashCode() : 0;
+            int result = taskId != null ? taskId.hashCode() : 0;
+            result = 31 * result + (processId != null ? processId.hashCode() : 0);
             result = 31 * result + (modification != null ? modification.hashCode() : 0);
             result = 31 * result + (readyItems != null ? Arrays.hashCode(readyItems) : 0);
             return result;
         }
 
-        public UUID getItemId() {
-            return itemId;
+        public UUID getTaskId() {
+            return taskId;
+        }
+
+        public UUID getProcessId() {
+            return processId;
         }
 
         public Modification getModification() {
@@ -88,7 +97,8 @@ public class HzGraphDao implements GraphDao {
         @Override
         public String toString() {
             return "DecisionRow{" +
-                    "itemId=" + itemId +
+                    "taskId=" + taskId +
+                    ", processId=" + processId +
                     ", modification=" + modification +
                     ", readyItems=" + Arrays.toString(readyItems) +
                     '}';
@@ -127,7 +137,7 @@ public class HzGraphDao implements GraphDao {
         Set<UUID> finishedItems = graph.getFinishedItems();
 
         for (UUID itemId : finishedItems) {
-            decisions.delete(itemId);
+            decisions.delete(new TaskKey(itemId, graphId));
         }
 
         graphs.delete(graphId);
@@ -144,10 +154,17 @@ public class HzGraphDao implements GraphDao {
         Modification modification = modifiedGraph.getModification();
 
         if (modification != null) {
-            DecisionRow decisionRow = new DecisionRow(modification.getCompletedItem(), modification, modifiedGraph.getReadyItems());
+            TaskKey taskKey = new TaskKey(modification.getCompletedItem(), modifiedGraph.getGraphId());
 
-            decisions.set(decisionRow.itemId, decisionRow, 0, TimeUnit.NANOSECONDS);
+            DecisionRow decisionRow = new DecisionRow(taskKey.getTaskId(), taskKey.getProcessId(),
+                    modification, modifiedGraph.getReadyItems());
+
+            decisions.set(taskKey, decisionRow, 0, TimeUnit.NANOSECONDS);
+
+            modifiedGraph.removeModification();
         }
+
+
 
         graphs.set(modifiedGraph.getGraphId(), modifiedGraph, 0, TimeUnit.NANOSECONDS);//hz feature
 
@@ -156,8 +173,8 @@ public class HzGraphDao implements GraphDao {
 
 
     @Override
-    public UUID[] getReadyTasks(UUID finishedTaskId) {
-        DecisionRow decisionRow = decisions.get(finishedTaskId);
+    public UUID[] getReadyTasks(UUID finishedTaskId, UUID processId) {
+        DecisionRow decisionRow = decisions.get(new TaskKey(finishedTaskId, processId));
         if (decisionRow != null) {
             return decisionRow.readyItems;
         }

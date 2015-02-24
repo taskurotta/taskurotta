@@ -32,7 +32,7 @@ public interface GraphDao {
      * @param finishedTaskId
      * @return
      */
-    public UUID[] getReadyTasks(UUID finishedTaskId);
+    public UUID[] getReadyTasks(UUID finishedTaskId, UUID processId);
 
 
     /**

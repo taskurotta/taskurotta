@@ -13,6 +13,7 @@ import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
 
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -82,7 +84,14 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
             UUID taskId = entry.getKey();
             DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
 
+            // skip decisions without error
             if (!taskDecision.containsError()) {
+                continue;
+            }
+
+            // skip not fatal errors
+            ErrorContainer errorContainer = taskDecision.getErrorContainer();
+            if (!errorContainer.isFatalError()) {
                 continue;
             }
 
@@ -177,7 +186,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
                         logger.debug("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis());
 
-                        int restartResult = restartTasks(taskContainers, processId);
+                        int restartResult = restartProcessTasks(taskContainers, processId);
                         restartedTasksCounter.addAndGet(restartResult);
 
                         boolContainer[0] = restartResult > 0;
@@ -237,7 +246,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         return successfullyRestartedProcesses;
     }
 
-    private int restartTasks(Collection<TaskContainer> taskContainers, UUID processId) {
+    private int restartProcessTasks(Collection<TaskContainer> taskContainers, UUID processId) {
         logger.trace("#[{}]: try to restart [{}] task containers", processId, taskContainers);
 
         int restartedTasks = 0;
@@ -246,19 +255,65 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
             long lastRecoveryStartTime = System.currentTimeMillis() - findIncompleteProcessPeriod;
 
-            for (TaskContainer taskContainer : taskContainers) {
+            // check tasks
+            for (Iterator<TaskContainer> it = taskContainers.iterator(); it.hasNext(); ) {
+                TaskContainer taskContainer = it.next();
                 UUID taskId = taskContainer.getTaskId();
                 long startTime = taskContainer.getStartTime();
                 String taskList = TransportUtils.getTaskList(taskContainer);
                 String actorId = taskContainer.getActorId();
 
-                if (isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)
-                        && queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
+                if (!isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)) {
 
-                    logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
-                            taskContainer);
+                    // remove not ready task from collection
+                    it.remove();
+                    continue;
+                }
 
-                    restartedTasks++;
+                // try to prepare task
+                boolean result = true;
+                try {
+                    if (taskService.getTaskToExecute(taskId, processId) == null) {
+                        result = false;
+                    }
+                } catch (IllegalStateException ex) {
+                    result = false;
+                }
+
+                // Need we restart process?
+                if (!result) {
+                    if (!restartProcessFromBeginning(processId)) {
+                        logger.error("Can not restart process from beginning. Process has ready task without " +
+                                "consistent arguments. Process id = {} task id = {}", processId, taskId);
+                    }
+
+                    // drop collection of tasks. We not need them in cause its process has been restarted.
+                    taskContainers = null;
+                    break;
+                }
+
+            }
+
+            // Should we restart task?
+            if (taskContainers != null) {
+
+                // restart tasks
+                for (TaskContainer taskContainer : taskContainers) {
+                    UUID taskId = taskContainer.getTaskId();
+                    long startTime = taskContainer.getStartTime();
+                    String taskList = TransportUtils.getTaskList(taskContainer);
+                    String actorId = taskContainer.getActorId();
+
+                    if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
+
+                        logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
+                                taskContainer);
+
+                        restartedTasks++;
+                    } else {
+                        logger.debug("#[{}]/[{}]: can not restart task. enqueue operation is false", processId,
+                                taskId, taskContainer);
+                    }
                 }
             }
 
@@ -403,8 +458,8 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
         TaskContainer startTaskContainer = processService.getStartTask(processId);
 
         // emulate TaskServer.startProcess()
-        taskService.startProcess(startTaskContainer);
         dependencyService.startProcess(startTaskContainer);
+        taskService.startProcess(startTaskContainer);
 
         logger.debug("#[{}]: restart process from start task [{}]", processId, startTaskContainer);
 

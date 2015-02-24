@@ -14,6 +14,7 @@ public class ErrorContainerBSerializer implements StreamBSerializer<ErrorContain
     private CString MESSAGE = new CString("message");
     private CString CLASS_NAMES = new CString("className");
     private CString STACK = new CString("stackTrace");
+    private CString FATAL_ERROR = new CString("fatal");
 
     @Override
     public Class<ErrorContainer> getObjectClass() {
@@ -25,6 +26,7 @@ public class ErrorContainerBSerializer implements StreamBSerializer<ErrorContain
         writeArrayOfString(CLASS_NAMES, object.getClassNames(), out);
         out.writeString(MESSAGE, object.getMessage());
         out.writeString(STACK, object.getStackTrace());
+        out.writeBoolean(FATAL_ERROR, object.isFatalError(), false);
     }
 
     @Override
@@ -33,7 +35,8 @@ public class ErrorContainerBSerializer implements StreamBSerializer<ErrorContain
         String[] classNames = readArrayOfString(CLASS_NAMES, in);
         String message = in.readString(MESSAGE);
         String stackTrace = in.readString(STACK);
+        boolean fatalError = in.readBoolean(FATAL_ERROR, false);
 
-        return new ErrorContainer(classNames, message, stackTrace);
+        return new ErrorContainer(classNames, message, stackTrace, fatalError);
     }
 }
