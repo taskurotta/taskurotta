@@ -8,6 +8,7 @@ import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.RecoveryProcessService;
+import ru.taskurotta.util.*;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,8 +27,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
     private boolean enabled;
 
     private CachedQueue<Operation> operationIQueue;
-
-    private volatile boolean notInShutdown = true;
 
     public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
                                        String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
@@ -63,18 +62,11 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
             }
         });
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                notInShutdown = false;
-            }
-        });
-
         executorService.submit(new Runnable() {
             @Override
             public void run() {
 
-                while (notInShutdown) {
+                while (!Shutdown.isTrue()) {
 
                     try {
                         Operation operation = operationIQueue.poll(1, TimeUnit.SECONDS);

@@ -1,13 +1,11 @@
 package ru.taskurotta.util;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  */
 public abstract class DaemonThread extends Thread {
 
-    AtomicBoolean isShutdown = new AtomicBoolean(false);
     TimeUnit sleepUnit;
     long sleepValue;
 
@@ -17,12 +15,6 @@ public abstract class DaemonThread extends Thread {
         this.sleepUnit = sleepUnit;
         this.sleepValue = sleepValue;
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                isShutdown.set(true);
-            }
-        });
     }
 
     public static class StopSignal extends RuntimeException {}
@@ -33,7 +25,7 @@ public abstract class DaemonThread extends Thread {
 
         while (true) {
 
-            if (isShutdown.get() || isInterrupted()) {
+            if (Shutdown.isTrue() || isInterrupted()) {
                 break;
             }
 

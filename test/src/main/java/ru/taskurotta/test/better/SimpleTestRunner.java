@@ -8,10 +8,14 @@ import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
 import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
 import ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderClient;
+import ru.taskurotta.util.Shutdown;
 
 import java.util.Queue;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,7 +34,6 @@ public class SimpleTestRunner {
     private ClientServiceManager clientServiceManager;
     private final Queue<Long> queue = new ConcurrentLinkedQueue<>();
     private long startTime = System.currentTimeMillis();
-    private AtomicBoolean isShutdown = new AtomicBoolean(false);
     private AtomicInteger threadCounter = new AtomicInteger(0);
     private volatile int lastMeasuredMaxQueue = 0;
 
@@ -38,12 +41,6 @@ public class SimpleTestRunner {
 
 
     public void initAndStart() throws InterruptedException {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                isShutdown.set(true);
-            }
-        });
         taskCountService = new TaskCountServiceImpl();
         executorService = Executors.newFixedThreadPool(threadSize);
         DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
@@ -172,7 +169,7 @@ public class SimpleTestRunner {
     }
 
     private boolean isConditionToRunTrue() {
-        if (isShutdown.get()) return false;
+        if (Shutdown.isTrue()) return false;
         return startTime + duration >= System.currentTimeMillis();
     }
 

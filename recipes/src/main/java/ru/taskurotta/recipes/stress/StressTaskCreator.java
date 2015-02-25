@@ -7,6 +7,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.multiplier.MultiplierDeciderClient;
+import ru.taskurotta.util.*;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -42,8 +43,6 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     public static MultiplierDeciderClient deciderClient;
     private static int shotSize;
 
-    private volatile boolean notInShutdown = true;
-
     public StressTaskCreator(ClientServiceManager clientServiceManager, boolean needRun, int shotSize, int initialCount) {
         this.clientServiceManager = clientServiceManager;
         this.needRun = needRun;
@@ -58,14 +57,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
 
         executorService = Executors.newFixedThreadPool(THREADS_COUNT);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                notInShutdown = false;
-            }
-        });
-
-        for (int i = 0; i < initialCount && notInShutdown; i++) {
+        for (int i = 0; i < initialCount && !Shutdown.isTrue(); i++) {
             sendInitialTasks();
         }
 
@@ -121,7 +113,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     @Override
     public void run() {
 
-        while (stabilizationCounter.get() < 10 && notInShutdown) {
+        while (stabilizationCounter.get() < 10 && !Shutdown.isTrue()) {
 //            LATCH = new CountDownLatch(1);
 //            sendInitialTasks(deciderClient);
             try {

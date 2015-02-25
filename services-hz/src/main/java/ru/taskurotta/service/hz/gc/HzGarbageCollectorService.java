@@ -2,13 +2,14 @@ package ru.taskurotta.service.hz.gc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
+import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.AbstractGCTask;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
-import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
-import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
+import ru.taskurotta.util.Shutdown;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -24,8 +25,6 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
     private boolean enabled;
 
     private CachedDelayQueue<UUID> garbageCollectorQueue;
-
-    private volatile boolean notInShutdown = true;
 
     public HzGarbageCollectorService(final ProcessService processService, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
@@ -55,18 +54,11 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
             }
         });
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                notInShutdown = false;
-            }
-        });
-
         for (int i = 0; i < poolSize; i++) {
             executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override
                 public void run() {
-                    while (notInShutdown) {
+                    while (!Shutdown.isTrue()) {
                         try {
                             logger.trace("Try to get process for garbage collector");
 

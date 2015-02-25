@@ -33,9 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * User: greg
- */
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
 
     private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
@@ -181,7 +178,9 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 try {
                     return runtimeProcessor.execute(task);
                 } finally {
-                    updateTimer("execute", task.getTarget(), executeTimers, System.currentTimeMillis() - startTime);
+                    if (logProfilerSeconds > 0) {
+                        updateTimer("execute", task.getTarget(), executeTimers, System.currentTimeMillis() - startTime);
+                    }
                 }
 
             }
