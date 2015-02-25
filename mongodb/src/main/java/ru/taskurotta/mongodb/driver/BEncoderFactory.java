@@ -1,8 +1,8 @@
-package ru.taskurotta.mongodb.driver.impl;
+package ru.taskurotta.mongodb.driver;
 
 import com.mongodb.DBEncoder;
 import com.mongodb.DBEncoderFactory;
-import ru.taskurotta.mongodb.driver.BSerializationService;
+import ru.taskurotta.mongodb.driver.impl.BEncoder;
 
 /**
  */

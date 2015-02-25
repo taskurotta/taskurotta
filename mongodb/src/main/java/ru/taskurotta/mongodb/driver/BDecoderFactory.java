@@ -1,8 +1,8 @@
-package ru.taskurotta.mongodb.driver.impl;
+package ru.taskurotta.mongodb.driver;
 
 import com.mongodb.DBDecoder;
 import com.mongodb.DBDecoderFactory;
-import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.mongodb.driver.impl.BDecoder;
 
 /**
  */

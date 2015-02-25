@@ -2,6 +2,7 @@ package ru.taskurotta.mongodb.driver.impl;
 
 import com.mongodb.DBDecoderFactory;
 import ru.taskurotta.mongodb.driver.BDataOutput;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 

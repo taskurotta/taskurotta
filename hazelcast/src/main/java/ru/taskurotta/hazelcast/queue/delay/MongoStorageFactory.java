@@ -16,8 +16,8 @@ import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
-import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
 import ru.taskurotta.util.Shutdown;
 
 import java.util.Map;

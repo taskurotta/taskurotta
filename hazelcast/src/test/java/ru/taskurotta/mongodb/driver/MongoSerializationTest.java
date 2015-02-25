@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.mongodb.driver.domain.RootPojo;
-import ru.taskurotta.mongodb.driver.impl.BDecoderFactory;
-import ru.taskurotta.mongodb.driver.impl.BEncoderFactory;
 import ru.taskurotta.mongodb.driver.io.RootPojoStreamBSerializer;
 
 import java.net.UnknownHostException;
