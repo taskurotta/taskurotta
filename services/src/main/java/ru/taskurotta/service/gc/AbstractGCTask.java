@@ -38,9 +38,9 @@ public abstract class AbstractGCTask implements Runnable {
 
         Graph graph = graphDao.getGraph(processId);
         if (graph == null) {
-            logger.error("Not found graph for process [{}], stop garbage collector for this process", processId);
+            logger.warn("Not found graph for process [{}], stop garbage collector for this process", processId);
             if (processService.getStartTask(processId) == null) {
-                logger.error("And processService has no start task for it [{}]", processId);
+                logger.warn("And processService has no start task for it [{}]", processId);
             }
             return;
         }

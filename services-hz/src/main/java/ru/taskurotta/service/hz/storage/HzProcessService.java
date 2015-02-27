@@ -70,7 +70,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         Process process = getProcess(processId);
 
         if (process == null) {
-            logger.error("#[{}]: can't get process start task, because process not found in storage", processId);
+            logger.warn("#[{}]: can't get process start task, because process not found in storage", processId);
             return null;
         }
 

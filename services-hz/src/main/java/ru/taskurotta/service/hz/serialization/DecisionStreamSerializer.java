@@ -21,11 +21,7 @@ public class DecisionStreamSerializer implements StreamSerializer<Decision> {
         UUIDSerializer.write(out, object.getProcessId());
         out.writeByte(object.getState());
         UUIDSerializer.write(out, object.getPass());
-
-        Decision.Timeouts timeouts = object.getTimeouts();
-
-        out.writeLong(timeouts.getWorkerTimeout());
-        out.writeBoolean(timeouts.isFailOnWorkerTimeout());
+        out.writeLong(object.getRecoveryTime());
 
         decisionContainerStreamSerializer.write(out, object.getDecisionContainer());
     }
@@ -37,12 +33,9 @@ public class DecisionStreamSerializer implements StreamSerializer<Decision> {
         UUID processId = UUIDSerializer.read(in);
         int state = in.readByte();
         UUID pass = UUIDSerializer.read(in);
+        long recoveryTime = in.readLong();
 
-        long workerTimeout = in.readLong();
-        boolean failOnWorkerTimeout = in.readBoolean();
-
-        return new Decision(taskId, processId, state, pass, new Decision.Timeouts(workerTimeout,
-                failOnWorkerTimeout), decisionContainerStreamSerializer.read(in));
+        return new Decision(taskId, processId, state, pass, recoveryTime, decisionContainerStreamSerializer.read(in));
     }
 
     @Override

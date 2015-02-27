@@ -121,14 +121,16 @@ public class HzTaskDao implements TaskDao {
             }
 
             UUID pass = UUID.randomUUID();
+            long recoveryTime = System.currentTimeMillis() + workerTimeout;
 
             if (decision == null) {
-                decision = new Decision(taskId, processId, Decision.STATE_WORK, pass, new Decision.Timeouts
-                        (workerTimeout, failOnWorkerTimeout), null);
+                decision = new Decision(taskId, processId, Decision.STATE_WORK, pass, recoveryTime,
+                        null);
             } else {
                 // assume that workerTimeout and failOnWorkerTimeouts values can not be changed
                 decision.setPass(pass);
                 decision.setState(Decision.STATE_WORK);
+                decision.setRecoveryTime(recoveryTime);
                 decision.setDecisionContainer(null);
             }
 

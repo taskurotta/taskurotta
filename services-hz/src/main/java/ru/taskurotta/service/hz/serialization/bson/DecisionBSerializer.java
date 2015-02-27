@@ -19,8 +19,7 @@ public class DecisionBSerializer implements StreamBSerializer<Decision> {
     public static final CString PROCESS_ID = new CString("p");
     public static final CString STATE = new CString("state");
     public static final CString PASS = new CString("pass");
-    public static final CString WORKER_TIMEOUT = new CString("wOut");
-    public static final CString FAIL_ON_WORKER_TIMEOUT = new CString("failWOut");
+    public static final CString RECOVERY_TIME = new CString("rTime");
     public static final CString DECISION_CONTAINER = new CString("c");
 
     private DecisionContainerBSerializer decisionContainerBSerializer = new DecisionContainerBSerializer();
@@ -41,9 +40,7 @@ public class DecisionBSerializer implements StreamBSerializer<Decision> {
         out.writeInt(STATE, object.getState());
         out.writeUUID(PASS, object.getPass());
 
-        Decision.Timeouts timeouts = object.getTimeouts();
-        out.writeLong(WORKER_TIMEOUT, timeouts.getWorkerTimeout(), 0);
-        out.writeBoolean(FAIL_ON_WORKER_TIMEOUT, timeouts.isFailOnWorkerTimeout(), false);
+        out.writeLong(RECOVERY_TIME, object.getRecoveryTime(), 0);
 
         writeObjectIfNotNull(DECISION_CONTAINER, object.getDecisionContainer(), decisionContainerBSerializer, out);
     }
@@ -59,10 +56,8 @@ public class DecisionBSerializer implements StreamBSerializer<Decision> {
         int state = in.readInt(STATE);
         UUID pass = in.readUUID(PASS);
 
-        long workerTimeout = in.readLong(WORKER_TIMEOUT);
-        boolean failOnWorkerTimeout = in.readBoolean(FAIL_ON_WORKER_TIMEOUT);
+        long recoveryTime = in.readLong(RECOVERY_TIME);
 
-        return new Decision(taskId, processId, state, pass, new Decision.Timeouts(workerTimeout,
-                failOnWorkerTimeout), readObject(DECISION_CONTAINER, decisionContainerBSerializer, in));
+        return new Decision(taskId, processId, state, pass, recoveryTime, readObject(DECISION_CONTAINER, decisionContainerBSerializer, in));
     }
 }
