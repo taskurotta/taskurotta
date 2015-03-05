@@ -10,6 +10,19 @@
     <artifactId>services-ora</artifactId>
     <name>Taskurotta :: Services implementation with Oracle</name>
 
+    <scm>
+        <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
+        <developerConnection>scm:git:git@github.com:taskurotta/taskurotta.git</developerConnection>
+        <url>http://taskurotta.org</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
     <profiles>
         <profile>
             <id>integration</id>
