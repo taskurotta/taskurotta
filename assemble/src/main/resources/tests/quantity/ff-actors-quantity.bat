@@ -1,0 +1,1 @@
+start java -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=target -cp ../../../../../target/assemble-0.8.0-SNAPSHOT.jar ru.taskurotta.bootstrap.Main -f ff-actors-quantity.yaml

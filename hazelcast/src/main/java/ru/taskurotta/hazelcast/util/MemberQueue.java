@@ -1,32 +1,22 @@
 package ru.taskurotta.hazelcast.util;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import com.hazelcast.core.*;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.LocalCachedQueueStats;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.ItemListener;
-import com.hazelcast.core.MigrationEvent;
-import com.hazelcast.core.MigrationListener;
-import com.hazelcast.core.Partition;
-import com.hazelcast.monitor.LocalQueueStats;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * User: romario
  * Date: 8/15/13
  * Time: 12:40 PM
  */
-public class MemberQueue<E> implements IQueue<E> {
+public class MemberQueue<E> implements CachedQueue<E> {
 
     private static final char MAP_INDEX_DELIMITER = '_';
 
-    private Map<Integer, IQueue<E>> id2queue;
+    private Map<Integer, CachedQueue<E>> id2queue;
     private volatile MemberState state;
 
     private String name;
@@ -80,7 +70,7 @@ public class MemberQueue<E> implements IQueue<E> {
         int maxPartitionsIndex = partitionService.getPartitions().size();
         for (int i = 0; i < maxPartitionsIndex; i++) {
 
-            IQueue queue = hzInstance.getQueue(name + MAP_INDEX_DELIMITER + i);
+            CachedQueue queue = hzInstance.getDistributedObject(CachedQueue.class.getName(), name + MAP_INDEX_DELIMITER + i);
             id2queue.put(i, queue);
 
             // progrev! :(
@@ -131,11 +121,6 @@ public class MemberQueue<E> implements IQueue<E> {
 
 
     @Override
-    public LocalQueueStats getLocalQueueStats() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public boolean offer(E e) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -155,7 +140,7 @@ public class MemberQueue<E> implements IQueue<E> {
         for (int i = 0; i < memberPartitionsQuantity; i++) {
             int partitionId = st.memberPartitions[st.counter++ % memberPartitionsQuantity];
 
-            IQueue queue = id2queue.get(partitionId);
+            CachedQueue queue = id2queue.get(partitionId);
 
             Object item = queue.poll();
 
@@ -178,10 +163,6 @@ public class MemberQueue<E> implements IQueue<E> {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public void put(E e) throws InterruptedException {
-
-    }
 
     @Override
     public boolean offer(E e, long timeout, TimeUnit unit) throws InterruptedException {
@@ -198,20 +179,6 @@ public class MemberQueue<E> implements IQueue<E> {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
-    public int remainingCapacity() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public int drainTo(Collection<? super E> c) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public int drainTo(Collection<? super E> c, int maxElements) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     public String getName() {
@@ -223,21 +190,15 @@ public class MemberQueue<E> implements IQueue<E> {
         return null;
     }
 
-    @Override
-    public String addItemListener(ItemListener<E> eItemListener, boolean b) {
-        //To change body of implemented methods use File | Settings | File Templates.
-        return null;
-    }
-
-    @Override
-    public boolean removeItemListener(String registrationId) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
 
     @Override
     public int size() {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public LocalCachedQueueStats getLocalQueueStats() {
+        return null;
     }
 
     @Override
@@ -284,7 +245,7 @@ public class MemberQueue<E> implements IQueue<E> {
 //
 //        smt = System.currentTimeMillis();
 
-        IQueue partitionQueue = id2queue.get(partitionId);
+        CachedQueue partitionQueue = id2queue.get(partitionId);
 
 //        System.err.println("MemberQueue.add() - get partitionQueue = " + partitionQueue + ". time: " + (System
 //                .currentTimeMillis() - smt));

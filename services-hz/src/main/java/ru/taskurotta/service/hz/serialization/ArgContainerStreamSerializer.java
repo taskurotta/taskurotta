@@ -44,7 +44,7 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
         }
 
         out.writeInt(argContainer.getCompositeValue().length);
-        for (ArgContainer arg : argContainer.getCompositeValue()) {
+        for (ArgContainer arg : compositeValue) {
             serializePlain(out, arg);
         }
     }
@@ -56,8 +56,7 @@ public class ArgContainerStreamSerializer implements StreamSerializer<ArgContain
             return null;
         }
 
-        ArgContainer arg;
-        arg = deserializePlain(in);
+        ArgContainer arg = deserializePlain(in);
         return compositeRead(in, arg);
     }
 

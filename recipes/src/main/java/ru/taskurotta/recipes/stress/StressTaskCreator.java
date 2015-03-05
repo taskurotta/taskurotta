@@ -7,6 +7,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.recipes.multiplier.MultiplierDeciderClient;
+import ru.taskurotta.util.*;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -55,7 +56,8 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
         deciderClient = clientProvider.getDeciderClient(MultiplierDeciderClient.class);
 
         executorService = Executors.newFixedThreadPool(THREADS_COUNT);
-        for (int i = 0; i < initialCount; i++) {
+
+        for (int i = 0; i < initialCount && !Shutdown.isTrue(); i++) {
             sendInitialTasks();
         }
 
@@ -111,7 +113,7 @@ public class StressTaskCreator implements Runnable, ApplicationListener<ContextR
     @Override
     public void run() {
 
-        while (stabilizationCounter.get() < 10) {
+        while (stabilizationCounter.get() < 10 && !Shutdown.isTrue()) {
 //            LATCH = new CountDownLatch(1);
 //            sendInitialTasks(deciderClient);
             try {

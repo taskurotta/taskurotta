@@ -17,7 +17,7 @@ public class Launcher {
         if (args.length > 0) {
             new Bootstrap(args).start();
         } else {
-            new Bootstrap("ru/taskurotta/recipes/parallel/config-hz.yml").start();
+            new Bootstrap("ru/taskurotta/recipes/parallel/wf-config.yml").start();
         }
     }
 

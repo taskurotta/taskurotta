@@ -3,7 +3,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,11 +12,59 @@
     <name>Taskurotta :: Util</name>
     <description>This module must depend only from Java!</description>
 
+    <scm>
+        <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
+        <developerConnection>scm:git:git@github.com:taskurotta/taskurotta.git</developerConnection>
+        <url>http://taskurotta.org</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <!-- metrics -->
+        <dependency>
+            <groupId>com.yammer.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${yammer.metrics.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yammer.metrics</groupId>
+            <artifactId>metrics-logback</artifactId>
+            <version>${yammer.metrics.version}</version>
+        </dependency>
+        <!-- /metrics -->
+
     </dependencies>
 
     <build>

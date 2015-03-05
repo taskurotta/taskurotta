@@ -82,7 +82,7 @@ public class ProxyInvocationHandler implements InvocationHandler {
 
         UUID processId = runtimeContext.getProcessId();
 
-        Task task = new TaskImpl(UUID.randomUUID(), processId, methodDescriptor.getTaskTarget(),
+        Task task = new TaskImpl(UUID.randomUUID(), processId, null, methodDescriptor.getTaskTarget(),
                 startTime, 0, args, taskOptions, methodDescriptor.isUnsafe(), methodDescriptor.getFailTypes());
 
         runtimeContext.handle(task);

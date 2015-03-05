@@ -3,12 +3,25 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>services</artifactId>
     <name>Taskurotta :: Services</name>
+
+    <scm>
+        <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
+        <developerConnection>scm:git:git@github.com:taskurotta/taskurotta.git</developerConnection>
+        <url>http://taskurotta.org</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
 
     <dependencies>
         <dependency>
@@ -25,6 +38,17 @@
             <groupId>ru.taskurotta</groupId>
             <artifactId>transport</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.carrotsearch</groupId>
+            <artifactId>java-sizeof</artifactId>
+            <version>0.0.4</version>
         </dependency>
 
         <dependency>
@@ -47,7 +71,7 @@
         <dependency>
             <groupId>com.yammer.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>2.2.0</version>
+            <version>${yammer.metrics.version}</version>
         </dependency>
 
         <dependency>

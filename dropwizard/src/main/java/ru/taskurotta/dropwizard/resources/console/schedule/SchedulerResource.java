@@ -221,7 +221,7 @@ public class SchedulerResource implements JobConstants {
             toc = new TaskOptionsContainer(null, tcc, null);
         }
 
-        return new TaskContainer(guid, guid, command.getMethod(), actorId,
+        return new TaskContainer(guid, guid, null, command.getMethod(), actorId,
                 type, startTime, JobConstants.DEFAULT_NUMBER_OF_ATTEMPTS,
                 getTaskArguments(guid, command.getArgs()), toc, false, null);
     }

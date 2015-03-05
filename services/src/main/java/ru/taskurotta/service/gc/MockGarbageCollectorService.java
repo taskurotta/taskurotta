@@ -19,7 +19,7 @@ public class MockGarbageCollectorService implements GarbageCollectorService {
     public MockGarbageCollectorService(ConfigService configService, ProcessService processService, GraphDao graphDao, TaskDao taskDao, Object queueFactory, String garbageCollectorQueueName, int poolSize, long delayTime) {}
 
     @Override
-    public void delete(UUID processId) {
+    public void collect(UUID processId) {
         // do nothing
     }
 

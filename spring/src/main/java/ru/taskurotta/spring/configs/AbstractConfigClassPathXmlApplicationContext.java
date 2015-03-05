@@ -3,6 +3,9 @@ package ru.taskurotta.spring.configs;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.util.StringUtils;
+import ru.taskurotta.util.MemoryAllocationConfigurator;
+import ru.taskurotta.util.PropertiesUtil;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -21,6 +24,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
     protected String[] contexts;
     protected Properties properties;
     protected String defaultPropertiesLocation;
+    protected String[] defaultPropertiesLocations;
 
     public void init() {
         if (applicationContext == null) {
@@ -31,20 +35,47 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                 applicationContext = new ClassPathXmlApplicationContext(contexts, false);
             }
 
-            if (properties != null && !properties.isEmpty()) {
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("customProperties", properties));
-            }
+            Properties result = new Properties();
+            Properties traceSource = new Properties();
 
-            if (defaultPropertiesLocation != null) {
+            if (StringUtils.hasText(defaultPropertiesLocation)) {
                 Properties defaultProperties;
                 try {
                     defaultProperties = PropertiesLoaderUtils.loadAllProperties(defaultPropertiesLocation);
+
                 } catch (IOException e) {
                     throw new IllegalStateException("Can not load default properties", e);
                 }
 
-                applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource("defaultProperties", defaultProperties));
+                result = PropertiesUtil.mergeProperties(result, defaultProperties, traceSource, "default");
             }
+
+            if (defaultPropertiesLocations != null) {
+
+                int i = 0;
+                for (String location : defaultPropertiesLocations) {
+                    Properties props;
+                    try {
+                        props = PropertiesLoaderUtils.loadAllProperties(location.trim());
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Can not load properties from [" + location + "]", e);
+                    }
+                    result = PropertiesUtil.mergeProperties(result, props, traceSource,
+                            "default[" + ++i + "]");
+                }
+            }
+
+            result = PropertiesUtil.mergeProperties(result, properties, traceSource, "yaml");
+
+            result = PropertiesUtil.mergeProperties(result, MemoryAllocationConfigurator.calculate(result), traceSource,
+                    "memory");
+
+            result = PropertiesUtil.mergeProperties(result, System.getProperties(), traceSource, "system");
+
+            PropertiesUtil.dumpProperties(this.getClass().getName(), result, traceSource);
+
+            applicationContext.getEnvironment().getPropertySources().addLast(new PropertiesPropertySource
+                    ("customProperties", result));
 
             applicationContext.refresh();
         }
@@ -65,4 +96,10 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
     public void setDefaultPropertiesLocation(String defaultPropertiesLocation) {
         this.defaultPropertiesLocation = defaultPropertiesLocation;
     }
+
+    public void setDefaultPropertiesLocations(String[] defaultPropertiesLocations) {
+        this.defaultPropertiesLocations = defaultPropertiesLocations;
+    }
+
+
 }

@@ -104,7 +104,7 @@ public class RetryPolicyConfig implements Serializable {
 
 
 
-    public void addExceptionToRetryException(Class<? extends Throwable> clazz) {
+    public void addExceptionToRetry(Class<? extends Throwable> clazz) {
         exceptionsToRetry.add(clazz.getName());
     }
 

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.metrics.handler.DataListener;
 import ru.taskurotta.service.metrics.handler.NumberDataListener;
+import ru.taskurotta.util.Shutdown;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +41,7 @@ public class MetricsFactory {
     public MetricsFactory(int dumpPeriod, int dumpingThreads, DataListener dataListener, NumberDataListener numberDataListener) {
         this.executorService = Executors.newScheduledThreadPool(dumpingThreads, new ThreadFactory() {
             private int counter = 0;
+
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
@@ -48,6 +50,9 @@ public class MetricsFactory {
                 return thread;
             }
         });
+
+        Shutdown.addHook(executorService);
+
         this.dumpPeriod = dumpPeriod;
         this.dataListener = dataListener;
         this.numberDataListener = numberDataListener;
@@ -59,7 +64,7 @@ public class MetricsFactory {
         if (metric == null) {
             synchronized (metricsCache) {
                 metric = metricsCache.get(name);
-                if(metric == null) {
+                if (metric == null) {
                     metric = instantiate(name, dumpPeriodMs, dataListener);
                     metricsCache.put(name, metric);
                 }
@@ -76,7 +81,7 @@ public class MetricsFactory {
     public PeriodicMetric getPeriodicInstance(String name, int periodSeconds) {
 
         //number of points to cover 24 hours period.
-        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS/Long.valueOf(periodSeconds).intValue();
+        int dataPointsCount = TimeConstants.SECONDS_IN_24_HOURS / periodSeconds;
 
         return new PeriodicMetric(name, executorService, numberDataListener, periodSeconds, dataPointsCount);
     }

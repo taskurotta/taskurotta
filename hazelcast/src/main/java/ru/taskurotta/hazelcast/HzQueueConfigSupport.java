@@ -1,14 +1,15 @@
 package ru.taskurotta.hazelcast;
 
-import com.hazelcast.config.QueueConfig;
-import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.QueueStoreFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
+import ru.taskurotta.hazelcast.queue.store.CachedQueueStoreFactory;
 
 /**
  * Bean for creating configuration for queues with backing map stores at runtime
@@ -23,28 +24,23 @@ public class HzQueueConfigSupport {
     private static final String QUEUE_CONFIG_LOCK = "queueConfigLock";
 
     private HazelcastInstance hzInstance;
-    private QueueStoreFactory queueStoreFactory;
+    private CachedQueueStoreFactory cachedQueueStoreFactory;
 
-    private int maxSize;
-    private int backupCount;
-    private int asyncBackupsCount;
-    private Integer memoryLimit;
+    private int cacheSize;
     private Boolean binary;
-    private Integer bulkLoad;
+    private Integer batchLoadSize;
+    private String objectClassName;
 
     private ILock queueConfigLock;
 
-    public HzQueueConfigSupport(HazelcastInstance hzInstance, QueueStoreFactory queueStoreFactory,
-                                int maxSize, int backupCount, int asyncBackupsCount,
-                                int memoryLimit, boolean binary, int bulkLoad) {
+    public HzQueueConfigSupport(HazelcastInstance hzInstance, CachedQueueStoreFactory cachedQueueStoreFactory,
+                                int cacheSize, boolean binary, int batchLoadSize, String objectClassName) {
         this.hzInstance = hzInstance;
-        this.queueStoreFactory = queueStoreFactory;
-        this.maxSize = maxSize;
-        this.backupCount = backupCount;
-        this.asyncBackupsCount = asyncBackupsCount;
-        this.memoryLimit = memoryLimit;
+        this.cachedQueueStoreFactory = cachedQueueStoreFactory;
+        this.cacheSize = cacheSize;
         this.binary = binary;
-        this.bulkLoad = bulkLoad;
+        this.batchLoadSize = batchLoadSize;
+        this.objectClassName = objectClassName;
 
         this.queueConfigLock = hzInstance.getLock(QUEUE_CONFIG_LOCK);
 
@@ -59,18 +55,16 @@ public class HzQueueConfigSupport {
                 return false;
             }
 
-            QueueConfig qc = new QueueConfig();
-            qc.setName(queueName);
-            qc.setMaxSize(maxSize);
-            qc.setBackupCount(backupCount);
-            qc.setAsyncBackupCount(asyncBackupsCount);
+            CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(hzInstance.getConfig(),
+                    queueName);
+            cachedQueueConfig.setCacheSize(cacheSize);
 
-            qc.setQueueStoreConfig(createQueueStoreConfig(queueName));
+            cachedQueueConfig.setQueueStoreConfig(createQueueStoreConfig(queueName));
 
-            hzInstance.getConfig().addQueueConfig(qc);
-            logger.debug("For queue name [{}] add config [{}]", queueName, qc);
+            logger.debug("For queue name [{}] add config [{}]", queueName, cachedQueueConfig);
 
-            hzInstance.getQueue(queueName);//ensures HZ queue initialization
+            //ensures HZ queue initialization
+            hzInstance.getDistributedObject(CachedQueue.class.getName(), queueName);
 
             return true;
         } finally {
@@ -78,22 +72,23 @@ public class HzQueueConfigSupport {
         }
     }
 
-    public QueueStoreConfig createQueueStoreConfig(String queueName) {
-        QueueStoreConfig queueStoreConfig = new QueueStoreConfig();
+    public CachedQueueStoreConfig createQueueStoreConfig(String queueName) {
 
-        queueStoreConfig.setProperty("binary", binary.toString());
-        queueStoreConfig.setProperty("memory-limit", memoryLimit.toString());
-        queueStoreConfig.setProperty("bulk-load", bulkLoad.toString());
-        queueStoreConfig.setStoreImplementation(queueStoreFactory.newQueueStore(queueName, null));
-        queueStoreConfig.setEnabled(true);
+        CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
+        cachedQueueStoreConfig.setEnabled(true);
+        cachedQueueStoreConfig.setBinary(binary);
+        cachedQueueStoreConfig.setBatchLoadSize(batchLoadSize);
+        cachedQueueStoreConfig.setObjectClassName(objectClassName);
 
-        return queueStoreConfig;
+        cachedQueueStoreConfig.setStoreImplementation(cachedQueueStoreFactory.newQueueStore(queueName, cachedQueueStoreConfig));
+
+        return cachedQueueStoreConfig;
     }
 
     private boolean isQueueExists(String name) {
         boolean result = false;
         for (DistributedObject inst : hzInstance.getDistributedObjects()) {
-            if ((inst instanceof IQueue) && name.equals(inst.getName())) {
+            if ((inst instanceof CachedQueue) && name.equals(inst.getName())) {
                 result = true;
                 break;
             }

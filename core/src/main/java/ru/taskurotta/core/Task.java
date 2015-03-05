@@ -77,4 +77,6 @@ public interface Task {
      * @return array of class names of exception classes
      */
     public String[] getFailTypes();
+
+    public UUID getPass();
 }

@@ -3,6 +3,7 @@ package ru.taskurotta.service.ora.storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.ServiceCriticalException;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
@@ -13,11 +14,13 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -30,12 +33,14 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     private DataSource dataSource;
 
-    private final static Logger log = LoggerFactory.getLogger(OraProcessService.class);
+    private final static Logger logger = LoggerFactory.getLogger(OraProcessService.class);
 
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
-    protected static final String SQL_GET_PROCESS_CNT_BY_STATE = "SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ? ";
-
+    protected static final String SQL_GET_PROCESS_CNT_BY_STATE =
+            "SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ? ";
+    protected static final String SQL_FIND_INCOMPLETE_PROCESSES =
+            "SELECT process_id FROM process WHERE state = ? AND start_time < ?";
 
 
     public OraProcessService(DataSource dataSource) {
@@ -53,7 +58,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             ps.setString(4, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         }
     }
@@ -66,7 +71,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             ps.setString(1, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         }
     }
@@ -74,7 +79,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public void startProcess(TaskContainer task) {
 
-        log.debug("Starting process with TaskContainer [{}]", task);
+        logger.debug("Starting process with TaskContainer [{}]", task);
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state, start_json, actor_id) VALUES (?, ?, ?, ?, ?, ?, ?)")
@@ -89,7 +94,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             ps.setString(7, task.getActorId());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         }
     }
@@ -107,7 +112,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
                 result = createProcessFromResultSet(rs);
             }
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
@@ -128,7 +133,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
                 result = taskSerializer.deserialize(rs.getString("start_json"));
             }
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
@@ -138,20 +143,29 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public void markProcessAsBroken(UUID processId) {
-        log.trace("Try to mark process [{}] as broken([{}])", processId, Process.BROKEN);
+        setProcessState(processId, Process.BROKEN);
+    }
+
+    @Override
+    public void markProcessAsStarted(UUID processId) {
+        setProcessState(processId, Process.START);
+    }
+
+    private void setProcessState(UUID processId, int state) {
+        logger.trace("Try to mark process [{}] state as ([{}])", processId, state);
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS set STATE = ? WHERE PROCESS_ID = ?")) {
 
-            ps.setInt(1, Process.BROKEN);
+            ps.setInt(1, state);
             ps.setString(2, processId.toString());
             ps.executeUpdate();
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         }
 
-        log.debug("Process [{}] marked as broken([{}])", processId, Process.BROKEN);
+        logger.debug("Process [{}] state marked as ([{}])", processId, state);
     }
 
     @Override
@@ -191,13 +205,13 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
                 totalCount = rs.getLong("cnt");
             }
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
         }
 
-        log.debug("Process list got by params: pageNum[{}], pageSize[{}], status[{}] is [{}]", pageNumber, pageSize, status, result);
+        logger.debug("Process list got by params: pageNum[{}], pageSize[{}], status[{}] is [{}]", pageNumber, pageSize, status, result);
 
         return new GenericPage<>(result, pageNumber, pageSize, totalCount);
     }
@@ -226,7 +240,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
                     result.add(createProcessFromResultSet(rs));
                 }
             } catch (SQLException ex) {
-                log.error("DataBase exception on query ["+query+"]: " + ex.getMessage(), ex);
+                logger.error("DataBase exception on query [" + query + "]: " + ex.getMessage(), ex);
                 throw new ServiceCriticalException("Database error", ex);
             } finally {
                 closeResultSet(rs);
@@ -251,7 +265,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
                 result = rs.getInt("cnt");
             }
         } catch (SQLException ex) {
-            log.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         }
         return result;
@@ -289,5 +303,45 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         process.setStartTask(taskSerializer.deserialize(resultSet.getString("start_json")));
 
         return process;
+    }
+
+    @Override
+    public ResultSetCursor findProcesses(long recoveryTime, int limit) {
+        final Collection<UUID> result = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(getSql(limit))) {
+
+            preparedStatement.setInt(1, Process.START);
+            preparedStatement.setLong(2, recoveryTime);
+            if (limit>0) {
+                preparedStatement.setInt(3, limit);
+            }
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                UUID processId = UUID.fromString(resultSet.getString("process_id"));
+                result.add(processId);
+            }
+
+        } catch (Throwable e) {
+            logger.error("Cannot find incomplete before time["+ recoveryTime +"]processes limit["+limit+"] due to database error", e);
+            throw new ServiceCriticalException("Incomplete processes search before time["+ recoveryTime +"] failed", e);
+        }
+        return new ResultSetCursor() {
+            @Override
+            public void close() throws IOException {
+
+            }
+
+            @Override
+            public Collection<UUID> getNext() {
+                return result;
+            }
+        };
+    }
+
+    private String getSql(int limit) {
+        return limit>0? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? ": SQL_FIND_INCOMPLETE_PROCESSES;
     }
 }

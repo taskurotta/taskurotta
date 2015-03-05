@@ -114,7 +114,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
 */
                 AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
                 MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method), -1, -1,
-                        null != acceptFail, getFailNames(acceptFail));
+                        acceptFail != null, getFailNames(acceptFail));
 
                 method2TaskTargetCache.put(method, descriptor);
             }
@@ -127,7 +127,7 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
         for (Method method : deciderInterface.getDeclaredMethods()) {
 
             Execute executeAnnotation = method.getAnnotation(Execute.class);
-            if (null != executeAnnotation) {
+            if (executeAnnotation != null) {
 
                 if (!isPublicMethod(method)) {
                     throw new IncorrectExecuteMethodDefinition("@Execute method must be public", target);
@@ -144,7 +144,8 @@ public class AsynchronousDeciderProxyFactory extends CachedProxyFactory {
                         AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
 
                         MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method),
-                                positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, getFailNames(acceptFail));
+                                positionActorSchedulingOptions, positionPromisesWaitFor, acceptFail != null,
+                                getFailNames(acceptFail));
                         method2TaskTargetCache.put(implementationMethod, descriptor);
                         break;
                     }

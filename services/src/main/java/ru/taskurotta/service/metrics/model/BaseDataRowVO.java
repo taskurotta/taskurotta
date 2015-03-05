@@ -1,7 +1,6 @@
 package ru.taskurotta.service.metrics.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,8 +13,8 @@ public class BaseDataRowVO {
     protected int size = -1;
 
     protected final AtomicInteger counter = new AtomicInteger(0);
-    protected AtomicLong updated = new AtomicLong(-1);
-    protected AtomicLong lastActive = new AtomicLong(-1);
+    protected volatile long updated = -1L;
+    protected volatile long lastActive = -1L;
 
     public BaseDataRowVO(int size, String metricName, String dataSetName) {
         this.metricName = metricName;
@@ -37,11 +36,11 @@ public class BaseDataRowVO {
     }
 
     public long getUpdated() {
-        return this.updated.get();
+        return this.updated;
     }
 
     public long getLatestActivity() {
-        return this.lastActive.get();
+        return this.lastActive;
     }
 
 }

@@ -25,47 +25,52 @@
                 </hz:join>
             </hz:network>
 
-            <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
+            <hz:executor-service name="${hz.executor-service.decisions.service-name}"
+                                 pool-size="${hz.executor-service.decisions.pool-size}" queue-capacity="0"/>
 
             <hz:map name="${hz.map.task.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="${hz.map.general.max-size}" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                    max-size="${hz.map.task.memory.max-size}" eviction-percentage="25"
+                    max-size-policy="USED_HEAP_PERCENTAGE">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.decision.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="${hz.map.general.max-size}" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                    max-size="${hz.map.decision.memory.max-size}" eviction-percentage="25"
+                    max-size-policy="USED_HEAP_PERCENTAGE">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskDecisionMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.graph.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="${hz.map.general.max-size}" eviction-percentage="25" max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                    max-size="${hz.map.graph.memory.max-size}" eviction-percentage="25"
+                    max-size-policy="USED_HEAP_PERCENTAGE">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.graph-decision.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="1000" eviction-percentage="25" max-size-policy="PER_NODE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                    max-size="${hz.map.graph-decision.memory.max-size}" eviction-percentage="25"
+                    max-size-policy="USED_HEAP_PERCENTAGE">
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphDecisionMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.process.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
-                    max-size="${hz.map.general.max-size}" eviction-percentage="25"
+                    max-size="${hz.map.process.memory.max-size}" eviction-percentage="25"
                     max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="processMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.broken-process.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
                     max-idle-seconds="0"
                     max-size="1000" eviction-percentage="25" max-size-policy="PER_NODE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="brokenProcessMapStore"/>
             </hz:map>
 
             <hz:map name="${hz.map.actor-preferences.name}" backup-count="0">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="mapStore"/>
+                <hz:map-store enabled="true" write-delay-seconds="0" implementation="actorsPrefMapStore"/>
             </hz:map>
 
             <hz:serialization>
@@ -78,6 +83,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.BrokenProcessStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.transport.model.Decision"
+                                   class-name="ru.taskurotta.service.hz.serialization.DecisionStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.dependency.HzGraphDao.DecisionRow"
                                    class-name="ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
@@ -96,8 +103,14 @@
                                    class-name="ru.taskurotta.service.hz.serialization.UUIDStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.queue.TaskQueueItem"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskQueueItemSteamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.StorageItem"
+                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.StorageItemStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.recovery.RecoveryOperation"
+                                   class-name="ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.config.model.ActorPreferences"
+                                   class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.hz.server.HazelcastTaskServer.ProcessDecisionUnitOfWork"
+                                   class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
         </hz:config>

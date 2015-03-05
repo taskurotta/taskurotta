@@ -1,33 +1,36 @@
 package ru.taskurotta.recipes.stress;
 
+import ru.taskurotta.internal.core.ArgType;
+import ru.taskurotta.internal.core.TaskType;
+import ru.taskurotta.recipes.multiplier.MultiplierDecider;
 import ru.taskurotta.service.ServiceBundle;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.console.model.BrokenProcess;
-import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
-import ru.taskurotta.recipes.multiplier.MultiplierDecider;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,6 +41,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * Time: 11:10 AM
  */
 public class MockServiceBundle implements ServiceBundle {
+
+    private static final UUID PASS = UUID.randomUUID();
 
     private static TaskContainer createRandomMultiplyTaskContainer() {
         UUID taskId = UUID.randomUUID();
@@ -51,11 +56,11 @@ public class MockServiceBundle implements ServiceBundle {
         String a = Integer.toString(ThreadLocalRandom.current().nextInt());
         String b = Integer.toString(ThreadLocalRandom.current().nextInt());
 
-        return new TaskContainer(taskId, processId, "multiply",
+        return new TaskContainer(taskId, processId, PASS, "multiply",
                 actorId, TaskType.DECIDER_START, 0, 1, new ArgContainer[]{
-                    new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, a),
-                    new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, b)},
-                new TaskOptionsContainer(new ArgType[] {ArgType.NONE, ArgType.NONE}), false, null);
+                new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, a),
+                new ArgContainer("java.lang.Integer", ArgContainer.ValueType.PLAIN, null, true, false, b)},
+                new TaskOptionsContainer(new ArgType[]{ArgType.NONE, ArgType.NONE}), false, null);
     }
 
     @Override
@@ -85,6 +90,31 @@ public class MockServiceBundle implements ServiceBundle {
             public void markProcessAsBroken(UUID processId) {
 
             }
+
+            @Override
+            public void markProcessAsStarted(UUID processId) {
+
+            }
+
+            @Override
+            public ru.taskurotta.service.console.model.Process getProcess(UUID processUUID) {
+                return null;
+            }
+
+            @Override
+            public ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit) {
+                return new ResultSetCursor<UUID>() {
+                    @Override
+                    public Collection<UUID> getNext() {
+                        return Collections.EMPTY_LIST;
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+
+                    }
+                };
+            }
         };
     }
 
@@ -97,7 +127,7 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
+            public TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate) {
                 return createRandomMultiplyTaskContainer(taskId, processId);
             }
 
@@ -107,8 +137,19 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public void addDecision(DecisionContainer taskDecision) {
+            public boolean finishTask(DecisionContainer taskDecision) {
                 // ignore
+                return true;
+            }
+
+            @Override
+            public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+                return true;
+            }
+
+            @Override
+            public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+                return true;
             }
 
             @Override
@@ -129,6 +170,11 @@ public class MockServiceBundle implements ServiceBundle {
             @Override
             public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds) {
                 // ignore
+            }
+
+            @Override
+            public void updateTaskDecision(DecisionContainer taskDecision) {
+
             }
         };
     }
@@ -151,8 +197,8 @@ public class MockServiceBundle implements ServiceBundle {
                 taskQueueItem.setTaskId(UUID.randomUUID());
                 taskQueueItem.setTaskList(taskList);
 
-                counter ++;
-                int currentMemMegaBytes = (int) (Runtime.getRuntime().freeMemory() / 1024 /1024);
+                counter++;
+                int currentMemMegaBytes = (int) (Runtime.getRuntime().freeMemory() / 1024 / 1024);
                 if (maxMemoMegabytes < currentMemMegaBytes) {
                     maxMemoMegabytes = currentMemMegaBytes;
                 }
@@ -290,7 +336,7 @@ public class MockServiceBundle implements ServiceBundle {
     public GarbageCollectorService getGarbageCollectorService() {
         return new GarbageCollectorService() {
             @Override
-            public void delete(UUID processId) {
+            public void collect(UUID processId) {
                 // ignore
             }
 

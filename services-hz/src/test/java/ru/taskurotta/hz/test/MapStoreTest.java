@@ -1,10 +1,7 @@
 package ru.taskurotta.hz.test;
 
-import java.util.UUID;
-
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
@@ -15,8 +12,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.queue.TaskQueueItem;
+
+import java.util.UUID;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,6 +31,8 @@ public class MapStoreTest {
     protected HazelcastInstance hzInstance;
     protected MongoTemplate mongoTemplate;
 
+    private static String MONGO_DB_NAME = "test";
+
     protected static final String PURE_MAPSTORE_MAP = "pureMapStoreTest";
     protected static final String PURE_EVICTION_MAP = "pureEvictionTest";
     protected static final String MAPSTORE_EVICTION_MAP = "mapStoreWithEvictionTest";
@@ -39,6 +41,7 @@ public class MapStoreTest {
 
     @Before
     public void init() {
+
         ApplicationContext appContext = new ClassPathXmlApplicationContext("appContext.xml");
         hzInstance = appContext.getBean("hzInstance", HazelcastInstance.class);
         mongoTemplate = appContext.getBean("mongoTemplate", MongoTemplate.class);
@@ -174,7 +177,7 @@ public class MapStoreTest {
     public void testQueueMapStore() {
         String testQueueName = QUEUE_MAP_NAME;
         String testMapName = "q:" + testQueueName;
-        IQueue<TaskQueueItem> hzQueue = hzInstance.getQueue(testQueueName);
+        CachedQueue<TaskQueueItem> hzQueue = hzInstance.getDistributedObject(CachedQueue.class.getName(), testQueueName);
         IMap hzMap = hzInstance.getMap(testMapName);//direct link to map backing this queue
         DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
 

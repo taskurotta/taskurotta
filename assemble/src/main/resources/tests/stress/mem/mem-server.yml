@@ -25,7 +25,7 @@ spreader:
           mongo.port: 27017
           gc.enabled: false
           recovery.enabled: false
-          hz.queue.task.memory-limit: 10000
+          hz.queue.task.cache-size: 10000
           hz.map.general.max-size: 10
 
 
@@ -37,7 +37,7 @@ profiler:
         properties:
           exitAfterAll: false
           tasksForStat: 1000
-          maxTaskQuantity: 1000000
+          maxProcessQuantity: 1000000
           taskPerProcess: 1
 
 actor:

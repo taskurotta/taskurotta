@@ -13,6 +13,7 @@ public class DecisionContainer implements Serializable {
 
     private UUID taskId;
     private UUID processId;
+    private UUID pass;
     private ArgContainer value;
     private ErrorContainer errorContainer;
     private long restartTime;
@@ -23,9 +24,11 @@ public class DecisionContainer implements Serializable {
     public DecisionContainer() {
     }
 
-    public DecisionContainer(UUID taskId, UUID processId, ArgContainer value, ErrorContainer errorContainer, long restartTime, TaskContainer[] tasks, String actorId, long executionTime) {
+    public DecisionContainer(UUID taskId, UUID processId, UUID pass, ArgContainer value, ErrorContainer errorContainer,
+                             long restartTime, TaskContainer[] tasks, String actorId, long executionTime) {
         this.taskId = taskId;
         this.processId = processId;
+        this.pass = pass;
         this.value = value;
         this.errorContainer = errorContainer;
         this.restartTime = restartTime;
@@ -50,6 +53,10 @@ public class DecisionContainer implements Serializable {
         return errorContainer;
     }
 
+    public void setErrorContainer(ErrorContainer errorContainer) {
+        this.errorContainer = errorContainer;
+    }
+
     public TaskContainer[] getTasks() {
         return tasks;
     }
@@ -70,18 +77,35 @@ public class DecisionContainer implements Serializable {
         return executionTime;
     }
 
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
+    }
+
+    public void setProcessId(UUID processId) {
+        this.processId = processId;
+    }
+
+    public UUID getPass() {
+        return pass;
+    }
+
+    public void setPass(UUID pass) {
+        this.pass = pass;
+    }
+
     @Override
     public String toString() {
         return "DecisionContainer{" +
                 "taskId=" + taskId +
                 ", processId=" + processId +
+                ", pass=" + pass +
                 ", value=" + value +
                 ", errorContainer=" + errorContainer +
                 ", restartTime=" + restartTime +
                 ", tasks=" + Arrays.toString(tasks) +
                 ", actorId='" + actorId + '\'' +
                 ", executionTime=" + executionTime +
-                "} " + super.toString();
+                '}';
     }
 
     @Override
@@ -96,6 +120,7 @@ public class DecisionContainer implements Serializable {
         if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
         if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
             return false;
+        if (pass != null ? !pass.equals(that.pass) : that.pass != null) return false;
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
         if (!Arrays.equals(tasks, that.tasks)) return false;
@@ -108,6 +133,7 @@ public class DecisionContainer implements Serializable {
     public int hashCode() {
         int result = taskId != null ? taskId.hashCode() : 0;
         result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (pass != null ? pass.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (errorContainer != null ? errorContainer.hashCode() : 0);
         result = 31 * result + (int) (restartTime ^ (restartTime >>> 32));

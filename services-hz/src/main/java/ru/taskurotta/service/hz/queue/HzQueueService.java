@@ -5,11 +5,11 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.ILock;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.queue.delay.DelayIQueue;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.delay.CachedDelayQueue;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
 import ru.taskurotta.hazelcast.util.ClusterUtils;
 import ru.taskurotta.service.console.model.GenericPage;
@@ -43,6 +43,9 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class HzQueueService implements QueueService, QueueInfoRetriever {
 
+    public static AtomicInteger pushedTaskToQueue = new AtomicInteger();
+    public static AtomicInteger pushedTaskToQueueWithDelay = new AtomicInteger();
+
     private static final Logger logger = LoggerFactory.getLogger(HzQueueService.class);
     private transient final ReentrantLock lock = new ReentrantLock();
     private long pollDelay;
@@ -60,7 +63,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     private ILock synchLock = null;
 
-    private Map<String, DelayIQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
+    private Map<String, CachedDelayQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
 
     private ILock drainLock;
 
@@ -112,7 +115,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 keys.addAll(mutualMap.keySet());
                 keys.addAll(myMap.keySet());
 
-                for (String key: keys) {
+                for (String key : keys) {
                     Long mutualValue = mutualMap.get(key);
                     Long myValue = myMap.get(key);
 
@@ -153,7 +156,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public void clearQueue(String queueName) {
-        DelayIQueue<TaskQueueItem> queue = getQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+        CachedDelayQueue<TaskQueueItem> queue = getQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix));
         queue.clear();
     }
 
@@ -162,7 +165,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            DelayIQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+            CachedDelayQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
             logger.debug("Removing queue with name [{}], cached queue is [{}]", queueName, queue);
             if (queue != null) {
                 queueMap.remove(queueName);
@@ -175,17 +178,17 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     @Override
     public long getQueueStorageCount(String queueName) {
-        DelayIQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
-        return queue!=null? queue.getStorageSize(): -1;//-1 indicating that there is no such queue cached yet
+        CachedDelayQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+        return queue != null ? queue.size() : -1;//-1 indicating that there is no such queue cached yet
     }
 
     @Override
     public TaskQueueItem poll(String actorId, String taskList) {
 
         String queueName = createQueueName(actorId, taskList);
-        DelayIQueue<TaskQueueItem> queue = getQueue(queueName);
+        CachedDelayQueue<TaskQueueItem> queue = getQueue(queueName);
 
-        TaskQueueItem result= null;
+        TaskQueueItem result = null;
         try {
             result = queue.poll(pollDelay, TimeUnit.MILLISECONDS);
             if (logger.isDebugEnabled()) {
@@ -193,12 +196,6 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
             }
 
             updateQueueEffectiveTime(queueName, result);
-//            if (result==null && queue.size()>0) {//possible queue store data loss -> apply null values drain
-//                result = getValueAfterNullDrain(queueName, queue);
-//                //do not update effective time if queue is nullified to prevent recovered tasks overflow
-//            } else {
-//                updateQueueEffectiveTime(queueName, result);
-//            }
 
         } catch (InterruptedException e) {
             logger.error("Queue poll operation interrupted", e);
@@ -207,38 +204,16 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         return result;
     }
 
-    private void updateQueueEffectiveTime (String queueName, TaskQueueItem result) {
-        long lastPolledTaskEnqueueTime = (result!=null? result.getEnqueueTime() : System.currentTimeMillis());
+    private void updateQueueEffectiveTime(String queueName, TaskQueueItem result) {
+        long lastPolledTaskEnqueueTime = (result != null ? result.getEnqueueTime() : System.currentTimeMillis());
         lastPolledTaskEnqueueTimes.put(queueName, lastPolledTaskEnqueueTime);
         logger.debug("lastPolledTaskEnqueueTimes updated for queue[{}] with new value [{}]", queueName, lastPolledTaskEnqueueTime);
     }
 
-    private TaskQueueItem getValueAfterNullDrain(String queueName, DelayIQueue<TaskQueueItem> queue) {
-        TaskQueueItem result = null;
-        if (drainLock.tryLock()) {
-            try {
-                logger.warn("Null item polled from not empty queue: possible store data loss? Try to drain null values...");
-                long cnt = 0l;
-                long start = System.currentTimeMillis();
-                do {
-                    cnt++;
-                    result = queue.poll();
-                    if (cnt % 100 == 0) {
-                        logger.warn("[{}] empty values drained away... Still processing", cnt);
-                    }
-                } while (result == null && queue.size()>0);
-                logger.warn("Total: [{}] empty values drained away in [{}] ms", cnt, System.currentTimeMillis() - start);
-
-            } finally {
-                drainLock.unlock();
-                updateQueueEffectiveTime(queueName, result);//update only when drain is finished
-            }
-        }
-        return result;
-    }
-
     @Override
     public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
+
+        pushedTaskToQueue.incrementAndGet();
 
         long now = System.currentTimeMillis();
 
@@ -255,32 +230,29 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         taskQueueItem.setTaskList(taskList);
 
         String queueName = createQueueName(actorId, taskList);
-        DelayIQueue<TaskQueueItem> queue = getQueue(queueName);
+        CachedDelayQueue<TaskQueueItem> queue = getQueue(queueName);
 
         long delayTime = startTime - now;
 
-        return queue.add(taskQueueItem, delayTime, TimeUnit.MILLISECONDS);
+        if (delayTime > 0) {
+            pushedTaskToQueueWithDelay.incrementAndGet();
+        }
+
+        try {
+            return queue.delayOffer(taskQueueItem, delayTime, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
-    /**
-     * Always return false, ignore this method's result.
-     */
     @Override
     public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
-        return false;
+        throw new UnsupportedOperationException("Only for all-in-memory backend");
     }
 
     @Override
     public String createQueueName(String actorId, String taskList) {
         return TransportUtils.createQueueName(actorId, taskList, queueNamePrefix);
-//        StringBuilder result = new StringBuilder(null != queueNamePrefix ? queueNamePrefix : "");
-//
-//        result.append(actorId);
-//        if (taskList != null) {
-//            result.append("#").append(taskList);
-//        }
-//
-//        return result.toString();
     }
 
     @Override
@@ -311,7 +283,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize) {
         List<TaskQueueItem> result = new ArrayList<>();
 
-        DelayIQueue<TaskQueueItem> queue = getQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix));
+        CachedDelayQueue<TaskQueueItem> queue = getQueue(ActorUtils.toPrefixed(queueName, queueNamePrefix));
         TaskQueueItem[] queueItems = queue.toArray(new TaskQueueItem[queue.size()]);
 
         if (queueItems.length > 0) {
@@ -355,7 +327,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 if (!resultItems.isEmpty()) {
                     for (QueueStatVO item : resultItems) {
                         item.setNodes(nodes);
-                        item.setLocal(ClusterUtils.isLocalQueue(queueNamePrefix+item.getName(), hazelcastInstance));
+                        item.setLocal(ClusterUtils.isLocalCachedQueue(hazelcastInstance, queueNamePrefix + item.getName()));
                     }
 
                     result = new GenericPage<>(resultItems, pageNum, pageSize, fullFilteredQueueNamesList.size());
@@ -371,9 +343,9 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         return getTaskQueueNamesByPrefix(queueNamePrefix, null, false);
     }
 
-    private DelayIQueue<TaskQueueItem> getQueue(String queueName) {
+    private CachedDelayQueue<TaskQueueItem> getQueue(String queueName) {
 
-        DelayIQueue<TaskQueueItem> queue = queueMap.get(queueName);
+        CachedDelayQueue<TaskQueueItem> queue = queueMap.get(queueName);
 
         if (queue == null) {
 
@@ -397,7 +369,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         List<String> result = new ArrayList<>();
 
         for (DistributedObject inst : hazelcastInstance.getDistributedObjects()) {
-            if (inst instanceof IQueue) {
+            if (inst instanceof CachedQueue) {
                 String name = inst.getName();
                 if (name.startsWith(prefix)) {
                     String item = prefixStrip ? name.substring(prefix.length()) : name;

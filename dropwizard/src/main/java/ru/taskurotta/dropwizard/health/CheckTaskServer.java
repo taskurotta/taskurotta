@@ -1,6 +1,6 @@
 package ru.taskurotta.dropwizard.health;
 
-import com.yammer.metrics.core.HealthCheck;
+import com.codahale.metrics.health.HealthCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
@@ -12,10 +12,6 @@ public class CheckTaskServer extends HealthCheck {
     private static final Logger logger = LoggerFactory.getLogger(CheckTaskServer.class);
 
     private TaskServer taskServer;
-
-    public CheckTaskServer(String name) {
-        super(name);
-    }
 
     @Override
     protected Result check() throws Exception {

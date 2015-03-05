@@ -80,7 +80,7 @@ public class ActorProxyFactory<ActorAnnotation extends Annotation, ClientAnnotat
             AcceptFail acceptFail = method.getAnnotation(AcceptFail.class);
 
             MethodDescriptor descriptor = new MethodDescriptor(taskTarget, getArgTypes(method),
-                    positionActorSchedulingOptions, positionPromisesWaitFor, null != acceptFail, getFailNames(acceptFail));
+                    positionActorSchedulingOptions, positionPromisesWaitFor, acceptFail != null, getFailNames(acceptFail));
 
             method2TaskTargetCache.put(method, descriptor);
         }

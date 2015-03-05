@@ -1,0 +1,80 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        contexts:
+          - classpath:spring/hz-mongo.xml
+          - classpath:ru/taskurotta/test/time/SpreaderBeans.xml
+        defaultPropertiesLocation: default.properties
+        properties:
+          duration: 10 hours
+          timeout: 2 seconds
+          threads: 25
+          gc.time-before-delete: 1 minutes
+          hz.jmx.detailed: true
+          hz.jmx: true
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.time.LifeTimeProfiler
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+      count: 25
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+      count: 25
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: ./target/5logs/leman24.log
+             append: true
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: ERROR
+        - ru.taskurotta.service.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             key: name
+             \@level: !!!str OFF
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

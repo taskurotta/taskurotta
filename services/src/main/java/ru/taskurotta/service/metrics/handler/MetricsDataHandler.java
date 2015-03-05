@@ -33,7 +33,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     }
 
     @PostConstruct
-    private void init() {
+    public void init() {
         singleton = this;
     }
 
@@ -43,7 +43,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         String holderKey = MetricsDataUtils.getKey(metricName, datasetName);
 
         DataRowVO dataRow = lastHourDataHolder.get(holderKey);
-        if(dataRow == null) {
+        if (dataRow == null) {
             synchronized (lastHourDataHolder) {
                 dataRow = lastHourDataHolder.get(holderKey);
                 if (dataRow == null) {
@@ -54,8 +54,8 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         }
 
         int position = dataRow.populate(count, mean, measurementTime);
-        if (position!=0 && position%SECONDS_IN_MINUTE == 0) {//new minute started
-            handleMinute(metricName, datasetName, dataRow.getTotalCount(position-SECONDS_IN_MINUTE, position), dataRow.getAverageMean(), measurementTime);
+        if (position != 0 && position % SECONDS_IN_MINUTE == 0) {//new minute started
+            handleMinute(metricName, datasetName, dataRow.getTotalCount(position - SECONDS_IN_MINUTE, position), dataRow.getAverageMean(), measurementTime);
         }
         logger.trace("Handled data for second [{}], metric[{}], dataset[{}], count[{}], mean[{}], measurementTime[{}]", position, metricName, datasetName, count, mean, measurementTime);
     }
@@ -87,9 +87,9 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
                 return input.getMetricsName() != null && input.getMetricsName().equals(input.getDataSetName());
             }
         });
-        if(uniqueMetrics!=null && !uniqueMetrics.isEmpty()) {
+        if (uniqueMetrics != null && !uniqueMetrics.isEmpty()) {
             result = new ArrayList<>();
-            for(DataRowVO dr: uniqueMetrics) {
+            for (DataRowVO dr : uniqueMetrics) {
                 result.add(dr.getMetricsName());
             }
         }
@@ -105,9 +105,9 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
                 return metricName.equals(input.getMetricsName());
             }
         });
-        if(uniqueMetrics!=null && !uniqueMetrics.isEmpty()) {
+        if (uniqueMetrics != null && !uniqueMetrics.isEmpty()) {
             result = new ArrayList<>();
-            for(DataRowVO dr: uniqueMetrics) {
+            for (DataRowVO dr : uniqueMetrics) {
                 result.add(dr.getDataSetName());
             }
         }
@@ -118,10 +118,10 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     public DataPointVO<Long>[] getCountsForLastHour(String metricName, String datasetName) {
         DataPointVO<Long>[] result = null;
         DataRowVO row = lastHourDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
-        if(row != null) {
+        if (row != null) {
             int size = row.getDsCounts().length();
             result = new DataPointVO[size];
-            for(int i = 0; i < size; i++) {
+            for (int i = 0; i < size; i++) {
                 result[i] = row.getDsCounts().get(i);
             }
         }
@@ -133,10 +133,10 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     public DataPointVO<Long>[] getCountsForLastDay(String metricName, String datasetName) {
         DataPointVO<Long>[] result = null;
         DataRowVO row = lastDayDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
-        if(row != null) {
+        if (row != null) {
             int size = row.getDsCounts().length();
             result = new DataPointVO[size];
-            for(int i = 0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 result[i] = row.getDsCounts().get(i);
             }
         }
@@ -147,10 +147,10 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     public DataPointVO<Double>[] getMeansForLastHour(String metricName, String datasetName) {
         DataPointVO<Double>[] result = null;
         DataRowVO row = lastHourDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
-        if(row != null) {
+        if (row != null) {
             int size = row.getDsMean().length();
             result = new DataPointVO[size];
-            for(int i = 0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 result[i] = row.getDsMean().get(i);
             }
         }
@@ -161,10 +161,10 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
     public DataPointVO<Double>[] getMeansForLastDay(String metricName, String datasetName) {
         DataPointVO<Double>[] result = null;
         DataRowVO row = lastDayDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
-        if(row != null) {
+        if (row != null) {
             int size = row.getDsMean().length();
             result = new DataPointVO[size];
-            for(int i = 0; i<size; i++) {
+            for (int i = 0; i < size; i++) {
                 result[i] = row.getDsMean().get(i);
             }
         }
@@ -183,7 +183,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
 
         if (row != null) {
             long latestActivity = row.getLatestActivity();
-            if (latestActivity>0) {
+            if (latestActivity > 0) {
                 result = new Date(latestActivity);
             }
         }

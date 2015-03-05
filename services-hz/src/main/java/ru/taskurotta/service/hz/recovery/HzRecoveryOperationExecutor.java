@@ -1,13 +1,14 @@
 package ru.taskurotta.service.hz.recovery;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.service.recovery.RecoveryProcessService;
+import ru.taskurotta.service.recovery.RecoveryService;
+import ru.taskurotta.util.*;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,14 +26,14 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
     private boolean enabled;
 
-    private IQueue<Operation> operationIQueue;
+    private CachedQueue<Operation> operationIQueue;
 
-    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
+    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryService recoveryService,
                                        String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
-        this(hazelcastInstance, recoveryProcessService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
+        this(hazelcastInstance, recoveryService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
     }
 
-    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
+    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryService recoveryService,
                                        HzQueueConfigSupport hzQueueConfigSupport, String recoveryOperationQueueName,
                                        int recoveryOperationPoolSize, boolean enabled) {
 
@@ -47,7 +48,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
             logger.warn("HzQueueConfigSupport is not configured");
         }
 
-        this.operationIQueue = hazelcastInstance.getQueue(recoveryOperationQueueName);
+        this.operationIQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), recoveryOperationQueueName);
 
         final ExecutorService recoveryOperationExecutorService = Executors.newFixedThreadPool(recoveryOperationPoolSize);
 
@@ -65,7 +66,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
             @Override
             public void run() {
 
-                while (true) {
+                while (!Shutdown.isTrue()) {
 
                     try {
                         Operation operation = operationIQueue.poll(1, TimeUnit.SECONDS);
@@ -74,7 +75,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
                             continue;
                         }
 
-                        operation.init(recoveryProcessService);
+                        operation.init(recoveryService);
 
                         recoveryOperationExecutorService.submit(operation);
 
@@ -92,7 +93,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         if (!enabled) {
             return;
         }
-
         operationIQueue.offer(operation);
     }
 
@@ -101,7 +101,6 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         if (!enabled) {
             return 0;
         }
-
         return operationIQueue.size();
     }
 

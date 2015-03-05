@@ -1,0 +1,121 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: classpath:ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        contexts:
+          - classpath:spring/hz-mongo.xml
+          - classpath:spring/actor-ff.xml
+        defaultPropertiesLocation: default.properties
+        properties:
+          server.poll-delay: 1 seconds
+          hz.nodes: localhost:7777
+          hz.jmx.detailed: true
+          hz.jmx: true
+          mongo.host: localhost
+          mongo.port: 27017
+          gc.enabled: true
+          gc.pool-size: 8
+          gc.time-before-delete: 20 seconds
+          recovery.enabled: true
+          recovery.process.incomplete-timeout: 30 seconds
+          recovery.find-incomplete-process-period: 5 seconds
+          recovery.process.change-timeout: 30 seconds
+          hz.queue.task.batch-load-size: 10000
+          hz.queue.delay.batch-load-size: 10000
+          taskurotta.memory.auto: true
+          taskurotta.memory.config: k:48Mb f:70% (p:20 g:20 gd:20 t:20 td:20 q:1)
+          test.ff.maxProcessQuantity: 50000
+          test.ff.startSpeedPerSecond: 50
+          test.ff.threadCount: 10
+          test.ff.minQueuesSize: 3000
+          test.ff.maxQueuesSize: 5000
+          test.ff.waitAfterDoneSeconds: 30
+
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.stress.LifetimeProfiler
+        properties:
+          tasksForStat: 1000
+          dropTaskDecisionEveryNTasks: 100
+          breakProcessEveryNTasks: 100
+          logProfilerSeconds: 10
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 25
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+      runtimeConfig: MainRuntimeConfig
+      spreaderConfig: MainTaskSpreaderConfig
+      profilerConfig: MainProfilerConfig
+      count: 25
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: logs/ff-hz-mongo-quantity.log
+             append: false
+             encoder:
+                 pattern: \%d [\%t] \%-5p \%c - \%m\%n
+    logger:
+        - org.springframework:
+             key: name
+             \@level: WARN
+        - ru.taskurotta.service.hz.dependency.HzGraphDao2:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.recovery.GeneralRecoveryProcessService2:
+             key: name
+             \@level: DEBUG
+        - com.hazelcast:
+             key: name
+             \@level: WARN
+        - ru.taskurotta:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.test.monkey:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: INFO
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             key: name
+             \@level: !!!str OFF
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

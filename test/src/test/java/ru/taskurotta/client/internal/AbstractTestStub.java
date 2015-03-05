@@ -23,7 +23,7 @@ import ru.taskurotta.service.dependency.links.MemoryGraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
 import ru.taskurotta.service.queue.MemoryQueueService;
-import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.GeneralTaskService;
 import ru.taskurotta.service.storage.MemoryBrokenProcessService;
@@ -47,10 +47,12 @@ import static junit.framework.Assert.assertTrue;
  */
 public class AbstractTestStub {
 
+    private static final UUID PASS = UUID.randomUUID();
+
     protected MemoryQueueService memoryQueueService;
     protected GeneralTaskService memoryStorageService;
     protected DependencyService dependencyService;
-    protected GeneralRecoveryProcessService recoveryProcessService;
+    protected RecoveryServiceImpl recoveryProcessService;
     protected BrokenProcessService brokenProcessService;
     protected ServiceBundle serviceBundle;
     protected GarbageCollectorService garbageCollectorService;
@@ -104,7 +106,7 @@ public class AbstractTestStub {
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1, 1000l);
-        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueService, dependencyService,
+        recoveryProcessService = new RecoveryServiceImpl(memoryQueueService, dependencyService,
                 serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, garbageCollectorService,
                 1l, 1000l);
 
@@ -126,7 +128,7 @@ public class AbstractTestStub {
     }
 
     public boolean isTaskPresent(UUID taskId, UUID processId) {
-        return null != memoryStorageService.getTask(taskId, processId);
+        return memoryStorageService.getTask(taskId, processId) != null;
     }
 
 
@@ -202,12 +204,12 @@ public class AbstractTestStub {
     }
 
     public void release(UUID taskAId, Object value, Task... newTasks) {
-        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, value, newTasks, 0l);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, PASS, value, newTasks, 0l);
         release(taskDecision);
     }
 
     public void release(UUID taskAId, Throwable error) {
-        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, error, null);
+        TaskDecision taskDecision = new TaskDecisionImpl(taskAId, processId, PASS, error, null);
         release(taskDecision);
     }
 

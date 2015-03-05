@@ -1,6 +1,5 @@
 package ru.taskurotta.service.metrics.model;
 
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
@@ -12,7 +11,7 @@ public class DataRowVO extends BaseDataRowVO {
     private AtomicReferenceArray<DataPointVO<Long>> dsCounts;
     private AtomicReferenceArray<DataPointVO<Double>> dsMean;
 
-    public DataRowVO (int size, String metricName, String dataSetName) {
+    public DataRowVO(int size, String metricName, String dataSetName) {
         super(size, metricName, dataSetName);
 
         this.dsCounts = new AtomicReferenceArray<DataPointVO<Long>>(size);
@@ -21,9 +20,10 @@ public class DataRowVO extends BaseDataRowVO {
 
     //Return updated position
     public int populate(long count, double mean, long measureTime) {
+
         int position = getPosition();
         DataPointVO countValue = this.dsCounts.get(position);
-        if (countValue!=null) {
+        if (countValue != null) {
             countValue.update(count, measureTime);
 
         } else {
@@ -31,7 +31,7 @@ public class DataRowVO extends BaseDataRowVO {
         }
 
         DataPointVO meanValue = this.dsMean.get(position);
-        if (meanValue!=null) {
+        if (meanValue != null) {
             meanValue.update(mean, measureTime);
 
         } else {
@@ -39,9 +39,9 @@ public class DataRowVO extends BaseDataRowVO {
         }
 
 
-        this.updated.set(new Date().getTime());
-        if (count>0 && lastActive.get()<measureTime) {
-            this.lastActive.set(measureTime);
+        this.updated = System.currentTimeMillis();
+        if (count > 0 && lastActive < measureTime) {
+            this.lastActive = measureTime;
         }
         return position;
     }
@@ -51,14 +51,14 @@ public class DataRowVO extends BaseDataRowVO {
         int resultCount = 0;
 
         for (int i = 0; i < this.size; i++) {
-            if (dsMean.get(i) != null && dsMean.get(i).getValue()!=null && dsMean.get(i).getValue()>=0) {
+            if (dsMean.get(i) != null && dsMean.get(i).getValue() != null && dsMean.get(i).getValue() >= 0) {
                 result += dsMean.get(i).getValue();
                 resultCount++;
             }
         }
 
-        if (resultCount>0) {
-            result = result/Double.valueOf(resultCount);
+        if (resultCount > 0) {
+            result = result / Double.valueOf(resultCount);
         }
 
         return result;
@@ -67,7 +67,7 @@ public class DataRowVO extends BaseDataRowVO {
     public long getTotalCount(int positionFrom, int positionTo) {
         long result = 0l;
         for (int i = positionFrom; i < positionTo; i++) {
-            if (dsCounts.get(i) != null && dsCounts.get(i).getValue()!=null && dsCounts.get(i).getValue()>=0) {
+            if (dsCounts.get(i) != null && dsCounts.get(i).getValue() != null && dsCounts.get(i).getValue() >= 0) {
                 result += dsCounts.get(i).getValue();
             }
         }

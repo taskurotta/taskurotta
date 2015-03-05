@@ -35,6 +35,17 @@ public class Process implements Serializable {
         this.startTask = startTask;
     }
 
+    public Process(TaskContainer startTask, String customId, long startTime, long endTime, int state, String returnValue) {
+        this.processId = startTask.getProcessId();
+        this.startTaskId = startTask.getTaskId();
+        this.customId = customId;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.state = state;
+        this.returnValue = returnValue;
+        this.startTask = startTask;
+    }
+
     public UUID getProcessId() {
         return processId;
     }
@@ -97,5 +108,51 @@ public class Process implements Serializable {
 
     public void setStartTask(TaskContainer startTask) {
         this.startTask = startTask;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Process process = (Process) o;
+
+        if (endTime != process.endTime) return false;
+        if (startTime != process.startTime) return false;
+        if (state != process.state) return false;
+        if (customId != null ? !customId.equals(process.customId) : process.customId != null) return false;
+        if (!processId.equals(process.processId)) return false;
+        if (returnValue != null ? !returnValue.equals(process.returnValue) : process.returnValue != null) return false;
+        if (!startTask.equals(process.startTask)) return false;
+        if (!startTaskId.equals(process.startTaskId)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = processId.hashCode();
+        result = 31 * result + startTaskId.hashCode();
+        result = 31 * result + (customId != null ? customId.hashCode() : 0);
+        result = 31 * result + (int) (startTime ^ (startTime >>> 32));
+        result = 31 * result + (int) (endTime ^ (endTime >>> 32));
+        result = 31 * result + state;
+        result = 31 * result + (returnValue != null ? returnValue.hashCode() : 0);
+        result = 31 * result + startTask.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Process{" +
+                "processId=" + processId +
+                ", startTaskId=" + startTaskId +
+                ", customId='" + customId + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", state=" + state +
+                ", returnValue='" + returnValue + '\'' +
+                ", startTask=" + startTask +
+                '}';
     }
 }

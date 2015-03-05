@@ -56,7 +56,7 @@
 
     <bean id="configService" class="ru.taskurotta.service.config.impl.MemoryConfigService" />
 
-    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
+    <bean id="recoveryService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
@@ -89,7 +89,6 @@
     <!-- /Backends -->
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <constructor-arg name="name" value="check task server" />
         <property name="taskServer" ref="taskServer" />
     </bean>
 

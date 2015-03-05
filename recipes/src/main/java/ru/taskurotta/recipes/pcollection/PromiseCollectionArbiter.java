@@ -41,7 +41,7 @@ public class PromiseCollectionArbiter extends BasicFlowArbiter {
     public static PromiseCollectionArbiter getInstance() {
         synchronized (PromiseCollectionArbiter.class) {
             try {
-                while (null == instance) {
+                while (instance == null) {
                     PromiseCollectionArbiter.class.wait();
                 }
             } catch (InterruptedException e) {

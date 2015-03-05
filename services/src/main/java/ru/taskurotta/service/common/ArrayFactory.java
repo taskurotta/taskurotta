@@ -24,7 +24,7 @@ public class ArrayFactory {
 
     public static Object newInstance(String className, int length) throws ClassNotFoundException {
         Class theClass = primitives.get(className);
-        if (null == theClass) {
+        if (theClass == null) {
             theClass = Class.forName(className);
         }
         return Array.newInstance(theClass, length);

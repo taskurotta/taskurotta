@@ -2,15 +2,15 @@ package ru.taskurotta.service.storage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.internal.core.ArgType;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.TaskInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
-import ru.taskurotta.internal.core.TaskType;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,9 +28,11 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     private final static Logger logger = LoggerFactory.getLogger(GeneralTaskService.class);
 
     private TaskDao taskDao;
+    private long workerTimeoutMilliseconds;
 
-    public GeneralTaskService(TaskDao taskDao) {
+    public GeneralTaskService(TaskDao taskDao, long workerTimeoutMilliseconds) {
         this.taskDao = taskDao;
+        this.workerTimeoutMilliseconds = workerTimeoutMilliseconds;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public TaskContainer getTaskToExecute(UUID taskId, UUID processId) {
+    public TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate) {
         logger.debug("getTaskToExecute(taskId[{}], processId[{}]) started", taskId, processId);
 
         TaskContainer task = getTask(taskId, processId);
@@ -76,6 +78,14 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
                 ArgType argType = argTypes == null ? null : argTypes[i];
 
+                // don't try to calculate @NoWait promise.
+                // there are so many cases when it is really needed
+                // and we can introduce new annotation to mark that promices
+                // with new type, for example: NO_WAIT_TRY.
+                if (argType == ArgType.NO_WAIT) {
+                    continue;
+                }
+
                 if (arg.isPromise()) {
                     args[i] = processPromiseArgValue(arg, processId, task, argType);
                 } else if (arg.isCollection()) {//can be collection of promises, case should be checked
@@ -97,6 +107,20 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             }
         }
 
+        // todo: timeout should be calculated for every actor
+
+        if (!simulate) {
+            // todo: actors should support acceptLast and acceptFirst strategies depends of their needs
+            UUID pass = taskDao.startTask(taskId, processId, System.currentTimeMillis() + workerTimeoutMilliseconds, false);
+
+            if (pass == null) {
+                logger.error("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+                return null;
+            }
+
+            task.setPass(pass);
+        }
+
         return task;
     }
 
@@ -113,24 +137,18 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
         UUID taskId = pArg.getTaskId();
 
-        if (!taskDao.isTaskReleased(taskId, processId)) {
-            if (ArgType.NO_WAIT.equals(argType)) {
-                // value may be null for NoWait promises
-                // leave it in peace...
-                return pArg;
-            }
-            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
+        //try to find promise value obtained by its task result
+        ArgContainer taskValue = null;
+
+        try {
+            taskValue = getTaskValue(taskId, processId, ArgType.NO_WAIT.equals(argType));
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException("Not initialized promise before execute [" + task + "]", e);
         }
 
-        ArgContainer taskValue = getTaskValue(taskId, processId);//try to find promise value obtained by its task result
-
+        // Task not completed yet and not initialized Promise is acceptable by Decider
         if (taskValue == null) {
-            if (ArgType.NO_WAIT.equals(argType)) {
-                // value may be null for NoWait promises
-                // leave it in peace...
-                return pArg;
-            }
-            throw new IllegalArgumentException("Not initialized promise before execute [" + task + "]");
+            return pArg;
         }
 
         ArgContainer newArg = new ArgContainer(taskValue);
@@ -152,21 +170,28 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         return TaskType.DECIDER_ASYNCHRONOUS.equals(taskType);
     }
 
-    private ArgContainer getTaskValue(UUID taskId, UUID processId) {
+    /**
+     * @return ArgContainer (even in case of null value result), null if it acceptable (isNoWait is true)
+     * or throw IllegalArgumentException (id decision not found and isNoWait is false)
+     */
+    private ArgContainer getTaskValue(UUID taskId, UUID processId, boolean isNoWait) throws IllegalStateException {
 
-        logger.debug("getTaskValue([{}])", taskId);
-        if (taskId == null) {
-            throw new IllegalStateException("Cannot find value for NULL taskId");
-        }
         DecisionContainer taskDecision = taskDao.getDecision(taskId, processId);
-        logger.debug("taskDecision getted for[{}] is [{}]", taskId, taskDecision);
 
         if (taskDecision == null) {
-            logger.debug("getTaskValue() taskDecision == null");
-            return null;
+            if (isNoWait) {
+                // value may be null for NoWait promises
+                // leave it in peace...
+                return null;
+            }
+            throw new IllegalStateException("Decision not found for not @NoWait task [" + taskId + "] processId [" +
+                    processId + "]");
         }
 
+        logger.debug("taskDecision of taskId [{}] is [{}]", taskId, taskDecision);
+
         ArgContainer result;
+
         if (taskDecision.containsError()) {
             result = taskDecision.getValue();
             result.setErrorContainer(taskDecision.getErrorContainer());
@@ -174,7 +199,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             result = taskDecision.getValue();
             if (result != null && result.isPromise() && !result.isReady()) {
                 logger.debug("getTaskValue([{}]) argContainer.isPromise() && !argContainer.isReady(). arg[{}]", taskId, result);
-                result = getTaskValue(result.getTaskId(), processId);
+
+                result = getTaskValue(result.getTaskId(), processId, isNoWait);
             }
         }
 
@@ -217,10 +243,12 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public void addDecision(DecisionContainer taskDecision) {
-        logger.debug("addDecision() taskDecision [{}]", taskDecision);
+    public boolean finishTask(DecisionContainer taskDecision) {
+        logger.debug("finishTask() taskDecision [{}]", taskDecision);
 
-        taskDao.addDecision(taskDecision);
+        if (!taskDao.finishTask(taskDecision)) {
+            return false;
+        }
 
         // increment number of attempts for error tasks with retry policy
         if (taskDecision.containsError() && taskDecision.getRestartTime() != -1) {
@@ -238,6 +266,18 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 taskDao.addTask(taskContainer);
             }
         }
+
+        return true;
+    }
+
+    @Override
+    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+        return taskDao.retryTask(taskId, processId, timeToStart);
+    }
+
+    @Override
+    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+        return taskDao.restartTask(taskId, processId, timeToStart, force);
     }
 
     @Override
@@ -258,6 +298,11 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     @Override
     public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds) {
         taskDao.archiveProcessData(processId, finishedTaskIds);
+    }
+
+    @Override
+    public void updateTaskDecision(DecisionContainer taskDecision) {
+        taskDao.updateTaskDecision(taskDecision);
     }
 
 

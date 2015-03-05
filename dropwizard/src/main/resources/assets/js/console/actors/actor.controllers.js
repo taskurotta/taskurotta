@@ -6,13 +6,14 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
         $scope.metricsData = {};
         $scope.feedback = {};
 
-        //Init paging object
-        $scope.actorsPage = {
+        var defaultActorsPage = {
             pageSize: 10,
             pageNumber: 1,
             totalCount: 0,
             items: []
         };
+        //Init paging object
+        $scope.actorsPage = defaultActorsPage;
 
         $scope.periods = ["day", "hour"];
 
@@ -71,7 +72,7 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
         $scope.update = function () {
 
             tskActors.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
-                $scope.actorsPage = value.data || {};
+                $scope.actorsPage = value.data || defaultActorsPage;
                 $log.info("actorListController: successfully updated actors list: " + angular.toJson($scope.actorsPage));
                 tskActors.listMetrics().then(function (success) {
                     $scope.metrics = success.data;

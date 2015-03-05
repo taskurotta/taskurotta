@@ -45,9 +45,10 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
         GeneralRuntimeProvider.TargetReference targetReference = taskTargetsMap.get(key);
         try {
 
-            if (null == targetReference) {
+            if (targetReference == null) {
                 log.error("Cannot execute task[{}]: actor undefined. Current task targets are[{}]", task, taskTargetsMap.keySet());
-                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), new UndefinedActorException(key), RuntimeContext.getCurrent().getTasks());
+                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), task.getPass(), new
+                        UndefinedActorException(key), RuntimeContext.getCurrent().getTasks());
             } else {
 
                 long startTime = System.currentTimeMillis();
@@ -58,7 +59,8 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
 
                 Task[] tasks = RuntimeContext.getCurrent().getTasks();
 
-                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), value, tasks, executionTime);
+                taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), task.getPass(), value, tasks,
+                        executionTime);
             }
         } catch (Throwable e) {
 
@@ -86,7 +88,8 @@ public class GeneralRuntimeProcessor implements RuntimeProcessor {
             if (e instanceof InvocationTargetException && e.getCause() != null) {
                 e = e.getCause();//to send real error to the server
             }
-            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), e, RuntimeContext.getCurrent().getTasks(), restartTime);
+            taskDecision = new TaskDecisionImpl(task.getId(), task.getProcessId(), task.getPass(), e, RuntimeContext
+                    .getCurrent().getTasks(), restartTime);
         } finally {
             RuntimeContext.finish();
         }

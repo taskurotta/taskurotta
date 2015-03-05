@@ -25,6 +25,8 @@ public class HzBrokenProcessService implements BrokenProcessService {
 
     private static final Logger logger = LoggerFactory.getLogger(HzBrokenProcessService.class);
 
+    private static final String WILDCARD_SYMBOL = "%";
+
     private IMap<UUID, BrokenProcess> brokenProcessIMap;
 
     public HzBrokenProcessService(HazelcastInstance hazelcastInstance, String brokenProcessMapName) {
@@ -43,20 +45,31 @@ public class HzBrokenProcessService implements BrokenProcessService {
 
         List<Predicate> predicates = new ArrayList<>();
 
+        if (searchCommand.getProcessId() != null) {
+            Collection<BrokenProcess> result = null;
+            BrokenProcess bp = brokenProcessIMap.get(searchCommand.getProcessId());
+            if (bp != null) {
+                result = new ArrayList<BrokenProcess>();
+                result.add(bp);
+            }
+            return result;
+        }
+
+
         if (StringUtils.hasText(searchCommand.getStartActorId())) {
-            predicates.add(new Predicates.LikePredicate("startActorId", searchCommand.getStartActorId() + "*"));
+            predicates.add(new Predicates.LikePredicate("startActorId", searchCommand.getStartActorId() + WILDCARD_SYMBOL));
         }
 
         if (StringUtils.hasText(searchCommand.getBrokenActorId())) {
-            predicates.add(new Predicates.LikePredicate("brokenActorId", searchCommand.getBrokenActorId() + "*"));
+            predicates.add(new Predicates.LikePredicate("brokenActorId", searchCommand.getBrokenActorId() + WILDCARD_SYMBOL));
         }
 
         if (StringUtils.hasText(searchCommand.getErrorClassName())) {
-            predicates.add(new Predicates.LikePredicate("errorClassName", searchCommand.getErrorClassName() + "*"));
+            predicates.add(new Predicates.LikePredicate("errorClassName", searchCommand.getErrorClassName() + WILDCARD_SYMBOL));
         }
 
         if (StringUtils.hasText(searchCommand.getErrorMessage())) {
-            predicates.add(new Predicates.LikePredicate("errorMessage", searchCommand.getErrorMessage() + "*"));
+            predicates.add(new Predicates.LikePredicate("errorMessage", searchCommand.getErrorMessage() + WILDCARD_SYMBOL));
         }
 
         if (searchCommand.getEndPeriod() > 0) {
@@ -67,13 +80,17 @@ public class HzBrokenProcessService implements BrokenProcessService {
             predicates.add(new Predicates.BetweenPredicate("time", searchCommand.getStartPeriod(), Long.MAX_VALUE));
         }
 
+        Collection<BrokenProcess> result = null;
         if (predicates.isEmpty()) {
-            return brokenProcessIMap.values();
+            result = brokenProcessIMap.values();
         } else {
             Predicate[] predicateArray = new Predicate[predicates.size()];
             Predicate predicate = new Predicates.AndPredicate(predicates.toArray(predicateArray));
-            return brokenProcessIMap.values(predicate);
+            result = brokenProcessIMap.values(predicate);
         }
+
+        logger.trace("Found [{}] broken processes by command[{}]", result!=null?result.size():null, searchCommand);
+        return result;
     }
 
     @Override

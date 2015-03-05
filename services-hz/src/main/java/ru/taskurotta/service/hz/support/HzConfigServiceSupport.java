@@ -6,9 +6,9 @@ import com.hazelcast.core.DistributedObjectEvent;
 import com.hazelcast.core.DistributedObjectListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.util.ActorUtils;
 
@@ -67,7 +67,7 @@ public class HzConfigServiceSupport implements DistributedObjectListener {
 
 
     private boolean isActorQueue(DistributedObject obj) {
-        return obj instanceof IQueue && obj.getName().startsWith(queuePrefix);
+        return obj instanceof CachedQueue && obj.getName().startsWith(queuePrefix);
     }
 
     public void setQueuePrefix(String queuePrefix) {

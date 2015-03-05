@@ -2,14 +2,17 @@ package ru.taskurotta.service.storage;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.transport.model.TaskContainer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     public void finishProcess(UUID processId, String returnValue) {
         Process process = processesStorage.get(processId);
         process.setEndTime(System.currentTimeMillis());
+        process.setState(Process.FINISH);
         process.setReturnValue(returnValue);
         processesStorage.put(processId, process);
     }
@@ -50,14 +54,37 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
+    public ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit) {
+        return new ResultSetCursor<UUID>() {
+            @Override
+            public Collection<UUID> getNext() {
+                return Collections.EMPTY_LIST;
+            }
+
+            @Override
+            public void close() throws IOException {
+            }
+        };
+    }
+
+    @Override
     public TaskContainer getStartTask(UUID processId) {
         return processesStorage.get(processId).getStartTask();
     }
 
     @Override
     public void markProcessAsBroken(UUID processId) {
+        setProcessState(processId, Process.BROKEN);
+    }
+
+    @Override
+    public void markProcessAsStarted(UUID processId) {
+        setProcessState(processId, Process.START);
+    }
+
+    public void setProcessState(UUID processId, int state) {
         Process process = processesStorage.get(processId);
-        process.setState(Process.BROKEN);
+        process.setState(state);
         processesStorage.put(processId, process);
     }
 

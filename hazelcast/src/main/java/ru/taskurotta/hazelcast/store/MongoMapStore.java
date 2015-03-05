@@ -18,17 +18,21 @@ package ru.taskurotta.hazelcast.store;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapLoaderLifecycleSupport;
 import com.hazelcast.core.MapStore;
-import com.hazelcast.spring.mongodb.MongoDBConverter;
-import com.hazelcast.spring.mongodb.SpringMongoDBConverter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.mongodb.driver.BSerializationService;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
+import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
 
     private final static Logger logger = LoggerFactory.getLogger(MongoMapStore.class);
+
     public static Timer storeTimer = Metrics.newTimer(MongoMapStore.class, "store",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer loadTimer = Metrics.newTimer(MongoMapStore.class, "load",
@@ -50,26 +55,31 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
     public static Timer deleteTimer = Metrics.newTimer(MongoMapStore.class, "delete",
             TimeUnit.MILLISECONDS, TimeUnit.SECONDS);
+
+    private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
+
     private String mapName;
-    private MongoDBConverter converter;
     private DBCollection coll;
-    private MongoTemplate mongoTemplate;
 
-    public MongoTemplate getMongoTemplate() {
-        return mongoTemplate;
-    }
+    private final MongoTemplate mongoTemplate;
+    private final BSerializationService serializationService;
+    private final String objectClassName;
 
-    public void setMongoTemplate(MongoTemplate mongoTemplate) {
+    public MongoMapStore(MongoTemplate mongoTemplate, BSerializationService serializationService, String
+            objectClassName) {
+
         this.mongoTemplate = mongoTemplate;
+        this.serializationService = serializationService;
+        this.objectClassName = objectClassName;
     }
 
     public void store(Object key, Object value) {
         long startTime = System.nanoTime();
 
         try {
-            DBObject dbo = converter.toDBObject(value);
-            dbo.put("_id", key);
-            coll.save(dbo);
+            DBObjectCheat<Object> documentKey = new DBObjectCheat<>(key);
+            DBObjectCheat<Object> document = new DBObjectCheat<>(value);
+            coll.update(documentKey, document, true, false);
         } finally {
             storeTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
@@ -85,21 +95,31 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         long startTime = System.nanoTime();
 
         try {
-            DBObject dbo = new BasicDBObject();
-            dbo.put("_id", key);
-            coll.remove(dbo);
+            DBObjectCheat<Object> objKey = new DBObjectCheat<>(key);
+            coll.remove(objKey, noWaitWriteConcern);
         } finally {
             deleteTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
         }
     }
 
     public void deleteAll(Collection keys) {
-        BasicDBList dbo = new BasicDBList();
-        for (Object key : keys) {
-            dbo.add(new BasicDBObject("_id", key));
+
+        int j = 0;
+        int size = keys.size();
+
+        BasicDBList idList = new BasicDBList();
+
+        for (Object id : keys) {
+            j++;
+
+            idList.add(id);
+
+            if (j % 100 == 0 && j == size) {
+                BasicDBObject inListObj = new BasicDBObject("$in", idList);
+                coll.remove(new BasicDBObject("_id", inListObj), noWaitWriteConcern);
+                idList.clear();
+            }
         }
-        BasicDBObject dbb = new BasicDBObject("$or", dbo);
-        coll.remove(dbb);
     }
 
 
@@ -108,25 +128,14 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
 
         try {
 
-            DBObject dbo = new BasicDBObject();
-            dbo.put("_id", key);
-            DBObject obj = coll.findOne(dbo);
-            if (obj == null)
+            DBObjectCheat objKey = new DBObjectCheat(key);
+            DBObject obj = coll.findOne(objKey);
+
+            if (obj == null) {
                 return null;
-
-            try {
-                Class clazz = Class.forName(obj.get("_class").toString());
-                Object result = converter.toObject(clazz, obj);
-
-                if (result != null) {
-                    loadSuccessTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
-                }
-
-                return result;
-            } catch (ClassNotFoundException e) {
-                logger.warn(e.getMessage(), e);
             }
-            return null;
+
+            return ((DBObjectCheat) obj).getObject();
 
         } finally {
             loadTimer.update(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
@@ -155,7 +164,11 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
         }
 
         this.coll = mongoTemplate.getCollection(this.mapName);
-        this.converter = new SpringMongoDBConverter(mongoTemplate);
+
+        StreamBSerializer objectSerializer = serializationService.getSerializer(objectClassName);
+
+        coll.setDBDecoderFactory(new BDecoderFactory(objectSerializer));
+        coll.setDBEncoderFactory(new BEncoderFactory(serializationService));
 
         logger.debug("Store for collection [" + mapName + "] initialized");
 

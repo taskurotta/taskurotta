@@ -12,7 +12,8 @@ import org.junit.Ignore;
 public class TestActorImpl implements TestActor {
 
     private String replacedValue;
-    private String defaultValue;
+    private String defaultValue1;
+    private String defaultValue2;
 
     @Override
     public int sum(int a, int b) {
@@ -27,11 +28,19 @@ public class TestActorImpl implements TestActor {
         this.replacedValue = replacedValue;
     }
 
-    public String getDefaultValue() {
-        return defaultValue;
+    public String getDefaultValue1() {
+        return defaultValue1;
     }
 
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
+    public void setDefaultValue1(String defaultValue1) {
+        this.defaultValue1 = defaultValue1;
+    }
+
+    public String getDefaultValue2() {
+        return defaultValue2;
+    }
+
+    public void setDefaultValue2(String defaultValue2) {
+        this.defaultValue2 = defaultValue2;
     }
 }

@@ -43,4 +43,6 @@ public interface TaskDecision {
     long getRestartTime();
 
     long getExecutionTime();
+
+    UUID getPass();
 }

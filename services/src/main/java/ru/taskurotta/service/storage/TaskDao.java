@@ -15,9 +15,16 @@ import java.util.UUID;
  * Date: 09.04.13
  */
 public interface TaskDao {
-    TaskContainer getTask(UUID taskId, UUID processId);
 
-    void addDecision(DecisionContainer taskDecision);
+    UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout);
+
+    boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force);
+
+    boolean retryTask(UUID taskId, UUID processId, long timeToStart);
+
+    boolean finishTask(DecisionContainer taskDecision);
+
+    TaskContainer getTask(UUID taskId, UUID processId);
 
     void addTask(TaskContainer taskContainer);
 
@@ -38,4 +45,7 @@ public interface TaskDao {
     void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds);
 
     List<TaskContainer> findTasks(TaskSearchCommand command);
+
+    void updateTaskDecision(DecisionContainer taskDecision);
+
 }

@@ -30,6 +30,7 @@ public class ErrorContainerStreamSerializer implements StreamSerializer<ErrorCon
         }
         writeString(out, object.getMessage());
         writeString(out, object.getStackTrace());
+        out.writeBoolean(object.isFatalError());
     }
 
     @Override
@@ -39,16 +40,16 @@ public class ErrorContainerStreamSerializer implements StreamSerializer<ErrorCon
             return null;
         }
 
-        ErrorContainer errorContainer = new ErrorContainer();
         int length = in.readInt();
         String[] types = new String[length];
         for (int i=0; i< length; i++) {
             types[i] = readString(in);
         }
-        errorContainer.setClassNames(types);
-        errorContainer.setMessage(readString(in));
-        errorContainer.setStackTrace(readString(in));
-        return errorContainer;
+        String message = readString(in);
+        String stackTrace = readString(in);
+        boolean fatalError = in.readBoolean();
+
+        return new ErrorContainer(types, message, stackTrace, fatalError);
     }
 
     @Override

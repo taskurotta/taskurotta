@@ -2,7 +2,7 @@ package ru.taskurotta.dropwizard.resources.console.operation;
 
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.service.recovery.IncompleteProcessFinder;
+import ru.taskurotta.service.recovery.RecoveryThreads;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 
 import javax.ws.rs.Consumes;
@@ -24,7 +24,7 @@ public class RecoveryResource {
 
     private OperationExecutor recoveryOperationExecutor;
 
-    private IncompleteProcessFinder incompleteProcessFinder;
+    private RecoveryThreads recoveryThreads;
 
     @GET
     @Path("/size")
@@ -42,16 +42,16 @@ public class RecoveryResource {
     @Path("/finder/state")
     public void setProcessFinderStarted(Boolean started) {
         if (started) {
-            incompleteProcessFinder.start();
+            recoveryThreads.start();
         } else {
-            incompleteProcessFinder.stop();
+            recoveryThreads.stop();
         }
     }
 
     @GET
     @Path("/finder/state")
     public Boolean isProcessFinderStarted() {
-        return incompleteProcessFinder.isStarted();
+        return recoveryThreads.isStarted();
     }
 
     @Required
@@ -60,7 +60,7 @@ public class RecoveryResource {
     }
 
     @Required
-    public void setIncompleteProcessFinder(IncompleteProcessFinder incompleteProcessFinder) {
-        this.incompleteProcessFinder = incompleteProcessFinder;
+    public void setRecoveryThreads(RecoveryThreads recoveryThreads) {
+        this.recoveryThreads = recoveryThreads;
     }
 }

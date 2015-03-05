@@ -20,11 +20,15 @@ import java.util.Map;
 /**
  * TaskServer wrapper delegating method calls to enclosed server with metrics data collect operations
  * Date: 27.08.13 14:39
+ * // todo: optimize code. prepare all needed objects on the constructor and minimize quantity of unnecessary methods
+ * calls
  */
 public class MetricsTaskServer implements TaskServer {
 
-    private TaskServer taskServer;
-    private MetricsFactory metricsFactory;
+    private final TaskServer taskServer;
+    private final MetricsFactory metricsFactory;
+
+    private final Metric startProcessMetric;
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsTaskServer.class);
 
@@ -32,6 +36,10 @@ public class MetricsTaskServer implements TaskServer {
         this.taskServer = taskServer;
         this.metricsFactory = metricsFactory;
 
+        this.startProcessMetric = metricsFactory.getInstance(MetricName.START_PROCESS.getValue());
+
+
+        // todo: remove from here
         PeriodicMetric memoryMetric = metricsFactory.getPeriodicInstance(MetricName.MEMORY.getValue(), memoryMetricsPeriodSeconds);
         memoryMetric.periodicMark(new DatasetValueExtractor() {
 
@@ -58,8 +66,8 @@ public class MetricsTaskServer implements TaskServer {
             @Override
             public Number getGeneralValue(Map<String, Number> datasetsValues) {
                 Number result = 0l;
-                if (datasetsValues!=null && !datasetsValues.isEmpty()) {
-                    result = (long)datasetsValues.get(TOTAL_MEM) - (long)datasetsValues.get(FREE_MEM);
+                if (datasetsValues != null && !datasetsValues.isEmpty()) {
+                    result = (long) datasetsValues.get(TOTAL_MEM) - (long) datasetsValues.get(FREE_MEM);
                 }
                 return result;
             }
@@ -76,8 +84,7 @@ public class MetricsTaskServer implements TaskServer {
 
         taskServer.startProcess(task);
 
-        long invocationTime = System.currentTimeMillis()-startTime;
-        Metric startProcessMetric = metricsFactory.getInstance(MetricName.START_PROCESS.getValue());
+        long invocationTime = System.currentTimeMillis() - startTime;
         startProcessMetric.mark(actorId, invocationTime);
         startProcessMetric.mark(MetricName.START_PROCESS.getValue(), invocationTime);
 
@@ -99,7 +106,7 @@ public class MetricsTaskServer implements TaskServer {
         pollMetric.mark(queueName, invocationTime);
         pollMetric.mark(MetricName.POLL.getValue(), invocationTime);
 
-        if (taskContainer!=null) {
+        if (taskContainer != null) {
             Metric successPollMetric = metricsFactory.getInstance(MetricName.SUCCESSFUL_POLL.getValue());
             successPollMetric.mark(queueName, invocationTime);
             successPollMetric.mark(MetricName.SUCCESSFUL_POLL.getValue(), invocationTime);

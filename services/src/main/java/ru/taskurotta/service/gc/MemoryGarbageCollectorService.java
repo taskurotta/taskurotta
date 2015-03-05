@@ -5,12 +5,7 @@ import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
 
 import java.util.UUID;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.Delayed;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class MemoryGarbageCollectorService implements GarbageCollectorService {
 
@@ -22,7 +17,7 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
                                          TaskDao taskDao, int poolSize, long timeBeforeDelete) {
         this.delayTime = timeBeforeDelete;
 
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
 
             @Override
@@ -35,10 +30,10 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
         });
 
         for (int i = 0; i < poolSize; i++) {
-            executorService.submit(new AbstractGCTask(processService, graphDao, taskDao) {
+            executorService.scheduleWithFixedDelay(new AbstractGCTask(processService, graphDao, taskDao) {
                 @Override
                 public void run() {
-                    while(true) {
+                    while (!garbageCollectorQueue.isEmpty()) {
                         DelayFinishedProcess delayFinishedProcess = null;
                         try {
                             delayFinishedProcess = garbageCollectorQueue.take();
@@ -46,14 +41,12 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
                             logger.error("Catch exception while find process for garbage collector", e);
                         }
 
-                        if (delayFinishedProcess == null) {
-                            continue;
+                        if (delayFinishedProcess != null) {
+                            gc(delayFinishedProcess.processId);
                         }
-
-                        gc(delayFinishedProcess.processId);
                     }
                 }
-            });
+            }, 0, 1, TimeUnit.SECONDS);
         }
     }
 
@@ -79,7 +72,7 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
     }
 
     @Override
-    public void delete(UUID processId) {
+    public void collect(UUID processId) {
         garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + delayTime));
     }
 

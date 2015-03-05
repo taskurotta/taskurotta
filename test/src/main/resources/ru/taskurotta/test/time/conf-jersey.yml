@@ -1,0 +1,80 @@
+runtime:
+  - MainRuntimeConfig:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: ru/taskurotta/test/time/SpreaderBeans-jersey.xml
+        defaultPropertiesLocation: default.properties
+        properties:
+          endpoint: "http://localhost:8081"
+          threadPoolSize: 100
+          readTimeout: 0
+          connectTimeout: 3000
+          duration: 10 hours
+          timeout: 1 seconds
+          threads: 50
+          gc.time-before-delete: 1 minutes
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.time.LifeTimeProfiler
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+      count: 25
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+      count: 25
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: logs/leman24.log
+             append: true
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO        
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: ERROR
+        - ru.taskurotta.service.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.service.hz.gc:
+             key: name
+             \@level: DEBUG
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             key: name
+             \@level: !!!str OFF
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

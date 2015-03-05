@@ -1,21 +1,19 @@
 package ru.taskurotta.hz.test;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.QueueConfig;
-import com.hazelcast.config.QueueStoreConfig;
-import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
-import com.mongodb.DBAddress;
-import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory;
 
 import java.net.UnknownHostException;
 
@@ -34,39 +32,38 @@ public class QueueTest {
     }
 
     private Config getServerConfig() throws Exception {
-        Config config = new Config();
-        //config.setProperty("hazelcast.initial.min.cluster.size","2");
+        Config cfg = new Config();
 
-        QueueConfig queueConfig = new QueueConfig();
-        queueConfig.setBackupCount(0);
-        queueConfig.setName(QUEUE_NAME);
-        config.addQueueConfig(queueConfig);
+        CachedQueueConfig cachedQueueConfig = CachedQueueServiceConfig.getQueueConfig(cfg, QUEUE_NAME);
+        cachedQueueConfig.setCacheSize(5);
 
-        QueueStoreConfig queueStoreConfig = new QueueStoreConfig();
-        queueStoreConfig.setStoreImplementation(new MongoQueueStore(QUEUE_NAME, getMongoTemplate()));
-        queueStoreConfig.setProperty("memory-limit", "1000");
-        queueConfig.setQueueStoreConfig(queueStoreConfig);
+        CachedQueueStoreConfig cachedQueueStoreConfig = new CachedQueueStoreConfig();
+        cachedQueueStoreConfig.setEnabled(true);
+        cachedQueueStoreConfig.setBinary(false);
+        cachedQueueStoreConfig.setBatchLoadSize(250);
 
-        config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
-        TcpIpConfig tcpIpConfig = config.getNetworkConfig().getJoin().getTcpIpConfig();
-        tcpIpConfig.setEnabled(true);
-        tcpIpConfig.addMember("127.0.0.1");
+        MongoTemplate mongoTemplate = getMongoTemplate();
+        MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
+                MongoCachedQueueStorageFactory(mongoTemplate, null);
+        cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
+                (QUEUE_NAME, cachedQueueStoreConfig));
+        cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
 
-        return config;
+        return cfg;
     }
 
     @Test
     public void start() throws Exception {
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(getServerConfig());
         log.info("server instance started");
-        Thread.sleep(300000);
+        Thread.sleep(3000);
     }
 
     @Test
     public void populateQueue() throws Exception {
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(getServerConfig());
 
-        IQueue<Object> testQueue = hazelcastInstance.getQueue(QUEUE_NAME);
+        CachedQueue<Object> testQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         log.info("Queue size before: {}", testQueue.size());
 
         for (int i=0; i<MAX_ITEMS; i++) {
@@ -80,12 +77,12 @@ public class QueueTest {
     public void queuePollTest() throws Exception {
         HazelcastInstance hazelcastInstance = Hazelcast.newHazelcastInstance(getServerConfig());
 
-        IQueue<Object> testQueue = hazelcastInstance.getQueue(QUEUE_NAME);
+        CachedQueue<Object> testQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         log.info("Queue size: {}", testQueue.size());
         long start = System.currentTimeMillis();
 
         int count = 0;
-        while (null != testQueue.poll()) {
+        while (testQueue.poll() != null) {
             count ++;
         }
 

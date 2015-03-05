@@ -4,9 +4,7 @@ import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.monitor.LocalMapStats;
-import com.hazelcast.monitor.LocalQueueStats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -16,8 +14,9 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
-import ru.taskurotta.hazelcast.store.MongoQueueStore;
 
 import java.util.Formatter;
 import java.util.Properties;
@@ -44,7 +43,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private double previousRate = 0;
     private boolean timeIsZero = true;
     private int deltaShot = 2000;
-    private int maxTaskQuantity = -1;
+    private int maxProcessQuantity = -1;
     private double previousCountTotalRate = 0;
     private double targetTolerance = 4.0;
     private AtomicInteger nullPoll = new AtomicInteger(0);
@@ -68,8 +67,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             targetTolerance = (Double) properties.get("targetTolerance");
         }
 
-        if (properties.containsKey("maxTaskQuantity")) {
-            maxTaskQuantity = (Integer) properties.get("maxTaskQuantity");
+        if (properties.containsKey("maxProcessQuantity")) {
+            maxProcessQuantity = (Integer) properties.get("maxProcessQuantity");
         }
 
         if (properties.containsKey("taskPerProcess")) {
@@ -131,12 +130,14 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                                 totalHeapCost += stat.getHeapCost();
                             }
-                            if (distributedObject instanceof IQueue) {
-                                IQueue queue = (IQueue) distributedObject;
-                                LocalQueueStats stat = queue.getLocalQueueStats();
+//
 
+                            if (distributedObject instanceof CachedQueue) {
+                                CachedQueue queue = (CachedQueue) distributedObject;
                                 sb.append("\tsize = " + queue.size());
-                                sb.append("\townedItemCount = " + stat.getOwnedItemCount());
+                                sb.append("\tcacheSize = " + queue.getLocalQueueStats().getCacheSize());
+                                sb.append("\tcacheMaxSize = " + queue.getLocalQueueStats().getCacheMaxSize());
+                                sb.append("\theapCost = " + queue.getLocalQueueStats().getHeapCost());
                             }
                         }
 
@@ -155,11 +156,11 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                     sb.append("\nMongo Queues statistics:");
                     sb.append(String.format("\ndelete mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.deleteTimer.mean(), MongoQueueStore.deleteTimer.oneMinuteRate()));
+                            MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate()));
                     sb.append(String.format("\nload   mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.loadTimer.mean(), MongoQueueStore.loadTimer.oneMinuteRate()));
+                            MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate()));
                     sb.append(String.format("\nstore  mean: %8.3f oneMinuteRate: %8.3f",
-                            MongoQueueStore.storeTimer.mean(), MongoQueueStore.storeTimer.oneMinuteRate()));
+                            MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate()));
                     System.err.println(sb);
                 }
 
@@ -195,7 +196,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     previousRate = rate;
                     lastTime.set(curTime);
 
-                    if ((maxTaskQuantity > 0 && maxTaskQuantity < count) || (maxTaskQuantity == -1 &&
+                    if ((maxProcessQuantity > 0 && maxProcessQuantity < count) || (maxProcessQuantity == -1 &&
                             currentTolerance < targetTolerance)) {
 
                         stabilizationCounter.incrementAndGet();

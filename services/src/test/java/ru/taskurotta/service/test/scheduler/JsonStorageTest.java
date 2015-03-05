@@ -104,7 +104,9 @@ public class JsonStorageTest {
 
         String newMethodName = "newMethodName";
         TaskContainer task = aJob.getTask();
-        TaskContainer newTask = new TaskContainer(task.getTaskId(), task.getProcessId(), newMethodName, task.getActorId(), task.getType(), task.getStartTime(), task.getErrorAttempts(), task.getArgs(), task.getOptions(), task.isUnsafe(), task.getFailTypes());
+        TaskContainer newTask = new TaskContainer(task.getTaskId(), task.getProcessId(), task.getPass(),
+                newMethodName, task.getActorId(), task.getType(), task.getStartTime(), task.getErrorAttempts(),
+                task.getArgs(), task.getOptions(), task.isUnsafe(), task.getFailTypes());
         aJob.setTask(newTask);
         aJob.setStatus(JobConstants.STATUS_INACTIVE);
         store.updateJob(aJob);
@@ -134,7 +136,8 @@ public class JsonStorageTest {
     }
 
     protected TaskContainer getNewTaskContainer() {
-        return new TaskContainer(UUID.randomUUID(), UUID.randomUUID(), "doThis", "actorId#2.4", TaskType.DECIDER_START, -1l, 10, null, null, false, null);
+        return new TaskContainer(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "doThis", "actorId#2.4",
+                TaskType.DECIDER_START, -1l, 10, null, null, false, null);
     }
 
 }

@@ -1,9 +1,5 @@
 package ru.taskurotta.recipes.multiplier;
 
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -13,6 +9,10 @@ import ru.taskurotta.bootstrap.profiler.SimpleProfiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by void 12.07.13 18:29
@@ -60,7 +60,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                 Task task = taskSpreader.poll();
 
                 long curTime = System.currentTimeMillis();
-                if (null != task) {
+                if (task != null) {
                     long count = taskCount.incrementAndGet();
                     if (count % tasksForStat == 0) {
                         System.out.printf("       tasks: %6d; time: %6.3f s; rate: %8.3f tps\n", count, 0.001 * (curTime - lastTime), 1000.0D * tasksForStat / (curTime - lastTime));

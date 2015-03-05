@@ -130,7 +130,7 @@
         <constructor-arg name="recoveryThreads" value="${recovery.broken-process-resource.thread-size}" />
 
         <property name="brokenProcessService" ref="brokenProcessService" />
-        <property name="recoveryProcessService" ref="recoveryProcessService" />
+        <property name="recoveryService" ref="recoveryService" />
     </bean>
 
     <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">
@@ -148,7 +148,7 @@
 
     <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryResource">
         <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor" />
-        <property name="incompleteProcessFinder" ref="incompleteProcessFinder" />
+        <property name="recoveryThreads" ref="incompleteProcessFinder" />
     </bean>
 
     <bean id = "gcResource" class="ru.taskurotta.dropwizard.resources.console.operation.GarbageCollectorResource">

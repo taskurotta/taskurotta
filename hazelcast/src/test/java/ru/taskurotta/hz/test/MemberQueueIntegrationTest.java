@@ -1,16 +1,16 @@
 package ru.taskurotta.hz.test;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-import static junit.framework.Assert.assertEquals;
-
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IQueue;
 import com.hazelcast.core.PartitionService;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.hazelcast.util.MemberQueue;
+
+import java.util.concurrent.ThreadLocalRandom;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * User: romario
@@ -24,7 +24,7 @@ public class MemberQueueIntegrationTest {
     class TestServer {
 
         private int number;
-        private IQueue<Long> queue;
+        private CachedQueue<Long> queue;
 
         private HazelcastInstance hzInstance;
         private PartitionService partitionService;
@@ -39,9 +39,9 @@ public class MemberQueueIntegrationTest {
 
 
             if (useMemberQueue) {
-                this.queue = new MemberQueue<Long>(QUEUE_NAME, hzInstance);
+                this.queue = new MemberQueue<>(QUEUE_NAME, hzInstance);
             } else {
-                this.queue = hzInstance.getQueue(QUEUE_NAME);
+                this.queue = hzInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
             }
         }
 

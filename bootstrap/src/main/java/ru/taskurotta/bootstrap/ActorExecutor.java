@@ -8,8 +8,12 @@ import ru.taskurotta.bootstrap.profiler.Profiler;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
+import ru.taskurotta.exception.SerializationException;
 import ru.taskurotta.exception.server.ServerConnectionException;
 import ru.taskurotta.exception.server.ServerException;
+import ru.taskurotta.internal.core.TaskDecisionImpl;
+
+import java.util.UUID;
 
 /**
  * User: stukushin
@@ -48,14 +52,65 @@ public class ActorExecutor implements Runnable {
             try {
 
                 logger.trace("Thread [{}]: try to poll", threadName);
-                Task task = taskSpreader.poll();
+                Task task = null;
+
+                try {
+                    task = taskSpreader.poll();
+                } catch (SerializationException ex) {
+
+                    UUID taskId = ex.getTaskId();
+
+                    if (taskId == null) {
+                        throw ex;
+                    }
+
+                    // send error decision to the server
+                    Throwable realEx = ex.getCause();
+                    if (realEx == null) {
+                        realEx = ex;
+                    }
+
+                    TaskDecision errorDecision = new TaskDecisionImpl(taskId, ex.getProcessId(), ex.getPass(), realEx,
+                            null);
+
+                    logger.error("Can not deserialize task. Try to release error decision [{}]", errorDecision);
+
+                    taskSpreader.release(errorDecision);
+                    continue;
+                }
 
                 if (task == null) {
                     continue;
                 }
 
                 logger.trace("Thread [{}]: try to execute task [{}]", threadName, task);
-                TaskDecision taskDecision = runtimeProcessor.execute(task);
+
+                TaskDecision taskDecision = null;
+
+                try {
+                    taskDecision = runtimeProcessor.execute(task);
+                } catch (SerializationException ex) {
+
+                    UUID taskId = ex.getTaskId();
+
+                    if (taskId == null) {
+                        throw ex;
+                    }
+
+                    // send error decision to the server
+                    Throwable realEx = ex.getCause();
+                    if (realEx == null) {
+                        realEx = ex;
+                    }
+
+                    TaskDecision errorDecision = new TaskDecisionImpl(taskId, ex.getProcessId(), ex.getPass(), realEx,
+                            null);
+
+                    logger.error("Can not serialize task decision. Try to release error decision [{}]", errorDecision);
+
+                    taskSpreader.release(errorDecision);
+                    continue;
+                }
 
                 logger.trace("Thread [{}]: try to release decision [{}] of task [{}]", threadName, taskDecision, task);
                 taskSpreader.release(taskDecision);

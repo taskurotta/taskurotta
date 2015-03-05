@@ -1,10 +1,9 @@
 package ru.taskurotta.transport.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import ru.taskurotta.transport.model.serialization.StringToJsonSerializer;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import ru.taskurotta.server.json.KeepAsJsonDeserialzier;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -48,29 +47,6 @@ public class ArgContainer implements Cloneable, Serializable {
     private boolean promise = false;
     private ErrorContainer errorContainer;
 
-
-    @JsonProperty("jsonvalue")  //workaround for Jackson rawJson deserialization feature absence
-    public void setJsonValue(JsonNode jsonValue) {
-        this.JSONValue = jsonValue !=null? jsonValue.toString(): null;
-    }
-
-    //deserialization feature is not implementet at Jackson: JACKSON-781, JACKSON-596
-    @JsonSerialize(using = StringToJsonSerializer.class, contentUsing = StringToJsonSerializer.class, keyUsing = StringToJsonSerializer.class)
-    @JsonProperty("jsonvalue")
-    public String getJsonValue() {
-        return JSONValue;
-    }
-
-    @JsonIgnore
-    public String getJSONValue() {
-        return JSONValue;
-    }
-
-    @JsonIgnore
-    public void setJSONValue(String JSONValue) {
-        this.JSONValue = JSONValue;
-    }
-
     public ArgContainer() {
     }
 
@@ -103,6 +79,16 @@ public class ArgContainer implements Cloneable, Serializable {
         this.errorContainer = source.errorContainer;
     }
 
+    @JsonRawValue
+    public String getJSONValue() {
+        return JSONValue;
+    }
+
+    @JsonDeserialize(using = KeepAsJsonDeserialzier.class)
+    public void setJSONValue(String JSONValue) {
+        this.JSONValue = JSONValue;
+    }
+
     public String getDataType() {
         return dataType;
     }
@@ -132,7 +118,7 @@ public class ArgContainer implements Cloneable, Serializable {
 
     @JsonIgnore
     public boolean isNull() {
-        return null == valueType;
+        return valueType == null;
     }
 
     public ValueType getValueType() {
@@ -232,7 +218,40 @@ public class ArgContainer implements Cloneable, Serializable {
     }
 
     public boolean containsError() {
-        return null != errorContainer;
+        return errorContainer != null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ArgContainer that = (ArgContainer) o;
+
+        if (isReady != that.isReady) return false;
+        if (promise != that.promise) return false;
+        if (JSONValue != null ? !JSONValue.equals(that.JSONValue) : that.JSONValue != null) return false;
+        if (!Arrays.equals(compositeValue, that.compositeValue)) return false;
+        if (dataType != null ? !dataType.equals(that.dataType) : that.dataType != null) return false;
+        if (errorContainer != null ? !errorContainer.equals(that.errorContainer) : that.errorContainer != null)
+            return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (valueType != that.valueType) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dataType != null ? dataType.hashCode() : 0;
+        result = 31 * result + (taskId != null ? taskId.hashCode() : 0);
+        result = 31 * result + (isReady ? 1 : 0);
+        result = 31 * result + (JSONValue != null ? JSONValue.hashCode() : 0);
+        result = 31 * result + (valueType != null ? valueType.hashCode() : 0);
+        result = 31 * result + (compositeValue != null ? Arrays.hashCode(compositeValue) : 0);
+        result = 31 * result + (promise ? 1 : 0);
+        result = 31 * result + (errorContainer != null ? errorContainer.hashCode() : 0);
+        return result;
     }
 
     @Override

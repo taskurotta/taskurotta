@@ -1,32 +1,16 @@
 package ru.taskurotta.hz.test;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import com.hazelcast.config.*;
+import com.hazelcast.core.*;
+import org.junit.Ignore;
+import org.junit.Test;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
+
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 
 import static junit.framework.Assert.assertEquals;
-
-import com.hazelcast.config.Config;
-import com.hazelcast.config.MapConfig;
-import com.hazelcast.config.MapStoreConfig;
-import com.hazelcast.config.MaxSizeConfig;
-import com.hazelcast.config.QueueConfig;
-import com.hazelcast.config.QueueStoreConfig;
-import com.hazelcast.config.SerializationConfig;
-import com.hazelcast.core.Hazelcast;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.IQueue;
-import com.hazelcast.core.MapStore;
-import com.hazelcast.core.QueueStore;
-import org.junit.Ignore;
-import org.junit.Test;
-import ru.taskurotta.hazelcast.util.ConfigUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -103,7 +87,7 @@ public class HZ3_Test {
 
             mapConfig.setMapStoreConfig(mapStoreConfig);
             mapConfig.setEvictionPercentage(80);
-            mapConfig.setEvictionPolicy(MapConfig.EvictionPolicy.LFU);
+            mapConfig.setEvictionPolicy(EvictionPolicy.LFU);
 
             MaxSizeConfig maxSizeConfig = new MaxSizeConfig();
             maxSizeConfig.setSize(100);
@@ -177,7 +161,7 @@ public class HZ3_Test {
 
             HazelcastInstance hz = Hazelcast.newHazelcastInstance(ConfigUtil.disableMulticast(cfg));
 
-            IQueue<TestQueueItem> queue = hz.getQueue("TestQueue");
+            CachedQueue<TestQueueItem> queue = hz.getDistributedObject(CachedQueue.class.getName(), "TestQueue");
 
 
             System.out.println("Putttt.....");

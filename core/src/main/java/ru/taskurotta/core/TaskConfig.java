@@ -68,7 +68,7 @@ public class TaskConfig {
                                             Class<? extends Throwable>[] exceptionToExclude) {
         RetryPolicyConfig rps = new RetryPolicyConfig(type, initialRetryIntervalSeconds, maximumRetryIntervalSeconds, retryExpirationIntervalSeconds, backoffCoefficient, maximumAttempts);
         for (Class<? extends Throwable> clazzRetry : exceptionToRetry) {
-            rps.addExceptionToRetryException(clazzRetry);
+            rps.addExceptionToRetry(clazzRetry);
         }
         for (Class<? extends Throwable> clazzExclude : exceptionToExclude) {
             rps.addExceptionToExclude(clazzExclude);

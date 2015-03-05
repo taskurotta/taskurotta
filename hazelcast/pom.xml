@@ -3,14 +3,38 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>hazelcast</artifactId>
     <name>Taskurotta :: Hazelcast support</name>
 
+    <scm>
+        <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
+        <developerConnection>scm:git:git@github.com:taskurotta/taskurotta.git</developerConnection>
+        <url>http://taskurotta.org</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
     <dependencies>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
@@ -24,6 +48,12 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-expression</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
@@ -57,6 +87,32 @@
             <version>${yammer.metrics.version}</version>
         </dependency>
         <!-- /metrics -->
+
+
+        <!-- log4j need only for hazelcast legacy tests -->
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- /log4j -->
+
+
 
     </dependencies>
 

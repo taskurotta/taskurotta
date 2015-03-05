@@ -2,26 +2,37 @@ package ru.taskurotta.service.hz.server;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Partition;
 import com.hazelcast.core.PartitionAware;
+import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.spring.context.SpringAware;
+import com.yammer.metrics.core.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
-import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.transport.model.DecisionContainer;
 
 import java.io.Serializable;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdAll;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdLock;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdWork;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statRelease;
 
 /**
  * Task server with async decision processing.
@@ -31,27 +42,35 @@ import java.util.concurrent.Callable;
 public class HazelcastTaskServer extends GeneralTaskServer {
 
     private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
+    private static final Clock clock = Clock.defaultClock();
+
     private static final String LOCK_PROCESS_MAP_NAME = HazelcastTaskServer.class.getName() + "#lockProcessMap";
 
     protected HazelcastInstance hzInstance;
-    protected IMap lockProcessMap;
+    private IMap<UUID, ?> lockProcessMap;
 
-    protected String decisionProcessingExecutorService;
+    private final String nodeCustomName;
+    private final int maxPendingLimit;
+    protected final IExecutorService distributedExeService;
+    protected final LocalExecutorStats localExecutorStats;
 
-    protected static HazelcastTaskServer instance;
-    protected static final Object instanceMonitor = 0;
-
-    private String nodeCustomName;
+    private final PendingDecisionQueueProxy pendingDecisionQueueProxy;
 
     protected HazelcastTaskServer(ServiceBundle serviceBundle, HazelcastInstance hzInstance, String nodeCustomName,
-                                  String decisionProcessingExecutorService) {
+                                  String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
+                                  long sleepOnOverloadMls) {
         super(serviceBundle);
 
         this.hzInstance = hzInstance;
         this.nodeCustomName = nodeCustomName;
-        this.decisionProcessingExecutorService = decisionProcessingExecutorService;
+        this.maxPendingLimit = maxPendingLimit;
 
         lockProcessMap = hzInstance.getMap(LOCK_PROCESS_MAP_NAME);
+        distributedExeService = hzInstance.getExecutorService(decisionProcessingExecutorService);
+        localExecutorStats = distributedExeService.getLocalExecutorStats();
+
+        pendingDecisionQueueProxy = new PendingDecisionQueueProxy(hzInstance, this, maxPendingWorkers,
+                maxPendingLimit, sleepOnOverloadMls);
     }
 
     protected HazelcastTaskServer(final ProcessService processService, final TaskService taskService,
@@ -59,43 +78,45 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                                   final DependencyService dependencyService, final ConfigService configService,
                                   final BrokenProcessService brokenProcessService, final GarbageCollectorService garbageCollectorService,
                                   HazelcastInstance hzInstance,
-                                  String nodeCustomName, String decisionProcessingExecutorService) {
+                                  String nodeCustomName, String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
+                                  long sleepOnOverloadMls) {
         this(new ServiceBundle() {
-            @Override
-            public ProcessService getProcessService() {
-                return processService;
-            }
+                 @Override
+                 public ProcessService getProcessService() {
+                     return processService;
+                 }
 
-            @Override
-            public TaskService getTaskService() {
-                return taskService;
-            }
+                 @Override
+                 public TaskService getTaskService() {
+                     return taskService;
+                 }
 
-            @Override
-            public QueueService getQueueService() {
-                return queueService;
-            }
+                 @Override
+                 public QueueService getQueueService() {
+                     return queueService;
+                 }
 
-            @Override
-            public DependencyService getDependencyService() {
-                return dependencyService;
-            }
+                 @Override
+                 public DependencyService getDependencyService() {
+                     return dependencyService;
+                 }
 
-            @Override
-            public ConfigService getConfigService() {
-                return configService;
-            }
+                 @Override
+                 public ConfigService getConfigService() {
+                     return configService;
+                 }
 
-            @Override
-            public BrokenProcessService getBrokenProcessService() {
-                return brokenProcessService;
-            }
+                 @Override
+                 public BrokenProcessService getBrokenProcessService() {
+                     return brokenProcessService;
+                 }
 
-            @Override
-            public GarbageCollectorService getGarbageCollectorService() {
-                return garbageCollectorService;
-            }
-        },  hzInstance, nodeCustomName, decisionProcessingExecutorService);
+                 @Override
+                 public GarbageCollectorService getGarbageCollectorService() {
+                     return garbageCollectorService;
+                 }
+             }, hzInstance, nodeCustomName, decisionProcessingExecutorService, maxPendingWorkers, maxPendingLimit,
+                sleepOnOverloadMls);
     }
 
     public void init() {
@@ -105,17 +126,76 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     public void release(DecisionContainer taskDecision) {
 
         logger.debug("HZ server release for decision [{}]", taskDecision);
+        long startTime = clock.tick();
 
-        // save it in task service
-        taskService.addDecision(taskDecision);
+        // save it firstly
+        if (!taskService.finishTask(taskDecision)) {
+            logger.warn("{}/{} Task decision can not be saved", taskDecision.getTaskId(), taskDecision.getProcessId());
+            return;
+        }
 
-        // send process call
-        ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskDecision.getProcessId(), taskDecision.getTaskId());
-        hzInstance.getExecutorService(decisionProcessingExecutorService).submit(call);
+        UUID processId = taskDecision.getProcessId();
+        TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), processId);
+
+        // is this a partition owner of process id?
+        Partition partition = hzInstance.getPartitionService().getPartition(processId);
+        if (hzInstance.getCluster().getLocalMember().equals(partition.getOwner())) {
+            lockAndProcessDecision(taskKey, this);
+        } else {
+            // are we overloaded?
+            if (localExecutorStats.getPendingTaskCount() > maxPendingLimit) {
+                pendingDecisionQueueProxy.stash(taskKey);
+            } else {
+                sendToClusterMember(taskKey);
+            }
+        }
+
+        startedDistributedTasks.incrementAndGet();
+        statRelease.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
+    }
+
+    protected void sendToClusterMember(TaskKey taskKey) {
+
+        ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskKey);
+        distributedExeService.submit(call);
     }
 
     protected DecisionContainer getDecision(UUID taskId, UUID processId) {
         return taskService.getDecision(taskId, processId);
+    }
+
+
+    public static void lockAndProcessDecision(TaskKey taskKey, HazelcastTaskServer taskServer) {
+
+        UUID taskId = taskKey.getTaskId();
+        UUID processId = taskKey.getProcessId();
+
+        logger.debug("ProcessDecisionUnitOfWork taskId[{}], processId[{]]", taskId, processId);
+        long startTime = clock.tick(), fullTime = clock.tick();
+
+        try {
+
+            taskServer.lockProcessMap.lock(processId);
+
+            try {
+                statPdLock.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
+                startTime = clock.tick();
+
+                taskServer.processDecision(taskId, processId);
+
+                statPdWork.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
+                startTime = clock.tick();
+            } finally {
+                taskServer.lockProcessMap.unlock(processId);
+            }
+
+            statPdAll.update(clock.tick() - fullTime, TimeUnit.NANOSECONDS);
+            finishedDistributedTasks.incrementAndGet();
+
+        } catch (HazelcastInstanceNotActiveException e) {
+            // reduce exception rain
+            logger.warn(e.getMessage());
+        }
     }
 
     /**
@@ -125,16 +205,14 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
         private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
 
-        UUID processId;
-        UUID taskId;
+        TaskKey taskKey;
         HazelcastTaskServer taskServer;
 
         public ProcessDecisionUnitOfWork() {
         }
 
-        public ProcessDecisionUnitOfWork(UUID processId, UUID taskId) {
-            this.processId = processId;
-            this.taskId = taskId;
+        public ProcessDecisionUnitOfWork(TaskKey TaskKey) {
+            this.taskKey = TaskKey;
         }
 
         @Autowired
@@ -144,30 +222,11 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         @Override
         public Object call() throws Exception {
-
             try {
-
-                taskServer.lockProcessMap.lock(processId);
-
-                try {
-                    DecisionContainer taskDecision = taskServer.getDecision(taskId, processId);
-                    logger.debug("ProcessDecisionUnitOfWork decision is[{}], taskId[{}], processId[{]]", taskDecision, taskId, processId);
-                    if (taskDecision == null) {
-                        String error = "Cannot get task decision from store by taskId[" + taskId + "], processId[" + processId + "]";
-                        logger.error(error);
-                        //TODO: this exception disappears for some reason
-                        throw new IllegalStateException(error);
-                    }
-
-                    taskServer.processDecision(taskDecision);
-
-                } finally {
-                    taskServer.lockProcessMap.unlock(processId);
-                }
-
-            } catch (HazelcastInstanceNotActiveException e) {
-                // reduce exception rain
-                logger.warn(e.getMessage());
+                lockAndProcessDecision(taskKey, taskServer);
+            } catch (RuntimeException ex) {
+                logger.error("Can not process task decision", ex);
+                throw ex;
             }
 
             return null;
@@ -175,7 +234,29 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
         @Override
         public Object getPartitionKey() {
-            return processId;
+            return taskKey.getProcessId();
+        }
+
+        public TaskKey getTaskKey() {
+            return taskKey;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ProcessDecisionUnitOfWork that = (ProcessDecisionUnitOfWork) o;
+
+            if (taskKey != null ? !taskKey.equals(that.taskKey) : that.taskKey != null)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return taskKey != null ? taskKey.hashCode() : 0;
         }
     }
 

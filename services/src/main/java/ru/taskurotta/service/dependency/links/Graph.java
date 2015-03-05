@@ -29,23 +29,22 @@ public class Graph implements Serializable {
 
     public final static UUID[] EMPTY_ARRAY = new UUID[0];
 
-    private int version = 0;
+    private int version;
     private UUID graphId;       //should be equal to process ID
 
     /**
      * Map of all not finished items in this process and its time of start in milliseconds.
      * It has 0 value if item is not started yet.
      */
-    private Map<UUID, Long> notFinishedItems = new HashMap<>();
+    private Map<UUID, Long> notFinishedItems;
 
     /**
      * Links map where keys are tasks which depends from value set of other tasks.
      * For example, A(B, C) - A is a key and {B, C} is a set value of map.
      */
-    private Map<UUID, Set<UUID>> links = new HashMap<>();
+    private Map<UUID, Set<UUID>> links;
 
-    //todo convention name
-    private Set<UUID> finishedItems = new HashSet<>();
+    private Set<UUID> finishedItems;
 
     // modification stuff.
     private Modification modification;
@@ -59,32 +58,43 @@ public class Graph implements Serializable {
      * generic constructor for deserializer
      */
     public Graph() {
-        touchTimeMillis = System.currentTimeMillis();
-        lastApplyTimeMillis = 0;
+        this.touchTimeMillis = System.currentTimeMillis();
+        this.version = 0;
+        this.notFinishedItems = new HashMap<>();
+        this.links = new HashMap<>();
+        this.finishedItems = new HashSet<>();
     }
 
     /**
      * smart constructor for deserializer
      */
     public Graph(int version, UUID graphId, Map<UUID, Long> notFinishedItems, Map<UUID, Set<UUID>> links,
-                 Set<UUID> finishedItems, long lastApplyTimeMillis) {
+                 Set<UUID> finishedItems, long lastApplyTimeMillis, long touchTimeMillis) {
 
         this.version = version;
         this.graphId = graphId;
 
         if (notFinishedItems != null) {
             this.notFinishedItems = notFinishedItems;
+        } else {
+            this.notFinishedItems = new HashMap<>();
+
         }
 
         if (links != null) {
             this.links = links;
+        } else {
+            this.links = new HashMap<>();
         }
 
         if (finishedItems != null) {
             this.finishedItems = finishedItems;
+        } else {
+            this.finishedItems = new HashSet<>();
         }
 
         this.lastApplyTimeMillis = lastApplyTimeMillis;
+        this.touchTimeMillis = touchTimeMillis;
     }
 
     /**
@@ -94,6 +104,7 @@ public class Graph implements Serializable {
      * @param startItem - ID of the first task in process
      */
     public Graph(UUID graphId, UUID startItem) {
+        this();
         this.graphId = graphId;
         notFinishedItems.put(startItem, 0L);
     }
@@ -184,6 +195,7 @@ public class Graph implements Serializable {
      * @param modification - diff object to apply
      */
     public void apply(Modification modification) {
+
         long currentTime = System.currentTimeMillis();
         logger.debug("apply() modification = [{}]", modification);
 
@@ -211,6 +223,27 @@ public class Graph implements Serializable {
         }
 
         touchTimeMillis = lastApplyTimeMillis = currentTime;
+
+    }
+
+    public Map<UUID, Long> getAllReadyItems() {
+
+        Map<UUID, Long> readyItems = null;
+
+        for (UUID itemId : notFinishedItems.keySet()) {
+            if (links.get(itemId) != null) {
+                continue;
+            }
+
+            if (readyItems == null) {
+                readyItems = new HashMap<>();
+            }
+
+            readyItems.put(itemId, notFinishedItems.get(itemId));
+        }
+
+
+        return readyItems;
     }
 
     private List<UUID> applyNewItems() {
@@ -228,11 +261,37 @@ public class Graph implements Serializable {
             // add all new items without links to readyItemsList
             Map<UUID, Set<UUID>> newLinks = modification.getLinks();
             for (UUID newItem : newItems) {
-                if (newLinks == null || newLinks.get(newItem) == null) {
+                if (newLinks == null) {
                     logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
 
                     readyItemsList.add(newItem);
+                    continue;
                 }
+
+                Set<UUID> itemDependencies = newLinks.get(newItem);
+
+                if (itemDependencies == null) {
+                    logger.debug("apply() new item [{}] has no links and added to readyItemsList [{}]", newItem, readyItemsList);
+
+                    readyItemsList.add(newItem);
+                    continue;
+                }
+
+                // may be some promises already resolved?
+                boolean isReady = true;
+                for (UUID promiseItem : itemDependencies) {
+                    if (newItems.contains(promiseItem) || notFinishedItems.containsKey(promiseItem)) {
+                        isReady = false;
+                        break;
+                    }
+                }
+
+                if (isReady) {
+
+                    readyItemsList.add(newItem);
+                }
+
+
             }
         }
         return readyItemsList;
@@ -244,6 +303,7 @@ public class Graph implements Serializable {
      * @return set of items dependent from finished one
      */
     private Set<UUID> updateLinks() {
+
 
         // update reverse map with new links
         Map<UUID, Set<UUID>> reverseLinks = reverseIt(links);
@@ -306,16 +366,16 @@ public class Graph implements Serializable {
             // update changed dependency
             if (dependencySubstitution != null) {
                 candidateLinks.add(dependencySubstitution);
-            }
+            } else {
+                if (candidateLinks.isEmpty()) {
+                    // GC items without dependencies
+                    links.remove(releaseCandidate);
 
-            if (candidateLinks.isEmpty()) {
-                // GC items without dependencies
-                links.remove(releaseCandidate);
+                    logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to" +
+                            " readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
 
-                logger.debug("apply() after remove [{}], item [{}] has no dependencies and added to" +
-                        " readyItemsList [{}]", finishedItem, releaseCandidate, readyItemsList);
-
-                readyItemsList.add(releaseCandidate);
+                    readyItemsList.add(releaseCandidate);
+                }
             }
         }
     }
@@ -440,6 +500,7 @@ public class Graph implements Serializable {
         }
         if (graphId != null ? !graphId.equals(graph.graphId) : graph.graphId != null) return false;
         if (links != null ? !links.equals(graph.links) : graph.links != null) return false;
+
         if (notFinishedItems != null ? !notFinishedItems.equals(graph.notFinishedItems) : graph.notFinishedItems != null) {
             return false;
         }
@@ -457,6 +518,10 @@ public class Graph implements Serializable {
         result = 31 * result + (int) (touchTimeMillis ^ (touchTimeMillis >>> 32));
         result = 31 * result + (int) (lastApplyTimeMillis ^ (lastApplyTimeMillis >>> 32));
         return result;
+    }
+
+    public void removeModification() {
+        modification = null;
     }
 }
 

@@ -35,7 +35,7 @@ public class MemoryServiceBundle implements ServiceBundle {
 
     public MemoryServiceBundle(int pollDelay, TaskDao taskDao) {
         this.processService = new MemoryProcessService();
-        this.taskService = new GeneralTaskService(taskDao);
+        this.taskService = new GeneralTaskService(taskDao, 30000);
         this.queueService = new MemoryQueueService(pollDelay);
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyService = new GeneralDependencyService(memoryGraphDao);

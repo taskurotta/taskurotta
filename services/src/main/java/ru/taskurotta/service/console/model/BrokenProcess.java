@@ -1,5 +1,6 @@
 package ru.taskurotta.service.console.model;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
@@ -7,7 +8,7 @@ import java.util.UUID;
  * Date: 11.10.13
  * Time: 18:24
  */
-public class BrokenProcess {
+public class BrokenProcess implements Serializable {
 
     private UUID processId;
     private String startActorId;

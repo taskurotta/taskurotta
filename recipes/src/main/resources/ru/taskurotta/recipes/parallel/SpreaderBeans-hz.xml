@@ -65,15 +65,15 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.TaskKey"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskKeyStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.hz.TaskFatKey"
+                                   class-name="ru.taskurotta.service.hz.serialization.TaskFatKeyStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer"/>
                     <hz:serializer type-class="java.util.UUID"
                                    class-name="ru.taskurotta.service.hz.serialization.UUIDStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.queue.TaskQueueItem"
                                    class-name="ru.taskurotta.service.hz.serialization.TaskQueueItemSteamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.StorageItem"
+                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.StorageItemStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
@@ -102,7 +102,7 @@
     <!-- /Actor config support -->
 
     <!-- Delay queue support -->
-    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
+    <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
@@ -112,12 +112,12 @@
         <constructor-arg name="commonStorageName" value="commonStorageForQueueBackend"/>
     </bean>
 
-    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
     </bean>
 
-    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.CommonStorageFactory">
+    <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
@@ -127,7 +127,7 @@
         <constructor-arg name="commonStorageName" value="commonStorageForGC"/>
     </bean>
 
-    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.BaseQueueFactory">
+    <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
     </bean>
@@ -194,7 +194,7 @@
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
-    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder">
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl">
         <constructor-arg name="dao" ref="incompleteProcessDao"/>
         <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
@@ -217,7 +217,7 @@
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
     </bean>
 
-    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
+    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>

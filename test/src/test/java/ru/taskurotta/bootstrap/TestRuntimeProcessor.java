@@ -33,7 +33,7 @@ public class TestRuntimeProcessor implements RuntimeProcessor {
         timeouts.add((int) (System.currentTimeMillis() - attemptDate.getTime()) / 1000);
         attemptDate = new Date();
 
-        return new TaskDecisionImpl(task.getId(), task.getProcessId(), new Throwable(), null);
+        return new TaskDecisionImpl(task.getId(), task.getProcessId(), task.getPass(), new Throwable(), null);
     }
 
     @Override

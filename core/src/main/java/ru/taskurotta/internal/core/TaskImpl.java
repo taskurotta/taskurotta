@@ -16,6 +16,7 @@ public class TaskImpl implements Task {
 
     private UUID id;
     private UUID processId;
+    private UUID pass;
     private TaskTarget target;
     private long startTime;
     private int errorAttempts = 0;
@@ -26,7 +27,7 @@ public class TaskImpl implements Task {
 
     public TaskImpl(){}
 
-    public TaskImpl(UUID uuid, UUID processId, TaskTarget taskTarget, long startTime, int errorAttempts,
+    public TaskImpl(UUID uuid, UUID processId, UUID pass, TaskTarget taskTarget, long startTime, int errorAttempts,
                     Object[] args, TaskOptions taskOptions, boolean unsafe, String[] failTypes) {
         this.processId = processId;
 
@@ -35,6 +36,7 @@ public class TaskImpl implements Task {
         }
 
         this.id = uuid;
+        this.pass = pass;
 
         if (taskTarget == null) {
             throw new IllegalArgumentException("target can not be null!");
@@ -83,49 +85,60 @@ public class TaskImpl implements Task {
         return errorAttempts;
     }
 
+    @Override
     public TaskOptions getTaskOptions() {
 		return taskOptions;
 	}
 
+    @Override
     public boolean isUnsafe() {
         return unsafe;
     }
 
+    @Override
     public String[] getFailTypes() {
         return failTypes;
     }
 
     @Override
+    public UUID getPass() {
+        return pass;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TaskImpl)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         TaskImpl task = (TaskImpl) o;
 
         if (errorAttempts != task.errorAttempts) return false;
         if (startTime != task.startTime) return false;
+        if (unsafe != task.unsafe) return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         if (!Arrays.equals(args, task.args)) return false;
-        if (!processId.equals(task.processId)) return false;
+        if (!Arrays.equals(failTypes, task.failTypes)) return false;
+        if (id != null ? !id.equals(task.id) : task.id != null) return false;
+        if (pass != null ? !pass.equals(task.pass) : task.pass != null) return false;
+        if (processId != null ? !processId.equals(task.processId) : task.processId != null) return false;
+        if (target != null ? !target.equals(task.target) : task.target != null) return false;
         if (taskOptions != null ? !taskOptions.equals(task.taskOptions) : task.taskOptions != null) return false;
-        if (!target.equals(task.target)) return false;
-        if (!id.equals(task.id)) return false;
-        if (unsafe != task.unsafe) return false;
-        return Arrays.equals(failTypes, task.failTypes);
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + processId.hashCode();
-        result = 31 * result + target.hashCode();
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (processId != null ? processId.hashCode() : 0);
+        result = 31 * result + (pass != null ? pass.hashCode() : 0);
+        result = 31 * result + (target != null ? target.hashCode() : 0);
         result = 31 * result + (int) (startTime ^ (startTime >>> 32));
         result = 31 * result + errorAttempts;
-        result = 31 * result + Arrays.hashCode(args);
+        result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
         result = 31 * result + (taskOptions != null ? taskOptions.hashCode() : 0);
-        if (unsafe) {
-            result = 31 * result + Arrays.hashCode(failTypes);
-        }
+        result = 31 * result + (unsafe ? 1 : 0);
+        result = 31 * result + (failTypes != null ? Arrays.hashCode(failTypes) : 0);
         return result;
     }
 
@@ -134,6 +147,7 @@ public class TaskImpl implements Task {
         return "TaskImpl{" +
                 "id=" + id +
                 ", processId=" + processId +
+                ", pass=" + pass +
                 ", target=" + target +
                 ", startTime=" + startTime +
                 ", errorAttempts=" + errorAttempts +

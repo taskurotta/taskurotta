@@ -7,5 +7,5 @@ package ru.taskurotta.hazelcast.queue.delay;
  */
 public interface QueueFactory {
 
-    public DelayIQueue create(String queueName);
+    public CachedDelayQueue create(String queueName);
 }

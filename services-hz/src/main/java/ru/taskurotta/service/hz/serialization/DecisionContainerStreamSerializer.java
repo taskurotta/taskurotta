@@ -28,6 +28,13 @@ public class DecisionContainerStreamSerializer implements StreamSerializer<Decis
     @Override
     public void write(ObjectDataOutput out, DecisionContainer object) throws IOException {
 
+        if (object == null) {
+            out.writeBoolean(false);
+            return;
+        }
+
+        out.writeBoolean(true);
+
         try {
             UUIDSerializer.write(out, object.getTaskId());
             UUIDSerializer.write(out, object.getProcessId());
@@ -50,6 +57,10 @@ public class DecisionContainerStreamSerializer implements StreamSerializer<Decis
     @Override
     public DecisionContainer read(ObjectDataInput in) throws IOException {
 
+        if (!in.readBoolean()) {
+            return null;
+        }
+
         try {
             UUID taskId = UUIDSerializer.read(in);
             UUID processId = UUIDSerializer.read(in);
@@ -59,7 +70,8 @@ public class DecisionContainerStreamSerializer implements StreamSerializer<Decis
             long reTime = in.readLong();
             String actorId = readString(in);
             TaskContainer[] taskContainers = readTaskContainerArray(in);
-            return new DecisionContainer(taskId, processId, value, errorContainer, reTime, taskContainers, actorId, exTime);
+            return new DecisionContainer(taskId, processId, null, value, errorContainer, reTime, taskContainers,
+                    actorId, exTime);
         } catch (RuntimeException e) {
             logger.error("Cannot read data", e);
             e.printStackTrace();
