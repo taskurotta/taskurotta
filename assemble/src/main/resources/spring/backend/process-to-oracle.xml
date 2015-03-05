@@ -25,13 +25,6 @@
     <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"/>
 
 
-    <!-- Recovery -->
-    <bean id = "incompleteProcessDao" class="ru.taskurotta.service.ora.recovery.OraIncompleteProcessDao">
-        <constructor-arg name="dataSource" ref="dataSource" />
-    </bean>
-    <!-- /Recovery -->
-
-
     <!-- Data source -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
         <constructor-arg name="targetDataSource" ref="originalDataSource"/>

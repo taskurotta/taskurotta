@@ -8,15 +8,15 @@ import java.util.UUID;
  * Date: 21.10.13
  * Time: 18:24
  */
-public interface RecoveryProcessService {
+public interface RecoveryService {
     /**
      * @return result of restart process
      */
-    boolean resurrect(UUID processId);
+    boolean resurrectProcess(UUID processId);
 
     /**
      * @return UUID's collection of successfully restarted processes
      */
-    Collection<UUID> restartProcessCollection(Collection<UUID> processIds);
+    Collection<UUID> resurrectProcesses(Collection<UUID> processIds);
 
 }

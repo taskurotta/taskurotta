@@ -4,6 +4,7 @@ import ru.taskurotta.internal.core.ArgType;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.recipes.multiplier.MultiplierDecider;
 import ru.taskurotta.service.ServiceBundle;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.config.model.ExpirationPolicyConfig;
@@ -27,7 +28,9 @@ import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -96,6 +99,21 @@ public class MockServiceBundle implements ServiceBundle {
             @Override
             public ru.taskurotta.service.console.model.Process getProcess(UUID processUUID) {
                 return null;
+            }
+
+            @Override
+            public ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit) {
+                return new ResultSetCursor<UUID>() {
+                    @Override
+                    public Collection<UUID> getNext() {
+                        return Collections.EMPTY_LIST;
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+
+                    }
+                };
             }
         };
     }

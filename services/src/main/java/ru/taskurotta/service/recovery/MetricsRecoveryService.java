@@ -11,20 +11,20 @@ import java.util.UUID;
  * Wrapper for RecoveryProcessService providing metrics data gathering for console
  * Date: 13.02.14 12:46
  */
-public class MetricsRecoveryService implements RecoveryProcessService {
+public class MetricsRecoveryService implements RecoveryService {
 
-    private RecoveryProcessService recoveryProcessService;
+    private RecoveryService recoveryService;
     private MetricsFactory metricsFactory;
 
-    public MetricsRecoveryService(RecoveryProcessService recoveryProcessService, MetricsFactory metricsFactory) {
-        this.recoveryProcessService = recoveryProcessService;
+    public MetricsRecoveryService(RecoveryService recoveryService, MetricsFactory metricsFactory) {
+        this.recoveryService = recoveryService;
         this.metricsFactory = metricsFactory;
     }
 
     @Override
-    public boolean resurrect(UUID processId) {
+    public boolean resurrectProcess(UUID processId) {
         long start = System.currentTimeMillis();
-        boolean result = recoveryProcessService.resurrect(processId);
+        boolean result = recoveryService.resurrectProcess(processId);
         long period = System.currentTimeMillis() - start;
         Metric recoveryMetric = metricsFactory.getInstance(MetricName.RECOVERY.getValue());
         recoveryMetric.mark(MetricName.RECOVERY.getValue(), period);
@@ -39,7 +39,7 @@ public class MetricsRecoveryService implements RecoveryProcessService {
     }
 
     @Override
-    public Collection<UUID> restartProcessCollection(Collection<UUID> processIds) {
-        return recoveryProcessService.restartProcessCollection(processIds);
+    public Collection<UUID> resurrectProcesses(Collection<UUID> processIds) {
+        return recoveryService.resurrectProcesses(processIds);
     }
 }

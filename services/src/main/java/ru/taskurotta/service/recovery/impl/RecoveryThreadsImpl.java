@@ -1,8 +1,12 @@
-package ru.taskurotta.service.recovery;
+package ru.taskurotta.service.recovery.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.executor.OperationExecutor;
+import ru.taskurotta.service.recovery.RecoveryOperation;
+import ru.taskurotta.service.recovery.RecoveryThreads;
+import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.util.Shutdown;
 
 import java.util.Collection;
@@ -18,25 +22,26 @@ import java.util.concurrent.locks.Lock;
  * Injected DAOs should implement environment specific logic.
  * Date: 13.01.14 12:03
  */
-public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
+public class RecoveryThreadsImpl implements RecoveryThreads {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultIncompleteProcessFinder.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecoveryThreadsImpl.class);
 
     public static AtomicInteger processesOnTimeoutFoundedCounter = new AtomicInteger(0);
 
     private OperationExecutor operationExecutor;
-    private IncompleteProcessDao dao;
+    private ProcessService processService;
     private Lock nodeLock;
     private long findIncompleteProcessPeriod;
     private long incompleteTimeOutMillis;
     private AtomicBoolean enabled = new AtomicBoolean(false);
     private int batchSize;
 
-    public DefaultIncompleteProcessFinder(final IncompleteProcessDao dao, final Lock nodeLock, final OperationExecutor operationExecutor, long findIncompleteProcessPeriod,
-                                          final long incompleteTimeOutMillis, boolean enabled, int batchSize) {
+    public RecoveryThreadsImpl(final ProcessService processService, final Lock nodeLock, final OperationExecutor
+            operationExecutor, long findIncompleteProcessPeriod,
+                               final long incompleteTimeOutMillis, boolean enabled, int batchSize) {
 
         this.operationExecutor = operationExecutor;
-        this.dao = dao;
+        this.processService = processService;
         this.nodeLock = nodeLock;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
         this.incompleteTimeOutMillis = incompleteTimeOutMillis;
@@ -86,7 +91,7 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
                                 logger.debug("Try to find incomplete processes started before [{}]", new Date(timeBefore));
                             }
 
-                            try (IncompleteProcessesCursor incompleteProcessesCursor = dao.findProcesses(timeBefore,
+                            try (ResultSetCursor<UUID> incompleteProcessesCursor = processService.findProcesses(timeBefore,
                                     batchSize)) {
 
                                 while (true) {
@@ -124,7 +129,6 @@ public class DefaultIncompleteProcessFinder implements IncompleteProcessFinder {
 
     }
 
-    @Override
     public void toRecovery(UUID processId) {
         if (enabled.get()) {
             operationExecutor.enqueue(new RecoveryOperation(processId));

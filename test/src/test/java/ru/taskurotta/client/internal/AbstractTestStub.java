@@ -23,7 +23,7 @@ import ru.taskurotta.service.dependency.links.MemoryGraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
 import ru.taskurotta.service.queue.MemoryQueueService;
-import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.GeneralTaskService;
 import ru.taskurotta.service.storage.MemoryBrokenProcessService;
@@ -52,7 +52,7 @@ public class AbstractTestStub {
     protected MemoryQueueService memoryQueueService;
     protected GeneralTaskService memoryStorageService;
     protected DependencyService dependencyService;
-    protected GeneralRecoveryProcessService recoveryProcessService;
+    protected RecoveryServiceImpl recoveryProcessService;
     protected BrokenProcessService brokenProcessService;
     protected ServiceBundle serviceBundle;
     protected GarbageCollectorService garbageCollectorService;
@@ -106,7 +106,7 @@ public class AbstractTestStub {
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1, 1000l);
-        recoveryProcessService = new GeneralRecoveryProcessService(memoryQueueService, dependencyService,
+        recoveryProcessService = new RecoveryServiceImpl(memoryQueueService, dependencyService,
                 serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, garbageCollectorService,
                 1l, 1000l);
 

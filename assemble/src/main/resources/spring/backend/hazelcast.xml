@@ -119,14 +119,14 @@
 
     <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="recoveryService" ref="recoveryService"/>
         <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
         <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
-    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder">
-        <constructor-arg name="dao" ref="incompleteProcessDao"/>
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl">
+        <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
         <constructor-arg name="incompleteTimeOutMillis">
@@ -143,12 +143,7 @@
         <constructor-arg name="batchSize" value="${recovery.find-incomplete-process-batch-size}"/>
     </bean>
 
-    <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.HzIncompleteProcessDao">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
-    </bean>
-
-    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
+    <bean id="recoveryService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>

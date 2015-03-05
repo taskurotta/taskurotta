@@ -5,16 +5,16 @@
 
 
     <!--<bean id="hzMapConfigSupport" class="ru.taskurotta.hazelcast.HzMapConfigSupport">-->
-        <!--<constructor-arg name="hzInstance" ref="hzInstance"/>-->
+    <!--<constructor-arg name="hzInstance" ref="hzInstance"/>-->
 
-        <!--<property name="asyncBackupsCount" value="0"/>-->
-        <!--<property name="backupCount" value="0"/>-->
-        <!--<property name="evictionPercentage" value="25"/>-->
-        <!--<property name="evictionPolicy" value="LRU"/>-->
-        <!--<property name="mapStore" ref="mapStore"/>-->
-        <!--<property name="timeToLive" value="0"/>-->
-        <!--<property name="maxSize" value="1000"/>-->
-        <!--<property name="maxSizePolicy" value="PER_NODE"/>-->
+    <!--<property name="asyncBackupsCount" value="0"/>-->
+    <!--<property name="backupCount" value="0"/>-->
+    <!--<property name="evictionPercentage" value="25"/>-->
+    <!--<property name="evictionPolicy" value="LRU"/>-->
+    <!--<property name="mapStore" ref="mapStore"/>-->
+    <!--<property name="timeToLive" value="0"/>-->
+    <!--<property name="maxSize" value="1000"/>-->
+    <!--<property name="maxSizePolicy" value="PER_NODE"/>-->
     <!--</bean>-->
 
     <bean id="cachedQueueServiceConfigurator"
@@ -40,12 +40,12 @@
         <constructor-arg name="cacheSize" value="100"/>
         <constructor-arg name="binary" value="${hz.executor-service.decisions.queue.binary}"/>
         <constructor-arg name="batchLoadSize" value="${hz.executor-service.decisions.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.TaskKey" />
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.TaskKey"/>
     </bean>
 
     <bean id="pendingQueueConfigurator" factory-bean="pendingDecisionsQueueConfigSupport"
           factory-method="createQueueConfig">
-        <constructor-arg name="queueName" value="${hz.executor-service.decisions.queue.name}" />
+        <constructor-arg name="queueName" value="${hz.executor-service.decisions.queue.name}"/>
     </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
@@ -97,7 +97,7 @@
             </bean>
         </constructor-arg>
         <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
-        <constructor-arg name="bSerializationService" ref="bSerializationService" />
+        <constructor-arg name="bSerializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.queue.TaskQueueItem"/>
     </bean>
 
@@ -112,25 +112,27 @@
         </constructor-arg>
         <constructor-arg name="batchLoadSize" value="${hz.queue.delay.batch-load-size}"/>
         <constructor-arg name="bSerializationService" ref="bSerializationService"/>
-        <constructor-arg name="objectClassName" value="java.util.UUID" />
+        <constructor-arg name="objectClassName" value="java.util.UUID"/>
     </bean>
     <!-- /Delay queue support -->
-
-    <bean id="incompleteProcessDao" class="ru.taskurotta.service.hz.recovery.MongoIncompleteProcessDao">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate" />
-        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
-        <constructor-arg name="bSerializationService" ref="bSerializationService" />
-    </bean>
 
     <!-- Services -->
     <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="recoveryProcessService" ref="recoveryProcessService"/>
+        <constructor-arg name="recoveryService" ref="recoveryService"/>
         <constructor-arg name="hzQueueConfigSupport" ref="recoveryQueueConfigSupport"/>
         <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
         <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
+
+    <bean id="processService" class="ru.taskurotta.service.hz.storage.MongoProcessService">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
+        <constructor-arg name="bSerializationService" ref="bSerializationService"/>
+    </bean>
+
     <!-- /Services -->
 
 </beans>

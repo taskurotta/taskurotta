@@ -17,7 +17,7 @@ public class RecoveryOperation implements Operation {
 
     private UUID processId;
 
-    private RecoveryProcessService recoveryProcessService;
+    private RecoveryService recoveryService;
 
     public RecoveryOperation(UUID processId) {
         this.processId = processId;
@@ -25,14 +25,14 @@ public class RecoveryOperation implements Operation {
 
     @Override
     public void init(Object nativePoint) {
-        this.recoveryProcessService = (RecoveryProcessService) nativePoint;
+        this.recoveryService = (RecoveryService) nativePoint;
     }
 
     @Override
     public void run() {
 
         try {
-            recoveryProcessService.resurrect(processId);
+            recoveryService.resurrectProcess(processId);
         } catch (Throwable e) {
             logger.error("Error on recovery operation: " + processId, e);
         }

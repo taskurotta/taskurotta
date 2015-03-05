@@ -18,8 +18,8 @@ import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.hz.queue.HzQueueService;
-import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
-import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
+import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.test.stress.process.Starter;
 import ru.taskurotta.util.DaemonThread;
 import ru.taskurotta.util.metrics.HzTaskServerMetrics;
@@ -279,14 +279,14 @@ public class ProcessPusher {
                         fpCounter.getCount() +
                         "  broken tasks = " +
                         GeneralTaskServer.brokenProcessesCounter.get() +
-                        "  resurrected tasks = " + GeneralRecoveryProcessService.resurrectedTasksCounter.get());
+                        "  resurrected tasks = " + RecoveryServiceImpl.resurrectedTasksCounter.get());
 
                 sb.append("\n processesOnTimeout = " +
-                        DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get() +
+                        RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
                         "  restartedProcesses = " +
-                        GeneralRecoveryProcessService.restartedProcessesCounter.get() +
+                        RecoveryServiceImpl.restartedProcessesCounter.get() +
                         "  restartedTasks = " +
-                        GeneralRecoveryProcessService.restartedTasksCounter);
+                        RecoveryServiceImpl.restartedTasksCounter);
 
                 sb.append("\n startedDistributedTasks = " + GeneralTaskServer.startedDistributedTasks.get() +
                         "  pending = " + (GeneralTaskServer.startedDistributedTasks.get()

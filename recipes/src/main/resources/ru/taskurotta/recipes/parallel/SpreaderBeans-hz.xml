@@ -194,7 +194,7 @@
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
-    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder">
+    <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl">
         <constructor-arg name="dao" ref="incompleteProcessDao"/>
         <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
@@ -217,7 +217,7 @@
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}" />
     </bean>
 
-    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.GeneralRecoveryProcessService">
+    <bean id="recoveryProcessService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>

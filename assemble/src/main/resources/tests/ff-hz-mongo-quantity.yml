@@ -79,6 +79,9 @@ logback:
              encoder:
                  pattern: \%d [\%t] \%-5p \%c - \%m\%n
     logger:
+        - org.springframework:
+             key: name
+             \@level: WARN
         - ru.taskurotta.service.hz.dependency.HzGraphDao2:
              key: name
              \@level: DEBUG

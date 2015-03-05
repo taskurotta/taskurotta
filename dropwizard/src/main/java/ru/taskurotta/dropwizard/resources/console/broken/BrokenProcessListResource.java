@@ -10,7 +10,7 @@ import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.ProcessGroupVO;
 import ru.taskurotta.service.console.model.SearchCommand;
-import ru.taskurotta.service.recovery.RecoveryProcessService;
+import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.console.Action;
 
 import javax.ws.rs.Consumes;
@@ -52,7 +52,7 @@ public class BrokenProcessListResource {
 
 
     private BrokenProcessService brokenProcessService;
-    private RecoveryProcessService recoveryProcessService;
+    private RecoveryService recoveryService;
 
     private ExecutorService executorService = null;
 
@@ -139,7 +139,7 @@ public class BrokenProcessListResource {
 
                 @Override
                 public void run() {
-                    recoveryProcessService.restartProcessCollection(processIds);
+                    recoveryService.resurrectProcesses(processIds);
 
                 }
             });
@@ -150,7 +150,7 @@ public class BrokenProcessListResource {
 //                    for (UUID processId : processIds) {
 //                        try {
 //                            //TODO: should some transactions be applied here?
-//                            recoveryProcessService.resurrect(processId);
+//                            recoveryProcessService.resurrectProcess(processId);
 //                            brokenProcessService.delete(processId.toString());
 //                            localResult++;
 //                            logger.debug("Processed processId [{}]", processId);
@@ -333,7 +333,7 @@ public class BrokenProcessListResource {
     }
 
     @Required
-    public void setRecoveryProcessService(RecoveryProcessService recoveryProcessService) {
-        this.recoveryProcessService = recoveryProcessService;
+    public void setRecoveryService(RecoveryService recoveryService) {
+        this.recoveryService = recoveryService;
     }
 }

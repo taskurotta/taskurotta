@@ -7,7 +7,7 @@ import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.service.recovery.RecoveryProcessService;
+import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.util.*;
 
 import java.util.concurrent.ExecutorService;
@@ -28,12 +28,12 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
     private CachedQueue<Operation> operationIQueue;
 
-    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
+    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryService recoveryService,
                                        String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
-        this(hazelcastInstance, recoveryProcessService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
+        this(hazelcastInstance, recoveryService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
     }
 
-    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryProcessService recoveryProcessService,
+    public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryService recoveryService,
                                        HzQueueConfigSupport hzQueueConfigSupport, String recoveryOperationQueueName,
                                        int recoveryOperationPoolSize, boolean enabled) {
 
@@ -75,7 +75,7 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
                             continue;
                         }
 
-                        operation.init(recoveryProcessService);
+                        operation.init(recoveryService);
 
                         recoveryOperationExecutorService.submit(operation);
 

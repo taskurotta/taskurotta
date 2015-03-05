@@ -110,6 +110,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         // todo: timeout should be calculated for every actor
 
         if (!simulate) {
+            // todo: actors should support acceptLast and acceptFirst strategies depends of their needs
             UUID pass = taskDao.startTask(taskId, processId, System.currentTimeMillis() + workerTimeoutMilliseconds, false);
 
             if (pass == null) {

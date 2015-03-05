@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
 import ru.taskurotta.server.GeneralTaskServer;
-import ru.taskurotta.service.recovery.DefaultIncompleteProcessFinder;
-import ru.taskurotta.service.recovery.GeneralRecoveryProcessService;
+import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
+import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.test.fullfeature.decider.FullFeatureDeciderClient;
 import ru.taskurotta.util.Shutdown;
 
@@ -139,9 +139,9 @@ public class SimpleTestRunner {
         log.info("Started processes = {}", GeneralTaskServer.startedProcessesCounter.get());
         log.info("Finished processes = {}", GeneralTaskServer.finishedProcessesCounter.get());
         log.info("Broken processes = {}", GeneralTaskServer.brokenProcessesCounter.get());
-        log.info("Processes on timeout founded = {}", DefaultIncompleteProcessFinder.processesOnTimeoutFoundedCounter.get());
-        log.info("Restarted process = {}", GeneralRecoveryProcessService.restartedProcessesCounter.get());
-        log.info("Restarted tasks = {}", GeneralRecoveryProcessService.restartedTasksCounter);
+        log.info("Processes on timeout founded = {}", RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get());
+        log.info("Restarted process = {}", RecoveryServiceImpl.restartedProcessesCounter.get());
+        log.info("Restarted tasks = {}", RecoveryServiceImpl.restartedTasksCounter);
     }
 
     private void checkProcessInQueueStart() {

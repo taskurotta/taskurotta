@@ -1,4 +1,4 @@
-package ru.taskurotta.service.recovery;
+package ru.taskurotta.service.recovery.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +8,7 @@ import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
@@ -32,9 +33,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Date: 21.10.13
  * Time: 18:24
  */
-public class GeneralRecoveryProcessService implements RecoveryProcessService {
+public class RecoveryServiceImpl implements RecoveryService {
 
-    private static final Logger logger = LoggerFactory.getLogger(GeneralRecoveryProcessService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecoveryServiceImpl.class);
 
     public static AtomicInteger restartedProcessesCounter = new AtomicInteger();
     public static AtomicInteger restartedTasksCounter = new AtomicInteger();
@@ -50,13 +51,13 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     private long recoveryProcessChangeTimeout;
     private long findIncompleteProcessPeriod;
 
-    public GeneralRecoveryProcessService() {
+    public RecoveryServiceImpl() {
     }
 
-    public GeneralRecoveryProcessService(QueueService queueService, DependencyService dependencyService,
-                                         ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
-                                         GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
-                                         long findIncompleteProcessPeriod) {
+    public RecoveryServiceImpl(QueueService queueService, DependencyService dependencyService,
+                               ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
+                               GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
+                               long findIncompleteProcessPeriod) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.processService = processService;
@@ -132,7 +133,7 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
 
 
     @Override
-    public boolean resurrect(final UUID processId) {
+    public boolean resurrectProcess(final UUID processId) {
         logger.trace("#[{}]: try to restart process", processId);
 
 
@@ -252,11 +253,11 @@ public class GeneralRecoveryProcessService implements RecoveryProcessService {
     }
 
     @Override
-    public Collection<UUID> restartProcessCollection(Collection<UUID> processIds) {
+    public Collection<UUID> resurrectProcesses(Collection<UUID> processIds) {
         Collection<UUID> successfullyRestartedProcesses = new ArrayList<>();
 
         for (UUID processId : processIds) {
-            if (resurrect(processId)) {
+            if (resurrectProcess(processId)) {
                 successfullyRestartedProcesses.add(processId);
             }
         }
