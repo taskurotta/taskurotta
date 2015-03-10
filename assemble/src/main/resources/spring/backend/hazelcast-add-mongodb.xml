@@ -89,7 +89,7 @@
     <!-- Delay queue support -->
     <bean id="storageFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="storagePrefix" value="${dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
@@ -103,7 +103,7 @@
 
     <bean id="storageFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.MongoStorageFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="storagePrefix" value="${gc.dq.storage-prefix}"/>
         <constructor-arg name="scheduleDelayMillis">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
