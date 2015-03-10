@@ -27,7 +27,6 @@
 
         <slf4j.version>1.7.5</slf4j.version>
         <spring.version>4.1.4.RELEASE</spring.version>
-        <spring-data-mongodb.version>1.6.1.RELEASE</spring-data-mongodb.version>
         <jackson.version>2.3.3</jackson.version>
         <jersey.version>1.18.1</jersey.version>
         <logback.version>1.0.13</logback.version>
@@ -126,25 +125,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-mongodb</artifactId>
-                <version>${spring-data-mongodb.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-beans</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>spring-expression</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <!-- /spring -->
 

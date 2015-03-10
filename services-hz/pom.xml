@@ -53,18 +53,7 @@
 
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-mongodb</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>ru.taskurotta</groupId>
-            <artifactId>mongodb</artifactId>
-            <version>${project.version}</version>
+            <artifactId>spring-context</artifactId>
         </dependency>
 
         <dependency>
