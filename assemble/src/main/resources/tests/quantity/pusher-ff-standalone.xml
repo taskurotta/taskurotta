@@ -46,7 +46,7 @@
         <property name="mongoTemplate" ref="mongoTemplate"/>
     </bean>
 
-    <bean id="hzClientProvider" class="ru.taskurotta.test.stress.HazelcastClientProvider">
+    <bean id="hzClientProvider" class="ru.taskurotta.test.stress.HzClientProvider">
         <constructor-arg value="${hz.nodes}" />
     </bean>
 

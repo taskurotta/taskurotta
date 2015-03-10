@@ -24,7 +24,7 @@ public class PendingDecisionQueueProxy {
     public static final long LOCK_TRY_TIME_MLS = 250;
     public static final String QUEUE_NAME = "PendingDecisions";
 
-    private final HazelcastTaskServer taskServer;
+    private final HzTaskServer taskServer;
     private final int maxPendingWorkers;
     private final int maxPendingLimit;
     private final long sleepOnOverloadMls;
@@ -35,7 +35,7 @@ public class PendingDecisionQueueProxy {
     private volatile int size;
     private final Lock lock = new ReentrantLock();
 
-    public PendingDecisionQueueProxy(HazelcastInstance hzInstance, HazelcastTaskServer taskServer, int maxPendingWorkers,
+    public PendingDecisionQueueProxy(HazelcastInstance hzInstance, HzTaskServer taskServer, int maxPendingWorkers,
                                      int maxPendingLimit, long sleepOnOverloadMls) {
         this.taskServer = taskServer;
         this.maxPendingWorkers = maxPendingWorkers;

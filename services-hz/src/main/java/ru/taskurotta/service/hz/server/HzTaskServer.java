@@ -39,12 +39,12 @@ import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statRelease;
  * Behaves exactly like GeneralTaskServer except for overridden release() method
  * Created by void 18.06.13 18:39
  */
-public class HazelcastTaskServer extends GeneralTaskServer {
+public class HzTaskServer extends GeneralTaskServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(HazelcastTaskServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzTaskServer.class);
     private static final Clock clock = Clock.defaultClock();
 
-    private static final String LOCK_PROCESS_MAP_NAME = HazelcastTaskServer.class.getName() + "#lockProcessMap";
+    private static final String LOCK_PROCESS_MAP_NAME = HzTaskServer.class.getName() + "#lockProcessMap";
 
     protected HazelcastInstance hzInstance;
     private IMap<UUID, ?> lockProcessMap;
@@ -56,9 +56,9 @@ public class HazelcastTaskServer extends GeneralTaskServer {
 
     private final PendingDecisionQueueProxy pendingDecisionQueueProxy;
 
-    protected HazelcastTaskServer(ServiceBundle serviceBundle, HazelcastInstance hzInstance, String nodeCustomName,
-                                  String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
-                                  long sleepOnOverloadMls) {
+    protected HzTaskServer(ServiceBundle serviceBundle, HazelcastInstance hzInstance, String nodeCustomName,
+                           String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
+                           long sleepOnOverloadMls) {
         super(serviceBundle);
 
         this.hzInstance = hzInstance;
@@ -73,13 +73,13 @@ public class HazelcastTaskServer extends GeneralTaskServer {
                 maxPendingLimit, sleepOnOverloadMls);
     }
 
-    protected HazelcastTaskServer(final ProcessService processService, final TaskService taskService,
-                                  final QueueService queueService,
-                                  final DependencyService dependencyService, final ConfigService configService,
-                                  final BrokenProcessService brokenProcessService, final GarbageCollectorService garbageCollectorService,
-                                  HazelcastInstance hzInstance,
-                                  String nodeCustomName, String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
-                                  long sleepOnOverloadMls) {
+    protected HzTaskServer(final ProcessService processService, final TaskService taskService,
+                           final QueueService queueService,
+                           final DependencyService dependencyService, final ConfigService configService,
+                           final BrokenProcessService brokenProcessService, final GarbageCollectorService garbageCollectorService,
+                           HazelcastInstance hzInstance,
+                           String nodeCustomName, String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
+                           long sleepOnOverloadMls) {
         this(new ServiceBundle() {
                  @Override
                  public ProcessService getProcessService() {
@@ -165,7 +165,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
     }
 
 
-    public static void lockAndProcessDecision(TaskKey taskKey, HazelcastTaskServer taskServer) {
+    public static void lockAndProcessDecision(TaskKey taskKey, HzTaskServer taskServer) {
 
         UUID taskId = taskKey.getTaskId();
         UUID processId = taskKey.getProcessId();
@@ -206,7 +206,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
 
         TaskKey taskKey;
-        HazelcastTaskServer taskServer;
+        HzTaskServer taskServer;
 
         public ProcessDecisionUnitOfWork() {
         }
@@ -216,7 +216,7 @@ public class HazelcastTaskServer extends GeneralTaskServer {
         }
 
         @Autowired
-        public void setTaskServer(HazelcastTaskServer taskServer) {
+        public void setTaskServer(HzTaskServer taskServer) {
             this.taskServer = taskServer;
         }
 

@@ -3,7 +3,7 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.service.hz.server.HazelcastTaskServer.ProcessDecisionUnitOfWork;
+import ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork;
 
 import java.io.IOException;
 
