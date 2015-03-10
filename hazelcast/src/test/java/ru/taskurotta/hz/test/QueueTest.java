@@ -3,12 +3,12 @@ package ru.taskurotta.hz.test;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
@@ -27,8 +27,8 @@ public class QueueTest {
     private static final int MAX_ITEMS = 100000;
     private static final String QUEUE_NAME = "testQueue";
 
-    private MongoTemplate getMongoTemplate() throws UnknownHostException {
-        return new MongoTemplate(new MongoClient("127.0.0.1"), "test");
+    private DB getMongoDB() throws UnknownHostException {
+        return new MongoClient("127.0.0.1").getDB("test");
     }
 
     private Config getServerConfig() throws Exception {
@@ -42,9 +42,9 @@ public class QueueTest {
         cachedQueueStoreConfig.setBinary(false);
         cachedQueueStoreConfig.setBatchLoadSize(250);
 
-        MongoTemplate mongoTemplate = getMongoTemplate();
+        DB mongoDB = getMongoDB();
         MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
-                MongoCachedQueueStorageFactory(mongoTemplate, null);
+                MongoCachedQueueStorageFactory(mongoDB, null);
         cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
                 (QUEUE_NAME, cachedQueueStoreConfig));
         cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);

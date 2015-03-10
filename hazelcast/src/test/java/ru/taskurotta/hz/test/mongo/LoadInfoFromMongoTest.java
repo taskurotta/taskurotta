@@ -5,13 +5,13 @@ import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.Partition;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
@@ -30,12 +30,11 @@ public class LoadInfoFromMongoTest {
     private static String QUEUE_NAME = "testQueue";
     private static String MONGO_DB_NAME = "test";
 
-
-    private MongoTemplate mongoTemplate;
+    private DB mongoDB;
 
     @Before
     public void init() throws UnknownHostException {
-        mongoTemplate = new MongoTemplate(new MongoClient("127.0.0.1"), MONGO_DB_NAME);
+        mongoDB = new MongoClient("127.0.0.1").getDB(MONGO_DB_NAME);
     }
 
     @Test
@@ -107,7 +106,7 @@ public class LoadInfoFromMongoTest {
         CachedQueue<String> queue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), QUEUE_NAME);
         DBObject dbObject = new BasicDBObject();
         dbObject.put("_id", 9L);
-        mongoTemplate.getCollection(QUEUE_NAME).remove(dbObject);
+        mongoDB.getCollection(QUEUE_NAME).remove(dbObject);
         queue.offer("testData15");
         isOrderRight(queue, 15, 0, 9L);
         Hazelcast.shutdownAll();
@@ -134,7 +133,7 @@ public class LoadInfoFromMongoTest {
             dbObject.put("_id", i);
             dbObject.put("_class", "com.hazelcast.spring.mongodb.ValueWrapper");
             dbObject.put("value", "testData" + i);
-            mongoTemplate.getCollection(QUEUE_NAME).insert(dbObject);
+            mongoDB.getCollection(QUEUE_NAME).insert(dbObject);
 
         }
     }
@@ -153,7 +152,7 @@ public class LoadInfoFromMongoTest {
 
         TimeUnit.SECONDS.sleep(1);
         MongoCachedQueueStorageFactory mongoCachedQueueStorageFactory = new
-                MongoCachedQueueStorageFactory(mongoTemplate, null);
+                MongoCachedQueueStorageFactory(mongoDB, null);
 
         cachedQueueStoreConfig.setStoreImplementation(mongoCachedQueueStorageFactory.newQueueStore
                 (QUEUE_NAME, cachedQueueStoreConfig));
@@ -163,7 +162,7 @@ public class LoadInfoFromMongoTest {
     }
 
     private void dataDrop() {
-        mongoTemplate.getDb().dropDatabase();
+        mongoDB.dropDatabase();
         try {
             TimeUnit.SECONDS.sleep(1);//to ensure mongoDB data flushing
         } catch (InterruptedException e) {

@@ -1,11 +1,11 @@
 package ru.taskurotta.hz.test;
 
+import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.hz.test.bson.BsonSerializationTest;
 import ru.taskurotta.mongodb.driver.BSerializationService;
@@ -32,7 +32,7 @@ public class MongoMapStoreTest {
                 DecisionContainerBSerializer(), new
                 TaskKeyBSerializer());
 
-        MongoMapStore mongoMapStore = new MongoMapStore(getMongoTemplate(), serializationService, "ru.taskurotta" +
+        MongoMapStore mongoMapStore = new MongoMapStore(getMongoDB(), serializationService, "ru.taskurotta" +
                 ".transport.model.DecisionContainer");
 
         mongoMapStore.init(null, new Properties(), "Decisions");
@@ -51,16 +51,14 @@ public class MongoMapStoreTest {
 
     }
 
-
-    private MongoTemplate getMongoTemplate() throws UnknownHostException {
+    private DB getMongoDB() throws UnknownHostException {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
         MongoClient mongoClient = new MongoClient(serverAddress);
 
         WriteConcern writeConcern = new WriteConcern(1, 0, false, true);
+        mongoClient.setWriteConcern(writeConcern);
 
-        MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, "test");
-        mongoTemplate.setWriteConcern(writeConcern);
-
-        return mongoTemplate;
+        return mongoClient.getDB("test");
     }
+
 }
