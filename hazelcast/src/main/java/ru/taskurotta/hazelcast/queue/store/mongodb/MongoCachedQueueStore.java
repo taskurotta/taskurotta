@@ -2,6 +2,7 @@ package ru.taskurotta.hazelcast.queue.store.mongodb;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -46,20 +47,18 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
     private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
 
     private String storageName;
-    private MongoTemplate mongoTemplate;
     private DBCollection coll;
 
     private String objectClassName;
 
     private int batchSize;
 
-    public MongoCachedQueueStore(String storageName, MongoTemplate mongoTemplate, CachedQueueStoreConfig config,
+    public MongoCachedQueueStore(String storageName, DB mongoDB, CachedQueueStoreConfig config,
                                  BSerializationService serializationService) {
 
         this.storageName = storageName;
-        this.mongoTemplate = mongoTemplate;
         this.batchSize = config.getBatchLoadSize();
-        this.coll = mongoTemplate.getCollection(this.storageName);
+        this.coll = mongoDB.getCollection(this.storageName);
 
         // todo: throw exception if it is null
         if (serializationService == null) {
@@ -83,14 +82,6 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
         coll.setDBDecoderFactory(new BDecoderFactory(containerStreamBSerializer));
         coll.setDBEncoderFactory(new BEncoderFactory(mainBSerializationService));
-    }
-
-    public MongoTemplate getMongoTemplate() {
-        return mongoTemplate;
-    }
-
-    public String getStorageName() {
-        return storageName;
     }
 
     @Override
