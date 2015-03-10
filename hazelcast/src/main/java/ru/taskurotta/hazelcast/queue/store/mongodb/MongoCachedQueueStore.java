@@ -11,16 +11,15 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.mongodb.bson.QueueItemContainerStreamBSerializer;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.BDecoderFactory;
-import ru.taskurotta.mongodb.driver.BEncoderFactory;
 
 import java.util.Collection;
 import java.util.HashMap;

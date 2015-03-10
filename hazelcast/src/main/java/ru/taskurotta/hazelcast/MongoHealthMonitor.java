@@ -4,7 +4,6 @@ import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 

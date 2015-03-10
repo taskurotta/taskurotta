@@ -1,7 +1,6 @@
 package ru.taskurotta.hazelcast.queue.store.mongodb;
 
 import com.mongodb.DB;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStoreFactory;

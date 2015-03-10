@@ -4,7 +4,6 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 
 import java.util.concurrent.ExecutorService;
