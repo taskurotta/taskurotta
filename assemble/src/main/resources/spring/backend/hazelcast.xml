@@ -184,7 +184,7 @@
     <!--/pending queue configurator -->
 
     <!-- Task server -->
-    <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HazelcastTaskServer"
+    <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HzTaskServer"
           depends-on="pendingQueueConfigurator">
         <constructor-arg name="configService" ref="configService"/>
         <constructor-arg name="dependencyService" ref="dependencyService"/>

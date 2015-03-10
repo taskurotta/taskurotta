@@ -7,13 +7,13 @@ import com.hazelcast.core.HazelcastInstance;
 /**
  * Created on 16.02.2015.
  */
-public class HazelcastClientProvider {
+public class HzClientProvider {
 
     private String addresses;
 
     private HazelcastInstance client;
 
-    public HazelcastClientProvider(String addresses) {
+    public HzClientProvider(String addresses) {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.getNetworkConfig().addAddress(addresses.split(",\\s*"));
         client = HazelcastClient.newHazelcastClient(clientConfig);
