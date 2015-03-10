@@ -1,5 +1,6 @@
 package ru.taskurotta.hazelcast.store;
 
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ public class HzQueueRestoreSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(HzQueueRestoreSupport.class);
 
-    private MongoTemplate mongoTemplate;
+    private DB mongoDB;
     private String queuePrefix;
     private HzQueueConfigSupport hzQueueConfigSupport;
     private boolean restore = true;
@@ -52,8 +53,8 @@ public class HzQueueRestoreSupport {
         }
     }
 
-    public void setMongoTemplate(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public void setMongoDB(DB mongoDB) {
+        this.mongoDB = mongoDB;
     }
 
     public void setQueuePrefix(String queuePrefix) {
@@ -70,7 +71,7 @@ public class HzQueueRestoreSupport {
 
     private void restore() {
         int queueRestored = 0;
-        for (String collectionName : mongoTemplate.getCollectionNames()) {
+        for (String collectionName : mongoDB.getCollectionNames()) {
             if (collectionName.startsWith(queuePrefix)) {//is backing queue
                 if (hzQueueConfigSupport != null) {
                     hzQueueConfigSupport.createQueueConfig(collectionName);
@@ -79,7 +80,7 @@ public class HzQueueRestoreSupport {
                 }
 
                 if (logger.isDebugEnabled()) {
-                    DBCollection coll = mongoTemplate.getCollection(collectionName);
+                    DBCollection coll = mongoDB.getCollection(collectionName);
                     logger.debug("Restoring queue [{}] with [{}] HZ elements and [{}] mongo elements", collectionName, coll.getCount());
                 }
 

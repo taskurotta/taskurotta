@@ -55,7 +55,7 @@
     </bean>
 
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
-        <property name="mongoTemplate" ref="mongoTemplate"/>
+        <property name="mongoDB" ref="mongoDB"/>
         <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
         <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
         <property name="restore" value="${hz.queue.restore}"/>
