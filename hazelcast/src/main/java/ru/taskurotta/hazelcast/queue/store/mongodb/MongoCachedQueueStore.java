@@ -2,6 +2,7 @@ package ru.taskurotta.hazelcast.queue.store.mongodb;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -10,16 +11,15 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.mongodb.bson.QueueItemContainerStreamBSerializer;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.BDecoderFactory;
-import ru.taskurotta.mongodb.driver.BEncoderFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,20 +46,18 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
     private static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
 
     private String storageName;
-    private MongoTemplate mongoTemplate;
     private DBCollection coll;
 
     private String objectClassName;
 
     private int batchSize;
 
-    public MongoCachedQueueStore(String storageName, MongoTemplate mongoTemplate, CachedQueueStoreConfig config,
+    public MongoCachedQueueStore(String storageName, DB mongoDB, CachedQueueStoreConfig config,
                                  BSerializationService serializationService) {
 
         this.storageName = storageName;
-        this.mongoTemplate = mongoTemplate;
         this.batchSize = config.getBatchLoadSize();
-        this.coll = mongoTemplate.getCollection(this.storageName);
+        this.coll = mongoDB.getCollection(this.storageName);
 
         // todo: throw exception if it is null
         if (serializationService == null) {
@@ -83,14 +81,6 @@ public class MongoCachedQueueStore implements CachedQueueStore<Object> {
 
         coll.setDBDecoderFactory(new BDecoderFactory(containerStreamBSerializer));
         coll.setDBEncoderFactory(new BEncoderFactory(mainBSerializationService));
-    }
-
-    public MongoTemplate getMongoTemplate() {
-        return mongoTemplate;
-    }
-
-    public String getStorageName() {
-        return storageName;
     }
 
     @Override

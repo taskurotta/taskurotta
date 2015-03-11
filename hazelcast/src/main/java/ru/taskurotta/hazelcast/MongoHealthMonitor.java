@@ -1,9 +1,9 @@
 package ru.taskurotta.hazelcast;
 
 import com.mongodb.CommandResult;
+import com.mongodb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 
@@ -19,11 +19,10 @@ public class MongoHealthMonitor {
     private long metricsPeriodMs;
     private long mongoStatPeriodMs;
 
-    private MongoTemplate mongoTemplate;
+    private DB mongoDB;
 
-    public MongoHealthMonitor(MongoTemplate mongoTemplate, long mongoStatPeriodMs, long metricsPeriodMs) {
-
-        this.mongoTemplate = mongoTemplate;
+    public MongoHealthMonitor(DB mongoDB, long mongoStatPeriodMs, long metricsPeriodMs) {
+        this.mongoDB = mongoDB;
         this.mongoStatPeriodMs = mongoStatPeriodMs;
         this.metricsPeriodMs = metricsPeriodMs;
 
@@ -85,7 +84,7 @@ public class MongoHealthMonitor {
     }
 
     public String getMongoServerStats() {
-        CommandResult cr = mongoTemplate.executeCommand("{serverStatus: 1}");
+        CommandResult cr = mongoDB.command("{serverStatus: 1}");
         StringBuilder sb = new StringBuilder("\nMongo server stat:");
         sb.append(cr.toString());
 

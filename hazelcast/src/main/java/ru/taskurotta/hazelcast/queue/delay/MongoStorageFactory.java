@@ -2,22 +2,22 @@ package ru.taskurotta.hazelcast.queue.delay;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer;
 import ru.taskurotta.hazelcast.queue.delay.impl.mongodb.StorageItemContainerBSerializer;
 import ru.taskurotta.hazelcast.util.ClusterUtils;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.BDecoderFactory;
-import ru.taskurotta.mongodb.driver.BEncoderFactory;
 import ru.taskurotta.util.Shutdown;
 
 import java.util.Map;
@@ -40,7 +40,7 @@ public class MongoStorageFactory implements StorageFactory {
     public static final String ENQUEUE_TIME_NAME = StorageItemContainerBSerializer.ENQUEUE_TIME.toString();
     public static final AtomicInteger bakedTasks = new AtomicInteger();
 
-    private MongoTemplate mongoTemplate;
+    private DB mongoDB;
     private String storagePrefix;
 
     private transient final ReentrantLock lock = new ReentrantLock();
@@ -51,10 +51,10 @@ public class MongoStorageFactory implements StorageFactory {
     private BEncoderFactory encoderFactory;
     private BDecoderFactory decoderFactory;
 
-    public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final MongoTemplate mongoTemplate,
+    public MongoStorageFactory(final HazelcastInstance hazelcastInstance, final DB mongoDB,
                                String storagePrefix, long scheduleDelayMillis, int batchLoadSize,
                                BSerializationService bSerializationService, String objectClassName) {
-        this.mongoTemplate = mongoTemplate;
+        this.mongoDB = mongoDB;
         this.storagePrefix = storagePrefix;
         this.batchLoadSize = batchLoadSize;
 
@@ -105,7 +105,7 @@ public class MongoStorageFactory implements StorageFactory {
                             if (ClusterUtils.isLocalCachedQueue(hazelcastInstance, cachedQueue)) {//Node should serve only
 
                                 // local queues
-                                DBCollection dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                                DBCollection dbCollection = mongoDB.getCollection(dbCollectionName);
                                 if (encoderFactory != null) {
                                     dbCollection.setDBEncoderFactory(encoderFactory);
                                     dbCollection.setDBDecoderFactory(decoderFactory);
@@ -189,14 +189,14 @@ public class MongoStorageFactory implements StorageFactory {
                 }
                 dbCollectionNamesMap.put(queueName, dbCollectionName);
 
-                dbCollection = mongoTemplate.getCollection(dbCollectionName);
+                dbCollection = mongoDB.getCollection(dbCollectionName);
 
                 dbCollection.ensureIndex(new BasicDBObject(ENQUEUE_TIME_NAME, 1));
             } finally {
                 lock.unlock();
             }
         } else {
-            dbCollection = mongoTemplate.getCollection(dbCollectionName);
+            dbCollection = mongoDB.getCollection(dbCollectionName);
         }
 
         if (encoderFactory != null) {
@@ -228,8 +228,8 @@ public class MongoStorageFactory implements StorageFactory {
                 String unPrefixed = removePrefix(finalDbCollectionName);
                 dbCollectionNamesMap.remove(queueName);
 
-                mongoTemplate.dropCollection(finalDbCollectionName);
-                mongoTemplate.dropCollection(unPrefixed);
+                mongoDB.getCollection(finalDbCollectionName).drop();
+                mongoDB.getCollection(unPrefixed).drop();
 
                 logger.debug("Destroying storage collections: delayedStore[{}] and queueBackingStore[{}]", finalDbCollectionName, unPrefixed);
             }

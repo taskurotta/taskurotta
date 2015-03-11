@@ -56,11 +56,6 @@
         </constructor-arg>
     </bean>
 
-    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="mongo"/>
-        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
-    </bean>
-
     <bean id="mongoDB" factory-bean="mongo" factory-method="getDB">
         <constructor-arg name="dbname" value="${mongo.db.name}" />
     </bean>
@@ -68,43 +63,43 @@
     <!-- Map stores -->
 
     <bean id="taskDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.Decision"/>
     </bean>
 
     <bean id="graphMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.dependency.links.Graph"/>
     </bean>
 
     <bean id="taskMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.transport.model.TaskContainer"/>
     </bean>
 
     <bean id="graphDecisionMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.dependency.HzGraphDao$DecisionRow"/>
     </bean>
 
     <bean id="processMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.Process"/>
     </bean>
 
     <bean id="actorsPrefMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.config.model.ActorPreferences"/>
     </bean>
 
     <bean id="brokenProcessMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.BrokenProcess"/>
     </bean>
@@ -170,13 +165,13 @@
 
     <bean id="cachedQueueStoreFactory"
           class="ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStorageFactory">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
     </bean>
     <!-- /Mongo -->
 
     <bean id="debugMonitor" class="ru.taskurotta.hazelcast.MongoHealthMonitor">
-        <constructor-arg name="mongoTemplate" ref="mongoTemplate"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="metricsPeriodMs">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${health.mongo.metrics.log-period}"/>
