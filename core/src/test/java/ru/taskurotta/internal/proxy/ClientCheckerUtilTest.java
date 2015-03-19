@@ -198,6 +198,61 @@ public class ClientCheckerUtilTest {
         public int method4(String arg1, double arg2);
     }
 
+    @Worker
+    public static interface VeryGoodActor extends GoodActor {
+
+        public int method5(String arg1, double arg2);
+
+    }
+
+    @Worker
+    public static interface VeryBadActor extends GoodActor {
+
+        public int method1(String arg1);
+
+    }
+
+    @WorkerClient(worker = VeryBadActor.class)
+    public static interface VeryBadClient {
+
+        public Promise<Void> method1(String arg1);
+
+        //public Promise<Void> method1(String arg1, String arg2); <- defined in actor super interface
+
+        public Promise<Void> method2(String arg1, double arg2);
+
+        public Promise<Void> method3(String arg1, double arg2);
+
+        public Promise<Integer> method4(String arg1, double arg2);
+
+        public Promise<Integer> method5(String arg1, double arg2);
+
+    }
+
+
+    @WorkerClient(worker = VeryGoodActor.class)
+    public static interface VeryGoodClient {
+        public Promise<Void> method1(String arg1, String arg2);
+
+        public Promise<Void> method2(String arg1, double arg2);
+
+        public Promise<Void> method3(String arg1, double arg2);
+
+        public Promise<Integer> method4(String arg1, double arg2);
+
+        public Promise<Integer> method5(String arg1, double arg2);
+
+    }
+
+    @Test(expected = ProxyFactoryException.class)
+    public void testVeryBadInterfaceMatching() {
+        Class clientInterface = VeryBadClient.class;
+        Class actorInterface = VeryBadActor.class;
+
+        ClientCheckerUtil.checkInterfaceMatching(clientInterface, actorInterface);
+
+    }
+
     @Test
     public void testGoodClientDefinition() {
         ClientCheckerUtil.checkClientDefinition(GoodClient.class, WorkerClient.class);
@@ -234,6 +289,14 @@ public class ClientCheckerUtilTest {
     public void testGoodInterfaceMatching() {
         Class clientInterface = GoodClient.class;
         Class actorInterface = GoodActor.class;
+
+        ClientCheckerUtil.checkInterfaceMatching(clientInterface, actorInterface);
+    }
+
+    @Test
+    public void testVeryGoodInterfaceMatching() {
+        Class clientInterface = VeryGoodClient.class;
+        Class actorInterface = VeryGoodActor.class;
 
         ClientCheckerUtil.checkInterfaceMatching(clientInterface, actorInterface);
     }

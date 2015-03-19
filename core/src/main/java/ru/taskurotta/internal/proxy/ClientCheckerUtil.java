@@ -33,7 +33,7 @@ public final class ClientCheckerUtil {
 
         Map<String, Method> actorMethodMap = new HashMap<String, Method>();
 
-        for (Method method : actorInterface.getDeclaredMethods()) {
+        for (Method method : actorInterface.getMethods()) {
             String methodName = method.getName();
 
             Method anotherMethodWithSameName = actorMethodMap.put(methodName, method);
