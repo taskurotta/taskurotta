@@ -119,6 +119,7 @@ public class TestHzBrokenProcessService {
         proc.setErrorClassName(UnsupportedOperationException.class.getName());
         proc.setErrorMessage("just testing");
         proc.setProcessId(UUID.randomUUID());
+        proc.setTaskId(UUID.randomUUID());
         proc.setStackTrace("some traces");
         proc.setTime(System.currentTimeMillis());
         return proc;

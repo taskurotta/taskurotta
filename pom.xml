@@ -320,6 +320,7 @@
                                 <skip>false</skip>
                                 <includes>
                                     <include>**/*Test.java</include>
+                                    <include>**/Test*.java</include>
                                 </includes>
                                 <excludes>
                                     <exclude>**/*TestIT.java</exclude>

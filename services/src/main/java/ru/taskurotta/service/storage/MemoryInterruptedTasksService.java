@@ -22,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MemoryInterruptedTasksService implements InterruptedTasksService {
 
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> actorIds = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> starterIds = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> processIds = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> times = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorMessages = new ConcurrentHashMap<>();
@@ -40,6 +41,7 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         String processId = itdTask.getProcessId()!=null? itdTask.getProcessId().toString() : null;
 
         addTaskId(actorIds, itdTask.getActorId(), taskId);
+        addTaskId(starterIds, itdTask.getStarterId(), taskId);
         addTaskId(processIds, processId, taskId);
         addTaskId(times, itdTask.getTime(), taskId);
         addTaskId(errorMessages, itdTask.getErrorMessage(), taskId);
@@ -66,6 +68,10 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
 
         if (searchCommand.getActorId() != null) {
             searchByStartString(searchCommand.getActorId(), actorIds, taskIds);
+        }
+
+        if (searchCommand.getStarterId() != null) {
+            searchByStartString(searchCommand.getStarterId(), starterIds, taskIds);
         }
 
         if (searchCommand.getProcessId() != null) {
@@ -126,6 +132,7 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         }
 
         deleteTaskId(actorIds, taskId);
+        deleteTaskId(starterIds, taskId);
         deleteTaskId(processIds, taskId);
         deleteTaskId(times, taskId);
         deleteTaskId(errorMessages, taskId);
