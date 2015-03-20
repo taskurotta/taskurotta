@@ -8,9 +8,8 @@ package ru.taskurotta.service.ora.tools;
 public class PagedQueryBuilder {
 
     public static String createPagesQuery(String query) {
-        StringBuilder pagedSql = new StringBuilder("SELECT t1.* FROM ( SELECT t.*, ROWNUM rnum FROM ( select a1.*, count(*) over() as cnt FROM ( ");
-        pagedSql.append(query);
-        pagedSql.append(" ) a1) t WHERE ROWNUM <= ? ) t1 WHERE t1.rnum >= ?");
-        return pagedSql.toString();
+        return "SELECT t1.* FROM ( SELECT t.*, ROWNUM rnum FROM ( select a1.*, count(*) over() as cnt FROM ( " +
+                query +
+                " ) a1) t WHERE ROWNUM <= ? ) t1 WHERE t1.rnum >= ?";
     }
 }
