@@ -140,7 +140,7 @@
           class="ru.taskurotta.service.hz.serialization.bson.ActorPreferencesBSerializer"/>
 
     <bean id="brokenProcessSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.BrokenProcessBSerializer"/>
+          class="ru.taskurotta.service.hz.serialization.bson.InterruptedTaskBSerializer"/>
 
     <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
           factory-method="newInstance">

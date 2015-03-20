@@ -8,31 +8,21 @@ import ru.taskurotta.policy.PolicyConstants;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
-import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
-import ru.taskurotta.transport.model.ArgContainer;
-import ru.taskurotta.transport.model.DecisionContainer;
-import ru.taskurotta.transport.model.ErrorContainer;
-import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
-import ru.taskurotta.transport.model.TaskConfigContainer;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.model.*;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.RetryPolicyConfigUtil;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -56,7 +46,7 @@ public class GeneralTaskServer implements TaskServer {
     protected QueueService queueService;
     protected DependencyService dependencyService;
     protected ConfigService configService;
-    protected BrokenProcessService brokenProcessService;
+    protected InterruptedTasksService interruptedTasksService;
     protected GarbageCollectorService garbageCollectorService;
 
     /*
@@ -71,19 +61,19 @@ public class GeneralTaskServer implements TaskServer {
         this.queueService = serviceBundle.getQueueService();
         this.dependencyService = serviceBundle.getDependencyService();
         this.configService = serviceBundle.getConfigService();
-        this.brokenProcessService = serviceBundle.getBrokenProcessService();
+        this.interruptedTasksService = serviceBundle.getInterruptedTasksService();
         this.garbageCollectorService = serviceBundle.getGarbageCollectorService();
     }
 
     public GeneralTaskServer(ProcessService processService, TaskService taskService, QueueService queueService,
-                             DependencyService dependencyService, ConfigService configService, BrokenProcessService brokenProcessService,
+                             DependencyService dependencyService, ConfigService configService, InterruptedTasksService interruptedTasksService,
                              GarbageCollectorService garbageCollectorService) {
         this.processService = processService;
         this.taskService = taskService;
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.configService = configService;
-        this.brokenProcessService = brokenProcessService;
+        this.interruptedTasksService = interruptedTasksService;
         this.garbageCollectorService = garbageCollectorService;
     }
 
@@ -298,24 +288,20 @@ public class GeneralTaskServer implements TaskServer {
         // increments stat counter
         brokenProcessesCounter.incrementAndGet();
 
-        // save broken process information
-        BrokenProcess brokenProcess = new BrokenProcess();
-        brokenProcess.setTime(System.currentTimeMillis());
-        brokenProcess.setProcessId(processId);
-        brokenProcess.setBrokenActorId(taskDecision.getActorId());
-
-        TaskContainer startTask = processService.getStartTask(processId);
-        if (startTask != null) {
-            brokenProcess.setStartActorId(startTask.getActorId());
-        }
+        // save interrupted task information
+        InterruptedTask itdTask = new InterruptedTask();
+        itdTask.setTime(System.currentTimeMillis());
+        itdTask.setProcessId(processId);
+        itdTask.setTaskId(taskDecision.getTaskId());
+        itdTask.setActorId(taskDecision.getActorId());
 
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
         if (errorContainer != null) {
-            brokenProcess.setErrorClassName(errorContainer.getClassName());
-            brokenProcess.setErrorMessage(errorContainer.getMessage());
-            brokenProcess.setStackTrace(errorContainer.getStackTrace());
+            itdTask.setErrorClassName(errorContainer.getClassName());
+            itdTask.setErrorMessage(errorContainer.getMessage());
+            itdTask.setStackTrace(errorContainer.getStackTrace());
         }
-        brokenProcessService.save(brokenProcess);
+        interruptedTasksService.save(itdTask);
 
         // mark process as broken
         processService.markProcessAsBroken(processId);

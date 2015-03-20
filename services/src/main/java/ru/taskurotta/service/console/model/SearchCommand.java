@@ -10,8 +10,9 @@ import java.util.UUID;
 public class SearchCommand {
 
     protected UUID processId;
-    protected String startActorId;
-    protected String brokenActorId;
+    protected UUID taskId;
+    protected String actorId;
+    protected String starterId;
     protected long startPeriod = -1;
     protected long endPeriod = -1;
     protected String errorMessage;
@@ -21,24 +22,32 @@ public class SearchCommand {
         return processId;
     }
 
+    public String getStarterId() {
+        return starterId;
+    }
+
+    public void setStarterId(String starterId) {
+        this.starterId = starterId;
+    }
+
     public void setProcessId(UUID processId) {
         this.processId = processId;
     }
 
-    public String getStartActorId() {
-        return startActorId;
+    public UUID getTaskId() {
+        return taskId;
     }
 
-    public void setStartActorId(String startActorId) {
-        this.startActorId = startActorId;
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
     }
 
-    public String getBrokenActorId() {
-        return brokenActorId;
+    public String getActorId() {
+        return actorId;
     }
 
-    public void setBrokenActorId(String brokenActorId) {
-        this.brokenActorId = brokenActorId;
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
     }
 
     public long getStartPeriod() {
@@ -71,18 +80,5 @@ public class SearchCommand {
 
     public void setErrorClassName(String errorClassName) {
         this.errorClassName = errorClassName;
-    }
-
-    @Override
-    public String toString() {
-        return "SearchCommand{" +
-                "processId=" + processId +
-                ", startActorId='" + startActorId + '\'' +
-                ", brokenActorId='" + brokenActorId + '\'' +
-                ", startPeriod=" + startPeriod +
-                ", endPeriod=" + endPeriod +
-                ", errorMessage='" + errorMessage + '\'' +
-                ", errorClassName='" + errorClassName + '\'' +
-                "} " + super.toString();
     }
 }

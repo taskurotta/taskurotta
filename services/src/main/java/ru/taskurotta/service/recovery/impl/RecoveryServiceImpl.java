@@ -9,7 +9,7 @@ import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.recovery.RecoveryService;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
@@ -45,7 +45,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     private DependencyService dependencyService;
     private ProcessService processService;
     private TaskService taskService;
-    private BrokenProcessService brokenProcessService;
+    private InterruptedTasksService interruptedTasksService;
     private GarbageCollectorService garbageCollectorService;
     // time out between recovery process in milliseconds
     private long recoveryProcessChangeTimeout;
@@ -55,14 +55,14 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     public RecoveryServiceImpl(QueueService queueService, DependencyService dependencyService,
-                               ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
+                               ProcessService processService, TaskService taskService, InterruptedTasksService interruptedTasksService,
                                GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
                                long findIncompleteProcessPeriod) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.processService = processService;
         this.taskService = taskService;
-        this.brokenProcessService = brokenProcessService;
+        this.interruptedTasksService = interruptedTasksService;
         this.garbageCollectorService = garbageCollectorService;
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
@@ -113,6 +113,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                 queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
                         (taskContainer));
                 result = true;
+                interruptedTasksService.delete(processId, taskId);
 
                 logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
                 resurrectedTasksCounter.incrementAndGet();
@@ -123,7 +124,6 @@ public class RecoveryServiceImpl implements RecoveryService {
         }
 
         if (result) {
-            brokenProcessService.delete(processId);
             // todo: process can receive new broken tasks before this point
             processService.markProcessAsStarted(processId);
         }
@@ -261,8 +261,6 @@ public class RecoveryServiceImpl implements RecoveryService {
                 successfullyRestartedProcesses.add(processId);
             }
         }
-
-        brokenProcessService.deleteCollection(successfullyRestartedProcesses);
 
         return successfullyRestartedProcesses;
     }
@@ -547,7 +545,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         this.processService = processService;
     }
 
-    public void setBrokenProcessService(BrokenProcessService brokenProcessService) {
-        this.brokenProcessService = brokenProcessService;
+    public void setInterruptedTasksService(InterruptedTasksService interruptedTasksService) {
+        this.interruptedTasksService = interruptedTasksService;
     }
 }

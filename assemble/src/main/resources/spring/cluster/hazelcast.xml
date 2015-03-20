@@ -47,7 +47,7 @@
                     <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.console.model.BrokenProcess"
-                                   class-name="ru.taskurotta.service.hz.serialization.BrokenProcessStreamSerializer"/>
+                                   class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.Decision"

@@ -1,18 +1,16 @@
 package ru.taskurotta.service.console.model;
 
-import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * User: stukushin
- * Date: 11.10.13
- * Time: 18:24
+ * Created on 19.03.2015.
  */
-public class BrokenProcess implements Serializable {
+public class InterruptedTask {
 
     private UUID processId;
-    private String startActorId;
-    private String brokenActorId;
+    private UUID taskId;
+    private String actorId;
+    private String starterId;
     private long time;
     private String errorMessage;
     private String errorClassName;
@@ -26,20 +24,20 @@ public class BrokenProcess implements Serializable {
         this.processId = processId;
     }
 
-    public String getStartActorId() {
-        return startActorId;
+    public UUID getTaskId() {
+        return taskId;
     }
 
-    public void setStartActorId(String startActorId) {
-        this.startActorId = startActorId;
+    public void setTaskId(UUID taskId) {
+        this.taskId = taskId;
     }
 
-    public String getBrokenActorId() {
-        return brokenActorId;
+    public String getActorId() {
+        return actorId;
     }
 
-    public void setBrokenActorId(String brokenActorId) {
-        this.brokenActorId = brokenActorId;
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
     }
 
     public long getTime() {
@@ -74,16 +72,25 @@ public class BrokenProcess implements Serializable {
         this.stackTrace = stackTrace;
     }
 
+    public String getStarterId() {
+        return starterId;
+    }
+
+    public void setStarterId(String starterId) {
+        this.starterId = starterId;
+    }
+
     @Override
     public String toString() {
-        return "BrokenProcess{" +
+        return "InterruptedTask{" +
                 "processId=" + processId +
-                ", startActorId='" + startActorId + '\'' +
-                ", brokenActorId='" + brokenActorId + '\'' +
+                ", taskId=" + taskId +
+                ", actorId='" + actorId + '\'' +
+                ", starterId='" + starterId + '\'' +
                 ", time=" + time +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", errorClassName='" + errorClassName + '\'' +
                 ", stackTrace='" + stackTrace + '\'' +
-                "} " + super.toString();
+                '}';
     }
 }

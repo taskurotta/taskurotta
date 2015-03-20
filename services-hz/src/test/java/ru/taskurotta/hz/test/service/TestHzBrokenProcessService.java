@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
-import ru.taskurotta.service.hz.storage.HzBrokenProcessService;
+import ru.taskurotta.service.hz.storage.HzInterruptedTasksService;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -26,39 +26,39 @@ public class TestHzBrokenProcessService {
 
     private long MS_IN_HOUR = 60*60*1000;
 
-    HzBrokenProcessService target;
+    HzInterruptedTasksService target;
     HazelcastInstance hzInstance;
 
     @Before
     public void setUp() {
         TestHazelcastInstanceFactory factory = new TestHazelcastInstanceFactory(1);
         hzInstance = factory.newHazelcastInstance();
-        target = new HzBrokenProcessService(hzInstance, targetMapName);
+        target = new HzInterruptedTasksService(hzInstance, targetMapName);
     }
 
     @Test
     public void testSaveAndFind() {
-        BrokenProcess p1 = getNewProcess();
+        InterruptedTask p1 = getNewTask();
         target.save(p1);
 
-        BrokenProcess p2 = getNewProcess();
+        InterruptedTask p2 = getNewTask();
         target.save(p2);
 
-        IMap<UUID, BrokenProcess> hzMap = hzInstance.getMap(targetMapName);
-        for (BrokenProcess bp : hzMap.values()) {
-            logger.debug("Stored broken process hzMap value[{}]", bp);
+        IMap<UUID, InterruptedTask> hzMap = hzInstance.getMap(targetMapName);
+        for (InterruptedTask it : hzMap.values()) {
+            logger.debug("Stored interrupted task hzMap value[{}]", it);
         }
         Assert.assertEquals(2, hzMap.size());
 
-        Collection<BrokenProcess> findRes = null;
+        Collection<InterruptedTask> findRes = null;
 
         SearchCommand c1 = new SearchCommand();
-        c1.setStartActorId(toTwoThirdsLength(p1.getStartActorId()));
+        c1.setStarterId(toTwoThirdsLength(p1.getStarterId()));
         findRes = target.find(c1);
         Assert.assertEquals(2, findRes.size());
 
         SearchCommand c2 = new SearchCommand();
-        c2.setBrokenActorId(toTwoThirdsLength(p1.getBrokenActorId()));
+        c2.setActorId(toTwoThirdsLength(p1.getActorId()));
         findRes = target.find(c2);
         Assert.assertEquals(2, findRes.size());
 
@@ -97,10 +97,10 @@ public class TestHzBrokenProcessService {
         findRes = target.find(cId3);
         Assert.assertNull(findRes);
 
-        BrokenProcess p3 = getNewProcess();
+        InterruptedTask p3 = getNewTask();
         p3.setErrorClassName(IllegalArgumentException.class.getName());
         SearchCommand com = new SearchCommand();
-        com.setStartActorId(p3.getStartActorId());
+        com.setStarterId(p3.getStarterId());
         com.setErrorClassName(p3.getErrorClassName());
         target.save(p3);
         findRes = target.find(com);
@@ -112,10 +112,10 @@ public class TestHzBrokenProcessService {
         return target.substring(0, target.length()*2/3);
     }
 
-    private BrokenProcess getNewProcess() {
-        BrokenProcess proc = new BrokenProcess();
-        proc.setStartActorId("ru.tsk.test.Starter#1.1");
-        proc.setBrokenActorId("ru.tsk.test.Actor#2.6");
+    private InterruptedTask getNewTask() {
+        InterruptedTask proc = new InterruptedTask();
+        proc.setStarterId("ru.tsk.test.Starter#1.1");
+        proc.setActorId("ru.tsk.test.Actor#2.6");
         proc.setErrorClassName(UnsupportedOperationException.class.getName());
         proc.setErrorMessage("just testing");
         proc.setProcessId(UUID.randomUUID());
