@@ -11,7 +11,7 @@ import java.util.Properties;
 /**
  * Created on 21.08.2014.
  */
-public class TestSimplifiedConfigHandler {
+public class SimplifiedConfigHandlerTest {
 
     @Test
     public void testParseConfig() throws Exception {
@@ -19,13 +19,13 @@ public class TestSimplifiedConfigHandler {
         Config config1 = SimplifiedConfigHandler.getConfig(null);
         Assert.assertEquals(1, config1.actorConfigs.size());
 
-        String externalFile = Thread.currentThread().getContextClassLoader().getResource("taskurotta/tsk-updated.yml").getFile();
+        String externalFile = getClass().getClassLoader().getResource("taskurotta/tsk-updated.yml").getFile();
         Config config2 = SimplifiedConfigHandler.getConfig(externalFile);
         Assert.assertEquals(2, config2.actorConfigs.size());
 
         System.setProperty("rtCfg.sysKey1", "sysVal1");
         System.setProperty("rtCfg.key5", "value5_sys");
-        String fullExternalFile = Thread.currentThread().getContextClassLoader().getResource("taskurotta/tsk-updated2.yaml").getFile();
+        String fullExternalFile = getClass().getClassLoader().getResource("taskurotta/tsk-updated2.yaml").getFile();
         Config config3 = SimplifiedConfigHandler.getConfig(fullExternalFile);
         RuntimeConfigPathXmlApplicationContext rc = (RuntimeConfigPathXmlApplicationContext)(config3.runtimeConfigs.get("rtCfg"));
         Properties props = rc.getProperties();
@@ -43,8 +43,11 @@ public class TestSimplifiedConfigHandler {
 
         Config propsCfg = SimplifiedConfigHandler.getConfig("taskurotta/cfg.properties");
         Assert.assertEquals(1, propsCfg.actorConfigs.size());
+        Assert.assertEquals(1, propsCfg.runtimeConfigs.size());
 
         RuntimeConfigPathXmlApplicationContext runtime = (RuntimeConfigPathXmlApplicationContext)(propsCfg.runtimeConfigs.get("TestRuntimeConfig"));
+
+        Assert.assertNotNull("Cannot get runtime from configs: " + propsCfg.runtimeConfigs, runtime);
         Properties rtProps =  runtime.getProperties();
         System.out.println("propRt props are: " + rtProps);
         Assert.assertEquals("rtValue1", rtProps.getProperty("prop1"));

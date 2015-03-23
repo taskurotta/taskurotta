@@ -18,9 +18,9 @@ import java.util.UUID;
 /**
  * Created on 24.02.2015.
  */
-public class TestHzBrokenProcessService {
+public class HzBrokenProcessServiceTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestHzBrokenProcessService.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzBrokenProcessServiceTest.class);
 
     private String targetMapName = "testBpProc";
 
@@ -83,17 +83,17 @@ public class TestHzBrokenProcessService {
         Assert.assertEquals(2, findRes.size());
 
         SearchCommand cId1 = new SearchCommand();
-        cId1.setProcessId(p1.getProcessId());
+        cId1.setTaskId(p1.getTaskId());
         findRes = target.find(cId1);
         Assert.assertEquals(1, findRes.size());
 
         SearchCommand cId2 = new SearchCommand();
-        cId2.setProcessId(p2.getProcessId());
+        cId2.setTaskId(p2.getTaskId());
         findRes = target.find(cId2);
         Assert.assertEquals(1, findRes.size());
 
         SearchCommand cId3 = new SearchCommand();
-        cId3.setProcessId(UUID.randomUUID());
+        cId3.setTaskId(UUID.randomUUID());
         findRes = target.find(cId3);
         Assert.assertNull(findRes);
 

@@ -15,9 +15,9 @@ import ru.taskurotta.bootstrap.config.logging.SimpleLogConverter;
 /**
  * Created on 22.08.2014.
  */
-public class TestSimpleLogConverter {
+public class SimpleLogConverterTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestSimpleLogConverter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SimpleLogConverterTest.class);
 
     @Before
     public void setUp(){

@@ -33,7 +33,7 @@
 
 
     <bean id="processResurrectionThread" class="ru.taskurotta.test.stress.AutoResurrectService">
-        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
         <constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>
     </bean>
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Created on 24.02.2015.
  */
-public class TestMemoryProcessService {
+public class MemoryProcessServiceTest {
 
     @Test
     public void testFinishedCount() {

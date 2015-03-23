@@ -45,7 +45,7 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
 
         if (searchCommand.getTaskId() != null) {
             Collection<InterruptedTask> result = null;
-            InterruptedTask bp = storeIMap.get(searchCommand.getProcessId());
+            InterruptedTask bp = storeIMap.get(searchCommand.getTaskId());
             if (bp != null) {
                 result = new ArrayList<InterruptedTask>();
                 result.add(bp);

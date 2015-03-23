@@ -1,11 +1,12 @@
 package ru.taskurotta.service.console.model;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created on 19.03.2015.
  */
-public class InterruptedTask {
+public class InterruptedTask implements Serializable {
 
     private UUID processId;
     private UUID taskId;
