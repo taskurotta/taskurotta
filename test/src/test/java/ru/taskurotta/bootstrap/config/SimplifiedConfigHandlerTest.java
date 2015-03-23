@@ -14,11 +14,13 @@ import java.util.Properties;
 public class SimplifiedConfigHandlerTest {
 
     @Test
-    public void testParseConfig() throws Exception {
-
+    public void testDefaultConfigLocation() throws Exception {
         Config config1 = SimplifiedConfigHandler.getConfig(null);
         Assert.assertEquals(1, config1.actorConfigs.size());
+    }
 
+    @Test
+    public void testParseMergedYamlConfig() throws Exception {
         String externalFile = getClass().getClassLoader().getResource("taskurotta/tsk-updated.yml").getFile();
         Config config2 = SimplifiedConfigHandler.getConfig(externalFile);
         Assert.assertEquals(2, config2.actorConfigs.size());
@@ -40,7 +42,10 @@ public class SimplifiedConfigHandlerTest {
         Assert.assertEquals("sysVal1", props.getProperty("sysKey1"));
         Assert.assertEquals("value5_sys", props.getProperty("key5"));//should be overwritten by system property
 
+    }
 
+    @Test
+    public void testParsePropertiesConfig() throws Exception {
         Config propsCfg = SimplifiedConfigHandler.getConfig("taskurotta/cfg.properties");
         Assert.assertEquals(1, propsCfg.actorConfigs.size());
         Assert.assertEquals(1, propsCfg.runtimeConfigs.size());
@@ -64,15 +69,14 @@ public class SimplifiedConfigHandlerTest {
 
         Assert.assertEquals(2, actor.getCount());//should be overwritten by cfg.properties file
         Assert.assertEquals(false, actor.isEnabled());//should be overwritten by cfg.properties file
-
-
     }
 
     @Test
     public void testNestedPropertiesCfg() throws Exception {
-        System.setProperty("config.location", "taskurotta/nested/taskurotta-nested-test.yml");
+        System.setProperty(SimplifiedConfigHandler.PARAM_DEFAULT_CONFIG_LOCATION, "taskurotta/nested/taskurotta-nested-test.yml");
         Config cfg = SimplifiedConfigHandler.getConfig("taskurotta/nested/nested.properties");
         Assert.assertNotNull(cfg);
+        System.getProperties().remove(SimplifiedConfigHandler.PARAM_DEFAULT_CONFIG_LOCATION);
     }
 
     private ActorConfig getTestActorCfg(List<ActorConfig> actors, String interfaceName) {

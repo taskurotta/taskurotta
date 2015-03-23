@@ -4,36 +4,26 @@ import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.util.StringUtils;
+import ru.taskurotta.service.console.Action;
 import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.ProcessGroupVO;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.recovery.RecoveryService;
-import ru.taskurotta.service.console.Action;
 import ru.taskurotta.service.storage.InterruptedTasksService;
+import ru.taskurotta.service.storage.TaskService;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
+import ru.taskurotta.util.ActorUtils;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,7 +33,7 @@ import java.util.concurrent.Executors;
  */
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/console/process/broken/{action}")
+@Path("/console/process/tasks/interrupted/{action}")
 public class InterruptedTasksListResource {
 
     private static final Logger logger = LoggerFactory.getLogger(InterruptedTasksListResource.class);
@@ -52,7 +42,10 @@ public class InterruptedTasksListResource {
 
 
     private InterruptedTasksService interruptedTasksService;
-    private RecoveryService recoveryService;
+    private TaskService taskService;
+    private QueueService queueService;
+
+//    private RecoveryService recoveryService;
 
     private ExecutorService executorService = null;
 
@@ -88,13 +81,13 @@ public class InterruptedTasksListResource {
     }
 
     public static class ActionCommand {
-        protected String[] restartIds;
+        protected TaskIdentifier[] restartIds;
 
-        public String[] getRestartIds() {
+        public TaskIdentifier[] getRestartIds() {
             return restartIds;
         }
 
-        public void setRestartIds(String[] restartIds) {
+        public void setRestartIds(TaskIdentifier[] restartIds) {
             this.restartIds = restartIds;
         }
 
@@ -102,27 +95,39 @@ public class InterruptedTasksListResource {
         public String toString() {
             return "ActionCommand{" +
                     "restartIds=" + Arrays.toString(restartIds) +
-                    "} ";
+                    '}';
         }
     }
 
     @POST
     //TODO: action command should contain searchCommand to be passed as is to a recovery service. Service itself
-    // should delete recovered values from broken processes store
-    public Response executeAction(@PathParam("action") String action, ActionCommand command) {
+    //TODO: should delete recovered values from broken processes store
+    public Response executeAction(@PathParam("action") String action, final ActionCommand command) {
         logger.debug("Executing action [{}] with command [{}]", action, command);
 
         if (Action.RESTART.getValue().equals(action)) {
-            Collection<UUID> processIds = null;
 
-            if (command.getRestartIds()!=null && command.getRestartIds().length>0) {
-                processIds = new ArrayList<>();
-                for (String processId : command.getRestartIds()) {
-                    processIds.add(UUID.fromString(processId));
-                }
+            if (command.getRestartIds() != null && command.getRestartIds().length>0) {
+                executorService.submit(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        for (TaskIdentifier ti : command.getRestartIds()) {
+                            UUID taskId = UUID.fromString(ti.getTaskId());
+                            UUID processId = UUID.fromString(ti.getProcessId());
+                            if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+                                TaskContainer tc = taskService.getTask(taskId, processId);
+                                if (tc!=null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+                                   interruptedTasksService.delete(taskId, processId);
+                                }
+                            }
+                        }
+                    }
+
+                });
+                logger.debug("Task group restarted [{}]", command);
             }
-            initiateRestart(processIds);
-            logger.debug("Process group restarted [{}] of [{}]", (processIds!=null?processIds.size(): null));
+
             return Response.ok().build();
 
         } else {
@@ -130,46 +135,6 @@ public class InterruptedTasksListResource {
             return Response.serverError().build();
 
         }
-    }
-
-    private void initiateRestart(final Collection<UUID> processIds) {
-        if (processIds!=null && !processIds.isEmpty()) {
-
-            executorService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    recoveryService.resurrectProcesses(processIds);
-
-                }
-            });
-//            Future<Integer> futureResult = executorService.submit(new Callable<Integer>() {
-//                @Override
-//                public Integer call() {
-//                    int localResult = 0;
-//                    for (UUID processId : processIds) {
-//                        try {
-//                            //TODO: should some transactions be applied here?
-//                            recoveryProcessService.resurrectProcess(processId);
-//                            brokenProcessService.delete(processId.toString());
-//                            localResult++;
-//                            logger.debug("Processed processId [{}]", processId);
-//                        } catch (Throwable e) {
-//                            logger.error("Error executing restart task for processes group", e);
-//                        }
-//                    }
-//                    return localResult;
-//                }
-//            });
-        }
-    }
-
-    private String getRequiredOptionalString(Optional<String> target, String errMessage) {
-        String result = target.or("");
-        if (!StringUtils.hasText(result)) {
-            throw new WebApplicationException(new IllegalArgumentException(errMessage));
-        }
-        return result;
     }
 
     private void validateGroupCommand(GroupCommand command) {
@@ -191,7 +156,7 @@ public class InterruptedTasksListResource {
         }
     }
 
-    public static GroupCommand convertToCommand(Optional<String> processIdOpt, Optional<String> actorIdOpt, Optional<String> exceptionOpt,
+    public static GroupCommand convertToCommand(Optional<String> starterIdOpt, Optional<String> actorIdOpt, Optional<String> exceptionOpt,
                                          Optional<String> dateFromOpt, Optional<String> dateToOpt, Optional<String> groupOpt) {
         String dateFrom = dateFromOpt.or("");
         String dateTo = dateToOpt.or("");
@@ -226,9 +191,7 @@ public class InterruptedTasksListResource {
             }
         }
 
-        if (processIdOpt.isPresent()) {
-            result.setProcessId(UUID.fromString(processIdOpt.get()));
-        }
+        result.setStarterId(starterIdOpt.or(""));
         result.setActorId(actorIdOpt.or(""));
         result.setErrorClassName(exceptionOpt.or(""));
         result.setGroup(groupOpt.or(GroupCommand.GROUP_STARTER));//default group processes by starter task
@@ -334,8 +297,18 @@ public class InterruptedTasksListResource {
         this.interruptedTasksService = interruptedTasksService;
     }
 
+//    @Required
+//    public void setRecoveryService(RecoveryService recoveryService) {
+//        this.recoveryService = recoveryService;
+//    }
+
     @Required
-    public void setRecoveryService(RecoveryService recoveryService) {
-        this.recoveryService = recoveryService;
+    public void setTaskService(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @Required
+    public void setQueueService(QueueService queueService) {
+        this.queueService = queueService;
     }
 }

@@ -63,9 +63,9 @@ angular.module("consoleApp", ['console.services', 'console.controllers', 'consol
             templateUrl: '/partials/view/create/process_create.html'
         });
         //broken
-        $routeProvider.when('/processes/broken', {
-            templateUrl: '/partials/view/list/process_broken.html',
-            controller: "brokenProcessListController"
+        $routeProvider.when('/processes/interrupted', {
+            templateUrl: '/partials/view/list/interrupted_tasks.html',
+            controller: "interruptedTasksListController"
         });
 
         //MONITORING

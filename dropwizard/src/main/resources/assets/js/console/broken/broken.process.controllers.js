@@ -1,6 +1,6 @@
 angular.module("console.broken.process.controllers", ['console.broken.process.directives', 'console.broken.process.services', 'console.util.services'])
 
-.controller("brokenProcessListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions) {
+.controller("interruptedTasksListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions) {
 
     $scope.brokenGroups = [];
     $scope.brokenProcesses = [];
@@ -179,7 +179,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
 
     var updateGroupsList = function() {
         $scope.initialized = false;
-        $http.get('/rest/console/process/broken/group?' + getCommandAsParamLine()).then(function(success) {
+        $http.get('/rest/console/process/tasks/interrupted/group?' + getCommandAsParamLine()).then(function(success) {
             $scope.brokenGroups = success.data;
             $scope.initialized = true;
         }, function(error) {
@@ -190,7 +190,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
 
     var updateProcessesList = function() {
         $scope.initialized = false;
-        $http.get('/rest/console/process/broken/list?' + getCommandAsParamLine()).then(function(success) {
+        $http.get('/rest/console/process/tasks/interrupted/list?' + getCommandAsParamLine()).then(function(success) {
             $scope.brokenProcesses = success.data;
             $scope.initialized = true;
         }, function(error) {
@@ -265,7 +265,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
     $scope.findProcesses = function() {
         if ($scope.isSearchFormCorrect()) {
             $scope.searchInitialized = false;
-            $http.get('/rest/console/process/broken/list?' + getSearchCommandAsParamLine()).then(function(success) {
+            $http.get('/rest/console/process/tasks/interrupted/list?' + getSearchCommandAsParamLine()).then(function(success) {
                 $scope.foundBrokenProcesses = success.data;
                 $scope.searchInitialized = true;
             }, function(error) {

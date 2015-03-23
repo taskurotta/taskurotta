@@ -23,22 +23,20 @@ public class ManifestInfoResource {
 
     private static final Logger logger = LoggerFactory.getLogger(ManifestInfoResource.class);
 
-    private String version = null;
+    private final String version = "\"" + getManifestVersion() + "\"";
 
     @GET
-    @Path("version")
+    @Path("/version")
     public String getImplementationVersion() {
-        if (version == null) {
-            version = getManifestVersion();
-        }
+        logger.debug("Implementation version is [{}]", version);
         return version;
     }
 
     protected String getManifestVersion() {
-        String result = null;
+        String result = "n/a";
         Properties allProps = getManifestProperties();
         logger.debug("Manifest file properties are [{}]", allProps);
-        if (allProps!=null && !allProps.isEmpty()) {
+        if (allProps!=null && allProps.containsKey("Implementation-Version")) {
             result = allProps.getProperty("Implementation-Version");
         }
         logger.debug("Implementation version is [{}]", result);
@@ -48,26 +46,15 @@ public class ManifestInfoResource {
     protected Properties getManifestProperties() {
         Properties result = new Properties();
 
-        InputStream stream = null;
-        try {
-            stream = getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
-            if (stream!=null) {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");) {
+            if (stream != null) {
                 result.load(stream);
             }  else {
                 logger.error("File [META-INF/MANIFEST.MF] was not found");
             }
         } catch (IOException e) {
             logger.error("Cannot read manifest file properties", e);
-
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-
-            } catch (IOException ignore) {}
         }
-
 
         return result;
     }

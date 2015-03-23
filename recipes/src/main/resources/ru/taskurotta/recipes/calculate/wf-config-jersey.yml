@@ -5,7 +5,7 @@ runtime:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
           sleep: -1 #-1 = disabled
-          workerFailChance: -1 #-1 = disabled
+          workerFailChance: 0.15 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
 

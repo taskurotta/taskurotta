@@ -295,6 +295,11 @@ public class GeneralTaskServer implements TaskServer {
         itdTask.setTaskId(taskDecision.getTaskId());
         itdTask.setActorId(taskDecision.getActorId());
 
+        TaskContainer startTask = processService.getStartTask(processId);
+        if (startTask != null) {
+            itdTask.setStarterId(startTask.getActorId());
+        }
+
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
         if (errorContainer != null) {
             itdTask.setErrorClassName(errorContainer.getClassName());

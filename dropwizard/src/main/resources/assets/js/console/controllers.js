@@ -5,9 +5,10 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.serverVersion = "";
 
     $scope.updateVersion = function() {
-        $http.get("/rest/console/manifest/version").then(function(success){
+        $http.get("/rest/console/manifest/version").then(function(success) {
             $scope.serverVersion = success.data || "";
         }, function(error) {
+            $log.error(error);
             $scope.serverVersion = "";
         });
     };

@@ -31,8 +31,8 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
                     });
                 };
 
-                $scope.submitRestart = function (processId, $index) {
-                    $log.log("Submitting restart for id["+processId+"], index ["+$index+"]");
+                $scope.submitRestart = function (itdTask, $index) {
+                    $log.log("Submitting restart for taskId["+itdTask.taskId+"], processID["+itdTask.processId+"]index ["+$index+"]");
                     tskBrokenProcessesActions.restartProcesses({restartIds: [processId]}).then(function(okResp) {
                         $scope.processes.splice($index, 1);
 
@@ -42,7 +42,7 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
                 };
 
             }],
-            templateUrl: "/partials/widget/broken/broken_process_list.html",
+            templateUrl: "/partials/widget/broken/interrupted_tasks_list.html",
             replace: true
         };
 
