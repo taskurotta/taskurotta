@@ -19,12 +19,9 @@ properties:
   hz.mancenter.enabled: false
   mongo.host: localhost
   mongo.port: 27017
-  oradb.url: "jdbc:oracle:thin:@(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = db1.fccland.ru)(PORT = 1521))(CONNECT_DATA = (SERVER = DEDICATED)(SERVICE_NAME = orcl.fccland.ru)))"
-  oradb.user: "taskurotta"
-  oradb.password: "taskurotta"
-#  oradb.url: "jdbc:oracle:thin:@172.16.4.240:1521:pgudb"
-#  oradb.user: "rip_rr"
-#  oradb.password: "rip_rr"
+  oradb.url: "jdbc:oracle:thin:@dev-ora-ext:1521:devext"
+  oradb.user: ""
+  oradb.password: ""
 #  recovery.process.incomplete-timeout: "5 SECONDS"
 #  recovery.find-incomplete-process-period: "5 SECONDS"
 #  hz.nodes: "localhost:7777,localhost:7778"

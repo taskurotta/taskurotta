@@ -28,13 +28,13 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     private static final Logger logger = LoggerFactory.getLogger(OraInterruptedTasksService.class);
 
     protected static final String SQL_CREATE_ITD_TASK = "BEGIN " +
-            "INSERT INTO TSK_INTERRUPTED_TASK (TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE) " +
+            "INSERT INTO TSK_INTERRUPTED_TASKS (TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; " +
             "END;";
 
-    protected static final String SQL_LIST_ALL = "SELECT TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE FROM TSK_INTERRUPTED_TASK ";
+    protected static final String SQL_LIST_ALL = "SELECT TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE FROM TSK_INTERRUPTED_TASKS ";
 
-    protected static final String SQL_DELETE_ITD_TASK = "DELETE FROM TSK_INTERRUPTED_TASK WHERE PROCESS_ID = ? AND TASK_ID = ? ";
+    protected static final String SQL_DELETE_ITD_TASK = "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
 
     protected LobHandler lobHandler;
 
