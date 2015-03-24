@@ -1,9 +1,9 @@
-angular.module("console.broken.process.controllers", ['console.broken.process.directives', 'console.broken.process.services', 'console.util.services'])
+angular.module("console.interrupted.controllers", ['console.interrupted.directives', 'console.util.services'])
 
 .controller("interruptedTasksListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions) {
 
     $scope.brokenGroups = [];
-    $scope.brokenProcesses = [];
+    $scope.brokenTasks = [];
     $scope.foundBrokenProcesses = [];
 
     $scope.searchInitialized = true;
@@ -191,7 +191,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
     var updateProcessesList = function() {
         $scope.initialized = false;
         $http.get('/rest/console/process/tasks/interrupted/list?' + getCommandAsParamLine()).then(function(success) {
-            $scope.brokenProcesses = success.data;
+            $scope.brokenTasks = success.data;
             $scope.initialized = true;
         }, function(error) {
             $scope.feedback = error.data;
@@ -276,7 +276,7 @@ angular.module("console.broken.process.controllers", ['console.broken.process.di
     };
 
     $scope.restartGroup = function (bpg, index) {
-        tskBrokenProcessesActions.restartProcesses({restartIds: bpg.processIds}).then(function(okResp) {
+        tskBrokenProcessesActions.restartGroup(bpg).then(function(okResp) {
             $scope.brokenGroups.splice(index, 1);
         }, function(errResp){
             $scope.feedback = errResp;

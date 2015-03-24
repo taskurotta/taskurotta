@@ -4,19 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-    <!--<bean id="hzMapConfigSupport" class="ru.taskurotta.hazelcast.HzMapConfigSupport">-->
-    <!--<constructor-arg name="hzInstance" ref="hzInstance"/>-->
-
-    <!--<property name="asyncBackupsCount" value="0"/>-->
-    <!--<property name="backupCount" value="0"/>-->
-    <!--<property name="evictionPercentage" value="25"/>-->
-    <!--<property name="evictionPolicy" value="LRU"/>-->
-    <!--<property name="mapStore" ref="mapStore"/>-->
-    <!--<property name="timeToLive" value="0"/>-->
-    <!--<property name="maxSize" value="1000"/>-->
-    <!--<property name="maxSizePolicy" value="PER_NODE"/>-->
-    <!--</bean>-->
-
     <bean id="cachedQueueServiceConfigurator"
           class="ru.taskurotta.hazelcast.queue.config.util.CachedQueueServiceConfigurator">
         <constructor-arg name="hzInstance" ref="hzInstance"/>

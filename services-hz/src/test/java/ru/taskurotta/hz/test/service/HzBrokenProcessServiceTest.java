@@ -108,6 +108,23 @@ public class HzBrokenProcessServiceTest {
 
     }
 
+    @Test
+    public void testAddAndDelete() {
+        InterruptedTask task1 = getNewTask();
+        InterruptedTask task2 = getNewTask();
+
+        target.save(task1);
+        target.save(task2);
+
+        Assert.assertEquals(2, target.findAll().size());
+
+        target.delete(task1.getProcessId(), task1.getTaskId());
+        Assert.assertEquals(1, target.findAll().size());
+
+        target.delete(task2.getProcessId(), task2.getTaskId());
+        Assert.assertEquals(0, target.findAll().size());
+    }
+
     private String toTwoThirdsLength(String target) {
         return target.substring(0, target.length()*2/3);
     }

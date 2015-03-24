@@ -3,14 +3,14 @@ package ru.taskurotta.service.console.model;
 import java.util.Collection;
 
 /**
- * POJO representing group of broken processes
+ * POJO representing group of interrupted tasks with common properties
  * User: dimadin
  * Date: 16.10.13 11:58
  */
-public class ProcessGroupVO {
+public class TasksGroupVO {
 
     private String name;
-    private Collection<String> processIds;
+    private Collection<TaskIdentifier> tasks;
     private int total;
     private int exceptionsCount;
     private int actorsCount;
@@ -56,24 +56,24 @@ public class ProcessGroupVO {
         this.startersCount = startersCount;
     }
 
-    public Collection<String> getProcessIds() {
-        return processIds;
+    public Collection<TaskIdentifier> getTasks() {
+        return tasks;
     }
 
-    public void setProcessIds(Collection<String> processIds) {
-        this.processIds = processIds;
+    public void setTasks(Collection<TaskIdentifier> tasks) {
+        this.tasks = tasks;
     }
 
     @Override
     public String toString() {
-        return "ProcessGroupVO{" +
+        return "TasksGroupVO{" +
                 "name='" + name + '\'' +
+                ", tasks=" + tasks +
                 ", total=" + total +
                 ", exceptionsCount=" + exceptionsCount +
                 ", actorsCount=" + actorsCount +
                 ", startersCount=" + startersCount +
-                ", processIds=" + processIds +
-                "} ";
+                '}';
     }
 
 }

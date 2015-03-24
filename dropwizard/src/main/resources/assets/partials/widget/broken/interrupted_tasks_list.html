@@ -21,7 +21,7 @@
             </th>
         </thead>
         <tbody>
-            <tr ng-repeat="bp in processes">
+            <tr ng-repeat="bp in tasks">
                 <td>
                     <small>
                         <a class="btn-link" ng-href="#/processes/task?processId={{bp.processId}}&taskId={{ bp.taskId }}"><b>{{ bp.taskId }}</b></a>
@@ -47,7 +47,7 @@
                     </small>
                 </td>
                 <td>
-                    <button ng-click="submitRestart(bp, $index)" popover="Submit process restart task" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
+                    <button ng-click="submitRestart(bp, $index)" popover="Try to restart the task" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
                 </td>
             </tr>
         </tbody>

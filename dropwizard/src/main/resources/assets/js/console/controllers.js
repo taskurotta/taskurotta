@@ -1,4 +1,4 @@
-angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute', 'console.metrics.controllers'])
+angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.interrupted.controllers', 'ngRoute', 'console.metrics.controllers'])
 
 .controller("rootController", function ($rootScope, $scope, $location, $log, $window, $http) {
 
@@ -77,17 +77,17 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         {status: -1, name: "All"},
         {status: 0, name: "Started"},
         {status: 1, name: "Finished"},
-        {status: 2, name: "Broken"}
+        {status: 2, name: "Failed"}
     ];
 
     $scope.getStatusName = function(status) {
         var result = "Unknown [" + status + "]";
         if (status == 0) {
-            result = "Started and still in flight";
+            result = "Still has unreleased tasks";
         } else if (status == 1) {
             result = "Has already finished";
         } else if (status == 2) {
-            result = "Broken, manual fix required";
+            result = "Has failed tasks, manual fix required";
         }
         return result;
     };

@@ -1,4 +1,4 @@
-angular.module("console.broken.process.directives", ['console.broken.process.services', 'console.util.services', 'ui.bootstrap.modal'])
+angular.module("console.interrupted.directives", ['console.interrupted.services', 'console.util.services', 'ui.bootstrap.modal'])
 
     .directive('tskBrokenProcessList', ['tskUtil', '$log', '$modal', 'tskBrokenProcessesActions',  function(tskUtil, $log, $modal, tskBrokenProcessesActions) {
 
@@ -6,7 +6,7 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
             restrict: 'ECA',//Element, Class, Attribute
             terminal: true,
             scope: {
-                processes: "=model"
+                tasks: "=model"
             },
             controller: ['$scope', '$element', '$attrs', '$transclude', function ($scope, $element, $attrs, $transclude) {
 
@@ -32,9 +32,9 @@ angular.module("console.broken.process.directives", ['console.broken.process.ser
                 };
 
                 $scope.submitRestart = function (itdTask, $index) {
-                    $log.log("Submitting restart for taskId["+itdTask.taskId+"], processID["+itdTask.processId+"]index ["+$index+"]");
-                    tskBrokenProcessesActions.restartProcesses({restartIds: [processId]}).then(function(okResp) {
-                        $scope.processes.splice($index, 1);
+                    $log.log("Submitting restart for taskId["+itdTask.taskId+"], processId["+itdTask.processId+"]index ["+$index+"]");
+                    tskBrokenProcessesActions.restartTask(itdTask).then(function(okResp) {
+                        $scope.tasks.splice($index, 1);
 
                     }, function(errResp){
                         $scope.feedback = errResp;

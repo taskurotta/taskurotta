@@ -1,6 +1,7 @@
-package ru.taskurotta.dropwizard.resources.console.broken;
+package ru.taskurotta.service.console.model;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Created on 23.03.2015.
@@ -9,6 +10,22 @@ public class TaskIdentifier implements Serializable {
 
     private String taskId;
     private String processId;
+
+    public TaskIdentifier(){}
+
+    public TaskIdentifier(UUID taskId, UUID processId) {
+        if (taskId != null) {
+            this.taskId = taskId.toString();
+        }
+        if (processId != null) {
+            this.processId = processId.toString();
+        }
+    }
+
+    public TaskIdentifier(String taskId, String processId) {
+        this.taskId = taskId;
+        this.processId = processId;
+    }
 
     public String getTaskId() {
         return taskId;
