@@ -1,0 +1,56 @@
+<div>
+    <table class="table table-striped table-condensed table-bordered">
+        <thead>
+            <th>
+                <small>Task ID</small>
+            </th>
+            <th>
+                <small>Starter ActorID</small>
+            </th>
+            <th>
+                <small>Task ActorID</small>
+            </th>
+            <th style="width:100px">
+                <small>Fail time</small>
+            </th>
+            <th>
+                <small>Error description</small>
+            </th>
+            <th>
+                <small>Actions</small>
+            </th>
+        </thead>
+        <tbody>
+            <tr ng-repeat="bp in tasks">
+                <td>
+                    <small>
+                        <a class="btn-link" ng-href="#/processes/task?processId={{bp.processId}}&taskId={{ bp.taskId }}"><b>{{ bp.taskId }}</b></a>
+                    </small>
+                </td>
+                <td>
+                    <small>{{ enableNewLine(bp.starterId) }}</small>
+                </td>
+                <td>
+                    <small>{{ enableNewLine(bp.actorId) }}</small>
+                </td>
+                <td>
+                    <small>{{ bp.time | date:'dd-MM-yyyy HH:mm:ss' }}</small>
+                </td>
+                <td>
+                    <small>
+                        <span class="muted"><b>Class: </b></span><b>{{ bp.errorClassName }}</b>
+                            <br />
+                        <span class="muted"><b>Message: </b></span><b>{{ bp.errorMessage}}</b>
+                            <br />
+                        <a class="btn-link" ng-click="showStackTrace(bp.stackTrace)"><i class="icon-list"></i><b>Stack trace</b></a>
+                        <br />
+                    </small>
+                </td>
+                <td>
+                    <button ng-click="submitRestart(bp, $index)" popover="Try to restart the task" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

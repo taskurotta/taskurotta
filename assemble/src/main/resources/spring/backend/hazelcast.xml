@@ -112,9 +112,9 @@
         <constructor-arg name="processesStorageMapName" value="${hz.map.process.name}"/>
     </bean>
 
-    <bean id="brokenProcessService" class="ru.taskurotta.service.hz.storage.HzBrokenProcessService">
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.hz.storage.HzInterruptedTasksService">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="brokenProcessMapName" value="${hz.map.broken-process.name}"/>
+        <constructor-arg name="storeMapName" value="${hz.map.interrupted-store.name}"/>
     </bean>
 
     <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
@@ -148,7 +148,7 @@
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
-        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
         <constructor-arg name="recoveryProcessChangeTimeout">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
@@ -191,7 +191,7 @@
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
-        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nodeCustomName" value="${node.custom-name}"/>

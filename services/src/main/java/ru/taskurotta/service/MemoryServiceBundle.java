@@ -9,13 +9,7 @@ import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
 import ru.taskurotta.service.queue.MemoryQueueService;
 import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.service.storage.GeneralTaskService;
-import ru.taskurotta.service.storage.MemoryBrokenProcessService;
-import ru.taskurotta.service.storage.MemoryProcessService;
-import ru.taskurotta.service.storage.ProcessService;
-import ru.taskurotta.service.storage.TaskDao;
-import ru.taskurotta.service.storage.TaskService;
+import ru.taskurotta.service.storage.*;
 
 /**
  * User: romario
@@ -30,7 +24,7 @@ public class MemoryServiceBundle implements ServiceBundle {
     private DependencyService dependencyService;
     private ConfigService configService;
     private MemoryGraphDao memoryGraphDao;
-    private BrokenProcessService brokenProcessService;
+    private InterruptedTasksService interruptedTasksService;
     private MemoryGarbageCollectorService garbageCollectorService;
 
     public MemoryServiceBundle(int pollDelay, TaskDao taskDao) {
@@ -40,7 +34,7 @@ public class MemoryServiceBundle implements ServiceBundle {
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyService = new GeneralDependencyService(memoryGraphDao);
         this.configService = new MemoryConfigService();
-        this.brokenProcessService = new MemoryBrokenProcessService();
+        this.interruptedTasksService = new MemoryInterruptedTasksService();
         this.garbageCollectorService = new MemoryGarbageCollectorService(processService, memoryGraphDao, taskDao, 1, 0l);
     }
 
@@ -70,8 +64,8 @@ public class MemoryServiceBundle implements ServiceBundle {
     }
 
     @Override
-    public BrokenProcessService getBrokenProcessService() {
-        return brokenProcessService;
+    public InterruptedTasksService getInterruptedTasksService() {
+        return interruptedTasksService;
     }
 
     @Override

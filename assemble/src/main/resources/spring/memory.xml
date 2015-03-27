@@ -26,7 +26,7 @@
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
-        <constructor-arg name="brokenProcessService" ref="brokenProcessService" />
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService" />
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
     </bean>
 
@@ -48,7 +48,7 @@
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
-    <bean id="brokenProcessService" class="ru.taskurotta.service.storage.MemoryBrokenProcessService" />
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService" />
 
     <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao" />
 
@@ -61,7 +61,7 @@
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
-        <constructor-arg name="brokenProcessService" ref="brokenProcessService"/>
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
         <constructor-arg name="recoveryProcessChangeTimeout">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">

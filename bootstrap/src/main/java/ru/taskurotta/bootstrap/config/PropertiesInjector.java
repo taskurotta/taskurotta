@@ -156,7 +156,7 @@ public class PropertiesInjector {
             if (locationFile.exists()) {
                 is = new FileInputStream(locationFile);
             } else {
-                is = Thread.currentThread().getContextClassLoader().getResourceAsStream(location);
+                is = PropertiesInjector.class.getClassLoader().getResourceAsStream(location);
             }
 
             if (is != null) {
@@ -165,8 +165,10 @@ public class PropertiesInjector {
                 is.close();
             }
 
-        } catch(IOException e) {
-            logger.error("Cannot parse properties for location["+location+"]", e);
+        } catch (IOException e) {
+            String mes = "Cannot parse properties for location["+location+"]";
+            logger.error(mes, e);
+            throw new IllegalArgumentException(mes, e);
         }
 
         return result;

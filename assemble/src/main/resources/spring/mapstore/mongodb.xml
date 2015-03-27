@@ -98,10 +98,10 @@
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.config.model.ActorPreferences"/>
     </bean>
 
-    <bean id="brokenProcessMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
+    <bean id="interruptedTasksMapStore" class="ru.taskurotta.hazelcast.store.MongoMapStore">
         <constructor-arg name="mongoDB" ref="mongoDB"/>
         <constructor-arg name="serializationService" ref="bSerializationService"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.BrokenProcess"/>
+        <constructor-arg name="objectClassName" value="ru.taskurotta.service.console.model.InterruptedTask"/>
     </bean>
 
     <!-- fastest serializers to BSON -->
@@ -139,8 +139,8 @@
     <bean id="actorsPreferencesSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.ActorPreferencesBSerializer"/>
 
-    <bean id="brokenProcessSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.BrokenProcessBSerializer"/>
+    <bean id="interruptedTasksSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.InterruptedTaskBSerializer"/>
 
     <bean id="bSerializationService" class="ru.taskurotta.mongodb.driver.BSerializationServiceFactory"
           factory-method="newInstance">
@@ -157,7 +157,7 @@
                 <ref bean="recoveryOperationSerializer"/>
                 <ref bean="taskKeyBSerializer"/>
                 <ref bean="actorsPreferencesSerializer"/>
-                <ref bean="brokenProcessSerializer"/>
+                <ref bean="interruptedTasksSerializer"/>
             </list>
         </constructor-arg>
     </bean>
@@ -183,5 +183,6 @@
             </bean>
         </constructor-arg>
     </bean>
+
 
 </beans>

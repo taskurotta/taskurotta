@@ -1,11 +1,6 @@
 package ru.taskurotta.service.hz.server;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.HazelcastInstanceNotActiveException;
-import com.hazelcast.core.IExecutorService;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.Partition;
-import com.hazelcast.core.PartitionAware;
+import com.hazelcast.core.*;
 import com.hazelcast.monitor.LocalExecutorStats;
 import com.hazelcast.spring.context.SpringAware;
 import com.yammer.metrics.core.Clock;
@@ -19,7 +14,7 @@ import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -29,10 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdAll;
-import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdLock;
-import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdWork;
-import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statRelease;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.*;
 
 /**
  * Task server with async decision processing.
@@ -76,7 +68,7 @@ public class HzTaskServer extends GeneralTaskServer {
     protected HzTaskServer(final ProcessService processService, final TaskService taskService,
                            final QueueService queueService,
                            final DependencyService dependencyService, final ConfigService configService,
-                           final BrokenProcessService brokenProcessService, final GarbageCollectorService garbageCollectorService,
+                           final InterruptedTasksService interruptedTasksService, final GarbageCollectorService garbageCollectorService,
                            HazelcastInstance hzInstance,
                            String nodeCustomName, String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
                            long sleepOnOverloadMls) {
@@ -107,8 +99,8 @@ public class HzTaskServer extends GeneralTaskServer {
                  }
 
                  @Override
-                 public BrokenProcessService getBrokenProcessService() {
-                     return brokenProcessService;
+                 public InterruptedTasksService getInterruptedTasksService() {
+                     return interruptedTasksService;
                  }
 
                  @Override
