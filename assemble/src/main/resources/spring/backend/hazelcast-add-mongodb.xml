@@ -122,4 +122,15 @@
 
     <!-- /Services -->
 
+    <!-- Services support -->
+    <bean id = "hzInterruptedTasksSupport" class="ru.taskurotta.service.hz.support.HzInterruptedTasksRestoreSupport" init-method="init">
+        <property name="hzInstance" ref="hzInstance" />
+        <property name="mapName" value="${hz.map.interrupted-store.name}" />
+        <property name="mongoDb" ref="mongoDB" />
+        <property name="restore" value="${hz.map.interrupted-store.restore}" />
+        <property name="serializationService" ref="bSerializationService" />
+        <property name="interruptedTasksService" ref="interruptedTasksService" />
+    </bean>
+    <!-- /Services support -->
+
 </beans>

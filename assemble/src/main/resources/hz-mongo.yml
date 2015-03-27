@@ -22,6 +22,7 @@ properties:
   hz.nodes: localhost:7777
   mongo.host: localhost
   mongo.port: 27017
+  hz.map.interrupted-store.restore: true
 
 server:
   type: simple
@@ -56,6 +57,7 @@ logging:
         ru.taskurotta: INFO
         ru.taskurotta.dropwizard.resources.console: DEBUG
         ru.taskurotta.service.hz.console: DEBUG
+        ru.taskurotta.service.hz.support: DEBUG
     appenders:
     - type: file
       currentLogFilename: "./target/logs/service.log"
