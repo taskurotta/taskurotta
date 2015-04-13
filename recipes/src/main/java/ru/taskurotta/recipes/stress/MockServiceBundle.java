@@ -232,7 +232,10 @@ public class MockServiceBundle implements ServiceBundle {
                 return System.currentTimeMillis();
             }
 
-
+            @Override
+            public List<String> getQueueNames() {
+                return null;
+            }
         };
     }
 

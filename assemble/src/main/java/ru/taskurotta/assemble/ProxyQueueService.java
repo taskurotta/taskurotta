@@ -3,6 +3,7 @@ package ru.taskurotta.assemble;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -38,5 +39,10 @@ public class ProxyQueueService implements QueueService {
     @Override
     public long getLastPolledTaskEnqueueTime(String queueName) {
         return target.getLastPolledTaskEnqueueTime(queueName);
+    }
+
+    @Override
+    public List<String> getQueueNames() {
+        return target.getQueueNames();
     }
 }

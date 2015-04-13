@@ -7,6 +7,7 @@ import ru.taskurotta.service.metrics.MetricName;
 import ru.taskurotta.service.metrics.Metric;
 import ru.taskurotta.transport.utils.TransportUtils;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -30,7 +31,7 @@ public class MetricsQueueService implements QueueService {
 
     @Override
     public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList) {
-        boolean result = false;
+        boolean result;
         Metric enqueueMetric = metricsFactory.getInstance(MetricName.ENQUEUE.getValue());
         long metricStartTime = System.currentTimeMillis();
         result = queueService.enqueueItem(actorId, taskId, processId, startTime, taskList);
@@ -55,5 +56,10 @@ public class MetricsQueueService implements QueueService {
     @Override
     public long getLastPolledTaskEnqueueTime(String queueName) {
         return queueService.getLastPolledTaskEnqueueTime(queueName);
+    }
+
+    @Override
+    public List<String> getQueueNames() {
+        return queueService.getQueueNames();
     }
 }
