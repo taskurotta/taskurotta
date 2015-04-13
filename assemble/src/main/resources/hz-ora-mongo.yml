@@ -14,8 +14,7 @@ actorConfig:
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
-  pollDelay: 10
-  pollDelayUnit: "SECONDS"
+  server.poll-delay: 60 seconds
   hz.mancenter.enabled: false
   mongo.host: localhost
   mongo.port: 27017

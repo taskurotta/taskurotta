@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -328,7 +329,11 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             logger.error("Cannot find incomplete before time["+ recoveryTime +"]processes limit["+limit+"] due to database error", e);
             throw new ServiceCriticalException("Incomplete processes search before time["+ recoveryTime +"] failed", e);
         }
+
         return new ResultSetCursor() {
+
+            Collection<UUID> localResult = result;
+
             @Override
             public void close() throws IOException {
 
@@ -336,7 +341,9 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
             @Override
             public Collection<UUID> getNext() {
-                return result;
+                Collection<UUID> returnResult = localResult;
+                localResult = Collections.EMPTY_LIST;
+                return returnResult;
             }
         };
     }

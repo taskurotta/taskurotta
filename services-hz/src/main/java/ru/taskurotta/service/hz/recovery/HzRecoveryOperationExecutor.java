@@ -8,11 +8,14 @@ import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.RecoveryService;
-import ru.taskurotta.util.*;
+import ru.taskurotta.util.Shutdown;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,9 +30,10 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
     private boolean enabled;
 
     private CachedQueue<Operation> operationIQueue;
+    private BlockingQueue<Runnable> localOperationQueue;
 
     public HzRecoveryOperationExecutor(HazelcastInstance hazelcastInstance, final RecoveryService recoveryService,
-                                       String recoveryOperationQueueName,int recoveryOperationPoolSize, boolean enabled) {
+                                       String recoveryOperationQueueName, int recoveryOperationPoolSize, boolean enabled) {
         this(hazelcastInstance, recoveryService, null, recoveryOperationQueueName, recoveryOperationPoolSize, enabled);
     }
 
@@ -49,14 +53,35 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
         }
 
         this.operationIQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), recoveryOperationQueueName);
+        this.localOperationQueue = new ArrayBlockingQueue<Runnable>(recoveryOperationPoolSize * 3) {
+            @Override
+            public boolean offer(Runnable runnable) {
+                try {
+                    super.put(runnable);
+                    return true;
+                } catch (InterruptedException e) {
+                    return false;
+                }
+            }
+        };
 
-        final ExecutorService recoveryOperationExecutorService = Executors.newFixedThreadPool(recoveryOperationPoolSize);
+        final ExecutorService recoveryOperationExecutorService = new ThreadPoolExecutor(recoveryOperationPoolSize, recoveryOperationPoolSize,
+                0L, TimeUnit.MILLISECONDS,
+                localOperationQueue, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("HzRecoveryOperationExecutorThread::worker");
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
 
         ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setName("HzRecoveryOperationExecutorThread");
+                thread.setName("HzRecoveryOperationExecutorThread::planner");
                 thread.setDaemon(true);
                 return thread;
             }
@@ -106,6 +131,8 @@ public class HzRecoveryOperationExecutor implements OperationExecutor {
 
     @Override
     public boolean isEmpty() {
-        return !enabled || operationIQueue.isEmpty();
+        return !enabled || (operationIQueue.isEmpty() && localOperationQueue.isEmpty());
     }
+
+
 }
