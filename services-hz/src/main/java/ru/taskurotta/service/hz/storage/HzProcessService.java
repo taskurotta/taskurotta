@@ -18,6 +18,7 @@ import ru.taskurotta.transport.model.TaskContainer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -75,6 +76,9 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         }
 
         return new ResultSetCursor() {
+
+            Collection<UUID> localResult = result;
+
             @Override
             public void close() throws IOException {
 
@@ -82,7 +86,9 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
             @Override
             public Collection<UUID> getNext() {
-                return result;
+                Collection<UUID> returnResult = localResult;
+                localResult = Collections.EMPTY_LIST;
+                return returnResult;
             }
         };
     }
