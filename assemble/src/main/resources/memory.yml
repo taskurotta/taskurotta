@@ -13,8 +13,7 @@ actorConfig:
 
 #Task server common properties (will be available as placeholders in spring context):
 properties:
-  pollDelay: 10
-  pollDelayUnit: "SECONDS"
+  server.poll-delay: 10 seconds
   recovery.schedule: "*/35 * * * * ?"
   recovery.period: 2
   recovery.period.unit: "DAYS"
