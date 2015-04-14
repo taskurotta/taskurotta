@@ -10,8 +10,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 /**
  * User: stukushin
@@ -33,7 +33,7 @@ public class NotPollingQueueCountResource {
 
         int count = 0;
         long now = System.currentTimeMillis();
-        List<String> queueNames = queueService.getQueueNames();
+        Collection<String> queueNames = queueService.getQueueNames();
         for (String name : queueNames) {
             Date lastActivity = metricsDataHandler.getLastActivityTime(MetricName.POLL.getValue(), name);
             if (lastActivity == null) {

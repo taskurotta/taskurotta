@@ -1,6 +1,6 @@
 package ru.taskurotta.service.queue;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -28,6 +28,6 @@ public interface QueueService {
 
     long getLastPolledTaskEnqueueTime(String queueName);
 
-    List<String> getQueueNames();
+    Collection<String> getQueueNames();
 
 }

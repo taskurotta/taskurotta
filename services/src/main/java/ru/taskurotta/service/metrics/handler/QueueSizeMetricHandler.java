@@ -7,6 +7,7 @@ import ru.taskurotta.service.metrics.PeriodicMetric;
 import ru.taskurotta.service.metrics.PeriodicMetric.DatasetValueExtractor;
 import ru.taskurotta.service.queue.QueueService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class QueueSizeMetricHandler {
 
             @Override
             public List<String> getDatasets() {//return list of queue names. Dataset name = queue name
-                return queueService.getQueueNames();
+                return new ArrayList<>(queueService.getQueueNames());
             }
 
             @Override

@@ -1,13 +1,13 @@
 package ru.taskurotta.service.metrics.queue;
 
+import ru.taskurotta.service.metrics.Metric;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.MetricsFactory;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.service.metrics.MetricsFactory;
-import ru.taskurotta.service.metrics.MetricName;
-import ru.taskurotta.service.metrics.Metric;
 import ru.taskurotta.transport.utils.TransportUtils;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -59,7 +59,7 @@ public class MetricsQueueService implements QueueService {
     }
 
     @Override
-    public List<String> getQueueNames() {
+    public Collection<String> getQueueNames() {
         return queueService.getQueueNames();
     }
 }
