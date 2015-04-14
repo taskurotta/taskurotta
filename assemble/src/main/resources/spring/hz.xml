@@ -2,24 +2,23 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd">
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder/>
     <context:annotation-config/>
-
 
     <import resource="cluster/hazelcast.xml"/>
     <import resource="backend/hazelcast.xml"/>
 
     <import resource="rest/task-server.xml"/>
     <import resource="rest/console.xml"/>
+    <import resource="rest/monitoring.xml"/>
 
     <import resource="statistics/task-server.xml"/>
     <import resource="statistics/queue-hz.xml"/>
 
-    <import resource="scheduler/file-stored-hz-scheduler.xml" />
+    <import resource="scheduler/file-stored-hz-scheduler.xml"/>
 
 </beans>

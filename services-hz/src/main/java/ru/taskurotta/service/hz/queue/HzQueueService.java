@@ -24,6 +24,7 @@ import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -341,6 +342,11 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     @Override
     public List<String> getQueueNames() {
         return getTaskQueueNamesByPrefix(queueNamePrefix, null, false);
+    }
+
+    @Override
+    public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
+        return getTaskQueueNamesByPrefix(prefix, filter, prefixStrip);
     }
 
     private CachedDelayQueue<TaskQueueItem> getQueue(String queueName) {

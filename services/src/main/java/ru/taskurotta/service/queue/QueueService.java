@@ -1,5 +1,6 @@
 package ru.taskurotta.service.queue;
 
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -9,9 +10,9 @@ import java.util.UUID;
  */
 public interface QueueService {
 
-    public TaskQueueItem poll(String actorId, String taskList);
+    TaskQueueItem poll(String actorId, String taskList);
 
-    public boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
+    boolean enqueueItem(String actorId, UUID taskId, UUID processId, long startTime, String taskList);
 
     /**
      * TODO: remove this method. Should be implemented only in MemoryQueueService for testing purpose.
@@ -21,10 +22,14 @@ public interface QueueService {
      * @param processId
      * @return
      */
-    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId);
+    boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId);
 
-    public String createQueueName(String actorId, String taskList);
+    String createQueueName(String actorId, String taskList);
 
-    public long getLastPolledTaskEnqueueTime(String queueName);
+    long getLastPolledTaskEnqueueTime(String queueName);
+
+    Collection<String> getQueueNames();
+
+    Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip);
 
 }
