@@ -15,7 +15,7 @@
                 <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
             </bean>
         </property>
-
+        <property name="queueNamePrefix" value="${hz.queue.task.prefix}"/>
         <property name="queueService" ref="realQueueBackend"/>
     </bean>
 
