@@ -14,6 +14,7 @@
 
     <import resource="rest/task-server.xml"/>
     <import resource="rest/console.xml"/>
+    <import resource="rest/monitoring.xml"/>
 
     <import resource="statistics/task-server.xml"/>
     <import resource="statistics/queue-hz.xml"/>
