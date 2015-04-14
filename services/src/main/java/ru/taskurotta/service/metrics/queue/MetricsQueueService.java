@@ -62,4 +62,9 @@ public class MetricsQueueService implements QueueService {
     public Collection<String> getQueueNames() {
         return queueService.getQueueNames();
     }
+
+    @Override
+    public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
+        return getQueueNames();
+    }
 }
