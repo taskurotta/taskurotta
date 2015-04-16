@@ -22,7 +22,11 @@ import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.RetryPolicyConfigUtil;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -112,7 +116,12 @@ public class GeneralTaskServer implements TaskServer {
         String actorId = ActorUtils.getActorId(actorDefinition);
 
         if (configService.isActorBlocked(actorId)) {
-            logger.warn("Rejected poll request from blocked actor {}", actorDefinition);
+            logger.debug("Rejected poll request from blocked actor {}", actorDefinition);
+            // todo: this is a hack to avoid overflow of server logs
+            try {
+                TimeUnit.SECONDS.sleep(30);
+            } catch (InterruptedException ignore) {
+            }
             return null;
         }
 
@@ -126,6 +135,7 @@ public class GeneralTaskServer implements TaskServer {
             TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId(), false);
             if (result == null) {
                 logger.warn("Failed to get task for queue item [" + item + "] from store");
+                // todo: server response can be very slowly in this case with huge amount of broken tasks
                 continue;
             }
 
@@ -136,10 +146,12 @@ public class GeneralTaskServer implements TaskServer {
     @Override
     public void release(DecisionContainer taskDecision) {
 
-        if (configService.isActorBlocked(taskDecision.getActorId())) {
-            logger.warn("Rejected  blocked actor [{}] release request", taskDecision.getActorId());
-            return;
-        }
+        // todo: should we block release of task? Or it should be another kind of block?
+        // todo: in general situation it is not good idea to drop release of task
+//        if (configService.isActorBlocked(taskDecision.getActorId())) {
+//            logger.warn("Rejected  blocked actor [{}] release request", taskDecision.getActorId());
+//            return;
+//        }
 
         // save it firstly
         if (!taskService.finishTask(taskDecision)) {
