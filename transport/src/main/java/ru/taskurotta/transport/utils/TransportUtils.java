@@ -9,6 +9,8 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
  */
 public class TransportUtils {
 
+    public static final String REST_SERVICE_PREFIX = "/rest/";
+
     public static String getTaskList(TaskContainer taskContainer) {
         String result = null;
 
@@ -31,6 +33,13 @@ public class TransportUtils {
 
     public static String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
+
+    public static String getRestPath(String endpoint, String path) {
+        if (endpoint != null && path != null) {
+            return endpoint.replaceAll("/*$", "") + REST_SERVICE_PREFIX + path.replaceAll("^/*", "");
+        }
+        return null;
     }
 
 }

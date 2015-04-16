@@ -1,6 +1,7 @@
 package ru.taskurotta.client.jersey;
 
 import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
 import org.slf4j.Logger;
@@ -55,13 +56,17 @@ public class BaseTaskProxy implements TaskServer {
     @Override
     public TaskContainer poll(ActorDefinition actorDefinition) {
         logger.trace("Polling task thread name[{}]", Thread.currentThread().getName());
-        TaskContainer result;
+        TaskContainer result = null;
         try {
             WebResource.Builder rb = pullResource.getRequestBuilder();
             rb.type(MediaType.APPLICATION_JSON);
-            rb.accept(MediaType.APPLICATION_JSON);
-            result = rb.post(TaskContainer.class, actorDefinition);
-        } catch(UniformInterfaceException ex) {//server responded with error
+            rb.accept(MediaType.APPLICATION_JSON, MediaType.MEDIA_TYPE_WILDCARD);
+
+            ClientResponse clientResponse = rb.post(ClientResponse.class, actorDefinition);
+            if (clientResponse.getStatus() != 204) {//204 = no-content
+                result = clientResponse.getEntity(TaskContainer.class);
+            }
+        } catch (UniformInterfaceException ex) {//server responded with error
             int status = ex.getResponse()!=null? ex.getResponse().getStatus(): -1;
             if (status>=400 && status<500) {
                 throw new InvalidServerRequestException("Poll error for actor["+actorDefinition+"]: " + ex.getMessage(), ex);
@@ -96,10 +101,6 @@ public class BaseTaskProxy implements TaskServer {
         } catch(Throwable ex) {//unexpected error
             throw new ServerException("Task release ["+taskResult.getTaskId()+"] error: " + ex.getMessage(), ex);
         }
-    }
-
-    protected String getContextUrl(String path) {
-        return endpoint.replaceAll("/*$", "") + REST_SERVICE_PREFIX + path.replaceAll("^/*", "");
     }
 
     public void setThreadPoolSize(Integer threadPoolSize) {
