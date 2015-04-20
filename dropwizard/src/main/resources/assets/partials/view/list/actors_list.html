@@ -42,6 +42,10 @@
             <tr>
                 <td>
                     <b class="muted">Actor metrics view:</b>
+                    <span style="margin-left: 10px;">
+                        <i class="icon-question-sign" popover="Filter by ActorId *starts with* condition" popover-trigger="mouseenter" />
+                        <input ng-model="selection.filter" type="text" class="search-query" />
+                    </span>
                 </td>
                 <td style="text-align: right">
                     <img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>

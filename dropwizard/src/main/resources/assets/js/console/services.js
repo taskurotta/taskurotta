@@ -9,8 +9,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
             }
             return $http.post(url, actorId);
         },
-        listActors: function(pageNumber, pageSize) {
-            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        listActors: function(pageNumber, pageSize, filter) {
+            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + filter);
         },
         listMetrics: function() {
             return $http.get('/rest/console/actor/metrics/compare');

@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
+import com.hazelcast.query.Predicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.config.model.ActorPreferences;
@@ -44,10 +45,15 @@ public class HzActorConfigManager implements ActorConfigManager {
     }
 
     @Override
-    public GenericPage<ActorVO> getActorList(int pageNum, int pageSize) {
+    public GenericPage<ActorVO> getActorList(int pageNum, int pageSize, String filter) {
         GenericPage<ActorVO> result = null;
         IMap<String, ActorPreferences> actorsPrefs = hzInstance.getMap(actorConfigName);
-        List<ActorPreferences> allPreferences = new ArrayList(actorsPrefs.values());
+        List<ActorPreferences> allPreferences;
+        if (filter != null && !filter.trim().isEmpty()) {
+            allPreferences = new ArrayList(actorsPrefs.values(new Predicates.LikePredicate("id", filter + "%")));
+        } else {
+            allPreferences = new ArrayList(actorsPrefs.values());
+        }
 
         if (allPreferences != null && !allPreferences.isEmpty()) {
             int fromIndex = (pageNum - 1) * pageSize;
