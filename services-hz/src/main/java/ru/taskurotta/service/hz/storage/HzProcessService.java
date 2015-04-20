@@ -147,6 +147,11 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
         setProcessState(processId, Process.BROKEN, Process.START);
     }
 
+    @Override
+    public void markProcessAsAborted(UUID processId) {
+        setProcessState(processId, Process.START, Process.ABORTED);
+    }
+
     private void setProcessState(UUID processId, int oldState, int newState) {
 
         processIMap.lock(processId);

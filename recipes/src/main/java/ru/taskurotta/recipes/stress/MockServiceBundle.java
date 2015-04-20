@@ -97,6 +97,11 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
+            public void markProcessAsAborted(UUID processId) {
+
+            }
+
+            @Override
             public ru.taskurotta.service.console.model.Process getProcess(UUID processUUID) {
                 return null;
             }

@@ -8,19 +8,21 @@ import java.util.UUID;
 
 public interface ProcessService {
 
-    public void startProcess(TaskContainer task);
+    void startProcess(TaskContainer task);
 
-    public void finishProcess(UUID processId, String returnValue);
+    void finishProcess(UUID processId, String returnValue);
 
-    public void deleteProcess(UUID processId);
+    void deleteProcess(UUID processId);
 
-    public TaskContainer getStartTask(UUID processId);
+    TaskContainer getStartTask(UUID processId);
 
-    public void markProcessAsBroken(UUID processId);
+    void markProcessAsBroken(UUID processId);
 
-    public void markProcessAsStarted(UUID processId);
+    void markProcessAsStarted(UUID processId);
 
-    public Process getProcess(UUID processUUID);
+    void markProcessAsAborted(UUID processId);
 
-    public ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit);
+    Process getProcess(UUID processUUID);
+
+    ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit);
 }

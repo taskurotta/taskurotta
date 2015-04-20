@@ -82,6 +82,11 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
         setProcessState(processId, Process.START);
     }
 
+    @Override
+    public void markProcessAsAborted(UUID processId) {
+        setProcessState(processId, Process.ABORTED);
+    }
+
     public void setProcessState(UUID processId, int state) {
         Process process = processesStorage.get(processId);
         process.setState(state);

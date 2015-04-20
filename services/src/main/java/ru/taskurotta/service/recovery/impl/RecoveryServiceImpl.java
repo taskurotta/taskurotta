@@ -11,6 +11,7 @@ import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
+import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -45,6 +46,8 @@ public class RecoveryServiceImpl implements RecoveryService {
     private DependencyService dependencyService;
     private ProcessService processService;
     private TaskService taskService;
+    private TaskDao taskDao;
+    private GraphDao graphDao;
     private InterruptedTasksService interruptedTasksService;
     private GarbageCollectorService garbageCollectorService;
     // time out between recovery process in milliseconds
@@ -55,13 +58,16 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     public RecoveryServiceImpl(QueueService queueService, DependencyService dependencyService,
-                               ProcessService processService, TaskService taskService, InterruptedTasksService interruptedTasksService,
+                               ProcessService processService, TaskService taskService, TaskDao taskDao, GraphDao graphDao,
+                               InterruptedTasksService interruptedTasksService,
                                GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
                                long findIncompleteProcessPeriod) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.processService = processService;
         this.taskService = taskService;
+        this.taskDao = taskDao;
+        this.graphDao = graphDao;
         this.interruptedTasksService = interruptedTasksService;
         this.garbageCollectorService = garbageCollectorService;
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
@@ -359,6 +365,35 @@ public class RecoveryServiceImpl implements RecoveryService {
         logger.debug("#[{}]: complete restart of [{}] tasks", processId, restartedTasks);
 
         return restartedTasks;
+    }
+
+    @Override
+    public boolean abortProcess(final UUID processId) {
+        boolean result = dependencyService.changeGraph(new GraphDao.Updater() {
+            @Override
+            public UUID getProcessId() {
+                return processId;
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+                Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
+                Set<UUID> finishedItems = graph.getFinishedItems();
+
+                taskDao.deleteTasks(notFinishedItems, processId);
+                taskDao.deleteDecisions(finishedItems, processId);
+
+                return true;
+            }
+        });
+
+        graphDao.deleteGraph(processId);
+
+        processService.markProcessAsAborted(processId);
+
+        logger.info("Abort process [{}]", processId);
+
+        return result;
     }
 
     private boolean isReadyToRecover(UUID processId, UUID taskId, long startTime, String actorId, String taskList, long lastRecoveryStartTime) {
