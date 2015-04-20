@@ -127,13 +127,7 @@
     </bean>
 
     <bean id="interruptedTasksListResource" class="ru.taskurotta.dropwizard.resources.console.broken.InterruptedTasksListResource" >
-        <constructor-arg name="recoveryThreads" value="${recovery.interrupted-tasks-resource.thread-size}" />
-
         <property name="interruptedTasksService" ref="interruptedTasksService" />
-        <!--<property name="recoveryService" ref="recoveryService" />-->
-        <property name="queueService" ref="queueService" />
-        <property name="taskService" ref="taskService" />
-
     </bean>
 
     <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">

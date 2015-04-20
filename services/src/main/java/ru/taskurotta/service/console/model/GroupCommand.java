@@ -1,7 +1,5 @@
 package ru.taskurotta.service.console.model;
 
-import ru.taskurotta.service.console.model.SearchCommand;
-
 /**
  * User: dimadin
  * Date: 16.10.13 15:40

@@ -20,6 +20,8 @@
     <bean id="interruptedTasksService" class="ru.taskurotta.service.ora.storage.OraInterruptedTasksService">
         <property name="dataSource" ref="originalDataSource"/>
         <property name="lobHandler" ref="lobHandler"/>
+        <property name="taskService" ref="taskService" />
+        <property name="queueService" ref="queueService" />
     </bean>
 
     <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"/>

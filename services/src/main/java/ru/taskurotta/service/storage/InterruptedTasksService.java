@@ -11,12 +11,15 @@ import java.util.UUID;
  */
 public interface InterruptedTasksService {
 
-    public void save(InterruptedTask brokenProcess);
+    void save(InterruptedTask brokenProcess);
 
-    public Collection<InterruptedTask> find(SearchCommand searchCommand);
+    Collection<InterruptedTask> find(SearchCommand searchCommand);
 
-    public Collection<InterruptedTask> findAll();
+    Collection<InterruptedTask> findAll();
 
-    public void delete(UUID processId, UUID taskId);
+    void delete(UUID processId, UUID taskId);
+
+    void restart(UUID processId, UUID taskId);
+
 
 }

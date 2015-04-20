@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.hz.storage.HzInterruptedTasksService;
+import ru.taskurotta.service.queue.MemoryQueueService;
+import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.MemoryTaskDao;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -18,9 +21,9 @@ import java.util.UUID;
 /**
  * Created on 24.02.2015.
  */
-public class HzBrokenProcessServiceTest {
+public class HzInterruptedTasksTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(HzBrokenProcessServiceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzInterruptedTasksTest.class);
 
     private String targetMapName = "testBpProc";
 
@@ -33,7 +36,7 @@ public class HzBrokenProcessServiceTest {
     public void setUp() {
         TestHazelcastInstanceFactory factory = new TestHazelcastInstanceFactory(1);
         hzInstance = factory.newHazelcastInstance();
-        target = new HzInterruptedTasksService(hzInstance, targetMapName);
+        target = new HzInterruptedTasksService(hzInstance, targetMapName, new GeneralTaskService(new MemoryTaskDao(), 30000), new MemoryQueueService(120000l));
     }
 
     @Test

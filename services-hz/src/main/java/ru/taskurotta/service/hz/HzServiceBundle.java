@@ -46,7 +46,7 @@ public class HzServiceBundle implements ServiceBundle {
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyService = new GeneralDependencyService(graphDao);
         this.configService = new HzConfigService(hazelcastInstance, "actorPreferencesMap");
-        this.interruptedTasksService = new HzInterruptedTasksService(hazelcastInstance, "BrokenProcess");
+        this.interruptedTasksService = new HzInterruptedTasksService(hazelcastInstance, "BrokenProcess", taskService, queueService);
     }
 
     @Override

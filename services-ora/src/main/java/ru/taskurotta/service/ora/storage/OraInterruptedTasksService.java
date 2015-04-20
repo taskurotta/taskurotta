@@ -14,11 +14,25 @@ import org.springframework.util.StringUtils;
 import ru.taskurotta.exception.ServiceCriticalException;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
+import ru.taskurotta.service.storage.TaskService;
+import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created on 19.03.2015.
@@ -37,6 +51,12 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     protected static final String SQL_DELETE_ITD_TASK = "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
 
     protected LobHandler lobHandler;
+
+    protected ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    protected TaskService taskService;
+
+    protected QueueService queueService;
 
     protected RowMapper<InterruptedTask> itdTaskRowMapper = new RowMapper<InterruptedTask>() {
 
@@ -182,10 +202,34 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
         logger.debug("Successfully deleted [{}] interrupted tasks, taskId [{}], processId[{}]", result, taskId, processId);
     }
 
+    @Override
+    public void restart(final UUID processId, final UUID taskId) {
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+                    TaskContainer tc = taskService.getTask(taskId, processId);
+                    if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+                        delete(processId, taskId);
+                        logger.debug("taskId[{}], processId[{}] restarted and removed from store", taskId, processId);
+                    }
+                }
+            }
+        });
+    }
 
     @Required
     public void setLobHandler(LobHandler lobHandler) {
         this.lobHandler = lobHandler;
     }
 
+    @Required
+    public void setTaskService(TaskService taskService) {
+        this.taskService = taskService;
+    }
+
+    @Required
+    public void setQueueService(QueueService queueService) {
+        this.queueService = queueService;
+    }
 }

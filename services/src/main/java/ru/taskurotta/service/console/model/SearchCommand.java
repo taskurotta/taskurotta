@@ -81,4 +81,18 @@ public class SearchCommand {
     public void setErrorClassName(String errorClassName) {
         this.errorClassName = errorClassName;
     }
+
+    @Override
+    public String toString() {
+        return "SearchCommand{" +
+                "processId=" + processId +
+                ", taskId=" + taskId +
+                ", actorId='" + actorId + '\'' +
+                ", starterId='" + starterId + '\'' +
+                ", startPeriod=" + startPeriod +
+                ", endPeriod=" + endPeriod +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", errorClassName='" + errorClassName + '\'' +
+                '}';
+    }
 }

@@ -43,12 +43,16 @@
 
     <bean id="taskService" class="ru.taskurotta.service.storage.GeneralTaskService">
         <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="workerTimeoutMilliseconds" value="60000" />
     </bean>
     <bean id="dependencyService" class="ru.taskurotta.service.dependency.GeneralDependencyService">
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
-    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService" />
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService" >
+        <constructor-arg name="queueService" ref="queueService" />
+        <constructor-arg name="taskService" ref="taskService" />
+    </bean>
 
     <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao" />
 
