@@ -106,24 +106,21 @@
                         <label class="control-label" for="starter"><small><b>{{getGroupLabel('starter')}}:</b></small></label>
                         <div class="controls">
                             <input class="input search-query" type="text" id="starter" placeholder="ru.taskurotta.Example#1.0" ng-model="searchCommand.starterId">
-                            <span style="cursor:pointer;" popover="ActorID of the decider (or the scheduler) task which started the process."
-                                popover-placement="right" class="badge badge-info">?</span>
+                            <i class="icon-question-sign" popover="ActorID of the decider (or the scheduler) task which started the process." popover-trigger="mouseenter" popover-placement="right" />
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="actor"><small><b>{{getGroupLabel('actor')}}:</b></small></label>
                         <div class="controls">
                             <input class="input search-query" type="text" id="actor" placeholder="ru.taskurotta.Example#1.0" ng-model="searchCommand.actorId">
-                            <span style="cursor:pointer;" popover="ActorID of the task which cause the process fail."
-                                popover-placement="right" class="badge badge-info">?</span>
+                            <i class="icon-question-sign" popover="ActorID of the task which cause the process fail." popover-trigger="mouseenter" popover-placement="right" />
                         </div>
                     </div>
                     <div class="control-group">
                         <label class="control-label" for="exception"><small><b>{{getGroupLabel('exception')}}:</b></small></label>
                         <div class="controls">
                             <input class="input search-query" type="text" id="exception" placeholder="ru.taskurotta.ExampleException" ng-model="searchCommand.exception">
-                            <span style="cursor:pointer;" popover="Exception class for the error causing process fail."
-                                  popover-placement="right" class="badge badge-info">?</span>
+                            <i class="icon-question-sign" popover="Exception class for the error causing process fail." popover-trigger="mouseenter" popover-placement="right" />
                         </div>
                     </div>
                     <div class="control-group">
