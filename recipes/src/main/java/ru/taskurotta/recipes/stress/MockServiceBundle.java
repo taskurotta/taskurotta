@@ -328,6 +328,11 @@ public class MockServiceBundle implements ServiceBundle {
                 // ignore
             }
 
+            @Override
+            public void restart(UUID processId, UUID taskId) {
+                throw new IllegalAccessError("Method not implemented");
+            }
+
         };
     }
 

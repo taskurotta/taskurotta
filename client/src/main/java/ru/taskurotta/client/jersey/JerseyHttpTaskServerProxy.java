@@ -5,6 +5,7 @@ import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import ru.taskurotta.server.TaskServerResource;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import javax.annotation.PostConstruct;
 
@@ -43,10 +44,9 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
         contentServerClient.setConnectTimeout(connectTimeout);
         contentServerClient.setReadTimeout(readTimeout);
 
-
-        startResource = contentServerClient.resource(getContextUrl(TaskServerResource.START));
-        pullResource = contentServerClient.resource(getContextUrl(TaskServerResource.POLL));
-        releaseResource = contentServerClient.resource(getContextUrl(TaskServerResource.RELEASE));
+        startResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.START));
+        pullResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.POLL));
+        releaseResource = contentServerClient.resource(TransportUtils.getRestPath(endpoint, TaskServerResource.RELEASE));
 
     }
 

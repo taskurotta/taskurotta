@@ -19,12 +19,17 @@
         <property name="maxConnectionsPerHost" value="${threadPoolSize}" />
     </bean>
 
+
+    <!--<bean id = "taskServer" class="ru.taskurotta.client.http.SimpleHttpClient">-->
+        <!--<constructor-arg name = "endpoint" value = "${endpoint}" />-->
+    <!--</bean>-->
+
     <!-- Jersey native ws client. Uses new thread for each connection -->
     <!--<bean id = "taskServer" class="ru.taskurotta.dropwizard.client.jersey.JerseyTaskServerProxy" >-->
     <!--<property name="connectTimeout" value="${connectTimeout}" />-->
     <!--<property name="readTimeout" value = "${readTimeout}" />-->
 
-    <!-- It seems like this property doesn't change anything... -->
+    <!--It seems like this property doesn't change anything...-->
     <!--<property name="threadPoolSize" value = "${threadPoolSize}" />-->
 
     <!--<property name="endpoint" value = "${endpoint}" />-->
