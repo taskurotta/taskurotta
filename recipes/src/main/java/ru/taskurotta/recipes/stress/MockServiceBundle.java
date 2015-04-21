@@ -233,12 +233,7 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public List<String> getQueueNames() {
-                return null;
-            }
-
-            @Override
-            public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
+            public Collection<String> getQueueNames() {
                 return null;
             }
         };

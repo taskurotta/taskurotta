@@ -3,159 +3,181 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id = "actorListResource" class = "ru.taskurotta.dropwizard.resources.console.actors.ActorListResource">
+    <bean id="actorListResource" class="ru.taskurotta.dropwizard.resources.console.actors.ActorListResource">
         <property name="actorConfigManager" ref="actorConfigManager"/>
         <property name="configService" ref="configService"/>
-        <property name="metricsDataRetriever" ref="metricsDataHandler" />
+        <property name="metricsDataRetriever" ref="metricsDataHandler"/>
     </bean>
 
     <bean id="baseConsoleResource" class="ru.taskurotta.dropwizard.resources.console.BaseResource">
         <property name="consoleManager" ref="consoleManager"/>
     </bean>
-    <bean id="consoleQueueListResource" class="ru.taskurotta.dropwizard.resources.console.queue.QueueStatListResource" parent="baseConsoleResource">
-        <property name = "queueInfoRetriever" ref = "realQueueBackend" />
+    <bean id="consoleQueueListResource" class="ru.taskurotta.dropwizard.resources.console.queue.QueueStatListResource"
+          parent="baseConsoleResource">
+        <property name="queueInfoRetriever" ref="realQueueBackend"/>
     </bean>
-    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.queue.QueueContentResource" parent="baseConsoleResource"/>
-    <bean id="consoleTaskCardResource" class="ru.taskurotta.dropwizard.resources.console.process.TaskResource" parent="baseConsoleResource"/>
-    <bean id="consoleProcessCardResource" class="ru.taskurotta.dropwizard.resources.console.process.ProcessResource" parent="baseConsoleResource"/>
-    <bean id="consoleTaskTreeResource" class="ru.taskurotta.dropwizard.resources.console.process.TaskTreeResource" parent="baseConsoleResource"/>
+    <bean id="consoleQueueCardResource" class="ru.taskurotta.dropwizard.resources.console.queue.QueueContentResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleTaskCardResource" class="ru.taskurotta.dropwizard.resources.console.process.TaskResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleProcessCardResource" class="ru.taskurotta.dropwizard.resources.console.process.ProcessResource"
+          parent="baseConsoleResource"/>
+    <bean id="consoleTaskTreeResource" class="ru.taskurotta.dropwizard.resources.console.process.TaskTreeResource"
+          parent="baseConsoleResource"/>
 
-    <bean id="hoveringQueuesResource" class="ru.taskurotta.dropwizard.resources.console.HoveringQueuesResource" parent="baseConsoleResource"/>
-    <bean id="repeatedTasks" class="ru.taskurotta.dropwizard.resources.console.RepeatedTasksResource" parent="baseConsoleResource"/>
+    <bean id="hoveringQueuesResource" class="ru.taskurotta.dropwizard.resources.console.HoveringQueuesResource"
+          parent="baseConsoleResource"/>
+    <bean id="repeatedTasks" class="ru.taskurotta.dropwizard.resources.console.RepeatedTasksResource"
+          parent="baseConsoleResource"/>
 
-    <bean id="consoleMetricsResource" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsResource" parent="baseConsoleResource" >
-        <property name="metricsDataHandler" ref="consoleMetricsDataHandler" />
-        <property name="metricsOptionsHandler" ref="consoleMetricsOptionsHandler" />
+    <bean id="consoleMetricsResource" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsResource"
+          parent="baseConsoleResource">
+        <property name="metricsDataHandler" ref="consoleMetricsDataHandler"/>
+        <property name="metricsOptionsHandler" ref="consoleMetricsOptionsHandler"/>
     </bean>
 
     <bean id="consoleMetricsDataHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsDataProvider">
-        <property name="methodDataRetriever" ref="metricsDataHandler" />
-        <property name="numberDataRetriever" ref="metricsNumberDataHandler" />
-        <property name="methodMetricsPeriodSeconds" value="${metric.data.method.period-in-seconds}" />
+        <property name="methodDataRetriever" ref="metricsDataHandler"/>
+        <property name="numberDataRetriever" ref="metricsNumberDataHandler"/>
+        <property name="methodMetricsPeriodSeconds" value="${metric.data.method.period-in-seconds}"/>
         <property name="periodicMetricPeriods">
             <map>
-                <entry key="queueSize" value="${metric.data.queue-size.period-in-seconds}" />
-                <entry key="memory" value="${metric.data.memory.period-in-seconds}" />
+                <entry key="queueSize" value="${metric.data.queue-size.period-in-seconds}"/>
+                <entry key="memory" value="${metric.data.memory.period-in-seconds}"/>
             </map>
         </property>
     </bean>
 
-    <bean id = "consoleMetricsOptionsHandler" class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsProvider" >
-        <property name="methodDataRetriever" ref="metricsDataHandler" />
-        <property name="numberDataRetriever" ref="metricsNumberDataHandler" />
-        <property name="optionsSupportBean" ref="optionsSupportBean" />
+    <bean id="consoleMetricsOptionsHandler"
+          class="ru.taskurotta.dropwizard.resources.console.metrics.MetricsOptionsProvider">
+        <property name="methodDataRetriever" ref="metricsDataHandler"/>
+        <property name="numberDataRetriever" ref="metricsNumberDataHandler"/>
+        <property name="optionsSupportBean" ref="optionsSupportBean"/>
     </bean>
 
-    <bean id="optionsSupportBean" class="ru.taskurotta.dropwizard.resources.console.metrics.support.OptionsSupportBean" >
+    <bean id="optionsSupportBean" class="ru.taskurotta.dropwizard.resources.console.metrics.support.OptionsSupportBean">
 
         <property name="metricsDescription">
             <map>
-                <entry key="startProcess" value="TaskServer#startProcess method invocations" />
-                <entry key="poll" value="TaskServer#poll method invocations" />
-                <entry key="successfulPoll" value="TaskServer#poll method invocations (with not empty polled task)" />
-                <entry key="release" value="TaskServer#release method invocations" />
-                <entry key="executionTime" value="Actor mean execution time (ms)" />
-                <entry key="errorDecision" value="Actor with error decision mean execution time (ms)" />
-                <entry key="enqueue" value="QueueBackend#enqueueTask method invocation" />
-                <entry key="queueSize" value="Number of tasks in the queue" />
-                <entry key="memory" value="Occupied, free and total amounts of memory consumed by this node" />
-                <entry key="operationExecutorSize" value="Number of operations in the recovery service executor's queue" />
-                <entry key="garbageCollectorQueueSize" value="Number of garbage collect tasks in the service's queue" />
+                <entry key="startProcess" value="TaskServer#startProcess method invocations"/>
+                <entry key="poll" value="TaskServer#poll method invocations"/>
+                <entry key="successfulPoll" value="TaskServer#poll method invocations (with not empty polled task)"/>
+                <entry key="release" value="TaskServer#release method invocations"/>
+                <entry key="executionTime" value="Actor mean execution time (ms)"/>
+                <entry key="errorDecision" value="Actor with error decision mean execution time (ms)"/>
+                <entry key="enqueue" value="QueueBackend#enqueueTask method invocation"/>
+                <entry key="queueSize" value="Number of tasks in the queue"/>
+                <entry key="memory" value="Occupied, free and total amounts of memory consumed by this node"/>
+                <entry key="operationExecutorSize"
+                       value="Number of operations in the recovery service executor's queue"/>
+                <entry key="garbageCollectorQueueSize" value="Number of garbage collect tasks in the service's queue"/>
             </map>
         </property>
 
         <property name="datasetDescription">
             <map>
-                <entry key="startProcess#startProcess" value="Mean value for method invocation by all actors" />
-                <entry key="poll#poll" value="Mean value for method invocation by all actors" />
-                <entry key="successfulPoll#successfulPoll" value="Mean value for method invocation by all actors" />
-                <entry key="release#release" value="Mean value for method invocation by all actors" />
-                <entry key="executionTime#executionTime" value="Mean value for all actors" />
-                <entry key="errorDecision#errorDecision" value="Mean value for all actors" />
-                <entry key="enqueue#enqueue" value="QueueBackend#enqueueTask method invocation" />
-                <entry key="queueSize#queueSize" value="Total number of task for all queues" />
-                <entry key="memory#memory" value="Occupied memory evaluated as: (total - free)" />
-                <entry key="operationExecutorSize#operationExecutorSize" value="Number of operations in the recovery service executor's queue" />
-                <entry key="garbageCollectorQueueSize#garbageCollectorQueueSize" value="Number of garbage collect tasks in the service's queue" />
+                <entry key="startProcess#startProcess" value="Mean value for method invocation by all actors"/>
+                <entry key="poll#poll" value="Mean value for method invocation by all actors"/>
+                <entry key="successfulPoll#successfulPoll" value="Mean value for method invocation by all actors"/>
+                <entry key="release#release" value="Mean value for method invocation by all actors"/>
+                <entry key="executionTime#executionTime" value="Mean value for all actors"/>
+                <entry key="errorDecision#errorDecision" value="Mean value for all actors"/>
+                <entry key="enqueue#enqueue" value="QueueBackend#enqueueTask method invocation"/>
+                <entry key="queueSize#queueSize" value="Total number of task for all queues"/>
+                <entry key="memory#memory" value="Occupied memory evaluated as: (total - free)"/>
+                <entry key="operationExecutorSize#operationExecutorSize"
+                       value="Number of operations in the recovery service executor's queue"/>
+                <entry key="garbageCollectorQueueSize#garbageCollectorQueueSize"
+                       value="Number of garbage collect tasks in the service's queue"/>
             </map>
         </property>
 
-        <property name="defaultDataTypes" value = "rate, mean" />
+        <property name="defaultDataTypes" value="rate, mean"/>
 
-        <property name="defaultPeriods" value = "1hour, 24hours" />
+        <property name="defaultPeriods" value="1hour, 24hours"/>
 
-        <property name="defaultScopes" value = "local" />
+        <property name="defaultScopes" value="local"/>
 
         <property name="metricDataTypes">
             <map>
-                <entry key="queueSize" value="size" />
-                <entry key="memory" value="size" />
-                <entry key="operationExecutorSize" value="size" />
-                <entry key="garbageCollectorQueueSize" value="size" />
+                <entry key="queueSize" value="size"/>
+                <entry key="memory" value="size"/>
+                <entry key="operationExecutorSize" value="size"/>
+                <entry key="garbageCollectorQueueSize" value="size"/>
             </map>
         </property>
         <property name="metricPeriods">
             <map>
-                <entry key="queueSize" value="24hours, 1hour, 5minutes, 1minute" />
-                <entry key="memory" value="24hours, 1hour, 5minutes, 1minute" />
-                <entry key="operationExecutorSize" value="24hours, 1hour, 5minutes, 1minute" />
-                <entry key="garbageCollectorQueueSize" value="24hours, 1hour, 5minutes, 1minute" />
+                <entry key="queueSize" value="24hours, 1hour, 5minutes, 1minute"/>
+                <entry key="memory" value="24hours, 1hour, 5minutes, 1minute"/>
+                <entry key="operationExecutorSize" value="24hours, 1hour, 5minutes, 1minute"/>
+                <entry key="garbageCollectorQueueSize" value="24hours, 1hour, 5minutes, 1minute"/>
             </map>
         </property>
         <property name="metricScopes">
             <map>
-                <entry key="queueSize" value = "cluster" />
-                <entry key="memory" value = "cluster" />
+                <entry key="queueSize" value="cluster"/>
+                <entry key="memory" value="cluster"/>
             </map>
         </property>
 
         <property name="optionDescriptions">
             <map>
-                <entry key="24hours" value="Last 24 hours" />
-                <entry key="1hour" value="Last hour" />
-                <entry key="cluster" value="All nodes (cluster)" />
-                <entry key="local" value="Current node" />
-                <entry key="5minutes" value="Last 5 minutes" />
-                <entry key="1minute" value="Last minute" />
-                <entry key="rate" value="Hits (times)" />
-                <entry key="mean" value="Mean time (ms)" />
-                <entry key="items" value="Number of items" />
-                <entry key="size" value="Size" />
+                <entry key="24hours" value="Last 24 hours"/>
+                <entry key="1hour" value="Last hour"/>
+                <entry key="cluster" value="All nodes (cluster)"/>
+                <entry key="local" value="Current node"/>
+                <entry key="5minutes" value="Last 5 minutes"/>
+                <entry key="1minute" value="Last minute"/>
+                <entry key="rate" value="Hits (times)"/>
+                <entry key="mean" value="Mean time (ms)"/>
+                <entry key="items" value="Number of items"/>
+                <entry key="size" value="Size"/>
             </map>
         </property>
 
     </bean>
 
-    <bean id="interruptedTasksListResource" class="ru.taskurotta.dropwizard.resources.console.broken.InterruptedTasksListResource" >
-        <constructor-arg name="recoveryThreads" value="${recovery.interrupted-tasks-resource.thread-size}" />
+    <bean id="interruptedTasksListResource"
+          class="ru.taskurotta.dropwizard.resources.console.broken.InterruptedTasksListResource">
+        <constructor-arg name="recoveryThreads" value="${recovery.interrupted-tasks-resource.thread-size}"/>
 
-        <property name="interruptedTasksService" ref="interruptedTasksService" />
+        <property name="interruptedTasksService" ref="interruptedTasksService"/>
         <!--<property name="recoveryService" ref="recoveryService" />-->
-        <property name="queueService" ref="queueService" />
-        <property name="taskService" ref="taskService" />
+        <property name="queueService" ref="queueService"/>
+        <property name="taskService" ref="taskService"/>
 
     </bean>
 
     <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">
-        <property name="queueInfo" ref="realQueueBackend" />
-        <property name="taskInfo" ref="taskService" />
-        <property name="processInfo" ref="processService" />
-        <property name="graphInfo" ref="dependencyService" />
+        <property name="queueInfo" ref="realQueueBackend"/>
+        <property name="taskInfo" ref="taskService"/>
+        <property name="processInfo" ref="processService"/>
+        <property name="graphInfo" ref="dependencyService"/>
     </bean>
 
-    <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource" />
+    <bean id="manifestResource" class="ru.taskurotta.dropwizard.resources.console.meta.ManifestInfoResource"/>
 
-    <bean id="contextResource" class="ru.taskurotta.dropwizard.resources.console.meta.ContextResource" />
+    <bean id="contextResource" class="ru.taskurotta.dropwizard.resources.console.meta.ContextResource"/>
 
-    <bean id="timerResource" class="ru.taskurotta.dropwizard.resources.console.meta.TimerResource" />
+    <bean id="timerResource" class="ru.taskurotta.dropwizard.resources.console.meta.TimerResource"/>
 
     <bean id="recoveryOperationResource" class="ru.taskurotta.dropwizard.resources.console.operation.RecoveryResource">
-        <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor" />
-        <property name="recoveryThreads" ref="incompleteProcessFinder" />
+        <property name="recoveryOperationExecutor" ref="recoveryOperationExecutor"/>
+        <property name="recoveryThreads" ref="incompleteProcessFinder"/>
     </bean>
 
-    <bean id = "gcResource" class="ru.taskurotta.dropwizard.resources.console.operation.GarbageCollectorResource">
-        <property name="gcService" ref="garbageCollectorService" />
+    <bean id="gcResource" class="ru.taskurotta.dropwizard.resources.console.operation.GarbageCollectorResource">
+        <property name="gcService" ref="garbageCollectorService"/>
+    </bean>
+
+    <bean class="ru.taskurotta.dropwizard.resources.monitoring.NotPollingQueueCountResource">
+        <property name="pollTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
+            </bean>
+        </property>
+        <property name="queueService" ref="realQueueBackend"/>
     </bean>
 
 </beans>

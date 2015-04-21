@@ -43,9 +43,4 @@ public class ProxyQueueService implements QueueService {
     public Collection<String> getQueueNames() {
         return target.getQueueNames();
     }
-
-    @Override
-    public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
-        return target.getQueueNames(prefix, filter, prefixStrip);
-    }
 }

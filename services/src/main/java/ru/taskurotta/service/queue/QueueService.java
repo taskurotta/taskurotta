@@ -30,6 +30,4 @@ public interface QueueService {
 
     Collection<String> getQueueNames();
 
-    Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip);
-
 }

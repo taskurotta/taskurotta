@@ -352,13 +352,8 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public List<String> getQueueNames() {
+    public Collection<String> getQueueNames() {
         return new ArrayList<>(queues.keySet());
-    }
-
-    @Override
-    public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
-        return getQueueNames();
     }
 
     /**
