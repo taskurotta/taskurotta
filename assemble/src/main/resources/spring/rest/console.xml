@@ -164,7 +164,7 @@
         <property name="gcService" ref="garbageCollectorService"/>
     </bean>
 
-    <bean class="ru.taskurotta.dropwizard.resources.monitoring.NotPollingQueueCountResource">
+    <bean id="notPollingQueueCountResource" class="ru.taskurotta.dropwizard.resources.monitoring.NotPollingQueueCountResource">
         <property name="pollTimeout">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
