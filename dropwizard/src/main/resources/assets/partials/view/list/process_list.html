@@ -82,6 +82,10 @@
                                 popover="Submit process to recovery service" popover-trigger="mouseenter" ng-if="!wasSubmitted(process.processId)">
                             <i class="icon-retweet"></i>
                         </button>
+                        <button ng-click="abortProcess(process.processId)" class="btn btn-small"
+                                popover="Abort process" popover-trigger="mouseenter" ng-if="!wasSubmitted(process.processId)">
+                            <i class="icon-trash"></i>
+                        </button>
                     </td>
                 </tr>
             </tbody>

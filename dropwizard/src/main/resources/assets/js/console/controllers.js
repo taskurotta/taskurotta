@@ -77,7 +77,8 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         {status: -1, name: "All"},
         {status: 0, name: "Started"},
         {status: 1, name: "Finished"},
-        {status: 2, name: "Failed"}
+        {status: 2, name: "Failed"},
+        {status: 3, name: "Aborted"}
     ];
 
     $scope.getStatusName = function(status) {
@@ -111,6 +112,10 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.addProcessToRecovery = function(processId) {
         tskProcesses.addProcessToRecovery(processId);
         $scope.submittedRecoveries.push(processId);
+    };
+
+    $scope.abortProcess = function(processId) {
+        tskProcesses.abortProcess(processId);
     };
 
     //Updates queues states  by polling REST resource
