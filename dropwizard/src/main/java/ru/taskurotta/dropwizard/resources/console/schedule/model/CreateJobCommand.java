@@ -1,6 +1,5 @@
 package ru.taskurotta.dropwizard.resources.console.schedule.model;
 
-import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.schedule.JobConstants;
 
 import java.io.Serializable;
@@ -9,19 +8,12 @@ import java.util.Arrays;
 /**
  * Created on 17.07.2014.
  */
-public class CreateJobCommand implements Serializable {
+public class CreateJobCommand extends TaskCommand implements Serializable {
 
     private String name;
     private String cron;
     private int queueLimit = -1;
     private int maxErrors = JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS;
-
-    private String actorId;
-    private String method;
-    private TaskType taskType;
-    private ArgVO[] args;
-
-    private String taskList;
 
     public String getName() {
         return name;
@@ -53,46 +45,6 @@ public class CreateJobCommand implements Serializable {
 
     public void setMaxErrors(int maxErrors) {
         this.maxErrors = maxErrors;
-    }
-
-    public String getActorId() {
-        return actorId;
-    }
-
-    public void setActorId(String actorId) {
-        this.actorId = actorId;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public TaskType getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(TaskType taskType) {
-        this.taskType = taskType;
-    }
-
-    public ArgVO[] getArgs() {
-        return args;
-    }
-
-    public void setArgs(ArgVO[] args) {
-        this.args = args;
-    }
-
-    public String getTaskList() {
-        return taskList;
-    }
-
-    public void setTaskList(String taskList) {
-        this.taskList = taskList;
     }
 
     @Override

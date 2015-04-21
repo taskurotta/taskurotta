@@ -112,7 +112,10 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
                 return $http.post('/rest/console/operation/recovery/add', processId);
             },
             cloneProcess: function (processId) {
-                return $http.post('/rest/console/operation/clone', processId);
+                return $http.post('/rest/console/operation/process/clone', processId);
+            },
+            createProcess: function (command) {
+                return $http.post('/rest/console/operation/process/create', command);
             }
         };
 
