@@ -142,6 +142,15 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
     $scope.feedback = "";
     $scope.initialized = false;
 
+
+    $scope.recoverProcess = function (processId) {
+        tskProcesses.addProcessToRecovery(processId);
+    };
+
+    $scope.cloneProcess = function (processId) {
+        tskProcesses.cloneProcess(processId);
+    };
+
     $scope.update = function () {
         tskProcesses.getProcess($routeParams.processId).then(function (value) {
             $scope.process = angular.fromJson(value.data || {});

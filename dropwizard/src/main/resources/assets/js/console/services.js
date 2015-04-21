@@ -109,7 +109,10 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
                 return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
             },
             addProcessToRecovery: function (processId) {
-                return $http.post('/console/operation/recovery/add', processId);
+                return $http.post('/rest/console/operation/recovery/add', processId);
+            },
+            cloneProcess: function (processId) {
+                return $http.post('/rest/console/operation/clone', processId);
             }
         };
 
