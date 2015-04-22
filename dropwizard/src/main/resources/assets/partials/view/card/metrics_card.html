@@ -22,8 +22,8 @@
             <table width="100%">
                 <tr>
                     <td style="width: 450px;">
-                        <span style="cursor:pointer;" popover="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."
-                              popover-placement="right" class="badge badge-info">?</span>
+                        <i class="icon-question-sign" popover="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."
+                           popover-trigger="mouseenter" popover-placement="right" />
                         <b>Metric:</b>
                         <select ng-model="selection.metric" ng-options="m.value for m in metricsOptions.metrics"></select>
 
@@ -39,7 +39,7 @@
                     </td>
 
                     <td>
-                        <div class="well">{{ selection.metric.name || "select a metric"}}</div>
+                        <div class="well">{{ selection.metric.name || "select a metric" }}</div>
                     </td>
                 </tr>
             </table>
@@ -56,8 +56,8 @@
                                     <table>
                                         <tr>
                                             <td>
-                                                <span style="cursor:pointer;" popover="Specify if metrics data should convey cluster data (for all nodes) or local node only."
-                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <i class="icon-question-sign" popover="Specify if metrics data should convey cluster data (for all nodes) or local node only."
+                                                   popover-trigger="mouseenter" popover-placement="right" />
                                                 <b><small>Scope:</small></b>
                                             </td>
                                             <td>
@@ -67,8 +67,8 @@
 
                                         <tr>
                                             <td>
-                                                <span style="cursor:pointer;" popover="Select the type of metrics data to show. Some metrics could have several data types associated with them."
-                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <i class="icon-question-sign" popover="Select the type of metrics data to show. Some metrics could have several data types associated with them."
+                                                   popover-trigger="mouseenter" popover-placement="right" />
                                                 <b><small>Data type:</small></b>
                                             </td>
                                             <td>
@@ -78,8 +78,8 @@
 
                                         <tr>
                                             <td>
-                                                <span style="cursor:pointer;" popover="Select the target time period."
-                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <i class="icon-question-sign" popover="Select the target time period."
+                                                   popover-trigger="mouseenter" popover-placement="right" />
                                                 <b><small>Period:</small></b>
                                             </td>
                                             <td>
@@ -95,8 +95,8 @@
 
                                         <tr>
                                             <td style="text-align:right;">
-                                                <span style="cursor:pointer;" popover="Enable filter to remove all dots with zero values from the plot. Requires plot refresh."
-                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <i class="icon-question-sign" popover="Enable filter to remove all dots with zero values from the plot. Requires plot refresh."
+                                                   popover-trigger="mouseenter" popover-placement="right" />
                                             </td>
                                             <td>
                                                 <label style="margin-left:25px;" class="checkbox small"><b><small>Apply skip zero values filter</small></b><input type="checkbox" ng-model="selection.omitZeroes" /></label>
@@ -104,8 +104,8 @@
                                         </tr>
                                         <tr>
                                             <td style="text-align:right;">
-                                                <span style="cursor:pointer;" popover="Enable filter to perform data averaging. Every dot value would be replaced with averaged value by N siblings."
-                                                      popover-placement="right" class="badge badge-info">?</span>
+                                                <i class="icon-question-sign" popover="Enable filter to perform data averaging. Every dot value would be replaced with averaged value by N siblings."
+                                                   popover-trigger="mouseenter" popover-placement="right" />
                                             </td>
                                             <td>
                                                 <b style="margin-left:25px;"><small>Sibling average filter:</small></b>
@@ -131,7 +131,8 @@
                             <td style="vertical-align:top;padding:10px;">
 
                                 <div class="well" style="height: 300px;overflow:auto;">
-                                    <span class="badge badge-info" style="cursor:pointer;" popover="Select datasets to show on the diagram" popover-placement="right">?</span>
+                                    <i class="icon-question-sign" popover="Select datasets to show on the diagram"
+                                       popover-trigger="mouseenter" popover-placement="right" />
                                     <b>Datasets:</b>
 
                                     <div ng-hide = "getDatasetList().length>0" class="alert alert-warning">No selected datasets to show</div>

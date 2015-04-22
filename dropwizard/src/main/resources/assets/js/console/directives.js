@@ -189,56 +189,34 @@ angular.module("console.directives", ['ngRoute'])
         };
     }])
 
-
-    .directive('tskCreateProcessForm', ['$http', function ($http) {
-        return {
-            restrict: 'ECA',//Element, Class, Attribute
-            terminal: true,
-            scope: {},
-            controller: ['$scope', '$element', '$attrs', '$transclude', 'tskTimeUtil', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, tskTimeUtil, $window, $log, $http) {
-
-                $scope.process = {
-                    actorId: "",
-                    method: "",
-                    type: "DECIDER_START"
-                };
-
-                $scope.argsJson = "[]";
-
-                $scope.create = function () {
-                    $scope.process.args = angular.fromJson($scope.argsJson);
-                    $log.log("create process: " + angular.toJson($scope.process));
-                    $http.post("/rest/tasks/start?generateId=true", $scope.process);
-                };
-
-            }],
-            templateUrl: "/partials/widget/start_process.html",
-            replace: true
-        };
-    }])
-
     .directive('tskTaskForm', ['$http', function ($http) {
         return {
             restrict: 'ECA',//Element, Class, Attribute
             terminal: true,
-            scope: {},
-            controller: ['$scope', '$element', '$attrs', '$transclude', '$window', '$log', '$http', function ($scope, $element, $attrs, $transclude, $window, $log, $http) {
-                $scope.taskTypes = ["DECIDER_START", "WORKER", "DECIDER_ASYNCHRONIOUS"];
+            scope: {
+                model: "=",
+                types: "="
+            },
+            controller: ['$scope', '$element', '$attrs', function ($scope, $element, $attrs) {
 
-                $scope.processUUID = "process-uuid";
-                $scope.taskUUID = "task-uuid";
+                $scope.addArgument = function() {
+                    if (!$scope.model.args) {
+                        $scope.model.args = [];
+                    }
+                    $scope.model.args.push({
+                        type: "string",
+                        value: ""
+                    });
+                };
 
-                $scope.actorMethod = "actor-method";
-                $scope.actorId = "actor-id";
-                $scope.taskType = "DECIDER_START";
-                $scope.taskStartTime = new Date();
-
-                $scope.args = [];
-                $scope.options = {};
-
+                $scope.removeArgument = function(idx) {
+                    if (!!$scope.model.args && $scope.model.args.length>0) {
+                        $scope.model.args.splice(idx, 1);
+                    }
+                };
 
             }],
-            templateUrl: "/partials/widget/task_container_form.html",
+            templateUrl: "/partials/widget/containers/task_command_form.html",
             replace: true
         };
     }])

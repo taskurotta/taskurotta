@@ -9,8 +9,8 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
             }
             return $http.post(url, actorId);
         },
-        listActors: function(pageNumber, pageSize) {
-            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize);
+        listActors: function(pageNumber, pageSize, filter) {
+            return $http.get('/rest/console/actor/list/?pageNum=' + pageNumber + '&pageSize=' + pageSize + '&filter=' + filter);
         },
         listMetrics: function() {
             return $http.get('/rest/console/actor/metrics/compare');
@@ -109,7 +109,13 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
                 return $http.get('/rest/console/tasks/process/' + encodeURIComponent(processId));
             },
             addProcessToRecovery: function (processId) {
-                return $http.post('/console/operation/recovery/add', processId);
+                return $http.post('/rest/console/operation/recovery/add', processId);
+            },
+            cloneProcess: function (processId) {
+                return $http.post('/rest/console/operation/process/clone', processId);
+            },
+            createProcess: function (command) {
+                return $http.post('/rest/console/operation/process/create', command);
             }
         };
 

@@ -1,0 +1,71 @@
+<div>
+    <table class="table table-condensed">
+        <tr>
+            <td>
+                <i class="icon-question-sign" popover="ActorId of the actor to trigger." popover-trigger="mouseenter" />
+                <b>ActorId:</b>
+            </td>
+            <td>
+                <input class="input-large search-query" type="text" ng-model="model.actorId" required/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="icon-question-sign" popover="Method of the actor to trigger." popover-trigger="mouseenter" />
+                <b>Method name:</b>
+            </td>
+            <td>
+                <input class="input-large search-query" type="text" ng-model="model.method" required/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="icon-question-sign" popover="Type of the actor to trigger." popover-trigger="mouseenter" />
+                <b>Actor type:</b>
+            </td>
+            <td>
+                <select ng-model="model.type" ng-options="type for type in types" required />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="icon-question-sign" popover="Specify task list if any." popover-trigger="mouseenter" />
+                <b>Task list:</b>
+            </td>
+            <td>
+                <input class="input-large search-query" type="text" ng-model="model.taskList" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <i class="icon-question-sign" popover="Arguments for the task. Only primitive and string values are allowed at the moment." popover-trigger="mouseenter" />
+                <b>Arguments:</b>
+            </td>
+            <td>
+                <table width="100%" class="table table-bordered table-condensed">
+                    <tr>
+                        <td colspan="3" style="text-align: center">
+                            <span ng-hide="model.args.length>0" class="muted">This task has no arguments. <br /> Press the 'plus' button below if you need to specify any.</span>
+                        </td>
+                    </tr>
+                    <tr ng-repeat="arg in model.args">
+                        <td style="vertical-align: middle">
+                            {{ $index }}.
+                        </td>
+                        <td>
+                            <div tsk-argument ng-model="arg"></div>
+                        </td>
+                        <td style="vertical-align: middle">
+                            <button class="btn btn-small" ng-click="removeArgument($index)" popover="Remove this argument" popover-trigger="mouseenter"><i class="icon-minus-sign"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align: center">
+                            <button class="btn btn-small" ng-click="addArgument()" popover="Add task argument" popover-trigger="mouseenter"><i class="icon-plus-sign"></i></button>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

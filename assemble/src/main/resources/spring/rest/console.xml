@@ -177,4 +177,9 @@
         <property name="processInfoRetriever" ref="processService"/>
     </bean>
 
+    <bean id="processOperationsResource" class="ru.taskurotta.dropwizard.resources.console.operation.ProcessOperationsResource">
+        <property name="consoleManager" ref="consoleManager" />
+        <property name="taskServer" ref="taskServer" />
+    </bean>
+
 </beans>
