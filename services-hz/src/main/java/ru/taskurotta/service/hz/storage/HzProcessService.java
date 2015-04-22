@@ -261,4 +261,18 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
         return result;
     }
+
+    @Override
+    public int getBrokenProcessCount() {
+        int result = 0;
+
+        Collection<Process> processes = processIMap.values();
+        for (Process process : processes) {
+            if (process.getState() == Process.BROKEN) {
+                result++;
+            }
+        }
+
+        return result;
+    }
 }
