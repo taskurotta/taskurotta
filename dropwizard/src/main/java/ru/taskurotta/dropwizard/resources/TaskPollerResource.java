@@ -11,8 +11,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -24,7 +22,7 @@ public class TaskPollerResource {
     private TaskServer taskServer;
 
     @POST
-    public Response poll(ActorDefinition actorDefinition, @Context HttpHeaders headers) throws Exception {
+    public Response poll(ActorDefinition actorDefinition) throws Exception {
         logger.debug("poll called with entity[{}]", actorDefinition);
 
         TaskContainer result = null;
