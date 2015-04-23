@@ -20,7 +20,15 @@ public class DecisionStreamSerializer implements StreamSerializer<Decision> {
         UUIDSerializer.write(out, object.getTaskId());
         UUIDSerializer.write(out, object.getProcessId());
         out.writeByte(object.getState());
-        UUIDSerializer.write(out, object.getPass());
+
+        UUID pass = object.getPass();
+        if (pass == null) {
+            out.writeBoolean(false);
+        } else {
+            out.writeBoolean(true);
+            UUIDSerializer.write(out, pass);
+        }
+
         out.writeLong(object.getRecoveryTime());
 
         decisionContainerStreamSerializer.write(out, object.getDecisionContainer());
@@ -32,7 +40,13 @@ public class DecisionStreamSerializer implements StreamSerializer<Decision> {
         UUID taskId = UUIDSerializer.read(in);
         UUID processId = UUIDSerializer.read(in);
         int state = in.readByte();
-        UUID pass = UUIDSerializer.read(in);
+        UUID pass = null;
+
+        boolean hasPass = in.readBoolean();
+        if (hasPass) {
+            pass = UUIDSerializer.read(in);
+        }
+
         long recoveryTime = in.readLong();
 
         return new Decision(taskId, processId, state, pass, recoveryTime, decisionContainerStreamSerializer.read(in));

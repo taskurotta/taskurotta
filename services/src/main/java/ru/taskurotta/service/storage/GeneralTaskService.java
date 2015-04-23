@@ -118,7 +118,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
                 return null;
             }
 
-            task.setPass(pass);
+//            task.setPass(pass);
         }
 
         return task;

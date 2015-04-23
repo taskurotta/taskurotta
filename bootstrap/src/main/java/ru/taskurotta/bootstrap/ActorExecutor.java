@@ -39,7 +39,7 @@ public class ActorExecutor implements Runnable {
         }
     }
 
-    private LogErrorEvent lastErrorEvent;
+    private volatile LogErrorEvent lastErrorEvent;
 
     private Profiler profiler;
     private RuntimeProcessor runtimeProcessor;
