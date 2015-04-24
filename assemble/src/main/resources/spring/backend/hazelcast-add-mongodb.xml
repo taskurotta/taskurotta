@@ -104,12 +104,12 @@
     <!-- /Delay queue support -->
 
     <!-- Services -->
-    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
-        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
-        <constructor-arg name="recoveryService" ref="recoveryService"/>
+    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nativePoint" ref="recoveryService"/>
         <constructor-arg name="hzQueueConfigSupport" ref="recoveryQueueConfigSupport"/>
-        <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
-        <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="queueName" value="${recovery.operation.queue.name}"/>
+        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
