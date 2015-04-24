@@ -11,9 +11,6 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.hz.storage.HzInterruptedTasksService;
-import ru.taskurotta.service.queue.MemoryQueueService;
-import ru.taskurotta.service.storage.GeneralTaskService;
-import ru.taskurotta.service.storage.MemoryTaskDao;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -36,7 +33,7 @@ public class HzInterruptedTasksTest {
     public void setUp() {
         TestHazelcastInstanceFactory factory = new TestHazelcastInstanceFactory(1);
         hzInstance = factory.newHazelcastInstance();
-        target = new HzInterruptedTasksService(hzInstance, targetMapName, new GeneralTaskService(new MemoryTaskDao(), 30000), new MemoryQueueService(120000l));
+        target = new HzInterruptedTasksService(hzInstance, targetMapName);
     }
 
     @Test

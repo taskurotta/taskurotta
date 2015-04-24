@@ -34,7 +34,7 @@ public class MemoryServiceBundle implements ServiceBundle {
         this.memoryGraphDao = new MemoryGraphDao();
         this.dependencyService = new GeneralDependencyService(memoryGraphDao);
         this.configService = new MemoryConfigService();
-        this.interruptedTasksService = new MemoryInterruptedTasksService(taskService, queueService);
+        this.interruptedTasksService = new MemoryInterruptedTasksService();
         this.garbageCollectorService = new MemoryGarbageCollectorService(processService, memoryGraphDao, taskDao, 1, 0l);
     }
 

@@ -1,7 +1,6 @@
 package ru.taskurotta.service.hz.storage;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.IMap;
 import com.hazelcast.query.Predicate;
 import com.hazelcast.query.Predicates;
@@ -10,13 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
-import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
-import ru.taskurotta.service.storage.TaskService;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.utils.TransportUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,20 +27,8 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
 
     private IMap<UUID, InterruptedTask> storeIMap;
 
-    private IExecutorService executorService;
-
-    private TaskService taskService;
-
-    private QueueService queueService;
-
-    private static HzInterruptedTasksService instance;
-
-    public HzInterruptedTasksService(HazelcastInstance hazelcastInstance, String storeMapName, TaskService taskService, QueueService queueService) {
+    public HzInterruptedTasksService(HazelcastInstance hazelcastInstance, String storeMapName) {
         this.storeIMap = hazelcastInstance.getMap(storeMapName);
-        this.executorService = hazelcastInstance.getExecutorService(getClass().getName());
-        this.taskService = taskService;
-        this.queueService = queueService;
-        this.instance = this;
     }
 
     @Override
@@ -122,39 +104,40 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
         storeIMap.delete(taskId);
     }
 
-    @Override
-    public void restart(final UUID processId, final UUID taskId) {
-        executorService.execute(new RestartInterruptedTask(processId, taskId));
-    }
+//    @Override
+//    public void restart(final UUID processId, final UUID taskId) {
+//        executorService.execute(new RestartInterruptedTask(processId, taskId));
+//    }
 
-    public static class RestartInterruptedTask implements Runnable, Serializable {
+//    public static class RestartInterruptedTask implements Runnable, Serializable {
+//
+//        private static final Logger logger = LoggerFactory.getLogger(RestartInterruptedTask.class);
+//
+//        private UUID processId;
+//        private UUID taskId;
+//
+//        public RestartInterruptedTask(UUID processId, UUID taskId) {
+//            this.processId = processId;
+//            this.taskId = taskId;
+//        }
+//
+//        @Override
+//        public void run() {
+//            HzInterruptedTasksService nodeInstance = HzInterruptedTasksService.getInstance();
+//            TaskService nodeTaskService = nodeInstance.taskService;
+//            QueueService nodeQueueService = nodeInstance.queueService;
+//            if (nodeTaskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+//                TaskContainer tc = nodeTaskService.getTask(taskId, processId);
+//                if (tc != null && nodeQueueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+//                    nodeInstance.delete(processId, taskId);
+//                    logger.debug("taskId[{}], processId[{}] restarted and removed from store", taskId, processId);
+//                }
+//            }
+//        }
+//    }
 
-        private static final Logger logger = LoggerFactory.getLogger(RestartInterruptedTask.class);
+//    public static HzInterruptedTasksService getInstance() {
+//        return instance;
+//    }
 
-        private UUID processId;
-        private UUID taskId;
-
-        public RestartInterruptedTask(UUID processId, UUID taskId) {
-            this.processId = processId;
-            this.taskId = taskId;
-        }
-
-        @Override
-        public void run() {
-            HzInterruptedTasksService nodeInstance = HzInterruptedTasksService.getInstance();
-            TaskService nodeTaskService = nodeInstance.taskService;
-            QueueService nodeQueueService = nodeInstance.queueService;
-            if (nodeTaskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
-                TaskContainer tc = nodeTaskService.getTask(taskId, processId);
-                if (tc != null && nodeQueueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
-                    nodeInstance.delete(processId, taskId);
-                    logger.debug("taskId[{}], processId[{}] restarted and removed from store", taskId, processId);
-                }
-            }
-        }
-    }
-
-    public static HzInterruptedTasksService getInstance() {
-        return instance;
-    }
 }
