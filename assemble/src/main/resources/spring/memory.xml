@@ -49,10 +49,7 @@
         <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
-    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService" >
-        <constructor-arg name="queueService" ref="queueService" />
-        <constructor-arg name="taskService" ref="taskService" />
-    </bean>
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService" />
 
     <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao" />
 

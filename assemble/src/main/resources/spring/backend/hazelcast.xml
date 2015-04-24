@@ -115,8 +115,6 @@
     <bean id="interruptedTasksService" class="ru.taskurotta.service.hz.storage.HzInterruptedTasksService">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storeMapName" value="${hz.map.interrupted-store.name}"/>
-        <constructor-arg name="queueService" ref="queueService" />
-        <constructor-arg name="taskService" ref="taskService" />
     </bean>
 
     <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.recovery.HzRecoveryOperationExecutor">
@@ -124,6 +122,14 @@
         <constructor-arg name="recoveryService" ref="recoveryService"/>
         <constructor-arg name="recoveryOperationQueueName" value="${recovery.operation.queue.name}"/>
         <constructor-arg name="recoveryOperationPoolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    </bean>
+
+    <bean id="taskRecoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nativePoint" ref="taskRecoveryService"/>
+        <constructor-arg name="queueName" value="${recovery.operation.queue-name}"/>
+        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
         <constructor-arg name="enabled" value="${recovery.enabled}"/>
     </bean>
 
@@ -162,6 +168,14 @@
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
+    </bean>
+
+    <bean id="taskRecoveryService" class="ru.taskurotta.service.recovery.impl.TaskRecoveryServiceImpl">
+        <constructor-arg name="dependencyService" ref="dependencyService"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="queueService" ref="queueService"/>
+        <constructor-arg name="taskService" ref="taskService"/>
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.hz.gc.HzGarbageCollectorService">

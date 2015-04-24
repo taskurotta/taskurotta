@@ -19,7 +19,7 @@ public interface InterruptedTasksService {
 
     void delete(UUID processId, UUID taskId);
 
-    void restart(UUID processId, UUID taskId);
+//    void restart(UUID processId, UUID taskId);
 
 
 }

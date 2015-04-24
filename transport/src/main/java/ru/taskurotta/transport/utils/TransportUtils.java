@@ -1,5 +1,6 @@
 package ru.taskurotta.transport.utils;
 
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -40,6 +41,10 @@ public class TransportUtils {
             return endpoint.replaceAll("/*$", "") + REST_SERVICE_PREFIX + path.replaceAll("^/*", "");
         }
         return null;
+    }
+
+    public static boolean hasFatalError(DecisionContainer decision) {
+        return decision!=null && decision.getErrorContainer()!=null && decision.getErrorContainer().isFatalError();
     }
 
 }

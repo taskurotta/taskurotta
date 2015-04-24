@@ -10,6 +10,9 @@ import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.console.model.TaskIdentifier;
 import ru.taskurotta.service.console.model.TasksGroupVO;
+import ru.taskurotta.service.executor.OperationExecutor;
+import ru.taskurotta.service.recovery.TaskRecoveryOperation;
+import ru.taskurotta.service.recovery.TaskRecoveryService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 
 import javax.ws.rs.Consumes;
@@ -47,6 +50,8 @@ public class InterruptedTasksListResource {
 
     private InterruptedTasksService interruptedTasksService;
 
+    private OperationExecutor<TaskRecoveryService> taskRecoveryOperationExecutor;
+
     @GET
     @Path("/group")
     public Response getProcessesGroup(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
@@ -73,14 +78,14 @@ public class InterruptedTasksListResource {
 
     @POST
     @Path("/restart")
-    public Response executeRestart(final ActionCommand command) {
-        logger.debug("Executing restart with command [{}]", command);
+    public Response executeTaskRecovery(final ActionCommand command) {
+        logger.debug("Executing task recovery with command [{}]", command);
 
         if (command.getRestartIds() != null && command.getRestartIds().length > 0) {
             for (TaskIdentifier ti : command.getRestartIds()) {
-                interruptedTasksService.restart(UUID.fromString(ti.getProcessId()), UUID.fromString(ti.getTaskId()));
+                taskRecoveryOperationExecutor.enqueue(new TaskRecoveryOperation(UUID.fromString(ti.getProcessId()), UUID.fromString(ti.getTaskId())));
             }
-            logger.debug("Task group restarted [{}]", command);
+            logger.debug("Task group restart [{}] submitted", command);
         }
 
         return Response.ok().build();
@@ -259,4 +264,8 @@ public class InterruptedTasksListResource {
         this.interruptedTasksService = interruptedTasksService;
     }
 
+    @Required
+    public void setTaskRecoveryOperationExecutor(OperationExecutor<TaskRecoveryService> taskRecoveryOperationExecutor) {
+        this.taskRecoveryOperationExecutor = taskRecoveryOperationExecutor;
+    }
 }

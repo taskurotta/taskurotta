@@ -1,41 +1,40 @@
-package ru.taskurotta.service;
+package ru.taskurotta.service.recovery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.executor.Operation;
-import ru.taskurotta.service.storage.InterruptedTasksService;
 
 import java.util.UUID;
 
 /**
  * Created on 23.04.2015.
  */
-public class TaskRecoveryOperation implements Operation<InterruptedTasksService> {
+public class TaskRecoveryOperation implements Operation<TaskRecoveryService> {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskRecoveryOperation.class);
 
-    private InterruptedTasksService interruptedTasksService;
+    private TaskRecoveryService taskRecoveryService;
 
     private UUID processId;
 
     private UUID taskId;
 
-    private TaskRecoveryOperation(UUID processId, UUID taskId) {
+    public TaskRecoveryOperation(UUID processId, UUID taskId) {
         this.processId = processId;
         this.taskId = taskId;
     }
 
     @Override
-    public void init (InterruptedTasksService nativePoint) {
-        this.interruptedTasksService = nativePoint;
+    public void init (TaskRecoveryService nativePoint) {
+        this.taskRecoveryService = nativePoint;
     }
 
     @Override
     public void run () {
         try {
-            interruptedTasksService.restart(processId, taskId);
+            taskRecoveryService.recover(processId, taskId);
         } catch (Throwable e) {
-            logger.error("Cannot restart task: processId[{}], taskId[{}]", processId, taskId);
+            logger.error("Cannot recover task: processId[{}], taskId[{}]", processId, taskId);
         }
     }
 

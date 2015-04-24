@@ -98,7 +98,7 @@ public class AbstractTestStub {
         memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
         memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
-        interruptedTasksService = new MemoryInterruptedTasksService(memoryStorageService, memoryQueueService);
+        interruptedTasksService = new MemoryInterruptedTasksService();
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1, 1000l);

@@ -29,16 +29,18 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
     private CachedQueue<Operation<T>> operationIQueue;
     private BlockingQueue<Runnable> localOperationQueue;
 
+    public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, String queueName, int poolSize, boolean enabled) {
+        this(nativePoint, hzInstance, null, queueName, poolSize, enabled);
+    }
+
     public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, final HzQueueConfigSupport hzQueueConfigSupport, String queueName, int poolSize, boolean enabled) {
         this.enabled = enabled;
         if (!enabled) {
             return;
         }
 
-        if (hzQueueConfigSupport != null) {
+        if (hzQueueConfigSupport != null) {//for queues with map store
             hzQueueConfigSupport.createQueueConfig(queueName);
-        } else {
-            logger.warn("HzQueueConfigSupport is not set for HzOperationExecutor");
         }
 
         this.operationIQueue = hzInstance.getDistributedObject(CachedQueue.class.getName(), queueName);
@@ -54,7 +56,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
             }
         };
 
-        final ExecutorService operationExecutorService = new ThreadPoolExecutor(poolSize, poolSize,
+        final ExecutorService localNodeOperationES = new ThreadPoolExecutor(poolSize, poolSize,
                 0L, TimeUnit.MILLISECONDS,
                 localOperationQueue, new ThreadFactory() {
             @Override
@@ -66,7 +68,8 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
             }
         });
 
-        ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        //new operation poller
+        Executors.newSingleThreadExecutor(new ThreadFactory() {
             @Override
             public Thread newThread (Runnable r) {
                 Thread thread = new Thread(r);
@@ -74,9 +77,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
                 thread.setDaemon(true);
                 return thread;
             }
-        });
-
-        executorService.submit(new Runnable() {
+        }).submit(new Runnable() {
             @Override
             public void run() {
 
@@ -91,7 +92,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
 
                         operation.init(nativePoint);
 
-                        operationExecutorService.submit(operation);
+                        localNodeOperationES.submit(operation);
 
                     } catch (Throwable throwable) {
                         logger.error(throwable.getLocalizedMessage(), throwable);
@@ -99,8 +100,8 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
                 }
             }
         });
-    }
 
+    }
 
     @Override
     public void enqueue (Operation<T> operation) {

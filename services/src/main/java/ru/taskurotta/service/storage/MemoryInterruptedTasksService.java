@@ -2,9 +2,6 @@ package ru.taskurotta.service.storage;
 
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
-import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.transport.model.TaskContainer;
-import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,15 +32,6 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
     private ConcurrentHashMap<UUID, InterruptedTask> brokenTasks = new ConcurrentHashMap<>();
 
     private static final Lock lock = new ReentrantLock();
-
-    private TaskService taskService;
-
-    private QueueService queueService;
-
-    public MemoryInterruptedTasksService(TaskService taskService, QueueService queueService) {
-        this.taskService = taskService;
-        this.queueService = queueService;
-    }
 
     @Override
     public void save(InterruptedTask itdTask) {
@@ -154,15 +142,15 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         brokenTasks.remove(taskId);
     }
 
-    @Override
-    public void restart(UUID processId, UUID taskId) {
-        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
-            TaskContainer tc = taskService.getTask(taskId, processId);
-            if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
-                delete(processId, taskId);
-            }
-        }
-    }
+//    @Override
+//    public void restart(UUID processId, UUID taskId) {
+//        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+//            TaskContainer tc = taskService.getTask(taskId, processId);
+//            if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+//                delete(processId, taskId);
+//            }
+//        }
+//    }
 
     private void addTaskId(ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, String key, UUID taskId) {
 
