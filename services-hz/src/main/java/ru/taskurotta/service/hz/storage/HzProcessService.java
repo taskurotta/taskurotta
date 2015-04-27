@@ -149,7 +149,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public void markProcessAsAborted(UUID processId) {
-        setProcessState(processId, Process.START, Process.ABORTED);
+        setProcessState(processId, -1, Process.ABORTED);
     }
 
     private void setProcessState(UUID processId, int oldState, int newState) {
@@ -164,14 +164,15 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
                         newState);
                 return;
             }
+            int state = process.getState();
 
-            if (process.getState() == newState) {
+            if (state == newState) {
                 return;
             }
 
-            if (process.getState() != oldState) {
+            if (oldState != -1 && state != oldState) {
                 logger.warn("#[{}]: can't set process state to {}, because process is not in {} state. Its value is " +
-                        "{}", processId, newState, oldState, process.getState());
+                        "{}", processId, newState, oldState, state);
                 return;
             }
 
