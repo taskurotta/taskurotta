@@ -62,7 +62,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("processListController", function ($scope, tskProcesses, tskTimeUtil, $log) {
+.controller("processListController", function ($scope, tskProcesses, tskTimeUtil, $log, $modal) {
     $scope.initialized = false;
 
     //Init paging object
@@ -77,7 +77,8 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         {status: -1, name: "All"},
         {status: 0, name: "Started"},
         {status: 1, name: "Finished"},
-        {status: 2, name: "Failed"}
+        {status: 2, name: "Failed"},
+        {status: 3, name: "Aborted"}
     ];
 
     $scope.getStatusName = function(status) {
@@ -88,6 +89,8 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
             result = "Has already finished";
         } else if (status == 2) {
             result = "Has failed tasks, manual fix required";
+        }  else if (status == 3) {
+            result = "Aborted";
         }
         return result;
     };
@@ -113,6 +116,27 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         $scope.submittedRecoveries.push(processId);
     };
 
+    $scope.abortProcess = function(processId) {
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "Current process, it's graph, all tasks and decisions will be deleted";
+            }
+        }).result.then(function(okMess) {
+                tskProcesses.abortProcess(processId).then(function(ok){
+                    $scope.refresh();
+                }, function(errReason){
+                    $scope.feedback = angular.toJson(errReason);
+                    $log.error("processListController: process abort failed: " + $scope.feedback);
+                    $scope.initialized = true;
+                });
+            }, function(cancelMsg) {
+                //do nothing
+            }
+        );
+    };
+
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
@@ -133,6 +157,10 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         $scope.update();
     });
 
+    $scope.refresh = function() {
+        $scope.initialized = false;
+        $scope.update();
+    };
 })
 
 .controller("processCreateController", function ($scope, $log, tskProcesses, $location) {

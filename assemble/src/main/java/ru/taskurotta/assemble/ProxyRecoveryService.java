@@ -26,4 +26,8 @@ public class ProxyRecoveryService implements RecoveryService {
         return target.resurrectProcesses(processIds);
     }
 
+    @Override
+    public boolean abortProcess(UUID processId) {
+        return target.abortProcess(processId);
+    }
 }

@@ -67,7 +67,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public void deleteProcess(UUID processId) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("DELETE TSK_PROCESS PROCESS WHERE PROCESS_ID = ?")
+             PreparedStatement ps = connection.prepareStatement("DELETE FROM TSK_PROCESS WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processId.toString());
             ps.executeUpdate();
@@ -154,6 +154,11 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public void markProcessAsStarted(UUID processId) {
         setProcessState(processId, Process.START);
+    }
+
+    @Override
+    public void markProcessAsAborted(UUID processId) {
+        setProcessState(processId, Process.ABORTED);
     }
 
     private void setProcessState(UUID processId, int state) {

@@ -116,6 +116,9 @@ angular.module("console.services", ['ngResource', 'ngCookies', 'console.util.ser
             },
             createProcess: function (command) {
                 return $http.post('/rest/console/operation/process/create', command);
+            },
+            abortProcess: function (processId) {
+                return $http.post('/rest/console/operation/process/abort', processId);
             }
         };
 

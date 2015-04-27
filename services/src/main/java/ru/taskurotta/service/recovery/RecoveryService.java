@@ -19,4 +19,9 @@ public interface RecoveryService {
      */
     Collection<UUID> resurrectProcesses(Collection<UUID> processIds);
 
+    /**
+     * @return result for aborting process
+     */
+    boolean abortProcess(UUID processId);
+
 }
