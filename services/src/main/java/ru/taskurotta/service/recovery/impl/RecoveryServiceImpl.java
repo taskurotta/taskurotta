@@ -390,6 +390,8 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         processService.markProcessAsAborted(processId);
 
+        garbageCollectorService.collect(processId);
+
         logger.info("Abort process [{}]", processId);
 
         return result;
