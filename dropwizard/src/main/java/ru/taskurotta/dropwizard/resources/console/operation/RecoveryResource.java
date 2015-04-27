@@ -1,6 +1,7 @@
 package ru.taskurotta.dropwizard.resources.console.operation;
 
 import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.AbortOperation;
 import ru.taskurotta.service.recovery.RecoveryThreads;
@@ -37,12 +38,6 @@ public class RecoveryResource {
     @Path("/add")
     public void addProcessToRecovery(String processId) {
         recoveryOperationExecutor.enqueue(new RecoveryOperation(UUID.fromString(processId)));
-    }
-
-    @POST
-    @Path("/abort")
-    public void abortProcess(String processId) {
-        recoveryOperationExecutor.enqueue(new AbortOperation(UUID.fromString(processId)));
     }
 
     @POST

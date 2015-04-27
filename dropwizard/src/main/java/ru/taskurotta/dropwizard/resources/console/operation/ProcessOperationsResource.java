@@ -9,6 +9,9 @@ import ru.taskurotta.dropwizard.resources.console.util.TaskContainerUtils;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.service.console.manager.ConsoleManager;
 import ru.taskurotta.service.console.model.Process;
+import ru.taskurotta.service.executor.Operation;
+import ru.taskurotta.service.executor.OperationExecutor;
+import ru.taskurotta.service.recovery.AbortOperation;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import javax.ws.rs.Consumes;
@@ -30,8 +33,8 @@ public class ProcessOperationsResource {
     private static final Logger logger = LoggerFactory.getLogger(ProcessOperationsResource.class);
 
     private ConsoleManager consoleManager;
-
     private TaskServer taskServer;
+    private OperationExecutor abortOperationExecutor;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -76,6 +79,12 @@ public class ProcessOperationsResource {
         return result;
     }
 
+    @POST
+    @Path("/abort")
+    public void abortProcess(String processId) {
+        abortOperationExecutor.enqueue(new AbortOperation(UUID.fromString(processId)));
+    }
+
     @Required
     public void setConsoleManager(ConsoleManager consoleManager) {
         this.consoleManager = consoleManager;
@@ -84,5 +93,10 @@ public class ProcessOperationsResource {
     @Required
     public void setTaskServer(TaskServer taskServer) {
         this.taskServer = taskServer;
+    }
+
+    @Required
+    public void setAbortOperationExecutor(OperationExecutor abortOperationExecutor) {
+        this.abortOperationExecutor = abortOperationExecutor;
     }
 }
