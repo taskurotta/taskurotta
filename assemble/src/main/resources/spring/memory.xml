@@ -43,6 +43,7 @@
 
     <bean id="taskService" class="ru.taskurotta.service.storage.GeneralTaskService">
         <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="workerTimeoutMilliseconds" value="60000" />
     </bean>
     <bean id="dependencyService" class="ru.taskurotta.service.dependency.GeneralDependencyService">
         <constructor-arg name="graphDao" ref="graphDao" />

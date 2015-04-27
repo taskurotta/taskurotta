@@ -16,9 +16,17 @@ import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created on 19.03.2015.
@@ -182,6 +190,21 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
         logger.debug("Successfully deleted [{}] interrupted tasks, taskId [{}], processId[{}]", result, taskId, processId);
     }
 
+//    @Override
+//    public void restart(final UUID processId, final UUID taskId) {
+//        executorService.execute(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+//                    TaskContainer tc = taskService.getTask(taskId, processId);
+//                    if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+//                        delete(processId, taskId);
+//                        logger.debug("taskId[{}], processId[{}] restarted and removed from store", taskId, processId);
+//                    }
+//                }
+//            }
+//        });
+//    }
 
     @Required
     public void setLobHandler(LobHandler lobHandler) {

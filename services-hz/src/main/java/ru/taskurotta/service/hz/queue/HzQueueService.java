@@ -340,13 +340,8 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public List<String> getQueueNames() {
-        return getTaskQueueNamesByPrefix(queueNamePrefix, null, false);
-    }
-
-    @Override
-    public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
-        return getTaskQueueNamesByPrefix(prefix, filter, prefixStrip);
+    public Collection<String> getQueueNames() {
+        return getTaskQueueNamesByPrefix(queueNamePrefix, null, true);
     }
 
     private CachedDelayQueue<TaskQueueItem> getQueue(String queueName) {

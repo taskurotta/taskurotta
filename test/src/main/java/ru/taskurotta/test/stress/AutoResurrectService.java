@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.executor.OperationExecutor;
 import ru.taskurotta.service.recovery.RecoveryOperation;
+import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.util.DaemonThread;
 
@@ -17,7 +18,7 @@ public class AutoResurrectService {
 
     private static final Logger logger = LoggerFactory.getLogger(AutoResurrectService.class);
 
-    public AutoResurrectService(final InterruptedTasksService interruptedTasksService, final OperationExecutor operationExecutor) {
+    public AutoResurrectService(final InterruptedTasksService interruptedTasksService, final OperationExecutor<RecoveryService> operationExecutor) {
 
         new DaemonThread("process resurrection thread", TimeUnit.SECONDS, 1) {
 

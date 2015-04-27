@@ -142,6 +142,16 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         brokenTasks.remove(taskId);
     }
 
+//    @Override
+//    public void restart(UUID processId, UUID taskId) {
+//        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+//            TaskContainer tc = taskService.getTask(taskId, processId);
+//            if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+//                delete(processId, taskId);
+//            }
+//        }
+//    }
+
     private void addTaskId(ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, String key, UUID taskId) {
 
         if (key == null) {

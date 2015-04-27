@@ -57,7 +57,9 @@ public class HzTaskDao implements TaskDao {
                 return false;
             }
 
-            if (taskDecision.getPass() == null || !(taskDecision.getPass().equals(decision.getPass()))) {
+            if (decision.getPass() != null && (taskDecision.getPass() == null || !(taskDecision.getPass().equals
+                    (decision.getPass())))) {
+
                 logger.warn("{}/{} Can not finish task. decision pass {} not equal to reference pass {}. Decision has" +
                                 " been rejected", taskKey.getTaskId(), taskKey.getProcessId(), taskDecision.getPass(),
                         decision.getPass());
@@ -124,11 +126,12 @@ public class HzTaskDao implements TaskDao {
             long recoveryTime = System.currentTimeMillis() + workerTimeout;
 
             if (decision == null) {
-                decision = new Decision(taskId, processId, Decision.STATE_WORK, pass, recoveryTime,
+                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime,
                         null);
             } else {
                 // assume that workerTimeout and failOnWorkerTimeouts values can not be changed
-                decision.setPass(pass);
+
+//                decision.setPass(pass);
                 decision.setState(Decision.STATE_WORK);
                 decision.setRecoveryTime(recoveryTime);
                 decision.setDecisionContainer(null);

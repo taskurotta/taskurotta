@@ -25,7 +25,6 @@ import java.util.Date;
 public class NotPollingQueueCountResource {
 
     private long pollTimeout;
-    private String queueNamePrefix;
     private QueueService queueService;
 
     @GET
@@ -33,7 +32,7 @@ public class NotPollingQueueCountResource {
         MetricsDataHandler metricsDataHandler = MetricsDataHandler.getInstance();
         int count = 0;
         long now = System.currentTimeMillis();
-        Collection<String> queueNames = queueService.getQueueNames(queueNamePrefix, null, true);
+        Collection<String> queueNames = queueService.getQueueNames();
         for (String queueName : queueNames) {
             Date lastActivity = metricsDataHandler.getLastActivityTime(MetricName.POLL.getValue(), queueName);
             if (lastActivity == null || (now - lastActivity.getTime()) > pollTimeout) {
@@ -46,10 +45,6 @@ public class NotPollingQueueCountResource {
 
     public void setPollTimeout(long pollTimeout) {
         this.pollTimeout = pollTimeout;
-    }
-
-    public void setQueueNamePrefix(String queueNamePrefix) {
-        this.queueNamePrefix = queueNamePrefix;
     }
 
     public void setQueueService(QueueService queueService) {

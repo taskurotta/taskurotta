@@ -74,10 +74,10 @@ public class ActorListResource {
 
     @GET
     @Path("/list")
-    public Response listActors(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize) {
+    public Response listActors(@QueryParam("pageNum") Optional<Integer> pageNum, @QueryParam("pageSize") Optional<Integer> pageSize, @QueryParam("filter") Optional<String> oFilter) {
 
         try {
-            GenericPage<ActorExtVO> extActors = extendActorFeatures(actorConfigManager.getActorList(pageNum.or(1), pageSize.or(10)));
+            GenericPage<ActorExtVO> extActors = extendActorFeatures(actorConfigManager.getActorList(pageNum.or(1), pageSize.or(10), oFilter.orNull()));
             logger.debug("Actor list (ext) got is [{}]", extActors);
 
             return Response.ok(extActors, MediaType.APPLICATION_JSON).build();

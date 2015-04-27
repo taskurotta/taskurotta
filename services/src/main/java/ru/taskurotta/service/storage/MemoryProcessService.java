@@ -174,4 +174,18 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
         }
         return result;
     }
+
+    @Override
+    public int getBrokenProcessCount() {
+        int count = 0;
+
+        Collection<Process> processes = processesStorage.values();
+        for (Process process : processes) {
+            if (process.getState() == Process.BROKEN) {
+                count++;
+            }
+        }
+
+        return count;
+    }
 }

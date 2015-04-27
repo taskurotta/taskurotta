@@ -12,9 +12,23 @@
     <div ng-if="process.processId.length > 0">
 
         <div class="well">
-            <b>Properties:</b>
-            <div style="padding:5px;background-color: #fff;">
-                <table width="100%" class="table table-condensed table-bordered table-striped">
+            <div>
+                <div>
+                    <div style="float: left;">
+                        <b>Properties:</b>
+                    </div>
+                    <div style="float: right; margin-bottom: 5px;">
+                        <button class="btn btn-small" ng-click="recoverProcess(process.processId)"
+                                popover="Submit process to recovery service" popover-trigger="mouseenter">
+                            <i class="icon-retweet" />
+                        </button>
+                        <button class="btn btn-small" ng-click="cloneProcess(process.processId)"
+                                popover="Clone process" popover-trigger="mouseenter">
+                            <i class="icon-tags" />
+                        </button>
+                    </div>
+                </div>
+                <table width="100%" class="table table-condensed table-bordered table-striped" style="background-color: #fff;">
                     <tr>
                         <td class="form-header">
                             <small>Start task actor:</small>
@@ -81,13 +95,24 @@
                             </i>
                         </td>
                     </tr>
+                    <tr>
+                        <td class="form-header">
+                            <small>Status:</small>
+                        </td>
+                        <td>
+                            <i>
+                                {{process.state | json}}
+                            </i>
+                        </td>
+                    </tr>
                 </table>
             </div>
         </div>
 
         <div class="well">
             <div>
-                <i class="icon-question-sign" popover="Navigate to find tasks view for the process" popover-trigger="mouseenter"></i><a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processId}}">List tasks for this process <span>({{ taskTree.tasksCount }})</span></a>
+                <i class="icon-question-sign" popover="Navigate to find tasks view for the process" popover-trigger="mouseenter"></i>
+                <a class="btn btn-link" ng-href="#/processes/search/task?processId={{process.processId}}">List tasks for this process <span>({{ taskTree.tasksCount }})</span></a>
             </div>
         </div>
 

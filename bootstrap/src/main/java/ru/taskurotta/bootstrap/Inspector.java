@@ -26,7 +26,7 @@ public class Inspector {
     private int failoverCheckTime = 0; //time to wait if taskServer unavailable or have no tasks for the actor when retry policy exceeded
     private TimeUnit failoverCheckTimeUnit = TimeUnit.SECONDS;
 
-    protected static  class PolicyCounters {
+    protected static class PolicyCounters {
         long firstAttempt;
         int numberOfTries;
 
@@ -55,18 +55,11 @@ public class Inspector {
 
                 try {
                     task = taskSpreader.poll();
-                } catch (ServerException e) {
-                    if (actorThreadPool.mute()) {
-                        logger.warn("Actor thread pool thread has been muted (on poll) due to server error [{}]. Remain [{}] threads.",
-                                e.getLocalizedMessage(), actorThreadPool.getCurrentSize());
-                        //TODO: shouldn't exception be thrown here?
-                        return null;
-                    } else {
-                        logger.debug("Can't mute actor thread pool (on poll), exception: ", e);
-                        throw e;
-                    }
-                } catch (Exception e) {
-                    logger.debug("Catch unexpected exception on poll: ", e);
+                } catch (RuntimeException e) {
+                    actorThreadPool.mute();
+                    throw e;
+                } catch (Throwable e) {
+                    actorThreadPool.mute();
                     throw new RuntimeException(e);
                 }
 

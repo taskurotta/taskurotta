@@ -238,12 +238,7 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public List<String> getQueueNames() {
-                return null;
-            }
-
-            @Override
-            public Collection<String> getQueueNames(String prefix, String filter, boolean prefixStrip) {
+            public Collection<String> getQueueNames() {
                 return null;
             }
         };
@@ -337,6 +332,11 @@ public class MockServiceBundle implements ServiceBundle {
             public void delete(UUID processId, UUID taskId) {
                 // ignore
             }
+
+//            @Override
+//            public void restart(UUID processId, UUID taskId) {
+//                throw new IllegalAccessError("Method not implemented");
+//            }
 
         };
     }

@@ -18,9 +18,9 @@ import java.util.UUID;
 /**
  * Created on 24.02.2015.
  */
-public class HzBrokenProcessServiceTest {
+public class HzInterruptedTasksTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(HzBrokenProcessServiceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HzInterruptedTasksTest.class);
 
     private String targetMapName = "testBpProc";
 

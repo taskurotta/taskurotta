@@ -35,6 +35,10 @@ public class TaskPollerResource {
             return Response.serverError().build();
         }
 
+        if (result == null) {
+            return Response.noContent().build();
+        }
+
         return Response.ok(result, MediaType.APPLICATION_JSON).build();
 
     }

@@ -357,6 +357,23 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         };
     }
 
+    @Override
+    public int getBrokenProcessCount() {
+        int result = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SQL_GET_PROCESS_CNT_BY_STATE)) {
+            ps.setInt(1, Process.BROKEN);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                result = rs.getInt("cnt");
+            }
+        } catch (SQLException ex) {
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new ServiceCriticalException("Database error", ex);
+        }
+        return result;
+    }
+
     private String getSql(int limit) {
         return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? " : SQL_FIND_INCOMPLETE_PROCESSES;
     }

@@ -1,6 +1,7 @@
 <div class="well">
-    <h4>Process create form: </h4>
+    <h4>Start task properties: </h4>
     <div style="width: 600px;" class="well">
-        <tsk-create-process-form />
+        <tsk-task-form model="task" types="types"></tsk-task-form>
     </div>
+    <button class="btn" ng-click="createProcess()" ng-disabled="!isValidForm()">Create process</button>
 </div>

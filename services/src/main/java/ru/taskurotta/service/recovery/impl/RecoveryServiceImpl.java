@@ -77,7 +77,6 @@ public class RecoveryServiceImpl implements RecoveryService {
     //    @Override
     public boolean restartBrokenTasks(final UUID processId) {
 
-
         boolean result = false;
 
         Graph graph = dependencyService.getGraph(processId);

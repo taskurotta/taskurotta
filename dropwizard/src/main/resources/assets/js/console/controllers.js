@@ -140,12 +140,70 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams) {
+.controller("processCreateController", function ($scope, $log, tskProcesses, $location) {
+        $scope.types = ["DECIDER_START"];
+        $scope.task = {
+            actorId: "",
+            method: "",
+            args: [],
+            type: $scope.types[0],
+            taskList: ""
+        };
+
+        var isCommandValid = function(command) {
+            return !!command.actorId && command.actorId.length>0 && !!command.method && command.method.length>0;
+        };
+
+        $scope.createProcess = function(){
+            var command = {
+                actorId: $scope.task.actorId,
+                method: $scope.task.method,
+                taskType: $scope.task.type,
+                args: $scope.task.args,
+                taskList: $scope.task.taskList
+            };
+            if (isCommandValid(command)) {
+                $log.log("Try to create process with command", command);
+                tskProcesses.createProcess(command).then(function (success) {
+                    $log.log("Process create success", success.data);
+                    $location.url("/processes/process?processId=" + success.data);
+                }, function (error) {
+                    $log.log("Process create error", error);
+                });
+            }
+        };
+
+        $scope.isValidForm = function() {
+            return isCommandValid($scope.task);
+        };
+    })
+
+.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams, $location) {
     $scope.process = {};
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
     $scope.feedback = "";
     $scope.initialized = false;
+
+
+    $scope.recoverProcess = function (processId) {
+        tskProcesses.addProcessToRecovery(processId).then(function (success) {
+            $location.url("/processes/list");
+        }, function (error) {
+            $log.log("Process recovery error", error);
+            $scope.feedback = angular.toJson(error);
+        });
+    };
+
+    $scope.cloneProcess = function (processId) {
+        tskProcesses.cloneProcess(processId).then(function (success) {
+            $log.log("Process clone success", success.data);
+            $location.url("/processes/process?processId=" + success.data);
+        }, function (error) {
+            $log.log("Process clone error", error);
+            $scope.feedback = angular.toJson(error);
+        });
+    };
 
     $scope.update = function () {
         tskProcesses.getProcess($routeParams.processId).then(function (value) {

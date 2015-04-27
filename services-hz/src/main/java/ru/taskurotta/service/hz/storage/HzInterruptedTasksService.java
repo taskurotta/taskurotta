@@ -47,7 +47,7 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
             Collection<InterruptedTask> result = null;
             InterruptedTask bp = storeIMap.get(searchCommand.getTaskId());
             if (bp != null) {
-                result = new ArrayList<InterruptedTask>();
+                result = new ArrayList<>();
                 result.add(bp);
             }
             return result;
@@ -103,5 +103,41 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
     public void delete(UUID processId, UUID taskId) {
         storeIMap.delete(taskId);
     }
+
+//    @Override
+//    public void restart(final UUID processId, final UUID taskId) {
+//        executorService.execute(new RestartInterruptedTask(processId, taskId));
+//    }
+
+//    public static class RestartInterruptedTask implements Runnable, Serializable {
+//
+//        private static final Logger logger = LoggerFactory.getLogger(RestartInterruptedTask.class);
+//
+//        private UUID processId;
+//        private UUID taskId;
+//
+//        public RestartInterruptedTask(UUID processId, UUID taskId) {
+//            this.processId = processId;
+//            this.taskId = taskId;
+//        }
+//
+//        @Override
+//        public void run() {
+//            HzInterruptedTasksService nodeInstance = HzInterruptedTasksService.getInstance();
+//            TaskService nodeTaskService = nodeInstance.taskService;
+//            QueueService nodeQueueService = nodeInstance.queueService;
+//            if (nodeTaskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+//                TaskContainer tc = nodeTaskService.getTask(taskId, processId);
+//                if (tc != null && nodeQueueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+//                    nodeInstance.delete(processId, taskId);
+//                    logger.debug("taskId[{}], processId[{}] restarted and removed from store", taskId, processId);
+//                }
+//            }
+//        }
+//    }
+
+//    public static HzInterruptedTasksService getInstance() {
+//        return instance;
+//    }
 
 }

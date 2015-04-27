@@ -11,7 +11,7 @@ import java.util.UUID;
  * Date: 24.12.13
  * Time: 12:29
  */
-public class RecoveryOperation implements Operation {
+public class RecoveryOperation implements Operation<RecoveryService> {
 
     private static final Logger logger = LoggerFactory.getLogger(RecoveryOperation.class);
 
@@ -24,8 +24,8 @@ public class RecoveryOperation implements Operation {
     }
 
     @Override
-    public void init(Object nativePoint) {
-        this.recoveryService = (RecoveryService) nativePoint;
+    public void init(RecoveryService recoveryService) {
+        this.recoveryService = recoveryService;
     }
 
     @Override
