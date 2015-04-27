@@ -181,6 +181,7 @@
     <bean id="processOperationsResource" class="ru.taskurotta.dropwizard.resources.console.operation.ProcessOperationsResource">
         <property name="consoleManager" ref="consoleManager" />
         <property name="taskServer" ref="taskServer" />
+        <property name="abortOperationExecutor" ref="abortOperationExecutor"/>
     </bean>
 
 </beans>
