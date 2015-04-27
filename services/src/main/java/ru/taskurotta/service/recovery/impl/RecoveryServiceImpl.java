@@ -20,9 +20,11 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -376,11 +378,16 @@ public class RecoveryServiceImpl implements RecoveryService {
 
             @Override
             public boolean apply(Graph graph) {
-                Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
                 Set<UUID> finishedItems = graph.getFinishedItems();
+                deleteTasksAnsDecisions(finishedItems, processId);
 
-                taskDao.deleteTasks(notFinishedItems, processId);
-                taskDao.deleteDecisions(finishedItems, processId);
+                Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
+                deleteTasksAnsDecisions(notFinishedItems, processId);
+
+                UUID[] readyItems = graph.getReadyItems();
+                if (readyItems != null) {
+                    deleteTasksAnsDecisions(new HashSet<>(Arrays.asList(readyItems)), processId);
+                }
 
                 return true;
             }
@@ -571,6 +578,14 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         // send process to GC
         garbageCollectorService.collect(processId);
+    }
+
+    private void deleteTasksAnsDecisions(Set<UUID> taskIds, UUID processId) {
+        taskDao.deleteDecisions(taskIds, processId);
+        taskDao.deleteTasks(taskIds, processId);
+        for (UUID id : taskIds) {
+            interruptedTasksService.delete(processId, id);
+        }
     }
 
     public void setDependencyService(DependencyService dependencyService) {
