@@ -126,7 +126,7 @@
                 <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.TaskRecoveryOperation"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="nativePoint" ref="taskRecoveryService" />
+        <constructor-arg name="nativePoint" ref="recoveryService" />
         <constructor-arg name="poolSize" value="${recovery.operation.pool-size}" />
         <constructor-arg name="queueName" value="${recovery.operation.queue-name}" />
     </bean>

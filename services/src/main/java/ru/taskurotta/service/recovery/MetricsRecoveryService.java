@@ -22,9 +22,9 @@ public class MetricsRecoveryService implements RecoveryService {
     }
 
     @Override
-    public boolean resurrectProcess(UUID processId) {
+    public boolean recoverProcess(UUID processId) {
         long start = System.currentTimeMillis();
-        boolean result = recoveryService.resurrectProcess(processId);
+        boolean result = recoveryService.recoverProcess(processId);
         long period = System.currentTimeMillis() - start;
         Metric recoveryMetric = metricsFactory.getInstance(MetricName.RECOVERY.getValue());
         recoveryMetric.mark(MetricName.RECOVERY.getValue(), period);
@@ -39,7 +39,12 @@ public class MetricsRecoveryService implements RecoveryService {
     }
 
     @Override
-    public Collection<UUID> resurrectProcesses(Collection<UUID> processIds) {
-        return recoveryService.resurrectProcesses(processIds);
+    public Collection<UUID> recoverProcesses(Collection<UUID> processIds) {
+        return recoveryService.recoverProcesses(processIds);
+    }
+
+    @Override
+    public boolean recoverTask(UUID processId, UUID taskId) {
+        return recoveryService.recoverTask(processId, taskId);
     }
 }

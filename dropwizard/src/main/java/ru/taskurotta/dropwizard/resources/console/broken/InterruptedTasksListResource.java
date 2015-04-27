@@ -11,8 +11,8 @@ import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.console.model.TaskIdentifier;
 import ru.taskurotta.service.console.model.TasksGroupVO;
 import ru.taskurotta.service.executor.OperationExecutor;
+import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.recovery.TaskRecoveryOperation;
-import ru.taskurotta.service.recovery.TaskRecoveryService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 
 import javax.ws.rs.Consumes;
@@ -50,7 +50,7 @@ public class InterruptedTasksListResource {
 
     private InterruptedTasksService interruptedTasksService;
 
-    private OperationExecutor<TaskRecoveryService> taskRecoveryOperationExecutor;
+    private OperationExecutor<RecoveryService> taskRecoveryOperationExecutor;
 
     @GET
     @Path("/group")
@@ -265,7 +265,7 @@ public class InterruptedTasksListResource {
     }
 
     @Required
-    public void setTaskRecoveryOperationExecutor(OperationExecutor<TaskRecoveryService> taskRecoveryOperationExecutor) {
+    public void setTaskRecoveryOperationExecutor(OperationExecutor<RecoveryService> taskRecoveryOperationExecutor) {
         this.taskRecoveryOperationExecutor = taskRecoveryOperationExecutor;
     }
 }

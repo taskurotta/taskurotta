@@ -45,7 +45,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertNull(dependencyService.getGraph(processId));
 
         // recovery process
-        recoveryProcessService.resurrectProcess(processId);
+        recoveryProcessService.recoverProcess(processId);
 
         // check not null graph for process
         assertNotNull(dependencyService.getGraph(processId));
@@ -83,14 +83,14 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertFalse(dependencyService.getGraph(processId).getNotFinishedItems().isEmpty());
 
         // recovery process
-        recoveryProcessService.resurrectProcess(processId);
+        recoveryProcessService.recoverProcess(processId);
 
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
         memoryQueueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
-        recoveryProcessService.resurrectProcess(processId);
+        recoveryProcessService.recoverProcess(processId);
 
         // check tasks in queue
         assertTrue(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));
@@ -139,7 +139,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         memoryQueueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
-        recoveryProcessService.resurrectProcess(processId);
+        recoveryProcessService.recoverProcess(processId);
 
         // check tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, workerTaskId, processId));

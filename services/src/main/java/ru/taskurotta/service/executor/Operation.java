@@ -4,6 +4,6 @@ import java.io.Serializable;
 
 public interface Operation<T> extends Runnable, Serializable {
 
-    void init(T nativePoint);
+    void init(T executiveService);
 
 }

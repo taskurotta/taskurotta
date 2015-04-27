@@ -9,11 +9,11 @@ import java.util.UUID;
 /**
  * Created on 23.04.2015.
  */
-public class TaskRecoveryOperation implements Operation<TaskRecoveryService> {
+public class TaskRecoveryOperation implements Operation<RecoveryService> {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskRecoveryOperation.class);
 
-    private TaskRecoveryService taskRecoveryService;
+    private RecoveryService taskRecoveryService;
 
     private UUID processId;
 
@@ -25,14 +25,14 @@ public class TaskRecoveryOperation implements Operation<TaskRecoveryService> {
     }
 
     @Override
-    public void init (TaskRecoveryService nativePoint) {
+    public void init (RecoveryService nativePoint) {
         this.taskRecoveryService = nativePoint;
     }
 
     @Override
     public void run () {
         try {
-            taskRecoveryService.recover(processId, taskId);
+            taskRecoveryService.recoverTask(processId, taskId);
         } catch (Throwable e) {
             logger.error("Cannot recover task: processId[{}], taskId[{}]", processId, taskId);
         }

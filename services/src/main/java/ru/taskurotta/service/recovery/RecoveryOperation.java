@@ -32,7 +32,7 @@ public class RecoveryOperation implements Operation<RecoveryService> {
     public void run() {
 
         try {
-            recoveryService.resurrectProcess(processId);
+            recoveryService.recoverProcess(processId);
         } catch (Throwable e) {
             logger.error("Error on recovery operation: " + processId, e);
         }

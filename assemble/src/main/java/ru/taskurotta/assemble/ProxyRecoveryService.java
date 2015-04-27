@@ -17,13 +17,18 @@ public class ProxyRecoveryService implements RecoveryService {
     }
 
     @Override
-    public boolean resurrectProcess(UUID processId) {
-        return target.resurrectProcess(processId);
+    public boolean recoverProcess(UUID processId) {
+        return target.recoverProcess(processId);
     }
 
     @Override
-    public Collection<UUID> resurrectProcesses(Collection<UUID> processIds) {
-        return target.resurrectProcesses(processIds);
+    public Collection<UUID> recoverProcesses(Collection<UUID> processIds) {
+        return target.recoverProcesses(processIds);
+    }
+
+    @Override
+    public boolean recoverTask(UUID processId, UUID taskId) {
+        return target.recoverTask(processId, taskId);
     }
 
 }

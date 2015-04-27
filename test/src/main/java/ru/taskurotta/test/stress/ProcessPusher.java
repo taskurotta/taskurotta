@@ -284,7 +284,7 @@ public class ProcessPusher {
                 sb.append("\n processesOnTimeout = " +
                         RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
                         "  restartedProcesses = " +
-                        RecoveryServiceImpl.restartedProcessesCounter.get() +
+                        RecoveryServiceImpl.recoveredFromStartProcesses.get() +
                         "  restartedTasks = " +
                         RecoveryServiceImpl.restartedTasksCounter);
 
