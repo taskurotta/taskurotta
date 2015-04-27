@@ -11,9 +11,9 @@ import java.util.UUID;
  * Date: 20.04.2015
  * Time: 18:13
  */
-public class AbortOperation implements Operation {
+public class AbortOperation implements Operation<RecoveryService> {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecoveryOperation.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbortOperation.class);
 
     private UUID processId;
 
@@ -28,8 +28,8 @@ public class AbortOperation implements Operation {
     }
 
     @Override
-    public void init(Object nativePoint) {
-        this.recoveryService = (RecoveryService) nativePoint;
+    public void init(RecoveryService nativePoint) {
+        this.recoveryService = nativePoint;
     }
 
     @Override
@@ -50,7 +50,6 @@ public class AbortOperation implements Operation {
 
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         return !(recoveryService != null ? !recoveryService.equals(that.recoveryService) : that.recoveryService != null);
-
     }
 
     @Override
