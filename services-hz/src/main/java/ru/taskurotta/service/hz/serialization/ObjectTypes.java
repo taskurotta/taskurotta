@@ -29,5 +29,6 @@ public class ObjectTypes {
     public static final int DECISION = 20;
     public static final int TASK_RECOVERY_OPERATION = 21;
     public static final int ABORT_OPERATION_OPERATION = 22;
+    public static final int HZ_QUEUE_STAT_TASK = 23;
 
 }

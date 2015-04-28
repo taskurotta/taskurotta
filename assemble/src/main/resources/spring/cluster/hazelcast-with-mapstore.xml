@@ -115,6 +115,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork"
                                    class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.hz.console.HzQueueStatTask"
+                                   class-name="ru.taskurotta.service.hz.serialization.HzQueueStatTaskStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
         </hz:config>

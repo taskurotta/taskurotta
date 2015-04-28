@@ -4,9 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
 import ru.taskurotta.service.metrics.handler.NumberDataHandler;
-import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.model.DataPointVO;
 import ru.taskurotta.util.ActorUtils;
 
@@ -36,17 +36,17 @@ public class HzQueueStatTask implements Callable<List<QueueStatVO>>, Serializabl
         logger.debug("Started HzQueueStatTask with queueNames [{}]", this.queueNames);
 
         List<QueueStatVO> result = null;
-        if (queueNames!=null && !queueNames.isEmpty()) {
+        if (queueNames != null && !queueNames.isEmpty()) {
             result = new ArrayList<>();
             MetricsDataHandler mdh = MetricsDataHandler.getInstance();
             NumberDataHandler ndh = NumberDataHandler.getInstance();
             if (mdh != null && ndh != null) {
-                for (String queueName: queueNames) {
+                for (String queueName : queueNames) {
                     QueueStatVO item = new QueueStatVO();
                     item.setName(queueName);
 
                     Number count = ndh.getLastValue(MetricName.QUEUE_SIZE.getValue(), ActorUtils.toPrefixed(queueName, queueNamePrefix));
-                    item.setCount(count!=null? (Integer)count: 0);
+                    item.setCount(count != null ? (Integer) count : 0);
                     item.setLastActivity(mdh.getLastActivityTime(MetricName.POLL.getValue(), queueName));
 
                     DataPointVO<Long>[] outHour = mdh.getCountsForLastHour(MetricName.SUCCESSFUL_POLL.getValue(), queueName);
@@ -64,7 +64,7 @@ public class HzQueueStatTask implements Callable<List<QueueStatVO>>, Serializabl
                     result.add(item);
                 }
             } else {
-                logger.error("Cannot extract dataHandlers, methodDataHandler["+mdh+"], numberDataHandler["+ndh+"]");
+                logger.error("Cannot extract dataHandlers, methodDataHandler[" + mdh + "], numberDataHandler[" + ndh + "]");
             }
 
         }
@@ -72,4 +72,19 @@ public class HzQueueStatTask implements Callable<List<QueueStatVO>>, Serializabl
         return result;
     }
 
+    public ArrayList<String> getQueueNames() {
+        return queueNames;
+    }
+
+    public void setQueueNames(ArrayList<String> queueNames) {
+        this.queueNames = queueNames;
+    }
+
+    public String getQueueNamePrefix() {
+        return queueNamePrefix;
+    }
+
+    public void setQueueNamePrefix(String queueNamePrefix) {
+        this.queueNamePrefix = queueNamePrefix;
+    }
 }
