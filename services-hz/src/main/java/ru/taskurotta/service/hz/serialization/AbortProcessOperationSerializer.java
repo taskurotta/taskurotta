@@ -3,10 +3,6 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.mongodb.driver.BDataInput;
-import ru.taskurotta.mongodb.driver.BDataOutput;
-import ru.taskurotta.mongodb.driver.CString;
-import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.service.recovery.AbortProcessOperation;
 
 import java.io.IOException;
