@@ -146,14 +146,14 @@
                 <constructor-arg name="hzInstance" ref="hzInstance"/>
                 <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
                 <constructor-arg name="cacheSize" value="100"/>
-                <constructor-arg name="binary" value="${abort.queue.binary}"/>
-                <constructor-arg name="batchLoadSize" value="${abort.queue.batch-load-size}"/>
+                <constructor-arg name="binary" value="${abort-process.queue.binary}"/>
+                <constructor-arg name="batchLoadSize" value="${abort-process.queue.batch-load-size}"/>
                 <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.AbortProcessOperation"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="queueName" value="${abort.operation.queue.name}"/>
-        <constructor-arg name="poolSize" value="${abort.operation.pool-size}"/>
-        <constructor-arg name="enabled" value="${abort.enabled}"/>
+        <constructor-arg name="queueName" value="${abort-process.operation.queue.name}"/>
+        <constructor-arg name="poolSize" value="${abort-process.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${abort-process.enabled}"/>
     </bean>
     <!-- /Services -->
 
