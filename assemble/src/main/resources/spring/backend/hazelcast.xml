@@ -128,9 +128,9 @@
     <bean id="taskRecoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="queueName" value="${recovery.operation.queue-name}"/>
-        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+        <constructor-arg name="queueName" value="${operation.task-recovery.queue-name}"/>
+        <constructor-arg name="poolSize" value="${operation.task-recovery.pool-size}"/>
+        <constructor-arg name="enabled" value="${operation.task-recovery.enabled}"/>
     </bean>
 
     <bean id="incompleteProcessFinder" class="ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl">
