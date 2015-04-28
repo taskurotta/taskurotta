@@ -173,7 +173,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         };
     })
 
-.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams, $location) {
+.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams, $location, $modal) {
     $scope.process = {};
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
@@ -182,22 +182,43 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 
     $scope.recoverProcess = function (processId) {
-        tskProcesses.addProcessToRecovery(processId).then(function (success) {
-            $location.url("/processes/list");
-        }, function (error) {
-            $log.log("Process recovery error", error);
-            $scope.feedback = angular.toJson(error);
-        });
+
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "Process will be sent to recovery service.";
+            }
+        }).result.then(function(okMess) {
+                tskProcesses.addProcessToRecovery(processId).then(function (success) {
+                    $location.url("/processes/list");
+                }, function (error) {
+                    $log.log("Process recovery error", error);
+                    $scope.feedback = angular.toJson(error);
+                });
+            }, function(cancelMsg) {
+                //do nothing
+            });
     };
 
     $scope.cloneProcess = function (processId) {
-        tskProcesses.cloneProcess(processId).then(function (success) {
-            $log.log("Process clone success", success.data);
-            $location.url("/processes/process?processId=" + success.data);
-        }, function (error) {
-            $log.log("Process clone error", error);
-            $scope.feedback = angular.toJson(error);
-        });
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "A new process with the same start task arguments would be created.";
+            }
+        }).result.then(function(okMess) {
+                tskProcesses.cloneProcess(processId).then(function (success) {
+                    $log.log("Process clone success", success.data);
+                    $location.url("/processes/process?processId=" + success.data);
+                }, function (error) {
+                    $log.log("Process clone error", error);
+                    $scope.feedback = angular.toJson(error);
+                });
+            }, function(cancelMsg) {
+                //do nothing
+            });
     };
 
     $scope.update = function () {
