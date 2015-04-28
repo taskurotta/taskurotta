@@ -76,8 +76,8 @@
                                    class-name="ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.recovery.AbortOperation"
                                    class-name="ru.taskurotta.service.hz.serialization.bson.AbortOperationSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.recovery.TaskRecoveryOperation"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskRecoveryOperationStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.recovery.RestartTaskOperation"
+                                   class-name="ru.taskurotta.service.hz.serialization.RestartTaskOperationStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.config.model.ActorPreferences"
                                    class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork"
