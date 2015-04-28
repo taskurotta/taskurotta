@@ -148,7 +148,7 @@
                 <constructor-arg name="cacheSize" value="100"/>
                 <constructor-arg name="binary" value="${abort.queue.binary}"/>
                 <constructor-arg name="batchLoadSize" value="${abort.queue.batch-load-size}"/>
-                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.AbortOperation"/>
+                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.AbortProcessOperation"/>
             </bean>
         </constructor-arg>
         <constructor-arg name="queueName" value="${abort.operation.queue.name}"/>

@@ -1,9 +1,7 @@
 package ru.taskurotta.dropwizard.resources.console.operation;
 
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.service.recovery.AbortOperation;
 import ru.taskurotta.service.recovery.RecoveryThreads;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 

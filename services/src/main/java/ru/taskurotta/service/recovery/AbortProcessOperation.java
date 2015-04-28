@@ -11,15 +11,15 @@ import java.util.UUID;
  * Date: 20.04.2015
  * Time: 18:13
  */
-public class AbortOperation implements Operation<RecoveryService> {
+public class AbortProcessOperation implements Operation<RecoveryService> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbortOperation.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbortProcessOperation.class);
 
     private UUID processId;
 
     private RecoveryService recoveryService;
 
-    public AbortOperation(UUID processId) {
+    public AbortProcessOperation(UUID processId) {
         this.processId = processId;
     }
 
@@ -46,7 +46,7 @@ public class AbortOperation implements Operation<RecoveryService> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AbortOperation that = (AbortOperation) o;
+        AbortProcessOperation that = (AbortProcessOperation) o;
 
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         return !(recoveryService != null ? !recoveryService.equals(that.recoveryService) : that.recoveryService != null);

@@ -9,9 +9,8 @@ import ru.taskurotta.dropwizard.resources.console.util.TaskContainerUtils;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.service.console.manager.ConsoleManager;
 import ru.taskurotta.service.console.model.Process;
-import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.service.recovery.AbortOperation;
+import ru.taskurotta.service.recovery.AbortProcessOperation;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import javax.ws.rs.Consumes;
@@ -82,7 +81,7 @@ public class ProcessOperationsResource {
     @POST
     @Path("/abort")
     public void abortProcess(String processId) {
-        abortOperationExecutor.enqueue(new AbortOperation(UUID.fromString(processId)));
+        abortOperationExecutor.enqueue(new AbortProcessOperation(UUID.fromString(processId)));
     }
 
     @Required
