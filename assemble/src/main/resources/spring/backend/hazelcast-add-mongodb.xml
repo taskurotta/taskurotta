@@ -138,7 +138,7 @@
         <constructor-arg name="bSerializationService" ref="bSerializationService"/>
     </bean>
 
-    <bean id="abortOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+    <bean id="abortProcessOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nativePoint" ref="recoveryService"/>
         <constructor-arg name="hzQueueConfigSupport">

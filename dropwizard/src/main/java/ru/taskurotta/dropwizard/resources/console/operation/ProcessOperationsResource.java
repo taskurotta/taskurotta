@@ -33,7 +33,7 @@ public class ProcessOperationsResource {
 
     private ConsoleManager consoleManager;
     private TaskServer taskServer;
-    private OperationExecutor abortOperationExecutor;
+    private OperationExecutor abortProcessOperationExecutor;
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -81,7 +81,7 @@ public class ProcessOperationsResource {
     @POST
     @Path("/abort")
     public void abortProcess(String processId) {
-        abortOperationExecutor.enqueue(new AbortProcessOperation(UUID.fromString(processId)));
+        abortProcessOperationExecutor.enqueue(new AbortProcessOperation(UUID.fromString(processId)));
     }
 
     @Required
@@ -95,7 +95,7 @@ public class ProcessOperationsResource {
     }
 
     @Required
-    public void setAbortOperationExecutor(OperationExecutor abortOperationExecutor) {
-        this.abortOperationExecutor = abortOperationExecutor;
+    public void setAbortProcessOperationExecutor(OperationExecutor abortProcessOperationExecutor) {
+        this.abortProcessOperationExecutor = abortProcessOperationExecutor;
     }
 }
