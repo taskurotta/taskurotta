@@ -71,15 +71,6 @@
         <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
         <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.RecoveryOperation"/>
     </bean>
-
-    <bean id="abortOperationQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="100"/>
-        <constructor-arg name="binary" value="${abort.queue.binary}"/>
-        <constructor-arg name="batchLoadSize" value="${abort.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.AbortOperation"/>
-    </bean>
     <!-- /Queues persistence support -->
 
     <!-- Delay queue support -->
@@ -150,7 +141,16 @@
     <bean id="abortOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="hzQueueConfigSupport" ref="abortOperationQueueConfigSupport"/>
+        <constructor-arg name="hzQueueConfigSupport">
+            <bean class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
+                <constructor-arg name="hzInstance" ref="hzInstance"/>
+                <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
+                <constructor-arg name="cacheSize" value="100"/>
+                <constructor-arg name="binary" value="${abort.queue.binary}"/>
+                <constructor-arg name="batchLoadSize" value="${abort.queue.batch-load-size}"/>
+                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.AbortOperation"/>
+            </bean>
+        </constructor-arg>
         <constructor-arg name="queueName" value="${abort.operation.queue.name}"/>
         <constructor-arg name="poolSize" value="${abort.operation.pool-size}"/>
         <constructor-arg name="enabled" value="${abort.enabled}"/>
