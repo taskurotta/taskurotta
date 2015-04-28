@@ -379,14 +379,14 @@ public class RecoveryServiceImpl implements RecoveryService {
             @Override
             public boolean apply(Graph graph) {
                 Set<UUID> finishedItems = graph.getFinishedItems();
-                deleteTasksAnsDecisions(finishedItems, processId);
+                deleteTasksAndDecisions(finishedItems, processId);
 
                 Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
-                deleteTasksAnsDecisions(notFinishedItems, processId);
+                deleteTasksAndDecisions(notFinishedItems, processId);
 
                 UUID[] readyItems = graph.getReadyItems();
                 if (readyItems != null) {
-                    deleteTasksAnsDecisions(new HashSet<>(Arrays.asList(readyItems)), processId);
+                    deleteTasksAndDecisions(new HashSet<>(Arrays.asList(readyItems)), processId);
                 }
 
                 return true;
@@ -580,7 +580,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         garbageCollectorService.collect(processId);
     }
 
-    private void deleteTasksAnsDecisions(Set<UUID> taskIds, UUID processId) {
+    private void deleteTasksAndDecisions(Set<UUID> taskIds, UUID processId) {
         taskDao.deleteDecisions(taskIds, processId);
         taskDao.deleteTasks(taskIds, processId);
         for (UUID id : taskIds) {
