@@ -47,4 +47,9 @@ public class MetricsRecoveryService implements RecoveryService {
     public boolean abortProcess(UUID processId) {
         return recoveryService.abortProcess(processId);
     }
+
+    @Override
+    public boolean restartTask(UUID processId, UUID taskId) {
+        return recoveryService.restartTask(processId, taskId);
+    }
 }

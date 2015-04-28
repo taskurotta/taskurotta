@@ -136,8 +136,8 @@
     <bean id="abortProcessOperationSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.AbortProcessOperationSerializer"/>
 
-    <bean id="taskRecoveryOperationSerializer"
-          class="ru.taskurotta.service.hz.serialization.bson.TaskRecoveryOperationSerializer"/>
+    <bean id="restartTaskOperationSerializer"
+          class="ru.taskurotta.service.hz.serialization.bson.RestartTaskOperationSerializer"/>
 
     <bean id="taskKeyBSerializer"
           class="ru.taskurotta.service.hz.serialization.bson.TaskKeyBSerializer"/>
@@ -161,8 +161,8 @@
                 <ref bean="uuidSerializer"/>
                 <ref bean="stringSerializer"/>
                 <ref bean="recoveryOperationSerializer"/>
+                <ref bean="restartTaskOperationSerializer" />
                 <ref bean="abortProcessOperationSerializer"/>
-                <ref bean="taskRecoveryOperationSerializer" />
                 <ref bean="taskKeyBSerializer"/>
                 <ref bean="actorsPreferencesSerializer"/>
                 <ref bean="interruptedTasksSerializer"/>

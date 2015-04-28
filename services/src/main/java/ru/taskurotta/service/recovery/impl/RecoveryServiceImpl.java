@@ -404,6 +404,61 @@ public class RecoveryServiceImpl implements RecoveryService {
         return result;
     }
 
+    @Override
+    public boolean restartTask(final UUID processId, final UUID taskId) {
+        final boolean[] boolContainer = new boolean[1];
+        dependencyService.changeGraph(new GraphDao.Updater() {
+
+            @Override
+            public UUID getProcessId() {
+                return processId;
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+                boolean result = false;
+                long touchTime = System.currentTimeMillis();
+                graph.setTouchTimeMillis(touchTime);
+
+                if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+                    TaskContainer tc = taskService.getTask(taskId, processId);
+                    if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+                        interruptedTasksService.delete(processId, taskId);
+                        result = true;
+                    }
+                }
+
+                // --process state change part--
+                if (!hasOtherNotReadyFatalTasks(processId, taskId, graph.getAllReadyItems())) {
+                    processService.markProcessAsStarted(processId);
+                }
+                // --/process state change part--
+
+                boolContainer[0] = result;
+
+                logger.debug("ProcessId [{}] graph change applied: touch time updated [{}], result[{}]", processId, touchTime, result);
+
+                return true;//touch time have been updated
+            }
+
+        });
+
+        return boolContainer[0];
+    }
+
+    private boolean hasOtherNotReadyFatalTasks(UUID processId, UUID taskId, Map<UUID, Long> readyItems) {
+        boolean result = false;
+        if (readyItems!=null) {
+            for (UUID readyTaskId : readyItems.keySet()) {
+                if (!taskId.equals(readyTaskId) && TransportUtils.hasFatalError(taskService.getDecision(readyTaskId, processId))) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     private boolean isReadyToRecover(UUID processId, UUID taskId, long startTime, String actorId, String taskList, long lastRecoveryStartTime) {
 
         logger.trace("#[{}]/[{}]: check if task ready to restart", processId, taskId);

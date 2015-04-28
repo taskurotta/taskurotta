@@ -33,7 +33,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
         this(nativePoint, hzInstance, null, queueName, poolSize, enabled);
     }
 
-    public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, final HzQueueConfigSupport hzQueueConfigSupport, String queueName, int poolSize, boolean enabled) {
+    public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, final HzQueueConfigSupport hzQueueConfigSupport, final String queueName, int poolSize, boolean enabled) {
         this.enabled = enabled;
         if (!enabled) {
             return;
@@ -62,7 +62,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
             @Override
             public Thread newThread(Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setName("HzOperationExecutorThread::worker");
+                thread.setName("HzOperationExecutor::worker::"+queueName);
                 thread.setDaemon(true);
                 return thread;
             }
@@ -73,7 +73,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
             @Override
             public Thread newThread (Runnable r) {
                 Thread thread = new Thread(r);
-                thread.setName("HzOperationExecutorThread::planner");
+                thread.setName("HzOperationExecutor::planner::"+queueName);
                 thread.setDaemon(true);
                 return thread;
             }

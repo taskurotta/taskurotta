@@ -123,10 +123,10 @@
                 <constructor-arg name="cacheSize" value="100"/>
                 <constructor-arg name="binary" value="${recovery.queue.binary}"/>
                 <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
-                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.TaskRecoveryOperation"/>
+                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.RestartTaskOperation"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="nativePoint" ref="taskRecoveryService" />
+        <constructor-arg name="nativePoint" ref="recoveryService" />
         <constructor-arg name="poolSize" value="${recovery.operation.pool-size}" />
         <constructor-arg name="queueName" value="${recovery.operation.queue-name}" />
     </bean>

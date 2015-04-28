@@ -9,30 +9,30 @@ import java.util.UUID;
 /**
  * Created on 23.04.2015.
  */
-public class TaskRecoveryOperation implements Operation<TaskRecoveryService> {
+public class RestartTaskOperation implements Operation<RecoveryService> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TaskRecoveryOperation.class);
+    private static final Logger logger = LoggerFactory.getLogger(RestartTaskOperation.class);
 
-    private TaskRecoveryService taskRecoveryService;
+    private RecoveryService taskRecoveryService;
 
     private UUID processId;
 
     private UUID taskId;
 
-    public TaskRecoveryOperation(UUID processId, UUID taskId) {
+    public RestartTaskOperation(UUID processId, UUID taskId) {
         this.processId = processId;
         this.taskId = taskId;
     }
 
     @Override
-    public void init (TaskRecoveryService nativePoint) {
+    public void init (RecoveryService nativePoint) {
         this.taskRecoveryService = nativePoint;
     }
 
     @Override
     public void run () {
         try {
-            taskRecoveryService.recover(processId, taskId);
+            taskRecoveryService.restartTask(processId, taskId);
         } catch (Throwable e) {
             logger.error("Cannot recover task: processId[{}], taskId[{}]", processId, taskId);
         }
@@ -51,7 +51,7 @@ public class TaskRecoveryOperation implements Operation<TaskRecoveryService> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        TaskRecoveryOperation that = (TaskRecoveryOperation) o;
+        RestartTaskOperation that = (RestartTaskOperation) o;
 
         if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
         return !(taskId != null ? !taskId.equals(that.taskId) : that.taskId != null);
