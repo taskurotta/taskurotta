@@ -389,11 +389,11 @@ public class RecoveryServiceImpl implements RecoveryService {
                     deleteTasksAndDecisions(new HashSet<>(Arrays.asList(readyItems)), processId);
                 }
 
-                return true;
+                graphDao.deleteGraph(processId);
+
+                return false;
             }
         });
-
-        graphDao.deleteGraph(processId);
 
         processService.markProcessAsAborted(processId);
 
