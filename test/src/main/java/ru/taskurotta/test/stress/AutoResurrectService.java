@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.service.recovery.RecoveryOperation;
 import ru.taskurotta.service.recovery.RecoveryService;
+import ru.taskurotta.service.recovery.RestartTaskOperation;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.util.DaemonThread;
 
@@ -31,7 +31,7 @@ public class AutoResurrectService {
                 for (InterruptedTask itdTask: allInterruptedTasks) {
 
                     if (itdTask.getErrorClassName().equals(BrokenProcessException.class.getName())) {
-                        operationExecutor.enqueue(new RecoveryOperation(itdTask.getProcessId()));
+                        operationExecutor.enqueue(new RestartTaskOperation(itdTask.getProcessId(), itdTask.getTaskId()));
                     }
                 }
             }
