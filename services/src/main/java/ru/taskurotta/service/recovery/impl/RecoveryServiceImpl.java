@@ -20,11 +20,9 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -383,11 +381,6 @@ public class RecoveryServiceImpl implements RecoveryService {
 
                 Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
                 deleteTasksAndDecisions(notFinishedItems, processId);
-
-                UUID[] readyItems = graph.getReadyItems();
-                if (readyItems != null) {
-                    deleteTasksAndDecisions(new HashSet<>(Arrays.asList(readyItems)), processId);
-                }
 
                 graphDao.deleteGraph(processId);
 
