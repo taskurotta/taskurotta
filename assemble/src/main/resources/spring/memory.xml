@@ -74,6 +74,8 @@
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="taskDao" ref="taskDao" />
+        <constructor-arg name="graphDao" ref="graphDao" />
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.gc.MemoryGarbageCollectorService">
