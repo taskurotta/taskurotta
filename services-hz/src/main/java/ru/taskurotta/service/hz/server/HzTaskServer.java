@@ -142,7 +142,7 @@ public class HzTaskServer extends GeneralTaskServer {
             }
         }
 
-        startedDistributedTasks.incrementAndGet();
+        receivedDecisionsCounter.incrementAndGet();
         statRelease.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
     }
 
@@ -182,7 +182,7 @@ public class HzTaskServer extends GeneralTaskServer {
             }
 
             statPdAll.update(clock.tick() - fullTime, TimeUnit.NANOSECONDS);
-            finishedDistributedTasks.incrementAndGet();
+            processedDecisionsCounter.incrementAndGet();
 
         } catch (HazelcastInstanceNotActiveException e) {
             // reduce exception rain

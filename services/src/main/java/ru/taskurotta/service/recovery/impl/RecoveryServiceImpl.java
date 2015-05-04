@@ -40,9 +40,9 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     private static final Logger logger = LoggerFactory.getLogger(RecoveryServiceImpl.class);
 
-    public static AtomicInteger restartedProcessesCounter = new AtomicInteger();
-    public static AtomicInteger restartedTasksCounter = new AtomicInteger();
-    public static AtomicInteger resurrectedTasksCounter = new AtomicInteger();
+    public static AtomicInteger recoveredProcessesCounter = new AtomicInteger();
+    public static AtomicInteger recoveredTasksCounter = new AtomicInteger();
+    public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
 
     private QueueService queueService;
     private DependencyService dependencyService;
@@ -123,7 +123,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                 interruptedTasksService.delete(processId, taskId);
 
                 logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
-                resurrectedTasksCounter.incrementAndGet();
+                restartedBrokenTasks.incrementAndGet();
             } else {
                 logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
             }
@@ -211,7 +211,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                         logger.debug("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis());
 
                         int restartResult = restartProcessTasks(taskContainers, processId);
-                        restartedTasksCounter.addAndGet(restartResult);
+                        recoveredTasksCounter.addAndGet(restartResult);
 
                         boolContainer[0] = restartResult > 0;
 
@@ -421,6 +421,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                     if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
                         interruptedTasksService.delete(processId, taskId);
                         result = true;
+                        restartedBrokenTasks.incrementAndGet();
                     }
                 }
 
@@ -602,7 +603,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                 startTaskContainer.getStartTime(), TransportUtils.getTaskList(startTaskContainer));
 
         if (result) {
-            restartedProcessesCounter.incrementAndGet();
+            recoveredProcessesCounter.incrementAndGet();
         }
 
         return result;

@@ -36,6 +36,7 @@ public class ProcessPusher {
     private final static Logger logger = LoggerFactory.getLogger(ProcessPusher.class);
 
     public static AtomicInteger counter = new AtomicInteger(0);
+    public static int taskPerSecondSpeed = 0;
 
     //with default finished processes counter, only per node
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
@@ -102,6 +103,10 @@ public class ProcessPusher {
                         queue.add((long) (timeCursor));
 
                         if (counter.incrementAndGet() == maxProcessQuantity) {
+                            taskPerSecondSpeed = (int) (1000.0 * LifetimeProfiler.taskCount
+                                    .incrementAndGet() / (double) (System.currentTimeMillis() - LifetimeProfiler
+                                    .startTestTime.get()));
+
                             throw new StopSignal();
                         }
                     }
@@ -142,9 +147,10 @@ public class ProcessPusher {
                         fpCounter.getCount() >= maxProcessQuantity) {
                     // stop JVM
 
-                    logger.info("Done... Speed is {} processes per second. Waiting before exit {} seconds",
+                    logger.info("Done... Total process speed is {} pps. Task speed at the all process pushed " +
+                                    "moment is {} tps. Waiting before exit {} seconds",
                             1f * maxProcessQuantity / (System.currentTimeMillis() - startTestTime) * 1000
-                            , waitAfterDoneSeconds);
+                            , taskPerSecondSpeed, waitAfterDoneSeconds);
                     try {
                         TimeUnit.SECONDS.sleep(waitAfterDoneSeconds);
                     } catch (InterruptedException e) {
@@ -279,18 +285,18 @@ public class ProcessPusher {
                         fpCounter.getCount() +
                         "  broken tasks = " +
                         GeneralTaskServer.brokenProcessesCounter.get() +
-                        "  resurrected tasks = " + RecoveryServiceImpl.resurrectedTasksCounter.get());
+                        "  restarted tasks = " + RecoveryServiceImpl.restartedBrokenTasks.get());
 
                 sb.append("\n processesOnTimeout = " +
                         RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
-                        "  restartedProcesses = " +
-                        RecoveryServiceImpl.restartedProcessesCounter.get() +
-                        "  restartedTasks = " +
-                        RecoveryServiceImpl.restartedTasksCounter);
+                        "  recoveredProcesses = " +
+                        RecoveryServiceImpl.recoveredProcessesCounter.get() +
+                        "  recoveredTasks = " +
+                        RecoveryServiceImpl.recoveredTasksCounter);
 
-                sb.append("\n startedDistributedTasks = " + GeneralTaskServer.startedDistributedTasks.get() +
-                        "  pending = " + (GeneralTaskServer.startedDistributedTasks.get()
-                        - GeneralTaskServer.finishedDistributedTasks.get()));
+                sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
+                        "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
+                        - GeneralTaskServer.processedDecisionsCounter.get()));
 
                 sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
                         "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
