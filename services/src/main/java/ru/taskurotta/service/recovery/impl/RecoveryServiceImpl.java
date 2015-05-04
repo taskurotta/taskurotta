@@ -144,14 +144,10 @@ public class RecoveryServiceImpl implements RecoveryService {
         logger.trace("#[{}]: try to restart process", processId);
 
 
-        // check Broken process
+        // skip broken and already finished process
         Process process = processService.getProcess(processId);
-        if (process.getState() == Process.BROKEN) {
-            if (restartBrokenTasks(processId)) {
-                return true;
-            }
-
-            // else try to resurrect process in general way
+        if (process.getState() == Process.FINISH || process.getState() == Process.BROKEN) {
+                return false;
         }
 
 
