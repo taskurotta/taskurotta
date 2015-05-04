@@ -26,7 +26,7 @@ public class AbortProcessOperationSerializer implements StreamSerializer<AbortPr
 
     @Override
     public int getTypeId() {
-        return ObjectTypes.ABORT_OPERATION_OPERATION;
+        return ObjectTypes.ABORT_PROCESS_OPERATION;
     }
 
     @Override

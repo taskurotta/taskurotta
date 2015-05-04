@@ -25,7 +25,8 @@ public class HzQueueStatTaskStreamSerializer implements StreamSerializer<HzQueue
         if (queueNames == null || queueNames.isEmpty()) {
             strings = null;
         } else {
-            strings = (String[]) queueNames.toArray();
+            strings = new String[queueNames.size()];
+            queueNames.toArray(strings);
         }
         SerializationTools.writeStringArray(out, strings);
         SerializationTools.writeString(out, queueNamePrefix);
