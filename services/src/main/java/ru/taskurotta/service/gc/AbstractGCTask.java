@@ -2,6 +2,7 @@ package ru.taskurotta.service.gc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.storage.ProcessService;
@@ -30,31 +31,40 @@ public abstract class AbstractGCTask implements Runnable {
     }
 
     protected void gc(UUID processId) {
+        logger.trace("Start garbage collector for process [{}]", processId);
+
         if (processId == null) {
             logger.warn("ProcessId for garbage collector is null");
             return;
         }
-        logger.trace("Start garbage collector for process [{}]", processId);
 
-        Graph graph = graphDao.getGraph(processId);
-        if (graph == null) {
-            logger.warn("Not found graph for process [{}], stop garbage collector for this process", processId);
-            if (processService.getStartTask(processId) == null) {
-                logger.warn("And processService has no start task for it [{}]", processId);
+        Process process = processService.getProcess(processId);
+        if (process == null) {
+            logger.warn("Not found process [{}]", processId);
+            return;
+        }
+
+        if (process.getState() != Process.ABORTED) {
+            Graph graph = graphDao.getGraph(processId);
+            if (graph == null) {
+                logger.warn("Not found graph for process [{}], stop garbage collector for this process", processId);
+                if (processService.getStartTask(processId) == null) {
+                    logger.warn("And processService has no start task for it [{}]", processId);
+                }
+                return;
             }
-            return;
+
+            if (!graph.isFinished()) {
+                logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
+                return;
+            }
+
+            Set<UUID> finishedItems = graph.getFinishedItems();
+            taskDao.deleteDecisions(finishedItems, processId);
+            taskDao.deleteTasks(finishedItems, processId);
+
+            graphDao.deleteGraph(processId);
         }
-
-        if (!graph.isFinished()) {
-            logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
-            return;
-        }
-
-        Set<UUID> finishedItems = graph.getFinishedItems();
-        taskDao.deleteDecisions(finishedItems, processId);
-        taskDao.deleteTasks(finishedItems, processId);
-
-        graphDao.deleteGraph(processId);
 
         processService.deleteProcess(processId);
 

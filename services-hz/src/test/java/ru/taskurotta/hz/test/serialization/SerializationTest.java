@@ -27,7 +27,7 @@ import ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer;
 import ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer;
 import ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer;
 import ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer;
-import ru.taskurotta.service.hz.server.HazelcastTaskServer.ProcessDecisionUnitOfWork;
+import ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ErrorContainer;

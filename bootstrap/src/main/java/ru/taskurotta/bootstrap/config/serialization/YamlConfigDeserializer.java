@@ -139,7 +139,7 @@ public class YamlConfigDeserializer extends JsonDeserializer<Config> {
             injectExternalProperties(spreaderConfigNode, spreaderConfigName);
             logger.debug("spreaderConfigNode [{}]", spreaderConfigNode);
 
-            String spreaderConfigClassName = "ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext";
+            String spreaderConfigClassName = "ru.taskurotta.spring.configs.DefaultSpreaderConfigPathXmlApplicationContext";
             JsonNode classNode = instanceDescriptionNode.get(YAML_CLASS);
             if (classNode != null) {
                 spreaderConfigClassName = classNode.textValue();

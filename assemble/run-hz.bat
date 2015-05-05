@@ -1,1 +1,1 @@
-start java -Xmx128m -Xms128m -jar target/assemble-0.8.0-SNAPSHOT.jar server src/main/resources/hz.yml
+java -DassetsMode=dev -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -jar target/assemble-0.9.0-SNAPSHOT.jar server src/main/resources/hz.yml

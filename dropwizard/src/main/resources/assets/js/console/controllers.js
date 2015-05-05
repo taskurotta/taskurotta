@@ -1,13 +1,14 @@
-angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.broken.process.controllers', 'ngRoute', 'console.metrics.controllers'])
+angular.module("console.controllers", ['queue.controllers', 'console.services', 'ui.bootstrap.modal', 'console.actor.controllers', 'console.schedule.controllers', 'console.interrupted.controllers', 'ngRoute', 'console.metrics.controllers'])
 
 .controller("rootController", function ($rootScope, $scope, $location, $log, $window, $http) {
 
     $scope.serverVersion = "";
 
     $scope.updateVersion = function() {
-        $http.get("/rest/console/manifest/version").then(function(success){
+        $http.get("/rest/console/manifest/version").then(function(success) {
             $scope.serverVersion = success.data || "";
         }, function(error) {
+            $log.error(error);
             $scope.serverVersion = "";
         });
     };
@@ -61,7 +62,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
 
 })
 
-.controller("processListController", function ($scope, tskProcesses, tskTimeUtil, $log) {
+.controller("processListController", function ($scope, tskProcesses, tskTimeUtil, $log, $modal) {
     $scope.initialized = false;
 
     //Init paging object
@@ -76,17 +77,20 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         {status: -1, name: "All"},
         {status: 0, name: "Started"},
         {status: 1, name: "Finished"},
-        {status: 2, name: "Broken"}
+        {status: 2, name: "Failed"},
+        {status: 3, name: "Aborted"}
     ];
 
     $scope.getStatusName = function(status) {
         var result = "Unknown [" + status + "]";
         if (status == 0) {
-            result = "Started and still in flight";
+            result = "Still has unreleased tasks";
         } else if (status == 1) {
             result = "Has already finished";
         } else if (status == 2) {
-            result = "Broken, manual fix required";
+            result = "Has failed tasks, manual fix required";
+        }  else if (status == 3) {
+            result = "Aborted";
         }
         return result;
     };
@@ -112,6 +116,27 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         $scope.submittedRecoveries.push(processId);
     };
 
+    $scope.abortProcess = function(processId) {
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "Current process, it's graph, all tasks and decisions will be deleted";
+            }
+        }).result.then(function(okMess) {
+                tskProcesses.abortProcess(processId).then(function(ok){
+                    $scope.refresh();
+                }, function(errReason){
+                    $scope.feedback = angular.toJson(errReason);
+                    $log.error("processListController: process abort failed: " + $scope.feedback);
+                    $scope.initialized = true;
+                });
+            }, function(cancelMsg) {
+                //do nothing
+            }
+        );
+    };
+
     //Updates queues states  by polling REST resource
     $scope.update = function () {
 
@@ -132,14 +157,96 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         $scope.update();
     });
 
+    $scope.refresh = function() {
+        $scope.initialized = false;
+        $scope.update();
+    };
 })
 
-.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams) {
+.controller("processCreateController", function ($scope, $log, tskProcesses, $location) {
+        $scope.types = ["DECIDER_START"];
+        $scope.task = {
+            actorId: "",
+            method: "",
+            args: [],
+            type: $scope.types[0],
+            taskList: ""
+        };
+
+        var isCommandValid = function(command) {
+            return !!command.actorId && command.actorId.length>0 && !!command.method && command.method.length>0;
+        };
+
+        $scope.createProcess = function(){
+            var command = {
+                actorId: $scope.task.actorId,
+                method: $scope.task.method,
+                taskType: $scope.task.type,
+                args: $scope.task.args,
+                taskList: $scope.task.taskList
+            };
+            if (isCommandValid(command)) {
+                $log.log("Try to create process with command", command);
+                tskProcesses.createProcess(command).then(function (success) {
+                    $log.log("Process create success", success.data);
+                    $location.url("/processes/process?processId=" + success.data);
+                }, function (error) {
+                    $log.log("Process create error", error);
+                });
+            }
+        };
+
+        $scope.isValidForm = function() {
+            return isCommandValid($scope.task);
+        };
+    })
+
+.controller("processCardController", function ($scope, tskProcesses, tskTimeUtil, $log, $routeParams, $location, $modal) {
     $scope.process = {};
     $scope.taskTree = {};
     $scope.processId = $routeParams.processId;
     $scope.feedback = "";
     $scope.initialized = false;
+
+    $scope.recoverProcess = function (processId) {
+
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "Process will be sent to recovery service.";
+            }
+        }).result.then(function(okMess) {
+                tskProcesses.addProcessToRecovery(processId).then(function (success) {
+                    $location.url("/processes/list");
+                }, function (error) {
+                    $log.log("Process recovery error", error);
+                    $scope.feedback = angular.toJson(error);
+                });
+            }, function(cancelMsg) {
+                //do nothing
+            });
+    };
+
+    $scope.cloneProcess = function (processId) {
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "A new process with the same start task arguments would be created.";
+            }
+        }).result.then(function(okMess) {
+                tskProcesses.cloneProcess(processId).then(function (success) {
+                    $log.log("Process clone success", success.data);
+                    $location.url("/processes/process?processId=" + success.data);
+                }, function (error) {
+                    $log.log("Process clone error", error);
+                    $scope.feedback = angular.toJson(error);
+                });
+            }, function(cancelMsg) {
+                //do nothing
+            });
+    };
 
     $scope.update = function () {
         tskProcesses.getProcess($routeParams.processId).then(function (value) {

@@ -1,18 +1,12 @@
 package ru.taskurotta.service.hz.support;
 
 
-import com.hazelcast.core.DistributedObject;
-import com.hazelcast.core.DistributedObjectEvent;
-import com.hazelcast.core.DistributedObjectListener;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.util.ActorUtils;
-
-import javax.annotation.PostConstruct;
 
 /**
  * Designed to populate distributed ActorPreferences map at runtime.
@@ -30,7 +24,6 @@ public class HzConfigServiceSupport implements DistributedObjectListener {
     private String actorPreferencesMapName;
     private IMap<String, ActorPreferences> distributedActorPreferences;
 
-    @PostConstruct
     private void init() {
         hzInstance.addDistributedObjectListener(this);
         distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);

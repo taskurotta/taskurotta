@@ -12,7 +12,7 @@ import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 
@@ -66,7 +66,7 @@ public class ContextResource implements ServerPropertiesAware, ApplicationContex
         appendBeansInfo(result, applicationContext.getBeanNamesForType(ProcessService.class));
         appendBeansInfo(result, applicationContext.getBeanNamesForType(TaskService.class));
         appendBeansInfo(result, applicationContext.getBeanNamesForType(DependencyService.class));
-        appendBeansInfo(result, applicationContext.getBeanNamesForType(BrokenProcessService.class));
+        appendBeansInfo(result, applicationContext.getBeanNamesForType(InterruptedTasksService.class));
         appendBeansInfo(result, applicationContext.getBeanNamesForType(GarbageCollectorService.class));
         appendBeansInfo(result, applicationContext.getBeanNamesForType(ConfigService.class));
 

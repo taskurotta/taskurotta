@@ -36,7 +36,7 @@ public class OraJobStore implements JobStore {
     @Override
     public long addJob(JobVO task) {
         try (Connection connection = dataSource.getConnection();
-            CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, MAX_ERRORS, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;");
+            CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, MAX_ERRORS, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;")
         ) {
             cs.setString(1, task.getName());
             cs.setString(2, task.getCron());
@@ -50,8 +50,7 @@ public class OraJobStore implements JobStore {
             cs.registerOutParameter(9, Types.NUMERIC);
             cs.execute();
 
-            Long resultId = cs.getLong(9);
-            return resultId;
+            return cs.getLong(9);
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
@@ -61,7 +60,7 @@ public class OraJobStore implements JobStore {
     @Override
     public void removeJob(long id) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("DELETE FROM TSK_SCHEDULED WHERE ID = ? ");
+             PreparedStatement ps = connection.prepareStatement("DELETE FROM TSK_SCHEDULED WHERE ID = ? ")
         ) {
             ps.setLong(1, id);
             ps.executeUpdate();
@@ -76,7 +75,7 @@ public class OraJobStore implements JobStore {
         Collection<Long> result = new ArrayList<>();
         ResultSet rs = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT ID FROM TSK_SCHEDULED");
+             PreparedStatement ps = connection.prepareStatement("SELECT ID FROM TSK_SCHEDULED")
         ) {
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -96,7 +95,7 @@ public class OraJobStore implements JobStore {
         ResultSet rs = null;
         JobVO result = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT * FROM TSK_SCHEDULED WHERE id = ? ");
+             PreparedStatement ps = connection.prepareStatement("SELECT * FROM TSK_SCHEDULED WHERE id = ? ")
         ) {
             ps.setLong(1, id);
             rs = ps.executeQuery();
@@ -124,7 +123,7 @@ public class OraJobStore implements JobStore {
     @Override
     public void updateJobStatus(long id, int status) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET STATUS = ? WHERE id = ? ");
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET STATUS = ? WHERE id = ? ")
         ) {
             ps.setInt(1, status);
             ps.setLong(2, id);
@@ -138,7 +137,7 @@ public class OraJobStore implements JobStore {
     @Override
     public void updateJob(JobVO jobVO) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ?, MAX_ERRORS = ? WHERE id = ? ");
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ?, MAX_ERRORS = ? WHERE id = ? ")
         ) {
             ps.setString(1, jobVO.getName());
             ps.setString(2, jobVO.getCron());
@@ -161,7 +160,7 @@ public class OraJobStore implements JobStore {
         ResultSet rs = null;
         int result = JobConstants.STATUS_UNDEFINED;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT status FROM TSK_SCHEDULED WHERE id = ? ");
+             PreparedStatement ps = connection.prepareStatement("SELECT status FROM TSK_SCHEDULED WHERE id = ? ")
         ) {
             ps.setLong(1, jobId);
             rs = ps.executeQuery();
@@ -180,7 +179,7 @@ public class OraJobStore implements JobStore {
     @Override
     public void updateErrorCount(long jobId, int count, String message) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET ERR_COUNT = ?, LAST_ERR_MESSAGE = ? WHERE id = ? ");
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET ERR_COUNT = ?, LAST_ERR_MESSAGE = ? WHERE id = ? ")
         ) {
             ps.setInt(1, count);
             ps.setString(2, message);

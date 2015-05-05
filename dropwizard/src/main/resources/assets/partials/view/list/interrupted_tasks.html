@@ -1,0 +1,147 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:10px;">
+                <h4>Interrupted tasks</h4>
+            </td>
+            <td style="text-align:right;">
+                <a class="btn btn-link" ng-click="back()">Back</a>
+            </td>
+        </tr>
+    </table>
+
+    <div ng-if="feedback.status>=500">
+        <div tsk-err-message model="feedback"></div>
+    </div>
+
+    <div class="well">
+        <div tsk-period-select model="period" ></div>
+    </div>
+
+    <div tabset>
+        <div tab heading="List tasks groups" style="cursor:pointer;">
+            <div class="well">
+
+                <div ng-if="!initialized" style="width:100%;text-align: center;">
+                    <img src="/img/ajax-loader.gif" />
+                </div>
+
+                <div ng-if="initialized">
+
+                    <div style="width:100%">
+                        <small>
+                            <span ng-if="viewType != 'list'" style="margin-right:30px;">
+                                <span class="muted"><b>Grouped by:</b></span>
+                                <span style="margin-left:5px;font-weight: bold;">{{getGroupLabel(groupCommand.group)}}</span>
+                            </span>
+                            <span tsk-broken-filter-view filter="filter" update-action="syncFilter()"></span>
+
+                        </small>
+                    </div>
+
+                    <div style="width:100%">
+                        <div style="float: right;">
+                            <!--<img id="loading" src="/img/ajax-loader.gif" style="display: none;"/>-->
+                            <button class="btn btn-small" ng-click="update()" popover="Refresh list" popover-trigger="mouseenter"><i class="icon-refresh"></i></button>
+                        </div>
+                    </div>
+
+
+                    <!-- GROUPS VIEW -->
+                    <table ng-if="viewType != 'list'" class="table table-striped" style="margin-right: 30px;">
+                        <tbody>
+                            <tr ng-if="brokenGroups.length==0">
+                                <td colspan="7"><div class="alert alert-warning" style="margin: 10px;">Not found any interrupted tasks</div></td>
+                            </tr>
+                            <tr ng-repeat="bg in brokenGroups">
+                                <td style="width: 25px;">
+                                    <small>{{ $index+1 }}</small>
+                                </td>
+                                <td>
+                                    <a ng-click="applyGroup(bg.name)" class="btn-link"><b>{{bg.name}}</b></a>
+                                </td>
+                                <td ng-if="hasStartersColumn()" style="width: 200px;">
+                                    <a ng-click="regroup('starter')" popover="Regroup by process starter type" popover-trigger="mouseenter" class="btn-link"><i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>Process</a> types in group:
+                                    <a ng-click="applyWithRegroup(bg.name, 'starter')" class="btn-link" popover="List all group's tasks" popover-trigger="mouseenter"><b>{{bg.startersCount}}</b></a>
+                                </td>
+                                <td ng-if="hasActorsColumn()" style="width: 200px;">
+                                    <a ng-click="regroup('actor')" popover="Regroup by broken actor type" popover-trigger="mouseenter" class="btn-link"><i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>Actor IDs</a> in group:
+                                    <a ng-click="applyWithRegroup(bg.name, 'actor')" class="btn-link" popover="List all group's tasks" popover-trigger="mouseenter"><b>{{bg.actorsCount}}</b></a>
+                                </td>
+                                <td ng-if="hasExceptionsColumn()" style="width: 200px;">
+                                    <a ng-click="regroup('exception')" popover="Regroup by broke cause exception class" popover-trigger="mouseenter" class="btn-link"><i class="icon-random" style="cursor: pointer;margin-right:5px;"></i>Exceptions</a> in group:
+                                    <a ng-click="applyWithRegroup(bg.name, 'exception')" class="btn-link" popover="List all group's tasks" popover-trigger="mouseenter"><b>{{bg.exceptionsCount}}</b></a>
+                                </td>
+                                <td style="width: 100px;">
+                                    Total: <a class="btn-link" ng-click="showProcessListView(bg.name)" popover="List all tasks in the group" popover-trigger="mouseenter"><b>{{bg.total}}</b></a>
+                                </td>
+                                <td style="width: 100px; text-align:center;">
+                                    <button ng-click="restartGroup(bg, $index)" popover="Submit restart task for all tasks in the group" popover-trigger="mouseenter"><i class="icon-retweet"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- /GROUPS VIEW -->
+
+                    <div tsk-broken-process-list ng-if="viewType == 'list'" model = "brokenTasks">
+                        <!-- PROCESSES VIEW -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div tab heading="Find tasks" style="cursor:pointer;">
+            <div class="well">
+                <div style="margin: 10px 10px 30px 10px;">
+                    <b>Search form:</b><br />
+                    <span class="muted">
+                        <small>Every search field is a "starts with" condition. When selecting multiple conditions, "AND" operator would be applied.</small>
+                    </span>
+
+                </div>
+
+                <form class="form-horizontal">
+                    <div class="control-group">
+                        <label class="control-label" for="starter"><small><b>{{getGroupLabel('starter')}}:</b></small></label>
+                        <div class="controls">
+                            <input class="input search-query" type="text" id="starter" placeholder="ru.taskurotta.Example#1.0" ng-model="searchCommand.starterId">
+                            <i class="icon-question-sign" popover="ActorID of the decider (or the scheduler) task which started the process." popover-trigger="mouseenter" popover-placement="right" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="actor"><small><b>{{getGroupLabel('actor')}}:</b></small></label>
+                        <div class="controls">
+                            <input class="input search-query" type="text" id="actor" placeholder="ru.taskurotta.Example#1.0" ng-model="searchCommand.actorId">
+                            <i class="icon-question-sign" popover="ActorID of the task which cause the process fail." popover-trigger="mouseenter" popover-placement="right" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="exception"><small><b>{{getGroupLabel('exception')}}:</b></small></label>
+                        <div class="controls">
+                            <input class="input search-query" type="text" id="exception" placeholder="ru.taskurotta.ExampleException" ng-model="searchCommand.exception">
+                            <i class="icon-question-sign" popover="Exception class for the error causing process fail." popover-trigger="mouseenter" popover-placement="right" />
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="controls">
+                            <button class="btn" ng-click="findProcesses()" ng-disabled="!isSearchFormCorrect()">Search</button>
+                        </div>
+                    </div>
+                </form>
+
+
+                <div class="well">
+                    <div ng-if="!searchInitialized" style="width:100%;text-align: center;">
+                        <img src="/img/ajax-loader.gif" />
+                    </div>
+
+                    <div ng-if = "foundBrokenProcesses.length == 0" class="alert alert-warning" style="margin: 10px;">Not found any broken processes</div>
+
+                    <div ng-if="foundBrokenProcesses.length>0" tsk-broken-process-list model = "foundBrokenProcesses"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

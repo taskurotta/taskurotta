@@ -1,7 +1,7 @@
 package ru.taskurotta.dropwizard.resources.console.broken;
 
 import ru.taskurotta.service.console.model.GroupCommand;
-import ru.taskurotta.service.console.model.ProcessGroupVO;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -13,22 +13,22 @@ import java.util.Collection;
  */
 public class ProcessGroupWrapper implements Serializable {
 
-    protected Collection<ProcessGroupVO> groups;
+    protected Collection<TasksGroupVO> groups;
     protected GroupCommand command;
 
 
     public ProcessGroupWrapper(){}
 
-    public ProcessGroupWrapper(Collection<ProcessGroupVO> groups, GroupCommand command){
+    public ProcessGroupWrapper(Collection<TasksGroupVO> groups, GroupCommand command){
         this.groups = groups;
         this.command = command;
     }
 
-    public Collection<ProcessGroupVO> getGroups() {
+    public Collection<TasksGroupVO> getGroups() {
         return groups;
     }
 
-    public void setGroups(Collection<ProcessGroupVO> groups) {
+    public void setGroups(Collection<TasksGroupVO> groups) {
         this.groups = groups;
     }
 

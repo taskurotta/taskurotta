@@ -30,7 +30,7 @@
 
     <bean id="taskCreator" class="ru.taskurotta.test.mongofail.WorkflowStarter" init-method="start">
         <property name = "clientServiceManager" ref = "clientServiceManager" />
-        <property name = "mongoTemplate" ref = "mongoTemplate" />
+        <property name = "mongoDB" ref = "mongoDB" />
         <property name = "count" value = "${count}" />
         <property name = "checkDelay" value = "${checkDelay}" />
         <property name = "failDelay" value = "${failDelay}" />
@@ -39,33 +39,62 @@
         <property name = "finishedCountRetriever" ref = "actualCountRetriever" />
     </bean>
 
-    <mongo:mongo id="mongo" host="${mongo.host}" port="${mongo.port}">
-        <mongo:options connections-per-host="50"
-                       threads-allowed-to-block-for-connection-multiplier="5"
-                       max-wait-time="12000"
-                       connect-timeout="0"
-                       socket-timeout="0"
-                       socket-keep-alive="false"
-                       auto-connect-retry="true"
-                       max-auto-connect-retry-time="0"
-                       write-number="0"
-                       write-timeout="0"
-                       write-fsync="false"
-                       slave-ok="false"/>
-    </mongo:mongo>
-
-    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg name="mongo" ref="mongo"/>
-        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
-        <property name="writeConcern" ref="writeConcern"/>
-    </bean>
-
+    <!-- Mongo -->
     <bean id="writeConcern" class="com.mongodb.WriteConcern">
-        <constructor-arg name="w" value="1"/>
-        <constructor-arg name="wtimeout" value="0"/>
-        <constructor-arg name="fsync" value="true"/>
-        <constructor-arg name="j" value="true"/>
+        <constructor-arg name="w" value="${mongo.options.write-concern.w}"/>
+        <constructor-arg name="wtimeout" value="${mongo.options.write-concern.wtimeout}"/>
+        <constructor-arg name="fsync" value="${mongo.options.write-concern.fsync}"/>
+        <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
     </bean>
+
+    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder"/>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="minConnectionsPerHost">
+        <constructor-arg value="${mongo.options.min-connections-per-host}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectionsPerHost">
+        <constructor-arg value="${mongo.options.connections-per-host}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="threadsAllowedToBlockForConnectionMultiplier">
+        <constructor-arg value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxWaitTime">
+        <constructor-arg value="${mongo.options.max-wait-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionIdleTime">
+        <constructor-arg value="${mongo.options.max-connection-idle-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionLifeTime">
+        <constructor-arg value="${mongo.options.max-connection-life-time}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectTimeout">
+        <constructor-arg value="${mongo.options.connect-timeout}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketTimeout">
+        <constructor-arg value="${mongo.options.socket-timeout}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketKeepAlive">
+        <constructor-arg value="${mongo.options.socket-keep-alive}"/>
+    </bean>
+    <bean factory-bean="mongoClientOptionsBuilder" factory-method="writeConcern">
+        <constructor-arg ref="writeConcern"/>
+    </bean>
+
+    <bean id="mongo" class="com.mongodb.MongoClient">
+        <constructor-arg name="addr">
+            <bean class="com.mongodb.ServerAddress">
+                <constructor-arg name="host" value="${mongo.host}"/>
+                <constructor-arg name="port" value="${mongo.port}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="options">
+            <bean factory-bean="mongoClientOptionsBuilder" factory-method="build"/>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mongoDB" factory-bean="mongo" factory-method="getDB">
+        <constructor-arg name="dbname" value="${mongo.db.name}" />
+    </bean>
+    <!-- /Mongo -->
 
 
 </beans>

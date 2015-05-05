@@ -24,11 +24,7 @@ import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
 import ru.taskurotta.service.queue.MemoryQueueService;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
-import ru.taskurotta.service.storage.BrokenProcessService;
-import ru.taskurotta.service.storage.GeneralTaskService;
-import ru.taskurotta.service.storage.MemoryBrokenProcessService;
-import ru.taskurotta.service.storage.MemoryTaskDao;
-import ru.taskurotta.service.storage.TaskDao;
+import ru.taskurotta.service.storage.*;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
@@ -53,7 +49,7 @@ public class AbstractTestStub {
     protected GeneralTaskService memoryStorageService;
     protected DependencyService dependencyService;
     protected RecoveryServiceImpl recoveryProcessService;
-    protected BrokenProcessService brokenProcessService;
+    protected InterruptedTasksService interruptedTasksService;
     protected ServiceBundle serviceBundle;
     protected GarbageCollectorService garbageCollectorService;
     protected GraphDao graphDao;
@@ -102,12 +98,12 @@ public class AbstractTestStub {
         memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
         memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
-        brokenProcessService = new MemoryBrokenProcessService();
+        interruptedTasksService = new MemoryInterruptedTasksService();
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1, 1000l);
         recoveryProcessService = new RecoveryServiceImpl(memoryQueueService, dependencyService,
-                serviceBundle.getProcessService(), serviceBundle.getTaskService(), brokenProcessService, garbageCollectorService,
+                serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService, garbageCollectorService,
                 1l, 1000l);
 
         taskServer = new GeneralTaskServer(serviceBundle);

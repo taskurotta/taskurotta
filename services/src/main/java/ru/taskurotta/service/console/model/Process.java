@@ -15,6 +15,7 @@ public class Process implements Serializable {
     public static final int START = 0;
     public static final int FINISH = 1;
     public static final int BROKEN = 2;
+    public static final int ABORTED = 3;
 
     protected UUID processId;
     protected UUID startTaskId;

@@ -14,11 +14,13 @@ import java.util.UUID;
  */
 public interface ProcessInfoRetriever {
 
-    public Process getProcess(UUID processUUID);
+    Process getProcess(UUID processUUID);
 
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter);
+    GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter);
 
-    public List<Process> findProcesses(ProcessSearchCommand command);
+    List<Process> findProcesses(ProcessSearchCommand command);
 
-    public int getFinishedCount(String customId);
+    int getFinishedCount(String customId);
+
+    int getBrokenProcessCount();
 }

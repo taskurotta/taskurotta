@@ -1,10 +1,10 @@
 package ru.taskurotta.test.mongofail;
 
+import com.mongodb.DB;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.bootstrap.Bootstrap;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
@@ -23,7 +23,7 @@ public class WorkflowStarter {
 
     private ClientServiceManager clientServiceManager;
 
-    private MongoTemplate mongoTemplate;
+    private DB mongoDB;
 
     private int count;
 
@@ -83,7 +83,7 @@ public class WorkflowStarter {
                     }
                 }
 
-                mongoTemplate.getDb().dropDatabase();
+                mongoDB.dropDatabase();
                 logger.info("Mongo DB drop triggered!");
             }
         });
@@ -143,8 +143,8 @@ public class WorkflowStarter {
     }
 
     @Required
-    public void setMongoTemplate(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public void setMongoDB(DB mongoDB) {
+        this.mongoDB = mongoDB;
     }
 
     @Required

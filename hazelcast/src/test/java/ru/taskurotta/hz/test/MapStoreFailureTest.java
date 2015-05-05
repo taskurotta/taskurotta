@@ -3,6 +3,7 @@ package ru.taskurotta.hz.test;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
@@ -12,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 /**
  * Date: 04.02.14 18:52
@@ -23,7 +23,7 @@ public class MapStoreFailureTest {
     private static final Logger logger = LoggerFactory.getLogger(MapStoreFailureTest.class);
 
     protected HazelcastInstance hzInstance;
-    protected MongoTemplate mongoTemplate;
+    protected DB mongoDB;
 
     protected String mapName = "MapStoreFailureTestMap";
 
@@ -33,8 +33,8 @@ public class MapStoreFailureTest {
     public void init() {
         ApplicationContext appContext = new ClassPathXmlApplicationContext("mapstore-fail-test-mongo.xml");
         hzInstance = appContext.getBean("hzInstance", HazelcastInstance.class);
-        mongoTemplate = appContext.getBean("mongoTemplate", MongoTemplate.class);
-        mongoTemplate.getDb().dropDatabase();
+        mongoDB = appContext.getBean("mongoDB", DB.class);
+        mongoDB.dropDatabase();
     }
 
     @Test
@@ -74,7 +74,7 @@ public class MapStoreFailureTest {
 
     @Test
     public void mongoTemplateConsTest() {
-        DBCollection dbCollection = mongoTemplate.getCollection("consCollection");
+        DBCollection dbCollection = mongoDB.getCollection("consCollection");
         int loaded = 1000;
         for (int i = 1; i <= loaded; i++ ) {
             BasicDBObject obj = new BasicDBObject();
@@ -88,7 +88,7 @@ public class MapStoreFailureTest {
     @Test
     public void mongoHzConsTest() {
         IMap map = hzInstance.getMap("yetAnotherMap");
-        DBCollection dbCollection = mongoTemplate.getCollection("yetAnotherMap");
+        DBCollection dbCollection = mongoDB.getCollection("yetAnotherMap");
         int loaded = 1000;
         for (int i = 1; i <= loaded; i++ ) {
             map.put("key-" + i, "val-" + i);

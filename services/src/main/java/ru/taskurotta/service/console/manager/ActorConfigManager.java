@@ -16,10 +16,10 @@ import java.util.Map;
  */
 public interface ActorConfigManager {
 
-    public GenericPage<ActorVO> getActorList(int pageNum, int pageSize);
+    GenericPage<ActorVO> getActorList(int pageNum, int pageSize, String filter);
 
-    public QueueBalanceVO getQueueState(String queueName);
+    QueueBalanceVO getQueueState(String queueName);
 
-    public Map<String, Collection<MetricsStatDataVO>> getMetricsData(Collection<String> metrics, Collection<String> actorIds);
+    Map<String, Collection<MetricsStatDataVO>> getMetricsData(Collection<String> metrics, Collection<String> actorIds);
 
 }

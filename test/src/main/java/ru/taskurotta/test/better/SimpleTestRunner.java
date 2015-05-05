@@ -140,8 +140,8 @@ public class SimpleTestRunner {
         log.info("Finished processes = {}", GeneralTaskServer.finishedProcessesCounter.get());
         log.info("Broken processes = {}", GeneralTaskServer.brokenProcessesCounter.get());
         log.info("Processes on timeout founded = {}", RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get());
-        log.info("Restarted process = {}", RecoveryServiceImpl.restartedProcessesCounter.get());
-        log.info("Restarted tasks = {}", RecoveryServiceImpl.restartedTasksCounter);
+        log.info("Recovered process = {}", RecoveryServiceImpl.recoveredProcessesCounter.get());
+        log.info("Recovered tasks = {}", RecoveryServiceImpl.recoveredTasksCounter);
     }
 
     private void checkProcessInQueueStart() {

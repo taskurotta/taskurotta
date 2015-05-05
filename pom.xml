@@ -1,21 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>ru.taskurotta</artifactId>
-    <version>0.8.2</version>
+    <version>0.9.0</version>
     <packaging>pom</packaging>
 
     <name>Taskurotta :: Parent module</name>
-    <description>Open source coordination of distributed processes for Java</description>
-    <developers>
-        <developer>
-            <email>taskurotta@googlegroups.com</email>
-        </developer>
-    </developers>
-    <url>http://taskurotta.org</url>
 
     <scm>
         <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
@@ -30,19 +22,9 @@
         </license>
     </licenses>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <properties>
         <java.version>1.7</java.version>
+
         <slf4j.version>1.7.5</slf4j.version>
         <spring.version>4.1.4.RELEASE</spring.version>
         <spring-data-mongodb.version>1.6.1.RELEASE</spring-data-mongodb.version>
@@ -55,8 +37,8 @@
         <yammer.metrics.version>2.2.0</yammer.metrics.version>
         <dropwizard.version>0.7.1</dropwizard.version>
         <skip.integration.tests>true</skip.integration.tests>
-        <recipesEnv/>
-        <endpoint/>
+        <recipesEnv />
+        <endpoint />
     </properties>
 
     <modules>
@@ -123,88 +105,6 @@
                     <uniqueVersion>false</uniqueVersion>
                 </snapshotRepository>
             </distributionManagement>
-        </profile>
-        <profile>
-            <id>ossrh</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.3</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>2.8.2</version>
-                        <configuration>
-                            <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <artifactId>maven-install-plugin</artifactId>
-                        <version>2.5.2</version>
-                        <configuration>
-                            <createChecksum>true</createChecksum>
-                        </configuration>
-                    </plugin>
-
-                </plugins>
-            </build>
         </profile>
     </profiles>
 
@@ -378,46 +278,46 @@
 
                 <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
-                <!--
-                                <plugin>
-                                    <groupId>org.eclipse.m2e</groupId>
-                                    <artifactId>lifecycle-mapping</artifactId>
-                                    <version>1.0.0</version>
-                                    <configuration>
-                                        <lifecycleMappingMetadata>
-                                            <pluginExecutions>
-                                                <pluginExecution>
-                                                    <pluginExecutionFilter>
-                                                        <groupId>org.codehaus.mojo</groupId>
-                                                        <artifactId>aspectj-maven-plugin</artifactId>
-                                                        <versionRange>[1.0,)</versionRange>
-                                                        <goals>
-                                                            <goal>test-compile</goal>
-                                                            <goal>compile</goal>
-                                                        </goals>
-                                                    </pluginExecutionFilter>
-                                                    <action>
-                                                        <execute />
-                                                    </action>
-                                                </pluginExecution>
-                                                <pluginExecution>
-                                                    <pluginExecutionFilter>
-                                                        <groupId>org.apache.maven.plugins</groupId>
-                                                        <artifactId>maven-dependency-plugin</artifactId>
-                                                        <versionRange>[2.1,)</versionRange>
-                                                        <goals>
-                                                            <goal>copy</goal>
-                                                        </goals>
-                                                    </pluginExecutionFilter>
-                                                    <action>
-                                                        <execute />
-                                                    </action>
-                                                </pluginExecution>
-                                            </pluginExecutions>
-                                        </lifecycleMappingMetadata>
-                                    </configuration>
-                                </plugin>
-                -->
+<!--
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>aspectj-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>test-compile</goal>
+                                            <goal>compile</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-dependency-plugin</artifactId>
+                                        <versionRange>[2.1,)</versionRange>
+                                        <goals>
+                                            <goal>copy</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <execute />
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
@@ -461,34 +361,8 @@
                         </execution>
                     </executions>
                 </plugin>
-
             </plugins>
         </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-
-        </plugins>
     </build>
 
 </project>

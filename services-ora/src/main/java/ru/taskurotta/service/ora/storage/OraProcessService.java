@@ -39,10 +39,9 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
     protected static final String SQL_GET_PROCESS_CNT_BY_STATE =
-            "SELECT COUNT(PROCESS_ID) AS cnt FROM PROCESS WHERE STATE = ? ";
+            "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? ";
     protected static final String SQL_FIND_INCOMPLETE_PROCESSES =
-            "SELECT process_id FROM process WHERE state = ? AND start_time < ?";
-
+            "SELECT PROCESS_ID FROM TSK_PROCESS WHERE STATE = ? AND START_TIME < ?";
 
     public OraProcessService(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -51,7 +50,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public void finishProcess(UUID processId, String returnValue) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS SET end_time = ?, state = ?, return_value= ? WHERE process_id = ?")
+             PreparedStatement ps = connection.prepareStatement(
+                     "UPDATE TSK_PROCESS SET END_TIME = ?, STATE = ?, RETURN_VALUE= ? WHERE PROCESS_ID = ?")
         ) {
             ps.setLong(1, (new Date()).getTime());
             ps.setInt(2, Process.FINISH);
@@ -67,7 +67,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public void deleteProcess(UUID processId) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("DELETE FROM PROCESS WHERE process_id = ?")
+             PreparedStatement ps = connection.prepareStatement("DELETE FROM TSK_PROCESS WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processId.toString());
             ps.executeUpdate();
@@ -83,7 +83,9 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         logger.debug("Starting process with TaskContainer [{}]", task);
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("INSERT INTO PROCESS (process_id, start_task_id, custom_id, start_time, state, start_json, actor_id) VALUES (?, ?, ?, ?, ?, ?, ?)")
+             PreparedStatement ps = connection.prepareStatement(
+                 "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID) " +
+                 "VALUES (?, ?, ?, ?, ?, ?, ?)")
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
@@ -105,7 +107,9 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         Process result = null;
         ResultSet rs = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS WHERE PROCESS_ID = ?")
+             PreparedStatement ps = connection.prepareStatement(
+                     "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON " +
+                     "FROM TSK_PROCESS WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processUUID.toString());
             rs = ps.executeQuery();
@@ -126,7 +130,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         TaskContainer result = null;
         ResultSet rs = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("SELECT start_json FROM PROCESS WHERE PROCESS_ID = ?")
+             PreparedStatement ps = connection.prepareStatement("SELECT START_JSON FROM TSK_PROCESS WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processId.toString());
             rs = ps.executeQuery();
@@ -152,11 +156,16 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         setProcessState(processId, Process.START);
     }
 
+    @Override
+    public void markProcessAsAborted(UUID processId) {
+        setProcessState(processId, Process.ABORTED);
+    }
+
     private void setProcessState(UUID processId, int state) {
         logger.trace("Try to mark process [{}] state as ([{}])", processId, state);
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement("UPDATE PROCESS set STATE = ? WHERE PROCESS_ID = ?")) {
+             PreparedStatement ps = connection.prepareStatement("UPDATE TSK_PROCESS SET STATE = ? WHERE PROCESS_ID = ?")) {
 
             ps.setInt(1, state);
             ps.setString(2, processId.toString());
@@ -174,7 +183,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         List<Process> result = new ArrayList<>();
         long totalCount = 0;
         ResultSet rs = null;
-        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM PROCESS ";
+        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS ";
         if (status >= 0 || typeFilter!=null) {
             StringBuilder sb = new StringBuilder("WHERE");
             if (status >= 0) {
@@ -253,7 +262,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public int getFinishedCount(String customId) {
         int result = 0;
-        String sql = customId!=null? SQL_GET_PROCESS_CNT_BY_STATE + "AND CUSTOM_ID = ? ": SQL_GET_PROCESS_CNT_BY_STATE;
+        String sql = customId!=null? SQL_GET_PROCESS_CNT_BY_STATE + " AND CUSTOM_ID = ? ": SQL_GET_PROCESS_CNT_BY_STATE;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -273,7 +282,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     private String getSearchSql(ProcessSearchCommand command) {
-        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM PROCESS WHERE ");
+        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM TSK_PROCESS WHERE ");
         boolean requireAndCdtn = false;
         if(command.getProcessId()!=null && command.getProcessId().trim().length()>0) {
             sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
@@ -348,7 +357,24 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         };
     }
 
+    @Override
+    public int getBrokenProcessCount() {
+        int result = 0;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SQL_GET_PROCESS_CNT_BY_STATE)) {
+            ps.setInt(1, Process.BROKEN);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                result = rs.getInt("cnt");
+            }
+        } catch (SQLException ex) {
+            logger.error("DataBase exception: " + ex.getMessage(), ex);
+            throw new ServiceCriticalException("Database error", ex);
+        }
+        return result;
+    }
+
     private String getSql(int limit) {
-        return limit>0? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? ": SQL_FIND_INCOMPLETE_PROCESSES;
+        return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? " : SQL_FIND_INCOMPLETE_PROCESSES;
     }
 }

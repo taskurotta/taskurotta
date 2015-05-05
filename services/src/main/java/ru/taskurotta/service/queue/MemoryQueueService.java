@@ -18,6 +18,7 @@ import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -335,7 +336,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
                     }
 
                     if (resultItems!=null && !resultItems.isEmpty()) {
-                        result = new GenericPage<QueueStatVO>(resultItems, pageNum, pageSize, allQueues.size());
+                        result = new GenericPage<>(resultItems, pageNum, pageSize, allQueues.size());
                     }
 
                 } else {
@@ -351,7 +352,7 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public List<String> getQueueNames() {
+    public Collection<String> getQueueNames() {
         return new ArrayList<>(queues.keySet());
     }
 

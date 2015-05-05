@@ -19,7 +19,8 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
 
         $scope.selection = {
             metric: {},
-            metricPeriod: {}
+            metricPeriod: {},
+            filter: ''
         };
 
         var setBlockedState = function(actorId, isBlocked) {
@@ -71,9 +72,10 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
         //Updates queues states  by polling REST resource
         $scope.update = function () {
 
-            tskActors.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize).then(function (value) {
+            tskActors.listActors($scope.actorsPage.pageNumber, $scope.actorsPage.pageSize, $scope.selection.filter).then(function (value) {
                 $scope.actorsPage = value.data || defaultActorsPage;
-                $log.info("actorListController: successfully updated actors list: " + angular.toJson($scope.actorsPage));
+                $log.info("actorListController: successfully updated actors list: ", $scope.actorsPage);
+
                 tskActors.listMetrics().then(function (success) {
                     $scope.metrics = success.data;
                     for (var i = 0; i<$scope.metrics.length; i++) {//period "hour" by default for all metrics (if other value has not been specified)
@@ -88,6 +90,7 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
                     $scope.feedback = fail.data;
                     $scope.initialized = true;
                 });
+
             }, function (errReason) {
                 $scope.feedback = errReason;
                 $scope.initialized = true;
@@ -98,7 +101,7 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
 
         $scope.getSelectedMetricNames = function() {
             var result = [];
-            for(var key in $scope.selection.metric) {
+            for (var key in $scope.selection.metric) {
                 if ($scope.selection.metric[key]) {
                     result.push(key);
                 }
@@ -112,13 +115,13 @@ angular.module("console.actor.controllers", ['console.services', 'ui.bootstrap.m
                 actorIds.push($scope.actorsPage.items[i].actorId);
             }
             var metricsArr = $scope.getSelectedMetricNames();
-            //$log.log("metricsArr: " + angular.toJson(metricsArr) + ", actorIds: " + angular.toJson(actorIds));
-
-            tskActors.getMetricsData(actorIds, metricsArr).then(function (success) {
-                $scope.metricsData = success.data;
-            }, function (error) {
-                $scope.feedback = error.data;
-            });
+            if (metricsArr.length > 0) {
+                tskActors.getMetricsData(actorIds, metricsArr).then(function (success) {
+                    $scope.metricsData = success.data;
+                }, function (error) {
+                    $scope.feedback = error.data;
+                });
+            }
         };
 
         $scope.getMetricsRows = function(columns) {

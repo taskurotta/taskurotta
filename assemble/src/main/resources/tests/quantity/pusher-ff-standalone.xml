@@ -43,10 +43,10 @@
 
     <bean id="fpCounter" class="ru.taskurotta.test.stress.mongo.MongoFpCounter" init-method="init">
         <property name="collectionName" value="Process"/>
-        <property name="mongoTemplate" ref="mongoTemplate"/>
+        <property name="mongoDB" ref="mongoDB"/>
     </bean>
 
-    <bean id="hzClientProvider" class="ru.taskurotta.test.stress.HazelcastClientProvider">
+    <bean id="hzClientProvider" class="ru.taskurotta.test.stress.HzClientProvider">
         <constructor-arg value="${hz.nodes}" />
     </bean>
 
@@ -102,9 +102,8 @@
         </constructor-arg>
     </bean>
 
-    <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="mongo"/>
-        <constructor-arg name="databaseName" value="${mongo.db.name}"/>
+    <bean id="mongoDB" factory-bean="mongo" factory-method="getDB">
+        <constructor-arg name="dbname" value="${mongo.db.name}" />
     </bean>
     <!-- /Mongo -->
 

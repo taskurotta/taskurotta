@@ -17,7 +17,7 @@
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 
-    <bean id="brokenProcessService" class="ru.taskurotta.service.ora.storage.OraBrokenProcessService">
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.ora.storage.OraInterruptedTasksService">
         <property name="dataSource" ref="originalDataSource"/>
         <property name="lobHandler" ref="lobHandler"/>
     </bean>
@@ -51,7 +51,7 @@
         </tx:attributes>
     </tx:advice>
 
-    <tx:advice id="brokenProcessTransactions" transaction-manager="txManager">
+    <tx:advice id="interruptedTasksTransactions" transaction-manager="txManager">
         <tx:attributes>
             <tx:method name="save" propagation="REQUIRES_NEW"/>
         </tx:attributes>
@@ -60,11 +60,11 @@
     <aop:config>
         <aop:pointcut id="serviceOperation"
                       expression="execution(* ru.taskurotta.service.ora.storage.OraProcessService.*(..))"/>
-        <aop:pointcut id="brokenProcessOperation"
-                      expression="execution(* ru.taskurotta.service.ora.storage.OraBrokenProcessService.*(..))"/>
+        <aop:pointcut id="interruptedTasksOperation"
+                      expression="execution(* ru.taskurotta.service.ora.storage.OraInterruptedTasksService.*(..))"/>
 
         <aop:advisor advice-ref="processTransactions" pointcut-ref="serviceOperation"/>
-        <aop:advisor advice-ref="brokenProcessTransactions" pointcut-ref="brokenProcessOperation"/>
+        <aop:advisor advice-ref="interruptedTasksTransactions" pointcut-ref="interruptedTasksOperation"/>
     </aop:config>
     <!-- /Transactions -->
 

@@ -8,13 +8,13 @@ import ru.taskurotta.policy.PolicyConstants;
 import ru.taskurotta.policy.retry.TimeRetryPolicyBase;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
-import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
@@ -49,15 +49,15 @@ public class GeneralTaskServer implements TaskServer {
     public static final AtomicInteger finishedProcessesCounter = new AtomicInteger();
     public static final AtomicInteger brokenProcessesCounter = new AtomicInteger();
 
-    public static final AtomicInteger startedDistributedTasks = new AtomicInteger();
-    public static final AtomicInteger finishedDistributedTasks = new AtomicInteger();
+    public static final AtomicInteger receivedDecisionsCounter = new AtomicInteger();
+    public static final AtomicInteger processedDecisionsCounter = new AtomicInteger();
 
     protected ProcessService processService;
     protected TaskService taskService;
     protected QueueService queueService;
     protected DependencyService dependencyService;
     protected ConfigService configService;
-    protected BrokenProcessService brokenProcessService;
+    protected InterruptedTasksService interruptedTasksService;
     protected GarbageCollectorService garbageCollectorService;
 
     /*
@@ -72,19 +72,19 @@ public class GeneralTaskServer implements TaskServer {
         this.queueService = serviceBundle.getQueueService();
         this.dependencyService = serviceBundle.getDependencyService();
         this.configService = serviceBundle.getConfigService();
-        this.brokenProcessService = serviceBundle.getBrokenProcessService();
+        this.interruptedTasksService = serviceBundle.getInterruptedTasksService();
         this.garbageCollectorService = serviceBundle.getGarbageCollectorService();
     }
 
     public GeneralTaskServer(ProcessService processService, TaskService taskService, QueueService queueService,
-                             DependencyService dependencyService, ConfigService configService, BrokenProcessService brokenProcessService,
+                             DependencyService dependencyService, ConfigService configService, InterruptedTasksService interruptedTasksService,
                              GarbageCollectorService garbageCollectorService) {
         this.processService = processService;
         this.taskService = taskService;
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.configService = configService;
-        this.brokenProcessService = brokenProcessService;
+        this.interruptedTasksService = interruptedTasksService;
         this.garbageCollectorService = garbageCollectorService;
     }
 
@@ -307,24 +307,25 @@ public class GeneralTaskServer implements TaskServer {
         // increments stat counter
         brokenProcessesCounter.incrementAndGet();
 
-        // save broken process information
-        BrokenProcess brokenProcess = new BrokenProcess();
-        brokenProcess.setTime(System.currentTimeMillis());
-        brokenProcess.setProcessId(processId);
-        brokenProcess.setBrokenActorId(taskDecision.getActorId());
+        // save interrupted task information
+        InterruptedTask itdTask = new InterruptedTask();
+        itdTask.setTime(System.currentTimeMillis());
+        itdTask.setProcessId(processId);
+        itdTask.setTaskId(taskDecision.getTaskId());
+        itdTask.setActorId(taskDecision.getActorId());
 
         TaskContainer startTask = processService.getStartTask(processId);
         if (startTask != null) {
-            brokenProcess.setStartActorId(startTask.getActorId());
+            itdTask.setStarterId(startTask.getActorId());
         }
 
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
         if (errorContainer != null) {
-            brokenProcess.setErrorClassName(errorContainer.getClassName());
-            brokenProcess.setErrorMessage(errorContainer.getMessage());
-            brokenProcess.setStackTrace(errorContainer.getStackTrace());
+            itdTask.setErrorClassName(errorContainer.getClassName());
+            itdTask.setErrorMessage(errorContainer.getMessage());
+            itdTask.setStackTrace(errorContainer.getStackTrace());
         }
-        brokenProcessService.save(brokenProcess);
+        interruptedTasksService.save(itdTask);
 
         // mark process as broken
         processService.markProcessAsBroken(processId);

@@ -8,7 +8,7 @@ import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.config.model.ExpirationPolicyConfig;
-import ru.taskurotta.service.console.model.BrokenProcess;
+import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
@@ -17,7 +17,7 @@ import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
@@ -93,6 +93,11 @@ public class MockServiceBundle implements ServiceBundle {
 
             @Override
             public void markProcessAsStarted(UUID processId) {
+
+            }
+
+            @Override
+            public void markProcessAsAborted(UUID processId) {
 
             }
 
@@ -232,7 +237,10 @@ public class MockServiceBundle implements ServiceBundle {
                 return System.currentTimeMillis();
             }
 
-
+            @Override
+            public Collection<String> getQueueNames() {
+                return null;
+            }
         };
     }
 
@@ -302,33 +310,34 @@ public class MockServiceBundle implements ServiceBundle {
     }
 
     @Override
-    public BrokenProcessService getBrokenProcessService() {
-        return new BrokenProcessService() {
+    public InterruptedTasksService getInterruptedTasksService() {
+        return new InterruptedTasksService() {
             @Override
-            public void save(BrokenProcess brokenProcess) {
+            public void save(InterruptedTask itdTask) {
                 // ignore
             }
 
             @Override
-            public Collection<BrokenProcess> find(SearchCommand searchCommand) {
+            public Collection<InterruptedTask> find(SearchCommand searchCommand) {
                 throw new IllegalAccessError("Method not implemented");
 
             }
 
             @Override
-            public Collection<BrokenProcess> findAll() {
+            public Collection<InterruptedTask> findAll() {
                 throw new IllegalAccessError("Method not implemented");
             }
 
             @Override
-            public void delete(UUID processId) {
+            public void delete(UUID processId, UUID taskId) {
                 // ignore
             }
 
-            @Override
-            public void deleteCollection(Collection<UUID> processIds) {
-                // ignore
-            }
+//            @Override
+//            public void restart(UUID processId, UUID taskId) {
+//                throw new IllegalAccessError("Method not implemented");
+//            }
+
         };
     }
 

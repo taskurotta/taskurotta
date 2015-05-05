@@ -4,7 +4,6 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,24 +13,22 @@ import java.util.Map;
  */
 public interface QueueInfoRetriever {
 
-    public GenericPage<String> getQueueList(int pageNum, int pageSize);
+    GenericPage<String> getQueueList(int pageNum, int pageSize);
 
-    public int getQueueTaskCount(String queueName);
+    int getQueueTaskCount(String queueName);
 
-    public GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize);
+    GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize);
 
-    public Map<String, Integer> getHoveringCount(float periodSize);
+    Map<String, Integer> getHoveringCount(float periodSize);
 
-    public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter);
+    GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter);
 
-    public List<String> getQueueNames();
+    long getLastPolledTaskEnqueueTime(String queueName);
 
-    public long getLastPolledTaskEnqueueTime(String queueName);
+    void clearQueue(String queueName);
 
-    public void clearQueue(String queueName);
+    void removeQueue(String queueName);
 
-    public void removeQueue(String queueName);
-
-    public long getQueueStorageCount(String queueName);
+    long getQueueStorageCount(String queueName);
 
 }

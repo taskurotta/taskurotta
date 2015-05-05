@@ -2,6 +2,8 @@ package ru.taskurotta.hz.test;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import junit.framework.Assert;
 import org.junit.Before;
@@ -11,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.queue.TaskQueueItem;
@@ -29,7 +30,7 @@ public class MapStoreTest {
     private static final Logger logger = LoggerFactory.getLogger(MapStoreTest.class);
 
     protected HazelcastInstance hzInstance;
-    protected MongoTemplate mongoTemplate;
+    protected DB mongoDB;
 
     private static String MONGO_DB_NAME = "test";
 
@@ -44,19 +45,12 @@ public class MapStoreTest {
 
         ApplicationContext appContext = new ClassPathXmlApplicationContext("appContext.xml");
         hzInstance = appContext.getBean("hzInstance", HazelcastInstance.class);
-        mongoTemplate = appContext.getBean("mongoTemplate", MongoTemplate.class);
+        mongoDB = appContext.getBean("mongoDB", DB.class);
 
-        mongoTemplate.dropCollection(PURE_MAPSTORE_MAP);
-        mongoTemplate.createCollection(PURE_MAPSTORE_MAP);
-
-        mongoTemplate.dropCollection(MAPSTORE_EVICTION_MAP);
-        mongoTemplate.createCollection(MAPSTORE_EVICTION_MAP);
-
-        mongoTemplate.dropCollection(PURE_POJO_MAPSTORE_MAP);
-        mongoTemplate.createCollection(PURE_POJO_MAPSTORE_MAP);
-
-        mongoTemplate.dropCollection(QUEUE_MAP_NAME);
-        mongoTemplate.createCollection(QUEUE_MAP_NAME);
+        recreateCollection(PURE_MAPSTORE_MAP);
+        recreateCollection(MAPSTORE_EVICTION_MAP);
+        recreateCollection(PURE_POJO_MAPSTORE_MAP);
+        recreateCollection(QUEUE_MAP_NAME);
     }
 
     @Test
@@ -69,7 +63,7 @@ public class MapStoreTest {
             hzMap.put("key-" + i, "val-" + i);
         }
 
-        DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
+        DBCollection mongoMap = mongoDB.getCollection(testMapName);
         logger.info("MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
 
         Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
@@ -122,7 +116,7 @@ public class MapStoreTest {
             }
         }
 
-        DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
+        DBCollection mongoMap = mongoDB.getCollection(testMapName);
         logger.info("EVICTION WITH MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
 
         int afterEvictionSize = size / 2 + 1;//half was evicted and then one added
@@ -167,7 +161,7 @@ public class MapStoreTest {
             hzMap.put(new TaskKey(processId, taskId), taskId);
         }
 
-        DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
+        DBCollection mongoMap = mongoDB.getCollection(testMapName);
         logger.info("EVICTION WITH POJO MAPSTORE: mongoMap size [{}], hzMapSize[{}]", mongoMap.count(), hzMap.size());
 
         Assert.assertEquals("Collections in mongo and in HZ should have same size", hzMap.size(), mongoMap.count());
@@ -179,7 +173,7 @@ public class MapStoreTest {
         String testMapName = "q:" + testQueueName;
         CachedQueue<TaskQueueItem> hzQueue = hzInstance.getDistributedObject(CachedQueue.class.getName(), testQueueName);
         IMap hzMap = hzInstance.getMap(testMapName);//direct link to map backing this queue
-        DBCollection mongoMap = mongoTemplate.getCollection(testMapName);
+        DBCollection mongoMap = mongoDB.getCollection(testMapName);
 
         logger.info("QUEUE MAPSTORE: initial queueMap size is [{}]", hzMap.size());
         logger.info("QUEUE MAPSTORE: initial queue size is [{}]", hzQueue.size());
@@ -224,6 +218,11 @@ public class MapStoreTest {
         tqi.setProcessId(processId);
         tqi.setTaskId(UUID.randomUUID());
         return tqi;
+    }
+
+    private void recreateCollection(String collectionName) {
+        this.mongoDB.getCollection(collectionName).drop();
+        this.mongoDB.createCollection(collectionName, new BasicDBObject());
     }
 
 }

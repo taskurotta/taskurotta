@@ -1,5 +1,6 @@
 package ru.taskurotta.mongodb.driver;
 
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -10,7 +11,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.mongodb.driver.domain.RootPojo;
 import ru.taskurotta.mongodb.driver.io.RootPojoStreamBSerializer;
 
@@ -29,17 +29,14 @@ public class MongoSerializationTest {
 
     public static WriteConcern noWaitWriteConcern = new WriteConcern(0, 0, false, true);
 
-
-    private MongoTemplate getMongoTemplate() throws UnknownHostException {
+    private DB getMongoDB() throws UnknownHostException {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
         MongoClient mongoClient = new MongoClient(serverAddress);
 
         WriteConcern writeConcern = new WriteConcern(1, 0, false, true);
+        mongoClient.setWriteConcern(writeConcern);
 
-        MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, "test");
-        mongoTemplate.setWriteConcern(writeConcern);
-
-        return mongoTemplate;
+        return mongoClient.getDB("test");
     }
 
     @Test
@@ -52,13 +49,12 @@ public class MongoSerializationTest {
         String str2 = "hohoho";
         UUID uuid2 = UUID.randomUUID();
 
-
-        final MongoTemplate mongoTemplate = getMongoTemplate();
-        mongoTemplate.getDb().dropDatabase();
+        DB mongoDB = getMongoDB();
+        mongoDB.dropDatabase();
 
         RootPojoStreamBSerializer rootPojoStreamBSerializer = new RootPojoStreamBSerializer();
 
-        final DBCollection coll = mongoTemplate.getCollection("new");
+        final DBCollection coll = mongoDB.getCollection("new");
         coll.setDBEncoderFactory(new BEncoderFactory(BSerializationServiceFactory.newInstance
                 (rootPojoStreamBSerializer)));
         coll.setDBDecoderFactory(new BDecoderFactory(rootPojoStreamBSerializer));

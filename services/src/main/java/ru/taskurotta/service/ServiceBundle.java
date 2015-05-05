@@ -3,8 +3,8 @@ package ru.taskurotta.service;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.storage.BrokenProcessService;
 import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 
@@ -25,7 +25,7 @@ public interface ServiceBundle {
 
     public ConfigService getConfigService();
 
-    public BrokenProcessService getBrokenProcessService();
+    public InterruptedTasksService getInterruptedTasksService();
 
     public GarbageCollectorService getGarbageCollectorService();
 }

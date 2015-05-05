@@ -9,8 +9,9 @@ import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.recovery.RecoveryService;
-import ru.taskurotta.service.storage.BrokenProcessService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
+import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -37,15 +38,17 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     private static final Logger logger = LoggerFactory.getLogger(RecoveryServiceImpl.class);
 
-    public static AtomicInteger restartedProcessesCounter = new AtomicInteger();
-    public static AtomicInteger restartedTasksCounter = new AtomicInteger();
-    public static AtomicInteger resurrectedTasksCounter = new AtomicInteger();
+    public static AtomicInteger recoveredProcessesCounter = new AtomicInteger();
+    public static AtomicInteger recoveredTasksCounter = new AtomicInteger();
+    public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
 
     private QueueService queueService;
     private DependencyService dependencyService;
     private ProcessService processService;
     private TaskService taskService;
-    private BrokenProcessService brokenProcessService;
+    private TaskDao taskDao;
+    private GraphDao graphDao;
+    private InterruptedTasksService interruptedTasksService;
     private GarbageCollectorService garbageCollectorService;
     // time out between recovery process in milliseconds
     private long recoveryProcessChangeTimeout;
@@ -55,14 +58,17 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     public RecoveryServiceImpl(QueueService queueService, DependencyService dependencyService,
-                               ProcessService processService, TaskService taskService, BrokenProcessService brokenProcessService,
+                               ProcessService processService, TaskService taskService, TaskDao taskDao, GraphDao graphDao,
+                               InterruptedTasksService interruptedTasksService,
                                GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
                                long findIncompleteProcessPeriod) {
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.processService = processService;
         this.taskService = taskService;
-        this.brokenProcessService = brokenProcessService;
+        this.taskDao = taskDao;
+        this.graphDao = graphDao;
+        this.interruptedTasksService = interruptedTasksService;
         this.garbageCollectorService = garbageCollectorService;
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
@@ -70,7 +76,6 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     //    @Override
     public boolean restartBrokenTasks(final UUID processId) {
-
 
         boolean result = false;
 
@@ -113,9 +118,10 @@ public class RecoveryServiceImpl implements RecoveryService {
                 queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
                         (taskContainer));
                 result = true;
+                interruptedTasksService.delete(processId, taskId);
 
                 logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
-                resurrectedTasksCounter.incrementAndGet();
+                restartedBrokenTasks.incrementAndGet();
             } else {
                 logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
             }
@@ -123,7 +129,6 @@ public class RecoveryServiceImpl implements RecoveryService {
         }
 
         if (result) {
-            brokenProcessService.delete(processId);
             // todo: process can receive new broken tasks before this point
             processService.markProcessAsStarted(processId);
         }
@@ -137,14 +142,10 @@ public class RecoveryServiceImpl implements RecoveryService {
         logger.trace("#[{}]: try to restart process", processId);
 
 
-        // check Broken process
+        // skip broken and already finished process
         Process process = processService.getProcess(processId);
-        if (process.getState() == Process.BROKEN) {
-            if (restartBrokenTasks(processId)) {
-                return true;
-            }
-
-            // else try to resurrect process in general way
+        if (process.getState() == Process.FINISH || process.getState() == Process.BROKEN) {
+                return false;
         }
 
 
@@ -208,7 +209,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                         logger.debug("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis());
 
                         int restartResult = restartProcessTasks(taskContainers, processId);
-                        restartedTasksCounter.addAndGet(restartResult);
+                        recoveredTasksCounter.addAndGet(restartResult);
 
                         boolContainer[0] = restartResult > 0;
 
@@ -261,8 +262,6 @@ public class RecoveryServiceImpl implements RecoveryService {
                 successfullyRestartedProcesses.add(processId);
             }
         }
-
-        brokenProcessService.deleteCollection(successfullyRestartedProcesses);
 
         return successfullyRestartedProcesses;
     }
@@ -361,6 +360,93 @@ public class RecoveryServiceImpl implements RecoveryService {
         logger.debug("#[{}]: complete restart of [{}] tasks", processId, restartedTasks);
 
         return restartedTasks;
+    }
+
+    @Override
+    public boolean abortProcess(final UUID processId) {
+        boolean result = dependencyService.changeGraph(new GraphDao.Updater() {
+            @Override
+            public UUID getProcessId() {
+                return processId;
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+                Set<UUID> finishedItems = graph.getFinishedItems();
+                deleteTasksAndDecisions(finishedItems, processId);
+
+                Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
+                deleteTasksAndDecisions(notFinishedItems, processId);
+
+                graphDao.deleteGraph(processId);
+
+                return false;
+            }
+        });
+
+        processService.markProcessAsAborted(processId);
+
+        garbageCollectorService.collect(processId);
+
+        logger.info("Abort process [{}]", processId);
+
+        return result;
+    }
+
+    @Override
+    public boolean restartTask(final UUID processId, final UUID taskId) {
+        final boolean[] boolContainer = new boolean[1];
+        dependencyService.changeGraph(new GraphDao.Updater() {
+
+            @Override
+            public UUID getProcessId() {
+                return processId;
+            }
+
+            @Override
+            public boolean apply(Graph graph) {
+                boolean result = false;
+                long touchTime = System.currentTimeMillis();
+                graph.setTouchTimeMillis(touchTime);
+
+                if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+                    TaskContainer tc = taskService.getTask(taskId, processId);
+                    if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+                        interruptedTasksService.delete(processId, taskId);
+                        result = true;
+                        restartedBrokenTasks.incrementAndGet();
+                    }
+                }
+
+                // --process state change part--
+                if (!hasOtherNotReadyFatalTasks(processId, taskId, graph.getAllReadyItems())) {
+                    processService.markProcessAsStarted(processId);
+                }
+                // --/process state change part--
+
+                boolContainer[0] = result;
+
+                logger.debug("ProcessId [{}] graph change applied: touch time updated [{}], result[{}]", processId, touchTime, result);
+
+                return true;//touch time have been updated
+            }
+
+        });
+
+        return boolContainer[0];
+    }
+
+    private boolean hasOtherNotReadyFatalTasks(UUID processId, UUID taskId, Map<UUID, Long> readyItems) {
+        boolean result = false;
+        if (readyItems!=null) {
+            for (UUID readyTaskId : readyItems.keySet()) {
+                if (!taskId.equals(readyTaskId) && TransportUtils.hasFatalError(taskService.getDecision(readyTaskId, processId))) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     private boolean isReadyToRecover(UUID processId, UUID taskId, long startTime, String actorId, String taskList, long lastRecoveryStartTime) {
@@ -510,7 +596,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                 startTaskContainer.getStartTime(), TransportUtils.getTaskList(startTaskContainer));
 
         if (result) {
-            restartedProcessesCounter.incrementAndGet();
+            recoveredProcessesCounter.incrementAndGet();
         }
 
         return result;
@@ -539,6 +625,14 @@ public class RecoveryServiceImpl implements RecoveryService {
         garbageCollectorService.collect(processId);
     }
 
+    private void deleteTasksAndDecisions(Set<UUID> taskIds, UUID processId) {
+        taskDao.deleteDecisions(taskIds, processId);
+        taskDao.deleteTasks(taskIds, processId);
+        for (UUID id : taskIds) {
+            interruptedTasksService.delete(processId, id);
+        }
+    }
+
     public void setDependencyService(DependencyService dependencyService) {
         this.dependencyService = dependencyService;
     }
@@ -547,7 +641,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         this.processService = processService;
     }
 
-    public void setBrokenProcessService(BrokenProcessService brokenProcessService) {
-        this.brokenProcessService = brokenProcessService;
+    public void setInterruptedTasksService(InterruptedTasksService interruptedTasksService) {
+        this.interruptedTasksService = interruptedTasksService;
     }
 }

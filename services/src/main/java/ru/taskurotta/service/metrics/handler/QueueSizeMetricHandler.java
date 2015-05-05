@@ -5,7 +5,9 @@ import ru.taskurotta.service.metrics.MetricName;
 import ru.taskurotta.service.metrics.MetricsFactory;
 import ru.taskurotta.service.metrics.PeriodicMetric;
 import ru.taskurotta.service.metrics.PeriodicMetric.DatasetValueExtractor;
+import ru.taskurotta.service.queue.QueueService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +17,7 @@ import java.util.Map;
  */
 public class QueueSizeMetricHandler {
 
-    public QueueSizeMetricHandler(MetricsFactory metricsFactory, final QueueInfoRetriever retriever, int queueSizeMetricPeriodSeconds) {
+    public QueueSizeMetricHandler(MetricsFactory metricsFactory, final QueueInfoRetriever retriever, final QueueService queueService, int queueSizeMetricPeriodSeconds) {
 
         PeriodicMetric queueSizeMetric = metricsFactory.getPeriodicInstance(MetricName.QUEUE_SIZE.getValue(), queueSizeMetricPeriodSeconds);
 
@@ -24,7 +26,7 @@ public class QueueSizeMetricHandler {
 
             @Override
             public List<String> getDatasets() {//return list of queue names. Dataset name = queue name
-                return retriever.getQueueNames();
+                return new ArrayList<>(queueService.getQueueNames());
             }
 
             @Override

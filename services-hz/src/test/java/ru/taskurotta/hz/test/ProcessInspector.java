@@ -1,10 +1,10 @@
 package ru.taskurotta.hz.test;
 
 import com.hazelcast.util.Base64;
+import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
@@ -175,25 +175,25 @@ public class ProcessInspector {
 
     private static void init() throws Throwable {
         MongoClient mongoClient = getMongoClient();
-        MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, DB_NAME);
+        DB mongoDB = mongoClient.getDB(DB_NAME);
 
         BSerializationService bSerializationService = BSerializationServiceFactory.newInstance(new UUIDBSerializer(),
                 new ProcessBSerializer(), new GraphBSerializer(), new TaskContainerBSerializer(), new
                         DecisionBSerializer(), new TaskKeyBSerializer(), new DecisionRowBSerializer());
 
-        processStore = new MongoMapStore(mongoTemplate, bSerializationService, Process.class.getName());
+        processStore = new MongoMapStore(mongoDB, bSerializationService, Process.class.getName());
         processStore.init(null, new Properties(), COLLECTION_PROCESS);
 
-        graphStore = new MongoMapStore(mongoTemplate, bSerializationService, Graph.class.getName());
+        graphStore = new MongoMapStore(mongoDB, bSerializationService, Graph.class.getName());
         graphStore.init(null, new Properties(), COLLECTION_GRAPH);
 
-        graphDecisionStore = new MongoMapStore(mongoTemplate, bSerializationService, HzGraphDao.DecisionRow.class.getName());
+        graphDecisionStore = new MongoMapStore(mongoDB, bSerializationService, HzGraphDao.DecisionRow.class.getName());
         graphDecisionStore.init(null, new Properties(), COLLECTION_GRAPH_DECISION);
 
-        taskStore = new MongoMapStore(mongoTemplate, bSerializationService, TaskContainer.class.getName());
+        taskStore = new MongoMapStore(mongoDB, bSerializationService, TaskContainer.class.getName());
         taskStore.init(null, new Properties(), COLLECTION_TASK);
 
-        taskDecisionStore = new MongoMapStore(mongoTemplate, bSerializationService, Decision.class.getName());
+        taskDecisionStore = new MongoMapStore(mongoDB, bSerializationService, Decision.class.getName());
         taskDecisionStore.init(null, new Properties(), COLLECTION_TASK_DECISION);
 
     }

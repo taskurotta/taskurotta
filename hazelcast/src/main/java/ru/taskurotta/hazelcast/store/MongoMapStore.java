@@ -20,6 +20,7 @@ import com.hazelcast.core.MapLoaderLifecycleSupport;
 import com.hazelcast.core.MapStore;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
@@ -27,12 +28,11 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.DBObjectCheat;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
-import ru.taskurotta.mongodb.driver.BDecoderFactory;
-import ru.taskurotta.mongodb.driver.BEncoderFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,14 +61,12 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
     private String mapName;
     private DBCollection coll;
 
-    private final MongoTemplate mongoTemplate;
+    private final DB mongoDB;
     private final BSerializationService serializationService;
     private final String objectClassName;
 
-    public MongoMapStore(MongoTemplate mongoTemplate, BSerializationService serializationService, String
-            objectClassName) {
-
-        this.mongoTemplate = mongoTemplate;
+    public MongoMapStore(DB mongoDB, BSerializationService serializationService, String objectClassName) {
+        this.mongoDB = mongoDB;
         this.serializationService = serializationService;
         this.objectClassName = objectClassName;
     }
@@ -163,7 +161,7 @@ public class MongoMapStore implements MapStore, MapLoaderLifecycleSupport {
             this.mapName = mapName;
         }
 
-        this.coll = mongoTemplate.getCollection(this.mapName);
+        this.coll = mongoDB.getCollection(this.mapName);
 
         StreamBSerializer objectSerializer = serializationService.getSerializer(objectClassName);
 

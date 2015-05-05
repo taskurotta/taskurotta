@@ -60,12 +60,13 @@ angular.module("consoleApp", ['console.services', 'console.controllers', 'consol
         });
         //create
         $routeProvider.when('/processes/create', {
-            templateUrl: '/partials/view/create/process_create.html'
+            templateUrl: '/partials/view/create/process_create.html',
+            controller: "processCreateController"
         });
         //broken
-        $routeProvider.when('/processes/broken', {
-            templateUrl: '/partials/view/list/process_broken.html',
-            controller: "brokenProcessListController"
+        $routeProvider.when('/processes/interrupted', {
+            templateUrl: '/partials/view/list/interrupted_tasks.html',
+            controller: "interruptedTasksListController"
         });
 
         //MONITORING

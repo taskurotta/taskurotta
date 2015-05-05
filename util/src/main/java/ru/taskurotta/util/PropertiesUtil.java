@@ -69,7 +69,7 @@ public class PropertiesUtil {
             return;
         }
 
-        if (properties.contains(PROP_DUMP_PROPERTIES) && !Boolean.valueOf(properties.getProperty(PROP_DUMP_PROPERTIES))) {
+        if (properties.containsKey(PROP_DUMP_PROPERTIES) && !Boolean.valueOf(properties.getProperty(PROP_DUMP_PROPERTIES))) {
             return;
         }
 

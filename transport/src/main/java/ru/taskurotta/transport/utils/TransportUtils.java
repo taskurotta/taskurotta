@@ -1,5 +1,6 @@
 package ru.taskurotta.transport.utils;
 
+import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
@@ -8,6 +9,8 @@ import ru.taskurotta.transport.model.TaskOptionsContainer;
  * Date: 06.02.14 12:24
  */
 public class TransportUtils {
+
+    public static final String REST_SERVICE_PREFIX = "/rest/";
 
     public static String getTaskList(TaskContainer taskContainer) {
         String result = null;
@@ -31,6 +34,17 @@ public class TransportUtils {
 
     public static String createQueueName(String actorId, String taskList) {
         return (taskList == null) ? actorId : actorId + "#" + taskList;
+    }
+
+    public static String getRestPath(String endpoint, String path) {
+        if (endpoint != null && path != null) {
+            return endpoint.replaceAll("/*$", "") + REST_SERVICE_PREFIX + path.replaceAll("^/*", "");
+        }
+        return null;
+    }
+
+    public static boolean hasFatalError(DecisionContainer decision) {
+        return decision!=null && decision.getErrorContainer()!=null && decision.getErrorContainer().isFatalError();
     }
 
 }
