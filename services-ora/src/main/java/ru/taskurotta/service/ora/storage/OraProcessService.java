@@ -8,7 +8,6 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
-import ru.taskurotta.service.ora.tools.PagedQueryBuilder;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
@@ -39,9 +38,11 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
     protected static final String SQL_GET_PROCESS_CNT_BY_STATE =
-            "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? ";
+            "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ?";
     protected static final String SQL_FIND_INCOMPLETE_PROCESSES =
             "SELECT PROCESS_ID FROM TSK_PROCESS WHERE STATE = ? AND START_TIME < ?";
+    protected static final String SQL_GET_PROCESS_LIST =
+            "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
 
     public OraProcessService(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -84,8 +85,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(
-                 "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID) " +
-                 "VALUES (?, ?, ?, ?, ?, ?, ?)")
+                     "INSERT INTO TSK_PROCESS (PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, STATE, START_JSON, ACTOR_ID) " +
+                             "VALUES (?, ?, ?, ?, ?, ?, ?)")
         ) {
             ps.setString(1, task.getProcessId().toString());
             ps.setString(2, task.getTaskId().toString());
@@ -109,7 +110,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(
                      "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON " +
-                     "FROM TSK_PROCESS WHERE PROCESS_ID = ?")
+                             "FROM TSK_PROCESS WHERE PROCESS_ID = ?")
         ) {
             ps.setString(1, processUUID.toString());
             rs = ps.executeQuery();
@@ -180,34 +181,42 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
 
     @Override
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter) {
+        StringBuilder stringBuilder = new StringBuilder(SQL_GET_PROCESS_LIST);
+        if (status >= 0 || typeFilter != null) {
+            stringBuilder.append(" WHERE");
+            boolean anotherConditionExists = false;
+            if (status >= 0) {
+                stringBuilder.append(" STATE = ?");
+                anotherConditionExists = true;
+            }
+            if (typeFilter != null) {
+                if (anotherConditionExists) {
+                    stringBuilder.append(" AND");
+                }
+                stringBuilder.append(" ACTOR_ID LIKE ?");
+            }
+        }
+        String query = stringBuilder.toString();
+
         List<Process> result = new ArrayList<>();
         long totalCount = 0;
         ResultSet rs = null;
-        String query = "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS ";
-        if (status >= 0 || typeFilter!=null) {
-            StringBuilder sb = new StringBuilder("WHERE");
-            if (status >= 0) {
-                sb.append(" STATE = ? ");
-            }
-            if (typeFilter != null) {
-                sb.append(" ACTOR_ID LIKE ? ");
-            }
-            query+= sb.toString();
-        }
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(PagedQueryBuilder.createPagesQuery(query))
-        ) {
+             PreparedStatement ps = connection.prepareStatement(createPagesQuery(query))) {
+
             int argIndex = 1;
             if (status >= 0) {
                 ps.setInt(argIndex++, status);
             }
+
             if (typeFilter != null) {
                 ps.setString(argIndex++, typeFilter + "%");
             }
+
             int startIndex = (pageNumber - 1) * pageSize + 1;
             int endIndex = startIndex + pageSize - 1;
             ps.setInt(argIndex++, endIndex);
-            ps.setInt(argIndex++, startIndex);
+            ps.setInt(argIndex, startIndex);
 
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -226,20 +235,10 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         return new GenericPage<>(result, pageNumber, pageSize, totalCount);
     }
 
-    private static void closeResultSet(ResultSet rs) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                throw new ServiceCriticalException("Error on closing ResultSet", e);
-            }
-        }
-    }
-
     @Override
     public List<Process> findProcesses(ProcessSearchCommand command) {
         List<Process> result = new ArrayList<>();
-        if(command!=null && !command.isEmpty()) {
+        if (command != null && !command.isEmpty()) {
             String query = getSearchSql(command);
             ResultSet rs = null;
             try (Connection connection = dataSource.getConnection();
@@ -262,7 +261,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public int getFinishedCount(String customId) {
         int result = 0;
-        String sql = customId!=null? SQL_GET_PROCESS_CNT_BY_STATE + " AND CUSTOM_ID = ? ": SQL_GET_PROCESS_CNT_BY_STATE;
+        String sql = customId != null ? SQL_GET_PROCESS_CNT_BY_STATE + " AND CUSTOM_ID = ? " : SQL_GET_PROCESS_CNT_BY_STATE;
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -270,34 +270,18 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             if (customId != null) {
                 ps.setString(2, customId);
             }
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                result = rs.getInt("cnt");
+            resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                result = resultSet.getInt("cnt");
             }
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
+        } finally {
+            closeResultSet(resultSet);
         }
+
         return result;
-    }
-
-    private String getSearchSql(ProcessSearchCommand command) {
-        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM TSK_PROCESS WHERE ");
-        boolean requireAndCdtn = false;
-        if(command.getProcessId()!=null && command.getProcessId().trim().length()>0) {
-            sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
-            requireAndCdtn = true;
-        }
-        if(command.getCustomId()!=null && command.getCustomId().trim().length()>0) {
-            if(requireAndCdtn) {
-                sb.append(" AND ");
-            }
-            sb.append("CUSTOM_ID LIKE '").append(command.getCustomId()).append("%'");
-        }
-
-        sb.append(" AND ROWNUM <= 200");
-
-        return sb.toString();
     }
 
     private Process createProcessFromResultSet(ResultSet resultSet) throws SQLException {
@@ -318,25 +302,26 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public ResultSetCursor findProcesses(long recoveryTime, int limit) {
         final Collection<UUID> result = new ArrayList<>();
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(getSql(limit))) {
 
             preparedStatement.setInt(1, Process.START);
             preparedStatement.setLong(2, recoveryTime);
-            if (limit>0) {
+            if (limit > 0) {
                 preparedStatement.setInt(3, limit);
             }
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 UUID processId = UUID.fromString(resultSet.getString("process_id"));
                 result.add(processId);
             }
-
         } catch (Throwable e) {
-            logger.error("Cannot find incomplete before time["+ recoveryTime +"]processes limit["+limit+"] due to database error", e);
-            throw new ServiceCriticalException("Incomplete processes search before time["+ recoveryTime +"] failed", e);
+            logger.error("Cannot find incomplete before time[" + recoveryTime + "]processes limit[" + limit + "] due to database error", e);
+            throw new ServiceCriticalException("Incomplete processes search before time[" + recoveryTime + "] failed", e);
+        } finally {
+            closeResultSet(resultSet);
         }
 
         return new ResultSetCursor() {
@@ -360,21 +345,59 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public int getBrokenProcessCount() {
         int result = 0;
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(SQL_GET_PROCESS_CNT_BY_STATE)) {
             ps.setInt(1, Process.BROKEN);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                result = rs.getInt("cnt");
+            resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                result = resultSet.getInt("cnt");
             }
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
+        } finally {
+            closeResultSet(resultSet);
         }
         return result;
     }
 
-    private String getSql(int limit) {
+    private static String getSql(int limit) {
         return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? " : SQL_FIND_INCOMPLETE_PROCESSES;
+    }
+
+    private static String createPagesQuery(String query) {
+        return "SELECT t1.* FROM ( SELECT t.*, ROWNUM rnum FROM ( select a1.*, count(*) over() as cnt FROM ( " +
+                query +
+                " ) a1) t WHERE ROWNUM <= ? ) t1 WHERE t1.rnum >= ?";
+    }
+
+    private static void closeResultSet(ResultSet rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                throw new ServiceCriticalException("Error on closing ResultSet", e);
+            }
+        }
+    }
+
+    private static String getSearchSql(ProcessSearchCommand command) {
+        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM TSK_PROCESS WHERE ");
+        boolean requireAndCdtn = false;
+        if (command.getProcessId() != null && command.getProcessId().trim().length() > 0) {
+            sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
+            requireAndCdtn = true;
+        }
+        if (command.getCustomId() != null && command.getCustomId().trim().length() > 0) {
+            if (requireAndCdtn) {
+                sb.append(" AND ");
+            }
+            sb.append("CUSTOM_ID LIKE '").append(command.getCustomId()).append("%'");
+        }
+
+        sb.append(" AND ROWNUM <= 200");
+
+        return sb.toString();
     }
 }
