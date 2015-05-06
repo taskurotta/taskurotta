@@ -216,7 +216,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             int startIndex = (pageNumber - 1) * pageSize + 1;
             int endIndex = startIndex + pageSize - 1;
             ps.setInt(argIndex++, endIndex);
-            ps.setInt(argIndex++, startIndex);
+            ps.setInt(argIndex, startIndex);
 
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -233,16 +233,6 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
         logger.debug("Process list got by params: pageNum[{}], pageSize[{}], status[{}] is [{}]", pageNumber, pageSize, status, result);
 
         return new GenericPage<>(result, pageNumber, pageSize, totalCount);
-    }
-
-    private static void closeResultSet(ResultSet rs) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                throw new ServiceCriticalException("Error on closing ResultSet", e);
-            }
-        }
     }
 
     @Override
@@ -272,6 +262,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     public int getFinishedCount(String customId) {
         int result = 0;
         String sql = customId != null ? SQL_GET_PROCESS_CNT_BY_STATE + " AND CUSTOM_ID = ? " : SQL_GET_PROCESS_CNT_BY_STATE;
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
 
@@ -279,34 +270,18 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             if (customId != null) {
                 ps.setString(2, customId);
             }
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                result = rs.getInt("cnt");
+            resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                result = resultSet.getInt("cnt");
             }
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
+        } finally {
+            closeResultSet(resultSet);
         }
+
         return result;
-    }
-
-    private String getSearchSql(ProcessSearchCommand command) {
-        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM TSK_PROCESS WHERE ");
-        boolean requireAndCdtn = false;
-        if (command.getProcessId() != null && command.getProcessId().trim().length() > 0) {
-            sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
-            requireAndCdtn = true;
-        }
-        if (command.getCustomId() != null && command.getCustomId().trim().length() > 0) {
-            if (requireAndCdtn) {
-                sb.append(" AND ");
-            }
-            sb.append("CUSTOM_ID LIKE '").append(command.getCustomId()).append("%'");
-        }
-
-        sb.append(" AND ROWNUM <= 200");
-
-        return sb.toString();
     }
 
     private Process createProcessFromResultSet(ResultSet resultSet) throws SQLException {
@@ -327,6 +302,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public ResultSetCursor findProcesses(long recoveryTime, int limit) {
         final Collection<UUID> result = new ArrayList<>();
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(getSql(limit))) {
 
@@ -336,16 +312,16 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
                 preparedStatement.setInt(3, limit);
             }
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-
+            resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 UUID processId = UUID.fromString(resultSet.getString("process_id"));
                 result.add(processId);
             }
-
         } catch (Throwable e) {
             logger.error("Cannot find incomplete before time[" + recoveryTime + "]processes limit[" + limit + "] due to database error", e);
             throw new ServiceCriticalException("Incomplete processes search before time[" + recoveryTime + "] failed", e);
+        } finally {
+            closeResultSet(resultSet);
         }
 
         return new ResultSetCursor() {
@@ -369,27 +345,59 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     @Override
     public int getBrokenProcessCount() {
         int result = 0;
+        ResultSet resultSet = null;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(SQL_GET_PROCESS_CNT_BY_STATE)) {
             ps.setInt(1, Process.BROKEN);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                result = rs.getInt("cnt");
+            resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                result = resultSet.getInt("cnt");
             }
         } catch (SQLException ex) {
             logger.error("DataBase exception: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
+        } finally {
+            closeResultSet(resultSet);
         }
         return result;
     }
 
-    private String getSql(int limit) {
+    private static String getSql(int limit) {
         return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? " : SQL_FIND_INCOMPLETE_PROCESSES;
     }
 
-    private String createPagesQuery(String query) {
+    private static String createPagesQuery(String query) {
         return "SELECT t1.* FROM ( SELECT t.*, ROWNUM rnum FROM ( select a1.*, count(*) over() as cnt FROM ( " +
                 query +
                 " ) a1) t WHERE ROWNUM <= ? ) t1 WHERE t1.rnum >= ?";
+    }
+
+    private static void closeResultSet(ResultSet rs) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                throw new ServiceCriticalException("Error on closing ResultSet", e);
+            }
+        }
+    }
+
+    private static String getSearchSql(ProcessSearchCommand command) {
+        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM TSK_PROCESS WHERE ");
+        boolean requireAndCdtn = false;
+        if (command.getProcessId() != null && command.getProcessId().trim().length() > 0) {
+            sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
+            requireAndCdtn = true;
+        }
+        if (command.getCustomId() != null && command.getCustomId().trim().length() > 0) {
+            if (requireAndCdtn) {
+                sb.append(" AND ");
+            }
+            sb.append("CUSTOM_ID LIKE '").append(command.getCustomId()).append("%'");
+        }
+
+        sb.append(" AND ROWNUM <= 200");
+
+        return sb.toString();
     }
 }
