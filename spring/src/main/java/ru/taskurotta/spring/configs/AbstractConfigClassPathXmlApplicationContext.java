@@ -60,8 +60,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
                     } catch (IOException e) {
                         throw new IllegalStateException("Can not load properties from [" + location + "]", e);
                     }
-                    result = PropertiesUtil.mergeProperties(result, props, traceSource,
-                            "default[" + ++i + "]");
+                    result = PropertiesUtil.mergeProperties(result, props, traceSource, "default[" + ++i + "]");
                 }
             }
 
@@ -97,9 +96,7 @@ abstract class AbstractConfigClassPathXmlApplicationContext {
         this.defaultPropertiesLocation = defaultPropertiesLocation;
     }
 
-    public void setDefaultPropertiesLocations(String[] defaultPropertiesLocations) {
-        this.defaultPropertiesLocations = defaultPropertiesLocations;
+    public void setDefaultPropertiesLocations(String defaultPropertiesLocations) {
+        this.defaultPropertiesLocations = defaultPropertiesLocations.split(",");
     }
-
-
 }
