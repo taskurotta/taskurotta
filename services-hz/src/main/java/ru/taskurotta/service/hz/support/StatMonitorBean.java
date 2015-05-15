@@ -15,6 +15,7 @@ import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
 import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
+import ru.taskurotta.service.console.retriever.StatInfoRetriever;
 import ru.taskurotta.service.hz.queue.HzQueueService;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created on 14.05.2015.
  */
-public class StatMonitorBean {
+public class StatMonitorBean implements StatInfoRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(StatMonitorBean.class);
 
@@ -41,116 +42,20 @@ public class StatMonitorBean {
     }
 
     public void init() {
-        // start dump thread
-        new DaemonThread("stats dumper", TimeUnit.SECONDS, periodSec) {
+        if (periodSec > 0) {
+            logger.info("=========== Periodic stats monitor activated =============");
 
-            @Override
-            public void daemonJob() {
+            // start dump thread
+            new DaemonThread("stats dumper", TimeUnit.SECONDS, periodSec) {
 
-                long totalHeapCost = 0;
-
-                StringBuilder sb = new StringBuilder();
-
-                if (hazelcastInstance != null) {
-                    sb.append("\n============  ").append(hazelcastInstance.getName()).append("  ===========");
-
-                    for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
-                        sb.append(String.format("\n%22s -> %18s", distributedObject.getServiceName(),
-                                distributedObject.getName()));
-
-                        if (distributedObject instanceof IMap) {
-                            IMap map = (IMap) distributedObject;
-                            LocalMapStats statM = map.getLocalMapStats();
-
-                            sb.append("\tsize = " + map.size());
-                            sb.append("\tcache: size = " + statM.getOwnedEntryCount());
-                            sb.append("\tmem = " + bytesToMb(statM.getOwnedEntryMemoryCost()));
-
-                            totalHeapCost += statM.getHeapCost();
-
-                        } else if (distributedObject instanceof CachedQueue) {
-                            CachedQueue queue = (CachedQueue) distributedObject;
-                            LocalCachedQueueStats statQ = queue.getLocalQueueStats();
-
-                            sb.append("\tsize = " + queue.size());
-                            sb.append("\tmax = " + statQ.getCacheMaxSize());
-                            sb.append("\tmem = " + bytesToMb(statQ.getHeapCost()));
-
-                            totalHeapCost += statQ.getHeapCost();
-                        } else if (distributedObject instanceof IExecutorService) {
-                            IExecutorService executorService = (IExecutorService) distributedObject;
-                            LocalExecutorStats statE = executorService.getLocalExecutorStats();
-                            sb.append("\tpending = " + statE.getPendingTaskCount());
-                        }
-                    }
-
-                    sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
+                @Override
+                public void daemonJob() {
+                    logger.info(getNodeStats());
                 }
 
-                sb.append("\nMongo Maps statistics (rate per second at last one minute):");
-                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
-                                .deleteTimer.max()));
-                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate(), MongoMapStore
-                                .loadTimer.max()));
-                sb.append(String.format("\nloadS  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate(),
-                        MongoMapStore.loadSuccessTimer.max()));
-                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate(), MongoMapStore
-                                .storeTimer.max()));
+            }.start();
 
-                sb.append("\nMongo Queues statistics:");
-                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.deleteTimer.max()));
-                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.loadTimer.max()));
-                sb.append(String.format("\nloadA  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()
-                        , MongoCachedQueueStore.loadAllTimer.max()));
-                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.storeTimer.max()));
-
-                sb.append("\n processesOnTimeout = " +
-                        RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
-                        "  recoveredProcesses = " +
-                        RecoveryServiceImpl.recoveredProcessesCounter.get() +
-                        "  recoveredTasks = " +
-                        RecoveryServiceImpl.recoveredTasksCounter);
-
-                sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
-                        "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
-                        - GeneralTaskServer.processedDecisionsCounter.get()));
-
-                sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
-                        "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
-                        ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
-                        MongoStorageFactory.bakedTasks.get());
-
-                {
-                    double release = HzTaskServerMetrics.statRelease.mean();
-                    double statPdAll = HzTaskServerMetrics.statPdAll.mean();
-                    double statPdLock = HzTaskServerMetrics.statPdLock.mean();
-                    double statPdWork = HzTaskServerMetrics.statPdWork.mean();
-
-                    sb.append(String.format("\n decision: release = %8.3f process: rate = %8.3f sum = %8.3f lock = " +
-                                    "%8.3f work = %8.3f unlock = %8.3f maxR = %8.3f  maxD = %8.3f",
-                            release, HzTaskServerMetrics.statPdAll.oneMinuteRate(), statPdAll, statPdLock, statPdWork,
-                            (statPdAll - statPdLock - statPdWork), HzTaskServerMetrics.statRelease.max(),
-                            HzTaskServerMetrics.statPdAll.max()));
-
-                }
-
-                logger.info(sb.toString());
-
-
-            }
-
-        }.start();
+        }
 
     }
 
@@ -159,4 +64,106 @@ public class StatMonitorBean {
     }
 
 
+    @Override
+    public String getNodeStats() {
+        long totalHeapCost = 0;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (hazelcastInstance != null) {
+            sb.append("\n============  ").append(hazelcastInstance.getName()).append("  ===========");
+
+            for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
+                sb.append(String.format("\n%22s -> %18s", distributedObject.getServiceName(),
+                        distributedObject.getName()));
+
+                if (distributedObject instanceof IMap) {
+                    IMap map = (IMap) distributedObject;
+                    LocalMapStats statM = map.getLocalMapStats();
+
+                    sb.append("\tsize = " + map.size());
+                    sb.append("\tcache: size = " + statM.getOwnedEntryCount());
+                    sb.append("\tmem = " + bytesToMb(statM.getOwnedEntryMemoryCost()));
+
+                    totalHeapCost += statM.getHeapCost();
+
+                } else if (distributedObject instanceof CachedQueue) {
+                    CachedQueue queue = (CachedQueue) distributedObject;
+                    LocalCachedQueueStats statQ = queue.getLocalQueueStats();
+
+                    sb.append("\tsize = " + queue.size());
+                    sb.append("\tmax = " + statQ.getCacheMaxSize());
+                    sb.append("\tmem = " + bytesToMb(statQ.getHeapCost()));
+
+                    totalHeapCost += statQ.getHeapCost();
+                } else if (distributedObject instanceof IExecutorService) {
+                    IExecutorService executorService = (IExecutorService) distributedObject;
+                    LocalExecutorStats statE = executorService.getLocalExecutorStats();
+                    sb.append("\tpending = " + statE.getPendingTaskCount());
+                }
+            }
+
+            sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
+        }
+
+        sb.append("\nMongo Maps statistics (rate per second at last one minute):");
+        sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
+                        .deleteTimer.max()));
+        sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate(), MongoMapStore
+                        .loadTimer.max()));
+        sb.append(String.format("\nloadS  mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate(),
+                MongoMapStore.loadSuccessTimer.max()));
+        sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate(), MongoMapStore
+                        .storeTimer.max()));
+
+        sb.append("\nMongo Queues statistics:");
+        sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate(),
+                MongoCachedQueueStore.deleteTimer.max()));
+        sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate(),
+                MongoCachedQueueStore.loadTimer.max()));
+        sb.append(String.format("\nloadA  mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()
+                , MongoCachedQueueStore.loadAllTimer.max()));
+        sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
+                MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
+                MongoCachedQueueStore.storeTimer.max()));
+
+        sb.append("\n processesOnTimeout = " +
+                RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
+                "  recoveredProcesses = " +
+                RecoveryServiceImpl.recoveredProcessesCounter.get() +
+                "  recoveredTasks = " +
+                RecoveryServiceImpl.recoveredTasksCounter);
+
+        sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
+                "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
+                - GeneralTaskServer.processedDecisionsCounter.get()));
+
+        sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
+                "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
+                ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
+                MongoStorageFactory.bakedTasks.get());
+
+        {
+            double release = HzTaskServerMetrics.statRelease.mean();
+            double statPdAll = HzTaskServerMetrics.statPdAll.mean();
+            double statPdLock = HzTaskServerMetrics.statPdLock.mean();
+            double statPdWork = HzTaskServerMetrics.statPdWork.mean();
+
+            sb.append(String.format("\n decision: release = %8.3f process: rate = %8.3f sum = %8.3f lock = " +
+                            "%8.3f work = %8.3f unlock = %8.3f maxR = %8.3f  maxD = %8.3f",
+                    release, HzTaskServerMetrics.statPdAll.oneMinuteRate(), statPdAll, statPdLock, statPdWork,
+                    (statPdAll - statPdLock - statPdWork), HzTaskServerMetrics.statRelease.max(),
+                    HzTaskServerMetrics.statPdAll.max()));
+
+        }
+
+        return sb.toString();
+    }
 }
