@@ -41,7 +41,7 @@ public class MongoProcessService extends HzProcessService {
     }
 
     @Override
-    public ResultSetCursor findProcesses(long recoveryTime, final int batchSize) {
+    public ResultSetCursor findIncompleteProcesses(long recoveryTime, final int batchSize) {
 
         // { "startTime" : { "$lte" : 1423988513856} , "$or" : [ {"state": 0}, {"state": null} ]}
         BasicDBObject query = new BasicDBObject();

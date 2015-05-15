@@ -73,6 +73,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>oracle-jdbc15</artifactId>
+            <version>11.1.0.7.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>

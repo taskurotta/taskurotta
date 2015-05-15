@@ -54,7 +54,7 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit) {
+    public ResultSetCursor<UUID> findIncompleteProcesses(long recoveryTime, int limit) {
         return new ResultSetCursor<UUID>() {
             @Override
             public Collection<UUID> getNext() {
