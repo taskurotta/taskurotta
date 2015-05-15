@@ -7,5 +7,6 @@ import java.util.Collection;
  */
 public interface ResultSetCursor<T> extends Closeable {
 
-    public Collection<T> getNext();
+    Collection<T> getNext();
+
 }
