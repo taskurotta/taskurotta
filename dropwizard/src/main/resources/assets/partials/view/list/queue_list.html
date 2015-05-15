@@ -95,7 +95,7 @@
                     </td>
                     <td>
                         <b>
-                            {{ queue.count }}
+                            <span ng-if="queue.nodes>0">{{ queue.count }}</span>
                             <span ng-if="hasCurrentSizeValue($index)" class="muted" style="font-size: 10px;">/{{ realSizes[$index] }}</span>
                         </b>
                     </td>

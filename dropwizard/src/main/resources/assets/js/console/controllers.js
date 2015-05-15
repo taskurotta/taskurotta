@@ -307,7 +307,6 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         items: []
     };
 
-    //Updates queues states  by polling REST resource
     $scope.update = function () {
 
         $$data.listTasks($scope.tasksPage.pageNumber, $scope.tasksPage.pageSize).then(function (value) {
@@ -317,7 +316,7 @@ angular.module("console.controllers", ['queue.controllers', 'console.services', 
         }, function (errReason) {
             $scope.feedback = angular.toJson(errReason);
             $scope.initialized = true;
-            $log.error("queueListController: tasks page update failed: " + $scope.feedback);
+            $log.error("taskListController: tasks page update failed: " + $scope.feedback);
         });
 
     };
