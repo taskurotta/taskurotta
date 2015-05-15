@@ -24,5 +24,5 @@ public interface ProcessService {
 
     Process getProcess(UUID processUUID);
 
-    ResultSetCursor<UUID> findProcesses(long recoveryTime, int limit);
+    ResultSetCursor<UUID> findIncompleteProcesses(long recoveryTime, int limit);
 }

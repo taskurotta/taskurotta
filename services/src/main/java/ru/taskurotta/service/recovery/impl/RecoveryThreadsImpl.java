@@ -91,7 +91,7 @@ public class RecoveryThreadsImpl implements RecoveryThreads {
                                 logger.debug("Try to find incomplete processes started before [{}]", new Date(timeBefore));
                             }
 
-                            try (ResultSetCursor<UUID> incompleteProcessesCursor = processService.findProcesses(timeBefore,
+                            try (ResultSetCursor<UUID> incompleteProcessesCursor = processService.findIncompleteProcesses(timeBefore,
                                     batchSize)) {
 
                                 while (true) {
