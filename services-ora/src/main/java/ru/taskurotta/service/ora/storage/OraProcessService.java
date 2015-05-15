@@ -363,7 +363,7 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     private static String getSql(int limit) {
-        return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? " : SQL_FIND_INCOMPLETE_PROCESSES;
+        return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM <= ? " : SQL_FIND_INCOMPLETE_PROCESSES;
     }
 
     private static String createPagesQuery(String query) {
