@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            ">
+
+    <bean id="statMonitorBean" class="ru.taskurotta.service.hz.support.StatMonitorBean" init-method="init">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="periodSec" value="${stats.monitor.period-sec}" />
+    </bean>
+
+    <bean id="statMonitorResource" class="ru.taskurotta.dropwizard.resources.monitoring.StatMonitorResource">
+        <property name="statInfoRetriever" ref="statMonitorBean" />
+    </bean>
+</beans>

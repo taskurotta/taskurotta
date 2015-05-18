@@ -7,7 +7,6 @@ import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.model.DataPointVO;
 import ru.taskurotta.service.metrics.model.NumberDataRowVO;
 
-import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -31,7 +30,6 @@ public class NumberDataHandler implements NumberDataListener, MetricsNumberDataR
         return singleton;
     }
 
-    @PostConstruct
     public void init() {
         singleton = this;
     }

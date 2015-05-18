@@ -103,4 +103,7 @@ public class ComputeQueueBalanceTask implements Callable<QueueBalanceVO>, Serial
         return result;
     }
 
+    public String getQueueName() {
+        return queueName;
+    }
 }

@@ -8,7 +8,6 @@ import ru.taskurotta.service.metrics.MetricsDataUtils;
 import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
 import ru.taskurotta.service.metrics.handler.NumberDataHandler;
 import ru.taskurotta.service.metrics.model.DataPointVO;
-import ru.taskurotta.util.ActorUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ public class HzQueueStatTask implements Callable<List<QueueStatVO>>, Serializabl
                     QueueStatVO item = new QueueStatVO();
                     item.setName(queueName);
 
-                    Number count = ndh.getLastValue(MetricName.QUEUE_SIZE.getValue(), ActorUtils.toPrefixed(queueName, queueNamePrefix));
+                    Number count = ndh.getLastValue(MetricName.QUEUE_SIZE.getValue(), queueName);
                     item.setCount(count != null ? (Integer) count : 0);
                     item.setLastActivity(mdh.getLastActivityTime(MetricName.POLL.getValue(), queueName));
 

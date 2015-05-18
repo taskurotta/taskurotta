@@ -51,7 +51,7 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public ResultSetCursor findProcesses(long recoveryTime, int limit) {
+    public ResultSetCursor findIncompleteProcesses(long recoveryTime, int limit) {
         com.hazelcast.query.Predicate predicate = new Predicates.AndPredicate(
                 new Predicates.BetweenPredicate(START_TIME_INDEX_NAME, 0l, recoveryTime),
                 new Predicates.EqualPredicate(STATE_INDEX_NAME, Process.START));

@@ -42,7 +42,8 @@ angular.module("queue.controllers", ['console.services', 'ngRoute', 'ui.bootstra
         });
 
         $scope.hasCurrentSizeValue = function(idx) {
-            if ($scope.realSizes[idx]) {
+            var value = $scope.realSizes[idx];
+            if (value || value==0) {
                 return true;
             } else {
                 return false;
@@ -85,6 +86,15 @@ angular.module("queue.controllers", ['console.services', 'ngRoute', 'ui.bootstra
             tskQueues.getQueueList($scope.queuesPage.pageNumber, $scope.queuesPage.pageSize, $scope.selection.filter).then(function (value) {
                 $scope.queuesPage = value.data || initPagingObject();
                 $log.info("queueListController: successfully updated queues state: " + angular.toJson($scope.queuesPage));
+                var rCnt = 0;
+                for (var i = 0; i<$scope.queuesPage.items.length ;i++) {
+                    if ($scope.hasCurrentSizeValue(i)) {
+                        var queue = $scope.queuesPage.items[i];
+                        $scope.showRealSize(queue.name, i);
+                        rCnt++;
+                    }
+                }
+                $log.info("Updated ["+rCnt+"] real queue size values");
                 $scope.initialized = true;
             }, function (errReason) {
                 $scope.feedback = angular.toJson(errReason);

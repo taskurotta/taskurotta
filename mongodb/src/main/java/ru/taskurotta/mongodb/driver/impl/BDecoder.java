@@ -231,7 +231,7 @@ public class BDecoder extends DefaultDBDecoder implements BDataInput {
             // try to read carefully. Some times size has a wrong big value and we are welcome to OOM
         } else {
 
-            logger.warn("Too big size of array [" + size + "]. Try to read carefully");
+            logger.debug("Too big size of array [{}]. Try to read carefully", size);
 
             tmp = new byte[128];
             ByteArrayOutputStream out = new ByteArrayOutputStream(10000);

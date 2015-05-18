@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -300,44 +299,65 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     }
 
     @Override
-    public ResultSetCursor findProcesses(long recoveryTime, int limit) {
-        final Collection<UUID> result = new ArrayList<>();
-        ResultSet resultSet = null;
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(getSql(limit))) {
+    public ResultSetCursor<UUID> findIncompleteProcesses(final long recoveryTime, final int limit) {
+        return new ResultSetCursor<UUID>() {
 
-            preparedStatement.setInt(1, Process.START);
-            preparedStatement.setLong(2, recoveryTime);
-            if (limit > 0) {
-                preparedStatement.setInt(3, limit);
-            }
+            private Connection connection;
+            private PreparedStatement preparedStatement;
+            private ResultSet resultSet;
+            private int counter;
 
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                UUID processId = UUID.fromString(resultSet.getString("process_id"));
-                result.add(processId);
-            }
-        } catch (Throwable e) {
-            logger.error("Cannot find incomplete before time[" + recoveryTime + "]processes limit[" + limit + "] due to database error", e);
-            throw new ServiceCriticalException("Incomplete processes search before time[" + recoveryTime + "] failed", e);
-        } finally {
-            closeResultSet(resultSet);
-        }
+            private void init() throws SQLException {
+                connection = dataSource.getConnection();
+                preparedStatement = connection.prepareStatement(SQL_FIND_INCOMPLETE_PROCESSES);
 
-        return new ResultSetCursor() {
+                preparedStatement.setInt(1, Process.START);
+                preparedStatement.setLong(2, recoveryTime);
+                preparedStatement.setFetchSize(limit);
 
-            Collection<UUID> localResult = result;
-
-            @Override
-            public void close() throws IOException {
-
+                resultSet = preparedStatement.executeQuery();
             }
 
             @Override
             public Collection<UUID> getNext() {
-                Collection<UUID> returnResult = localResult;
-                localResult = Collections.EMPTY_LIST;
-                return returnResult;
+                Collection<UUID> result = new ArrayList<>(limit);
+                try {
+                    if (resultSet == null) {
+                        init();
+                    }
+
+                    while (counter < limit && resultSet.next()) {
+                        result.add(UUID.fromString(resultSet.getString("process_id")));
+                        counter++;
+                    }
+                    counter = 0;
+                } catch (SQLException e) {
+                    logger.error("Catch exception when finding incomplete processes before time[" + recoveryTime + "] processes limit[" + limit + "]", e);
+                    throw new ServiceCriticalException("Incomplete processes search before time[" + recoveryTime + "] failed", e);
+                }
+
+                return result;
+            }
+
+            @Override
+            public void close() throws IOException {
+                closeResultSet(resultSet);
+
+                if (preparedStatement != null) {
+                    try {
+                        preparedStatement.close();
+                    } catch (SQLException e) {
+                        throw new ServiceCriticalException("Error on closing PreparedStatement", e);
+                    }
+                }
+
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        throw new ServiceCriticalException("Error on closing Connection", e);
+                    }
+                }
             }
         };
     }
@@ -360,10 +380,6 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
             closeResultSet(resultSet);
         }
         return result;
-    }
-
-    private static String getSql(int limit) {
-        return limit > 0 ? SQL_FIND_INCOMPLETE_PROCESSES + " AND ROWNUM < ? " : SQL_FIND_INCOMPLETE_PROCESSES;
     }
 
     private static String createPagesQuery(String query) {
