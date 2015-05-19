@@ -44,16 +44,13 @@
         <constructor-arg ref="writeConcern"/>
     </bean>
 
+    <bean id="mongoClientURI" class="com.mongodb.MongoClientURI">
+        <constructor-arg name="uri" value="${mongo.client-uri}"/>
+        <constructor-arg name="builder" ref="mongoClientOptionsBuilder"/>
+    </bean>
+
     <bean id="mongo" class="com.mongodb.MongoClient">
-        <constructor-arg name="addr">
-            <bean class="com.mongodb.ServerAddress">
-                <constructor-arg name="host" value="${mongo.host}"/>
-                <constructor-arg name="port" value="${mongo.port}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="options">
-            <bean factory-bean="mongoClientOptionsBuilder" factory-method="build"/>
-        </constructor-arg>
+        <constructor-arg name="uri" ref="mongoClientURI"/>
     </bean>
 
     <bean id="mongoDB" factory-bean="mongo" factory-method="getDB">
