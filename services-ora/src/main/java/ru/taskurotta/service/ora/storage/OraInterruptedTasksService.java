@@ -33,6 +33,8 @@ import java.util.UUID;
  */
 public class OraInterruptedTasksService extends JdbcDaoSupport implements InterruptedTasksService {
 
+    public static final int MESSAGE_MAX_LENGTH = 500;
+
     private static final Logger logger = LoggerFactory.getLogger(OraInterruptedTasksService.class);
 
     protected static final String SQL_CREATE_ITD_TASK = "BEGIN " +
@@ -82,7 +84,7 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
                             ps.setString(4, itdTask.getStarterId());
                             ps.setTimestamp(5, new Timestamp(new Date().getTime()));
                             ps.setLong(6, itdTask.getTime());
-                            ps.setString(7, itdTask.getErrorMessage());
+                            ps.setString(7, trimToLength(itdTask.getErrorMessage(), MESSAGE_MAX_LENGTH));
                             ps.setString(8, itdTask.getErrorClassName());
                             lobCreator.setClobAsString(ps, 9, itdTask.getStackTrace());
 
@@ -102,6 +104,14 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
             throw new ServiceCriticalException(errMessage);
         }
 
+    }
+
+    public static String trimToLength(String target, int length) {
+        if (target == null || target.length()<=length) {
+            return target;
+        } else {
+            return target.substring(0, length);
+        }
     }
 
     @Override
@@ -189,22 +199,6 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
         int result = getJdbcTemplate().update(SQL_DELETE_ITD_TASK, processId.toString(), taskId.toString());
         logger.debug("Successfully deleted [{}] interrupted tasks, taskId [{}], processId[{}]", result, taskId, processId);
     }
-
-//    @Override
-//    public void restart(final UUID processId, final UUID taskId) {
-//        executorService.execute(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
-//                    TaskContainer tc = taskService.getTask(taskId, processId);
-//                    if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
-//                        delete(processId, taskId);
-//                        logger.debug("taskId[{}], processId[{}] restarted and removed from store", taskId, processId);
-//                    }
-//                }
-//            }
-//        });
-//    }
 
     @Required
     public void setLobHandler(LobHandler lobHandler) {
