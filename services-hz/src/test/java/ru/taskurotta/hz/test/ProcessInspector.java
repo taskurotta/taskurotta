@@ -8,7 +8,9 @@ import com.mongodb.WriteConcern;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
+import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
+import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.hz.dependency.HzGraphDao;
@@ -19,15 +21,21 @@ import ru.taskurotta.service.hz.serialization.bson.ProcessBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.TaskContainerBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.TaskKeyBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.UUIDBSerializer;
+import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.TaskDao;
+import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -47,6 +55,8 @@ public class ProcessInspector {
     static MongoMapStore taskStore;
     static MongoMapStore taskDecisionStore;
 
+    static TaskService taskService;
+
     public static void main(String[] args) throws Throwable {
         init();
 
@@ -57,7 +67,7 @@ public class ProcessInspector {
 
 
 //        UUID processId = getUUID("I0ieD4Yc1LEHzv3XSCZAnw==");
-        UUID processId = UUID.fromString("5fdd0db8-dd04-4a65-85e5-f9da16075f2b");
+        UUID processId = UUID.fromString("b2796de6-3bfd-4211-93f5-cf1bc0630e8a");
 
         System.err.println("Date = " + new Date(2863196575625l));
         System.err.println("Process ID = " + processId + "\n");
@@ -81,6 +91,12 @@ public class ProcessInspector {
                 TaskContainer taskContainer = (TaskContainer) taskStore.load(taskKey);
                 System.err.println("Task = " + taskContainer);
                 System.err.println("Task decision = " + taskDecisionStore.load(taskKey));
+
+                try {
+                System.err.println("Task container = " + taskService.getTaskToExecute(taskId, processId, true));
+                } catch (IllegalStateException ex) {
+                    System.err.println("Task container not ready yet..." + ex.getMessage());
+                }
 
                 System.err.println("Its arguments: ");
                 for (ArgContainer taskArg : taskContainer.getArgs()) {
@@ -198,6 +214,8 @@ public class ProcessInspector {
         taskDecisionStore = new MongoMapStore(mongoDB, bSerializationService, Decision.class.getName());
         taskDecisionStore.init(null, new Properties(), COLLECTION_TASK_DECISION);
 
+        taskService = createTaskService(taskStore);
+
     }
 
     private static MongoClient getMongoClient() throws Throwable {
@@ -206,5 +224,102 @@ public class ProcessInspector {
         mongoClient.setWriteConcern(new WriteConcern(1, 0, false, true));
 
         return mongoClient;
+    }
+
+
+    private static TaskService createTaskService(final MongoMapStore taskStore) {
+
+        return new GeneralTaskService(new TaskDao() {
+            @Override
+            public UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
+                return null;
+            }
+
+            @Override
+            public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+                return true;
+            }
+
+            @Override
+            public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+                return true;
+            }
+
+            @Override
+            public boolean finishTask(DecisionContainer taskDecision) {
+                return true;
+            }
+
+            @Override
+            public TaskContainer getTask(UUID taskId, UUID processId) {
+                TaskKey taskKey = new TaskKey(taskId, processId);
+                System.err.println("ready Task " + taskId + ": ");
+                return (TaskContainer) taskStore.load(taskKey);
+            }
+
+            @Override
+            public void addTask(TaskContainer taskContainer) {
+
+            }
+
+            @Override
+            public void updateTask(TaskContainer taskContainer) {
+
+            }
+
+            @Override
+            public DecisionContainer getDecision(UUID taskId, UUID processId) {
+
+                TaskKey taskKey = new TaskKey(taskId, processId);
+                return ((Decision) taskDecisionStore.load(taskKey)).getDecisionContainer();
+            }
+
+            @Override
+            public boolean isTaskReleased(UUID taskId, UUID processId) {
+                TaskKey taskKey = new TaskKey(taskId, processId);
+                Decision decision = (Decision) taskDecisionStore.load(taskKey);
+
+                if (decision == null) {
+                    return false;
+                }
+
+                return decision.getState() == Decision.STATE_FINISH;
+            }
+
+            @Override
+            public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
+                return null;
+            }
+
+            @Override
+            public List<TaskContainer> getRepeatedTasks(int iterationCount) {
+                return null;
+            }
+
+            @Override
+            public void deleteTasks(Set<UUID> taskIds, UUID processId) {
+
+            }
+
+            @Override
+            public void deleteDecisions(Set<UUID> decisionsIds, UUID processId) {
+
+            }
+
+            @Override
+            public void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds) {
+
+            }
+
+            @Override
+            public List<TaskContainer> findTasks(TaskSearchCommand command) {
+                return null;
+            }
+
+            @Override
+            public void updateTaskDecision(DecisionContainer taskDecision) {
+
+            }
+        }, 10000);
     }
 }
