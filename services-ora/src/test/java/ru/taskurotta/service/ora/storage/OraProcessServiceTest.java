@@ -4,6 +4,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.service.common.ResultSetCursor;
 
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class OraProcessServiceTest {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 
-        this.oraProcessService = new OraProcessService(dataSource);
+        this.oraProcessService = new OraProcessService(ConfigUtil.newInstanceWithoutMulticast(), dataSource);
     }
 
     @Test

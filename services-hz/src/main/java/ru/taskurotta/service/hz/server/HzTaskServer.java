@@ -36,10 +36,8 @@ public class HzTaskServer extends GeneralTaskServer {
     private static final Logger logger = LoggerFactory.getLogger(HzTaskServer.class);
     private static final Clock clock = Clock.defaultClock();
 
-    private static final String LOCK_PROCESS_MAP_NAME = HzTaskServer.class.getName() + "#lockProcessMap";
-
+    protected ProcessService processService;
     protected HazelcastInstance hzInstance;
-    private IMap<UUID, ?> lockProcessMap;
 
     private final String nodeCustomName;
     private final int maxPendingLimit;
@@ -57,7 +55,7 @@ public class HzTaskServer extends GeneralTaskServer {
         this.nodeCustomName = nodeCustomName;
         this.maxPendingLimit = maxPendingLimit;
 
-        lockProcessMap = hzInstance.getMap(LOCK_PROCESS_MAP_NAME);
+        processService = serviceBundle.getProcessService();
         distributedExeService = hzInstance.getExecutorService(decisionProcessingExecutorService);
         localExecutorStats = distributedExeService.getLocalExecutorStats();
 
@@ -167,7 +165,7 @@ public class HzTaskServer extends GeneralTaskServer {
 
         try {
 
-            taskServer.lockProcessMap.lock(processId);
+            taskServer.processService.lock(processId);
 
             try {
                 statPdLock.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
@@ -178,7 +176,7 @@ public class HzTaskServer extends GeneralTaskServer {
                 statPdWork.update(clock.tick() - startTime, TimeUnit.NANOSECONDS);
                 startTime = clock.tick();
             } finally {
-                taskServer.lockProcessMap.unlock(processId);
+                taskServer.processService.unlock(processId);
             }
 
             statPdAll.update(clock.tick() - fullTime, TimeUnit.NANOSECONDS);

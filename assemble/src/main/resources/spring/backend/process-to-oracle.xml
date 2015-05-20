@@ -14,6 +14,7 @@
 
 
     <bean id="processService" class="ru.taskurotta.service.ora.storage.OraProcessService">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="dataSource" ref="dataSource"/>
     </bean>
 

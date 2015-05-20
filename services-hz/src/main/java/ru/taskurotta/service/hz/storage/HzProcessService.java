@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * User: dimadin
  * Date: 13.06.13 16:00
  */
-public class HzProcessService implements ProcessService, ProcessInfoRetriever {
+public class HzProcessService extends AbstractHzProcessService implements ProcessService, ProcessInfoRetriever {
 
     private static final Logger logger = LoggerFactory.getLogger(HzProcessService.class);
 
@@ -40,6 +40,8 @@ public class HzProcessService implements ProcessService, ProcessInfoRetriever {
 
 
     public HzProcessService(HazelcastInstance hzInstance, String processesStorageMapName) {
+        super(hzInstance);
+
         this.processesStorageMapName = processesStorageMapName;
         this.processIMap = hzInstance.getMap(processesStorageMapName);
 

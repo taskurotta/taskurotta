@@ -298,14 +298,15 @@ public class GeneralTaskServer implements TaskServer {
     }
 
     private void markProcessAsBroken(DecisionContainer taskDecision) {
+
+        // increments stat counter
+        brokenProcessesCounter.incrementAndGet();
+
         UUID processId = taskDecision.getProcessId();
 
         // save decision with fatal flag
         taskDecision.getErrorContainer().setFatalError(true);
         taskService.updateTaskDecision(taskDecision);
-
-        // increments stat counter
-        brokenProcessesCounter.incrementAndGet();
 
         // save interrupted task information
         InterruptedTask itdTask = new InterruptedTask();
