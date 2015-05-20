@@ -3,6 +3,7 @@ package ru.taskurotta.hazelcast;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ public class ConfigTest {
     private static String QUEUE_NAME = "testQueue";
 
 
+    @Ignore
     @Test
     public void failTest() {
 
