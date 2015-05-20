@@ -120,6 +120,16 @@ public class MockServiceBundle implements ServiceBundle {
                     }
                 };
             }
+
+            @Override
+            public void lock(UUID processId) {
+
+            }
+
+            @Override
+            public void unlock(UUID processId) {
+
+            }
         };
     }
 

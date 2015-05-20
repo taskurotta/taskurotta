@@ -68,6 +68,16 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
+    public void lock(UUID processId) {
+
+    }
+
+    @Override
+    public void unlock(UUID processId) {
+
+    }
+
+    @Override
     public TaskContainer getStartTask(UUID processId) {
         return processesStorage.get(processId).getStartTask();
     }

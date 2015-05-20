@@ -1,5 +1,6 @@
 package ru.taskurotta.service.ora.storage;
 
+import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.ServiceCriticalException;
@@ -8,6 +9,7 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
+import ru.taskurotta.service.hz.storage.AbstractHzProcessService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
@@ -28,7 +30,7 @@ import java.util.UUID;
  * User: moroz
  * Date: 25.04.13
  */
-public class OraProcessService implements ProcessService, ProcessInfoRetriever {
+public class OraProcessService extends AbstractHzProcessService implements ProcessService, ProcessInfoRetriever {
 
     private DataSource dataSource;
 
@@ -43,7 +45,8 @@ public class OraProcessService implements ProcessService, ProcessInfoRetriever {
     protected static final String SQL_GET_PROCESS_LIST =
             "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
 
-    public OraProcessService(DataSource dataSource) {
+    public OraProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
+        super(hzInstance);
         this.dataSource = dataSource;
     }
 

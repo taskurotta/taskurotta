@@ -3,6 +3,7 @@ package ru.taskurotta.service.ora;
 import junit.framework.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.ora.storage.OraProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -14,7 +15,8 @@ import ru.taskurotta.transport.model.TaskContainer;
 public class ProcessTestIT {
 
     private DbConnect connection = new DbConnect();
-    private OraProcessService dao = new OraProcessService(connection.getDataSource());
+    private OraProcessService dao = new OraProcessService(ConfigUtil.newInstanceWithoutMulticast(), connection
+            .getDataSource());
 
     @Ignore
     @Test

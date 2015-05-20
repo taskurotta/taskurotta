@@ -2,6 +2,7 @@ package ru.taskurotta.service.recovery.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
@@ -22,7 +23,6 @@ import ru.taskurotta.transport.utils.TransportUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +41,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     public static AtomicInteger recoveredProcessesCounter = new AtomicInteger();
     public static AtomicInteger recoveredTasksCounter = new AtomicInteger();
     public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
+    public static AtomicInteger recoveredInterruptedTasksCounter = new AtomicInteger();
 
     private QueueService queueService;
     private DependencyService dependencyService;
@@ -75,77 +76,89 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     //    @Override
-    public boolean restartBrokenTasks(final UUID processId) {
-
-        boolean result = false;
-
-        Graph graph = dependencyService.getGraph(processId);
-
-        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, true);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("restartBrokenTasks({}) getAllReadyTaskIds.size() = {}", processId, allReadyTaskIds.size());
-        }
-
-        for (Map.Entry<UUID, Long> entry : allReadyTaskIds.entrySet()) {
-
-            UUID taskId = entry.getKey();
-            logger.debug("restartBrokenTasks({}) analise task = {}", processId, taskId);
-
-            DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
-
-            // skip tasks without decision
-            if (taskDecision == null) {
-                continue;
-            }
-
-            // skip decisions without error
-            if (!taskDecision.containsError()) {
-                logger.debug("{}/{} Can not resurrect task. Task has no error", taskId, processId);
-                continue;
-            }
-
-            // skip not fatal errors
-            ErrorContainer errorContainer = taskDecision.getErrorContainer();
-            if (!errorContainer.isFatalError()) {
-                logger.debug("{}/{} Can not resurrect task. Task has not fatal error", taskId, processId);
-                continue;
-            }
-
-            TaskContainer taskContainer = taskService.getTask(taskId, processId);
-
-            if (taskService.retryTask(taskId, processId, System.currentTimeMillis())) {
-                queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
-                        (taskContainer));
-                result = true;
-                interruptedTasksService.delete(processId, taskId);
-
-                logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
-                restartedBrokenTasks.incrementAndGet();
-            } else {
-                logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
-            }
-
-        }
-
-        if (result) {
-            // todo: process can receive new broken tasks before this point
-            processService.markProcessAsStarted(processId);
-        }
-
-        return result;
-    }
+//    public boolean restartBrokenTasks(final UUID processId) {
+//
+//        boolean result = false;
+//
+//        Graph graph = dependencyService.getGraph(processId);
+//
+//        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, true);
+//
+//        if (logger.isDebugEnabled()) {
+//            logger.debug("restartBrokenTasks({}) getAllReadyTaskIds.size() = {}", processId, allReadyTaskIds.size());
+//        }
+//
+//        for (Map.Entry<UUID, Long> entry : allReadyTaskIds.entrySet()) {
+//
+//            UUID taskId = entry.getKey();
+//            logger.debug("restartBrokenTasks({}) analise task = {}", processId, taskId);
+//
+//            DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
+//
+//            // skip tasks without decision
+//            if (taskDecision == null) {
+//                continue;
+//            }
+//
+//            // skip decisions without error
+//            if (!taskDecision.containsError()) {
+//                logger.debug("{}/{} Can not resurrect task. Task has no error", taskId, processId);
+//                continue;
+//            }
+//
+//            // skip not fatal errors
+//            ErrorContainer errorContainer = taskDecision.getErrorContainer();
+//            if (!errorContainer.isFatalError()) {
+//                logger.debug("{}/{} Can not resurrect task. Task has not fatal error", taskId, processId);
+//                continue;
+//            }
+//
+//            TaskContainer taskContainer = taskService.getTask(taskId, processId);
+//
+//            if (taskService.retryTask(taskId, processId, System.currentTimeMillis())) {
+//                queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
+//                        (taskContainer));
+//                result = true;
+//                interruptedTasksService.delete(processId, taskId);
+//
+//                logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
+//                restartedBrokenTasks.incrementAndGet();
+//            } else {
+//                logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
+//            }
+//
+//        }
+//
+//        if (result) {
+//            // todo: process can receive new broken tasks before this point
+//            processService.markProcessAsStarted(processId);
+//        }
+//
+//        return result;
+//    }
 
 
     @Override
     public boolean resurrectProcess(final UUID processId) {
+
+        processService.lock(processId);
+
+        try {
+            return resurrectProcessInternal(processId);
+        } finally {
+            processService.unlock(processId);
+        }
+
+    }
+
+    private boolean resurrectProcessInternal(final UUID processId) {
         logger.trace("#[{}]: try to restart process", processId);
 
 
         // skip broken and already finished process
         Process process = processService.getProcess(processId);
-        if (process.getState() == Process.FINISH || process.getState() == Process.BROKEN) {
-                return false;
+        if (process == null || process.getState() == Process.FINISH || process.getState() == Process.BROKEN) {
+            return false;
         }
 
 
@@ -181,44 +194,67 @@ public class RecoveryServiceImpl implements RecoveryService {
             logger.debug("#[{}]: graph was recently applied or recovered, skip it", processId);
 
         } else {
+
+            final Map<UUID, Long> allReadyTaskIds = graph.getAllReadyItems();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("#[{}]: found [{}] not finished taskIds", processId, allReadyTaskIds.size());
+            }
+
+            // check broken process
+
+            for (UUID taskId: allReadyTaskIds.keySet()) {
+                DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
+                if (decisionContainer != null) {
+                    ErrorContainer errorContainer = decisionContainer.getErrorContainer();
+                    if (errorContainer != null && errorContainer.isFatalError()) {
+
+                        // process is broken now.
+                        markProcessAsBroken(decisionContainer);
+                        recoveredInterruptedTasksCounter.incrementAndGet();
+
+                        result = true;
+                    }
+                }
+            }
+
             // require restart => try to find process's tasks for restart
 
-            final Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(graph);
+            final Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(allReadyTaskIds, processId);
             if (taskContainers == null) {
                 // there is a problem in task store => restart process
 
                 logger.warn("#[{}]: task containers were not found (possible data loss?), try to restart process from start task", processId);
-                result = restartProcessFromBeginning(processId);
+                result = result || restartProcessFromBeginning(processId);
 
             } else {
                 // restart unfinished tasks
 
-                final boolean[] boolContainer = new boolean[1];
+                int recoveredTasks = restartProcessTasks(taskContainers, processId);
+                recoveredTasksCounter.addAndGet(recoveredTasks);
+
+                result = result || recoveredTasks > 0;
+
+                boolean graphUpdated = false;
 
                 logger.debug("#[{}]: try to update graph", processId);
-                boolean graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
-                    @Override
-                    public UUID getProcessId() {
-                        return processId;
-                    }
 
-                    @Override
-                    public boolean apply(Graph graph) {
-                        graph.setTouchTimeMillis(System.currentTimeMillis());
+                if (result) {
+                    graphUpdated = dependencyService.changeGraph(new GraphDao.Updater() {
+                        @Override
+                        public UUID getProcessId() {
+                            return processId;
+                        }
 
-                        logger.debug("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis());
+                        @Override
+                        public boolean apply(Graph graph) {
+                            graph.setTouchTimeMillis(System.currentTimeMillis());
 
-                        int restartResult = restartProcessTasks(taskContainers, processId);
-                        recoveredTasksCounter.addAndGet(restartResult);
-
-                        boolContainer[0] = restartResult > 0;
-
-                        return true;
-                    }
-                });
-
-                result = boolContainer[0];
-
+                            logger.debug("#[{}]: update touch time to [{} ({})]", processId, graph.getTouchTimeMillis());
+                            return true;
+                        }
+                    });
+                }
                 logger.debug("#[{}]: has been recovered, graph update result [{}]", processId, graphUpdated);
 
             }
@@ -227,6 +263,34 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         return result;
     }
+
+    private void markProcessAsBroken(DecisionContainer taskDecision) {
+        UUID processId = taskDecision.getProcessId();
+
+        // save interrupted task information
+        InterruptedTask itdTask = new InterruptedTask();
+        itdTask.setTime(System.currentTimeMillis());
+        itdTask.setProcessId(processId);
+        itdTask.setTaskId(taskDecision.getTaskId());
+        itdTask.setActorId(taskDecision.getActorId());
+
+        TaskContainer startTask = processService.getStartTask(processId);
+        if (startTask != null) {
+            itdTask.setStarterId(startTask.getActorId());
+        }
+
+        ErrorContainer errorContainer = taskDecision.getErrorContainer();
+        if (errorContainer != null) {
+            itdTask.setErrorClassName(errorContainer.getClassName());
+            itdTask.setErrorMessage(errorContainer.getMessage());
+            itdTask.setStackTrace(errorContainer.getStackTrace());
+        }
+        interruptedTasksService.save(itdTask);
+
+        // mark process as broken
+        processService.markProcessAsBroken(processId);
+    }
+
 
     private boolean hasRecentActivity(Graph graph) {
 
@@ -395,50 +459,45 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     @Override
     public boolean restartTask(final UUID processId, final UUID taskId) {
-        final boolean[] boolContainer = new boolean[1];
-        dependencyService.changeGraph(new GraphDao.Updater() {
+        processService.lock(processId);
 
-            @Override
-            public UUID getProcessId() {
-                return processId;
+        try {
+
+            Graph graph = dependencyService.getGraph(processId);
+            if (graph == null) {
+
+                // remove garbage
+                interruptedTasksService.delete(processId, taskId);
+                return false;
             }
 
-            @Override
-            public boolean apply(Graph graph) {
-                boolean result = false;
-                long touchTime = System.currentTimeMillis();
-                graph.setTouchTimeMillis(touchTime);
+            long touchTime = System.currentTimeMillis();
+            graph.setTouchTimeMillis(touchTime);
 
-                if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
-                    TaskContainer tc = taskService.getTask(taskId, processId);
-                    if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
-                        interruptedTasksService.delete(processId, taskId);
-                        result = true;
-                        restartedBrokenTasks.incrementAndGet();
-                    }
+            if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+                TaskContainer tc = taskService.getTask(taskId, processId);
+                if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
+                    interruptedTasksService.delete(processId, taskId);
+                    restartedBrokenTasks.incrementAndGet();
                 }
-
-                // --process state change part--
-                if (!hasOtherNotReadyFatalTasks(processId, taskId, graph.getAllReadyItems())) {
-                    processService.markProcessAsStarted(processId);
-                }
-                // --/process state change part--
-
-                boolContainer[0] = result;
-
-                logger.debug("ProcessId [{}] graph change applied: touch time updated [{}], result[{}]", processId, touchTime, result);
-
-                return true;//touch time have been updated
             }
 
-        });
+            // --process state change part--
+            if (!hasOtherNotReadyFatalTasks(processId, taskId, graph.getAllReadyItems())) {
+                processService.markProcessAsStarted(processId);
+            }
+            // --/process state change part--
 
-        return boolContainer[0];
+            return true;
+        } finally {
+            processService.unlock(processId);
+        }
+
     }
 
     private boolean hasOtherNotReadyFatalTasks(UUID processId, UUID taskId, Map<UUID, Long> readyItems) {
         boolean result = false;
-        if (readyItems!=null) {
+        if (readyItems != null) {
             for (UUID readyTaskId : readyItems.keySet()) {
                 if (!taskId.equals(readyTaskId) && TransportUtils.hasFatalError(taskService.getDecision(readyTaskId, processId))) {
                     result = true;
@@ -508,48 +567,8 @@ public class RecoveryServiceImpl implements RecoveryService {
         return result;
     }
 
-    private Map<UUID, Long> getAllReadyTaskIds(final Graph graph, final boolean touchGraph) {
 
-        final Map<UUID, Long> allReadyTaskIds = new HashMap<>();
-
-        dependencyService.changeGraph(new GraphDao.Updater() {
-            @Override
-            public UUID getProcessId() {
-                return graph.getGraphId();
-            }
-
-            @Override
-            public boolean apply(Graph graph) {
-
-                allReadyTaskIds.putAll(graph.getAllReadyItems());
-
-                if (touchGraph) {
-                    graph.setTouchTimeMillis(System.currentTimeMillis());
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
-        return allReadyTaskIds;
-    }
-
-    private Collection<TaskContainer> findIncompleteTaskContainers(Graph graph) {
-
-        if (graph == null) {
-            return null;
-        }
-
-        final UUID processId = graph.getGraphId();
-
-        logger.trace("#[{}]: try to find incomplete tasks", processId);
-
-        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, false);
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("#[{}]: found [{}] not finished taskIds", processId, allReadyTaskIds.size());
-        }
+    private Collection<TaskContainer> findIncompleteTaskContainers(Map<UUID, Long> allReadyTaskIds, UUID processId) {
 
         Collection<TaskContainer> taskContainers = new ArrayList<>(allReadyTaskIds.size());
 

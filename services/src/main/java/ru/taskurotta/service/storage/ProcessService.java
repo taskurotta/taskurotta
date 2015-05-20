@@ -25,4 +25,8 @@ public interface ProcessService {
     Process getProcess(UUID processUUID);
 
     ResultSetCursor<UUID> findIncompleteProcesses(long recoveryTime, int limit);
+
+    void lock(UUID processId);
+
+    void unlock(UUID processId);
 }
