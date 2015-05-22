@@ -24,7 +24,8 @@
                 </hz:join>
             </hz:network>
 
-            <hz:executor-service name="${hz.executor-service.decisions.service-name}" pool-size="${hz.executor-service.decisions.pool-size}"/>
+            <hz:executor-service name="${hz.executor-service.decisions.service-name}"
+                                 pool-size="${hz.executor-service.decisions.pool-size}"/>
 
             <hz:map name="${hz.map.task.name}" backup-count="1"/>
 
@@ -83,13 +84,15 @@
                     <hz:serializer type-class="ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork"
                                    class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ApplicationObject"
-                                   class-name="ru.taskurotta.service.hz.serialization.BSONStreamSerializer" />
+                                   class-name="ru.taskurotta.service.hz.serialization.BSONStreamSerializer"/>
+                    <hz:serializer type-class="ru.taskurotta.service.console.model.QueueStatVO"
+                                   class-name="ru.taskurotta.service.hz.serialization.QueueStatVOStreamSerializer"/>
                 </hz:serializers>
             </hz:serialization>
 
         </hz:config>
     </hz:hazelcast>
 
-    <hz:lock id="recoveryNodeLock" instance-ref="hzInstance" name="${hz.recovery.lock.name}" />
+    <hz:lock id="recoveryNodeLock" instance-ref="hzInstance" name="${hz.recovery.lock.name}"/>
 
 </beans>

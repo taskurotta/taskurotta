@@ -6,6 +6,7 @@ import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * User: greg
@@ -97,5 +98,22 @@ public class SerializationTools {
             strings[i] = readString(in);
         }
         return strings;
+    }
+
+    public static void writeDate(ObjectDataOutput out, Date date) throws IOException {
+        long time = -1l;
+        if (date != null) {
+            time = date.getTime();
+        }
+        out.writeLong(time);
+    }
+
+    public static Date readDate(ObjectDataInput in) throws IOException {
+        Date date = null;
+        long time = in.readLong();
+        if (time >= 0l) {
+            date = new Date(time);
+        }
+        return date;
     }
 }
