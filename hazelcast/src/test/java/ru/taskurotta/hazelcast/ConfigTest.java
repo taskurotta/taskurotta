@@ -1,5 +1,6 @@
 package ru.taskurotta.hazelcast;
 
+import com.hazelcast.config.ClasspathXmlConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -13,6 +14,9 @@ import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig;
 import ru.taskurotta.hazelcast.queue.impl.MockCachedQueueStore;
 import ru.taskurotta.hazelcast.queue.store.CachedQueueStore;
+
+import java.io.IOException;
+import java.util.Properties;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -96,5 +100,18 @@ public class ConfigTest {
 
             cachedQueueConfig.setQueueStoreConfig(cachedQueueStoreConfig);
         }
+    }
+
+    @Test
+    public void loadHzConfigFromClasspathWithProperties() throws IOException {
+
+        Properties properties = new Properties();
+        properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("tsk.properties"));
+
+        Config cfg = new ClasspathXmlConfig("tsk-hazelcast.xml", properties);
+
+        System.err.println("Port: " + cfg.getNetworkConfig().getPort());
+        System.err.println("Members: " + cfg.getNetworkConfig().getJoin().getTcpIpConfig().getMembers());
+
     }
 }

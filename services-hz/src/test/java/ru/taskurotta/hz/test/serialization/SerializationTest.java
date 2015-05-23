@@ -16,7 +16,7 @@ import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.Modification;
 import ru.taskurotta.service.hz.TaskKey;
-import ru.taskurotta.service.hz.dependency.HzGraphDao;
+import ru.taskurotta.service.hz.dependency.DecisionRow;
 import ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer;
 import ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer;
 import ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer;
@@ -27,7 +27,7 @@ import ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer;
 import ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer;
 import ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer;
 import ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer;
-import ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork;
+import ru.taskurotta.service.hz.server.ProcessDecisionUnitOfWork;
 import ru.taskurotta.service.recovery.RecoveryOperation;
 import ru.taskurotta.transport.model.ArgContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
@@ -68,7 +68,7 @@ public class SerializationTest {
                 setImplementation(new GraphStreamSerializer()).
                 setTypeClass(Graph.class).
                 setImplementation(new DecisionRowStreamSerializer()).
-                setTypeClass(HzGraphDao.DecisionRow.class).
+                setTypeClass(DecisionRow.class).
                 setImplementation(new ArgContainerStreamSerializer()).
                 setTypeClass(ArgContainer.class).
                 setImplementation(new TaskOptionsContainerSerializer()).
@@ -137,11 +137,11 @@ public class SerializationTest {
         modification.addNewItem(newItem2);
 
 
-        HzGraphDao.DecisionRow decisionRow = new HzGraphDao.DecisionRow(itemUuid, completeUuid, modification, null);
+        DecisionRow decisionRow = new DecisionRow(itemUuid, completeUuid, modification, null);
 
         hzMap.put("dec", decisionRow);
 
-        HzGraphDao.DecisionRow fromMapDecisionRow = (HzGraphDao.DecisionRow) hzMap.get("dec");
+        DecisionRow fromMapDecisionRow = (DecisionRow) hzMap.get("dec");
 
         junit.framework.Assert.assertEquals(decisionRow, fromMapDecisionRow);
     }

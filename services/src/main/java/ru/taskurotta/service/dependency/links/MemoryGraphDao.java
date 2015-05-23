@@ -22,7 +22,6 @@ public class MemoryGraphDao implements GraphDao {
 
     // TODO: garbage collection policy for real database
     private Map<UUID, GraphRow> graphs = new ConcurrentHashMap<UUID, GraphRow>();
-    private Map<UUID, DecisionRow> decisions = new ConcurrentHashMap<UUID, DecisionRow>();
 
     private Object newGraphLock = new Object();
 
@@ -91,15 +90,6 @@ public class MemoryGraphDao implements GraphDao {
 
     }
 
-    /**
-     * Table of row contains decision stuff
-     */
-    private static class DecisionRow {
-        private UUID itemId;
-        private Modification modification;
-        private UUID[] readyItems;
-    }
-
 
     @Override
     public void createGraph(UUID graphId, UUID taskId) {
@@ -143,34 +133,11 @@ public class MemoryGraphDao implements GraphDao {
 
         logger.debug("updateGraph() modifiedGraph = [{}]", modifiedGraph);
 
-        Modification modification = modifiedGraph.getModification();
-
-        if (modification != null) {
-            DecisionRow decisionRow = new DecisionRow();
-
-            decisionRow.itemId = modification.getCompletedItem();
-            decisionRow.modification = modification;
-            decisionRow.readyItems = modifiedGraph.getReadyItems();
-
-            decisions.put(decisionRow.itemId, decisionRow);
-        }
-
         GraphRow graphRow = graphs.get(modifiedGraph.getGraphId());
 
         return graphRow.updateGraph(modifiedGraph);
     }
 
-
-    @Override
-    public UUID[] getReadyTasks(UUID finishedTaskId, UUID processId) {
-
-        DecisionRow decisionRow = decisions.get(finishedTaskId);
-        if (decisionRow != null) {
-            return decisionRow.readyItems;
-        }
-
-        return Graph.EMPTY_ARRAY;
-    }
 
     @Override
     public boolean changeGraph(Updater updater) {

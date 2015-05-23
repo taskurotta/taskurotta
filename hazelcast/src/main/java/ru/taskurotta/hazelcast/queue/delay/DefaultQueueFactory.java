@@ -3,7 +3,6 @@ package ru.taskurotta.hazelcast.queue.delay;
 import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.delay.impl.CachedDelayQueueImpl;
 
@@ -21,7 +20,6 @@ public class DefaultQueueFactory implements QueueFactory {
 
     private HazelcastInstance hazelcastInstance;
     private StorageFactory storageFactory;
-    private HzQueueConfigSupport hzQueueConfigSupport;
 
     private transient final ReentrantLock lock = new ReentrantLock();
     private ConcurrentHashMap<String, CachedDelayQueue> queueMap = new ConcurrentHashMap<>();
@@ -30,12 +28,6 @@ public class DefaultQueueFactory implements QueueFactory {
     public DefaultQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory) {
         this.hazelcastInstance = hazelcastInstance;
         this.storageFactory = storageFactory;
-    }
-
-    public DefaultQueueFactory(HazelcastInstance hazelcastInstance, StorageFactory storageFactory, HzQueueConfigSupport hzQueueConfigSupport) {
-        this.hazelcastInstance = hazelcastInstance;
-        this.storageFactory = storageFactory;
-        this.hzQueueConfigSupport = hzQueueConfigSupport;
     }
 
     @Override
@@ -52,12 +44,6 @@ public class DefaultQueueFactory implements QueueFactory {
                 cachedDelayQueue = queueMap.get(queueName);
                 if (cachedDelayQueue != null) {
                     return cachedDelayQueue;
-                }
-
-                if (hzQueueConfigSupport != null) {
-                    hzQueueConfigSupport.createQueueConfig(queueName);
-                } else {
-                    logger.warn("HzQueueConfigSupport is not configured");
                 }
 
                 CachedQueue cQueue = hazelcastInstance.getDistributedObject(CachedQueue.class.getName(), queueName);

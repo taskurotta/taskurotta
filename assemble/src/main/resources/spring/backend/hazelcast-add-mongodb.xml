@@ -4,73 +4,25 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 
-    <bean id="cachedQueueServiceConfigurator"
-          class="ru.taskurotta.hazelcast.queue.config.util.CachedQueueServiceConfigurator">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="maxPercentageOfHeapSize" value="${hz.queue.memory.max-size}"/>
-    </bean>
-
     <!-- Queues persistence support -->
-
-    <bean id="queueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="100"/>
-        <constructor-arg name="binary" value="${hz.queue.task.binary}"/>
-        <constructor-arg name="batchLoadSize" value="${hz.queue.task.batch-load-size}"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.service.queue.TaskQueueItem"/>
-    </bean>
-
-    <bean id="pendingDecisionsQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="100"/>
-        <constructor-arg name="binary" value="${hz.executor-service.decisions.queue.binary}"/>
-        <constructor-arg name="batchLoadSize" value="${hz.executor-service.decisions.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.service.hz.TaskKey"/>
-    </bean>
-
-    <bean id="pendingQueueConfigurator" factory-bean="pendingDecisionsQueueConfigSupport"
-          factory-method="createQueueConfig">
-        <constructor-arg name="queueName" value="${hz.executor-service.decisions.queue.name}"/>
-    </bean>
 
     <bean id="queueFactoryForQueueBackend" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForQueueBackend"/>
-        <constructor-arg name="hzQueueConfigSupport" ref="queueConfigSupport"/>
     </bean>
 
     <bean id="restoreQueueSupport" class="ru.taskurotta.hazelcast.store.HzQueueRestoreSupport" init-method="init">
         <property name="mongoDB" ref="mongoDB"/>
         <property name="queuePrefix" value="${hz.queue.task.prefix}"/>
-        <property name="hzQueueConfigSupport" ref="queueConfigSupport"/>
+        <property name="hzInstance" ref="hzInstance"/>
         <property name="restore" value="${hz.queue.restore}"/>
-    </bean>
-
-    <bean id="gcQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="100"/>
-        <constructor-arg name="binary" value="${gc.queue.binary}"/>
-        <constructor-arg name="batchLoadSize" value="${gc.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName" value="java.util.UUID"/>
     </bean>
 
     <bean id="queueFactoryForGC" class="ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory">
         <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
         <constructor-arg name="storageFactory" ref="storageFactoryForGC"/>
-        <constructor-arg name="hzQueueConfigSupport" ref="gcQueueConfigSupport"/>
     </bean>
 
-    <bean id="recoveryQueueConfigSupport" class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-        <constructor-arg name="cacheSize" value="100"/>
-        <constructor-arg name="binary" value="${recovery.queue.binary}"/>
-        <constructor-arg name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
-        <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.RecoveryOperation"/>
-    </bean>
     <!-- /Queues persistence support -->
 
     <!-- Delay queue support -->
@@ -104,32 +56,6 @@
     <!-- /Delay queue support -->
 
     <!-- Services -->
-    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="hzInstance" ref="hzInstance"/>
-        <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="hzQueueConfigSupport" ref="recoveryQueueConfigSupport"/>
-        <constructor-arg name="queueName" value="${recovery.operation.queue.name}"/>
-        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
-        <constructor-arg name="enabled" value="${recovery.enabled}"/>
-    </bean>
-
-    <bean id="taskRecoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
-        <constructor-arg name="enabled" value="${operation.task-restart.enabled}" />
-        <constructor-arg name="hzInstance" ref="hzInstance" />
-        <constructor-arg name="hzQueueConfigSupport">
-            <bean class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-                <constructor-arg name="hzInstance" ref="hzInstance"/>
-                <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-                <constructor-arg name="cacheSize" value="${operation.task-restart.queue-cache-size}"/>
-                <constructor-arg name="binary" value="${operation.task-restart.queue-binary}"/>
-                <constructor-arg name="batchLoadSize" value="${operation.task-restart.batch-load-size}"/>
-                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.RestartTaskOperation"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="nativePoint" ref="recoveryService" />
-        <constructor-arg name="poolSize" value="${operation.task-restart.pool-size}" />
-        <constructor-arg name="queueName" value="${operation.task-restart.queue-name}" />
-    </bean>
 
     <bean id="processService" class="ru.taskurotta.service.hz.storage.MongoProcessService">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
@@ -138,24 +64,36 @@
         <constructor-arg name="bSerializationService" ref="bSerializationService"/>
     </bean>
 
+    <!-- /Services -->
+
+    <!-- Executors -->
+
+    <bean id="recoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="nativePoint" ref="recoveryService"/>
+        <constructor-arg name="queueName" value="${recovery.operation.queue.name}"/>
+        <constructor-arg name="poolSize" value="${recovery.operation.pool-size}"/>
+        <constructor-arg name="enabled" value="${recovery.enabled}"/>
+    </bean>
+
+    <bean id="taskRecoveryOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
+        <constructor-arg name="enabled" value="${operation.task-restart.enabled}" />
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+        <constructor-arg name="nativePoint" ref="recoveryService" />
+        <constructor-arg name="poolSize" value="${operation.task-restart.pool-size}" />
+        <constructor-arg name="queueName" value="${operation.task-restart.queue-name}" />
+    </bean>
+
     <bean id="abortProcessOperationExecutor" class="ru.taskurotta.service.hz.support.HzOperationExecutor">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="nativePoint" ref="recoveryService"/>
-        <constructor-arg name="hzQueueConfigSupport">
-            <bean class="ru.taskurotta.hazelcast.HzQueueConfigSupport">
-                <constructor-arg name="hzInstance" ref="hzInstance"/>
-                <constructor-arg name="cachedQueueStoreFactory" ref="cachedQueueStoreFactory"/>
-                <constructor-arg name="cacheSize" value="100"/>
-                <constructor-arg name="binary" value="${operation.abort-process.queue.binary}"/>
-                <constructor-arg name="batchLoadSize" value="${operation.abort-process.queue.batch-load-size}"/>
-                <constructor-arg name="objectClassName" value="ru.taskurotta.service.recovery.AbortProcessOperation"/>
-            </bean>
-        </constructor-arg>
         <constructor-arg name="queueName" value="${operation.abort-process.queue.name}"/>
         <constructor-arg name="poolSize" value="${operation.abort-process.pool-size}"/>
         <constructor-arg name="enabled" value="${operation.abort-process.enabled}"/>
     </bean>
-    <!-- /Services -->
+
+    <!-- /Executors -->
+
 
     <!-- Services support -->
     <bean id = "hzInterruptedTasksSupport" class="ru.taskurotta.service.hz.support.HzInterruptedTasksRestoreSupport" init-method="init">

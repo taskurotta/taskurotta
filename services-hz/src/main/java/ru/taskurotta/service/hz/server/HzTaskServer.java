@@ -1,12 +1,13 @@
 package ru.taskurotta.service.hz.server;
 
-import com.hazelcast.core.*;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastInstanceNotActiveException;
+import com.hazelcast.core.IExecutorService;
+import com.hazelcast.core.Partition;
 import com.hazelcast.monitor.LocalExecutorStats;
-import com.hazelcast.spring.context.SpringAware;
 import com.yammer.metrics.core.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
@@ -19,12 +20,13 @@ import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.DecisionContainer;
 
-import java.io.Serializable;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static ru.taskurotta.util.metrics.HzTaskServerMetrics.*;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdAll;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdLock;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statPdWork;
+import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statRelease;
 
 /**
  * Task server with async decision processing.
@@ -185,68 +187,6 @@ public class HzTaskServer extends GeneralTaskServer {
         } catch (HazelcastInstanceNotActiveException e) {
             // reduce exception rain
             logger.warn(e.getMessage());
-        }
-    }
-
-    /**
-     * Callable task for processing taskDecisions
-     */
-    @SpringAware
-    public static class ProcessDecisionUnitOfWork implements Callable, PartitionAware, Serializable {
-        private static final Logger logger = LoggerFactory.getLogger(ProcessDecisionUnitOfWork.class);
-
-        TaskKey taskKey;
-        HzTaskServer taskServer;
-
-        public ProcessDecisionUnitOfWork() {
-        }
-
-        public ProcessDecisionUnitOfWork(TaskKey TaskKey) {
-            this.taskKey = TaskKey;
-        }
-
-        @Autowired
-        public void setTaskServer(HzTaskServer taskServer) {
-            this.taskServer = taskServer;
-        }
-
-        @Override
-        public Object call() throws Exception {
-            try {
-                lockAndProcessDecision(taskKey, taskServer);
-            } catch (RuntimeException ex) {
-                logger.error("Can not process task decision", ex);
-                throw ex;
-            }
-
-            return null;
-        }
-
-        @Override
-        public Object getPartitionKey() {
-            return taskKey.getProcessId();
-        }
-
-        public TaskKey getTaskKey() {
-            return taskKey;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ProcessDecisionUnitOfWork that = (ProcessDecisionUnitOfWork) o;
-
-            if (taskKey != null ? !taskKey.equals(that.taskKey) : that.taskKey != null)
-                return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return taskKey != null ? taskKey.hashCode() : 0;
         }
     }
 
