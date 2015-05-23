@@ -337,8 +337,6 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         if (taskContainers != null && !taskContainers.isEmpty()) {
 
-            long lastRecoveryStartTime = System.currentTimeMillis() - findIncompleteProcessPeriod;
-
             // check tasks
             for (Iterator<TaskContainer> it = taskContainers.iterator(); it.hasNext(); ) {
                 TaskContainer taskContainer = it.next();
@@ -358,8 +356,8 @@ public class RecoveryServiceImpl implements RecoveryService {
                     }
                 }
 
+                long lastRecoveryStartTime = System.currentTimeMillis() - findIncompleteProcessPeriod;
                 if (!isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)) {
-
                     // remove not ready task from collection
                     it.remove();
                     continue;
@@ -400,7 +398,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String actorId = taskContainer.getActorId();
 
                     boolean restartResult = taskService.restartTask(taskId, processId, System.currentTimeMillis(),
-                            false);
+                            true);
                     if (restartResult) {
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
 
@@ -512,8 +510,6 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         logger.trace("#[{}]/[{}]: check if task ready to restart", processId, taskId);
 
-        boolean result = true;//consider every task as ready by default
-
         if (startTime > System.currentTimeMillis()) {//task must be started in future => skip it //recovery iterations may take some time so check current date here
 
             if (logger.isDebugEnabled()) {
@@ -564,7 +560,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             return false;
         }
 
-        return result;
+        return true;
     }
 
 
