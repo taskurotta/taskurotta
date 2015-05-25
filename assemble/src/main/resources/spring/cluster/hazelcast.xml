@@ -5,7 +5,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
             http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd">
 
-
     <bean id="hzInstance" class="ru.taskurotta.hazelcast.config.HazelcastInstanceFactory"
           factory-method="create">
         <constructor-arg name="hazelcastConfigFileName" value="hazelcast.xml"/>

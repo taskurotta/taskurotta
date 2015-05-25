@@ -31,5 +31,6 @@ public class ObjectTypes {
     public static final int ABORT_PROCESS_OPERATION = 22;
     public static final int HZ_QUEUE_STAT_TASK = 23;
     public static final int HZ_QUEUE_BALANCE_TASK = 24;
+    public static final int QUEUE_STAT_VO = 25;
 
 }
