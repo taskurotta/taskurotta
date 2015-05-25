@@ -158,8 +158,8 @@ public class HzTaskDao implements TaskDao {
                 return true;
             }
 
-            if (!force && decision.getState() != Decision.STATE_WORK) {
-                logger.debug("{}/{} Can not restart task. Task has {} state. Decision is {}", taskKey.getTaskId(),
+            if (!force && decision.getState() == Decision.STATE_FINISH) {
+                logger.debug("{}/{} Can not restart task. Task is finished now. Decision is {}", taskKey.getTaskId(),
                         taskKey.getProcessId(), decision.getState(), decision);
 
                 return false;

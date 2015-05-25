@@ -398,7 +398,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String actorId = taskContainer.getActorId();
 
                     boolean restartResult = taskService.restartTask(taskId, processId, System.currentTimeMillis(),
-                            true);
+                            false);
                     if (restartResult) {
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
 
