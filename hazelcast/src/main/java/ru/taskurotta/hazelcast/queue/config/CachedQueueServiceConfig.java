@@ -60,6 +60,7 @@ public class CachedQueueServiceConfig extends ServiceConfig {
         return queueServiceConfig;
     }
 
+
     public CachedQueueSizeConfig getSizeConfig() {
         return sizeConfig;
     }

@@ -99,7 +99,6 @@
     <bean id="graphDao" class="ru.taskurotta.service.hz.dependency.HzGraphDao">
         <constructor-arg name="hzInstance" ref="hzInstance"/>
         <constructor-arg name="graphsMapName" value="${hz.map.graph.name}"/>
-        <constructor-arg name="decisionsMapName" value="${hz.map.graph-decision.name}"/>
     </bean>
 
     <bean id="configService" class="ru.taskurotta.service.hz.config.HzConfigService">

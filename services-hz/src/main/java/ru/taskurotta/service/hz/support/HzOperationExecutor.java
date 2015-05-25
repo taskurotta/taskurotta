@@ -3,11 +3,10 @@ package ru.taskurotta.service.hz.support;
 import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.HzQueueConfigSupport;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.service.executor.Operation;
 import ru.taskurotta.service.executor.OperationExecutor;
-import ru.taskurotta.util.*;
+import ru.taskurotta.util.Shutdown;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -29,18 +28,11 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
     private CachedQueue<Operation<T>> operationIQueue;
     private BlockingQueue<Runnable> localOperationQueue;
 
-    public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, String queueName, int poolSize, boolean enabled) {
-        this(nativePoint, hzInstance, null, queueName, poolSize, enabled);
-    }
 
-    public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, final HzQueueConfigSupport hzQueueConfigSupport, final String queueName, int poolSize, boolean enabled) {
+    public HzOperationExecutor(final T nativePoint, final HazelcastInstance hzInstance, final String queueName, int poolSize, boolean enabled) {
         this.enabled = enabled;
         if (!enabled) {
             return;
-        }
-
-        if (hzQueueConfigSupport != null) {//for queues with map store
-            hzQueueConfigSupport.createQueueConfig(queueName);
         }
 
         this.operationIQueue = hzInstance.getDistributedObject(CachedQueue.class.getName(), queueName);

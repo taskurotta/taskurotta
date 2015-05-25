@@ -20,7 +20,6 @@ public class MemoryAllocationConfigurator {
 
     public static final String MAP_PROCESS_SIZE = "hz.map.process.memory.max-size";
     public static final String MAP_GRAPH_SIZE = "hz.map.graph.memory.max-size";
-    public static final String MAP_GRAPH_DECISION = "hz.map.graph-decision.memory.max-size";
     public static final String MAP_TASK_SIZE = "hz.map.task.memory.max-size";
     public static final String MAP_TASK_DECISION_SIZE = "hz.map.decision.memory.max-size";
     public static final String QUEUES = "hz.queue.memory.max-size";
@@ -67,10 +66,9 @@ public class MemoryAllocationConfigurator {
 
         setAndPrint(resultProperties, MAP_PROCESS_SIZE, totalMemory, onePartSize, data[2]);
         setAndPrint(resultProperties, MAP_GRAPH_SIZE, totalMemory, onePartSize, data[3]);
-        setAndPrint(resultProperties, MAP_GRAPH_DECISION, totalMemory, onePartSize, data[4]);
-        setAndPrint(resultProperties, MAP_TASK_SIZE, totalMemory, onePartSize, data[5]);
-        setAndPrint(resultProperties, MAP_TASK_DECISION_SIZE, totalMemory, onePartSize, data[6]);
-        setAndPrint(resultProperties, QUEUES, totalMemory, onePartSize, data[7]);
+        setAndPrint(resultProperties, MAP_TASK_SIZE, totalMemory, onePartSize, data[4]);
+        setAndPrint(resultProperties, MAP_TASK_DECISION_SIZE, totalMemory, onePartSize, data[5]);
+        setAndPrint(resultProperties, QUEUES, totalMemory, onePartSize, data[6]);
 
         return resultProperties;
     }
@@ -109,10 +107,9 @@ public class MemoryAllocationConfigurator {
         data[1] = getProportion(value, "f");
         data[2] = getProportion(value, "p");
         data[3] = getProportion(value, "g");
-        data[4] = getProportion(value, "gd");
-        data[5] = getProportion(value, "t");
-        data[6] = getProportion(value, "td");
-        data[7] = getProportion(value, "q");
+        data[4] = getProportion(value, "t");
+        data[5] = getProportion(value, "td");
+        data[6] = getProportion(value, "q");
 
         return data;
     }

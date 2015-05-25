@@ -13,7 +13,7 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.hz.TaskKey;
-import ru.taskurotta.service.hz.dependency.HzGraphDao;
+import ru.taskurotta.service.hz.dependency.DecisionRow;
 import ru.taskurotta.service.hz.serialization.bson.DecisionBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.DecisionRowBSerializer;
 import ru.taskurotta.service.hz.serialization.bson.GraphBSerializer;
@@ -67,7 +67,7 @@ public class ProcessInspector {
 
 
 //        UUID processId = getUUID("I0ieD4Yc1LEHzv3XSCZAnw==");
-        UUID processId = UUID.fromString("b2796de6-3bfd-4211-93f5-cf1bc0630e8a");
+        UUID processId = UUID.fromString("febd8d5a-1f35-43ec-9770-142e7f48a425");
 
         System.err.println("Date = " + new Date(2863196575625l));
         System.err.println("Process ID = " + processId + "\n");
@@ -205,7 +205,7 @@ public class ProcessInspector {
         graphStore = new MongoMapStore(mongoDB, bSerializationService, Graph.class.getName());
         graphStore.init(null, new Properties(), COLLECTION_GRAPH);
 
-        graphDecisionStore = new MongoMapStore(mongoDB, bSerializationService, HzGraphDao.DecisionRow.class.getName());
+        graphDecisionStore = new MongoMapStore(mongoDB, bSerializationService, DecisionRow.class.getName());
         graphDecisionStore.init(null, new Properties(), COLLECTION_GRAPH_DECISION);
 
         taskStore = new MongoMapStore(mongoDB, bSerializationService, TaskContainer.class.getName());
