@@ -61,12 +61,12 @@ angular.module("console.interrupted.services", ['ui.bootstrap.modal'])
             return $http.post("/rest/console/process/tasks/interrupted/restart", command);
         },
         restartTask: function (itdTask) {
-            var command = taskAsActionCommand(itdTask);
-            return this.submitRestart(command);
+            $log.log("Try to submit restart task:", itdTask);
+            return $http.post("/rest/console/process/tasks/interrupted/restart/task", itdTask);
         },
-        restartGroup: function (itdTaskGroup) {
-            var command = groupAsActionCommand(itdTaskGroup);
-            return this.submitRestart(command);
+        restartGroup: function (command) {
+            $log.log("Try to submit restart group with command: ", command);
+            return $http.post("/rest/console/process/tasks/interrupted/restart/group", command);
         },
         showModalMessage: function(type, processId, taskId) {
             var url = createMessageUrl(type, processId, taskId);

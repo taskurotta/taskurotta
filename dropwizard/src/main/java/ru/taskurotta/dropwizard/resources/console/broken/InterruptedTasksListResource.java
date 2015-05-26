@@ -27,19 +27,12 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 /**
- * User: dimadin
- * Date: 16.10.13 11:39
+ * Created: 16.10.13 11:39
  */
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -60,36 +53,45 @@ public class InterruptedTasksListResource {
                                       @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
                                       @QueryParam("group") Optional<String> groupOpt) {
         long startTime = System.currentTimeMillis();
-        GroupCommand command = convertToCommand(starterIdOpt, actorIdOpt, exceptionOpt, dateFromOpt, dateToOpt, groupOpt);
+        GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
         validateGroupCommand(command);
-        Collection<TasksGroupVO> groups = getGroupList(command);
+        Collection<TasksGroupVO> groups = interruptedTasksService.getGroupList(command);
         logger.debug("Process groups count got by command [{}] are [{}], total time [{}]", command, (groups != null ? groups.size() : null), System.currentTimeMillis() - startTime);
         return Response.ok(groups, MediaType.APPLICATION_JSON).build();
     }
 
     @GET
     @Path("/list")
-    public Response getProcessesList(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
+    public Response getInterruptedTasksList(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
                                      @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
                                      @QueryParam("group") Optional<String> groupOpt) {
-        GroupCommand command = convertToCommand(starterIdOpt, actorIdOpt, exceptionOpt, dateFromOpt, dateToOpt, groupOpt);
-        Collection<InterruptedTask> processes = interruptedTasksService.find(command);
-        logger.debug("Processes got by command [{}] are [{}]", command, processes);
-        return Response.ok(processes, MediaType.APPLICATION_JSON).build();
+        GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
+        Collection<InterruptedTask> tasks = interruptedTasksService.find(command);
+        logger.debug("Tasks got by command [{}] are [{}]", command, tasks);
+        return Response.ok(tasks, MediaType.APPLICATION_JSON).build();
     }
 
     @POST
-    @Path("/restart")
-    public Response executeTaskRecovery(final ActionCommand command) {
-        logger.debug("Executing task recovery with command [{}]", command);
-
-        if (command.getRestartIds() != null && command.getRestartIds().length > 0) {
-            for (TaskIdentifier ti : command.getRestartIds()) {
+    @Path("/restart/group")
+    public Response executeGroupRestart(final GroupAction action) {
+        GroupCommand command = convertToCommand(action.starterId, action.actorId, action.errorClassName, action.dateFrom, action.dateTo, action.group);
+        logger.debug("Executing group recovery with command [{}]", command);
+        Collection<TaskIdentifier> restartIds = interruptedTasksService.getTaskIdentifiers(command);
+        if (restartIds != null && !restartIds.isEmpty()) {
+            for (TaskIdentifier ti : restartIds) {
                 taskRecoveryOperationExecutor.enqueue(new RestartTaskOperation(UUID.fromString(ti.getProcessId()), UUID.fromString(ti.getTaskId())));
             }
-            logger.debug("Task group restart [{}] submitted", command);
         }
+        logger.debug("Task group restart [{}] submitted for [{}] tasks", command, restartIds!=null? restartIds.size() : 0);
+        return Response.ok().build();
+    }
 
+    @POST
+    @Path("/restart/task")
+    public Response executeTaskRestart(final TaskIdentifier ti) {
+        logger.debug("Executing task recovery with command [{}]", ti);
+        taskRecoveryOperationExecutor.enqueue(new RestartTaskOperation(UUID.fromString(ti.getProcessId()), UUID.fromString(ti.getTaskId())));
+        logger.debug("Task restarted [{}] ", ti);
         return Response.ok().build();
     }
 
@@ -117,17 +119,14 @@ public class InterruptedTasksListResource {
         return new Status(result!=null?HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
     }
 
-    public static class ActionCommand {
-        protected TaskIdentifier[] restartIds;
-
-        public TaskIdentifier[] getRestartIds() {
-            return restartIds;
-        }
-
-        public void setRestartIds(TaskIdentifier[] restartIds) {
-            this.restartIds = restartIds;
-        }
-
+    public static class GroupAction {
+        public String group;
+        public String actorId;
+        public String starterId;
+        public String errorMessage;
+        public String errorClassName;
+        public String dateFrom;
+        public String dateTo;
     }
 
     private void validateGroupCommand(GroupCommand command) {
@@ -149,12 +148,21 @@ public class InterruptedTasksListResource {
         }
     }
 
-    public static GroupCommand convertToCommand(Optional<String> starterIdOpt, Optional<String> actorIdOpt, Optional<String> exceptionOpt,
-                                                Optional<String> dateFromOpt, Optional<String> dateToOpt, Optional<String> groupOpt) {
-        String dateFrom = dateFromOpt.or("");
-        String dateTo = dateToOpt.or("");
+    public static GroupCommand convertToCommand(String starterId, String actorId, String exception,
+                                                String dateFrom, String dateTo, String group) {
         GroupCommand result = new GroupCommand();
+        appendPeriodValues(result, dateFrom, dateTo);
+        result.setStarterId(starterId);
+        result.setActorId(actorId);
+        result.setErrorClassName(exception);
+        result.setGroup(group);//default group processes by starter task
 
+        logger.debug("Converted GroupCommand is [{}]", result);
+
+        return result;
+    }
+
+    private static void appendPeriodValues(GroupCommand result, String dateFrom, String dateTo) {
         if (StringUtils.hasText(dateFrom) || StringUtils.hasText(dateTo)) {
             SimpleDateFormat sdf = null;
             boolean withTime = false;
@@ -183,106 +191,6 @@ public class InterruptedTasksListResource {
                 throw new WebApplicationException(e);
             }
         }
-
-        result.setStarterId(starterIdOpt.or(""));
-        result.setActorId(actorIdOpt.or(""));
-        result.setErrorClassName(exceptionOpt.or(""));
-        result.setGroup(groupOpt.or(GroupCommand.GROUP_STARTER));//default group processes by starter task
-
-        logger.debug("Converted GroupCommand is [{}]", result);
-
-        return result;
-    }
-
-    public List<TasksGroupVO> getGroupList(GroupCommand command) {
-        List<TasksGroupVO> result = null;
-        Collection<InterruptedTask> tasks = interruptedTasksService.find(command);
-
-        if (tasks != null && !tasks.isEmpty()) {
-            Map<String, Collection<InterruptedTask>> groupedTasks = groupProcessList(tasks, command.getGroup());
-            result = convertToGroupsList(groupedTasks, command);
-        }
-
-        return result;
-    }
-
-
-    private Map<String, Collection<InterruptedTask>> groupProcessList(Collection<InterruptedTask> tasks, String groupType) {
-        Map<String, Collection<InterruptedTask>> result = new HashMap<>();
-
-        if (tasks != null && !tasks.isEmpty()) {
-
-            if (GroupCommand.GROUP_STARTER.equals(groupType)) {
-                for (InterruptedTask it : tasks) {
-                    Collection<InterruptedTask> coll = result.get(it.getStarterId());
-                    if (coll == null) {
-                        coll = new ArrayList<>();
-                    }
-                    coll.add(it);
-                    result.put(it.getStarterId(), coll);
-                }
-            } else if (GroupCommand.GROUP_ACTOR.equals(groupType)) {
-                for (InterruptedTask it : tasks) {
-                    Collection<InterruptedTask> coll = result.get(it.getActorId());
-                    if (coll == null) {
-                        coll = new ArrayList<>();
-                    }
-                    coll.add(it);
-                    result.put(it.getActorId(), coll);
-                }
-            } else if (GroupCommand.GROUP_EXCEPTION.equals(groupType)) {
-                for (InterruptedTask it : tasks) {
-                    Collection<InterruptedTask> coll = result.get(it.getErrorClassName());
-                    if (coll == null) {
-                        coll = new ArrayList<>();
-                    }
-                    coll.add(it);
-                    result.put(it.getErrorClassName(), coll);
-                }
-            } else {
-                logger.error("Unsupported groupType[" + groupType + "]");
-            }
-
-        }
-
-        return result;
-    }
-
-    private List<TasksGroupVO> convertToGroupsList(Map<String, Collection<InterruptedTask>> groupedProcesses, GroupCommand command) {
-        List<TasksGroupVO> result = null;
-        if (groupedProcesses != null && !groupedProcesses.isEmpty()) {
-            result = new ArrayList<>();
-            for (Map.Entry<String, Collection<InterruptedTask>> entry : groupedProcesses.entrySet()) {
-                Collection<InterruptedTask> groupItems = entry.getValue();
-                TasksGroupVO group = convertToGroup(groupItems, entry.getKey());
-                result.add(group);
-            }
-        }
-        return result;
-    }
-
-    private static TasksGroupVO convertToGroup(Collection<InterruptedTask> members, String name) {
-        TasksGroupVO group = new TasksGroupVO();
-        Set<String> actorsDiffs = new HashSet<>();
-        Set<String> startersDiffs = new HashSet<>();
-        Set<String> exceptionsDiffs = new HashSet<>();
-        Set<TaskIdentifier> tasks = new HashSet<>();
-        if (members != null && !members.isEmpty()) {
-            for (InterruptedTask it : members) {
-                actorsDiffs.add(it.getActorId());
-                startersDiffs.add(it.getStarterId());
-                exceptionsDiffs.add(it.getErrorClassName());
-                tasks.add(new TaskIdentifier(it.getTaskId(), it.getProcessId()));
-            }
-        }
-        group.setName(name);
-        group.setStartersCount(startersDiffs.size());
-        group.setActorsCount(actorsDiffs.size());
-        group.setExceptionsCount(exceptionsDiffs.size());
-        group.setTotal(tasks.size());
-        group.setTasks(tasks);
-
-        return group;
     }
 
     @Required

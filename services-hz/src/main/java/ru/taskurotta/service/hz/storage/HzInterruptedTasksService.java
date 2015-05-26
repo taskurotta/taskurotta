@@ -7,14 +7,19 @@ import com.hazelcast.query.Predicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.InterruptedTaskExt;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 import ru.taskurotta.service.storage.InterruptedTasksService;
+import ru.taskurotta.util.InterruptedTaskSupport;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -130,6 +135,24 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
     public String getStackTrace(UUID processId, UUID taskId) {
         InterruptedTaskExt bp = storeIMap.get(taskId);
         return bp!=null? bp.getStackTrace() : null;
+    }
+
+    @Override
+    public List<TasksGroupVO> getGroupList(GroupCommand command) {
+        List<TasksGroupVO> result = null;
+        Collection<InterruptedTask> tasks = find(command);
+
+        if (tasks != null && !tasks.isEmpty()) {
+            Map<String, Collection<InterruptedTask>> groupedTasks = InterruptedTaskSupport.groupProcessList(tasks, command.getGroup());
+            result = InterruptedTaskSupport.convertToGroupsList(groupedTasks, command);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
+        return InterruptedTaskSupport.asTaskIdentifiers(find(command), command);
     }
 
 }

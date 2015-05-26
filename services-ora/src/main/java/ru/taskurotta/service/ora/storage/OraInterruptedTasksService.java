@@ -12,8 +12,11 @@ import org.springframework.jdbc.support.lob.LobCreator;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.exception.ServiceCriticalException;
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.transport.utils.TransportUtils;
 
@@ -45,9 +48,13 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
 
     protected static final String SQL_DELETE_ITD_TASK = "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
 
-    protected static final String SQL_GET_STACK_TRACE = "SELECT STACK_TRACE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
+    protected static final String SQL_GET_STACK_TRACE = "SELECT STACK_TRACE clb FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
 
-    protected static final String SQL_GET_MESSAGE = "SELECT FULL_MESSAGE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
+    protected static final String SQL_GET_MESSAGE = "SELECT MESSAGE_FULL clb FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
+
+    protected static final String SQL_GROUP_COUNTERS = " count(distinct STARTER_ID) starters, count(distinct ACTOR_ID) actors, count(distinct ERROR_CLASS_NAME) errors, count(id) total from TSK_INTERRUPTED_TASKS ";
+
+    protected static final String SQL_LIST_TASK_IDENTIFIERS = "SELECT TASK_ID, PROCESS_ID FROM TSK_INTERRUPTED_TASKS ";
 
     protected LobHandler lobHandler;
 
@@ -56,7 +63,7 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
 
         @Override
         public String mapRow(ResultSet rs, int i) throws SQLException {
-            return rs.getString(1);
+            return lobHandler.getClobAsString(rs, "clb");
         }
     };
 
@@ -74,6 +81,29 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
             result.setStarterId(rs.getString("STARTER_ID"));
             result.setTime(rs.getLong("TIME"));
 
+            return result;
+        }
+    };
+
+    protected RowMapper<TasksGroupVO> taskGroupMapper = new RowMapper<TasksGroupVO>() {
+        @Override
+        public TasksGroupVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+            TasksGroupVO result = new TasksGroupVO();
+            result.setName(rs.getString("name"));
+            result.setActorsCount(rs.getInt("actors"));
+            result.setExceptionsCount(rs.getInt("errors"));
+            result.setStartersCount(rs.getInt("starters"));
+            result.setTotal(rs.getInt("total"));
+            return result;
+        }
+    };
+
+    protected RowMapper<TaskIdentifier> taskIdentifierMapper = new RowMapper<TaskIdentifier>() {
+        @Override
+        public TaskIdentifier mapRow(ResultSet rs, int rowNum) throws SQLException {
+            TaskIdentifier result = new TaskIdentifier();
+            result.setProcessId(rs.getString("PROCESS_ID"));
+            result.setTaskId(rs.getString("TASK_ID"));
             return result;
         }
     };
@@ -112,7 +142,7 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
         } catch (DataAccessException e) {
             String errMessage = "Cannot create interrupted task entry[" + itdTask + "]";
             logger.error(errMessage, e);
-            throw new ServiceCriticalException(errMessage);
+            throw new ServiceCriticalException(errMessage, e);
         }
 
     }
@@ -120,8 +150,45 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     @Override
     public Collection<InterruptedTask> find(SearchCommand searchCommand) {
         List<Object> parameters = new ArrayList<>();//order does matter
+        String searchSql = constructSearchSql(searchCommand, parameters);
+
+        Collection<InterruptedTask> result;
+        long startTime = System.currentTimeMillis();
+        try {
+            result = getJdbcTemplate().query(searchSql, parameters.toArray(), itdTaskRowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            result = Collections.emptyList();
+        }
+
+        logger.trace("SearchSQL got is[{}], params are[{}]", searchSql, parameters);
+        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), searchCommand, (System.currentTimeMillis() - startTime));
+
+        return result;
+    }
+
+    static String constructGroupSql(GroupCommand command, List<Object> parameters) {
+        String column = "starter_id";//default column
+        if (GroupCommand.GROUP_ACTOR.equalsIgnoreCase(command.getGroup())) {
+            column = "actor_id";
+        } else if (GroupCommand.GROUP_EXCEPTION.equalsIgnoreCase(command.getGroup())) {
+            column = "error_class_name";
+        }
+        StringBuilder sb = new StringBuilder().append("SELECT ").append(column).append(" name, ").append(SQL_GROUP_COUNTERS);
+
+        appendFilterCondition(sb, command, parameters, true);
+
+        sb.append(" GROUP by ").append(column);
+
+        return sb.toString();
+    }
+
+    static String constructSearchSql(SearchCommand searchCommand, List<Object> parameters) {
         StringBuilder sb = new StringBuilder(SQL_LIST_ALL);
-        boolean first = true;
+        appendFilterCondition(sb, searchCommand, parameters, true);
+        return sb.toString();
+    }
+
+    static void appendFilterCondition(StringBuilder sb, SearchCommand searchCommand, List<Object> parameters, boolean first) {
         if (searchCommand.getProcessId() != null) {
             sb.append((first ? " WHERE " : " AND ")).append("PROCESS_ID = ? ");
             parameters.add(searchCommand.getProcessId().toString());
@@ -163,20 +230,6 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
             parameters.add(searchCommand.getStartPeriod());
             first = false;
         }
-
-        Collection<InterruptedTask> result;
-        String searchSql = sb.toString();
-        long startTime = System.currentTimeMillis();
-        try {
-            result = getJdbcTemplate().query(searchSql, parameters.toArray(), itdTaskRowMapper);
-        } catch (EmptyResultDataAccessException e) {
-            result = Collections.emptyList();
-        }
-
-        logger.trace("SearchSQL got is[{}], params are[{}]", searchSql, parameters);
-        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), searchCommand, (System.currentTimeMillis() - startTime));
-
-        return result;
     }
 
     @Override
@@ -205,14 +258,66 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
 
     @Override
     public String getFullMessage(UUID processId, UUID taskId) {
-        List<String> result = getJdbcTemplate().query(SQL_GET_MESSAGE, clobMapper, processId, taskId);//TODO: migrate to some interrupted task unique identifier
+        List<String> result = getJdbcTemplate().query(SQL_GET_MESSAGE, clobMapper, processId!=null? processId.toString(): null, taskId!=null? taskId.toString(): null);//TODO: migrate to some interrupted task unique identifier
         return result!=null&&!result.isEmpty()? result.get(0) : null;
     }
 
     @Override
     public String getStackTrace(UUID processId, UUID taskId) {
-        List<String> result = getJdbcTemplate().query(SQL_GET_STACK_TRACE, clobMapper, processId, taskId);//TODO: migrate to some interrupted task unique identifier
+        List<String> result = getJdbcTemplate().query(SQL_GET_STACK_TRACE, clobMapper, processId!=null? processId.toString(): null, taskId!=null? taskId.toString(): null);//TODO: migrate to some interrupted task unique identifier
         return result!=null&&!result.isEmpty()? result.get(0) : null;
+    }
+
+    @Override
+    public List<TasksGroupVO> getGroupList(GroupCommand command) {
+        List<Object> parameters = new ArrayList<>();//order does matter
+        String sql = constructGroupSql(command, parameters);
+
+        List<TasksGroupVO> result;
+        long startTime = System.currentTimeMillis();
+        try {
+            result = getJdbcTemplate().query(sql, parameters.toArray(), taskGroupMapper);
+        } catch (EmptyResultDataAccessException e) {
+            result = Collections.emptyList();//nothing found
+        }
+
+        logger.trace("Group SQL got is[{}], params are[{}]", sql, parameters);
+        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), command, (System.currentTimeMillis() - startTime));
+
+        return result;
+    }
+
+    @Override
+    public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
+        List<Object> parameters = new ArrayList<>();//order does matter
+        StringBuilder sb = new StringBuilder(SQL_LIST_TASK_IDENTIFIERS);
+        if (GroupCommand.GROUP_ACTOR.equalsIgnoreCase(command.getGroup())) {
+            sb.append("WHERE ACTOR_ID = ? ");
+            parameters.add(command.getActorId());
+        } else if (GroupCommand.GROUP_EXCEPTION.equalsIgnoreCase(command.getGroup())) {
+            sb.append("WHERE ERROR_CLASS_NAME = ? ");
+            parameters.add(command.getErrorClassName());
+        } else { //STARTERS by default
+            sb.append("WHERE STARTER_ID = ? ");
+            parameters.add(command.getStarterId());
+        }
+
+        appendFilterCondition(sb, command, parameters, false);
+
+        String sql = sb.toString();
+
+        List<TaskIdentifier> result;
+        long startTime = System.currentTimeMillis();
+        try {
+            result = getJdbcTemplate().query(sql, parameters.toArray(), taskIdentifierMapper);
+        } catch (EmptyResultDataAccessException e) {
+            result = Collections.emptyList();//nothing found
+        }
+
+        logger.trace("Task ifdentifiers SQL got is[{}], params are[{}]", sql, parameters);
+        logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), command, (System.currentTimeMillis() - startTime));
+
+        return result;
     }
 
     @Required

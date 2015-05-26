@@ -24,7 +24,7 @@ angular.module("console.interrupted.directives", ['console.interrupted.services'
 
                 $scope.submitRestart = function (itdTask, $index) {
                     $log.log("Submitting restart for taskId["+itdTask.taskId+"], processId["+itdTask.processId+"]index ["+$index+"]");
-                    tskBrokenProcessesActions.restartTask(itdTask).then(function(okResp) {
+                    tskBrokenProcessesActions.restartTask({taskId: itdTask.taskId, processId: itdTask.processId}).then(function(okResp) {
                         $scope.tasks.splice($index, 1);
 
                     }, function(errResp){

@@ -116,21 +116,21 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
                 fromDateStr = fromDateStr + " " + getTimeAsString($scope.period.timeFrom);
                 toDateStr = toDateStr + " " + getTimeAsString($scope.period.timeTo);
             }
-            command.dateFrom = fromDateStr;
-            command.dateTo = toDateStr;
+            command["dateFrom"] = fromDateStr;
+            command["dateTo"] = toDateStr;
         }
         return result;
     };
 
 
-    var getCommandAsParamLine = function() {
+    var getCommandAsParamLine = function(command) {
         var result = "";
-        setDatesToCommand($scope.groupCommand);
-        for (var key in $scope.groupCommand) {
+        setDatesToCommand(command);
+        for (var key in command) {
             if (result.length>0) {
                 result = result + "&";
             }
-            result = result + key + "=" + encodeURIComponent($scope.groupCommand[key]);
+            result = result + key + "=" + encodeURIComponent(command[key]);
         }
         $log.log("group command line is " + result);
         return result;
@@ -179,7 +179,7 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
 
     var updateGroupsList = function() {
         $scope.initialized = false;
-        $http.get('/rest/console/process/tasks/interrupted/group?' + getCommandAsParamLine()).then(function(success) {
+        $http.get('/rest/console/process/tasks/interrupted/group?' + getCommandAsParamLine($scope.groupCommand)).then(function(success) {
             $scope.brokenGroups = success.data;
             $scope.initialized = true;
         }, function(error) {
@@ -190,7 +190,7 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
 
     var updateProcessesList = function() {
         $scope.initialized = false;
-        $http.get('/rest/console/process/tasks/interrupted/list?' + getCommandAsParamLine()).then(function(success) {
+        $http.get('/rest/console/process/tasks/interrupted/list?' + getCommandAsParamLine($scope.groupCommand)).then(function(success) {
             $scope.brokenTasks = success.data;
             $scope.initialized = true;
         }, function(error) {
@@ -276,7 +276,23 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
     };
 
     $scope.restartGroup = function (bpg, index) {
-        tskBrokenProcessesActions.restartGroup(bpg).then(function(okResp) {
+        var command = {
+            group: $scope.groupCommand.group,
+            actorId: $scope.groupCommand.actorId,
+            starterId: $scope.groupCommand.starterId,
+            errorMessage: $scope.groupCommand.errorMessage,
+            errorClassName: $scope.groupCommand.exception
+        };
+        if ('starter' == command.group) {
+            command["starterId"] = bpg.name;
+        } else if ('actor' == command.group) {
+            command["actorId"] = bpg.name;
+        } else if ('exception' == command.group) {
+            command["errorClassName"] = bpg.name;
+        }
+        setDatesToCommand(command);
+
+        tskBrokenProcessesActions.restartGroup(command).then(function(okResp) {
             $scope.brokenGroups.splice(index, 1);
         }, function(errResp){
             $scope.feedback = errResp;

@@ -1,9 +1,13 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -24,5 +28,9 @@ public interface InterruptedTasksService {
     String getFullMessage(UUID processId, UUID taskId);
 
     String getStackTrace(UUID processId, UUID taskId);
+
+    List<TasksGroupVO> getGroupList(GroupCommand command);
+
+    Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command);
 
 }

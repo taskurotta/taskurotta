@@ -1,16 +1,12 @@
 package ru.taskurotta.service.console.model;
 
-import java.util.Collection;
-
 /**
  * POJO representing group of interrupted tasks with common properties
- * User: dimadin
  * Date: 16.10.13 11:58
  */
 public class TasksGroupVO {
 
     private String name;
-    private Collection<TaskIdentifier> tasks;
     private int total;
     private int exceptionsCount;
     private int actorsCount;
@@ -56,19 +52,10 @@ public class TasksGroupVO {
         this.startersCount = startersCount;
     }
 
-    public Collection<TaskIdentifier> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(Collection<TaskIdentifier> tasks) {
-        this.tasks = tasks;
-    }
-
     @Override
     public String toString() {
         return "TasksGroupVO{" +
                 "name='" + name + '\'' +
-                ", tasks=" + tasks +
                 ", total=" + total +
                 ", exceptionsCount=" + exceptionsCount +
                 ", actorsCount=" + actorsCount +

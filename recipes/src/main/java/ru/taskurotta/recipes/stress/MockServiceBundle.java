@@ -8,8 +8,11 @@ import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
@@ -350,6 +353,16 @@ public class MockServiceBundle implements ServiceBundle {
 
             @Override
             public String getStackTrace(UUID processId, UUID taskId) {
+                return null;
+            }
+
+            @Override
+            public List<TasksGroupVO> getGroupList(GroupCommand command) {
+                return null;
+            }
+
+            @Override
+            public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
                 return null;
             }
 
