@@ -8,14 +8,13 @@ import java.util.UUID;
  */
 public class InterruptedTask implements Serializable {
 
-    private UUID processId;
-    private UUID taskId;
-    private String actorId;
-    private String starterId;
-    private long time;
-    private String errorMessage;
-    private String errorClassName;
-    private String stackTrace;
+    protected UUID processId;
+    protected UUID taskId;
+    protected String actorId;
+    protected String starterId;
+    protected long time;
+    protected String errorMessage;
+    protected String errorClassName;
 
     public UUID getProcessId() {
         return processId;
@@ -65,14 +64,6 @@ public class InterruptedTask implements Serializable {
         this.errorClassName = errorClassName;
     }
 
-    public String getStackTrace() {
-        return stackTrace;
-    }
-
-    public void setStackTrace(String stackTrace) {
-        this.stackTrace = stackTrace;
-    }
-
     public String getStarterId() {
         return starterId;
     }
@@ -91,7 +82,6 @@ public class InterruptedTask implements Serializable {
                 ", time=" + time +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", errorClassName='" + errorClassName + '\'' +
-                ", stackTrace='" + stackTrace + '\'' +
                 '}';
     }
 }

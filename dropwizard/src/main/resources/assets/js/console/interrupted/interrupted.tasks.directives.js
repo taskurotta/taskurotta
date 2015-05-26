@@ -1,6 +1,6 @@
-angular.module("console.interrupted.directives", ['console.interrupted.services', 'console.util.services', 'ui.bootstrap.modal'])
+angular.module("console.interrupted.directives", ['console.interrupted.services', 'console.util.services'])
 
-    .directive('tskBrokenProcessList', ['tskUtil', '$log', '$modal', 'tskBrokenProcessesActions',  function(tskUtil, $log, $modal, tskBrokenProcessesActions) {
+    .directive('tskBrokenProcessList', ['tskUtil', '$log', '$modal', 'tskBrokenProcessesActions', '$http',  function(tskUtil, $log, $modal, tskBrokenProcessesActions, $http) {
 
         return {
             restrict: 'ECA',//Element, Class, Attribute
@@ -14,21 +14,12 @@ angular.module("console.interrupted.directives", ['console.interrupted.services'
                     return tskUtil.injectNewLineDelimiter(word, 25, '.');
                 };
 
-                $scope.showStackTrace = function (stackTrace) {
-                    //$log.log("Showing stacktrace : " + stackTrace);
-                    var modalInstance = $modal.open({
-                        templateUrl: '/partials/view/modal/stacktrace_msg.html',
-                        windowClass: 'stack-trace',
-                        controller: function ($scope) {
-                            $scope.stackTrace = stackTrace;
-                        }
-                    });
+                $scope.showStackTrace = function (processId, taskId) {
+                    tskBrokenProcessesActions.showModalMessage('stacktrace', processId, taskId);
+                };
 
-                    modalInstance.result.then(function(okMess) {
-                        //do nothing
-                    }, function(cancelMsg) {
-                        //do nothing
-                    });
+                $scope.showMessage = function (processId, taskId) {
+                    tskBrokenProcessesActions.showModalMessage('message', processId, taskId);
                 };
 
                 $scope.submitRestart = function (itdTask, $index) {

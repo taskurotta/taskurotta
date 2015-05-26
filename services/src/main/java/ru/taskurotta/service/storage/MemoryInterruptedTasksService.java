@@ -1,10 +1,12 @@
 package ru.taskurotta.service.storage;
 
 import ru.taskurotta.service.console.model.InterruptedTask;
+import ru.taskurotta.service.console.model.InterruptedTaskExt;
 import ru.taskurotta.service.console.model.SearchCommand;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,14 +29,13 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
     private ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> times = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorMessages = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorClassNames = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> stackTraces = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<UUID, InterruptedTask> brokenTasks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<UUID, InterruptedTaskExt> brokenTasks = new ConcurrentHashMap<>();
 
     private static final Lock lock = new ReentrantLock();
 
     @Override
-    public void save(InterruptedTask itdTask) {
+    public void save(InterruptedTask itdTask, String message, String stackTrace) {
 
         UUID taskId = itdTask.getTaskId();
 
@@ -46,9 +47,8 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         addTaskId(times, itdTask.getTime(), taskId);
         addTaskId(errorMessages, itdTask.getErrorMessage(), taskId);
         addTaskId(errorClassNames, itdTask.getErrorClassName(), taskId);
-        addTaskId(stackTraces, itdTask.getStackTrace(), taskId);
 
-        this.brokenTasks.put(taskId, itdTask);
+        this.brokenTasks.put(taskId, new InterruptedTaskExt(itdTask, message, stackTrace));
     }
 
     @Override
@@ -121,7 +121,16 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
 
     @Override
     public Collection<InterruptedTask> findAll() {
-        return brokenTasks.values();
+        Collection<InterruptedTask> result = null;
+
+        Collection<InterruptedTaskExt> tasks = brokenTasks.values();
+        if (tasks!=null && !tasks.isEmpty()) {
+            result = new ArrayList<>();
+            for (InterruptedTaskExt itdTask : tasks) {
+                result.add(itdTask);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -137,20 +146,39 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         deleteTaskId(times, taskId);
         deleteTaskId(errorMessages, taskId);
         deleteTaskId(errorClassNames, taskId);
-        deleteTaskId(stackTraces, taskId);
 
         brokenTasks.remove(taskId);
     }
 
-//    @Override
-//    public void restart(UUID processId, UUID taskId) {
-//        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
-//            TaskContainer tc = taskService.getTask(taskId, processId);
-//            if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
-//                delete(processId, taskId);
-//            }
-//        }
-//    }
+    @Override
+    public String getFullMessage(UUID processId, UUID taskId) {
+        Iterator<InterruptedTaskExt> iter = brokenTasks.values().iterator();
+        while (iter.hasNext()) {
+            InterruptedTaskExt task = iter.next();
+            if (task!=null && task.getProcessId()!=null
+                    && task.getProcessId().equals(processId)
+                    && task.getTaskId()!=null
+                    && task.getTaskId().equals(taskId)) {
+                return task.getFullMessage();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getStackTrace(UUID processId, UUID taskId) {
+        Iterator<InterruptedTaskExt> iter = brokenTasks.values().iterator();
+        while (iter.hasNext()) {
+            InterruptedTaskExt task = iter.next();
+            if (task!=null && task.getProcessId()!=null
+                    && task.getProcessId().equals(processId)
+                    && task.getTaskId()!=null
+                    && task.getTaskId().equals(taskId)) {
+                return task.getStackTrace();
+            }
+        }
+        return null;
+    }
 
     private void addTaskId(ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, String key, UUID taskId) {
 

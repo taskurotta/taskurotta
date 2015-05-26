@@ -24,6 +24,7 @@ import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
 import ru.taskurotta.transport.model.TaskConfigContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.TaskOptionsContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
 import ru.taskurotta.util.RetryPolicyConfigUtil;
@@ -297,6 +298,7 @@ public class GeneralTaskServer implements TaskServer {
 
     }
 
+
     private void markProcessAsBroken(DecisionContainer taskDecision) {
 
         // increments stat counter
@@ -321,12 +323,15 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
+        String message = null;
+        String stacktrace = null;
         if (errorContainer != null) {
             itdTask.setErrorClassName(errorContainer.getClassName());
-            itdTask.setErrorMessage(errorContainer.getMessage());
-            itdTask.setStackTrace(errorContainer.getStackTrace());
+            message = errorContainer.getMessage();
+            itdTask.setErrorMessage(TransportUtils.trimToLength(message, InterruptedTasksService.MESSAGE_MAX_LENGTH));
+            stacktrace = errorContainer.getStackTrace();
         }
-        interruptedTasksService.save(itdTask);
+        interruptedTasksService.save(itdTask, message, stacktrace);
 
         // mark process as broken
         processService.markProcessAsBroken(processId);

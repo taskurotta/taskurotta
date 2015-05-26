@@ -35,6 +35,8 @@
                         class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
             <serializer type-class="ru.taskurotta.service.console.model.InterruptedTask"
                         class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.console.model.InterruptedTaskExt"
+                        class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskExtStreamSerializer"/>
             <serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
                         class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
             <serializer type-class="ru.taskurotta.transport.model.Decision"
@@ -71,6 +73,8 @@
                         class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
             <serializer type-class="ru.taskurotta.service.console.model.QueueStatVO"
                         class-name="ru.taskurotta.service.hz.serialization.QueueStatVOStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.hz.console.HzQueueStatTask"
+                        class-name="ru.taskurotta.service.hz.serialization.HzQueueStatTaskStreamSerializer"/>
         </serializers>
     </serialization>
 

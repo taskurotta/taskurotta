@@ -323,7 +323,7 @@ public class MockServiceBundle implements ServiceBundle {
     public InterruptedTasksService getInterruptedTasksService() {
         return new InterruptedTasksService() {
             @Override
-            public void save(InterruptedTask itdTask) {
+            public void save(InterruptedTask itdTask, String message, String stackTrace) {
                 // ignore
             }
 
@@ -343,10 +343,15 @@ public class MockServiceBundle implements ServiceBundle {
                 // ignore
             }
 
-//            @Override
-//            public void restart(UUID processId, UUID taskId) {
-//                throw new IllegalAccessError("Method not implemented");
-//            }
+            @Override
+            public String getFullMessage(UUID processId, UUID taskId) {
+                return null;
+            }
+
+            @Override
+            public String getStackTrace(UUID processId, UUID taskId) {
+                return null;
+            }
 
         };
     }

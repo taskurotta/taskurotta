@@ -15,6 +15,7 @@ import ru.taskurotta.exception.ServiceCriticalException;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.storage.InterruptedTasksService;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -33,20 +34,31 @@ import java.util.UUID;
  */
 public class OraInterruptedTasksService extends JdbcDaoSupport implements InterruptedTasksService {
 
-    public static final int MESSAGE_MAX_LENGTH = 500;
-
     private static final Logger logger = LoggerFactory.getLogger(OraInterruptedTasksService.class);
 
     protected static final String SQL_CREATE_ITD_TASK = "BEGIN " +
-            "INSERT INTO TSK_INTERRUPTED_TASKS (TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; " +
+            "INSERT INTO TSK_INTERRUPTED_TASKS (TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE, MESSAGE_FULL) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; " +
             "END;";
 
-    protected static final String SQL_LIST_ALL = "SELECT TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE FROM TSK_INTERRUPTED_TASKS ";
+    protected static final String SQL_LIST_ALL = "SELECT TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME FROM TSK_INTERRUPTED_TASKS ";
 
     protected static final String SQL_DELETE_ITD_TASK = "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
 
+    protected static final String SQL_GET_STACK_TRACE = "SELECT STACK_TRACE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
+
+    protected static final String SQL_GET_MESSAGE = "SELECT FULL_MESSAGE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ? ";
+
     protected LobHandler lobHandler;
+
+
+    protected RowMapper<String> clobMapper = new RowMapper<String>() {
+
+        @Override
+        public String mapRow(ResultSet rs, int i) throws SQLException {
+            return rs.getString(1);
+        }
+    };
 
     protected RowMapper<InterruptedTask> itdTaskRowMapper = new RowMapper<InterruptedTask>() {
 
@@ -57,7 +69,6 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
             result.setTaskId(UUID.fromString(rs.getString("TASK_ID")));
             result.setErrorClassName(rs.getString("ERROR_CLASS_NAME"));
             result.setProcessId(UUID.fromString(rs.getString("PROCESS_ID")));
-            result.setStackTrace(lobHandler.getClobAsString(rs, "STACK_TRACE"));
             result.setErrorMessage(rs.getString("ERROR_MESSAGE"));
             result.setActorId(rs.getString("ACTOR_ID"));
             result.setStarterId(rs.getString("STARTER_ID"));
@@ -68,7 +79,7 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     };
 
     @Override
-    public void save(final InterruptedTask itdTask) {
+    public void save(final InterruptedTask itdTask, final String message, final String stackTrace) {
 
         try {
             Long id = getJdbcTemplate().execute(SQL_CREATE_ITD_TASK,
@@ -84,16 +95,16 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
                             ps.setString(4, itdTask.getStarterId());
                             ps.setTimestamp(5, new Timestamp(new Date().getTime()));
                             ps.setLong(6, itdTask.getTime());
-                            ps.setString(7, trimToLength(itdTask.getErrorMessage(), MESSAGE_MAX_LENGTH));
+                            ps.setString(7, TransportUtils.trimToLength(itdTask.getErrorMessage(), MESSAGE_MAX_LENGTH));
                             ps.setString(8, itdTask.getErrorClassName());
-                            lobCreator.setClobAsString(ps, 9, itdTask.getStackTrace());
-
-                            ps.registerOutParameter(10, Types.BIGINT);
+                            lobCreator.setClobAsString(ps, 9, stackTrace);
+                            lobCreator.setClobAsString(ps, 10, message);
+                            ps.registerOutParameter(11, Types.BIGINT);
 
                             ps.execute();
                             lobCreator.close();
 
-                            return ps.getLong(10);
+                            return ps.getLong(11);
                         }
                     });
 
@@ -104,14 +115,6 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
             throw new ServiceCriticalException(errMessage);
         }
 
-    }
-
-    public static String trimToLength(String target, int length) {
-        if (target == null || target.length()<=length) {
-            return target;
-        } else {
-            return target.substring(0, length);
-        }
     }
 
     @Override
@@ -198,6 +201,18 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
 
         int result = getJdbcTemplate().update(SQL_DELETE_ITD_TASK, processId.toString(), taskId.toString());
         logger.debug("Successfully deleted [{}] interrupted tasks, taskId [{}], processId[{}]", result, taskId, processId);
+    }
+
+    @Override
+    public String getFullMessage(UUID processId, UUID taskId) {
+        List<String> result = getJdbcTemplate().query(SQL_GET_MESSAGE, clobMapper, processId, taskId);//TODO: migrate to some interrupted task unique identifier
+        return result!=null&&!result.isEmpty()? result.get(0) : null;
+    }
+
+    @Override
+    public String getStackTrace(UUID processId, UUID taskId) {
+        List<String> result = getJdbcTemplate().query(SQL_GET_STACK_TRACE, clobMapper, processId, taskId);//TODO: migrate to some interrupted task unique identifier
+        return result!=null&&!result.isEmpty()? result.get(0) : null;
     }
 
     @Required

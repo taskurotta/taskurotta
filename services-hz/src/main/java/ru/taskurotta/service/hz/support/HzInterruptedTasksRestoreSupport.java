@@ -10,8 +10,12 @@ import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
-import ru.taskurotta.mongodb.driver.*;
-import ru.taskurotta.service.console.model.InterruptedTask;
+import ru.taskurotta.mongodb.driver.BDecoderFactory;
+import ru.taskurotta.mongodb.driver.BEncoderFactory;
+import ru.taskurotta.mongodb.driver.BSerializationService;
+import ru.taskurotta.mongodb.driver.DBObjectCheat;
+import ru.taskurotta.mongodb.driver.StreamBSerializer;
+import ru.taskurotta.service.console.model.InterruptedTaskExt;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 
 import java.util.HashSet;
@@ -41,7 +45,7 @@ public class HzInterruptedTasksRestoreSupport {
 
     public void init() {
         dbCollection = mongoDb.getCollection(mapName);
-        StreamBSerializer objectSerializer = serializationService.getSerializer(InterruptedTask.class.getName());
+        StreamBSerializer objectSerializer = serializationService.getSerializer(InterruptedTaskExt.class.getName());
         dbCollection.setDBDecoderFactory(new BDecoderFactory(objectSerializer));
         dbCollection.setDBEncoderFactory(new BEncoderFactory(serializationService));
 
@@ -78,7 +82,7 @@ public class HzInterruptedTasksRestoreSupport {
         ILock restorationLock = hzInstance.getLock(HzInterruptedTasksRestoreSupport.class.getName());
         if (restorationLock.tryLock()) {
             try {
-                IMap<UUID, InterruptedTask> hzCollection = hzInstance.getMap(mapName);
+                IMap<UUID, InterruptedTaskExt> hzCollection = hzInstance.getMap(mapName);
                 long dbObjects = dbCollection.count();
                 long hzObjects = hzCollection.size();
                 if (dbObjects > hzObjects) {
@@ -88,10 +92,10 @@ public class HzInterruptedTasksRestoreSupport {
                         batchesCount++;
                     }
                     for (int i = 0; i<batchesCount; i++) {
-                        Set<InterruptedTask> batch = getBatchToLoad(dbCollection, i);
+                        Set<InterruptedTaskExt> batch = getBatchToLoad(dbCollection, i);
                         logger.debug("Try to load interrupted tasks batch batch [{}] with size[{}]", i, batch.size());
-                        for (InterruptedTask it : batch) {
-                            interruptedTasksService.save(it);
+                        for (InterruptedTaskExt it : batch) {
+                            interruptedTasksService.save(it, it.getFullMessage(), it.getStackTrace());
                         }
                         restored += batch.size();
                     }
@@ -107,13 +111,13 @@ public class HzInterruptedTasksRestoreSupport {
         return restored;
     }
 
-    private Set<InterruptedTask> getBatchToLoad(DBCollection dbCollection, int batchNumber) {
-        Set<InterruptedTask> result = new HashSet<>();
+    private Set<InterruptedTaskExt> getBatchToLoad(DBCollection dbCollection, int batchNumber) {
+        Set<InterruptedTaskExt> result = new HashSet<>();
         DBCursor cursor = dbCollection.find().skip(batchSize*batchNumber).limit(batchSize);
         while (cursor.hasNext()) {
             DBObject dbObj = cursor.next();
             if (dbObj instanceof DBObjectCheat) {
-                InterruptedTask task  = ((DBObjectCheat<InterruptedTask>) dbObj).getObject();
+                InterruptedTaskExt task  = ((DBObjectCheat<InterruptedTaskExt>) dbObj).getObject();
                 if (task != null) {
                     result.add(task);
                 }

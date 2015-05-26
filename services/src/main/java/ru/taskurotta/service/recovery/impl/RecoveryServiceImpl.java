@@ -280,12 +280,15 @@ public class RecoveryServiceImpl implements RecoveryService {
         }
 
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
+        String message = null;
+        String stacktrace = null;
         if (errorContainer != null) {
             itdTask.setErrorClassName(errorContainer.getClassName());
-            itdTask.setErrorMessage(errorContainer.getMessage());
-            itdTask.setStackTrace(errorContainer.getStackTrace());
+            message = errorContainer.getMessage();
+            itdTask.setErrorMessage(TransportUtils.trimToLength(message, InterruptedTasksService.MESSAGE_MAX_LENGTH));
+            stacktrace = errorContainer.getStackTrace();
         }
-        interruptedTasksService.save(itdTask);
+        interruptedTasksService.save(itdTask, message, stacktrace);
 
         // mark process as broken
         processService.markProcessAsBroken(processId);

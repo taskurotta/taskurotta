@@ -1,10 +1,12 @@
 package ru.taskurotta.dropwizard.resources.console.broken;
 
 import com.google.common.base.Optional;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.StringUtils;
+import ru.taskurotta.dropwizard.resources.console.Status;
 import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
@@ -89,6 +91,30 @@ public class InterruptedTasksListResource {
         }
 
         return Response.ok().build();
+    }
+
+    @GET
+    @Path("/stacktrace")
+    public Status getStacktrace(@QueryParam("processId") Optional<String> processIdOpt, @QueryParam("taskId") Optional<String> taskIdOpt) {
+        String result = "";
+        UUID processId = processIdOpt.isPresent()? UUID.fromString(processIdOpt.get()) : null;
+        UUID taskId = taskIdOpt.isPresent()? UUID.fromString(taskIdOpt.get()) : null;
+        if (processId!=null && taskId != null) {
+            result = interruptedTasksService.getStackTrace(processId, taskId);
+        }
+        return new Status(result!=null?HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
+    }
+
+    @GET
+    @Path("/message")
+    public Status getMessage(@QueryParam("processId") Optional<String> processIdOpt, @QueryParam("taskId") Optional<String> taskIdOpt) {
+        String result = "";
+        UUID processId = processIdOpt.isPresent()? UUID.fromString(processIdOpt.get()) : null;
+        UUID taskId = taskIdOpt.isPresent()? UUID.fromString(taskIdOpt.get()) : null;
+        if (processId!=null && taskId != null) {
+            result = interruptedTasksService.getFullMessage(processId, taskId);
+        }
+        return new Status(result!=null?HttpStatus.OK_200 : HttpStatus.NO_CONTENT_204, result);
     }
 
     public static class ActionCommand {

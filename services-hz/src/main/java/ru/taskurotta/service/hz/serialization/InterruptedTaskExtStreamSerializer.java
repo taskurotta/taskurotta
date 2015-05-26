@@ -3,20 +3,17 @@ package ru.taskurotta.service.hz.serialization;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
-import ru.taskurotta.service.console.model.InterruptedTask;
+import ru.taskurotta.service.console.model.InterruptedTaskExt;
 
 import java.io.IOException;
 
 /**
- * User: romario
- * Date: 12/1/13
- * Time: 10:49 PM
+ * Created on 25.05.2015.
  */
-public class InterruptedTaskStreamSerializer implements StreamSerializer<InterruptedTask> {
+public class InterruptedTaskExtStreamSerializer implements StreamSerializer<InterruptedTaskExt> {
 
     @Override
-    public void write(ObjectDataOutput out, InterruptedTask itdTask) throws IOException {
-
+    public void write(ObjectDataOutput out, InterruptedTaskExt itdTask) throws IOException {
         UUIDSerializer.write(out, itdTask.getTaskId());
         UUIDSerializer.write(out, itdTask.getProcessId());
         SerializationTools.writeString(out, itdTask.getActorId());
@@ -25,12 +22,13 @@ public class InterruptedTaskStreamSerializer implements StreamSerializer<Interru
         SerializationTools.writeString(out, itdTask.getErrorMessage());
         SerializationTools.writeString(out, itdTask.getErrorClassName());
 
+        SerializationTools.writeString(out, itdTask.getFullMessage());
+        SerializationTools.writeString(out, itdTask.getStackTrace());
     }
 
     @Override
-    public InterruptedTask read(ObjectDataInput in) throws IOException {
-
-        InterruptedTask result = new InterruptedTask();
+    public InterruptedTaskExt read(ObjectDataInput in) throws IOException {
+        InterruptedTaskExt result = new InterruptedTaskExt();
 
         result.setTaskId(UUIDSerializer.read(in));
         result.setProcessId(UUIDSerializer.read(in));
@@ -40,15 +38,19 @@ public class InterruptedTaskStreamSerializer implements StreamSerializer<Interru
         result.setErrorMessage(SerializationTools.readString(in));
         result.setErrorClassName(SerializationTools.readString(in));
 
+        result.setFullMessage(SerializationTools.readString(in));
+        result.setStackTrace(SerializationTools.readString(in));
+
         return result;
     }
 
     @Override
     public int getTypeId() {
-        return ObjectTypes.BROKEN_PROCESS;
+        return ObjectTypes.BROKEN_TASK_EXT;
     }
 
     @Override
     public void destroy() {
+
     }
 }

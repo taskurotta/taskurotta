@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import ru.taskurotta.service.console.model.InterruptedTask;
+import ru.taskurotta.service.console.model.InterruptedTaskExt;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 
@@ -25,15 +26,15 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
 
     private static final String WILDCARD_SYMBOL = "%";
 
-    private IMap<UUID, InterruptedTask> storeIMap;
+    private IMap<UUID, InterruptedTaskExt> storeIMap;
 
     public HzInterruptedTasksService(HazelcastInstance hazelcastInstance, String storeMapName) {
         this.storeIMap = hazelcastInstance.getMap(storeMapName);
     }
 
     @Override
-    public void save(InterruptedTask task) {
-        storeIMap.put(task.getTaskId(), task);
+    public void save(InterruptedTask task, String message, String stackTrace) {
+        storeIMap.put(task.getTaskId(), new InterruptedTaskExt(task, message, stackTrace));
     }
 
     @Override
@@ -84,24 +85,51 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
 
         Collection<InterruptedTask> result = null;
         if (predicates.isEmpty()) {
-            result = storeIMap.values();
+            result = findAll();
         } else {
             Predicate[] predicateArray = new Predicate[predicates.size()];
             Predicate predicate = new Predicates.AndPredicate(predicates.toArray(predicateArray));
-            result = storeIMap.values(predicate);
+            result = asSimpleTasks(storeIMap.values(predicate));
         }
         logger.trace("Found [{}] interrupted tasks by command[{}]", result!=null?result.size():null, searchCommand);
         return result;
     }
 
+    //TODO: try to remove this method invocations
+    public Collection<InterruptedTask> asSimpleTasks(Collection<InterruptedTaskExt> tasks) {
+        Collection<InterruptedTask> result = null;
+        if (tasks!=null && !tasks.isEmpty()) {
+            result = new ArrayList<>();
+            for (InterruptedTaskExt tExt : tasks) {
+                tExt.setFullMessage(null);
+                tExt.setStackTrace(null);
+                result.add(tExt);
+            }
+        }
+
+        return result;
+    }
+
     @Override
     public Collection<InterruptedTask> findAll() {
-        return storeIMap.values();
+        return asSimpleTasks(storeIMap.values());
     }
 
     @Override
     public void delete(UUID processId, UUID taskId) {
         storeIMap.delete(taskId);
+    }
+
+    @Override
+    public String getFullMessage(UUID processId, UUID taskId) {
+        InterruptedTaskExt bp = storeIMap.get(taskId);
+        return bp!=null? bp.getFullMessage() : null;
+    }
+
+    @Override
+    public String getStackTrace(UUID processId, UUID taskId) {
+        InterruptedTaskExt bp = storeIMap.get(taskId);
+        return bp!=null? bp.getStackTrace() : null;
     }
 
 }
