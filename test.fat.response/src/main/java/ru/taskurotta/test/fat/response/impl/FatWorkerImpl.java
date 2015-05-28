@@ -12,33 +12,32 @@ import java.util.Random;
  */
 public class FatWorkerImpl implements FatWorker {
 
-    private static final Logger logger = LoggerFactory.getLogger(FatWorkerImpl.class);
+    //private static final Logger logger = LoggerFactory.getLogger(FatWorkerImpl.class);
 
     @Override
-    public Response createResponse(int size) throws Exception {
-        String result = createStringOfLength(size);
-        logger.debug("Message generated with size[{}] is [{}]", size, result);
-
+    public byte[] createResponse(int size) throws Exception {
+        byte[] result = createArrayOfLength(size);
+        //logger.debug("Message generated with size[{}] is [{}]", size, result);
         if (size<0) {
-            throw new IllegalArgumentException(result);
+            throw new IllegalArgumentException(new String(result, "ISO-8859-1"));
         }
 
-        return new Response(size, result);
+        return result;
     }
 
-    String createStringOfLength(int size) throws Exception {
+    byte[] createArrayOfLength(int size) throws Exception {
         size = Math.abs(size);
-        byte[] buffer = new byte[size];
+        byte[] result = new byte[size];
         Random random = new Random();
         for (int i = 0; i<size; i++) {
             if (random.nextBoolean()) {
-                buffer[i] = 1;
+                result[i] = 1;
             } else {
-                buffer[i] = 0;
+                result[i] = 0;
             }
         }
 
-        return new String(buffer, "ISO-8859-1");
+        return result;
     }
 
 }
