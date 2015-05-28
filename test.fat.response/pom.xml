@@ -6,7 +6,7 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>test.fat.response</artifactId>
-    <version>1.4</version>
+    <version>1.5</version>
 
     <properties>
         <java.version>1.7</java.version>

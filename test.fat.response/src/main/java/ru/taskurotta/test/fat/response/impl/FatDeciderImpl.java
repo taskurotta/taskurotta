@@ -21,13 +21,13 @@ public class FatDeciderImpl implements FatDecider {
 
     @Override
     public void start(int size) {
-        Promise<byte[]> resp = fatWorkerClient.createResponse(size);
+        Promise<String> resp = fatWorkerClient.createResponse(size);
         self.logResult(resp);
     }
 
     @Asynchronous
-    public void logResult(Promise<byte[]> resp) {
-        logger.info("Result length is [{}]", resp.get().length);
+    public void logResult(Promise<String> resp) {
+        logger.info("Result length is [{}]", resp.get().length());
     }
 
     @Required

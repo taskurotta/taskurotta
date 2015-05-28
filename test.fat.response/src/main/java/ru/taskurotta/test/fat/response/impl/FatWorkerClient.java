@@ -11,6 +11,6 @@ import ru.taskurotta.test.fat.response.Response;
 @WorkerClient(worker = FatWorker.class)
 public interface FatWorkerClient {
 
-    Promise<byte[]> createResponse(int size);
+    Promise<String> createResponse(int size);
 
 }
