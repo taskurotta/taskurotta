@@ -1,0 +1,74 @@
+#Configuration of taskurotta runtime to use
+runtime:
+  - runtime:
+      class: ru.taskurotta.spring.configs.RuntimeConfigPathXmlApplicationContext #it's Spingframework managed runtime
+      instance:
+        context: spring/appContext.xml
+
+
+#Configuration for TaskSpreader <- where to get tasks from (or release to)
+spreader:
+  - MainTaskSpreaderConfig:
+      class: ru.taskurotta.spring.configs.SpreaderConfigPathXmlApplicationContext
+      instance:
+        context: spring/test.fat.response-spreader.xml
+        properties:
+          connectTimeout: 5000
+          readTimeout: 0
+          threadPoolSize: 20
+          endpoint: "http://test-srv1-cnt.egron.net:8811"
+
+
+actor:
+  - Decider:
+      actorInterface: ru.taskurotta.test.fat.response.FatDecider
+
+  - Worker:
+      actorInterface: ru.taskurotta.test.fat.response.FatWorker
+
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%-4r [\%t] \%-5p \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.rolling.RollingFileAppender
+             file: logs/fat-test.log
+             rollingPolicy:
+                key: name
+                \@class: ch.qos.logback.core.rolling.TimeBasedRollingPolicy
+                fileNamePattern: logs\fat-test.%d{yyyy-MM-dd}.%i.log
+                timeBasedFileNamingAndTriggeringPolicy:
+                  key: name
+                  \@class: ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP
+                  maxFileSize: 100MB
+             append: true
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: WARN
+        - ru.taskurotta.test.fat.response:
+             key: name
+             \@level: DEBUG
+        - org.springframework:
+             key: name
+             \@level: WARN
+        - httpclient.wire:
+             key: name
+             \@level: WARN
+        - org.apache:
+             key: name
+             \@level: WARN
+
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref

@@ -1,0 +1,1 @@
+java -jar test.fat.response-1.0-SNAPSHOT.jar
