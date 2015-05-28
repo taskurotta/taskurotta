@@ -12,20 +12,20 @@ public class FatWorkerImplTest {
     int size = 1024 * 1024;
 
     @Test
-    public void testCeateMessage() {
+    public void testCeateMessage() throws Exception {
         FatWorkerImpl target = new FatWorkerImpl();
         Response resp = target.createResponse(size);
         Assert.assertEquals(size, resp.getMessage().length());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFailMessage() {
+    public void testFailMessage() throws Exception {
         FatWorkerImpl target = new FatWorkerImpl();
         Response resp = target.createResponse(-size);
     }
 
     @Test
-    public void testFailMessageSize() {
+    public void testFailMessageSize() throws Exception {
         FatWorkerImpl target = new FatWorkerImpl();
         try {
             Response resp = target.createResponse(-size);

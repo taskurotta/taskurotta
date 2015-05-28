@@ -15,7 +15,7 @@ public class FatWorkerImpl implements FatWorker {
     private static final Logger logger = LoggerFactory.getLogger(FatWorkerImpl.class);
 
     @Override
-    public Response createResponse(int size) {
+    public Response createResponse(int size) throws Exception {
         String result = createStringOfLength(size);
         logger.debug("Message generated with size[{}] is [{}]", size, result);
 
@@ -26,7 +26,7 @@ public class FatWorkerImpl implements FatWorker {
         return new Response(size, result);
     }
 
-    String createStringOfLength(int size) {
+    String createStringOfLength(int size) throws Exception {
         size = Math.abs(size);
         byte[] buffer = new byte[size];
         Random random = new Random();
@@ -38,7 +38,7 @@ public class FatWorkerImpl implements FatWorker {
             }
         }
 
-        return new String(buffer);
+        return new String(buffer, "ISO-8859-1");
     }
 
 }

@@ -8,6 +8,6 @@ import ru.taskurotta.annotation.Worker;
 @Worker
 public interface FatWorker {
 
-    Response createResponse(int size);
+    Response createResponse(int size) throws Exception;
 
 }
