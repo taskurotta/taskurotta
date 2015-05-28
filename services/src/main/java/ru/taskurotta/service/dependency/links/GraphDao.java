@@ -27,15 +27,6 @@ public interface GraphDao {
     public void deleteGraph(UUID graphId);
     
     /**
-     * Returns array of ready tasks by finishedTaskId from history for replay case.
-     *
-     * @param finishedTaskId
-     * @return
-     */
-    public UUID[] getReadyTasks(UUID finishedTaskId, UUID processId);
-
-
-    /**
      * Run graph updater
      *
      * @param updater

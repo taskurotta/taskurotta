@@ -24,7 +24,6 @@ public class InterruptedTaskStreamSerializer implements StreamSerializer<Interru
         out.writeLong(itdTask.getTime());
         SerializationTools.writeString(out, itdTask.getErrorMessage());
         SerializationTools.writeString(out, itdTask.getErrorClassName());
-        SerializationTools.writeString(out, itdTask.getStackTrace());
 
     }
 
@@ -40,7 +39,6 @@ public class InterruptedTaskStreamSerializer implements StreamSerializer<Interru
         result.setTime(in.readLong());
         result.setErrorMessage(SerializationTools.readString(in));
         result.setErrorClassName(SerializationTools.readString(in));
-        result.setStackTrace(SerializationTools.readString(in));
 
         return result;
     }

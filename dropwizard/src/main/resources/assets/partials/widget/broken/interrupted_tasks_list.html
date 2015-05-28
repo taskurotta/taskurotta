@@ -40,9 +40,9 @@
                     <small>
                         <span class="muted"><b>Class: </b></span><b>{{ bp.errorClassName }}</b>
                             <br />
-                        <span class="muted"><b>Message: </b></span><b>{{ bp.errorMessage}}</b>
+                        <span class="muted"><b>Message: </b></span><b>{{ bp.errorMessage}}</b> <a ng-if="bp.errorMessage.length==500" class="btn-link" ng-click="showMessage(bp.processId, bp.taskId)">More...</a>
                             <br />
-                        <a class="btn-link" ng-click="showStackTrace(bp.stackTrace)"><i class="icon-list"></i><b>Stack trace</b></a>
+                        <a class="btn-link" ng-click="showStackTrace(bp.processId, bp.taskId)"><i class="icon-list"></i><b>Stack trace</b></a>
                         <br />
                     </small>
                 </td>

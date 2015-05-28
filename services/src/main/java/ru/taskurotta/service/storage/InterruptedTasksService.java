@@ -1,9 +1,14 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -11,7 +16,9 @@ import java.util.UUID;
  */
 public interface InterruptedTasksService {
 
-    void save(InterruptedTask brokenProcess);
+    int MESSAGE_MAX_LENGTH = 500;
+
+    void save(InterruptedTask brokenProcess, String fullMessage, String stackTrace);
 
     Collection<InterruptedTask> find(SearchCommand searchCommand);
 
@@ -19,7 +26,15 @@ public interface InterruptedTasksService {
 
     void delete(UUID processId, UUID taskId);
 
-//    void restart(UUID processId, UUID taskId);
+    String getFullMessage(UUID processId, UUID taskId);
 
+    String getStackTrace(UUID processId, UUID taskId);
 
+    List<TasksGroupVO> getGroupList(GroupCommand command);
+
+    Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command);
+
+    Set<UUID> getProcessIds(GroupCommand command);
+
+    long deleteTasksForProcess(UUID processId);
 }

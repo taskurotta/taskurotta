@@ -1,6 +1,6 @@
 angular.module("console.interrupted.controllers", ['console.interrupted.directives', 'console.util.services'])
 
-.controller("interruptedTasksListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions) {
+.controller("interruptedTasksListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', '$modal', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions, $modal) {
 
     $scope.brokenGroups = [];
     $scope.brokenTasks = [];
@@ -116,21 +116,21 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
                 fromDateStr = fromDateStr + " " + getTimeAsString($scope.period.timeFrom);
                 toDateStr = toDateStr + " " + getTimeAsString($scope.period.timeTo);
             }
-            command.dateFrom = fromDateStr;
-            command.dateTo = toDateStr;
+            command["dateFrom"] = fromDateStr;
+            command["dateTo"] = toDateStr;
         }
         return result;
     };
 
 
-    var getCommandAsParamLine = function() {
+    var getCommandAsParamLine = function(command) {
         var result = "";
-        setDatesToCommand($scope.groupCommand);
-        for (var key in $scope.groupCommand) {
+        setDatesToCommand(command);
+        for (var key in command) {
             if (result.length>0) {
                 result = result + "&";
             }
-            result = result + key + "=" + encodeURIComponent($scope.groupCommand[key]);
+            result = result + key + "=" + encodeURIComponent(command[key]);
         }
         $log.log("group command line is " + result);
         return result;
@@ -179,7 +179,7 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
 
     var updateGroupsList = function() {
         $scope.initialized = false;
-        $http.get('/rest/console/process/tasks/interrupted/group?' + getCommandAsParamLine()).then(function(success) {
+        $http.get('/rest/console/process/tasks/interrupted/group?' + getCommandAsParamLine($scope.groupCommand)).then(function(success) {
             $scope.brokenGroups = success.data;
             $scope.initialized = true;
         }, function(error) {
@@ -190,13 +190,32 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
 
     var updateProcessesList = function() {
         $scope.initialized = false;
-        $http.get('/rest/console/process/tasks/interrupted/list?' + getCommandAsParamLine()).then(function(success) {
+        $http.get('/rest/console/process/tasks/interrupted/list?' + getCommandAsParamLine($scope.groupCommand)).then(function(success) {
             $scope.brokenTasks = success.data;
             $scope.initialized = true;
         }, function(error) {
             $scope.feedback = error.data;
             $scope.initialized = true;
         });
+    };
+
+    var constructGroupCommand = function(groupName) {
+        var command = {
+            group: $scope.groupCommand.group,
+            actorId: $scope.groupCommand.actorId,
+            starterId: $scope.groupCommand.starterId,
+            errorMessage: $scope.groupCommand.errorMessage,
+            errorClassName: $scope.groupCommand.exception
+        };
+        if ('starter' == command.group) {
+            command["starterId"] = groupName;
+        } else if ('actor' == command.group) {
+            command["actorId"] = groupName;
+        } else if ('exception' == command.group) {
+            command["errorClassName"] = groupName;
+        }
+        setDatesToCommand(command);
+        return command;
     };
 
     $scope.regroup = function (groupType) {
@@ -276,11 +295,31 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
     };
 
     $scope.restartGroup = function (bpg, index) {
-        tskBrokenProcessesActions.restartGroup(bpg).then(function(okResp) {
+        var command = constructGroupCommand(bpg.name);
+        tskBrokenProcessesActions.restartGroup(command).then(function(okResp) {
             $scope.brokenGroups.splice(index, 1);
         }, function(errResp){
             $scope.feedback = errResp;
         });
+    };
+
+    $scope.abortGroup = function(bpg, index) {
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "All processes matching group conditions will be deleted.";
+            }
+        }).result.then(function(okMess) {
+
+                var command = constructGroupCommand(bpg.name);
+                tskBrokenProcessesActions.abortGroup(command).then(function(okResp) {
+                    $scope.brokenGroups.splice(index, 1);
+                }, function(errResp){
+                    $scope.feedback = errResp;
+                });
+
+            });
     };
 
     $scope.update();

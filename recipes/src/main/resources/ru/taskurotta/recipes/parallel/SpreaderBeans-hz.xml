@@ -55,7 +55,7 @@
                                    class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.dependency.HzGraphDao.DecisionRow"
+                    <hz:serializer type-class="ru.taskurotta.service.hz.dependency.DecisionRow"
                                    class-name="ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer"/>
                     <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
                                    class-name="ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer"/>

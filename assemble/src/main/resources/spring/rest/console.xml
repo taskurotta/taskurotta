@@ -141,6 +141,7 @@
     <bean id="interruptedTasksListResource" class="ru.taskurotta.dropwizard.resources.console.broken.InterruptedTasksListResource" >
         <property name="interruptedTasksService" ref="interruptedTasksService" />
         <property name="taskRecoveryOperationExecutor" ref="taskRecoveryOperationExecutor" />
+        <property name="recoveryService" ref="recoveryService" />
     </bean>
 
     <bean id="consoleManager" class="ru.taskurotta.service.console.manager.impl.ConsoleManagerImpl">

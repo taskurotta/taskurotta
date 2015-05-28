@@ -47,4 +47,12 @@ public class TransportUtils {
         return decision!=null && decision.getErrorContainer()!=null && decision.getErrorContainer().isFatalError();
     }
 
+    public static String trimToLength(String target, int length) {
+        if (target == null || target.length()<=length) {
+            return target;
+        } else {
+            return target.substring(0, length);
+        }
+    }
+
 }

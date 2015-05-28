@@ -1,127 +1,223 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:hz="http://www.hazelcast.com/schema/spring"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-            http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring-3.1.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <bean id="hzInstance" class="ru.taskurotta.hazelcast.config.HazelcastInstanceFactory"
+          factory-method="create">
+        <constructor-arg name="hazelcastConfigFileName" value="hazelcast.xml"/>
+        <constructor-arg name="propertiesFileName" value="default.properties"/>
+        <constructor-arg name="mapConfigs">
+            <list>
+                <bean class="com.hazelcast.config.MapConfig">
+                    <property name="name" value="${hz.map.task.name}"/>
+                    <property name="backupCount" value="0"/>
+                    <property name="timeToLiveSeconds" value="0"/>
+                    <property name="evictionPolicy" value="LRU"/>
+                    <property name="maxIdleSeconds" value="0"/>
+                    <property name="evictionPercentage" value="25"/>
+                    <property name="maxSizeConfig">
+                        <bean class="com.hazelcast.config.MaxSizeConfig">
+                            <property name="size" value="${hz.map.task.memory.max-size}"/>
+                            <property name="maxSizePolicy" value="USED_HEAP_PERCENTAGE"/>
+                        </bean>
+                    </property>
+                    <property name="mapStoreConfig">
+                        <bean class="com.hazelcast.config.MapStoreConfig">
+                            <property name="enabled" value="true"/>
+                            <property name="writeDelaySeconds" value="0"/>
+                            <property name="implementation" ref="taskMapStore"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="com.hazelcast.config.MapConfig">
+                    <property name="name" value="${hz.map.decision.name}"/>
+                    <property name="backupCount" value="0"/>
+                    <property name="timeToLiveSeconds" value="0"/>
+                    <property name="evictionPolicy" value="LRU"/>
+                    <property name="maxIdleSeconds" value="0"/>
+                    <property name="evictionPercentage" value="25"/>
+                    <property name="maxSizeConfig">
+                        <bean class="com.hazelcast.config.MaxSizeConfig">
+                            <property name="size" value="${hz.map.decision.memory.max-size}"/>
+                            <property name="maxSizePolicy" value="USED_HEAP_PERCENTAGE"/>
+                        </bean>
+                    </property>
+                    <property name="mapStoreConfig">
+                        <bean class="com.hazelcast.config.MapStoreConfig">
+                            <property name="enabled" value="true"/>
+                            <property name="writeDelaySeconds" value="0"/>
+                            <property name="implementation" ref="taskDecisionMapStore"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="com.hazelcast.config.MapConfig">
+                    <property name="name" value="${hz.map.graph.name}"/>
+                    <property name="backupCount" value="0"/>
+                    <property name="timeToLiveSeconds" value="0"/>
+                    <property name="evictionPolicy" value="LRU"/>
+                    <property name="maxIdleSeconds" value="0"/>
+                    <property name="evictionPercentage" value="25"/>
+                    <property name="maxSizeConfig">
+                        <bean class="com.hazelcast.config.MaxSizeConfig">
+                            <property name="size" value="${hz.map.graph.memory.max-size}"/>
+                            <property name="maxSizePolicy" value="USED_HEAP_PERCENTAGE"/>
+                        </bean>
+                    </property>
+                    <property name="mapStoreConfig">
+                        <bean class="com.hazelcast.config.MapStoreConfig">
+                            <property name="enabled" value="true"/>
+                            <property name="writeDelaySeconds" value="0"/>
+                            <property name="implementation" ref="graphMapStore"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="com.hazelcast.config.MapConfig">
+                    <property name="name" value="${hz.map.process.name}"/>
+                    <property name="backupCount" value="0"/>
+                    <property name="timeToLiveSeconds" value="0"/>
+                    <property name="evictionPolicy" value="LRU"/>
+                    <property name="maxIdleSeconds" value="0"/>
+                    <property name="evictionPercentage" value="25"/>
+                    <property name="maxSizeConfig">
+                        <bean class="com.hazelcast.config.MaxSizeConfig">
+                            <property name="size" value="${hz.map.process.memory.max-size}"/>
+                            <property name="maxSizePolicy" value="USED_HEAP_PERCENTAGE"/>
+                        </bean>
+                    </property>
+                    <property name="mapStoreConfig">
+                        <bean class="com.hazelcast.config.MapStoreConfig">
+                            <property name="enabled" value="true"/>
+                            <property name="writeDelaySeconds" value="0"/>
+                            <property name="implementation" ref="processMapStore"/>
+                        </bean>
+                    </property>
+                </bean>
 
-    <hz:hazelcast id="hzInstance">
-        <hz:config>
-            <hz:management-center enabled="${hz.mancenter.enabled}" url="${hz.mancenter.url}"/>
+                <bean class="com.hazelcast.config.MapConfig">
+                    <property name="name" value="${hz.map.interrupted-store.name}"/>
+                    <property name="backupCount" value="0"/>
+                    <property name="timeToLiveSeconds" value="0"/>
+                    <property name="evictionPolicy" value="LRU"/>
+                    <property name="maxIdleSeconds" value="0"/>
+                    <property name="evictionPercentage" value="25"/>
+                    <property name="maxSizeConfig">
+                        <bean class="com.hazelcast.config.MaxSizeConfig">
+                            <property name="size" value="1000"/>
+                            <property name="maxSizePolicy" value="PER_NODE"/>
+                        </bean>
+                    </property>
+                    <property name="mapStoreConfig">
+                        <bean class="com.hazelcast.config.MapStoreConfig">
+                            <property name="enabled" value="true"/>
+                            <property name="writeDelaySeconds" value="0"/>
+                            <property name="implementation" ref="interruptedTasksMapStore"/>
+                        </bean>
+                    </property>
+                </bean>
 
-            <hz:properties>
-                <hz:property name="hazelcast.logging.type">${hz.logging.type}</hz:property>
-                <hz:property name="hazelcast.jmx">${hz.jmx}</hz:property>
-                <hz:property name="hazelcast.jmx.detailed">${hz.jmx.detailed}</hz:property>
-            </hz:properties>
+                <bean class="com.hazelcast.config.MapConfig">
+                    <property name="name" value="${hz.map.actor-preferences.name}"/>
+                    <property name="backupCount" value="0"/>
+                    <property name="mapStoreConfig">
+                        <bean class="com.hazelcast.config.MapStoreConfig">
+                            <property name="enabled" value="true"/>
+                            <property name="writeDelaySeconds" value="0"/>
+                            <property name="implementation" ref="actorsPrefMapStore"/>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </constructor-arg>
 
-            <hz:network port="${hz.port}" port-auto-increment="true">
-                <hz:join>
-                    <hz:multicast enabled="false"/>
-                    <hz:tcp-ip enabled="true">
-                        <hz:members>${hz.nodes}</hz:members>
-                    </hz:tcp-ip>
-                </hz:join>
-            </hz:network>
+        <constructor-arg name="cachedQueueConfigs">
+            <list>
+                <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueConfig">
+                    <property name="name" value="${hz.queue.task.prefix}*"/>
+                    <property name="cacheSize" value="100"/>
+                    <property name="queueStoreConfig">
+                        <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig">
+                            <property name="factoryImplementation" ref="cachedQueueStoreFactory"/>
+                            <property name="binary" value="${hz.queue.task.binary}"/>
+                            <property name="batchLoadSize" value="${hz.queue.task.batch-load-size}"/>
+                            <property name="objectClassName" value="ru.taskurotta.service.queue.TaskQueueItem"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueConfig">
+                    <property name="name" value="${hz.executor-service.decisions.queue.name}"/>
+                    <property name="cacheSize" value="100"/>
+                    <property name="queueStoreConfig">
+                        <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig">
+                            <property name="factoryImplementation" ref="cachedQueueStoreFactory"/>
+                            <property name="binary" value="${hz.executor-service.decisions.queue.binary}"/>
+                            <property name="batchLoadSize"
+                                      value="${hz.executor-service.decisions.queue.batch-load-size}"/>
+                            <property name="objectClassName" value="ru.taskurotta.service.hz.TaskKey"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueConfig">
+                    <property name="name" value="${gc.queue-name}"/>
+                    <property name="cacheSize" value="100"/>
+                    <property name="queueStoreConfig">
+                        <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig">
+                            <property name="factoryImplementation" ref="cachedQueueStoreFactory"/>
+                            <property name="binary" value="${gc.queue.binary}"/>
+                            <property name="batchLoadSize" value="${gc.queue.batch-load-size}"/>
+                            <property name="objectClassName" value="java.util.UUID"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueConfig">
+                    <property name="name" value="${recovery.operation.queue.name}"/>
+                    <property name="cacheSize" value="100"/>
+                    <property name="queueStoreConfig">
+                        <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig">
+                            <property name="factoryImplementation" ref="cachedQueueStoreFactory"/>
+                            <property name="binary" value="${recovery.queue.binary}"/>
+                            <property name="batchLoadSize" value="${recovery.queue.batch-load-size}"/>
+                            <property name="objectClassName" value="ru.taskurotta.service.recovery.RecoveryOperation"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueConfig">
+                    <property name="name" value="${operation.task-restart.queue-name}"/>
+                    <property name="cacheSize" value="100"/>
+                    <property name="queueStoreConfig">
+                        <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig">
+                            <property name="factoryImplementation" ref="cachedQueueStoreFactory"/>
+                            <property name="binary" value="${operation.task-restart.queue-binary}"/>
+                            <property name="batchLoadSize" value="${operation.task-restart.batch-load-size}"/>
+                            <property name="objectClassName"
+                                      value="ru.taskurotta.service.recovery.RestartTaskOperation"/>
+                        </bean>
+                    </property>
+                </bean>
+                <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueConfig">
+                    <property name="name" value="${operation.abort-process.queue.name}"/>
+                    <property name="cacheSize" value="100"/>
+                    <property name="queueStoreConfig">
+                        <bean class="ru.taskurotta.hazelcast.queue.config.CachedQueueStoreConfig">
+                            <property name="factoryImplementation" ref="cachedQueueStoreFactory"/>
+                            <property name="binary" value="${operation.abort-process.queue.binary}"/>
+                            <property name="batchLoadSize" value="${operation.abort-process.queue.batch-load-size}"/>
+                            <property name="objectClassName"
+                                      value="ru.taskurotta.service.recovery.AbortProcessOperation"/>
+                        </bean>
+                    </property>
+                </bean>
+            </list>
+        </constructor-arg>
 
-            <hz:executor-service name="${hz.executor-service.decisions.service-name}"
-                                 pool-size="${hz.executor-service.decisions.pool-size}" queue-capacity="0"/>
+        <constructor-arg name="managedContext" ref="managedContext"/>
+        <constructor-arg name="cachedQueueMaxPercentageOfHeapSize" value="${hz.queue.memory.max-size}"/>
+        <constructor-arg name="properties" ref="envProperties"/>
+    </bean>
 
-            <hz:map name="${hz.map.task.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
-                    max-idle-seconds="0"
-                    max-size="${hz.map.task.memory.max-size}" eviction-percentage="25"
-                    max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskMapStore"/>
-            </hz:map>
+    <bean id="managedContext" class="com.hazelcast.spring.context.SpringManagedContext"/>
 
-            <hz:map name="${hz.map.decision.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
-                    max-idle-seconds="0"
-                    max-size="${hz.map.decision.memory.max-size}" eviction-percentage="25"
-                    max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="taskDecisionMapStore"/>
-            </hz:map>
+    <bean id="envProperties" class="ru.taskurotta.spring.env.PropertySourceProperties"/>
 
-            <hz:map name="${hz.map.graph.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
-                    max-idle-seconds="0"
-                    max-size="${hz.map.graph.memory.max-size}" eviction-percentage="25"
-                    max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphMapStore"/>
-            </hz:map>
-
-            <hz:map name="${hz.map.graph-decision.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
-                    max-idle-seconds="0"
-                    max-size="${hz.map.graph-decision.memory.max-size}" eviction-percentage="25"
-                    max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="graphDecisionMapStore"/>
-            </hz:map>
-
-            <hz:map name="${hz.map.process.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
-                    max-idle-seconds="0"
-                    max-size="${hz.map.process.memory.max-size}" eviction-percentage="25"
-                    max-size-policy="USED_HEAP_PERCENTAGE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="processMapStore"/>
-            </hz:map>
-
-            <hz:map name="${hz.map.interrupted-store.name}" backup-count="0" time-to-live-seconds="0" eviction-policy="LRU"
-                    max-idle-seconds="0"
-                    max-size="1000" eviction-percentage="25" max-size-policy="PER_NODE">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="interruptedTasksMapStore"/>
-            </hz:map>
-
-            <hz:map name="${hz.map.actor-preferences.name}" backup-count="0">
-                <hz:map-store enabled="true" write-delay-seconds="0" implementation="actorsPrefMapStore"/>
-            </hz:map>
-
-            <hz:serialization>
-                <hz:serializers>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskConfigContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.ArgContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.console.model.InterruptedTask"
-                                   class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.Decision"
-                                   class-name="ru.taskurotta.service.hz.serialization.DecisionStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.dependency.HzGraphDao.DecisionRow"
-                                   class-name="ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.dependency.links.Graph"
-                                   class-name="ru.taskurotta.service.hz.serialization.GraphStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.console.model.Process"
-                                   class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.TaskKey"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskKeyStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer"/>
-                    <hz:serializer type-class="java.util.UUID"
-                                   class-name="ru.taskurotta.service.hz.serialization.UUIDStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.queue.TaskQueueItem"
-                                   class-name="ru.taskurotta.service.hz.serialization.TaskQueueItemSteamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer"
-                                   class-name="ru.taskurotta.service.hz.serialization.StorageItemStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.recovery.RecoveryOperation"
-                                   class-name="ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.recovery.AbortProcessOperation"
-                                   class-name="ru.taskurotta.service.hz.serialization.AbortProcessOperationSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.recovery.RestartTaskOperation"
-                                   class-name="ru.taskurotta.service.hz.serialization.RestartTaskOperationStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.config.model.ActorPreferences"
-                                   class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.server.HzTaskServer.ProcessDecisionUnitOfWork"
-                                   class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.console.HzQueueStatTask"
-                                   class-name="ru.taskurotta.service.hz.serialization.HzQueueStatTaskStreamSerializer"/>
-                    <hz:serializer type-class="ru.taskurotta.service.hz.config.ComputeQueueBalanceTask"
-                                   class-name="ru.taskurotta.service.hz.serialization.ComputeQueueBalanceTaskStreamSerializer"/>
-                </hz:serializers>
-            </hz:serialization>
-        </hz:config>
-    </hz:hazelcast>
 
 </beans>

@@ -1,127 +1,89 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
+import ru.taskurotta.service.console.model.InterruptedTaskExt;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
+import ru.taskurotta.util.InterruptedTaskSupport;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * User: stukushin
- * Date: 11.10.13
- * Time: 18:28
+ * Created: 11.10.13 18:28
  */
+@Deprecated
 public class MemoryInterruptedTasksService implements InterruptedTasksService {
 
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> actorIds = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> starterIds = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> processIds = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> times = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorMessages = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> errorClassNames = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> stackTraces = new ConcurrentHashMap<>();
-
-    private ConcurrentHashMap<UUID, InterruptedTask> brokenTasks = new ConcurrentHashMap<>();
-
-    private static final Lock lock = new ReentrantLock();
+    private ConcurrentHashMap<UUID, InterruptedTaskExt> brokenTasks = new ConcurrentHashMap<>();
 
     @Override
-    public void save(InterruptedTask itdTask) {
-
+    public void save(InterruptedTask itdTask, String message, String stackTrace) {
         UUID taskId = itdTask.getTaskId();
-
-        String processId = itdTask.getProcessId()!=null? itdTask.getProcessId().toString() : null;
-
-        addTaskId(actorIds, itdTask.getActorId(), taskId);
-        addTaskId(starterIds, itdTask.getStarterId(), taskId);
-        addTaskId(processIds, processId, taskId);
-        addTaskId(times, itdTask.getTime(), taskId);
-        addTaskId(errorMessages, itdTask.getErrorMessage(), taskId);
-        addTaskId(errorClassNames, itdTask.getErrorClassName(), taskId);
-        addTaskId(stackTraces, itdTask.getStackTrace(), taskId);
-
-        this.brokenTasks.put(taskId, itdTask);
+        this.brokenTasks.put(taskId, new InterruptedTaskExt(itdTask, message, stackTrace));
     }
 
     @Override
-    public Collection<InterruptedTask> find(SearchCommand searchCommand) {
-
-        if (searchCommand == null) {
-            return new ArrayList<>();
-        }
-
-        List<UUID> taskIds = new ArrayList<>();
+    public Collection<InterruptedTask> find(SearchCommand com) {
         Collection<InterruptedTask> result = new ArrayList<>();
-
-        if (searchCommand.getProcessId() != null) {
-            result.add(brokenTasks.get(searchCommand.getProcessId()));
-            return result;
-        }
-
-        if (searchCommand.getActorId() != null) {
-            searchByStartString(searchCommand.getActorId(), actorIds, taskIds);
-        }
-
-        if (searchCommand.getStarterId() != null) {
-            searchByStartString(searchCommand.getStarterId(), starterIds, taskIds);
-        }
-
-        if (searchCommand.getProcessId() != null) {
-            searchByStartString(searchCommand.getProcessId().toString(), this.processIds, taskIds);
-        }
-
-        if (searchCommand.getStartPeriod() > 0 && searchCommand.getEndPeriod() > 0) {
-            Set<Map.Entry<Long, CopyOnWriteArraySet<UUID>>> entries = times.entrySet();
-            for (Map.Entry<Long, CopyOnWriteArraySet<UUID>> entry: entries) {
-                if (entry.getKey() > searchCommand.getStartPeriod() && entry.getKey() < searchCommand.getEndPeriod()) {
-                    merge(entry.getValue(), taskIds);
+        if (com != null) {
+            for (InterruptedTaskExt task : brokenTasks.values()) {
+                if (task == null) {
+                    continue;
                 }
-            }
-        } else if (searchCommand.getStartPeriod() > 0 && searchCommand.getEndPeriod() < 0) {
-            Set<Map.Entry<Long, CopyOnWriteArraySet<UUID>>> entries = times.entrySet();
-            for (Map.Entry<Long, CopyOnWriteArraySet<UUID>> entry: entries) {
-                if (entry.getKey() > searchCommand.getStartPeriod()) {
-                    merge(entry.getValue(), taskIds);
-                }
-            }
-        } else if (searchCommand.getStartPeriod() < 0 && searchCommand.getEndPeriod() > 0) {
-            Set<Map.Entry<Long, CopyOnWriteArraySet<UUID>>> entries = times.entrySet();
-            for (Map.Entry<Long, CopyOnWriteArraySet<UUID>> entry: entries) {
-                if (entry.getKey() < searchCommand.getEndPeriod()) {
-                    merge(entry.getValue(), taskIds);
+                if ( (com.getProcessId()==null || com.getProcessId().equals(task.getProcessId()))
+                        && (com.getActorId()==null || startsWith(task.getActorId(), com.getActorId()))
+                        && (com.getStarterId()==null || startsWith(task.getStarterId(), com.getStarterId()))
+                        && (com.getErrorClassName()==null || startsWith(task.getErrorClassName(), com.getErrorClassName()))
+                        && (com.getErrorMessage() == null || startsWith(task.getErrorMessage(), com.getErrorMessage()))
+                        && ( (com.getStartPeriod()<=0&&com.getEndPeriod()<=0) || isInsideTargetPeriod(com.getStartPeriod(), com.getEndPeriod(), task.getTime()))) {
+                    result.add(task);
                 }
             }
         }
-
-        if (searchCommand.getErrorMessage() != null) {
-            searchByStartString(searchCommand.getErrorMessage(), errorMessages, taskIds);
-        }
-
-        if (searchCommand.getErrorClassName() != null) {
-            searchByStartString(searchCommand.getErrorClassName(), errorClassNames, taskIds);
-        }
-
-        for (UUID taskId : taskIds) {
-            InterruptedTask itdTask = this.brokenTasks.get(taskId);
-            if (itdTask != null) {
-                result.add(itdTask);
-            }
-        }
-
         return result;
+    }
+
+    boolean isInsideTargetPeriod(long start, long end, long target) {
+        boolean result = false;
+        if (start>0&&end>0) {
+            result = target>=start && target<=end;
+        } else if (start>0 && end<0) {
+            result = target>=start;
+        } else if (start<0 && end>0) {
+            result = target<=end;
+        }
+        return result;
+    }
+
+    boolean startsWith(String target, String prefix) {
+        if (target!=null && prefix!=null && target.trim().toUpperCase().startsWith(prefix.trim().toUpperCase())) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public Collection<InterruptedTask> findAll() {
-        return brokenTasks.values();
+        Collection<InterruptedTask> result = null;
+
+        Collection<InterruptedTaskExt> tasks = brokenTasks.values();
+        if (tasks!=null && !tasks.isEmpty()) {
+            result = new ArrayList<>();
+            for (InterruptedTaskExt itdTask : tasks) {
+                result.add(itdTask);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -130,114 +92,78 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
         if (taskId == null) {
             return;
         }
-
-        deleteTaskId(actorIds, taskId);
-        deleteTaskId(starterIds, taskId);
-        deleteTaskId(processIds, taskId);
-        deleteTaskId(times, taskId);
-        deleteTaskId(errorMessages, taskId);
-        deleteTaskId(errorClassNames, taskId);
-        deleteTaskId(stackTraces, taskId);
-
         brokenTasks.remove(taskId);
     }
 
-//    @Override
-//    public void restart(UUID processId, UUID taskId) {
-//        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
-//            TaskContainer tc = taskService.getTask(taskId, processId);
-//            if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
-//                delete(processId, taskId);
-//            }
-//        }
-//    }
+    @Override
+    public String getFullMessage(UUID processId, UUID taskId) {
+        Iterator<InterruptedTaskExt> iter = brokenTasks.values().iterator();
+        while (iter.hasNext()) {
+            InterruptedTaskExt task = iter.next();
+            if (task!=null && task.getProcessId()!=null
+                    && task.getProcessId().equals(processId)
+                    && task.getTaskId()!=null
+                    && task.getTaskId().equals(taskId)) {
+                return task.getFullMessage();
+            }
+        }
+        return null;
+    }
 
-    private void addTaskId(ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, String key, UUID taskId) {
+    @Override
+    public String getStackTrace(UUID processId, UUID taskId) {
+        Iterator<InterruptedTaskExt> iter = brokenTasks.values().iterator();
+        while (iter.hasNext()) {
+            InterruptedTaskExt task = iter.next();
+            if (task!=null && task.getProcessId()!=null
+                    && task.getProcessId().equals(processId)
+                    && task.getTaskId()!=null
+                    && task.getTaskId().equals(taskId)) {
+                return task.getStackTrace();
+            }
+        }
+        return null;
+    }
 
-        if (key == null) {
-            return;
+    @Override
+    public List<TasksGroupVO> getGroupList(GroupCommand command) {
+        List<TasksGroupVO> result = null;
+        Collection<InterruptedTask> tasks = find(command);
+
+        if (tasks != null && !tasks.isEmpty()) {
+            Map<String, Collection<InterruptedTask>> groupedTasks = InterruptedTaskSupport.groupProcessList(tasks, command.getGroup());
+            result = InterruptedTaskSupport.convertToGroupsList(groupedTasks, command);
         }
 
-        CopyOnWriteArraySet<UUID> taskIds = map.get(key);
+        return result;
+    }
 
-        if (taskIds == null) {
-            try {
-                lock.lock();
+    @Override
+    public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
+        return InterruptedTaskSupport.asTaskIdentifiers(find(command), command);
+    }
 
-                taskIds = new CopyOnWriteArraySet<>();
-                taskIds.add(taskId);
+    @Override
+    public Set<UUID> getProcessIds(GroupCommand command) {
+        return InterruptedTaskSupport.asProcessIdentifiers(find(command), command);
+    }
 
-                CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, taskIds);
-                if (previous != null) {
-                    map.get(key).add(taskId);
+    @Override
+    public long deleteTasksForProcess(UUID processId) {
+        long result = 0l;
+        if (processId != null) {
+            synchronized (brokenTasks) {
+                Iterator<Map.Entry<UUID, InterruptedTaskExt>> iter = brokenTasks.entrySet().iterator();
+                while (iter.hasNext()) {
+                    Map.Entry<UUID, InterruptedTaskExt> entry = iter.next();
+                    if (entry!=null && entry.getValue()!=null && processId.equals(entry.getValue().getProcessId())) {
+                        iter.remove();
+                        result++;
+                    }
                 }
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            taskIds.add(taskId);
-        }
-    }
-
-    private void addTaskId(ConcurrentHashMap<Long, CopyOnWriteArraySet<UUID>> map, Long key, UUID taskId) {
-
-        if (key == null) {
-            return;
-        }
-
-        CopyOnWriteArraySet<UUID> taskIds = map.get(key);
-
-        if (taskIds == null) {
-            try {
-                lock.lock();
-
-                taskIds = new CopyOnWriteArraySet<>();
-                taskIds.add(taskId);
-
-                CopyOnWriteArraySet<UUID> previous = map.putIfAbsent(key, taskIds);
-                if (previous != null) {
-                    map.get(key).add(taskId);
-                }
-            } finally {
-                lock.unlock();
-            }
-        } else {
-            taskIds.add(taskId);
-        }
-    }
-
-    private void searchByStartString(String prefix, ConcurrentHashMap<String, CopyOnWriteArraySet<UUID>> map, Collection<UUID> result) {
-        Set<Map.Entry<String, CopyOnWriteArraySet<UUID>>> entries = map.entrySet();
-
-        for (Map.Entry<String, CopyOnWriteArraySet<UUID>> entry : entries) {
-            if (entry.getKey().startsWith(prefix)) {
-                merge(entry.getValue(), result);
             }
         }
+        return result;
     }
 
-    private Collection<UUID> merge(Collection<UUID> from, Collection<UUID> to) {
-
-        for (UUID uuid : from) {
-            if (to.contains(uuid)) {
-                continue;
-            }
-
-            to.add(uuid);
-        }
-
-        return to;
-    }
-
-    private void deleteTaskId(ConcurrentHashMap<?, CopyOnWriteArraySet<UUID>> map, UUID taskId) {
-
-        if (taskId == null) {
-            return;
-        }
-
-        Collection<CopyOnWriteArraySet<UUID>> values = map.values();
-        for (CopyOnWriteArraySet<UUID> processIds : values) {
-            processIds.remove(taskId);
-        }
-    }
 }

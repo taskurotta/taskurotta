@@ -1,10 +1,11 @@
 package ru.taskurotta.hazelcast.store;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.hazelcast.HzQueueConfigSupport;
+import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,8 +23,8 @@ public class HzQueueRestoreSupport {
 
     private DB mongoDB;
     private String queuePrefix;
-    private HzQueueConfigSupport hzQueueConfigSupport;
     private boolean restore = true;
+    private HazelcastInstance hzInstance;
 
     public void init() {
         if (restore) {
@@ -60,23 +61,21 @@ public class HzQueueRestoreSupport {
         this.queuePrefix = queuePrefix;
     }
 
-    public void setHzQueueConfigSupport(HzQueueConfigSupport hzQueueConfigSupport) {
-        this.hzQueueConfigSupport = hzQueueConfigSupport;
-    }
-
     public void setRestore(boolean restore) {
         this.restore = restore;
+    }
+
+    public void setHzInstance(HazelcastInstance hzInstance) {
+        this.hzInstance = hzInstance;
     }
 
     private void restore() {
         int queueRestored = 0;
         for (String collectionName : mongoDB.getCollectionNames()) {
             if (collectionName.startsWith(queuePrefix)) {//is backing queue
-                if (hzQueueConfigSupport != null) {
-                    hzQueueConfigSupport.createQueueConfig(collectionName);
-                } else {
-                    logger.warn("Cannot restore queue[{}], mapstore config is not set!", collectionName);
-                }
+
+                // initialize cached queue
+                CachedQueueServiceConfig.getCachedQueue(hzInstance, collectionName);
 
                 if (logger.isDebugEnabled()) {
                     DBCollection coll = mongoDB.getCollection(collectionName);

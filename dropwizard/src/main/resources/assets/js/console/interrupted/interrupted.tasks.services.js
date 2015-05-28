@@ -1,4 +1,4 @@
-angular.module("console.interrupted.services", [])
+angular.module("console.interrupted.services", ['ui.bootstrap.modal'])
 .service("tskBpTextProvider", ['$http', function($http){
     return {
         getGroupLabel: function(name) {
@@ -25,7 +25,7 @@ angular.module("console.interrupted.services", [])
         }
     };
 }])
-.service ("tskBrokenProcessesActions", ['$http', '$log', function ($http, $log) {
+.service ("tskBrokenProcessesActions", ['$http', '$log', '$modal', function ($http, $log, $modal) {
     var asTaskIdentifier = function (obj) {
         var result = {};
         if (!!obj) {
@@ -51,18 +51,48 @@ angular.module("console.interrupted.services", [])
         return {"restartIds": identifiersArray};
     };
 
+    var createMessageUrl = function(type, processId, taskId) {
+        return '/rest/console/process/tasks/interrupted/' + type + '?processId=' + processId + '&taskId=' + taskId;
+    };
+
     return {
         submitRestart: function(command) {
             $log.log("Try to submit restart task command: ", command);
             return $http.post("/rest/console/process/tasks/interrupted/restart", command);
         },
         restartTask: function (itdTask) {
-            var command = taskAsActionCommand(itdTask);
-            return this.submitRestart(command);
+            $log.log("Try to submit restart task:", itdTask);
+            return $http.post("/rest/console/process/tasks/interrupted/restart/task", itdTask);
         },
-        restartGroup: function (itdTaskGroup) {
-            var command = groupAsActionCommand(itdTaskGroup);
-            return this.submitRestart(command);
+        restartGroup: function (command) {
+            $log.log("Try to submit restart group with command: ", command);
+            return $http.post("/rest/console/process/tasks/interrupted/restart/group", command);
+        },
+        abortGroup: function(command) {
+            $log.log("Try to abort processes group with command: ", command);
+            return $http.post("/rest/console/process/tasks/interrupted/abort/group", command);
+        },
+        showModalMessage: function(type, processId, taskId) {
+            var url = createMessageUrl(type, processId, taskId);
+            $http.get(url).then(function (success) {
+                $log.log("Result is", success);
+                var modalInstance = $modal.open({
+                    templateUrl: '/partials/view/modal/modal_msg.html',
+                    windowClass: 'stack-trace',
+                    controller: function ($scope) {
+                        $scope.status = success.data;
+                    }
+                });
+
+                modalInstance.result.then(function(okMess) {
+                    //do nothing
+                }, function(cancelMsg) {
+                    //do nothing
+                });
+
+            }, function(error) {
+                $log.error("Cannot show message type[" + type + "]for processId[" + processId + "], taskId[" + taskId + "]");
+            });
         }
     };
 

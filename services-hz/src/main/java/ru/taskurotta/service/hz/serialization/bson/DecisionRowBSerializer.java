@@ -5,14 +5,14 @@ import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.service.dependency.links.Modification;
-import ru.taskurotta.service.hz.dependency.HzGraphDao;
+import ru.taskurotta.service.hz.dependency.DecisionRow;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.DecisionRow> {
+public class DecisionRowBSerializer implements StreamBSerializer<DecisionRow> {
 
     public static final CString TASK_ID = new CString("t");
     public static final CString PROCESS_ID = new CString("p");
@@ -21,12 +21,12 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
     public static final CString READY_ITEMS = new CString("ready");
 
     @Override
-    public Class<HzGraphDao.DecisionRow> getObjectClass() {
-        return HzGraphDao.DecisionRow.class;
+    public Class<DecisionRow> getObjectClass() {
+        return DecisionRow.class;
     }
 
     @Override
-    public void write(BDataOutput out, HzGraphDao.DecisionRow decisionRow) {
+    public void write(BDataOutput out, DecisionRow decisionRow) {
         int writeIdLabel = out.writeObject(_ID);
         out.writeUUID(TASK_ID, decisionRow.getTaskId());
         out.writeUUID(PROCESS_ID, decisionRow.getProcessId());
@@ -60,7 +60,7 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
     }
 
     @Override
-    public HzGraphDao.DecisionRow read(BDataInput in) {
+    public DecisionRow read(BDataInput in) {
         int readIdLabel = in.readObject(_ID);
         UUID taskId = in.readUUID(TASK_ID);
         UUID processId = in.readUUID(PROCESS_ID);
@@ -93,6 +93,6 @@ public class DecisionRowBSerializer implements StreamBSerializer<HzGraphDao.Deci
 
         Modification modification = new Modification(taskId, waitForAfterRelease, links, newItems);
 
-        return new HzGraphDao.DecisionRow(taskId, processId, modification, readyItems);
+        return new DecisionRow(taskId, processId, modification, readyItems);
     }
 }

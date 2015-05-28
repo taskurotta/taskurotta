@@ -1,0 +1,81 @@
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config
+    http://www.hazelcast.com/schema/config/hazelcast-config-3.4.xsd"
+           xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           id="hzInstance">
+
+    <management-center enabled="${hz.mancenter.enabled}">${hz.mancenter.url}</management-center>
+
+    <properties>
+        <property name="hazelcast.logging.type">${hz.logging.type}</property>
+        <property name="hazelcast.jmx">${hz.jmx}</property>
+        <property name="hazelcast.jmx.detailed">${hz.jmx.detailed}</property>
+    </properties>
+
+    <network>
+        <port auto-increment="true">${hz.port}</port>
+        <join>
+            <multicast enabled="false"/>
+            <tcp-ip enabled="true">
+                <members>${hz.nodes}</members>
+            </tcp-ip>
+        </join>
+    </network>
+
+    <executor-service name="${hz.executor-service.decisions.service-name}">
+        <pool-size>${hz.executor-service.decisions.pool-size}</pool-size>
+        <queue-capacity>0</queue-capacity>
+    </executor-service>
+
+    <serialization>
+        <serializers>
+            <serializer type-class="ru.taskurotta.transport.model.TaskConfigContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.TaskConfigContainerStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.transport.model.ArgContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.ArgContainerStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.console.model.InterruptedTask"
+                        class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.console.model.InterruptedTaskExt"
+                        class-name="ru.taskurotta.service.hz.serialization.InterruptedTaskExtStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.transport.model.DecisionContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.DecisionContainerStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.transport.model.Decision"
+                        class-name="ru.taskurotta.service.hz.serialization.DecisionStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.hz.dependency.DecisionRow"
+                        class-name="ru.taskurotta.service.hz.serialization.DecisionRowStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.transport.model.ErrorContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.ErrorContainerStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.dependency.links.Graph"
+                        class-name="ru.taskurotta.service.hz.serialization.GraphStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.console.model.Process"
+                        class-name="ru.taskurotta.service.hz.serialization.ProcessStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.transport.model.TaskContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.TaskContainerStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.hz.TaskKey"
+                        class-name="ru.taskurotta.service.hz.serialization.TaskKeyStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.transport.model.TaskOptionsContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.TaskOptionsContainerSerializer"/>
+            <serializer type-class="java.util.UUID"
+                        class-name="ru.taskurotta.service.hz.serialization.UUIDStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.queue.TaskQueueItem"
+                        class-name="ru.taskurotta.service.hz.serialization.TaskQueueItemSteamSerializer"/>
+            <serializer type-class="ru.taskurotta.hazelcast.queue.delay.impl.StorageItemContainer"
+                        class-name="ru.taskurotta.service.hz.serialization.StorageItemStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.recovery.RecoveryOperation"
+                        class-name="ru.taskurotta.service.hz.serialization.RecoveryOperationStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.recovery.AbortProcessOperation"
+                        class-name="ru.taskurotta.service.hz.serialization.AbortProcessOperationSerializer"/>
+            <serializer type-class="ru.taskurotta.service.recovery.RestartTaskOperation"
+                        class-name="ru.taskurotta.service.hz.serialization.RestartTaskOperationStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.config.model.ActorPreferences"
+                        class-name="ru.taskurotta.service.hz.serialization.ActorPreferencesStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.hz.server.ProcessDecisionUnitOfWork"
+                        class-name="ru.taskurotta.service.hz.serialization.ProcessDecisionUnitOfWorkStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.console.model.QueueStatVO"
+                        class-name="ru.taskurotta.service.hz.serialization.QueueStatVOStreamSerializer"/>
+            <serializer type-class="ru.taskurotta.service.hz.console.HzQueueStatTask"
+                        class-name="ru.taskurotta.service.hz.serialization.HzQueueStatTaskStreamSerializer"/>
+        </serializers>
+    </serialization>
+
+</hazelcast>

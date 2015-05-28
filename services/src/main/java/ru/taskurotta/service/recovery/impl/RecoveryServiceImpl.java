@@ -2,6 +2,7 @@ package ru.taskurotta.service.recovery.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.DependencyService;
@@ -42,7 +43,9 @@ public class RecoveryServiceImpl implements RecoveryService {
     public static AtomicInteger recoveredTasksCounter = new AtomicInteger();
     public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
     public static AtomicInteger recoveredInterruptedTasksCounter = new AtomicInteger();
+    public static AtomicInteger recoveredProcessDecisionCounter = new AtomicInteger();
 
+    private GeneralTaskServer generalTaskServer;
     private QueueService queueService;
     private DependencyService dependencyService;
     private ProcessService processService;
@@ -58,11 +61,16 @@ public class RecoveryServiceImpl implements RecoveryService {
     public RecoveryServiceImpl() {
     }
 
-    public RecoveryServiceImpl(QueueService queueService, DependencyService dependencyService,
-                               ProcessService processService, TaskService taskService, TaskDao taskDao, GraphDao graphDao,
-                               InterruptedTasksService interruptedTasksService,
+    public RecoveryServiceImpl(GeneralTaskServer generalTaskServer, QueueService queueService,
+                               DependencyService dependencyService, ProcessService processService,
+                               TaskService taskService, TaskDao taskDao,
+                               GraphDao graphDao, InterruptedTasksService interruptedTasksService,
                                GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
                                long findIncompleteProcessPeriod) {
+
+        // todo: THIS IS A HUCK. SERVICES STRUCTURE SHOULD BE OPTIMIZED!!!
+        this.generalTaskServer = generalTaskServer;
+
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.processService = processService;
@@ -74,68 +82,6 @@ public class RecoveryServiceImpl implements RecoveryService {
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
     }
-
-    //    @Override
-//    public boolean restartBrokenTasks(final UUID processId) {
-//
-//        boolean result = false;
-//
-//        Graph graph = dependencyService.getGraph(processId);
-//
-//        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, true);
-//
-//        if (logger.isDebugEnabled()) {
-//            logger.debug("restartBrokenTasks({}) getAllReadyTaskIds.size() = {}", processId, allReadyTaskIds.size());
-//        }
-//
-//        for (Map.Entry<UUID, Long> entry : allReadyTaskIds.entrySet()) {
-//
-//            UUID taskId = entry.getKey();
-//            logger.debug("restartBrokenTasks({}) analise task = {}", processId, taskId);
-//
-//            DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
-//
-//            // skip tasks without decision
-//            if (taskDecision == null) {
-//                continue;
-//            }
-//
-//            // skip decisions without error
-//            if (!taskDecision.containsError()) {
-//                logger.debug("{}/{} Can not resurrect task. Task has no error", taskId, processId);
-//                continue;
-//            }
-//
-//            // skip not fatal errors
-//            ErrorContainer errorContainer = taskDecision.getErrorContainer();
-//            if (!errorContainer.isFatalError()) {
-//                logger.debug("{}/{} Can not resurrect task. Task has not fatal error", taskId, processId);
-//                continue;
-//            }
-//
-//            TaskContainer taskContainer = taskService.getTask(taskId, processId);
-//
-//            if (taskService.retryTask(taskId, processId, System.currentTimeMillis())) {
-//                queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
-//                        (taskContainer));
-//                result = true;
-//                interruptedTasksService.delete(processId, taskId);
-//
-//                logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
-//                restartedBrokenTasks.incrementAndGet();
-//            } else {
-//                logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
-//            }
-//
-//        }
-//
-//        if (result) {
-//            // todo: process can receive new broken tasks before this point
-//            processService.markProcessAsStarted(processId);
-//        }
-//
-//        return result;
-//    }
 
 
     @Override
@@ -203,7 +149,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
             // check broken process
 
-            for (UUID taskId: allReadyTaskIds.keySet()) {
+            for (UUID taskId : allReadyTaskIds.keySet()) {
                 DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
                 if (decisionContainer != null) {
                     ErrorContainer errorContainer = decisionContainer.getErrorContainer();
@@ -280,12 +226,15 @@ public class RecoveryServiceImpl implements RecoveryService {
         }
 
         ErrorContainer errorContainer = taskDecision.getErrorContainer();
+        String message = null;
+        String stacktrace = null;
         if (errorContainer != null) {
             itdTask.setErrorClassName(errorContainer.getClassName());
-            itdTask.setErrorMessage(errorContainer.getMessage());
-            itdTask.setStackTrace(errorContainer.getStackTrace());
+            message = errorContainer.getMessage();
+            itdTask.setErrorMessage(TransportUtils.trimToLength(message, InterruptedTasksService.MESSAGE_MAX_LENGTH));
+            stacktrace = errorContainer.getStackTrace();
         }
-        interruptedTasksService.save(itdTask);
+        interruptedTasksService.save(itdTask, message, stacktrace);
 
         // mark process as broken
         processService.markProcessAsBroken(processId);
@@ -337,8 +286,6 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         if (taskContainers != null && !taskContainers.isEmpty()) {
 
-            long lastRecoveryStartTime = System.currentTimeMillis() - findIncompleteProcessPeriod;
-
             // check tasks
             for (Iterator<TaskContainer> it = taskContainers.iterator(); it.hasNext(); ) {
                 TaskContainer taskContainer = it.next();
@@ -358,8 +305,8 @@ public class RecoveryServiceImpl implements RecoveryService {
                     }
                 }
 
+                long lastRecoveryStartTime = System.currentTimeMillis() - findIncompleteProcessPeriod;
                 if (!isReadyToRecover(processId, taskId, startTime, actorId, taskList, lastRecoveryStartTime)) {
-
                     // remove not ready task from collection
                     it.remove();
                     continue;
@@ -399,9 +346,9 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String taskList = TransportUtils.getTaskList(taskContainer);
                     String actorId = taskContainer.getActorId();
 
-                    boolean restartResult = taskService.restartTask(taskId, processId, System.currentTimeMillis(),
-                            false);
-                    if (restartResult) {
+                    if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), false)) {
+
+                        // task ready to enqueue
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
 
                             logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
@@ -413,6 +360,16 @@ public class RecoveryServiceImpl implements RecoveryService {
                                     taskId, taskContainer);
                         }
                     } else {
+
+                        // task is finished but still ready in Graph.
+                        try {
+                            generalTaskServer.processDecision(taskId, processId);
+                        } catch (RuntimeException ex) {
+                            logger.error("Can not process decision", ex);
+                        }
+
+                        recoveredProcessDecisionCounter.incrementAndGet();
+
                         logger.debug("#[{}]/[{}]: can not restart task. taskService.restartTask() operation is false",
                                 processId, taskId, taskContainer);
                     }
@@ -512,8 +469,6 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         logger.trace("#[{}]/[{}]: check if task ready to restart", processId, taskId);
 
-        boolean result = true;//consider every task as ready by default
-
         if (startTime > System.currentTimeMillis()) {//task must be started in future => skip it //recovery iterations may take some time so check current date here
 
             if (logger.isDebugEnabled()) {
@@ -564,7 +519,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             return false;
         }
 
-        return result;
+        return true;
     }
 
 

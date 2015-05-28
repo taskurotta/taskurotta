@@ -4,7 +4,7 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.service.dependency.links.Modification;
-import ru.taskurotta.service.hz.dependency.HzGraphDao;
+import ru.taskurotta.service.hz.dependency.DecisionRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,10 +19,10 @@ import java.util.UUID;
  * Date: 9/12/13
  * Time: 2:52 PM
  */
-public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.DecisionRow> {
+public class DecisionRowStreamSerializer implements StreamSerializer<DecisionRow> {
 
     @Override
-    public void write(ObjectDataOutput out, HzGraphDao.DecisionRow decisionRow) throws IOException {
+    public void write(ObjectDataOutput out, DecisionRow decisionRow) throws IOException {
 
         UUIDSerializer.write(out, decisionRow.getTaskId());
         UUIDSerializer.write(out, decisionRow.getProcessId());
@@ -64,7 +64,7 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
     }
 
     @Override
-    public HzGraphDao.DecisionRow read(ObjectDataInput in) throws IOException {
+    public DecisionRow read(ObjectDataInput in) throws IOException {
         UUID itemId = UUIDSerializer.read(in);
         UUID processId = UUIDSerializer.read(in);
 
@@ -97,9 +97,9 @@ public class DecisionRowStreamSerializer implements StreamSerializer<HzGraphDao.
             UUID[] arrayOfUUID = new UUID[list.size()];
             list.toArray(arrayOfUUID);
 
-            return new HzGraphDao.DecisionRow(itemId, processId, modification, arrayOfUUID);
+            return new DecisionRow(itemId, processId, modification, arrayOfUUID);
         }
-        return new HzGraphDao.DecisionRow(itemId, processId, modification, null);
+        return new DecisionRow(itemId, processId, modification, null);
     }
 
 

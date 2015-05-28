@@ -13,7 +13,7 @@ public class QueueStatVO implements Serializable {
     private String name;
     private int count = 0;
     private Date lastActivity = null;
-    private long lastPolledTaskEnqueueTime = -1;
+    private long lastPolledTaskEnqueueTime = -1l;
 
     private long inHour = 0;
     private long outHour = 0;

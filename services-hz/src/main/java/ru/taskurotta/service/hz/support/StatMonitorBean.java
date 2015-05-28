@@ -134,6 +134,16 @@ public class StatMonitorBean implements StatInfoRetriever {
                 MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
                 MongoCachedQueueStore.storeTimer.max()));
 
+        sb.append("\n errorsCounter = " + GeneralTaskServer.errorsCounter.get());
+                
+        sb.append("\n startedProcessesCounter = " +
+                GeneralTaskServer.startedProcessesCounter.get() +
+                "  finishedProcessesCounter = " +
+                GeneralTaskServer.finishedProcessesCounter.get() +
+                "  brokenProcessesCounter = " +
+                GeneralTaskServer.brokenProcessesCounter.get());
+
+
         sb.append("\n processesOnTimeout = " +
                 RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
                 "  recoveredProcesses = " +
@@ -143,7 +153,9 @@ public class StatMonitorBean implements StatInfoRetriever {
                 "  recoveredInterruptedTasks = " +
                 RecoveryServiceImpl.recoveredInterruptedTasksCounter.get() +
                 "  restartedBrokenTasks = " +
-                RecoveryServiceImpl.restartedBrokenTasks.get());
+                RecoveryServiceImpl.restartedBrokenTasks.get() +
+                "  recoveredProcessDecisionCounter = " +
+                RecoveryServiceImpl.recoveredProcessDecisionCounter.get());
 
         sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
                 "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()

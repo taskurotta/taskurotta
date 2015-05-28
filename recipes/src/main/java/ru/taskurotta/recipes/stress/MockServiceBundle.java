@@ -8,8 +8,11 @@ import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.config.model.ActorPreferences;
 import ru.taskurotta.service.config.model.ExpirationPolicyConfig;
+import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
+import ru.taskurotta.service.console.model.TaskIdentifier;
+import ru.taskurotta.service.console.model.TasksGroupVO;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -323,7 +327,7 @@ public class MockServiceBundle implements ServiceBundle {
     public InterruptedTasksService getInterruptedTasksService() {
         return new InterruptedTasksService() {
             @Override
-            public void save(InterruptedTask itdTask) {
+            public void save(InterruptedTask itdTask, String message, String stackTrace) {
                 // ignore
             }
 
@@ -343,10 +347,35 @@ public class MockServiceBundle implements ServiceBundle {
                 // ignore
             }
 
-//            @Override
-//            public void restart(UUID processId, UUID taskId) {
-//                throw new IllegalAccessError("Method not implemented");
-//            }
+            @Override
+            public String getFullMessage(UUID processId, UUID taskId) {
+                return null;
+            }
+
+            @Override
+            public String getStackTrace(UUID processId, UUID taskId) {
+                return null;
+            }
+
+            @Override
+            public List<TasksGroupVO> getGroupList(GroupCommand command) {
+                return null;
+            }
+
+            @Override
+            public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
+                return null;
+            }
+
+            @Override
+            public Set<UUID> getProcessIds(GroupCommand command) {
+                return null;
+            }
+
+            @Override
+            public long deleteTasksForProcess(UUID processId) {
+                return 0;
+            }
 
         };
     }

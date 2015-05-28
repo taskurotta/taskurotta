@@ -14,7 +14,6 @@ public class InterruptedTaskBSerializer implements StreamBSerializer<Interrupted
     public static final CString TIME = new CString("time");
     public static final CString ERROR_MESSAGE = new CString("errorMessage");
     public static final CString ERROR_CLASS_NAME = new CString("errorClassName");
-    public static final CString STACK_TRACE = new CString("stackTrace");
 
     @Override
     public Class<InterruptedTask> getObjectClass() {
@@ -30,7 +29,6 @@ public class InterruptedTaskBSerializer implements StreamBSerializer<Interrupted
         out.writeLong(TIME, object.getTime());
         out.writeString(ERROR_MESSAGE, object.getErrorMessage());
         out.writeString(ERROR_CLASS_NAME, object.getErrorClassName());
-        out.writeString(STACK_TRACE, object.getStackTrace());
     }
 
     @Override
@@ -43,7 +41,6 @@ public class InterruptedTaskBSerializer implements StreamBSerializer<Interrupted
         result.setTime(in.readLong(TIME));
         result.setErrorMessage(in.readString(ERROR_MESSAGE));
         result.setErrorClassName(in.readString(ERROR_CLASS_NAME));
-        result.setStackTrace(in.readString(STACK_TRACE));
         return result;
     }
 }

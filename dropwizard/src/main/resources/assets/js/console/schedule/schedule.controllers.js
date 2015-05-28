@@ -256,10 +256,10 @@ angular.module("console.schedule.controllers", ['console.services', 'ui.bootstra
 
         $scope.showError = function (errMessage) {
             var modalInstance = $modal.open({
-                templateUrl: '/partials/view/modal/stacktrace_msg.html',
+                templateUrl: '/partials/view/modal/modal_msg.html',
                 windowClass: 'stack-trace',
                 controller: function ($scope) {
-                    $scope.stackTrace = errMessage;
+                    $scope.msg = errMessage;
                 }
             });
 
