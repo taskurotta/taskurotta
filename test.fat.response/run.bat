@@ -1,1 +1,1 @@
-java -jar test.fat.response-1.0-SNAPSHOT.jar
+start java -server -cp target/test.fat.response-1.0-SNAPSHOT.jar ru.taskurotta.bootstrap.Main -f src/main/resources/taskurotta/test.fat.response.yaml

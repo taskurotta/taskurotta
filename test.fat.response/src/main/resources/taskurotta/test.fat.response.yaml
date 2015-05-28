@@ -37,11 +37,11 @@ logback:
         - FILE:
              key: name
              \@class: ch.qos.logback.core.rolling.RollingFileAppender
-             file: logs/fat-test.log
+             file: target/logs/fat-test.log
              rollingPolicy:
                 key: name
                 \@class: ch.qos.logback.core.rolling.TimeBasedRollingPolicy
-                fileNamePattern: logs\fat-test.%d{yyyy-MM-dd}.%i.log
+                fileNamePattern: target/logs/fat-test.%d{yyyy-MM-dd}.%i.log
                 timeBasedFileNamingAndTriggeringPolicy:
                   key: name
                   \@class: ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP
