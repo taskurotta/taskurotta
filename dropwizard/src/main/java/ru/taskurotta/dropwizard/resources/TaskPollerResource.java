@@ -2,6 +2,7 @@ package ru.taskurotta.dropwizard.resources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.TaskServerResource;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -31,7 +32,9 @@ public class TaskPollerResource {
             result = taskServer.poll(actorDefinition);
             logger.debug("Task polled for[{}] is[{}]", actorDefinition.getName(), result);
         } catch (Throwable e) {
-            logger.error("Poll task for[" + actorDefinition + "] failed!", e);
+            GeneralTaskServer.errorsCounter.incrementAndGet();
+            logger.error("Poll task failed! ActorDefinition = [" + actorDefinition + "] ", e);
+
             return Response.serverError().build();
         }
 

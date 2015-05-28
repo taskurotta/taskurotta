@@ -2,6 +2,7 @@ package ru.taskurotta.dropwizard.resources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.TaskServerResource;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -22,14 +23,16 @@ public class TaskReleaserResource {
     private TaskServer taskServer;
 
     @POST
-    public Response release(DecisionContainer resultContainer) {
-        logger.debug("release resource called with entity[{}]", resultContainer);
+    public Response release(DecisionContainer decisionContainer) {
+        logger.debug("release resource called with entity[{}]", decisionContainer);
 
         try {
-            taskServer.release(resultContainer);
-            logger.debug("Task successfully released, [{}]", resultContainer);
+            taskServer.release(decisionContainer);
+            logger.debug("Task successfully released, [{}]", decisionContainer);
         } catch(Throwable e) {
-            logger.error("Releasing of task["+resultContainer+"] failed!", e);
+            GeneralTaskServer.errorsCounter.incrementAndGet();
+            logger.error("Releasing of task failed! DecisionContainer = [" + decisionContainer + "] ", e);
+
             return Response.serverError().build();
         }
 

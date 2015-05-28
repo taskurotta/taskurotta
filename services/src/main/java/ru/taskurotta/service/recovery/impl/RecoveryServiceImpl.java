@@ -75,68 +75,6 @@ public class RecoveryServiceImpl implements RecoveryService {
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
     }
 
-    //    @Override
-//    public boolean restartBrokenTasks(final UUID processId) {
-//
-//        boolean result = false;
-//
-//        Graph graph = dependencyService.getGraph(processId);
-//
-//        final Map<UUID, Long> allReadyTaskIds = getAllReadyTaskIds(graph, true);
-//
-//        if (logger.isDebugEnabled()) {
-//            logger.debug("restartBrokenTasks({}) getAllReadyTaskIds.size() = {}", processId, allReadyTaskIds.size());
-//        }
-//
-//        for (Map.Entry<UUID, Long> entry : allReadyTaskIds.entrySet()) {
-//
-//            UUID taskId = entry.getKey();
-//            logger.debug("restartBrokenTasks({}) analise task = {}", processId, taskId);
-//
-//            DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
-//
-//            // skip tasks without decision
-//            if (taskDecision == null) {
-//                continue;
-//            }
-//
-//            // skip decisions without error
-//            if (!taskDecision.containsError()) {
-//                logger.debug("{}/{} Can not resurrect task. Task has no error", taskId, processId);
-//                continue;
-//            }
-//
-//            // skip not fatal errors
-//            ErrorContainer errorContainer = taskDecision.getErrorContainer();
-//            if (!errorContainer.isFatalError()) {
-//                logger.debug("{}/{} Can not resurrect task. Task has not fatal error", taskId, processId);
-//                continue;
-//            }
-//
-//            TaskContainer taskContainer = taskService.getTask(taskId, processId);
-//
-//            if (taskService.retryTask(taskId, processId, System.currentTimeMillis())) {
-//                queueService.enqueueItem(taskContainer.getActorId(), taskId, processId, -1l, TransportUtils.getTaskList
-//                        (taskContainer));
-//                result = true;
-//                interruptedTasksService.delete(processId, taskId);
-//
-//                logger.debug("restartBrokenTasks({}) enqueue task = {}", processId, taskId);
-//                restartedBrokenTasks.incrementAndGet();
-//            } else {
-//                logger.warn("{}/{} Can not resurrect task. taskService.retryTask() return is false", taskId, processId);
-//            }
-//
-//        }
-//
-//        if (result) {
-//            // todo: process can receive new broken tasks before this point
-//            processService.markProcessAsStarted(processId);
-//        }
-//
-//        return result;
-//    }
-
 
     @Override
     public boolean resurrectProcess(final UUID processId) {

@@ -49,6 +49,7 @@ public class GeneralTaskServer implements TaskServer {
     public static final AtomicInteger startedProcessesCounter = new AtomicInteger();
     public static final AtomicInteger finishedProcessesCounter = new AtomicInteger();
     public static final AtomicInteger brokenProcessesCounter = new AtomicInteger();
+    public static final AtomicInteger errorsCounter = new AtomicInteger();
 
     public static final AtomicInteger receivedDecisionsCounter = new AtomicInteger();
     public static final AtomicInteger processedDecisionsCounter = new AtomicInteger();
@@ -102,19 +103,24 @@ public class GeneralTaskServer implements TaskServer {
         // atomic statement
         processService.startProcess(task);
 
-        // inform taskService about new process
-        // idempotent statement
-        taskService.startProcess(task);
+        try {
+            // inform taskService about new process
+            // idempotent statement
+            taskService.startProcess(task);
 
-        // inform dependencyService about new process
-        // idempotent statement
-        dependencyService.startProcess(task);
+            // inform dependencyService about new process
+            // idempotent statement
+            dependencyService.startProcess(task);
 
-        // we assume that new process task has no dependencies and it is ready to enqueue.
-        // idempotent statement
-        enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
+            // we assume that new process task has no dependencies and it is ready to enqueue.
+            // idempotent statement
+            enqueueTask(task.getTaskId(), task.getProcessId(), task.getActorId(), task.getStartTime(), getTaskList(task));
 
-        startedProcessesCounter.incrementAndGet();
+            startedProcessesCounter.incrementAndGet();
+        } catch (Throwable e) {
+            errorsCounter.incrementAndGet();
+            logger.warn("Error on start process", e);
+        }
     }
 
 
