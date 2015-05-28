@@ -48,7 +48,13 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         this.hazelcastInstance = hazelcastInstance;
         this.actorPreferencesMapName = actorPreferencesMapName;
 
-        init();
+        new Thread(){
+            @Override
+            public void run() {
+                init();
+            }
+        }.start();
+
     }
 
     public HzConfigService(HazelcastInstance hazelcastInstance, int defaultTimeout, TimeUnit defaultTimeUnit, String actorPreferencesMapName) {
@@ -57,7 +63,12 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         this.defaultTimeUnit = defaultTimeUnit;
         this.actorPreferencesMapName = actorPreferencesMapName;
 
-        init();
+        new Thread(){
+            @Override
+            public void run() {
+                init();
+            }
+        }.start();
     }
 
     private void init() {
@@ -137,7 +148,7 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         }
 
         value.setBlocked(isBlocked);
-        distributedActorPreferences.put(actorId, value);
+        distributedActorPreferences.set(actorId, value);
 
     }
 

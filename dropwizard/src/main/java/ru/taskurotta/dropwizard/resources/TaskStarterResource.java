@@ -3,6 +3,7 @@ package ru.taskurotta.dropwizard.resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.TaskServerResource;
 import ru.taskurotta.transport.model.TaskContainer;
@@ -33,7 +34,8 @@ public class TaskStarterResource {
             taskServer.startProcess(taskContainer);
             logger.debug("Successfully started process task[{}]", taskContainer);
         } catch (Throwable e) {
-            logger.error("Starting of process by task[" + taskContainer + "] failed!", e);
+            GeneralTaskServer.errorsCounter.incrementAndGet();
+            logger.error("Starting of process by task failed! TaskContainer = [" + taskContainer + "] ", e);
             return Response.serverError().build();
         }
 

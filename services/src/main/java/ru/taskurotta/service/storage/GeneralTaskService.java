@@ -111,7 +111,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
 
         if (!simulate) {
             // todo: actors should support acceptLast and acceptFirst strategies depends of their needs
-            UUID pass = taskDao.startTask(taskId, processId, System.currentTimeMillis() + workerTimeoutMilliseconds, false);
+            UUID pass = taskDao.startTask(taskId, processId, workerTimeoutMilliseconds, false);
 
             if (pass == null) {
                 logger.error("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
