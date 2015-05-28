@@ -6,11 +6,11 @@
 
     <groupId>ru.taskurotta</groupId>
     <artifactId>test.fat.response</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 
     <properties>
         <java.version>1.7</java.version>
-        <taskurotta.version>0.8.0</taskurotta.version>
+        <taskurotta.version>0.9.3</taskurotta.version>
         <spring.version>4.1.4.RELEASE</spring.version>
         <skip.integration.tests>true</skip.integration.tests>
         <dropwizard.version>0.7.1</dropwizard.version>
