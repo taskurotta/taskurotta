@@ -1,7 +1,11 @@
 package ru.taskurotta.service.hz.support;
 
 
-import com.hazelcast.core.*;
+import com.hazelcast.core.DistributedObject;
+import com.hazelcast.core.DistributedObjectEvent;
+import com.hazelcast.core.DistributedObjectListener;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.CachedQueue;
@@ -12,7 +16,7 @@ import ru.taskurotta.util.ActorUtils;
  * Designed to populate distributed ActorPreferences map at runtime.
  * If a new task queue object created for absent(unregistered) actor config,
  * that config would be automatically appended to configuration
- *
+ * <p/>
  * User: dimadin
  * Date: 05.09.13 11:56
  */
@@ -27,22 +31,32 @@ public class HzConfigServiceSupport implements DistributedObjectListener {
     private void init() {
         hzInstance.addDistributedObjectListener(this);
         distributedActorPreferences = hzInstance.getMap(actorPreferencesMapName);
+
+        for (DistributedObject distributedObject : hzInstance.getDistributedObjects()) {
+            registerObject(distributedObject);
+        }
     }
 
     @Override
     public void distributedObjectCreated(DistributedObjectEvent event) {
         DistributedObject obj = event.getDistributedObject();
 
-        if (isActorQueue(obj)) {
-            String actorId = ActorUtils.getPrefixStripped(obj.getName(), queuePrefix);
-            ActorPreferences ap = new ActorPreferences();
-            ap.setId(actorId);
-            ap.setBlocked(false);
-            ap.setQueueName(obj.getName());
+        registerObject(obj);
+    }
 
-            if (distributedActorPreferences.putIfAbsent(actorId, ap) == null) {
-                logger.info("New actor [{}] has been registered", actorId);
-            }
+    private void registerObject(DistributedObject obj) {
+        if (!isActorQueue(obj)) {
+            return;
+        }
+
+        String actorId = ActorUtils.getPrefixStripped(obj.getName(), queuePrefix);
+        ActorPreferences ap = new ActorPreferences();
+        ap.setId(actorId);
+        ap.setBlocked(false);
+        ap.setQueueName(obj.getName());
+
+        if (distributedActorPreferences.putIfAbsent(actorId, ap) == null) {
+            logger.info("New actor [{}] has been registered", actorId);
         }
     }
 

@@ -51,7 +51,11 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         new Thread(){
             @Override
             public void run() {
-                init();
+                try {
+                    init();
+                } catch (Throwable e) {
+                    logger.error("BIG BADABOOM!", e);
+                }
             }
         }.start();
 
@@ -66,7 +70,11 @@ public class HzConfigService implements ConfigService, ConfigInfoRetriever {
         new Thread(){
             @Override
             public void run() {
-                init();
+                try {
+                    init();
+                } catch (Throwable e) {
+                    logger.error("BIG BADABOOM!", e);
+                }
             }
         }.start();
     }
