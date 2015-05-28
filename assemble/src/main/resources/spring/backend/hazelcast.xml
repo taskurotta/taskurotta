@@ -151,6 +151,7 @@
     </bean>
 
     <bean id="recoveryService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
+        <constructor-arg name="generalTaskServer" ref="realTaskServer" />
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>

@@ -2,6 +2,7 @@ package ru.taskurotta.service.recovery.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.dependency.DependencyService;
@@ -42,7 +43,9 @@ public class RecoveryServiceImpl implements RecoveryService {
     public static AtomicInteger recoveredTasksCounter = new AtomicInteger();
     public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
     public static AtomicInteger recoveredInterruptedTasksCounter = new AtomicInteger();
+    public static AtomicInteger recoveredProcessDecisionCounter = new AtomicInteger();
 
+    private GeneralTaskServer generalTaskServer;
     private QueueService queueService;
     private DependencyService dependencyService;
     private ProcessService processService;
@@ -58,11 +61,16 @@ public class RecoveryServiceImpl implements RecoveryService {
     public RecoveryServiceImpl() {
     }
 
-    public RecoveryServiceImpl(QueueService queueService, DependencyService dependencyService,
-                               ProcessService processService, TaskService taskService, TaskDao taskDao, GraphDao graphDao,
-                               InterruptedTasksService interruptedTasksService,
+    public RecoveryServiceImpl(GeneralTaskServer generalTaskServer, QueueService queueService,
+                               DependencyService dependencyService, ProcessService processService,
+                               TaskService taskService, TaskDao taskDao,
+                               GraphDao graphDao, InterruptedTasksService interruptedTasksService,
                                GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
                                long findIncompleteProcessPeriod) {
+
+        // todo: THIS IS A HUCK. SERVICES STRUCTURE SHOULD BE OPTIMIZED!!!
+        this.generalTaskServer = generalTaskServer;
+
         this.queueService = queueService;
         this.dependencyService = dependencyService;
         this.processService = processService;
@@ -141,7 +149,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
             // check broken process
 
-            for (UUID taskId: allReadyTaskIds.keySet()) {
+            for (UUID taskId : allReadyTaskIds.keySet()) {
                 DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
                 if (decisionContainer != null) {
                     ErrorContainer errorContainer = decisionContainer.getErrorContainer();
@@ -338,9 +346,9 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String taskList = TransportUtils.getTaskList(taskContainer);
                     String actorId = taskContainer.getActorId();
 
-                    boolean restartResult = taskService.restartTask(taskId, processId, System.currentTimeMillis(),
-                            false);
-                    if (restartResult) {
+                    if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), false)) {
+
+                        // task ready to enqueue
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
 
                             logger.debug("#[{}]/[{}]: task container [{}] have been restarted", processId, taskId,
@@ -352,6 +360,16 @@ public class RecoveryServiceImpl implements RecoveryService {
                                     taskId, taskContainer);
                         }
                     } else {
+
+                        // task is finished but still ready in Graph.
+                        try {
+                            generalTaskServer.processDecision(taskId, processId);
+                        } catch (RuntimeException ex) {
+                            logger.error("Can not process decision", ex);
+                        }
+
+                        recoveredProcessDecisionCounter.incrementAndGet();
+
                         logger.debug("#[{}]/[{}]: can not restart task. taskService.restartTask() operation is false",
                                 processId, taskId, taskContainer);
                     }

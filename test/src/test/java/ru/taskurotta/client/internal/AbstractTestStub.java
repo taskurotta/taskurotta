@@ -102,11 +102,12 @@ public class AbstractTestStub {
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1, 1000l);
-        recoveryProcessService = new RecoveryServiceImpl(memoryQueueService, dependencyService,
+        taskServer = new GeneralTaskServer(serviceBundle);
+
+        recoveryProcessService = new RecoveryServiceImpl((GeneralTaskServer) taskServer, memoryQueueService, dependencyService,
                 serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService, garbageCollectorService,
                 1l, 1000l);
 
-        taskServer = new GeneralTaskServer(serviceBundle);
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
         objectFactory = new ObjectFactory();
     }
