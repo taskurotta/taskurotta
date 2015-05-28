@@ -6,7 +6,7 @@ import ru.taskurotta.annotation.Execute;
 /**
  * Created on 28.05.2015.
  */
-@Decider(version = "2.0")
+@Decider
 public interface FatDecider {
 
     @Execute

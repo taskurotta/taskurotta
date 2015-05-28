@@ -5,7 +5,7 @@ import ru.taskurotta.annotation.Worker;
 /**
  * Created on 28.05.2015.
  */
-@Worker(version = "2.0")
+@Worker
 public interface FatWorker {
 
     String createResponse(int size) throws Exception;
