@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -364,6 +365,16 @@ public class MockServiceBundle implements ServiceBundle {
             @Override
             public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
                 return null;
+            }
+
+            @Override
+            public Set<UUID> getProcessIds(GroupCommand command) {
+                return null;
+            }
+
+            @Override
+            public long deleteTasksForProcess(UUID processId) {
+                return 0;
             }
 
         };

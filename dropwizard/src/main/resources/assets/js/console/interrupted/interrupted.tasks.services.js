@@ -68,6 +68,10 @@ angular.module("console.interrupted.services", ['ui.bootstrap.modal'])
             $log.log("Try to submit restart group with command: ", command);
             return $http.post("/rest/console/process/tasks/interrupted/restart/group", command);
         },
+        abortGroup: function(command) {
+            $log.log("Try to abort processes group with command: ", command);
+            return $http.post("/rest/console/process/tasks/interrupted/abort/group", command);
+        },
         showModalMessage: function(type, processId, taskId) {
             var url = createMessageUrl(type, processId, taskId);
             $http.get(url).then(function (success) {

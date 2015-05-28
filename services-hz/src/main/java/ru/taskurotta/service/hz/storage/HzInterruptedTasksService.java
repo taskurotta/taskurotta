@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -153,6 +154,26 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
     @Override
     public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
         return InterruptedTaskSupport.asTaskIdentifiers(find(command), command);
+    }
+
+    @Override
+    public Set<UUID> getProcessIds(GroupCommand command) {
+        return InterruptedTaskSupport.asProcessIdentifiers(find(command), command);
+    }
+
+    @Override
+    public long deleteTasksForProcess(UUID processId) {
+        long result = 0l;
+        Collection<InterruptedTaskExt> tasks = storeIMap.values(new Predicates.EqualPredicate("processId", processId));
+        if (tasks!=null && !tasks.isEmpty()) {//TODO: lock map for the operation
+            for (InterruptedTaskExt task : tasks) {
+                if (storeIMap.containsKey(task.getTaskId())) {
+                    storeIMap.delete(task.getTaskId());
+                    result++;
+                }
+            }
+        }
+        return result;
     }
 
 }

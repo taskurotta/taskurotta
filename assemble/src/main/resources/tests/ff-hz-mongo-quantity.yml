@@ -88,13 +88,16 @@ logback:
         - ru.taskurotta.service.recovery.GeneralRecoveryProcessService2:
              key: name
              \@level: DEBUG
+        - ru.taskurotta.test.stress:
+             key: name
+             \@level: DEBUG
         - com.hazelcast:
              key: name
              \@level: WARN
         - ru.taskurotta:
              key: name
              \@level: INFO
-        - ru.taskurotta.test.monkey:
+        - ru.taskurotta.service.hz.storage.HzInterruptedTasksService:
              key: name
              \@level: DEBUG
         - ru.taskurotta.test.fullfeature:

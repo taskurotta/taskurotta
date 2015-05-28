@@ -8,6 +8,7 @@ import ru.taskurotta.service.console.model.TasksGroupVO;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -33,4 +34,7 @@ public interface InterruptedTasksService {
 
     Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command);
 
+    Set<UUID> getProcessIds(GroupCommand command);
+
+    long deleteTasksForProcess(UUID processId);
 }

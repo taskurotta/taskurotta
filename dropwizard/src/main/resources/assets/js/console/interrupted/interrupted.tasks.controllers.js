@@ -1,6 +1,6 @@
 angular.module("console.interrupted.controllers", ['console.interrupted.directives', 'console.util.services'])
 
-.controller("interruptedTasksListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions) {
+.controller("interruptedTasksListController", ['$scope', '$log', '$http', 'tskBpTextProvider', 'tskBrokenProcessesActions', '$modal', function($scope, $log, $http, tskBpTextProvider, tskBrokenProcessesActions, $modal) {
 
     $scope.brokenGroups = [];
     $scope.brokenTasks = [];
@@ -199,6 +199,25 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
         });
     };
 
+    var constructGroupCommand = function(groupName) {
+        var command = {
+            group: $scope.groupCommand.group,
+            actorId: $scope.groupCommand.actorId,
+            starterId: $scope.groupCommand.starterId,
+            errorMessage: $scope.groupCommand.errorMessage,
+            errorClassName: $scope.groupCommand.exception
+        };
+        if ('starter' == command.group) {
+            command["starterId"] = groupName;
+        } else if ('actor' == command.group) {
+            command["actorId"] = groupName;
+        } else if ('exception' == command.group) {
+            command["errorClassName"] = groupName;
+        }
+        setDatesToCommand(command);
+        return command;
+    };
+
     $scope.regroup = function (groupType) {
         $scope.groupCommand.group = groupType;
         $scope.update();
@@ -276,27 +295,31 @@ angular.module("console.interrupted.controllers", ['console.interrupted.directiv
     };
 
     $scope.restartGroup = function (bpg, index) {
-        var command = {
-            group: $scope.groupCommand.group,
-            actorId: $scope.groupCommand.actorId,
-            starterId: $scope.groupCommand.starterId,
-            errorMessage: $scope.groupCommand.errorMessage,
-            errorClassName: $scope.groupCommand.exception
-        };
-        if ('starter' == command.group) {
-            command["starterId"] = bpg.name;
-        } else if ('actor' == command.group) {
-            command["actorId"] = bpg.name;
-        } else if ('exception' == command.group) {
-            command["errorClassName"] = bpg.name;
-        }
-        setDatesToCommand(command);
-
+        var command = constructGroupCommand(bpg.name);
         tskBrokenProcessesActions.restartGroup(command).then(function(okResp) {
             $scope.brokenGroups.splice(index, 1);
         }, function(errResp){
             $scope.feedback = errResp;
         });
+    };
+
+    $scope.abortGroup = function(bpg, index) {
+        $modal.open({
+            templateUrl: '/partials/view/modal/approve_msg.html',
+            windowClass: 'approve',
+            controller: function ($scope) {
+                $scope.description = "All processes matching group conditions will be deleted.";
+            }
+        }).result.then(function(okMess) {
+
+                var command = constructGroupCommand(bpg.name);
+                tskBrokenProcessesActions.abortGroup(command).then(function(okResp) {
+                    $scope.brokenGroups.splice(index, 1);
+                }, function(errResp){
+                    $scope.feedback = errResp;
+                });
+
+            });
     };
 
     $scope.update();

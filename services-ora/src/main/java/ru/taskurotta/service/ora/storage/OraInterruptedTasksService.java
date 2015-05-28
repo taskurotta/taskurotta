@@ -29,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -55,6 +57,10 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     protected static final String SQL_GROUP_COUNTERS = " count(distinct STARTER_ID) starters, count(distinct ACTOR_ID) actors, count(distinct ERROR_CLASS_NAME) errors, count(id) total from TSK_INTERRUPTED_TASKS ";
 
     protected static final String SQL_LIST_TASK_IDENTIFIERS = "SELECT TASK_ID, PROCESS_ID FROM TSK_INTERRUPTED_TASKS ";
+
+    protected static final String SQL_LIST_PROCESS_IDENTIFIERS = "SELECT DISTINCT(PROCESS_ID) pid FROM TSK_INTERRUPTED_TASKS ";
+
+    protected static final String SQL_DELETE_BY_PROCESS_ID = "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? ";
 
     protected LobHandler lobHandler;
 
@@ -105,6 +111,13 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
             result.setProcessId(rs.getString("PROCESS_ID"));
             result.setTaskId(rs.getString("TASK_ID"));
             return result;
+        }
+    };
+
+    protected RowMapper<UUID> processIdMapper = new RowMapper<UUID>() {
+        @Override
+        public UUID mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return UUID.fromString(rs.getString("pid"));
         }
     };
 
@@ -318,6 +331,48 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
         logger.debug("Found [{}] result by command[{}] in [{}]ms", result.size(), command, (System.currentTimeMillis() - startTime));
 
         return result;
+    }
+
+    @Override
+    public Set<UUID> getProcessIds(GroupCommand command) {
+        List<Object> parameters = new ArrayList<>();//order does matter
+        StringBuilder sb = new StringBuilder(SQL_LIST_PROCESS_IDENTIFIERS);
+        if (GroupCommand.GROUP_ACTOR.equalsIgnoreCase(command.getGroup())) {
+            sb.append("WHERE ACTOR_ID = ? ");
+            parameters.add(command.getActorId());
+        } else if (GroupCommand.GROUP_EXCEPTION.equalsIgnoreCase(command.getGroup())) {
+            sb.append("WHERE ERROR_CLASS_NAME = ? ");
+            parameters.add(command.getErrorClassName());
+        } else { //STARTERS by default
+            sb.append("WHERE STARTER_ID = ? ");
+            parameters.add(command.getStarterId());
+        }
+
+        appendFilterCondition(sb, command, parameters, false);
+
+        String sql = sb.toString();
+
+        List<UUID> list;
+        long startTime = System.currentTimeMillis();
+        try {
+            list = getJdbcTemplate().query(sql, parameters.toArray(), processIdMapper);
+        } catch (EmptyResultDataAccessException e) {
+            list = Collections.emptyList();//nothing found
+        }
+        Set<UUID> result = new HashSet<>(list);
+
+        logger.trace("Process ids SQL got is[{}], params are[{}]", sql, parameters);
+        logger.debug("Found [{}] process UUIDs by command[{}] in [{}]ms", result.size(), command, (System.currentTimeMillis() - startTime));
+
+        return result.isEmpty()? null : result;
+    }
+
+    @Override
+    public long deleteTasksForProcess(UUID processId) {
+        if (processId==null) {
+            return 0l;
+        }
+        return getJdbcTemplate().update(SQL_DELETE_BY_PROCESS_ID, processId.toString());
     }
 
     @Required

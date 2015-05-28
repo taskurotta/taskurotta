@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -46,6 +47,8 @@ public class InterruptedTasksListResource {
     private InterruptedTasksService interruptedTasksService;
 
     private OperationExecutor<RecoveryService> taskRecoveryOperationExecutor;
+
+    private RecoveryService recoveryService;
 
     @GET
     @Path("/group")
@@ -73,7 +76,7 @@ public class InterruptedTasksListResource {
 
     @POST
     @Path("/restart/group")
-    public Response executeGroupRestart(final GroupAction action) {
+    public Response executeGroupRestart(GroupAction action) {
         GroupCommand command = convertToCommand(action.starterId, action.actorId, action.errorClassName, action.dateFrom, action.dateTo, action.group);
         logger.debug("Executing group recovery with command [{}]", command);
         Collection<TaskIdentifier> restartIds = interruptedTasksService.getTaskIdentifiers(command);
@@ -93,6 +96,25 @@ public class InterruptedTasksListResource {
         taskRecoveryOperationExecutor.enqueue(new RestartTaskOperation(UUID.fromString(ti.getProcessId()), UUID.fromString(ti.getTaskId())));
         logger.debug("Task restarted [{}] ", ti);
         return Response.ok().build();
+    }
+
+    @POST
+    @Path("/abort/group")
+    public Status deleteGroup(GroupAction action) {
+        GroupCommand command = convertToCommand(action.starterId, action.actorId, action.errorClassName, action.dateFrom, action.dateTo, action.group);
+        logger.debug("Executing group abortion with command [{}]", command);
+        Set<UUID> processes = interruptedTasksService.getProcessIds(command);
+        int size = 0;
+        if (processes!=null && !processes.isEmpty()) {
+            for (UUID processId : processes) {
+                recoveryService.abortProcess(processId);
+                long tasks = interruptedTasksService.deleteTasksForProcess(processId);
+                logger.debug("Deleted [{}] interrupted tasks for aborted process [{}]", tasks, processId);
+                size++;
+            }
+        }
+        logger.debug("Aborted [{}] processes. UUID list [{}]", size, processes);
+        return new Status(HttpStatus.OK_200, "Aborted ["+size+"] processes");
     }
 
     @GET
@@ -201,5 +223,10 @@ public class InterruptedTasksListResource {
     @Required
     public void setTaskRecoveryOperationExecutor(OperationExecutor<RecoveryService> taskRecoveryOperationExecutor) {
         this.taskRecoveryOperationExecutor = taskRecoveryOperationExecutor;
+    }
+
+    @Required
+    public void setRecoveryService(RecoveryService recoveryService) {
+        this.recoveryService = recoveryService;
     }
 }

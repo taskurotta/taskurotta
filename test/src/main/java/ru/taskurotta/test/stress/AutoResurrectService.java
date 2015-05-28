@@ -25,17 +25,18 @@ public class AutoResurrectService {
             @Override
             public void daemonJob() {
                 Collection<InterruptedTask> allInterruptedTasks = interruptedTasksService.findAll();
+                if (allInterruptedTasks != null) {
+                    logger.debug("Found [{}] interrupted tasks", allInterruptedTasks.size());
 
-                logger.debug("Found [{}] interrupted tasks", allInterruptedTasks.size());
+                    for (InterruptedTask itdTask: allInterruptedTasks) {
 
-                for (InterruptedTask itdTask: allInterruptedTasks) {
-
-                    if (itdTask.getErrorClassName().equals(BrokenProcessException.class.getName())) {
-                        operationExecutor.enqueue(new RestartTaskOperation(itdTask.getProcessId(), itdTask.getTaskId()));
+                        if (itdTask.getErrorClassName().equals(BrokenProcessException.class.getName())) {
+                            operationExecutor.enqueue(new RestartTaskOperation(itdTask.getProcessId(), itdTask.getTaskId()));
+                        }
                     }
+
                 }
             }
         }.start();
-
     }
 }

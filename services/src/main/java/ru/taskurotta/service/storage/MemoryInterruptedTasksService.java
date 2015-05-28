@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -140,6 +141,29 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
     @Override
     public Collection<TaskIdentifier> getTaskIdentifiers(GroupCommand command) {
         return InterruptedTaskSupport.asTaskIdentifiers(find(command), command);
+    }
+
+    @Override
+    public Set<UUID> getProcessIds(GroupCommand command) {
+        return InterruptedTaskSupport.asProcessIdentifiers(find(command), command);
+    }
+
+    @Override
+    public long deleteTasksForProcess(UUID processId) {
+        long result = 0l;
+        if (processId != null) {
+            synchronized (brokenTasks) {
+                Iterator<Map.Entry<UUID, InterruptedTaskExt>> iter = brokenTasks.entrySet().iterator();
+                while (iter.hasNext()) {
+                    Map.Entry<UUID, InterruptedTaskExt> entry = iter.next();
+                    if (entry!=null && entry.getValue()!=null && processId.equals(entry.getValue().getProcessId())) {
+                        iter.remove();
+                        result++;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 }

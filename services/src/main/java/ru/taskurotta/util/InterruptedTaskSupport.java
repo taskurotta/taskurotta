@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created on 26.05.2015.
@@ -109,5 +110,20 @@ public class InterruptedTaskSupport {
         return result.isEmpty()? null : result;
     }
 
+    public static Set<UUID> asProcessIdentifiers(Collection<InterruptedTask> tasks, GroupCommand command) {
+        Set<UUID> result = new HashSet<>();
+        if (command.getGroup() != null) {
+            if (tasks!=null && !tasks.isEmpty()) {
+                for (InterruptedTask task : tasks) {
+                    if ( (GroupCommand.GROUP_ACTOR.equalsIgnoreCase(command.getGroup()) && command.getActorId().equals(task.getActorId()))
+                            || (GroupCommand.GROUP_EXCEPTION.equalsIgnoreCase(command.getGroup()) && command.getErrorClassName().equals(task.getErrorClassName()))
+                            || (GroupCommand.GROUP_STARTER.equalsIgnoreCase(command.getGroup()) && command.getStarterId().equals(task.getStarterId())) ) {
+                        result.add(task.getProcessId());
+                    }
+                }
+            }
+        }
+        return result.isEmpty()? null : result;
+    }
 
 }
