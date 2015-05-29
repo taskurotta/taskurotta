@@ -221,7 +221,7 @@ public class ProcessInspector {
 
     private static MongoClient getMongoClient() throws Throwable {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
-        MongoClientURI mongoClientURI = new MongoClientURI("mongodb://test-tsk-db1-cnt.egron.net:27017,test-tsk-db2-cnt.egron.net:27017/?replicaSet=tskrs");
+        MongoClientURI mongoClientURI = new MongoClientURI("mongodb://127.0.0.1:27017/?replicaSet=tskrs");
         MongoClient mongoClient = new MongoClient(mongoClientURI);
         mongoClient.setWriteConcern(new WriteConcern(1, 0, false, true));
 
