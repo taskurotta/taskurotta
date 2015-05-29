@@ -107,6 +107,13 @@ public class HzInterruptedTasksTest {
         findRes = target.find(com);
         Assert.assertEquals(1, findRes.size());
 
+
+        Collection<InterruptedTask> all = target.findAll();
+        Assert.assertEquals(3, all.size());
+
+        target.save(p1, "new message", "new stack trace");//should overwrite existing
+        Collection<InterruptedTask> all2 = target.findAll();
+        Assert.assertEquals(3, all2.size());
     }
 
     @Test
