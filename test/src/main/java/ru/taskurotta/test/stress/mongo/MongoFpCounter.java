@@ -15,16 +15,13 @@ public class MongoFpCounter implements ProcessesCounter {
 
     private DB mongoDB;
     private String collectionName;
-
-    private void init() {
-        DBCollection processCol = mongoDB.getCollection(collectionName);
-        processCol.createIndex(new BasicDBObject("state", 1));
-    }
+    private String findField;
+    private String findQuery;
 
     @Override
     public long getCount() {
-        DBCollection processCol = mongoDB.getCollection(collectionName);
-        return processCol.count(new BasicDBObject("state", 1));
+        DBCollection processCollection = mongoDB.getCollection(collectionName);
+        return processCollection.count(new BasicDBObject(findField, findQuery));
     }
 
     @Required
@@ -37,4 +34,13 @@ public class MongoFpCounter implements ProcessesCounter {
         this.collectionName = collectionName;
     }
 
+    @Required
+    public void setFindField(String findField) {
+        this.findField = findField;
+    }
+
+    @Required
+    public void setFindQuery(String findQuery) {
+        this.findQuery = findQuery;
+    }
 }
