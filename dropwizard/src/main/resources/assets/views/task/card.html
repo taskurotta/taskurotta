@@ -1,0 +1,82 @@
+<div page-header>
+    <h4>Task: <em>{{ taskParams.taskId}}</em></h4>
+</div>
+
+<page-message></page-message>
+
+<div ng-show="task.taskId">
+    <div class="well">
+        <h4>Properties:</h4>
+        <table width="100%" class="table table-condensed">
+            <tr>
+                <td class="form-header">ID:</td>
+                <td>{{task.taskId}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Process ID:</td>
+                <td><a ui-sref="process({processId:task.processId})">{{task.processId}}</a></td>
+            </tr>
+            <tr>
+                <td class="form-header">Method:</td>
+                <td>{{task.method}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Actor id:</td>
+                <td>{{task.actorId}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Type:</td>
+                <td>{{task.valueType}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Start time:</td>
+                <td>{{task.startTime | date:'dd-MM-yyyy HH:mm:ss'}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Error attempts:</td>
+                <td>{{task.errorAttempts}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Args:</td>
+
+                <td tree-properties="task.args">
+                </td>
+            </tr>
+            <tr>
+                <td class="form-header">Options:</td>
+                <td tree-properties="task.options">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="well">
+        <h4>Decision properties:</h4>
+        <div ng-hide="taskDecision.taskId" class="alert alert-warning">Task have not been released.</div>
+        <table ng-show="taskDecision.taskId"  width="100%" class="table table-condensed">
+            <tr>
+                <td class="form-header">Released with exception:</td>
+                <td>{{taskDecision.errorContainer || "false"}}</td>
+            </tr>
+            <tr ng-show="taskDecision.restartTime > 0">
+                <td class="form-header">Restart time:</td>
+                <td>{{taskDecision.restartTime | date:dateTimeFormat}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Created tasks:</td>
+                <td>{{taskDecision.tasks.length || "none"}}</td>
+            </tr>
+            <tr>
+                <td class="form-header">Value:</td>
+                <td tree-properties="taskDecision.value"><pre>
+                </pre></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="well">
+        <h4>Task tree:</h4>
+        <div task-tree-table="taskTree" process-task="task"></div>
+    </div>
+
+</div>

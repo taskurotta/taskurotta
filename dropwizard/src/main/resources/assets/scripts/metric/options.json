@@ -1,0 +1,2954 @@
+{
+  "metrics": [
+    {
+      "value": "queueSize",
+      "name": "Number of tasks in the queue",
+      "general": false
+    },
+    {
+      "value": "memory",
+      "name": "Occupied, free and total amounts of memory consumed by this node",
+      "general": false
+    },
+    {
+      "value": "startProcess",
+      "name": "TaskServer#startProcess method invocations",
+      "general": false
+    },
+    {
+      "value": "release",
+      "name": "TaskServer#release method invocations",
+      "general": false
+    },
+    {
+      "value": "executionTime",
+      "name": "Actor mean execution time (ms)",
+      "general": false
+    },
+    {
+      "value": "errorDecision",
+      "name": "Actor with error decision mean execution time (ms)",
+      "general": false
+    },
+    {
+      "value": "poll",
+      "name": "TaskServer#poll method invocations",
+      "general": false
+    },
+    {
+      "value": "successfulPoll",
+      "name": "TaskServer#poll method invocations (with not empty polled task)",
+      "general": false
+    },
+    {
+      "value": "enqueue",
+      "name": "QueueBackend#enqueueTask method invocation",
+      "general": false
+    }
+  ],
+  "dataSets": {
+    "enqueue": [
+      {
+        "value": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "name": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "name": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "name": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "name": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "name": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "name": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "name": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ZipWorker#1.0",
+        "name": "ru.rr.drr.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.PackageChecker#1.0",
+        "name": "ru.rr.flk.workers.PackageChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "name": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "name": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "name": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FileWorker#1.0",
+        "name": "ru.rr.drr.workers.FileWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.mds.Sender#1.0",
+        "name": "ru.rr.drr.mds.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "name": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.XPathHelper#1.0",
+        "name": "ru.rr.drr.workers.XPathHelper#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "name": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "name": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "name": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "name": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "name": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "name": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "name": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "enqueue",
+        "name": "QueueBackend#enqueueTask method invocation",
+        "general": true
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "name": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "general": false
+      }
+    ],
+    "queueSize": [
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ZipWorker#1.0",
+        "name": "ru.rr.drr.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.Signer#1.0",
+        "name": "ru.rr.crypto.signature.workers.Signer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp02Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp02Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.worker.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.LoggingFlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.LoggingFlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "name": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "name": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.RequestXmlExtractor#1.0",
+        "name": "ru.rr.airgkn.backend.worker.RequestXmlExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "name": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ChargeImportStarter#1.0",
+        "name": "ru.rr.gisgmp.module.decider.ChargeImportStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuDDValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuDDValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "name": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.CopyDocumentCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.CopyDocumentCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.ZoneValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.ZoneValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.KsCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.KsCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.XmlNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.XmlNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "name": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.SubscriptionRemover#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.SubscriptionRemover#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "name": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.PackagesCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.PackagesCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.SubscriptionCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.SubscriptionCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "name": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.decider.AirgknSubscriptionFinalizerProcess#1.0",
+        "name": "ru.rr.airgkn.process.subscription.decider.AirgknSubscriptionFinalizerProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "name": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.KvCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.KvCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.LandmarkPlan4Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.LandmarkPlan4Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "name": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "name": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.TechnicalPlanValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.TechnicalPlanValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.oid.workers.EsiaServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.oid.workers.EsiaServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "name": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "name": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.QuittanceExportStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.QuittanceExportStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.UnpaidProcess#1.0",
+        "name": "ru.rr.drr.deciders.UnpaidProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuOniValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuOniValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ChargeImportStarter",
+        "name": "ru.rr.gisgmp.module.decider.ChargeImportStarter",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.AirgknSubscriptionProcess#1.0",
+        "name": "ru.rr.airgkn.backend.process.AirgknSubscriptionProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuIzmZuValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuIzmZuValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.RequiredDataParserGknV2#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.RequiredDataParserGknV2#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.PackageChecker#1.0",
+        "name": "ru.rr.flk.workers.PackageChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.TechnicalErrorONValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.TechnicalErrorONValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuArchiveValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuArchiveValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.ChargeStatusStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.ChargeStatusStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.CreateStatementsGknV2Process#1.0",
+        "name": "ru.rr.airgkn.backend.process.CreateStatementsGknV2Process#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuIzmOniValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuIzmOniValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "name": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GknIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GknIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.SubscriptionsPackagesCreator#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.SubscriptionsPackagesCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-gkn",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-gkn",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.XPathHelper#1.0",
+        "name": "ru.rr.drr.workers.XPathHelper#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "name": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.FixCadastralErrorValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.FixCadastralErrorValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "name": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FileWorker#1.0",
+        "name": "ru.rr.drr.workers.FileWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.KptCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.KptCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.Archiver#1.0",
+        "name": "ru.rr.airgkn.backend.worker.Archiver#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "queueSize",
+        "name": "Total number of task for all queues",
+        "general": true
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IExpiredNotifier#1.0#drr",
+        "name": "ru.rr.gisgmp.module.decider.IExpiredNotifier#1.0#drr",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.ExpiredCheckStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.ExpiredCheckStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.mds.Sender#1.0",
+        "name": "ru.rr.drr.mds.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GknIr02Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GknIr02Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuOksValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuOksValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.TaskObjectsPreparer#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.TaskObjectsPreparer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.ObjectProcessor#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.ObjectProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.AirgknMainProcess#1.0",
+        "name": "ru.rr.airgkn.backend.process.AirgknMainProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "name": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.AirgknSignPackageProcess#1.0",
+        "name": "ru.rr.airgkn.backend.process.AirgknSignPackageProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuZuValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuZuValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.KaisValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.KaisValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "name": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.ResponseSender#1.0",
+        "name": "ru.rr.airgkn.backend.worker.ResponseSender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.StatusWorker#1.0",
+        "name": "ru.rr.drr.workers.StatusWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.LandmarkPlan3Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.LandmarkPlan3Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.CadastralPassportCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.CadastralPassportCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "name": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "name": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "general": false
+      }
+    ],
+    "poll": [
+      {
+        "value": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.AirgknSubscriptionProcess#1.0",
+        "name": "ru.rr.airgkn.backend.process.AirgknSubscriptionProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.FixCadastralErrorValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.FixCadastralErrorValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.ExpiredCheckStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.ExpiredCheckStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuIzmOniValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuIzmOniValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.PackagesCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.PackagesCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.LoggingFlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.LoggingFlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.AirgknMainProcess#1.0",
+        "name": "ru.rr.airgkn.backend.process.AirgknMainProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "name": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.KptCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.KptCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "name": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "name": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.LandmarkPlan4Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.LandmarkPlan4Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.StatusWorker#1.0",
+        "name": "ru.rr.drr.workers.StatusWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.ChargeStatusStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.ChargeStatusStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.KvCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.KvCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.RequestXmlExtractor#1.0",
+        "name": "ru.rr.airgkn.backend.worker.RequestXmlExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.RequiredDataParserGknV2#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.RequiredDataParserGknV2#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.decider.AirgknSubscriptionFinalizerProcess#1.0",
+        "name": "ru.rr.airgkn.process.subscription.decider.AirgknSubscriptionFinalizerProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.oid.workers.EsiaServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.oid.workers.EsiaServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GknIr02Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GknIr02Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.CadastralPassportCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.CadastralPassportCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.SubscriptionRemover#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.SubscriptionRemover#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "name": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IExpiredNotifier#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IExpiredNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.CopyDocumentCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.CopyDocumentCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.Signer#1.0",
+        "name": "ru.rr.crypto.signature.workers.Signer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.QuittanceExportStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.QuittanceExportStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "name": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.SubscriptionCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.SubscriptionCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuOksValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuOksValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.TechnicalPlanValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.TechnicalPlanValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.Archiver#1.0",
+        "name": "ru.rr.airgkn.backend.worker.Archiver#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.UnpaidProcess#1.0",
+        "name": "ru.rr.drr.deciders.UnpaidProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "name": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.XPathHelper#1.0",
+        "name": "ru.rr.drr.workers.XPathHelper#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.ZoneValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.ZoneValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.AirgknSignPackageProcess#1.0",
+        "name": "ru.rr.airgkn.backend.process.AirgknSignPackageProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.process.CreateStatementsGknV2Process#1.0",
+        "name": "ru.rr.airgkn.backend.process.CreateStatementsGknV2Process#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.gknv2.KsCreator#1.0",
+        "name": "ru.rr.airgkn.backend.worker.gknv2.KsCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.ResponseSender#1.0",
+        "name": "ru.rr.airgkn.backend.worker.ResponseSender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "name": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.mds.Sender#1.0",
+        "name": "ru.rr.drr.mds.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuDDValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuDDValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "name": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "name": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.ObjectProcessor#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.ObjectProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.XmlNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.XmlNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "name": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "name": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "name": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "poll",
+        "name": "Mean value for method invocation by all actors",
+        "general": true
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FileWorker#1.0",
+        "name": "ru.rr.drr.workers.FileWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.PackageChecker#1.0",
+        "name": "ru.rr.flk.workers.PackageChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuIzmZuValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuIzmZuValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuZuValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuZuValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "name": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.TaskObjectsPreparer#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.TaskObjectsPreparer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "name": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.KaisValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.KaisValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "name": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ZipWorker#1.0",
+        "name": "ru.rr.drr.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "name": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "name": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ChargeImportStarter#1.0",
+        "name": "ru.rr.gisgmp.module.decider.ChargeImportStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "name": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GknIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GknIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.LandmarkPlan3Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.LandmarkPlan3Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.process.subscription.worker.SubscriptionsPackagesCreator#1.0",
+        "name": "ru.rr.airgkn.process.subscription.worker.SubscriptionsPackagesCreator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.TechnicalErrorONValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.TechnicalErrorONValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuArchiveValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuArchiveValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.GkuOniValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.GkuOniValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "name": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp02Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp02Validator#1.0",
+        "general": false
+      }
+    ],
+    "executionTime": [
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FileWorker#1.0",
+        "name": "ru.rr.drr.workers.FileWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "name": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "name": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "name": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "name": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ZipWorker#1.0",
+        "name": "ru.rr.drr.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "name": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "name": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "name": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "name": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "name": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "name": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "name": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.XPathHelper#1.0",
+        "name": "ru.rr.drr.workers.XPathHelper#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "executionTime",
+        "name": "Mean value for all actors",
+        "general": true
+      },
+      {
+        "value": "ru.rr.flk.workers.PackageChecker#1.0",
+        "name": "ru.rr.flk.workers.PackageChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "name": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "name": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "name": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.mds.Sender#1.0",
+        "name": "ru.rr.drr.mds.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "name": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "name": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "name": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "name": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "name": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      }
+    ],
+    "errorDecision": [
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "errorDecision",
+        "name": "Mean value for all actors",
+        "general": true
+      }
+    ],
+    "startProcess": [
+      {
+        "value": "startProcess",
+        "name": "Mean value for method invocation by all actors",
+        "general": true
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      }
+    ],
+    "release": [
+      {
+        "value": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FileWorker#1.0",
+        "name": "ru.rr.drr.workers.FileWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "name": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "name": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "name": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "name": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "name": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ZipWorker#1.0",
+        "name": "ru.rr.drr.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.XPathHelper#1.0",
+        "name": "ru.rr.drr.workers.XPathHelper#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.PackageChecker#1.0",
+        "name": "ru.rr.flk.workers.PackageChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "name": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "name": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "name": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "name": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "release",
+        "name": "Mean value for method invocation by all actors",
+        "general": true
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "name": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "name": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "name": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "name": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "name": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "name": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.mds.Sender#1.0",
+        "name": "ru.rr.drr.mds.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "name": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "name": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "name": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "name": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      }
+    ],
+    "successfulPoll": [
+      {
+        "value": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "name": "ru.rr.drr.flk.workers.AllCertificatesExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "name": "ru.rr.drr.deciders.ResponseProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.XPathHelper#1.0",
+        "name": "ru.rr.drr.workers.XPathHelper#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.PackageChecker#1.0",
+        "name": "ru.rr.flk.workers.PackageChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "name": "ru.rr.crypto.signature.workers.DigtSignatureMathsValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "name": "ru.rr.drr.deciders.RequestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "name": "ru.rr.flk.test.stress.deciders.TestSuiteProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-fir",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "name": "ru.rr.drr.workers.FlkProtocolRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "name": "ru.rr.crypto.encryption.workers.EncryptionWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.TechnokadServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "name": "ru.rr.crypto.signature.workers.CertificateExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "name": "ru.rr.drr.workers.DurationCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "name": "ru.rr.flk.registries.notary.deciders.NotaryCheckingProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.RequestReestrFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.FinisherWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "name": "ru.rr.kuvd.workers.KuvdRegistrar#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "name": "ru.rr.drr.rdc.workers.RdcWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Egrp01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#2.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "name": "ru.rr.flk.validators.deciders.EgrpIrValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrUpdater#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.flk.signature.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "name": "ru.rr.drr.deciders.MdsProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "name": "ru.rr.flk.registries.am.workers.ArbitrationManagerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "name": "ru.rr.flk.registries.notary.workers.NotaryChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IFinisher#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubscriptionFinalizer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "name": "ru.rr.drr.notification.workers.EmailNotifier#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatDecider#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "name": "ru.rr.gisgmp.module.decider.ISuccessNotifier#1.0#drr",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "name": "ru.rr.flk.esb.actors.deciders.Adapter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "name": "ru.taskurotta.test.fat.response.FatWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "name": "ru.rr.drr.workers.PaymentDataWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.flk.RegisterParamsChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentTypeDetector#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "name": "ru.rr.gisgmp.module.worker.starter.FakePaymentStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestReestrDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.starter.Starter#1.0",
+        "name": "ru.rr.drr.starter.Starter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "name": "ru.rr.drr.flk.workers.AppliedDocumentFinder#1.0",
+        "general": false
+      },
+      {
+        "value": "successfulPoll",
+        "name": "Mean value for method invocation by all actors",
+        "general": true
+      },
+      {
+        "value": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "name": "ru.rr.gisgmp.module.worker.ReceptionistWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "name": "ru.rr.flk.certificate.deciders.CertificateVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "name": "ru.rr.drr.flk.workers.StepRecorder#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "name": "ru.rr.flk.registries.ce.workers.CadastralEngineerChecker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "name": "ru.rr.drr.flk.workers.DocumentSchemaValidator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.SignatureVerificationProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.ZipWorker#1.0",
+        "name": "ru.rr.flk.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.FileWorker#1.0",
+        "name": "ru.rr.drr.workers.FileWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "name": "ru.rr.drr.workers.RequestMetaDataSerializer#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "name": "ru.rr.drr.workers.RequestDataExtractor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "name": "ru.rr.flk.esb.actors.workers.Sender#1.0#esb-egrp",
+        "general": false
+      },
+      {
+        "value": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "name": "ru.rr.airgkn.backend.worker.subscription.SubsriptionStarter#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "name": "ru.rr.flk.validators.deciders.Gkn01Validator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "name": "ru.rr.drr.deciders.PostPaymentProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.mds.Sender#1.0",
+        "name": "ru.rr.drr.mds.Sender#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "name": "ru.rr.gisgmp.module.decider.IReceptionist#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "name": "ru.rr.flk.test.auto.deciders.TestProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "name": "ru.rr.crypto.certificate.workers.SmevServiceWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "name": "ru.rr.drr.workers.PriceCalculator#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ZipWorker#1.0",
+        "name": "ru.rr.drr.workers.ZipWorker#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "name": "ru.rr.drr.flk.deciders.FlkProcess#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "name": "ru.rr.drr.workers.ResponseProcessor#1.0",
+        "general": false
+      },
+      {
+        "value": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "name": "ru.rr.flk.workers.RequestTypeDetector#1.0",
+        "general": false
+      }
+    ],
+    "memory": [
+      {
+        "value": "total",
+        "name": "total",
+        "general": false
+      },
+      {
+        "value": "free",
+        "name": "free",
+        "general": false
+      },
+      {
+        "value": "memory",
+        "name": "Occupied memory evaluated as: (total - free)",
+        "general": true
+      }
+    ]
+  },
+  "dataTypes": {
+    "enqueue": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "queueSize": [
+      {
+        "value": "size",
+        "name": "Size",
+        "general": false
+      }
+    ],
+    "poll": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "errorDecision": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "executionTime": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "startProcess": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "release": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "successfulPoll": [
+      {
+        "value": "rate",
+        "name": "Hits (times)",
+        "general": false
+      },
+      {
+        "value": "mean",
+        "name": "Mean time (ms)",
+        "general": false
+      }
+    ],
+    "memory": [
+      {
+        "value": "size",
+        "name": "Size",
+        "general": false
+      }
+    ]
+  },
+  "scopes": {
+    "enqueue": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "queueSize": [
+      {
+        "value": "cluster",
+        "name": "All nodes (cluster)",
+        "general": false
+      }
+    ],
+    "poll": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "errorDecision": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "executionTime": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "startProcess": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "release": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "successfulPoll": [
+      {
+        "value": "local",
+        "name": "Current node",
+        "general": false
+      }
+    ],
+    "memory": [
+      {
+        "value": "cluster",
+        "name": "All nodes (cluster)",
+        "general": false
+      }
+    ]
+  },
+  "periods": {
+    "enqueue": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "queueSize": [
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      },
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "5minutes",
+        "name": "Last 5 minutes",
+        "general": false
+      },
+      {
+        "value": "1minute",
+        "name": "Last minute",
+        "general": false
+      }
+    ],
+    "poll": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "errorDecision": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "executionTime": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "startProcess": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "release": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "successfulPoll": [
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      }
+    ],
+    "memory": [
+      {
+        "value": "24hours",
+        "name": "Last 24 hours",
+        "general": false
+      },
+      {
+        "value": "1hour",
+        "name": "Last hour",
+        "general": false
+      },
+      {
+        "value": "5minutes",
+        "name": "Last 5 minutes",
+        "general": false
+      },
+      {
+        "value": "1minute",
+        "name": "Last minute",
+        "general": false
+      }
+    ]
+  }
+}

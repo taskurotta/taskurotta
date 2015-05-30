@@ -1,0 +1,45 @@
+<div>
+
+    <div class="pagination pull-left" style="width: 40%">
+        <span ng-if="model.pageSize">
+            <span class="muted">Show </span>
+            <select ng-model="model.pageSize" style="height:30px;width:55px;"
+                ng-options="ps for ps in pageSizes" ng-change="go(1)">
+            </select>
+            <span class="muted"> entries</span>
+        </span>
+        <ng-transclude></ng-transclude>
+
+    </div>
+
+
+    <div class="pagination pull-left">
+        <span class="muted info-text" ng-if="model">Showing <b>{{minIndex}}</b> to <b>{{maxIndex}}</b> of <b>{{totalCount}}</b> entries</span>
+    </div>
+
+
+
+    <div class="pagination pull-right" ng-if="pageCount">
+        <ul>
+            <li ng-class="{disabled: model.pageNumber === 1}">
+                <a ng-hide="model.pageNumber === 1" ng-click="go(1)">&lt;&lt; First</a>
+            </li>
+            <li ng-class="{disabled: model.pageNumber === 1}">
+                <a ng-hide="model.pageNumber === 1" ng-click="go(model.pageNumber - 1)">&lt; Prev</a>
+            </li>
+            <li>
+                <span ng-show="pageCount>1">{{ model.pageNumber }} of {{ pageCount }}</span>
+                <span ng-hide="pageCount>1">{{ pageCount }}</span>
+            </li>
+            <li ng-class="{disabled: model.pageNumber >= pageCount }">
+                <a ng-hide="model.pageNumber >= pageCount" ng-click="go(model.pageNumber + 1)">Next &gt;</a>
+            </li>
+            <li ng-class="{disabled: model.pageNumber >= pageCount }">
+                <a ng-hide="model.pageNumber >= pageCount" ng-click="go(pageCount)">Last &gt;&gt;</a>
+            </li>
+        </ul>
+    </div>
+
+
+
+</div>

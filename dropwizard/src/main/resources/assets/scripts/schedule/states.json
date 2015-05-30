@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "name": "Active",
+    "class": "success"
+  },
+  {
+    "id": "-1",
+    "name": "Inactive",
+    "class": "info"
+  },
+  {
+    "id": "-2",
+    "name": "Error",
+    "class": "error"
+  },
+  {
+    "id": "unknown",
+    "name": "Unknown",
+    "class": "warning"
+  }
+]

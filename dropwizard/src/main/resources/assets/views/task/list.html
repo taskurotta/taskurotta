@@ -1,0 +1,104 @@
+<div page-header ng-dblclick="$debug = !$debug">
+    <h4 ng-hide="resourceParams.iterationCount">List of tasks</h4>
+    <h4 ng-show="resourceParams.iterationCount">Tasks repeated {{ resourceParams.iterationCount }} and more times</h4>
+    <div ng-if="$debug">
+        <h6>{{ formParams }}</h6>
+        <h6>{{ resourceParams }}</h6>
+    </div>
+</div>
+
+<div page-form="Task search form">
+    <div class="control-group">
+        <label class="control-label" for="processId">Process id:</label>
+        <div class="controls">
+            <input id="processId" type="text" ng-model="formParams.processId" ng-disabled="formParams.iterationCount"
+                   class="input-xlarge" on-enter="search()"/>
+            <i icon-info="Filter tasks by *Process id* condition" model="formParams.processId" remove="formParams.processId = null"></i>
+
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="taskId">Task id:</label>
+        <div class="controls">
+            <input id="taskId" type="text" ng-model="formParams.taskId" ng-disabled="formParams.iterationCount"
+                   class="input-xlarge" on-enter="search()"/>
+            <i icon-info="Filter tasks by *Task id* condition" model="formParams.taskId" remove="formParams.taskId = null"></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="iterationCount">Task attempts:</label>
+        <div class="controls">
+            <input id="iterationCount" type="number" min="0" ng-model="formParams.iterationCount"
+                   ng-disabled="formParams.processId || formParams.taskId"
+                   class="input-mini" on-enter="search()"/>
+            <i icon-info="Tasks repeated several times" model="formParams.iterationCount" remove="formParams.iterationCount = 0"></i>
+            <button class="btn" ng-click="search()">Search</button>
+        </div>
+    </div>
+</div>
+
+<page-message></page-message>
+
+<div class="well">
+    <list-reload model="tasksResource">
+    </list-reload>
+
+    <table class="table table-striped table-hover table-bordered table-items">
+        <thead>
+            <tr>
+                <th style="width: 50px">№</th>
+                <th>Task id</th>
+                <th>Process id</th>
+                <th>Type</th>
+                <th>Actor id</th>
+                <th>Method</th>
+                <th>Arguments</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr ng-repeat="task in tasksModel.items">
+                <td>
+                    {{ tasksModel.$startIndex + $index }}
+                </td>
+                <td>
+                    <a ui-sref="task({taskId: task.taskId, processId:task.processId})" style="cursor: pointer;" >
+                            {{task.taskId}}</a>
+                </td>
+                <td>
+                    <a ui-sref="process({processId:task.processId})"  style="cursor: pointer;">
+                            {{task.processId}}</a>
+                </td>
+                <td>
+                    <b>{{task.type}}</b>
+                </td>
+                <td>
+                    <span ng-bind-html="task.actorId | lineWrap"></span>
+                </td>
+                <td>
+                    <b>{{task.method}}</b>
+                </td>
+                <td>
+                    <button ng-show="task.args && task.args.length"
+                            ng-click="showArgs(task)" class="btn btn-mini"
+                            popover="Show arguments"
+                            popover-trigger="mouseenter">
+                        <i class="icon-info-sign"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <td colspan="7">
+                    <list-paginator model="tasksModel">
+                    </list-paginator>
+                </td>
+            </tr>
+        </tfoot>
+
+    </table>
+
+    <div>Total: <b>{{tasksModel.totalCount || tasksModel.items.length}}</b> tasks</div>
+</div>

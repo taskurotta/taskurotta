@@ -1,0 +1,74 @@
+<div page-header="Edit scheduled task"></div>
+
+<page-message></page-message>
+
+<div class="well">
+    <table width="100%">
+        <tr>
+            <td style="vertical-align: top; width: 430px;">
+                <div class="well">
+                    <h4>Job properties:</h4>
+                    <table class="table table-condensed">
+                        <tr>
+                            <td style="width: 200px;">
+                                <i class="icon-question-sign" popover="Specify the human readable name of the job." popover-trigger="mouseenter"></i>
+                                <b>Job name:</b>
+                            </td>
+                            <td>
+                                <input class="input search-query" type="text" ng-model="job.name" required />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <i class="icon-question-sign" popover="Cron expression to trigger task." popover-trigger="mouseenter"></i>
+                                <b>Cron:</b>
+                            </td>
+                            <td>
+                                <input class="input-small search-query" type="text" ng-model="job.cron" ng-change="changeCron()" required />
+                                <i ng-if="job.isCronValid === true" popover="Valid cron expression" popover-trigger="mouseenter" class="icon-thumbs-up"></i>
+                                <i ng-if="job.isCronValid === false" popover = "Incorrect cron expression" popover-trigger="mouseenter" class="icon-thumbs-down"></i>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <i class="icon-question-sign" popover="Max tasks count per actor queue. If queue size exceeds that value on current scheduler iteration, scheduler would just skip until queue is ready. Use negative or zero value to disable this option." popover-trigger="mouseenter"></i>
+                                <b>Queue limit:</b>
+                            </td>
+                            <td>
+                                <input type="number" min="0" style="outline: 0" class="input-mini search-query" ng-model="job.queueLimit" />
+                                <!--<span ng-if="job.queueLimit<=0" class="muted"><small>disabled</small></span>-->
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <i class="icon-question-sign" popover="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option." popover-trigger="mouseenter"></i>
+                                <b>Max errors:</b>
+                            </td>
+                            <td>
+                                <input type="number" min="0" style="outline: 0" class="input-mini search-query" ng-model="job.maxErrors" />
+                                <!--<span ng-if="job.maxErrors<=0" class="muted"><small>disabled</small></span>-->
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+            <td style="vertical-align: top;">
+                <div class="well">
+                    <h4>Task properties:</h4>
+                    <div task-form="job.task" task-types="types"></div>
+                 </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td></td>
+            <td>
+                <a class="btn" ng-click="save()" ng-disabled="!isValidForm()" ng-if="job.id>0 && job.status!=1">Save scheduled task</a>
+                <span ng-if="job.id > 0 && job.status == 1" class="alert alert-danger">You should stop job before edit
+                    <a class="btn-link" ui-sref="schedules()">Back to list</a></span>
+             </td>
+        </tr>
+    </table>
+
+</div>
