@@ -3,11 +3,7 @@
     <parent>
         <artifactId>ru.taskurotta</artifactId>
         <groupId>ru.taskurotta</groupId>
-<<<<<<< HEAD
-        <version>0.9.4</version>
-=======
         <version>0.9.5</version>
->>>>>>> release/0.9.5
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
