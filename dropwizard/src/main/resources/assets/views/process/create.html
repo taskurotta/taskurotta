@@ -1,0 +1,11 @@
+<div page-header="Create process"></div>
+
+<page-message></page-message>
+
+<div class="well">
+    <div style="width: 600px;" class="well">
+        <h4>Start task properties: </h4>
+        <div task-form="task" task-types="types"></div>
+    </div>
+    <button class="btn" ng-click="save()" ng-disabled="!isValidForm()">Create process</button>
+</div>

@@ -29,21 +29,25 @@ public class JsonDirectoryJobStore implements JobStore {
     private String storeLocation = "job_store";
     private File storeDir;
 
-
-    public void init() throws IllegalStateException {
-        if (!StringUtils.isBlank(storeLocation)) {
-            storeDir = new File(storeLocation);
-            storeDir.mkdirs();
+    private File getStore() {
+        if (storeDir==null) {
+            synchronized (this) {
+                if (!StringUtils.isBlank(storeLocation)) {
+                    storeDir = new File(storeLocation);
+                    storeDir.mkdirs();
+                }
+                if (!storeDir.exists()) {
+                    throw new IllegalStateException("Cannot find or create directory for job store [" + storeLocation + "]");
+                }
+                logger.debug("Store dir initialized, location [{}]", storeDir.getPath());
+            }
         }
-        if (!storeDir.exists()) {
-            throw new IllegalStateException("Cannot find or create directory for job store [" + storeLocation + "]");
-        }
-        logger.debug("Store dir initialized, location [{}]", storeDir.getPath());
+        return storeDir;
     }
 
     protected int getAvailableFileNumber() {
         int result = JSON_FILE_MIN_INDEX;
-        while (new File(storeDir, result + STORE_FILE_EXTENSION).exists()) {
+        while (new File(getStore(), result + STORE_FILE_EXTENSION).exists()) {
             result++;
         }
         logger.debug("Available file number is [{}]", result);
@@ -55,7 +59,7 @@ public class JsonDirectoryJobStore implements JobStore {
         int fileNumber = getAvailableFileNumber();
         try {
             task.setId(fileNumber);
-            objectMapper.writeValue(new File(storeDir, fileNumber + STORE_FILE_EXTENSION), task);
+            objectMapper.writeValue(new File(getStore(), fileNumber + STORE_FILE_EXTENSION), task);
             logger.debug("Job added with number [{}]", fileNumber);
         } catch (IOException e) {
             logger.error("Cannot add job["+task+"] to store", e);
@@ -67,7 +71,7 @@ public class JsonDirectoryJobStore implements JobStore {
     @Override
     public void removeJob (long id) {
         logger.debug("Try to remove job with id [{}]", id);
-        File jobFile = new File(storeDir, id + STORE_FILE_EXTENSION);
+        File jobFile = new File(getStore(), id + STORE_FILE_EXTENSION);
         if (jobFile.exists()) {
             jobFile.delete();
         }
@@ -80,7 +84,7 @@ public class JsonDirectoryJobStore implements JobStore {
     @Override
     public Collection<Long> getJobIds() {
         Collection<Long> result = null;
-        String[] stores = storeDir.list(new FilenameFilter() {
+        String[] stores = getStore().list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
                 return name.toLowerCase().endsWith(STORE_FILE_EXTENSION);
@@ -103,7 +107,7 @@ public class JsonDirectoryJobStore implements JobStore {
     @Override
     public JobVO getJob(long id) {
         JobVO result = null;
-        File jobFile = new File(storeDir, id + STORE_FILE_EXTENSION);
+        File jobFile = new File(getStore(), id + STORE_FILE_EXTENSION);
         if (jobFile.exists()) {
             try {
                 result = objectMapper.readValue(jobFile, JobVO.class);
@@ -130,7 +134,7 @@ public class JsonDirectoryJobStore implements JobStore {
     public void updateJob(JobVO jobVO) {
         if (jobVO != null && jobVO.getId()>=0) {
             try {
-                objectMapper.writeValue(new File(storeDir, jobVO.getId() + STORE_FILE_EXTENSION), jobVO);
+                objectMapper.writeValue(new File(getStore(), jobVO.getId() + STORE_FILE_EXTENSION), jobVO);
             } catch (IOException e) {
                 logger.error("Cannot update job["+jobVO+"] to store", e);
             }

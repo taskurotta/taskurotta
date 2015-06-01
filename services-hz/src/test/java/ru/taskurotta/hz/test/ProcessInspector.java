@@ -3,6 +3,7 @@ package ru.taskurotta.hz.test;
 import com.hazelcast.util.Base64;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
@@ -220,7 +221,8 @@ public class ProcessInspector {
 
     private static MongoClient getMongoClient() throws Throwable {
         ServerAddress serverAddress = new ServerAddress("127.0.0.1", 27017);
-        MongoClient mongoClient = new MongoClient(serverAddress);
+        MongoClientURI mongoClientURI = new MongoClientURI("mongodb://127.0.0.1:27017/?replicaSet=tskrs");
+        MongoClient mongoClient = new MongoClient(mongoClientURI);
         mongoClient.setWriteConcern(new WriteConcern(1, 0, false, true));
 
         return mongoClient;

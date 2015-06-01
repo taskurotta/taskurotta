@@ -1,0 +1,75 @@
+<div page-header="">
+    <h4>Taskurotta console</h4>
+    <p style="margin-left: 10px;">
+        <small>Server version: <b>{{serverVersion}}</b>, started <b>{{servicePage.startupDate | date:dateTimeFormat}}</b></small>
+    </p>
+    <p><a href="/index.html">Перейти на старую версию консоли</a></p>
+</div>
+
+<page-message></page-message>
+
+<div class="well">
+    <div style="margin-bottom: 10px;">
+        <i class="icon-question-sign"
+              popover="These configuration details are specific for the local cluster node only"
+              popover-trigger="mouseenter"></i>
+        <b>Node configuration details:</b>
+    </div>
+
+    <table width="100%">
+        <tr>
+            <td>
+                <div style="width:100%; text-align: left; margin: 0px 0px 10px 0px;">
+                        <span style="cursor: pointer;" ng-click="servicePage.configBeans.$visible = !servicePage.configBeans.$visible">
+                            <span ng-hide="servicePage.configBeans.$visible" class="muted"><b>Show configs </b>
+                                <i class="icon-chevron-down"></i></span>
+                            <span ng-show="servicePage.configBeans.$visible" class="muted"><b>Hide configs </b><i
+                                    class="icon-chevron-up"></i></span>
+                        </span>
+                </div>
+                <div collapse="!servicePage.configBeans.$visible" style="height: auto;" class="collapse">
+                    <div style="background-color: #ffffff; padding: 5px;">
+                        <table class="table-bordered table-condensed table-striped" width="100%">
+                            <tr ng-repeat="(k, v) in servicePage.configBeans">
+                                <td width="25%">
+                                    <small><b>{{k}}:</b></small>
+                                </td>
+                                <td>
+                                    <small><i>{{v}}</i></small>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div style="width:100%; text-align: left;margin: 0px 0px 10px 0px;">
+                        <span style="cursor: pointer;" ng-click="servicePage.properties.$visible = !servicePage.properties.$visible">
+                            <span ng-hide="servicePage.properties.$visible" class="muted"><b>Show properties </b>
+                                   <i class="icon-chevron-down"></i></span>
+                            <span ng-show="servicePage.properties.$visible" class="muted"><b>Hide properties </b>
+                                   <i class="icon-chevron-up"></i></span>
+                        </span>
+                </div>
+                <div collapse="!servicePage.properties.$visible" style="height: auto;" class="collapse">
+                    <div style="background-color: #ffffff; padding: 5px;">
+                        <table class="table-bordered table-condensed table-striped" width="100%" >
+                            <tr ng-repeat="(k, v) in servicePage.properties">
+                                <td width="25%">
+                                    <small><b>{{k}}:</b></small>
+                                </td>
+                                <td style="word-break: break-all">
+                                    <small><i>{{v}}</i></small>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+

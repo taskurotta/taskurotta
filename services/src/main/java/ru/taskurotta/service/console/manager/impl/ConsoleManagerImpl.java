@@ -23,7 +23,6 @@ import ru.taskurotta.transport.model.TaskContainer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -185,24 +184,24 @@ public class ConsoleManagerImpl implements ConsoleManager {
         return taskInfo.findTasks(new TaskSearchCommand(processId, taskId));
     }
 
-    @Override
-    public List<QueueVO> getQueuesHovering(float periodSize) {
-        if (queueInfo == null) {
-            return null;
-        }
-        List<QueueVO> tmpResult = null;
-        Map<String, Integer> queues = queueInfo.getHoveringCount(periodSize);
-        if (queues != null) {
-            tmpResult = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : queues.entrySet()) {
-                QueueVO queueVO = new QueueVO();
-                queueVO.setName(entry.getKey());
-                queueVO.setCount(entry.getValue());
-                tmpResult.add(queueVO);
-            }
-        }
-        return tmpResult;
-    }
+//    @Override
+//    public List<QueueVO> getQueuesHovering(float periodSize) {
+//        if (queueInfo == null) {
+//            return null;
+//        }
+//        List<QueueVO> tmpResult = null;
+//        Map<String, Integer> queues = queueInfo.getHoveringCount(periodSize);
+//        if (queues != null) {
+//            tmpResult = new ArrayList<>();
+//            for (Map.Entry<String, Integer> entry : queues.entrySet()) {
+//                QueueVO queueVO = new QueueVO();
+//                queueVO.setName(entry.getKey());
+//                queueVO.setCount(entry.getValue());
+//                tmpResult.add(queueVO);
+//            }
+//        }
+//        return tmpResult;
+//    }
 
     @Override
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {

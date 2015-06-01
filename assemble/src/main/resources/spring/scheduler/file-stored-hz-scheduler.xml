@@ -10,7 +10,7 @@
         <constructor-arg name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id = "realJobStore" class="ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore" init-method="init">
+    <bean id = "realJobStore" class="ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore">
         <property name="storeLocation" value="${schedule.job.store.dir}" />
     </bean>
 

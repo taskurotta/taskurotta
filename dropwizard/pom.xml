@@ -6,7 +6,11 @@
     <parent>
         <groupId>ru.taskurotta</groupId>
         <artifactId>ru.taskurotta</artifactId>
+<<<<<<< HEAD
         <version>0.9.4</version>
+=======
+        <version>0.9.5</version>
+>>>>>>> release/0.9.5
     </parent>
 
     <artifactId>dropwizard</artifactId>

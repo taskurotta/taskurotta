@@ -42,6 +42,7 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
     private static final Logger logger = LoggerFactory.getLogger(OraInterruptedTasksService.class);
 
     protected static final String SQL_CREATE_ITD_TASK = "BEGIN " +
+            "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? AND TASK_ID = ?;" +
             "INSERT INTO TSK_INTERRUPTED_TASKS (TASK_ID, PROCESS_ID, ACTOR_ID, STARTER_ID, CREATION_DATE, TIME, ERROR_MESSAGE, ERROR_CLASS_NAME, STACK_TRACE, MESSAGE_FULL) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; " +
             "END;";
@@ -132,22 +133,24 @@ public class OraInterruptedTasksService extends JdbcDaoSupport implements Interr
                             String taskId = itdTask.getTaskId()!=null? itdTask.getTaskId().toString(): null;
                             String processId = itdTask.getProcessId()!=null? itdTask.getProcessId().toString(): null;
                             LobCreator lobCreator = lobHandler.getLobCreator();
-                            ps.setString(1, taskId);
-                            ps.setString(2, processId);
-                            ps.setString(3, itdTask.getActorId());
-                            ps.setString(4, itdTask.getStarterId());
-                            ps.setTimestamp(5, new Timestamp(new Date().getTime()));
-                            ps.setLong(6, itdTask.getTime());
-                            ps.setString(7, TransportUtils.trimToLength(itdTask.getErrorMessage(), MESSAGE_MAX_LENGTH));
-                            ps.setString(8, itdTask.getErrorClassName());
-                            lobCreator.setClobAsString(ps, 9, stackTrace);
-                            lobCreator.setClobAsString(ps, 10, message);
-                            ps.registerOutParameter(11, Types.BIGINT);
+                            ps.setString(1, processId);
+                            ps.setString(2, taskId);
+                            ps.setString(3, taskId);
+                            ps.setString(4, processId);
+                            ps.setString(5, itdTask.getActorId());
+                            ps.setString(6, itdTask.getStarterId());
+                            ps.setTimestamp(7, new Timestamp(new Date().getTime()));
+                            ps.setLong(8, itdTask.getTime());
+                            ps.setString(9, TransportUtils.trimToLength(itdTask.getErrorMessage(), MESSAGE_MAX_LENGTH));
+                            ps.setString(10, itdTask.getErrorClassName());
+                            lobCreator.setClobAsString(ps, 11, stackTrace);
+                            lobCreator.setClobAsString(ps, 12, message);
+                            ps.registerOutParameter(13, Types.BIGINT);
 
                             ps.execute();
                             lobCreator.close();
 
-                            return ps.getLong(11);
+                            return ps.getLong(13);
                         }
                     });
 

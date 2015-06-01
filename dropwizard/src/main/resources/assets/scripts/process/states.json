@@ -1,0 +1,37 @@
+[
+  {
+    "id": "0",
+    "name": "Started",
+    "info": "Still has unreleased tasks",
+    "desc": "Process have not been finished yet",
+    "icon": "icon-time"
+  },
+  {
+    "id": "1",
+    "name": "Finished",
+    "info": "Has already finished",
+    "desc": "Process is finished",
+    "icon": "icon-ok"
+  },
+  {
+    "id": "2",
+    "name": "Failed",
+    "info": "Has failed tasks, manual fix required",
+    "desc": "Process was stopped due to execution error",
+    "icon": "icon-exclamation-sign"
+  },
+  {
+    "id": "3",
+    "name": "Aborted",
+    "info": "Aborted",
+    "desc": "Process was aborted",
+    "icon": "icon-trash"
+  },
+  {
+    "id": "unknown",
+    "name": "Unknown",
+    "info": "Have not been released yet",
+    "desc": "Process was not been released yet",
+    "icon": "icon-question-sign"
+  }
+]

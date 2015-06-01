@@ -1,0 +1,22 @@
+<div class="well" style=" padding-top: 5px; padding-bottom: 5px;">
+    <table cellspacing="0" cellpadding="0" width="100%">
+        <tr>
+            <td style="text-align: left;">
+                <h5 class="muted">
+                    <span ng-mouseover="$collapsed = false" ng-click="$collapsed = !$collapsed">
+                        {{ title }}
+                    </span>
+                </h5>
+            </td>
+            <td style="text-align: right;">
+                <span ng-click="$collapsed = !$collapsed" style="cursor:pointer;">
+                    <i class="icon-chevron-up" ng-hide="$collapsed" popover="Hide options" popover-trigger="mouseenter" popover-placement="left"></i>
+                    <i class="icon-chevron-down" ng-show="$collapsed" popover="Show options" popover-trigger="mouseenter" popover-placement="left"></i>
+                </span>
+            </td>
+        </tr>
+    </table>
+    <form class="form-horizontal form-bordered" ng-hide="$collapsed" >
+        <ng-transclude></ng-transclude>
+    </form>
+ </div>

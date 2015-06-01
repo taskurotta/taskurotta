@@ -27,8 +27,7 @@ public class MemoryInterruptedTasksService implements InterruptedTasksService {
 
     @Override
     public void save(InterruptedTask itdTask, String message, String stackTrace) {
-        UUID taskId = itdTask.getTaskId();
-        this.brokenTasks.put(taskId, new InterruptedTaskExt(itdTask, message, stackTrace));
+        this.brokenTasks.put(itdTask.getTaskId(), new InterruptedTaskExt(itdTask, message, stackTrace));
     }
 
     @Override
