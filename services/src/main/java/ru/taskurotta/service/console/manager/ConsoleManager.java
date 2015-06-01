@@ -68,7 +68,7 @@ public interface ConsoleManager {
 
     public List<TaskContainer> findTasks(String processId, String taskId);
 
-    public List<QueueVO> getQueuesHovering(float periodSize);
+//    public List<QueueVO> getQueuesHovering(float periodSize);
 
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount);
 

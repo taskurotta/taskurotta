@@ -1,7 +1,5 @@
 package ru.taskurotta.service.queue;
 
-import net.sf.cglib.core.CollectionUtils;
-import net.sf.cglib.core.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.exception.ServiceCriticalException;
@@ -17,10 +15,7 @@ import ru.taskurotta.transport.utils.TransportUtils;
 import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -271,32 +266,6 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
     public String createQueueName(String actorId, String taskList) {
         return TransportUtils.createQueueName(actorId, taskList);
         //return (taskList == null) ? actorId : actorId + "#" + taskList;
-    }
-
-    @Override
-    public Map<String, Integer> getHoveringCount(float periodSize) {
-        Map<String, Integer> result = new HashMap<>();
-        String[] queueNames = new String[queues.keySet().size()];
-        int days = (int) (periodSize / 1);
-        int hours = (int) ((periodSize - days) * 24);
-        Calendar endDate = Calendar.getInstance();
-        endDate.add(Calendar.DATE, -days);
-        endDate.add(Calendar.HOUR, -hours);
-        final Date tmpDate = endDate.getTime();
-        if (!queues.isEmpty()) {
-            for (String queueName : queueNames) {
-                DelayQueue<DelayedTaskElement> queue = queues.get(queueName);
-                int count = CollectionUtils.filter(queue, new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        DelayedTaskElement task = (DelayedTaskElement) o;
-                        return task.startTime < tmpDate.getTime();
-                    }
-                }).size();
-                result.put(queueName, count);
-            }
-        }
-        return result;
     }
 
     @Override
