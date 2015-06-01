@@ -4,8 +4,6 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
-import java.util.Map;
-
 /**
  * Task queues information retriever. Provides information such as number
  * of queues, queue names, task count and such
@@ -18,8 +16,6 @@ public interface QueueInfoRetriever {
     int getQueueTaskCount(String queueName);
 
     GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize);
-
-    Map<String, Integer> getHoveringCount(float periodSize);
 
     GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter);
 

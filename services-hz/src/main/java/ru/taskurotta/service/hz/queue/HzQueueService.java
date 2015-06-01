@@ -60,15 +60,15 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     private static final String LAST_POLLED_TASK_ENQUEUE_TIME = "lastPolledTaskEnqueueTimes";
     private static final String SYNCH_LOCK_NAME = HzQueueService.class.getName().concat("#SINCH_LOCK");
-    private static final String DRAIN_LOCK_NAME = HzQueueService.class.getName().concat("#DRAIN_LOCK");
+//    private static final String DRAIN_LOCK_NAME = HzQueueService.class.getName().concat("#DRAIN_LOCK");
 
     private ILock synchLock = null;
 
     private Map<String, CachedDelayQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
 
-    private ILock drainLock;
-
-    private AtomicInteger cnt = new AtomicInteger(0);
+//    private ILock drainLock;
+//
+//    private AtomicInteger cnt = new AtomicInteger(0);
 
     public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix, long mergePeriodMs, long pollDelay) {
         this.queueFactory = queueFactory;
@@ -77,7 +77,7 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         this.pollDelay = pollDelay;
 
         this.synchLock = hazelcastInstance.getLock(SYNCH_LOCK_NAME);
-        this.drainLock = hazelcastInstance.getLock(DRAIN_LOCK_NAME);
+//        this.drainLock = hazelcastInstance.getLock(DRAIN_LOCK_NAME);
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -166,10 +166,11 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
-            CachedDelayQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
-            logger.debug("Removing queue with name [{}], cached queue is [{}]", queueName, queue);
+            String prefixedQueueName = ActorUtils.toPrefixed(queueName, queueNamePrefix);
+            CachedDelayQueue<TaskQueueItem> queue = queueMap.get(prefixedQueueName);
             if (queue != null) {
-                queueMap.remove(queueName);
+                logger.debug("Removing queue with name [{}], cached queue is [{}]", queueName, queue);
+                queueMap.remove(prefixedQueueName);
                 queue.destroy();
             }
         } finally {
@@ -297,16 +298,11 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public Map<String, Integer> getHoveringCount(float periodSize) {
-        return null;
-    }
-
-    @Override
     public GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter) {
         GenericPage<QueueStatVO> result = null;
         List<String> fullFilteredQueueNamesList = getTaskQueueNamesByPrefix(queueNamePrefix, filter, true);
-
         if (fullFilteredQueueNamesList != null && !fullFilteredQueueNamesList.isEmpty()) {
+            logger.debug("Found [{}] queues by prefixed name", fullFilteredQueueNamesList.size());
             int pageStart = (pageNum - 1) * pageSize;
             int pageEnd = Math.min(pageSize * pageNum, fullFilteredQueueNamesList.size());
 
@@ -318,7 +314,9 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
                 int nodes = 0;
                 for (Future<List<QueueStatVO>> nodeResultFuture : results.values()) {
                     try {
-                        mergeByQueueName(resultItems, nodeResultFuture.get(5, TimeUnit.SECONDS));
+                        List<QueueStatVO> qStat = nodeResultFuture.get(5, TimeUnit.SECONDS);
+                        logger.debug("Try to merge queue list from node, qStat size[{}]", qStat.size());
+                        mergeByQueueName(resultItems, qStat);
                         nodes++;
                     } catch (Exception e) {
                         logger.warn("Cannot obtain QueueStatVO data from node", e);

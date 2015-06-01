@@ -37,7 +37,6 @@ public class JsonStorageTest {
     public void prepareStoreDir() {
         store = new JsonDirectoryJobStore();
         store.setStoreLocation(tmpFolder.getRoot().getPath());
-        store.init();
     }
 
     @Test

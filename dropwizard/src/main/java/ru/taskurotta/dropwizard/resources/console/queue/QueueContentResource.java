@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
  * User: dimadin
  * Date: 21.05.13 12:44
  */
+@Deprecated
 @Path("/console/queue/{name}")
 public class QueueContentResource extends BaseResource {
 
