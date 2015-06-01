@@ -30,7 +30,7 @@ angular.module('actorModule', ['coreApp'])
                             loadMetrics(params.metrics, $scope.actorsModel.items);
                         }
                     } else {
-                        coreApp.info('Actors not found', value);
+                        coreApp.info('Actors not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {

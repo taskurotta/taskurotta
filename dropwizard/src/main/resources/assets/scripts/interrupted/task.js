@@ -6,9 +6,17 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
         return $resource(restTaskUrl + 'task', {}, {
                 getStacktrace: {url: restTaskUrl + 'stacktrace', params: {}},
                 //list
-                query: {url: restTaskUrl + ':query', params: {}, isArray: true},
+                queryGroup: {url: restTaskUrl + 'group', params: {}, isArray: true},
+                query: {url: restTaskUrl + 'list', params: {}, isArray: true},
                 //actions
-                restart: {url: restTaskUrl + 'restart', params: {}},
+                restart: {url: restTaskUrl + 'restart/task', method:'POST', params: {}},
+                restartGroup: {url: restTaskUrl + 'restart/group', method:'POST', params: {
+                    errorClassName:'@exception'
+                }},
+                abortGroup: {url: restTaskUrl + 'restart/group', method:'POST', params: {
+                    errorClassName:'@exception'
+                }},
+
                 //dictionaries
                 dictionaryGroup: {url: '/scripts/interrupted/groups.json', params: {}, isArray: true, cache: true}
 
@@ -23,17 +31,20 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             return (angular.isDate(date) ? moment(date) : moment(date, moment.ISO_8601))
                 .format('DD.MM.YYYY' + (withTime ? ' HH:mm' : ''));
         }
+        function getRest() {
+            return $state.is('interrupted')? interruptedRest.queryGroup : interruptedRest.query;
+        }
 
         function loadModel(params) {
             $log.info('Load model', $scope.resourceParams = params);
 
-            $scope.interruptedResource = interruptedRest.query(params,
+            $scope.interruptedResource = getRest()(params,
                 function success(value) {
                     $scope.interruptedModel = coreApp.parseListModel(value);//cause array or object
                     if($scope.interruptedModel){
                         $log.info('Successfully updated interrupted tasks page');
                     }else{
-                        coreApp.warn('Not found any interrupted tasks',value);
+                        coreApp.info('Not found any interrupted tasks');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -51,14 +62,11 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             $scope.groups.actor.selected = $stateParams.actorId || $stateParams.group === 'actor';
             $scope.groups.exception.selected = $stateParams.exception || $stateParams.group === 'exception';
 
-            //mark selected filter or group
-            var params = angular.copy($scope.formParams);
-            params.query = $state.is('interrupted')? 'group':'list';
-            params.dateFrom = getRestDateFormat(params.dateFrom, params.withTime, true);
-            params.dateTo = getRestDateFormat(params.dateTo, params.withTime, true);
-            delete params.withTime;
-
-            loadModel(params);
+            loadModel(angular.extend({},$scope.formParams,{
+                dateFrom: getRestDateFormat($scope.formParams.dateFrom, $scope.formParams.withTime, true),
+                dateTo: getRestDateFormat($scope.formParams.dateTo, $scope.formParams.withTime, true),
+                withTime: undefined
+            }));
 
             $scope.joinFilterParam = function (params, value) {
                 var param = $scope.groups[$scope.resourceParams.group].param;
@@ -99,17 +107,13 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             coreApp.openStacktraceModal(task.errorMessage, 'Message');
         };
 
+
         $scope.restartGroup = function (group) {
             coreApp.openConfirmModal('Tasks of group '+group.name +' will be restarted.',
                 function confirmed() {
-                    interruptedRest.restart({
-                        restartIds: _.map(group.tasks, function (item) {
-                            return {
-                                taskId: item.taskId,
-                                processId: item.processId
-                            };
-                        })
-                    }, function success() {
+                    var params = $scope.joinFilterParam(angular.copy($scope.resourceParams),group.name);
+                    $log.info('restartGroup', params);
+                    interruptedRest.restartGroup(params, function success() {
                         $log.log('Tasks of group ' + group.name + ' have been restarted');
                         loadModel($scope.resourceParams);
                     }, function error(reason) {
@@ -118,14 +122,26 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
                 });
         };
 
+        $scope.abortGroup = function (group) {
+            coreApp.openConfirmModal('Tasks of group '+group.name +' will be aborted.',
+                function confirmed() {
+                    var params = $scope.joinFilterParam(angular.copy($scope.resourceParams),group.name);
+                    $log.info('abortGroup', params);
+                    interruptedRest.abortGroup(params, function success() {
+                        $log.log('Tasks of group ' + group.name + ' have been aborted');
+                        loadModel($scope.resourceParams);
+                    }, function error(reason) {
+                        coreApp.error('Error task group '+group.name +' aborting', reason);
+                    });
+                });
+        };
+
         $scope.restart = function (task) {
             coreApp.openConfirmModal('Task [' + task.taskId + '] will be restarted.',
                 function confirmed() {
                     interruptedRest.restart({
-                        restartIds: [{
-                            taskId: task.taskId,
-                            processId: task.processId
-                        }]
+                        taskId: task.taskId,
+                        processId: task.processId
                     }, function success() {
                         $log.log('Task [' + task.taskId + '] have been restarted');
                         loadModel($scope.resourceParams);

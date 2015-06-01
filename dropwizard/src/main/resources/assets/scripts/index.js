@@ -23,7 +23,7 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
 
         coreAppProvider.setDialogPropertiesConfig({
             templateUrl: '/views/core/dialog-properties.html',
-            windowClass: 'modal-huge',
+            windowClass: 'bigModalDialog',
             controller: 'ModalDialogController'
         });
 

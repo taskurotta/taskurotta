@@ -47,7 +47,7 @@ angular.module('processModule', ['taskModule', 'coreApp'])
                     if($scope.processesModel){
                         $log.info('Successfully updated processes page');
                     }else{
-                        coreApp.info('Processes not found',value);
+                        coreApp.info('Processes not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {

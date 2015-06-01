@@ -97,7 +97,7 @@ angular.module('taskModule', ['coreApp'])
                     if($scope.tasksModel){
                         $log.info('Successfully updated tasks page');
                     }else{
-                        coreApp.info('Tasks not found',value);
+                        coreApp.info('Tasks not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {

@@ -9,15 +9,15 @@
                            popover="{{ node.$expanded ? 'Collapse' : 'Expand' }}"></i>
                     </a>
                 </span>
-                <small class="text-muted">({{ node.$num }})</small>
+                <!--<small class="text-muted">({{ node.$num }})</small>-->
                 <a ui-sref="task({processId:processTask.processId,taskId:node.id})" class="btn btn-link">
-                    <small><b>{{ node.id }}</b></small>
+                    <b>{{  node.desc ? node.desc : node.id }}</b>
                 </a>
             </td>
             <td>
                 <i class="{{ node.state | taskState:'icon' }}" popover="{{ node.state | taskState:'desc' }}"
                    popover-trigger="mouseenter"></i>
-                <span class="muted">{{ node.desc }}</span>
+                <!--<span class="muted">{{ node.id }}</span>-->
             </td>
         </tr>
         </tbody>

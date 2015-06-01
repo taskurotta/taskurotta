@@ -1,4 +1,4 @@
-<div ng-if="messageEvent" class="alert {{ messageEvent.level }}">
+<div ng-if="messageEvent" class="well alert alert-{{ messageEvent.level }}">
     <h5>{{ messageEvent.title }}</h5>
     <table ng-show="messageEvent.message" class="table" style="color:black">
         <tr>
@@ -16,11 +16,11 @@
                 </span>
             </td>
         </tr>
-        <tr ng-if="messageEvent.detail">
+        <tr ng-if="messageEvent.detail || messageEvent.detailObject">
             <td>
                 <div collapse="!messageEvent.$detail" style="font-size: smaller">
-                    <pre ng-if="messageEvent.detail" class="muted">{{ messageEvent.detail }}</pre>
-                    <pre ng-if="messageEvent.detailObject">{{ messageEvent.detailObject | json }}</pre>
+                    <pre ng-if="messageEvent.detail" >{{ messageEvent.detail | json }}</pre>
+                    <pre ng-if="messageEvent.detailObject" class="muted">{{ messageEvent.detailObject | json }}</pre>
                 </div>
             </td>
             <td></td>

@@ -179,8 +179,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 info: function(title, reason){
                     $log.info(title, reason);
                     showMessage('info',title, reason);
-                 },
-                error: function(title,reason){
+                },
+                error: function(title, reason){
                     $log.error(title, reason);
                     showMessage('error',title, reason);
                 }
@@ -232,7 +232,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$num = parent ? (parent.$num + '.' + (index + 1)) : ('' + (index + 1));
                 item.$level = parent ? (parent.$level + 1 ) : 0;
                 item.$parentKey = parent ? parent.$key : null;
-                item.$expanded = !parent && (item.$children === 0 || contItems === 1);
+                item.$expanded =  true; //(item.$children === 0 || contItems === 1);
+                //item.$expanded = !parent && (item.$children === 0 || contItems === 1); @if wont be collapsed
                 item[subItemsField] = null;
 
                 item.$parent = function getParent(){
@@ -532,8 +533,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     } else if (isObject && message.reason.status) {
                         $scope.messageEvent.message = 'Status ' + message.reason.status +
                             ' : ' + message.reason.statusText;
-                        $scope.messageEvent.detail = message.reason.data && message.reason.data.length>0 ?
-                            message.reason.data : null;
+                        if(angular.isObject(message.reason.data)){
+                            $scope.messageEvent.detail = message.reason.data;
+                        }else if ( angular.isString(message.reason.data) && message.reason.data.length>0){
+                            $scope.messageEvent.detail = message.reason.data;
+                        }else {
+                            $scope.messageEvent.detail = null;
+                        }
+
                         $scope.messageEvent.detailObject = message.reason.config;
 
                     } else {

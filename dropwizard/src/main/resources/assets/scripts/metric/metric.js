@@ -18,17 +18,13 @@ angular.module('metricModule', ['coreApp'])
 
         function loadModel(params) {
             $log.info('Load model', $scope.resourceParams = params);
-            $scope.metricsResource =  metricRest.query(function(restParams){
-                    $log.info('metricsResource ',restParams);
-                    restParams.dataset = coreApp.getKeys(restParams.dataset).join(',');
-                    return restParams;
-                }(angular.copy(params)),
+            $scope.metricsResource =  metricRest.query(params,
                 function success(value) {
                     $scope.metricsModel = value; //cause array or object
                     if ($scope.metricsModel) {
                         $log.info('Successfully updated metrics data');
                     } else {
-                        coreApp.info('Metrics data not found', reason);
+                        coreApp.info('Metrics data not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -57,7 +53,9 @@ angular.module('metricModule', ['coreApp'])
                 $log.log('Loaded metric options dictionary', value);
                 if($scope.options.metrics.length){
                     if($scope.isValidForm()){
-                        loadModel(angular.copy($scope.formParams));
+                        loadModel(angular.extend({},$scope.formParams, {
+                            dataset: coreApp.getKeys($scope.formParams.dataset).join(',')
+                        }));
                     }
                 }else{
                     coreApp.error('No available metrics to show', $scope.options);
@@ -70,9 +68,9 @@ angular.module('metricModule', ['coreApp'])
 
         $scope.clearForm = function (){
             $scope.formParams.dataset = {};
-            $scope.formParams.scope = undefined;
-            $scope.formParams.type = undefined;
-            $scope.formParams.period = undefined;
+         //   $scope.formParams.scope = undefined;
+         //   $scope.formParams.type = undefined;
+         //   $scope.formParams.period = undefined;
             $scope.formParams.showDataset = undefined;
         };
 

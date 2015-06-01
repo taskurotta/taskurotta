@@ -43,7 +43,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
                     if($scope.schedulesModel){
                         $log.info('Successfully updated scheduled tasks page');
                     }else{
-                        coreApp.info('Scheduled tasks not found',value);
+                        coreApp.info('Scheduled tasks not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
