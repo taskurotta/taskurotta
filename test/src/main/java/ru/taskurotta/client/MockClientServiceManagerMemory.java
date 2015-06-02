@@ -21,7 +21,7 @@ public class MockClientServiceManagerMemory implements ClientServiceManager {
 
     public MockClientServiceManagerMemory(int pollDelay) {
         memoryServiceBundle = new MemoryServiceBundle(pollDelay, new MemoryTaskDao());
-        taskServer = new GeneralTaskServer(memoryServiceBundle);
+        taskServer = new GeneralTaskServer(memoryServiceBundle, 0l);
     }
 
     @Override

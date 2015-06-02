@@ -76,7 +76,7 @@ public class HzOperationExecutor<T> implements OperationExecutor<T> {
                 while (!Shutdown.isTrue()) {
 
                     try {
-                        Operation<T> operation = operationIQueue.poll(1, TimeUnit.SECONDS);
+                        Operation<T> operation = operationIQueue.poll(600, TimeUnit.SECONDS);
 
                         if (operation == null) {
                             continue;

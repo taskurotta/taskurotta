@@ -84,8 +84,6 @@ public class MongoStorageFactory implements StorageFactory {
 
                 while (!Shutdown.isTrue() && !Thread.currentThread().isInterrupted()) {
 
-                    boolean shouldSleep = true;
-
                     try {
                         Set<Map.Entry<String, String>> entrySet = dbCollectionNamesMap.entrySet();
 
@@ -114,8 +112,6 @@ public class MongoStorageFactory implements StorageFactory {
                                 try (DBCursor dbCursor = dbCollection.find(query).batchSize(batchLoadSize)) {
                                     while (dbCursor.hasNext()) {
 
-                                        shouldSleep = false;
-
                                         StorageItemContainer storageItemContainer = null;
                                         DBObject dbObject = dbCursor.next();
 
@@ -136,15 +132,12 @@ public class MongoStorageFactory implements StorageFactory {
 
                         logger.error("MongoDB storage scan iteration failed. Try to resume in [" + scheduleDelayMillis + "]ms...", e);
                         // ToDo: repair index on dbCollection
-                        shouldSleep = true;
                     }
 
-                    if (shouldSleep) {
                         try {
                             TimeUnit.MILLISECONDS.sleep(scheduleDelayMillis);
                         } catch (InterruptedException ignored) {
                         }
-                    }
                 }
 
             }

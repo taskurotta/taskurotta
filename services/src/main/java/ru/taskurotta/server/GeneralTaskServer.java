@@ -61,6 +61,7 @@ public class GeneralTaskServer implements TaskServer {
     protected ConfigService configService;
     protected InterruptedTasksService interruptedTasksService;
     protected GarbageCollectorService garbageCollectorService;
+    protected long timeBeforeDeleteFinishedProcess;
 
     /*
      *  For tests ONLY
@@ -68,7 +69,7 @@ public class GeneralTaskServer implements TaskServer {
     public GeneralTaskServer() {
     }
 
-    public GeneralTaskServer(ServiceBundle serviceBundle) {
+    public GeneralTaskServer(ServiceBundle serviceBundle, long timeBeforeDeleteFinishedProcess) {
         this.processService = serviceBundle.getProcessService();
         this.taskService = serviceBundle.getTaskService();
         this.queueService = serviceBundle.getQueueService();
@@ -76,11 +77,12 @@ public class GeneralTaskServer implements TaskServer {
         this.configService = serviceBundle.getConfigService();
         this.interruptedTasksService = serviceBundle.getInterruptedTasksService();
         this.garbageCollectorService = serviceBundle.getGarbageCollectorService();
+        this.timeBeforeDeleteFinishedProcess = timeBeforeDeleteFinishedProcess;
     }
 
     public GeneralTaskServer(ProcessService processService, TaskService taskService, QueueService queueService,
                              DependencyService dependencyService, ConfigService configService, InterruptedTasksService interruptedTasksService,
-                             GarbageCollectorService garbageCollectorService) {
+                             GarbageCollectorService garbageCollectorService, long timeBeforeDeleteFinishedProcess) {
         this.processService = processService;
         this.taskService = taskService;
         this.queueService = queueService;
@@ -88,6 +90,7 @@ public class GeneralTaskServer implements TaskServer {
         this.configService = configService;
         this.interruptedTasksService = interruptedTasksService;
         this.garbageCollectorService = garbageCollectorService;
+        this.timeBeforeDeleteFinishedProcess = timeBeforeDeleteFinishedProcess;
     }
 
     @Override
@@ -297,7 +300,7 @@ public class GeneralTaskServer implements TaskServer {
 
             processService.finishProcess(processId, dependencyDecision.getFinishedProcessValue());
             taskService.finishProcess(processId, dependencyService.getGraph(processId).getProcessTasks());
-            garbageCollectorService.collect(processId);
+            garbageCollectorService.collect(processId, timeBeforeDeleteFinishedProcess);
         }
 
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
