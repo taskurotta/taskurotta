@@ -11,11 +11,8 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
 
     private DelayQueue<DelayFinishedProcess> garbageCollectorQueue = new DelayQueue<>();
 
-    private long delayTime;
-
     public MemoryGarbageCollectorService(ProcessService processService, GraphDao graphDao,
-                                         TaskDao taskDao, int poolSize, long timeBeforeDelete) {
-        this.delayTime = timeBeforeDelete;
+                                         TaskDao taskDao, int poolSize) {
 
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(poolSize, new ThreadFactory() {
             private int counter = 0;
@@ -72,8 +69,8 @@ public class MemoryGarbageCollectorService implements GarbageCollectorService {
     }
 
     @Override
-    public void collect(UUID processId) {
-        garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + delayTime));
+    public void collect(UUID processId, long timeout) {
+        garbageCollectorQueue.add(new DelayFinishedProcess(processId, System.currentTimeMillis() + timeout));
     }
 
     @Override
