@@ -179,8 +179,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 info: function(title, reason){
                     $log.info(title, reason);
                     showMessage('info',title, reason);
-                 },
-                error: function(title,reason){
+                },
+                error: function(title, reason){
                     $log.error(title, reason);
                     showMessage('error',title, reason);
                 }
@@ -188,13 +188,38 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
         this.$get.$inject = ['$log', '$timeout', '$modal','$filter','$rootScope','$state','$stateParams'];
     })
+    .factory('coreInterceptor', function ($log,$q) {
+       var restUrl = '/rest';
+        function parseData(response){
+            $log.info('intercept response',response.config.url, response.config);
+            //try {
+            //    var data = angular.fromJson(response.data);
+            //    return data;
+            //} catch (e) {
+            //    $log.error('not valid json object', response.data);
+            //    return {
+            //        data: response.data
+            //    };
+            //}
+            return response;
+        }
+       return {
+           'response': function (response) {
+
+               if(response.config.url.indexOf(restUrl) === 0){
+                   return parseData(response);
+               }
+               return response;
+           }
+       };
+    })
     // Config
-    .config(function (datepickerConfig) {
+    .config(function (datepickerConfig,$httpProvider) {
         datepickerConfig.startingDay = 1;
         datepickerConfig.showWeeks = false;
         datepickerConfig.minDate="2010-01-01";
         datepickerConfig.maxDate="2100-01-01";
-
+      //  $httpProvider.interceptors.push('coreInterceptor');
     })
 
     //Services
@@ -232,7 +257,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$num = parent ? (parent.$num + '.' + (index + 1)) : ('' + (index + 1));
                 item.$level = parent ? (parent.$level + 1 ) : 0;
                 item.$parentKey = parent ? parent.$key : null;
-                item.$expanded = !parent && (item.$children === 0 || contItems === 1);
+                item.$expanded =  true; //(item.$children === 0 || contItems === 1);
+                //item.$expanded = !parent && (item.$children === 0 || contItems === 1); @if wont be collapsed
                 item[subItemsField] = null;
 
                 item.$parent = function getParent(){
@@ -532,9 +558,9 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     } else if (isObject && message.reason.status) {
                         $scope.messageEvent.message = 'Status ' + message.reason.status +
                             ' : ' + message.reason.statusText;
-                        $scope.messageEvent.detail = message.reason.data && message.reason.data.length>0 ?
-                            message.reason.data : null;
-                        $scope.messageEvent.detailObject = message.reason.config;
+
+                        $scope.messageEvent.detail = message.reason.data;
+                        $scope.messageEvent.detailConfig = message.reason.config;
 
                     } else {
                         $scope.messageEvent.message = message.reason;
@@ -568,7 +594,16 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             transclude: false,
             scope: { model: "=model", info: "@iconInfo", remove: "&remove" },
             templateUrl: '/views/core/icon-info.html',
-            replace: true
+            replace: true,
+            link: function (scope, element, attrs) {
+                scope.iconHide = function () {
+                    if(angular.isObject(scope.model) || angular.isArray(scope.model)){
+                        return _.size(scope.model)>0 && scope.remove;
+                    }else{
+                        return scope.model && scope.remove;
+                    }
+                };
+            }
         };
     })
 

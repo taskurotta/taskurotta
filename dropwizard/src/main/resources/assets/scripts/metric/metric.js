@@ -15,24 +15,19 @@ angular.module('metricModule', ['coreApp'])
     .controller('metricListController', function ($log, $scope, metricRest, smoothRates, coreApp, $state,$stateParams) {
         $log.info('metricListController');
 
-
         function loadModel(params) {
             $log.info('Load model', $scope.resourceParams = params);
-            $scope.metricsResource =  metricRest.query(function(restParams){
-                    $log.info('metricsResource ',restParams);
-                    restParams.dataset = coreApp.getKeys(restParams.dataset).join(',');
-                    return restParams;
-                }(angular.copy(params)),
+            $scope.metricsResource =  metricRest.query(params,
                 function success(value) {
                     $scope.metricsModel = value; //cause array or object
                     if ($scope.metricsModel) {
                         $log.info('Successfully updated metrics data');
                     } else {
-                        coreApp.info('Metrics data not found', reason);
+                        coreApp.info('Metrics data not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
-                    coreApp.error('Actors page update failed', reason);
+                    coreApp.error('Metrics data update failed', reason);
                 });
         }
 
@@ -45,22 +40,32 @@ angular.module('metricModule', ['coreApp'])
             coreApp.clearObject(JSON.parse($scope.formParams.dataset)) : {};
 
 
-        $scope.isValidForm = function() {
-            return $scope.formParams.type && $scope.formParams.scope &&
-                $scope.formParams.period && $scope.formParams.metric &&
-                angular.isObject($scope.formParams.dataset) &&
-                _.size(coreApp.clearObject($scope.formParams.dataset))>0;
-        };
-
         $scope.options = metricRest.dictionaryOptions({},
-            function success(value) {
-                $log.log('Loaded metric options dictionary', value);
-                if($scope.options.metrics.length){
+            function success(options) {
+                $log.log('Loaded metric options dictionary', options);
+
+                $scope.isValidForm = function() {
+                    var params = $scope.formParams;
+                    return params.metric &&
+                        angular.isObject(params.dataset) &&
+                        _.find(options.scopes[params.metric],
+                            function(scope){ return scope.value === params.scope; }) &&
+                        _.find(options.dataTypes[params.metric],
+                            function(type){ return type.value === params.type; }) &&
+                        _.find(options.periods[params.metric],
+                            function(period){ return period.value === params.period; }) &&
+                        _.find(params.dataset,
+                            function(dataset){ return dataset === true; });
+                };
+
+                if(options.metrics.length){
                     if($scope.isValidForm()){
-                        loadModel(angular.copy($scope.formParams));
+                        loadModel(angular.extend({},$scope.formParams, {
+                            dataset: coreApp.getKeys($scope.formParams.dataset).join(',')
+                        }));
                     }
                 }else{
-                    coreApp.error('No available metrics to show', $scope.options);
+                    coreApp.error('No available metrics to show', options);
                 }
 
             }, function error(reason) {
@@ -68,19 +73,13 @@ angular.module('metricModule', ['coreApp'])
             });
 
 
-        $scope.clearForm = function (){
-            $scope.formParams.dataset = {};
-            $scope.formParams.scope = undefined;
-            $scope.formParams.type = undefined;
-            $scope.formParams.period = undefined;
-            $scope.formParams.showDataset = undefined;
-        };
 
         //Update command:
         $scope.search = function () {
-            var params = angular.copy($scope.formParams);
-            params.dataset = JSON.stringify(coreApp.clearObject(params.dataset));
-            coreApp.reloadState(params);
+            coreApp.reloadState(angular.extend({},$scope.formParams,{
+                refreshRate: undefined,
+                dataset: JSON.stringify(coreApp.clearObject($scope.formParams.dataset))
+            }));
         };
 
         //Finalization:

@@ -220,6 +220,13 @@ form {
     padding:0;
 }
 
+.table-noborder th {
+    border: none;
+}
+.table-noborder td {
+    border: none;
+}
+
 .checkbox-group-table td {
     width: 50%;
 }

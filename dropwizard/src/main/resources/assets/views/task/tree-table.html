@@ -1,24 +1,30 @@
 <div ng-if="taskTreeItems">
-    <table style="background-color: #f5f5f5;padding:2px;" class="table table-bordered table-condensed">
+    <table style="background-color: #f5f5f5;padding:2px;" class="table table-condensed table-noborder table-items">
         <tbody>
         <tr ng-repeat="node in taskTreeItems" ng-show="node.$visible()">
             <td nowrap>
-                <span ng-style="node.$padding(10)">
-                    <a ng-if="node.$children" ng-click="node.$toggle()">
+                <span ng-style="node.$padding(30)">
+                    <a ng-show="node.$children" ng-click="node.$toggle()">
                         <i class="icon-chevron-{{ node.$expanded ? 'down' : 'right' }}" popover-trigger="mouseenter"
-                           popover="{{ node.$expanded ? 'Collapse' : 'Expand' }}"></i>
+                           popover="{{ node.$expanded ? ('Collapse (' + node.$num + ')') : ('Expand (' + node.$num + ')') }}"></i>
+                    </a>
+                    <a ng-hide="node.$children">
+                        <i class="icon-minus" popover-trigger="mouseenter"
+                           popover="{{ '(' + node.$num + ')' }}" ></i>
                     </a>
                 </span>
-                <small class="text-muted">({{ node.$num }})</small>
-                <a ui-sref="task({processId:processTask.processId,taskId:node.id})" class="btn btn-link">
-                    <small><b>{{ node.id }}</b></small>
+                <small class="muted">({{ node.$num }})</small>
+                <a ui-sref="task({processId:processTask.processId,taskId:node.id})" class="btn btn-link alert-{{node.state | taskState:'class'}}"
+                        title="{{ node.id }}">
+                    {{  node.desc ? node.desc : node.id }}
                 </a>
-            </td>
-            <td>
                 <i class="{{ node.state | taskState:'icon' }}" popover="{{ node.state | taskState:'desc' }}"
                    popover-trigger="mouseenter"></i>
-                <span class="muted">{{ node.desc }}</span>
             </td>
+            <!--<td>-->
+ <!---->
+                <!--<small class="muted">{{ node.id }}</small>-->
+            <!--</td>-->
         </tr>
         </tbody>
     </table>

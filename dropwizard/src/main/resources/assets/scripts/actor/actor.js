@@ -30,7 +30,7 @@ angular.module('actorModule', ['coreApp'])
                             loadMetrics(params.metrics, $scope.actorsModel.items);
                         }
                     } else {
-                        coreApp.info('Actors not found', value);
+                        coreApp.info('Actors not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -77,9 +77,11 @@ angular.module('actorModule', ['coreApp'])
 
         //Update command:
         $scope.search = function () {
-            var params = angular.copy($scope.formParams);
-            params.metrics = JSON.stringify(coreApp.clearObject(params.metrics));
-            coreApp.reloadState(params);
+            coreApp.reloadState(angular.extend({},$scope.formParams,{
+                pageNum: undefined,
+                refreshRate: undefined,
+                metrics: JSON.stringify(coreApp.clearObject($scope.formParams.metrics))
+            }));
         };
 
         //Finalization:

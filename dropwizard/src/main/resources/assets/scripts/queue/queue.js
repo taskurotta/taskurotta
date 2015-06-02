@@ -35,7 +35,7 @@ angular.module('queueModule', ['coreApp'])
                         $scope.queuesModel.$totalTasks = _.reduce($scope.queuesModel.items,
                             function(sum, item) { return sum + item.count; }, 0);
                     }else{
-                        coreApp.info('Processes not found',value);
+                        coreApp.info('Queues not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -51,6 +51,8 @@ angular.module('queueModule', ['coreApp'])
 
         //Submit form command:
         $scope.search = function () {
+            $scope.formParams.pageNum = undefined;
+            $scope.formParams.refreshRate = undefined;
             coreApp.reloadState($scope.formParams);
         };
 

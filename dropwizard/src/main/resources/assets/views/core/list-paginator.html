@@ -3,7 +3,7 @@
     <div class="pagination pull-left" style="width: 40%">
         <span ng-if="model.pageSize">
             <span class="muted">Show </span>
-            <select ng-model="model.pageSize" style="height:30px;width:55px;"
+            <select ng-model="model.pageSize" class="input-mini"
                 ng-options="ps for ps in pageSizes" ng-change="go(1)">
             </select>
             <span class="muted"> entries</span>
