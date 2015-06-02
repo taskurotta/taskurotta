@@ -50,8 +50,8 @@ public class HzTaskServer extends GeneralTaskServer {
 
     protected HzTaskServer(ServiceBundle serviceBundle, HazelcastInstance hzInstance, String nodeCustomName,
                            String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
-                           long sleepOnOverloadMls) {
-        super(serviceBundle);
+                           long sleepOnOverloadMls, long timeBeforeDeleteFinishedProcess) {
+        super(serviceBundle, timeBeforeDeleteFinishedProcess);
 
         this.hzInstance = hzInstance;
         this.nodeCustomName = nodeCustomName;
@@ -71,7 +71,7 @@ public class HzTaskServer extends GeneralTaskServer {
                            final InterruptedTasksService interruptedTasksService, final GarbageCollectorService garbageCollectorService,
                            HazelcastInstance hzInstance,
                            String nodeCustomName, String decisionProcessingExecutorService, int maxPendingWorkers, int maxPendingLimit,
-                           long sleepOnOverloadMls) {
+                           long sleepOnOverloadMls, long timeBeforeDeleteFinishedProcess) {
         this(new ServiceBundle() {
                  @Override
                  public ProcessService getProcessService() {
@@ -108,7 +108,7 @@ public class HzTaskServer extends GeneralTaskServer {
                      return garbageCollectorService;
                  }
              }, hzInstance, nodeCustomName, decisionProcessingExecutorService, maxPendingWorkers, maxPendingLimit,
-                sleepOnOverloadMls);
+                sleepOnOverloadMls, timeBeforeDeleteFinishedProcess);
     }
 
     public void init() {

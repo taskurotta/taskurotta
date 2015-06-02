@@ -26,8 +26,13 @@
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
         <constructor-arg name="taskService" ref="taskService"/>
-        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService" />
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
         <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
+        <constructor-arg name="timeBeforeDeleteFinishedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <!-- Backends -->
@@ -39,26 +44,26 @@
         </constructor-arg>
     </bean>
 
-    <bean id="taskDao" class="ru.taskurotta.service.storage.MemoryTaskDao" />
+    <bean id="taskDao" class="ru.taskurotta.service.storage.MemoryTaskDao"/>
 
     <bean id="taskService" class="ru.taskurotta.service.storage.GeneralTaskService">
-        <constructor-arg name="taskDao" ref="taskDao" />
-        <constructor-arg name="workerTimeoutMilliseconds" value="60000" />
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="workerTimeoutMilliseconds" value="60000"/>
     </bean>
     <bean id="dependencyService" class="ru.taskurotta.service.dependency.GeneralDependencyService">
-        <constructor-arg name="graphDao" ref="graphDao" />
+        <constructor-arg name="graphDao" ref="graphDao"/>
     </bean>
 
-    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService" />
+    <bean id="interruptedTasksService" class="ru.taskurotta.service.storage.MemoryInterruptedTasksService"/>
 
-    <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao" />
+    <bean id="graphDao" class="ru.taskurotta.service.dependency.links.MemoryGraphDao"/>
 
-    <bean id="processService" class="ru.taskurotta.service.storage.MemoryProcessService" />
+    <bean id="processService" class="ru.taskurotta.service.storage.MemoryProcessService"/>
 
-    <bean id="configService" class="ru.taskurotta.service.config.impl.MemoryConfigService" />
+    <bean id="configService" class="ru.taskurotta.service.config.impl.MemoryConfigService"/>
 
     <bean id="recoveryService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
-        <constructor-arg name="generalTaskServer" ref="realTaskServer" />
+        <constructor-arg name="generalTaskServer" ref="realTaskServer"/>
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
@@ -75,8 +80,18 @@
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
-        <constructor-arg name="taskDao" ref="taskDao" />
-        <constructor-arg name="graphDao" ref="graphDao" />
+        <constructor-arg name="taskDao" ref="taskDao"/>
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="timeBeforeDeleteFinishedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="timeBeforeManualDeleteProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-manual-delete-process}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.gc.MemoryGarbageCollectorService">
@@ -84,19 +99,15 @@
         <constructor-arg name="graphDao" ref="graphDao"/>
         <constructor-arg name="taskDao" ref="taskDao"/>
         <constructor-arg name="poolSize" value="${gc.pool-size}"/>
-        <constructor-arg name="timeBeforeDelete">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-delete}"/>
-            </bean>
-        </constructor-arg>
     </bean>
     <!-- /Backends -->
 
     <bean id="checkTaskServer" class="ru.taskurotta.dropwizard.health.CheckTaskServer">
-        <property name="taskServer" ref="taskServer" />
+        <property name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init" />
-    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler" init-method="init" />
+    <bean id="metricsDataHandler" class="ru.taskurotta.service.metrics.handler.MetricsDataHandler" init-method="init"/>
+    <bean id="metricsNumberDataHandler" class="ru.taskurotta.service.metrics.handler.NumberDataHandler"
+          init-method="init"/>
 
 </beans>
