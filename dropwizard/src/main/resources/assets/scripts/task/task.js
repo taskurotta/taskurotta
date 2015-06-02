@@ -39,6 +39,9 @@ angular.module('taskModule', ['coreApp'])
             replace: false,
             link: function (scope, element, attrs) {
                 scope.taskTreeItems = null;
+                scope.range = function(n) {
+                    return new Array(n);
+                };
                 scope.$watch('taskTreeTable', function (value) {
                     if (value && value.$resolved) {
                         scope.taskTreeItems = coreTree.getFlatArray([value], 'children');
@@ -111,6 +114,8 @@ angular.module('taskModule', ['coreApp'])
 
         //Submit form command:
         $scope.search = function () {
+            $scope.formParams.pageNum = undefined;
+            $scope.formParams.refreshRate = undefined;
             coreApp.reloadState($scope.formParams);
         };
 
@@ -139,7 +144,7 @@ angular.module('taskModule', ['coreApp'])
                     if(value.taskId) {
                         $log.info('taskCardController: successfully updated task page');
                     }else{
-                        coreApp.warn('Task not found by id',$scope.taskParams.taskId);
+                        coreApp.info('Task not found by id',$scope.taskParams.taskId);
                     }
                 }, function error(reason) {
                     coreApp.error('Task page update failed', reason);

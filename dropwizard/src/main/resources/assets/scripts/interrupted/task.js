@@ -27,10 +27,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
     .controller('interruptedController', function ($log, $scope, interruptedRest, coreApp, $state,$stateParams) {
         $log.info('interruptedController');
 
-        function getRestDateFormat(date, withTime) {
-            return (angular.isDate(date) ? moment(date) : moment(date, moment.ISO_8601))
-                .format('DD.MM.YYYY' + (withTime ? ' HH:mm' : ''));
-        }
+
         function getRest() {
             return $state.is('interrupted')? interruptedRest.queryGroup : interruptedRest.query;
         }
@@ -62,6 +59,11 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             $scope.groups.actor.selected = $stateParams.actorId || $stateParams.group === 'actor';
             $scope.groups.exception.selected = $stateParams.exception || $stateParams.group === 'exception';
 
+            function getRestDateFormat(date, withTime) {
+                return (angular.isDate(date) ? moment(date) : moment(date, moment.ISO_8601))
+                    .format('DD.MM.YYYY' + (withTime ? ' HH:mm' : ''));
+            }
+
             loadModel(angular.extend({},$scope.formParams,{
                 dateFrom: getRestDateFormat($scope.formParams.dateFrom, $scope.formParams.withTime, true),
                 dateTo: getRestDateFormat($scope.formParams.dateTo, $scope.formParams.withTime, true),
@@ -82,10 +84,13 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
                 return (angular.isDate(date) ? moment(date) : moment(date, moment.ISO_8601))
                     .format('YYYY-MM-DD' + (withTime ? 'THH:mm' : ''));
             }
-            var params = angular.copy($scope.formParams);
-            params.dateFrom = getIsoDateFormat(params.dateFrom, params.withTime);
-            params.dateTo = getIsoDateFormat(params.dateTo, params.withTime);
-            coreApp.reloadState(params);
+
+            coreApp.reloadState(angular.extend({},$scope.formParams,{
+               // pageNum: undefined,
+                refreshRate: undefined,
+                dateFrom: getIsoDateFormat($scope.formParams.dateFrom, $scope.formParams.withTime),
+                dateTo: getIsoDateFormat($scope.formParams.dateTo, $scope.formParams.withTime)
+            }));
         };
 
         //Finalization:

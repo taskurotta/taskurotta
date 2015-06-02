@@ -51,6 +51,8 @@ angular.module('queueModule', ['coreApp'])
 
         //Submit form command:
         $scope.search = function () {
+            $scope.formParams.pageNum = undefined;
+            $scope.formParams.refreshRate = undefined;
             coreApp.reloadState($scope.formParams);
         };
 

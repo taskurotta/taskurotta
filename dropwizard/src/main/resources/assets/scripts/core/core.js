@@ -533,15 +533,9 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     } else if (isObject && message.reason.status) {
                         $scope.messageEvent.message = 'Status ' + message.reason.status +
                             ' : ' + message.reason.statusText;
-                        if(angular.isObject(message.reason.data)){
-                            $scope.messageEvent.detail = message.reason.data;
-                        }else if ( angular.isString(message.reason.data) && message.reason.data.length>0){
-                            $scope.messageEvent.detail = message.reason.data;
-                        }else {
-                            $scope.messageEvent.detail = null;
-                        }
 
-                        $scope.messageEvent.detailObject = message.reason.config;
+                        $scope.messageEvent.detail = message.reason.data;
+                        $scope.messageEvent.detailConfig = message.reason.config;
 
                     } else {
                         $scope.messageEvent.message = message.reason;
@@ -575,7 +569,16 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             transclude: false,
             scope: { model: "=model", info: "@iconInfo", remove: "&remove" },
             templateUrl: '/views/core/icon-info.html',
-            replace: true
+            replace: true,
+            link: function (scope, element, attrs) {
+                scope.iconHide= function () {
+                    if(angular.isObject(scope.model) || angular.isArray(scope.model)){
+                        return _.size(scope.model)>0 && scope.remove;
+                    }else{
+                        return scope.model && scope.remove;
+                    }
+                }
+            }
         };
     })
 

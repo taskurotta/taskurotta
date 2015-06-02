@@ -17,7 +17,7 @@
                         <select id="metric" class="input-medium"
                                 ng-model="formParams.metric"
                                 ng-options="metric.value as metric.value for metric in options.metrics"
-                                ng-change="clearForm()">
+                                ng-change="formParams.dataset = {}">
                         </select>
                         <i icon-info="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."></i>
                     </div>
@@ -26,7 +26,7 @@
             <td style="border: none;">
                 <div class="control-group">
                     <label class="inline-label alert alert-info" for="metric">
-                        {{ (options.metrics | filter:formParams.metric)[0] ?
+                        {{ formParams.metric ?
                         (options.metrics | filter:formParams.metric)[0].name : 'Select a metric' }}
                     </label>
                 </div>
@@ -75,7 +75,8 @@
                 <div class="controls">
                     <select id="smooth" class="input-mini" ng-model="formParams.smooth"
                             ng-options = "smooth for smooth in smoothRates" ></select>
-                    <i icon-info="Enable filter to perform data averaging. Every dot value would be replaced with averaged value by N siblings."></i>
+                    <i icon-info="Enable filter to perform data averaging. Every dot value would be replaced with averaged value by N siblings."
+                       model="formParams.smooth" remove="formParams.smooth = 0"></i>
                 </div>
             </div>
             <div class="control-group">
@@ -90,10 +91,11 @@
                 <label class="inline-label" for="dataSets">
                     <input id="dataSets" type="checkbox" ng-model="formParams.showDataset"
                            ng-disabled="!options.dataSets[formParams.metric]"
-                           ng-changed="formParams.dataset = {}"/>
+                           ng-change="formParams.dataset = {}"/>
                     Show all datasets:
-                    <i icon-info="Select datasets to show on the diagram"></i>
                 </label>
+                <i icon-info="Select datasets to show on the diagram" model="formParams.dataset"
+                   remove="formParams.dataset = {}"></i>
             </div>
             <div class="control-group">
                 <!--<div ng-hide = "options.dataSets[formParams.metric].length"-->
@@ -119,7 +121,12 @@
 <page-message></page-message>
 
 <div class="well">
-    <h4>Plot:</h4>
+    <h4>Plot:
+    <span class="inline-label" ng-if="$stateParams.metric"><span class="muted">Metric:</span> {{$stateParams.metric}},</span>
+    <span class="inline-label" ng-if="$stateParams.scope"><span class="muted">Scope:</span> {{$stateParams.scope}},</span>
+    <span class="inline-label" ng-if="$stateParams.type"><span class="muted">Data type:</span> {{$stateParams.type}},</span>
+    <span class="inline-label" ng-if="$stateParams.period"><span class="muted">Period:</span> {{$stateParams.period}},</span>
+    </h4>
     <list-reload model="metricsResource">
     </list-reload>
 
