@@ -44,6 +44,10 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             "SELECT PROCESS_ID FROM TSK_PROCESS WHERE STATE = ? AND START_TIME < ?";
     protected static final String SQL_GET_PROCESS_LIST =
             "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
+    protected static final String SQL_GET_ORDERED_PROCESS_LIST =
+            "SELECT /*+ INDEX_ASC(TSK_PROCESS TSK_PROCESS_START_TIME_IDX) */ PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
+
+
 
     public OraProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
         super(hzInstance);
@@ -183,8 +187,9 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
 
     @Override
     public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter) {
-        StringBuilder stringBuilder = new StringBuilder(SQL_GET_PROCESS_LIST);
+        StringBuilder stringBuilder = new StringBuilder();
         if (status >= 0 || typeFilter != null) {
+            stringBuilder.append(SQL_GET_PROCESS_LIST);
             stringBuilder.append(" WHERE");
             boolean anotherConditionExists = false;
             if (status >= 0) {
@@ -197,6 +202,8 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
                 }
                 stringBuilder.append(" ACTOR_ID LIKE ?");
             }
+        } else {
+            stringBuilder.append(SQL_GET_ORDERED_PROCESS_LIST);
         }
         String query = stringBuilder.toString();
 
