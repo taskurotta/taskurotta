@@ -3,9 +3,9 @@
 <page-message></page-message>
 
 <div class="well">
-    <h4>Start task properties: </h4>
-    <div style="width: 600px;" class="well">
+    <h5>Start task properties: </h5>
+    <form class="form-horizontal form-bordered" >
         <div task-form="task" task-types="types"></div>
-    </div>
+    </form>
     <button class="btn" ng-click="save()" ng-disabled="!isValidForm()">Create process</button>
 </div>

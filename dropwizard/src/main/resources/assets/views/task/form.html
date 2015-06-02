@@ -1,86 +1,74 @@
 <div>
-    <table class="table table-condensed">
-        <tr>
-            <td>
-                <i class="icon-question-sign" popover="ActorId of the actor to trigger." popover-trigger="mouseenter"></i>
-                <b>ActorId:</b>
-            </td>
-            <td>
-                <input class="input-large search-query" type="text" ng-model="task.actorId" required/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <i class="icon-question-sign" popover="Method of the actor to trigger." popover-trigger="mouseenter"></i>
-                <b>Method name:</b>
-            </td>
-            <td>
-                <input class="input-large search-query" type="text" ng-model="task.method" required/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <i class="icon-question-sign" popover="Type of the actor to trigger." popover-trigger="mouseenter"></i>
-                <b>Actor type:</b>
-            </td>
-            <td>
-                <select ng-model="task.type" ng-options="type for type in types" required></i>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <i class="icon-question-sign" popover="Specify task list if any." popover-trigger="mouseenter"></i>
-                <b>Task list:</b>
-            </td>
-            <td>
-                <input class="input-large search-query" type="text" ng-model="job.taskList"/>
-            </td>
-        </tr>
+    <div class="control-group">
+        <label class="control-label" for="task_actorId">ActorId:</label>
+        <div class="controls">
+            <input id="task_actorId" class="input-xlarge" type="text" ng-model="task.actorId" required/>
+            <i icon-info="ActorId of the actor to trigger."></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="task_method">Method name:</label>
+        <div class="controls">
+            <input id="task_method" class="input-xlarge" type="text" ng-model="task.method" required/>
+            <i icon-info="Method of the actor to trigger."></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="task_type">Actor type:</label>
+        <div class="controls">
+            <select id="task_type" class="input-large" ng-model="task.type" ng-options="type for type in types" required></select>
+            <i icon-info="Type of the actor to trigger."></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label" for="task_taskList">Task list:</label>
+        <div class="controls">
+            <input id="task_taskList" class="input-xlarge" type="text" ng-model="task.taskList"/>
+            <i icon-info="Specify task list if any."></i>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Arguments:</label>
+        <div class="controls">
+            <table class="table-bordered table-condensed table-striped">
+                <tr>
+                    <td colspan="4" style="text-align: center">
+                        <span ng-hide="task.args && task.args.length>0" class="muted">
+                            Has no arguments
+                            <button class="btn btn-small" ng-click="addArgument()"
+                                 popover="Add task argument. Only primitive and string values are allowed at the moment." popover-trigger="mouseenter">
+                             <i class="icon-plus-sign"></i></button>
 
-        <tr>
-            <td>
-                <i class="icon-question-sign"
-                   popover="Arguments for the scheduled task. Only primitive and string values are allowed at the moment."
-                   popover-trigger="mouseenter"></i>
-                <b>Arguments:</b>
-            </td>
-            <td>
-                <table width="100%" class="table table-bordered table-condensed">
-                    <tr>
-                        <td colspan="4" style="text-align: center">
-                            <span ng-hide="task.args.length>0" class="muted">This task has no arguments. <br /> Press the 'plus' button below if you need to specify any.</span>
-                        </td>
-                    </tr>
-                    <tr ng-if="task.args">
-                        <td>№</td>
-                        <td>Value:</td>
-                        <td>Type:</td>
-                        <td></td>
-                    </tr>
-                    <tr ng-repeat="arg in task.args">
-                        <td>
-                            {{ $index }}.
-                        </td>
-                        <td>
-                            <input ng-model="arg.value" type="text" class="input-large search-query"/>
-                        </td>
-                        <td>
-                            <select ng-model="arg.type" ng-options="argType for argType in argTypes" style="width: 80px"></select>
-                        </td>
-                        <td>
-                            <button class="btn btn-small" ng-click="removeArgument($index)" popover="Remove this argument" popover-trigger="mouseenter">
-                                <i class="icon-minus-sign"></i></button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" style="text-align: center">
-                            <button class="btn btn-small" ng-click="addArgument()" popover="Add task argument" popover-trigger="mouseenter">
-                                <i class="icon-plus-sign"></i></button>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+                        </span>
+                    </td>
+                </tr>
+                <tr ng-if="task.args && task.args.length>0">
+                    <td>№</td>
+                    <td>Value:</td>
+                    <td>Type:</td>
+                    <td><button class="btn btn-small" ng-click="addArgument()"
+                                popover="Add task argument. Only primitive and string values are allowed at the moment." popover-trigger="mouseenter">
+                        <i class="icon-plus-sign"></i></button>
+                    </td>
+                </tr>
+                <tr ng-repeat="arg in task.args">
+                    <td>
+                        {{ $index + 1 }}.
+                    </td>
+                    <td>
+                        <input ng-model="arg.value" type="text" class="input-large"/>
+                    </td>
+                    <td>
+                        <select ng-model="arg.type" ng-options="argType for argType in argTypes"
+                                class="input-small"></select>
+                    </td>
+                    <td>
+                        <button class="btn btn-small" ng-click="removeArgument($index)" popover="Remove this argument" popover-trigger="mouseenter">
+                            <i class="icon-minus-sign"></i></button>
+                    </td>
+                </tr>
+            </table>
 
-    </table>
+        </div>
+    </div>
 </div>

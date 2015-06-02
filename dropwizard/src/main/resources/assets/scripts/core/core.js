@@ -188,13 +188,38 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
         this.$get.$inject = ['$log', '$timeout', '$modal','$filter','$rootScope','$state','$stateParams'];
     })
+    .factory('coreInterceptor', function ($log,$q) {
+       var restUrl = '/rest';
+        function parseData(response){
+            $log.info('intercept response',response.config.url, response.config);
+            //try {
+            //    var data = angular.fromJson(response.data);
+            //    return data;
+            //} catch (e) {
+            //    $log.error('not valid json object', response.data);
+            //    return {
+            //        data: response.data
+            //    };
+            //}
+            return response;
+        }
+       return {
+           'response': function (response) {
+
+               if(response.config.url.indexOf(restUrl) === 0){
+                   return parseData(response);
+               }
+               return response;
+           }
+       };
+    })
     // Config
-    .config(function (datepickerConfig) {
+    .config(function (datepickerConfig,$httpProvider) {
         datepickerConfig.startingDay = 1;
         datepickerConfig.showWeeks = false;
         datepickerConfig.minDate="2010-01-01";
         datepickerConfig.maxDate="2100-01-01";
-
+      //  $httpProvider.interceptors.push('coreInterceptor');
     })
 
     //Services
@@ -571,13 +596,13 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             templateUrl: '/views/core/icon-info.html',
             replace: true,
             link: function (scope, element, attrs) {
-                scope.iconHide= function () {
+                scope.iconHide = function () {
                     if(angular.isObject(scope.model) || angular.isArray(scope.model)){
                         return _.size(scope.model)>0 && scope.remove;
                     }else{
                         return scope.model && scope.remove;
                     }
-                }
+                };
             }
         };
     })
