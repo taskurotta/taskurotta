@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import ru.taskurotta.dropwizard.resources.console.BaseResource;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
+import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -11,7 +12,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -28,10 +28,17 @@ public class ProcessResource extends BaseResource {
 
     @GET
     @Path("/search")
-    public List<Process> findProcesses(@QueryParam("processId") Optional<String> processId, @QueryParam("customId") Optional<String> customId) {
-
+    public GenericPage<Process> findProcesses(@QueryParam("pageNum") Optional<Integer> pageNum,
+                                       @QueryParam("pageSize") Optional<Integer> pageSize,
+                                       @QueryParam("processId") Optional<String> processId,
+                                       @QueryParam("customId") Optional<String> customId) {
         try {
-            List<Process> processes = consoleManager.findProcesses(processId.or(""), customId.or(""));
+            ProcessSearchCommand command = new ProcessSearchCommand();
+            command.setPageNum(pageNum.or(DEFAULT_START_PAGE));
+            command.setPageSize(pageSize.or(DEFAULT_PAGE_SIZE));
+            command.setProcessId(processId.orNull());
+            command.setCustomId(customId.orNull());
+            GenericPage<Process> processes = consoleManager.findProcesses(command);
             logger.debug("Processes found are [{}]", processes);
             return processes;
 
@@ -68,12 +75,13 @@ public class ProcessResource extends BaseResource {
                                               @QueryParam("type") Optional<String> type) {
 
         try {
-            GenericPage<Process> result = consoleManager.listProcesses(pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), status.or(DEFAULT_STATUS), type.orNull());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processes page is [{}]. Params: pageNum[{}], pageSize[{}], status[{}], type[{}]", result,
-                        pageNum.or(DEFAULT_START_PAGE), pageSize.or(DEFAULT_PAGE_SIZE), status.or(DEFAULT_STATUS), type.orNull());
-            }
+            ProcessSearchCommand command = new ProcessSearchCommand();
+            command.setPageNum(pageNum.or(DEFAULT_START_PAGE));
+            command.setPageSize(pageSize.or(DEFAULT_PAGE_SIZE));
+            command.setState(status.or(DEFAULT_STATUS));
+            command.setActorId(type.orNull());
+            GenericPage<Process> result = consoleManager.findProcesses(command);
+            logger.debug("Processes page is [{}]. Command [{}]", result, command);
 
             return result;
 

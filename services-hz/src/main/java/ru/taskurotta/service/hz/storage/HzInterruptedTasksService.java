@@ -13,6 +13,7 @@ import ru.taskurotta.service.console.model.InterruptedTaskExt;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.console.model.TaskIdentifier;
 import ru.taskurotta.service.console.model.TasksGroupVO;
+import ru.taskurotta.service.hz.support.PredicateUtils;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.util.InterruptedTaskSupport;
 
@@ -62,39 +63,38 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
 
 
         if (StringUtils.hasText(searchCommand.getActorId())) {
-            predicates.add(new Predicates.LikePredicate("actorId", searchCommand.getActorId() + WILDCARD_SYMBOL));
+            predicates.add(PredicateUtils.getStartsWith("actorId", searchCommand.getActorId()));
         }
 
         if (StringUtils.hasText(searchCommand.getStarterId())) {
-            predicates.add(new Predicates.LikePredicate("starterId", searchCommand.getStarterId() + WILDCARD_SYMBOL));
+            predicates.add(PredicateUtils.getStartsWith("starterId", searchCommand.getStarterId()));
         }
 
         if (searchCommand.getProcessId() != null) {
-            predicates.add(new Predicates.EqualPredicate("processId", searchCommand.getProcessId()));
+            predicates.add(PredicateUtils.getEqual("processId", searchCommand.getProcessId()));
         }
 
         if (StringUtils.hasText(searchCommand.getErrorClassName())) {
-            predicates.add(new Predicates.LikePredicate("errorClassName", searchCommand.getErrorClassName() + WILDCARD_SYMBOL));
+            predicates.add(PredicateUtils.getStartsWith("errorClassName", searchCommand.getErrorClassName()));
         }
 
         if (StringUtils.hasText(searchCommand.getErrorMessage())) {
-            predicates.add(new Predicates.LikePredicate("errorMessage", searchCommand.getErrorMessage() + WILDCARD_SYMBOL));
+            predicates.add(PredicateUtils.getStartsWith("errorMessage", searchCommand.getErrorMessage()));
         }
 
         if (searchCommand.getEndPeriod() > 0) {
-            predicates.add(new Predicates.BetweenPredicate("time", 0l, searchCommand.getEndPeriod()));
+            predicates.add(PredicateUtils.getLessThen("time", searchCommand.getEndPeriod()));
         }
 
         if (searchCommand.getStartPeriod() > 0) {
-            predicates.add(new Predicates.BetweenPredicate("time", searchCommand.getStartPeriod(), Long.MAX_VALUE));
+            predicates.add(PredicateUtils.getMoreThen("time", searchCommand.getStartPeriod()));
         }
 
         Collection<InterruptedTask> result = null;
         if (predicates.isEmpty()) {
             result = findAll();
         } else {
-            Predicate[] predicateArray = new Predicate[predicates.size()];
-            Predicate predicate = new Predicates.AndPredicate(predicates.toArray(predicateArray));
+            Predicate predicate = PredicateUtils.combineWithAndCondition(predicates);
             result = asSimpleTasks(storeIMap.values(predicate));
         }
         logger.trace("Found [{}] interrupted tasks by command[{}]", result!=null?result.size():null, searchCommand);

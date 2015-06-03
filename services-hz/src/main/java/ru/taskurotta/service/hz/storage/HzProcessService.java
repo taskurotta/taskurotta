@@ -12,6 +12,7 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
+import ru.taskurotta.service.hz.support.PredicateUtils;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -25,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
- * User: dimadin
  * Date: 13.06.13 16:00
  */
 public class HzProcessService extends AbstractHzProcessService implements ProcessService, ProcessInfoRetriever {
@@ -186,71 +186,62 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status, final String typeFilter) {
-        List<Process> result = new ArrayList<>();
-        Collection<Process> values = null;
-        if (!processIMap.isEmpty()) {
+    public GenericPage<Process> findProcesses(final ProcessSearchCommand command) {
+        Collection<Process> items = null;
 
-            if (status >= 0 || typeFilter != null) {
-                values = Collections2.filter(processIMap.values(), new Predicate<Process>() {
-                    @Override
-                    public boolean apply(Process input) {
-                        boolean result = false;
-                        if (input != null) {
-                            result = status >= 0 ? (input.getState() == status) : true;
-                            if (result && typeFilter != null) {
-                                String actorType = input.getStartTask() != null ? input.getStartTask().getActorId() : null;
-                                result = actorType != null && actorType.startsWith(typeFilter);
-                            }
-                        }
-                        return result;
-                    }
-                });
-            } else {
-                values = processIMap.values();
-            }
-
-            if (values != null && !values.isEmpty()) {
-                int pageEnd = Math.min(pageSize * pageNumber, values.size());
-                int pageStart = (pageNumber - 1) * pageSize;
-                result.addAll(new ArrayList<>(values).subList(pageStart, pageEnd));
-            }
+        com.hazelcast.query.Predicate<UUID, Process> predicate = constructPredicate(command);
+        if (predicate != null) {
+            items = processIMap.values(predicate);
+        } else {
+            items = processIMap.values();
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found [{}] items for predicate [{}] from processes map size[{}]", items.size(), predicate, processIMap.size());
         }
 
-        return new GenericPage<>(result, pageNumber, pageSize, values != null ? values.size() : 0);
+        if (command.getActorId() != null) {//TODO: add actorId field to Process entity
+            items = Collections2.filter(items, new Predicate<Process>() {
+                @Override
+                public boolean apply(Process p) {
+                    return p.getStartTask()!=null && p.getStartTask().getActorId()!=null && p.getStartTask().getActorId().startsWith(command.getActorId());
+                }
+            });
+        }
+
+        if (items != null && !items.isEmpty()) {
+            int pageEnd = Math.min(command.getPageSize() * command.getPageNum(), items.size());
+            int pageStart = (command.getPageNum() - 1) * command.getPageSize();
+            return new GenericPage<Process>(new ArrayList<Process>(items).subList(pageStart, pageEnd), command.getPageNum(), command.getPageSize(), items.size());
+        } else {
+            return new GenericPage<Process>(null, command.getPageNum(), command.getPageSize(), 0);
+        }
     }
 
-    @Override
-    public List<Process> findProcesses(final ProcessSearchCommand command) {
-        List<Process> result = new ArrayList<>();
-
-        if (!command.isEmpty()) {
-            result.addAll(Collections2.filter(processIMap.values(), new Predicate<Process>() {
-
-                private boolean hasText(String target) {
-                    return target != null && target.trim().length() > 0;
-                }
-
-                private boolean isValid(Process process) {
-                    boolean isValid = true;
-                    if (hasText(command.getCustomId())) {
-                        isValid = process.getProcessId().toString().startsWith(command.getCustomId());
-                    }
-                    if (hasText(command.getProcessId())) {
-                        isValid = isValid && process.getProcessId().toString().startsWith(command.getProcessId());
-                    }
-                    return isValid;
-                }
-
-                @Override
-                public boolean apply(Process process) {
-                    return isValid(process);
-                }
-
-            }));
+    static com.hazelcast.query.Predicate<UUID, Process> constructPredicate(ProcessSearchCommand command) {
+        List<com.hazelcast.query.Predicate> pList = new ArrayList<>();
+        if (command.getProcessId() != null) {
+            pList.add(PredicateUtils.getStartsWith("processId", command.getProcessId()));
+        }
+//        if (command.getActorId() != null) {
+//            pList.add(PredicateUtils.getStartsWith("actorId", command.getActorId()));
+//        }
+        if (command.getCustomId() != null) {
+            pList.add(PredicateUtils.getStartsWith("customId", command.getCustomId()));
         }
 
-        return result;
+        if (command.getState()>=0) {
+            pList.add(PredicateUtils.getEqual("state", command.getState()));
+        }
+
+        if (command.getStartedFrom() > 0) {
+            pList.add(PredicateUtils.getMoreThen("startTime", command.getStartedFrom()));
+        }
+
+        if (command.getStartedTill() > 0) {
+            pList.add(PredicateUtils.getLessThen("startTime", command.getStartedTill()));
+        }
+
+        return PredicateUtils.combineWithAndCondition(pList);
     }
 
     @Override

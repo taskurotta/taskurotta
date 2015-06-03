@@ -14,16 +14,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * User: romario
- * Date: 4/2/13
- * Time: 8:02 PM
+ * Date: 4/2/13 8:02 PM
  */
+@Deprecated
 public class MemoryProcessService implements ProcessService, ProcessInfoRetriever {
 
     private Map<UUID, Process> processesStorage = new ConcurrentHashMap<>();
@@ -104,45 +102,12 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, final int status, final String typeFilter) {
-        List<Process> result = new ArrayList<>();
-        Collection<Process> values = null;
-        if (!processesStorage.isEmpty()) {
-
-            if (status >= 0 || typeFilter!=null) {
-                values = Collections2.filter(processesStorage.values(), new Predicate<Process>() {
-                    @Override
-                    public boolean apply(Process input) {
-                        boolean result = false;
-                        if (input != null) {
-                            result = status>=0? (input.getState() == status): true;
-                            if (result && typeFilter != null) {
-                                String actorType = input.getStartTask()!=null? input.getStartTask().getActorId(): null;
-                                result = actorType!=null && actorType.startsWith(typeFilter);
-                            }
-                        }
-                        return result;
-                    }
-                });
-            } else {
-                values = processesStorage.values();
-            }
-
-            if (values!=null && !values.isEmpty()) {
-                int pageStart = (pageNumber - 1) * pageSize;
-                int pageEnd = Math.min(pageSize * pageNumber, values.size());
-                result.addAll(new ArrayList<>(values).subList(pageStart, pageEnd));
-            }
-        }
-
-        return new GenericPage<>(result, pageNumber, pageSize, values!=null? values.size(): 0);
-    }
-
-    @Override
-    public List<Process> findProcesses(final ProcessSearchCommand command) {
-        List<Process> result = new ArrayList<>();
-        if (command.getCustomId()!=null || command.getProcessId()!=null ) {
-            result.addAll(Collections2.filter(processesStorage.values(), new Predicate<Process>() {
+    public GenericPage<Process> findProcesses(final ProcessSearchCommand command) {
+        Collection<Process> items = new ArrayList<>();
+        if (command.isFilterEmpty()) {
+            items = processesStorage.values();
+        } else {
+            items = Collections2.filter(processesStorage.values(), new Predicate<Process>() {
 
                 private boolean hasText(String target){
                     return target != null && target.trim().length()>0;
@@ -156,6 +121,18 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
                     if (hasText(command.getProcessId())) {
                         isValid = isValid && process.getProcessId().toString().startsWith(command.getProcessId());
                     }
+                    if (hasText(command.getActorId())) {
+                        isValid = isValid && process.getStartTask().getActorId().startsWith(command.getActorId());
+                    }
+                    if (command.getState() >= 0) {
+                        isValid = isValid && process.getState() == command.getState();
+                    }
+                    if (command.getStartedFrom() > 0) {
+                        isValid = isValid && process.getStartTime() >= command.getStartedFrom();
+                    }
+                    if (command.getStartedTill() > 0) {
+                        isValid = isValid && process.getStartTime() <= command.getStartedTill();
+                    }
                     return isValid;
                 }
 
@@ -164,9 +141,18 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
                     return isValid(process);
                 }
 
-            }));
+            });
+
         }
-        return result;
+
+        if (items!=null && !items.isEmpty()) {
+            int pageStart = (command.getPageNum() - 1) * command.getPageSize();
+            int pageEnd = Math.min(command.getPageSize() * command.getPageNum(), items.size());
+            return new GenericPage<>(new ArrayList<>(items).subList(pageStart, pageEnd), command.getPageNum(), command.getPageSize(), items.size());
+        } else {
+            return new GenericPage<>(null, command.getPageNum(), command.getPageSize(), 0);
+        }
+
     }
 
     @Override

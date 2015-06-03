@@ -19,8 +19,8 @@ properties:
   mongo.host: localhost
   mongo.port: 27017
   oradb.url: "jdbc:oracle:thin:@dev-ora-ext.egron.net:1521:devext"
-  oradb.user: ""
-  oradb.password: ""
+  oradb.user: "pgu_cc"
+  oradb.password: "pgu_cc"
 #  recovery.process.incomplete-timeout: "5 SECONDS"
 #  recovery.find-incomplete-process-period: "5 SECONDS"
 #  hz.nodes: "localhost:7777,localhost:7778"
@@ -58,7 +58,7 @@ logging:
         com.hazelcast: INFO
         com.yammer: INFO
         ru.taskurotta: INFO
-        ru.taskurotta.dropwizard.resources.console.broken: DEBUG
+        ru.taskurotta.service.ora.storage: DEBUG
     appenders:
     - type: file
       currentLogFilename: "./target/logs/service.log"

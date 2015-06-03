@@ -7,7 +7,6 @@ import java.util.UUID;
 
 /**
  * POJO representing workflow process
- * User: dimadin
  * Date: 21.05.13 11:09
  */
 public class Process implements Serializable {
