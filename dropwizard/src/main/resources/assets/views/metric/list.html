@@ -100,14 +100,14 @@
             <div class="control-group">
                 <!--<div ng-hide = "options.dataSets[formParams.metric].length"-->
                      <!--class="alert alert-warning">No selected datasets to show</div>-->
-                <ul style="max-height: 180px; overflow: auto; padding: 0 0 0 0">
+                <ul style="max-height: 180px; overflow: auto; padding: 0 20px 0 0">
                     <li ng-repeat="dataSet in options.dataSets[formParams.metric] | filter:{general:!formParams.showDataset}">
                         <label class="checkbox">
                             <input type="checkbox" ng-model="formParams.dataset[dataSet.value]"/>
-                            <small>
+
                                 {{ dataSet.value }}
                                 <i ng-if="dataSet.general"> - <b>{{dataSet.name}}</b></i>
-                            </small>
+
                         </label>
                     </li>
                 </ul>
@@ -128,42 +128,64 @@
     <span class="inline-label" ng-if="$stateParams.period"><span class="muted">Period:</span> {{$stateParams.period}},</span>
     </h4>
     <list-reload model="metricsResource">
+
+        <div style="float: left; margin: 10px 0 0 20px">
+             <span class="muted">Position:</span>
+             <span id="metrics-hoverdata"></span>
+        </div>
     </list-reload>
 
-    <table class="table table-condensed table-items " ng-if="metricsModel">
+    <table class="table table-condensed table-items" ng-if="metricsModel">
         <tbody ng-init="position = {}">
             <tr>
-                <td style="min-width: 35px; vertical-align: middle; ">
-                    <span class="axis-label">{{ metricsModel[0].yLabel }}</span>
+                <td style="max-width: 12px; vertical-align: middle; ">
+                    <div class="yaxis-label">{{ metricsModel[0].yLabel }}</div>
                 </td>
-                <td style="min-width: 900px;">
-                    <div ng-show="metricsModel" style="width:900px;height:480px;"
-                         metrics-plot="metricsModel" params="$stateParams"/>
+                <td style="max-width: 950px;max-height:500px;">
+                    <div ng-show="metricsModel" style="width: 950px;height:500px;"
+                         metrics-plot="metricsModel" params="$stateParams"></div>
                 </td>
-                <td style="vertical-align: top; text-align: left; min-width: 160px;">
+                <td style="vertical-align: top; text-align: left; width: 160px;">
                     <label class="checkbox small">
-                        <input type="checkbox" ng-model="$stateParams.zoom"/>
-                        Zoom on scroll <i class="icon-question-sign" style="cursor: help;" popover-placement="bottom" popover="Enable to zoom in/out on mouse scroll over plot pane" popover-trigger="mouseenter"></i>
+                        <input type="checkbox" ng-model="$stateParams.zoom" />
+                        <span popover="Enable to zoom in/out on mouse scroll over plot pane"
+                               popover-trigger="mouseenter" popover-placement="bottom">Zoom</span>
                     </label>
                     <label class="checkbox small">
                         <input type="checkbox" ng-model="$stateParams.pan" />
-                        Mouse draggable <i class="icon-question-sign" style="cursor: help;" popover-placement="bottom" popover="Enable to drag plot over pane with mouse" popover-trigger="mouseenter"></i>
+                        <span popover="Enable to drag plot over pane with mouse"
+                           popover-trigger="mouseenter" popover-placement="bottom">Draggable</span>
                     </label>
-                    <hr />
+                    <label class="checkbox small">
+                        <input type="checkbox" ng-model="$stateParams.points" />
+                        <span popover="Show points on plot pane"
+                              popover-trigger="mouseenter" popover-placement="bottom">Points</span>
+                    </label>
+                    <label class="checkbox small">
+                        <input type="checkbox" ng-model="$stateParams.showLegend" />
+                        <span popover="Show legend on plot pane"
+                              popover-trigger="mouseenter" popover-placement="bottom">Legend</span>
+                    </label>
+                    <select ng-if="$stateParams.showLegend" class="input-small" ng-model="$stateParams.legend"
+                            ng-options = "position as  positionName for (position, positionName) in legendPositions" ></select>
 
+                    <!--<hr />-->
+                    <!--<ul ng-hide="$stateParams.showLegend" style="width: 100%; max-width: 160px; max-height: 180px;-->
+                    <!--overflow: auto; padding: 0 0 0 0">-->
+                        <!--<li ng-repeat="(dataSet,value) in formParams.dataset">-->
+                           <!--<small>{{ dataSet }}</small>-->
+                        <!--</li>-->
+                    <!--</ul>-->
                     <!--<small>X ticks: </small><input type="text" class="input-mini" ng-model="$stateParams.xaxis"/>-->
                     <!--<small>Y ticks: </small><input type="text" class="input-mini" ng-model="$stateParams.yaxis" />-->
-                    <b style="font-size: 12px;">Mouse position:</b>
-                    <div class="well" id="metrics-hoverdata">
-                        <div class="current" style="font-size: 12px;"></div>
-                    </div>
+
                     <!--<button class="btn" ng-click="clear()"><i class="icon-remove"></i>Clear data</button>-->
                 </td>
             </tr>
             <tr>
                 <td></td>
-                <td style="height: 30px;text-align: center;">
-                    <span class="axis-label">{{ metricsModel[0].xLabel }}</span>
+                <td style="text-align: center;">
+                    <span class="xaxis-label">{{ metricsModel[0].xLabel }}</span>
                 </td>
                 <td></td>
             </tr>

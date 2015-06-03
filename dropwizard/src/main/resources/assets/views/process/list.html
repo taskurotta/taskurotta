@@ -85,6 +85,7 @@
                     </a><br/>
                     <span ng-bind-html="process.startTask.actorId | lineWrap"></span>
                     - <b>{{ process.startTask.method }}</b>
+                    <i icon-info="Show startTask detail" ng-click="showStartTask(process)"></i>
                 </td>
                 <td>
                     {{ process.customId }}

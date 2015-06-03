@@ -12,7 +12,7 @@ angular.module('metricModule', ['coreApp'])
     })
 
 
-    .controller('metricListController', function ($log, $scope, metricRest, smoothRates, coreApp, $state,$stateParams) {
+    .controller('metricListController', function ($log, $scope, metricRest, smoothRates, legendPositions, coreApp, $state,$stateParams) {
         $log.info('metricListController');
 
         function loadModel(params) {
@@ -33,11 +33,13 @@ angular.module('metricModule', ['coreApp'])
 
         //Initialization:
         $scope.smoothRates = smoothRates;
+        $scope.legendPositions = legendPositions;
 
         $scope.formParams = coreApp.copyStateParams();
         $scope.$stateParams = coreApp.getStateParams();
-        $scope.formParams.dataset = $scope.formParams.dataset ?
-            coreApp.clearObject(JSON.parse($scope.formParams.dataset)) : {};
+        $scope.$stateParams.showLegend = !!$scope.$stateParams.legend;
+        $scope.formParams.dataset = coreApp.parseObjectParam($scope.formParams.dataset);
+
 
 
         $scope.options = metricRest.dictionaryOptions({},
@@ -78,7 +80,7 @@ angular.module('metricModule', ['coreApp'])
         $scope.search = function () {
             coreApp.reloadState(angular.extend({},$scope.formParams,{
                 refreshRate: undefined,
-                dataset: JSON.stringify(coreApp.clearObject($scope.formParams.dataset))
+                dataset: coreApp.stringifyObjectParam($scope.formParams.dataset)
             }));
         };
 
@@ -97,68 +99,92 @@ angular.module('metricModule', ['coreApp'])
             return {
                 zoom: {interactive: (params && params.zoom) || false},
                 pan: {interactive: (params && params.pan) || false},
-                xaxis: xFormatterFunc ? { tickFormatter: xFormatterFunc } : undefined,
-                yaxis: yFormatterFunc ? { tickFormatter: yFormatterFunc } : undefined,
-                legend: {show: true},
+                xaxis: {
+                    tickFormatter: xFormatterFunc || undefined
+                },
+                yaxis: {
+                    tickFormatter: yFormatterFunc || undefined
+                },
+                legend: {
+                    show: (params && params.showLegend) || false,
+                    backgroundOpacity: 0.2,
+                    position: (params && params.legend) ? params.legend : 'ne'
+                    //labelFormatter: function (label, series) {
+                    //    var cb = '<input class='legendCB' type='checkbox' ';
+                    //    if (series.data.length > 0){
+                    //        cb += 'checked='true' ';
+                    //    }
+                    //    cb += 'id=''+label+'' /> ';
+                    //    cb += label;
+                    //    return cb;
+                    //}
+                },
                 grid: {
-                    hoverable: true
-//                        clickable: true
+                    hoverable: true,
+                    clickable: true,
+                    backgroundColor: { colors: ['#ddd', '#fff'] }
                 },
                 series: {
-                    lines: {show: true},
-                    points: {show: true}
+                    lines: {show: true ,  lineWidth: 2},
+                    points: {show: (params && params.points) || false, radius: 3 }
                 }
             };
         }
         var style = {
-            position: "absolute",
-            display: "none",
-            border: "1px solid #fdd",
-            padding: "2px",
-            backgroundColor: "#FFA801",
+            position: 'absolute',
+            display: 'none',
+            border: '1px solid #fdd',
+            padding: '1px',
+            backgroundColor: '#FFA801',
             opacity: 0.80,
-            fontSize: "12px"
+            fontSize: '12px'
         };
 
         return {
             restrict: 'CA',//Class, Attribute
             terminal: true,
             scope: {
-                model: "=metricsPlot",
-                width: "@",
-                height: "@",
-                params: "="
+                model: '=metricsPlot',
+                width: '@',
+                height: '@',
+                params: '='
             },
             controller: function ($scope, $element, $attrs) {
 
                 var jPlot = $($element);
 
                 //Setting css width and height if explicitly set
-                if($scope.width) { jPlot.css("width", $scope.width); }
-                if($scope.height) { jPlot.css("height", $scope.height); }
+                if($scope.width) { jPlot.css('width', $scope.width); }
+                if($scope.height) { jPlot.css('height', $scope.height); }
 
-                $("<div id='metrics-tooltip'></div>").css(style).appendTo("body");
+                $('<div id="metrics-tooltip"></div>').css(style).appendTo('body');
 
                 var plotElem = $.plot(jPlot, [], getOptions());
 
-                jPlot.bind("plothover", function (event, pos, item) {
+                jPlot.bind('plothover', function (event, pos, item) {
 
                     if ($scope.model.length>0) {
                         var posX = metricsFormatters.getFormattedValue($scope.model[0].xFormatter, pos.x, false);
                         var posY = metricsFormatters.getFormattedValue($scope.model[0].yFormatter, pos.y, false);
 
-                        $("#metrics-hoverdata .current").text("(" +
-                                posX + ", " + posY + ")");
+                       
 
                         //$log.info('$scope.mousePosition',$scope.mousePosition);
                         if (item) {
+
                             var xVal = metricsFormatters.getFormattedValue($scope.model[0].xFormatter, item.datapoint[0], false);
                             var yVal = metricsFormatters.getFormattedValue($scope.model[0].yFormatter, item.datapoint[1], false);
-                            $("#metrics-tooltip").html("[" + xVal + ", " + yVal + "]")
+                            var position = '(' + xVal + ', ' + yVal + ')';
+
+                            $('#metrics-tooltip').html(item.series.label + '<br/>' + position)
                                 .css({top: item.pageY+5, left: item.pageX+5})
                                 .fadeIn(200);
+                            $('#metrics-hoverdata').html(position +
+                                ' <span class="muted">Dataset:</span> ' + item.series.label );
                         } else {
-                            $("#metrics-tooltip").hide();
+
+                            $('#metrics-tooltip').hide();
+                            $('#metrics-hoverdata').text('(' + posX + ', ' + posY + ')');
                         }
                     }
 
@@ -167,7 +193,7 @@ angular.module('metricModule', ['coreApp'])
                 var updatePlotData = function(model, params) {
                     if(model && model.length>0){
                         var options = getOptions(params, model[0].xFormatter, model[0].yFormatter);
-                        //$log.info("Plot options:",options);
+                        //$log.info('Plot options:',options);
                         plotElem = $.plot(jPlot, model, options );
                     }else{
                         $log.info('Clear datasets');
@@ -178,14 +204,14 @@ angular.module('metricModule', ['coreApp'])
                 $scope.$watch('model', function (newData) {
                    // $log.info('$watch(model)',newData);
                     if(newData.$resolved) {
-                        $log.info("Updated plot datasets:");
+                        $log.info('Updated plot datasets:');
                         updatePlotData(newData,$scope.params);
                     }
                 },false);
 
                 $scope.$watch('params', function (newParams, oldParams) {
                     if(newParams!==oldParams) {
-                        $log.info("Updated plot params:", newParams);
+                        $log.info('Updated plot params:', newParams);
                         updatePlotData($scope.model,newParams);
                    }
                 }, true);
@@ -195,7 +221,7 @@ angular.module('metricModule', ['coreApp'])
         };
     })
 
-    .factory("metricsFormatters", function ( $log) {
+    .factory('metricsFormatters', function ( $log) {
         var resultService = {
             time: function (val, axis) {
                 return moment(new Date(val)).format('DD/MM HH:mm');
@@ -206,11 +232,13 @@ angular.module('metricModule', ['coreApp'])
                 }
                 var units = [' B', ' KB', ' MB', ' GB', ' TB', ' PB'],
                     number = Math.floor(Math.log(bytes) / Math.log(1024));
-                return (bytes / Math.pow(1024, Math.floor(number))).toFixed(1) + ' ' + units[number];
+                var value = (bytes / Math.pow(1024, Math.floor(number))).toFixed(1);
+                var metric = units[number];
+                return (value || '') + ' ' + (metric || '');
             },
             getFormattedValue: function(formatterName, value, axis) {
                 var result = value;
-                if (!!formatterName && !!this[formatterName]) {
+                if (formatterName && this[formatterName]) {
                     result = this[formatterName](value, axis);
                 }
                 return result;

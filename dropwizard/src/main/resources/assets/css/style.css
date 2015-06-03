@@ -124,6 +124,8 @@ code {
 .form-header {
     width: 150px;
     font-weight: bold;
+    font-size: 90%;
+    padding: 0 10px 0 10px;
 }
 
 /*Form classes*/
@@ -260,10 +262,30 @@ form {
 }
 
 
-.axis-label {
+.xaxis-label {
     font-family: monospace;
-    font-size: 8;
+    font-size: 11pt;
     font-weight: bold;
+}
+
+.yaxis-label {
+    font-family: monospace;
+    font-size: 10pt;
+    font-weight: bold;
+    width: 300px;
+
+    top: 60%;
+    left: 2px;
+    transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
 }
 
 /*.table .inner-table {*/

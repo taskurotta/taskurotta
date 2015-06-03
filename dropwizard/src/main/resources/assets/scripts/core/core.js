@@ -107,6 +107,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                         return object;
                     }, {});
                 },
+                parseObjectParam: function(jsonStringParam){
+                   return jsonStringParam ? this.clearObject(JSON.parse(jsonStringParam)) : {};
+                },
+
+                stringifyObjectParam: function(objectParam){
+                    var param = this.clearObject(objectParam);
+                    return _.size(param)>0 ? JSON.stringify(param) : null;
+                },
 
                 getKeys: function(list){
                     return _.reduce(list, function (keys, value, key) {
@@ -217,8 +225,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
     .config(function (datepickerConfig,$httpProvider) {
         datepickerConfig.startingDay = 1;
         datepickerConfig.showWeeks = false;
-        datepickerConfig.minDate="2010-01-01";
-        datepickerConfig.maxDate="2100-01-01";
+        datepickerConfig.minDate='2010-01-01';
+        datepickerConfig.maxDate='2100-01-01';
       //  $httpProvider.interceptors.push('coreInterceptor');
     })
 
@@ -325,10 +333,15 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$num = parent ? (parent.$num + '.' + (++subNum)) : ('' + (++subNum));
                 item.$level = parent ? (parent.$level + 1 ) : 0;
                 item.$parentKey = parent ? parent.$key : null;
-                item.$expanded = !parent && (subNum < 3 || item.$children === 0);
+                item.$expanded = !parent && (subNum < 2 || item.$children === 0);
 
                 item.$parent = function getParent(){
                     return this.$parentKey !== null ? list[this.$parentKey] : null;
+                };
+
+                item.$ends = function(suffix) {
+                    return angular.isString(this.id) ?
+                        this.id.indexOf(suffix, this.id.length - suffix.length) !== -1 : false;
                 };
 
                 item.$visible = function isVisible(){
@@ -377,7 +390,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         return {
             restrict: 'A',
             transclude: false,
-            scope: {properties: '=treeProperties'},
+            scope: {properties: '=treeProperties',treeLevel:"@"},
             templateUrl: '/views/core/tree-properties.html',
             replace: false,
             link: function (scope, element, attrs) {
@@ -592,7 +605,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         return {
             restrict: 'A',
             transclude: false,
-            scope: { model: "=model", info: "@iconInfo", remove: "&remove" },
+            scope: { model: '=model', info: '@iconInfo', placement: '@', remove: '&remove' },
             templateUrl: '/views/core/icon-info.html',
             replace: true,
             link: function (scope, element, attrs) {
@@ -653,14 +666,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     result = subResult + skip;
                 }
             }
-            //$log.log("skipping index for [" + word + "] is [" + result + "]");
+            //$log.log('skipping index for [' + word + '] is [' + result + ']');
             return result;
         }
 
         function parseWord(word, skip, delimiter){
             var skippingIndex = skippingIndexOf(word, skip || 25, delimiter || '.');
             if (skippingIndex >=0) {
-                //$log.log("skippingIndex["+skippingIndex+"] for["+word+"], sub1["+word.substr(0, skippingIndex+1)+"], sub 2["+word.substr(skippingIndex+1)+"]");
+                //$log.log('skippingIndex['+skippingIndex+'] for['+word+'], sub1['+word.substr(0, skippingIndex+1)+'], sub 2['+word.substr(skippingIndex+1)+']');
                 return ( words[word] = word.substr(0, skippingIndex+1) + '<wbr>' + word.substr(skippingIndex+1));
             }
             return (words[word] = word);
