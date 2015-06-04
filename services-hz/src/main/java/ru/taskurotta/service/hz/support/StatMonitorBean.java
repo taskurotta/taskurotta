@@ -51,6 +51,7 @@ public class StatMonitorBean implements StatInfoRetriever {
                 @Override
                 public void daemonJob() {
                     logger.info(getNodeStats());
+                    logger.info(getHazelcastStats());
                 }
 
             }.start();
@@ -65,12 +66,14 @@ public class StatMonitorBean implements StatInfoRetriever {
 
 
     @Override
-    public String getNodeStats() {
-        long totalHeapCost = 0;
+    public String getHazelcastStats() {
+
 
         StringBuilder sb = new StringBuilder();
 
         if (hazelcastInstance != null) {
+            long totalHeapCost = 0;
+
             sb.append("\n============  ").append(hazelcastInstance.getName()).append("  ===========");
 
             for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
@@ -106,6 +109,13 @@ public class StatMonitorBean implements StatInfoRetriever {
             sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
         }
 
+        return sb.toString();
+    }
+
+    @Override
+    public String getNodeStats () {
+        StringBuilder sb = new StringBuilder();
+
         sb.append("\nMongo Maps statistics (rate per second at last one minute):");
         sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
                 MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
@@ -135,7 +145,7 @@ public class StatMonitorBean implements StatInfoRetriever {
                 MongoCachedQueueStore.storeTimer.max()));
 
         sb.append("\n errorsCounter = " + GeneralTaskServer.errorsCounter.get());
-                
+
         sb.append("\n startedProcessesCounter = " +
                 GeneralTaskServer.startedProcessesCounter.get() +
                 "  finishedProcessesCounter = " +
@@ -182,4 +192,6 @@ public class StatMonitorBean implements StatInfoRetriever {
 
         return sb.toString();
     }
+
+
 }

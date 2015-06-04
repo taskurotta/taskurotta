@@ -5,6 +5,8 @@ package ru.taskurotta.service.console.retriever;
  */
 public interface StatInfoRetriever {
 
+    String getHazelcastStats();
+
     String getNodeStats();
 
 }
