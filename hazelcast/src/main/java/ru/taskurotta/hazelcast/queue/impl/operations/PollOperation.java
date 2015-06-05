@@ -17,9 +17,13 @@
 package ru.taskurotta.hazelcast.queue.impl.operations;
 
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import com.hazelcast.spi.BackupAwareOperation;
 import com.hazelcast.spi.Notifier;
+import com.hazelcast.spi.Operation;
 import com.hazelcast.spi.WaitNotifyKey;
 import com.hazelcast.spi.WaitSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.impl.QueueDataSerializerHook;
 import ru.taskurotta.hazelcast.queue.impl.QueueItem;
 import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
@@ -28,7 +32,9 @@ import ru.taskurotta.hazelcast.queue.impl.stats.LocalCachedQueueStatsImpl;
  * Pool operation for Queue.
  */
 public final class PollOperation extends QueueOperation
-        implements WaitSupport, Notifier, IdentifiedDataSerializable {
+        implements WaitSupport, Notifier, IdentifiedDataSerializable, BackupAwareOperation {
+
+    private static final Logger logger = LoggerFactory.getLogger(PollOperation.class);
 
     private QueueItem item;
 
@@ -41,44 +47,90 @@ public final class PollOperation extends QueueOperation
 
     @Override
     public void run() {
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess run start detected");
+        }
+
         item = getOrCreateContainer().poll();
         if (item != null) {
             response = item.getData();
+        }
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess run end detected");
         }
     }
 
     @Override
     public void afterRun() throws Exception {
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess after run start detected");
+        }
+
         LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         if (response != null) {
             stats.incrementPolls();
         } else {
             stats.incrementEmptyPolls();
         }
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess after run end detected");
+        }
     }
 
     @Override
     public boolean shouldNotify() {
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess shouldNotify detected");
+        }
+
         return response != null;
     }
 
     @Override
     public WaitNotifyKey getNotifiedKey() {
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess getNotifiedKey detected");
+        }
+
         return getOrCreateContainer().getOfferWaitNotifyKey();
     }
 
     @Override
     public WaitNotifyKey getWaitKey() {
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess getWaitKey detected");
+        }
+
         return getOrCreateContainer().getPollWaitNotifyKey();
     }
 
     @Override
     public boolean shouldWait() {
-        return getWaitTimeout() != 0 && getOrCreateContainer().size() == 0;
+
+        long waitTimeout = getWaitTimeout();
+        int containerSize = getOrCreateContainer().size();
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess shouldWait detected waitTimeout = {}, containerSize = {}", waitTimeout, containerSize);
+        }
+
+        return waitTimeout != 0 && containerSize == 0;
     }
 
     @Override
     public void onWaitExpire() {
+
+        if (name.equals("AbortProcess")) {
+            logger.info("AbortProcess onWaitExpire detected");
+        }
+
         getResponseHandler().sendResponse(null);
     }
 
@@ -90,5 +142,25 @@ public final class PollOperation extends QueueOperation
     @Override
     public int getId() {
         return QueueDataSerializerHook.POLL;
+    }
+
+    @Override
+    public boolean shouldBackup() {
+        return false;
+    }
+
+    @Override
+    public int getSyncBackupCount() {
+        return 0;
+    }
+
+    @Override
+    public int getAsyncBackupCount() {
+        return 0;
+    }
+
+    @Override
+    public Operation getBackupOperation() {
+        return null;
     }
 }
