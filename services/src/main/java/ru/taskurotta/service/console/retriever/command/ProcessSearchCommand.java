@@ -1,19 +1,36 @@
 package ru.taskurotta.service.console.retriever.command;
 
 /**
- * User: dimadin
  * Date: 10.09.13 14:12
  */
 public class ProcessSearchCommand {
 
+    private int pageNum;
+    private int pageSize;
+
     private String customId;
     private String processId;
+    private String actorId;
+    private int state;
+    private long startedFrom;
+    private long startedTill;
 
     public ProcessSearchCommand() {}
 
-    public ProcessSearchCommand(String processId, String customId) {
-       this.processId = processId;
-       this.customId = customId;
+    public int getPageNum() {
+        return pageNum;
+    }
+
+    public void setPageNum(int pageNum) {
+        this.pageNum = pageNum;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     public String getCustomId() {
@@ -32,15 +49,58 @@ public class ProcessSearchCommand {
         this.processId = processId;
     }
 
-    public boolean isEmpty() {
-        return (customId == null || customId.trim().length() == 0) && (processId == null || processId.trim().length() == 0);
+    public String getActorId() {
+        return actorId;
+    }
+
+    public void setActorId(String actorId) {
+        this.actorId = actorId;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    public long getStartedFrom() {
+        return startedFrom;
+    }
+
+    public void setStartedFrom(long startedFrom) {
+        this.startedFrom = startedFrom;
+    }
+
+    public long getStartedTill() {
+        return startedTill;
+    }
+
+    public void setStartedTill(long startedTill) {
+        this.startedTill = startedTill;
+    }
+
+    public boolean isFilterEmpty() {
+        return (customId == null || customId.trim().length() == 0)
+                && (processId == null || processId.trim().length() == 0)
+                && (actorId==null || actorId.trim().length()==0)
+                && startedFrom <= 0l
+                && startedTill <= 0l
+                && state<0;
     }
 
     @Override
     public String toString() {
         return "ProcessSearchCommand{" +
-                "customId='" + customId + '\'' +
+                "pageNum=" + pageNum +
+                ", pageSize=" + pageSize +
+                ", customId='" + customId + '\'' +
                 ", processId='" + processId + '\'' +
-                "} " + super.toString();
+                ", actorId='" + actorId + '\'' +
+                ", state=" + state +
+                ", startedFrom=" + startedFrom +
+                ", startedTill=" + startedTill +
+                '}';
     }
 }

@@ -47,7 +47,7 @@ angular.module('processModule', ['taskModule', 'coreApp'])
                     if($scope.processesModel){
                         $log.info('Successfully updated processes page');
                     }else{
-                        coreApp.info('Processes not found',value);
+                        coreApp.info('Processes not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -63,6 +63,8 @@ angular.module('processModule', ['taskModule', 'coreApp'])
 
         //Submit form command:
         $scope.search = function () {
+            $scope.formParams.pageNum = undefined;
+            $scope.formParams.refreshRate = undefined;
             coreApp.reloadState($scope.formParams);
         };
 
@@ -72,6 +74,10 @@ angular.module('processModule', ['taskModule', 'coreApp'])
         });
 
         //Actions
+        $scope.showStartTask = function (process) {
+            coreApp.openPropertiesModal(process.startTask,'Process start task');
+        };
+
         $scope.recovery = function (process) {
             coreApp.openConfirmModal('Process will be sent to recovery service.',
                 function confirmed() {
@@ -134,8 +140,12 @@ angular.module('processModule', ['taskModule', 'coreApp'])
         loadModel();
 
         //Actions
+        $scope.showStartTask = function (process) {
+            coreApp.openPropertiesModal(process.startTask,'Process start task');
+        };
+
         $scope.recovery = function (process) {
-            coreApp.openConfirmModal('Process will be sent to recovery service.').result.then(
+            coreApp.openConfirmModal('Process will be sent to recovery service.',
                 function confirmed() {
                     processRest.recovery(process.processId,
                         function success (value) {
@@ -148,7 +158,7 @@ angular.module('processModule', ['taskModule', 'coreApp'])
         };
 
         $scope.clone = function (process) {
-            coreApp.openConfirmModal('A new process with the same start task arguments would be created.').result.then(
+            coreApp.openConfirmModal('A new process with the same start task arguments would be created.',
                 function confirmed() {
                     processRest.clone(process.processId,
                         function success(value) {

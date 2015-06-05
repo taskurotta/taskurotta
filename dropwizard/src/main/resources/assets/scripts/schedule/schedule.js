@@ -3,15 +3,20 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
     .factory('scheduleRest', function ($log, coreApp, $resource) {
         var restScheduleUrl = coreApp.getRestUrl() + 'schedule/';
         var rawInterceptor = coreApp.getRawInterceptor();
+        function stringTransformResponse(data, headersGetter, status) {
+            return data;
+        }
+
         return $resource(restScheduleUrl + 'card', {}, {
-                getNodeCount: {url: restScheduleUrl + 'node_count', interceptor: rawInterceptor},
+                getNodeCount: {url: restScheduleUrl + 'node_count', interceptor:rawInterceptor },
                 //list
                 query: {url: restScheduleUrl + 'list', params: {}, isArray: true},
                 //actions
                 create: {url: restScheduleUrl + 'schedule/create', method: 'PUT', params: {}},
                 update: {url: restScheduleUrl + 'schedule/update?jobId=:id', method: 'PUT', params: {}},
 
-                validate: {url: restScheduleUrl + 'validate/cron', interceptor: rawInterceptor},
+                validate: {url: restScheduleUrl + 'validate/cron',
+                    transformResponse: stringTransformResponse, interceptor: rawInterceptor},
                 activate: {url: restScheduleUrl + 'action/activate/', method: 'POST', params: {}},
                 deactivate: {url: restScheduleUrl + 'action/deactivate/', method: 'POST', params: {}},
                 delete: {url: restScheduleUrl + 'action/delete/', method: 'POST', params: {}},
@@ -43,7 +48,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
                     if($scope.schedulesModel){
                         $log.info('Successfully updated scheduled tasks page');
                     }else{
-                        coreApp.info('Scheduled tasks not found',value);
+                        coreApp.info('Scheduled tasks not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -52,6 +57,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
 
             scheduleRest.getNodeCount({} ,
                 function success(value) {
+                    $log.info('Successfully updated NodeCount',value);
                     $scope.total = value;
                 }, function error(reason) {
                     coreApp.error('Cannot get node count',reason);
@@ -59,6 +65,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
 
             coreRest.getTime({} ,
                 function success(value) {
+                    $log.info('Successfully updated serverTime',value);
                     $scope.serverTime = value;
                 }, function error(reason) {
                     coreApp.error('Cannot update server time',reason);
@@ -71,6 +78,8 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
 
         //Submit form command:
         $scope.search = function () {
+            //$scope.formParams.pageNum = undefined;
+            $scope.formParams.refreshRate = undefined;
             coreApp.reloadState($scope.formParams);
         };
 
@@ -127,18 +136,23 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         //Updates schedules  by polling REST resource
         function loadModel() {
             $log.info('Load model', $stateParams.id);
-            $scope.job = $stateParams.id ?
-                scheduleRest.get($stateParams,
+            $scope.job = scheduleRest.get($stateParams,
                     function success(value) {
                         $log.info('scheduleCardController: successfully updated schedule page');
                         $scope.changeCron();
                     }, function error(reason) {
                         coreApp.error('Schedule page update failed',reason);
-                    }) : new scheduleRest();
+                    });
         }
 
         //Initialization:
-        loadModel();
+        if($stateParams.id){
+            loadModel();
+        }else{
+            $scope.job = new scheduleRest();
+            $scope.job.task = {};
+        }
+
 
         $scope.isValidForm = function () {
             return $scope.job.name && $scope.job.isCronValid &&
@@ -162,10 +176,11 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
             if ($scope.job.cron) {
                 scheduleRest.validate({value: $scope.job.cron},
                     function success(value) {
-                        if(value.length > 0) {
+                        if(value.length === 0) {
                             $log.info('scheduleCardController: successfully cron validate', value);
                             $scope.job.isCronValid = true;
                         } else {
+                            coreApp.warn('Schedule cron validate failed',value);
                             $scope.job.isCronValid = false;
                         }
                     }, function error(reason) {

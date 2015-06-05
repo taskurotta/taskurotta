@@ -1,7 +1,7 @@
 <p ng-hide="treeProperties.length">
     {{ properties | json }}
 </p>
-<table ng-if="treeProperties.length" class="table table-bordered table-condensed">
+<table ng-if="treeProperties.length" class="table table-bordered table-striped table-condensed">
     <tbody>
     <tr ng-repeat="node in treeProperties" ng-show="node.$visible()">
         <!--<td width="3%">-->
@@ -15,13 +15,9 @@
                 </a>
             </span>
             <small>
-                <!--<a ng-show="node.$children" ng-click="node.$toggle()">-->
-                    <!--({{ node.$num }}) -->
-                <!--</a>-->
-                <!--<span ng-hide="node.$children">-->
-                    <!--({{ node.$num }})-->
-                <!--</span>-->
-                <span class="muted">({{ node.$num }})</span>
+                <span class="muted" ng-hide="{{ treeLevel === false || treeLevel === 'false' }}">
+                    ({{ node.$num }})
+                </span>
                 <b>{{ node.id }}</b>
             </small>
         </td>
@@ -31,7 +27,10 @@
                     <small>{{ node.value }}</small>
                 </a>
                 <span ng-hide="node.$children">
-                    <small ng-class="{ muted:node.value === 'null' }">{{ node.value }}</small>
+                    <small ng-class="{ muted:node.value === 'null' }">
+                          {{ (node.$ends('Time') && node.value > 0) ?
+                            (node.value | date:dateTimeFormat): node.value }}
+                    </small>
                 </span>
             </span>
         </td>

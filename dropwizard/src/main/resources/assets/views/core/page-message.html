@@ -1,9 +1,9 @@
-<div ng-if="messageEvent" class="alert {{ messageEvent.level }}">
+<div ng-if="messageEvent" class="well alert alert-{{ messageEvent.level }}">
     <h5>{{ messageEvent.title }}</h5>
     <table ng-show="messageEvent.message" class="table" style="color:black">
         <tr>
             <td><b>{{messageEvent.message | json }}</b></td>
-            <td ng-if="messageEvent.detail">
+            <td ng-if="messageEvent.detail || messageEvent.detailConfig">
                 <span ng-click="messageEvent.$detail = !messageEvent.$detail" style="cursor:pointer;">
                    <span ng-hide="messageEvent.$detail" class="muted">
                     <i class="icon-chevron-down" popover="Show config" popover-trigger="mouseenter"
@@ -16,11 +16,11 @@
                 </span>
             </td>
         </tr>
-        <tr ng-if="messageEvent.detail">
+        <tr ng-if="messageEvent.detail || messageEvent.detailConfig">
             <td>
                 <div collapse="!messageEvent.$detail" style="font-size: smaller">
-                    <pre ng-if="messageEvent.detail" class="muted">{{ messageEvent.detail }}</pre>
-                    <pre ng-if="messageEvent.detailObject">{{ messageEvent.detailObject | json }}</pre>
+                    <pre ng-if="messageEvent.detail" >{{ messageEvent.detail | json }}</pre>
+                    <pre ng-if="messageEvent.detailConfig" class="muted">{{ messageEvent.detailConfig | json }}</pre>
                 </div>
             </td>
             <td></td>

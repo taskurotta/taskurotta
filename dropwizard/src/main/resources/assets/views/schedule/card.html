@@ -1,63 +1,69 @@
-<div page-header="Edit scheduled task"></div>
+<div page-header="Edit scheduled task" ng-dblclick="$debug = !$debug">
+    <div ng-if="$debug">
+        <h6>{{ job | json }}</h6>
+    </div>
+</div>
 
 <page-message></page-message>
 
 <div class="well">
-    <table width="100%">
+    <h5>Start task properties: </h5>
+    <form class="form-horizontal form-bordered form-small" >
+    <table class="table table-condensed table-noborder">
+        <tr>
+            <th>
+                <div class="controls">
+                Job properties:</div>
+            </th>
+            <th>
+                <div class="controls">
+                <h5>Task properties:</h5></div>
+            </th>
+        </tr>
         <tr>
             <td style="vertical-align: top; width: 430px;">
-                <div class="well">
-                    <h4>Job properties:</h4>
-                    <table class="table table-condensed">
-                        <tr>
-                            <td style="width: 200px;">
-                                <i class="icon-question-sign" popover="Specify the human readable name of the job." popover-trigger="mouseenter"></i>
-                                <b>Job name:</b>
-                            </td>
-                            <td>
-                                <input class="input search-query" type="text" ng-model="job.name" required />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <i class="icon-question-sign" popover="Cron expression to trigger task." popover-trigger="mouseenter"></i>
-                                <b>Cron:</b>
-                            </td>
-                            <td>
-                                <input class="input-small search-query" type="text" ng-model="job.cron" ng-change="changeCron()" required />
-                                <i ng-if="job.isCronValid === true" popover="Valid cron expression" popover-trigger="mouseenter" class="icon-thumbs-up"></i>
-                                <i ng-if="job.isCronValid === false" popover = "Incorrect cron expression" popover-trigger="mouseenter" class="icon-thumbs-down"></i>
+                    <div class="control-group">
+                        <label class="control-label" for="job_name">Job name:</label>
+                        <div class="controls">
+                            <input id="job_name" class="input-xlarge" type="text" ng-model="job.name" required />
+                            <i icon-info="Specify the human readable name of the job."
+                               model="job.name" remove="job.name = null"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="job_cron">Cron:</label>
+                        <div class="controls">
+                            <input id="job_cron" class="input-medium" type="text" ng-model="job.cron"
+                                   ng-change="changeCron()" required />
+                            <i ng-if="job.isCronValid === true" popover="Valid cron expression" popover-trigger="mouseenter" class="icon-thumbs-up"></i>
+                            <i ng-if="job.isCronValid === false" popover = "Incorrect cron expression" popover-trigger="mouseenter" class="icon-thumbs-down"></i>
+                            <i icon-info="Cron expression to trigger task."></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="job_cron" for="job_queueLimit">Queue limit:</label>
+                        <div class="controls">
+                            <input id="job_queueLimit" type="number" min="0" class="input-mini"
+                                   ng-model="job.queueLimit" />
+                            <!--<span ng-if="job.queueLimit<=0" class="muted"><small>disabled</small></span>-->
+                            <i icon-info="Max tasks count per actor queue. If queue size exceeds that value on current scheduler iteration, scheduler would just skip until queue is ready. Use negative or zero value to disable this option."
+                                    model="job.queueLimit" remove="job.queueLimit = 0"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="job_maxErrors">Max errors:</label>
+                        <div class="controls">
+                            <input id="job_maxErrors" type="number" min="-1" class="input-mini"
+                                   ng-model="job.maxErrors" />
+                            <!--<span ng-if="job.maxErrors<=0" class="muted"><small>disabled</small></span>-->
 
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <i class="icon-question-sign" popover="Max tasks count per actor queue. If queue size exceeds that value on current scheduler iteration, scheduler would just skip until queue is ready. Use negative or zero value to disable this option." popover-trigger="mouseenter"></i>
-                                <b>Queue limit:</b>
-                            </td>
-                            <td>
-                                <input type="number" min="0" style="outline: 0" class="input-mini search-query" ng-model="job.queueLimit" />
-                                <!--<span ng-if="job.queueLimit<=0" class="muted"><small>disabled</small></span>-->
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <i class="icon-question-sign" popover="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option." popover-trigger="mouseenter"></i>
-                                <b>Max errors:</b>
-                            </td>
-                            <td>
-                                <input type="number" min="0" style="outline: 0" class="input-mini search-query" ng-model="job.maxErrors" />
-                                <!--<span ng-if="job.maxErrors<=0" class="muted"><small>disabled</small></span>-->
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+                            <i icon-info="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option."
+                               model="job.maxErrors" remove="job.maxErrors = 0"></i>
+                        </div>
+                    </div>
             </td>
             <td style="vertical-align: top;">
-                <div class="well">
-                    <h4>Task properties:</h4>
-                    <div task-form="job.task" task-types="types"></div>
-                 </div>
+                <div task-form="job.task" task-types="types"></div>
             </td>
         </tr>
 

@@ -6,7 +6,7 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
 
         coreAppProvider.setRestUrl('/rest/console/');
         coreAppProvider.setPageSizes([5, 10, 30, 50, 100, 200]);
-        coreAppProvider.setRefreshRates([0, 2, 5, 10, 30, 50, 100]);
+        coreAppProvider.setRefreshRates([0, 2, 5, 10, 30, 60, 120]);
 
         //Dialog configs
         coreAppProvider.setDialogConfirmConfig({
@@ -23,7 +23,7 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
 
         coreAppProvider.setDialogPropertiesConfig({
             templateUrl: '/views/core/dialog-properties.html',
-            windowClass: 'modal-huge',
+            windowClass: 'bigModalDialog',
             controller: 'ModalDialogController'
         });
 
@@ -264,11 +264,14 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
         //Metrics
         $stateProvider.state('metrics', {
             url: '/metrics?{metric}&{scope}&{type}&{period}&{zeroes:bool}&{smooth:int}&' +
-            '{refreshRate:int}&{dataset}&{showDataset:bool}&{zoom:bool}&{pan:bool}&{xaxis:num}&{yaxis:num}',
-            params: { refreshRate: 0 },
+            '{refreshRate:int}&{dataset}&{showDataset:bool}&{zoom:bool}&{pan:bool}&{legend}&{points:bool}&{xaxis:num}&{yaxis:num}',
+            params: { refreshRate: 0, legend: 'nw', points: true },
             resolve: {
                 smoothRates: function () {
                     return [0, 3, 7, 20, 30];
+                },
+                legendPositions : function() {
+                    return {ne:'northeast',nw:'northwest', se: 'southeast', sw : 'southwest' };
                 }
             },
             views: {

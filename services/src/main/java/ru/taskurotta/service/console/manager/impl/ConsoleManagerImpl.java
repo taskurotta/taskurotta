@@ -3,9 +3,7 @@ package ru.taskurotta.service.console.manager.impl;
 import ru.taskurotta.service.console.manager.ConsoleManager;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
-import ru.taskurotta.service.console.model.ProfileVO;
 import ru.taskurotta.service.console.model.QueueStatVO;
-import ru.taskurotta.service.console.model.QueueVO;
 import ru.taskurotta.service.console.model.TaskTreeVO;
 import ru.taskurotta.service.console.retriever.ConfigInfoRetriever;
 import ru.taskurotta.service.console.retriever.DecisionInfoRetriever;
@@ -20,7 +18,6 @@ import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -39,26 +36,6 @@ public class ConsoleManagerImpl implements ConsoleManager {
     private DecisionInfoRetriever decisionInfo;
     private ConfigInfoRetriever configInfo;
     private GraphInfoRetriever graphInfo;
-
-    @Override
-    public GenericPage<QueueVO> getQueuesState(int pageNumber, int pageSize) {
-        if (queueInfo == null) {
-            return null;
-        }
-        List<QueueVO> tmpResult;
-        GenericPage<String> queuesPage = queueInfo.getQueueList(pageNumber, pageSize);
-        if (queuesPage != null && queuesPage.getItems() != null) {
-            tmpResult = new ArrayList<>();
-            for (String queueName : queuesPage.getItems()) {
-                QueueVO queueVO = new QueueVO();
-                queueVO.setName(queueName);
-                queueVO.setCount(queueInfo.getQueueTaskCount(queueName));
-                tmpResult.add(queueVO);
-            }
-            return new GenericPage<>(tmpResult, queuesPage.getPageNumber(), queuesPage.getPageSize(), queuesPage.getTotalCount());
-        }
-        return null;
-    }
 
     @Override
     public Collection<TaskContainer> getProcessTasks(UUID processId) {
@@ -101,27 +78,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public List<ProfileVO> getProfilesInfo() {
-        if (profileInfo == null) {
-            return null;
-        }
-        return profileInfo.getProfileInfo();
-    }
-
-    @Override
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
         if (taskInfo == null) {
             return null;
         }
         return taskInfo.listTasks(pageNumber, pageSize);
-    }
-
-    @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter) {
-        if (processInfo == null) {
-            return null;
-        }
-        return processInfo.listProcesses(pageNumber, pageSize, status, typeFilter);
     }
 
     @Override
@@ -169,11 +130,11 @@ public class ConsoleManagerImpl implements ConsoleManager {
     }
 
     @Override
-    public List<Process> findProcesses(String processId, String customId) {
+    public GenericPage<Process> findProcesses(ProcessSearchCommand command) {
         if (processInfo == null) {
             return null;
         }
-        return processInfo.findProcesses(new ProcessSearchCommand(processId, customId));
+        return processInfo.findProcesses(command);
     }
 
     @Override
@@ -183,25 +144,6 @@ public class ConsoleManagerImpl implements ConsoleManager {
         }
         return taskInfo.findTasks(new TaskSearchCommand(processId, taskId));
     }
-
-//    @Override
-//    public List<QueueVO> getQueuesHovering(float periodSize) {
-//        if (queueInfo == null) {
-//            return null;
-//        }
-//        List<QueueVO> tmpResult = null;
-//        Map<String, Integer> queues = queueInfo.getHoveringCount(periodSize);
-//        if (queues != null) {
-//            tmpResult = new ArrayList<>();
-//            for (Map.Entry<String, Integer> entry : queues.entrySet()) {
-//                QueueVO queueVO = new QueueVO();
-//                queueVO.setName(entry.getKey());
-//                queueVO.setCount(entry.getValue());
-//                tmpResult.add(queueVO);
-//            }
-//        }
-//        return tmpResult;
-//    }
 
     @Override
     public Collection<TaskContainer> getRepeatedTasks(int iterationCount) {

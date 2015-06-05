@@ -107,6 +107,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                         return object;
                     }, {});
                 },
+                parseObjectParam: function(jsonStringParam){
+                   return jsonStringParam ? this.clearObject(JSON.parse(jsonStringParam)) : {};
+                },
+
+                stringifyObjectParam: function(objectParam){
+                    var param = this.clearObject(objectParam);
+                    return _.size(param)>0 ? JSON.stringify(param) : null;
+                },
 
                 getKeys: function(list){
                     return _.reduce(list, function (keys, value, key) {
@@ -179,8 +187,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 info: function(title, reason){
                     $log.info(title, reason);
                     showMessage('info',title, reason);
-                 },
-                error: function(title,reason){
+                },
+                error: function(title, reason){
                     $log.error(title, reason);
                     showMessage('error',title, reason);
                 }
@@ -188,13 +196,38 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         };
         this.$get.$inject = ['$log', '$timeout', '$modal','$filter','$rootScope','$state','$stateParams'];
     })
+    .factory('coreInterceptor', function ($log,$q) {
+       var restUrl = '/rest';
+        function parseData(response){
+            $log.info('intercept response',response.config.url, response.config);
+            //try {
+            //    var data = angular.fromJson(response.data);
+            //    return data;
+            //} catch (e) {
+            //    $log.error('not valid json object', response.data);
+            //    return {
+            //        data: response.data
+            //    };
+            //}
+            return response;
+        }
+       return {
+           'response': function (response) {
+
+               if(response.config.url.indexOf(restUrl) === 0){
+                   return parseData(response);
+               }
+               return response;
+           }
+       };
+    })
     // Config
-    .config(function (datepickerConfig) {
+    .config(function (datepickerConfig,$httpProvider) {
         datepickerConfig.startingDay = 1;
         datepickerConfig.showWeeks = false;
-        datepickerConfig.minDate="2010-01-01";
-        datepickerConfig.maxDate="2100-01-01";
-
+        datepickerConfig.minDate='2010-01-01';
+        datepickerConfig.maxDate='2100-01-01';
+      //  $httpProvider.interceptors.push('coreInterceptor');
     })
 
     //Services
@@ -232,7 +265,8 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$num = parent ? (parent.$num + '.' + (index + 1)) : ('' + (index + 1));
                 item.$level = parent ? (parent.$level + 1 ) : 0;
                 item.$parentKey = parent ? parent.$key : null;
-                item.$expanded = !parent && (item.$children === 0 || contItems === 1);
+                item.$expanded =  true; //(item.$children === 0 || contItems === 1);
+                //item.$expanded = !parent && (item.$children === 0 || contItems === 1); @if wont be collapsed
                 item[subItemsField] = null;
 
                 item.$parent = function getParent(){
@@ -299,10 +333,15 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 item.$num = parent ? (parent.$num + '.' + (++subNum)) : ('' + (++subNum));
                 item.$level = parent ? (parent.$level + 1 ) : 0;
                 item.$parentKey = parent ? parent.$key : null;
-                item.$expanded = !parent && (subNum < 3 || item.$children === 0);
+                item.$expanded = !parent && (subNum < 2 || item.$children === 0);
 
                 item.$parent = function getParent(){
                     return this.$parentKey !== null ? list[this.$parentKey] : null;
+                };
+
+                item.$ends = function(suffix) {
+                    return angular.isString(this.id) ?
+                        this.id.indexOf(suffix, this.id.length - suffix.length) !== -1 : false;
                 };
 
                 item.$visible = function isVisible(){
@@ -351,7 +390,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         return {
             restrict: 'A',
             transclude: false,
-            scope: {properties: '=treeProperties'},
+            scope: {properties: '=treeProperties',treeLevel:"@"},
             templateUrl: '/views/core/tree-properties.html',
             replace: false,
             link: function (scope, element, attrs) {
@@ -532,9 +571,9 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     } else if (isObject && message.reason.status) {
                         $scope.messageEvent.message = 'Status ' + message.reason.status +
                             ' : ' + message.reason.statusText;
-                        $scope.messageEvent.detail = message.reason.data && message.reason.data.length>0 ?
-                            message.reason.data : null;
-                        $scope.messageEvent.detailObject = message.reason.config;
+
+                        $scope.messageEvent.detail = message.reason.data;
+                        $scope.messageEvent.detailConfig = message.reason.config;
 
                     } else {
                         $scope.messageEvent.message = message.reason;
@@ -566,9 +605,18 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
         return {
             restrict: 'A',
             transclude: false,
-            scope: { model: "=model", info: "@iconInfo", remove: "&remove" },
+            scope: { model: '=model', info: '@iconInfo', placement: '@', remove: '&remove' },
             templateUrl: '/views/core/icon-info.html',
-            replace: true
+            replace: true,
+            link: function (scope, element, attrs) {
+                scope.iconHide = function () {
+                    if(angular.isObject(scope.model) || angular.isArray(scope.model)){
+                        return _.size(scope.model)>0 && scope.remove;
+                    }else{
+                        return scope.model && scope.remove;
+                    }
+                };
+            }
         };
     })
 
@@ -618,14 +666,14 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     result = subResult + skip;
                 }
             }
-            //$log.log("skipping index for [" + word + "] is [" + result + "]");
+            //$log.log('skipping index for [' + word + '] is [' + result + ']');
             return result;
         }
 
         function parseWord(word, skip, delimiter){
             var skippingIndex = skippingIndexOf(word, skip || 25, delimiter || '.');
             if (skippingIndex >=0) {
-                //$log.log("skippingIndex["+skippingIndex+"] for["+word+"], sub1["+word.substr(0, skippingIndex+1)+"], sub 2["+word.substr(skippingIndex+1)+"]");
+                //$log.log('skippingIndex['+skippingIndex+'] for['+word+'], sub1['+word.substr(0, skippingIndex+1)+'], sub 2['+word.substr(skippingIndex+1)+']');
                 return ( words[word] = word.substr(0, skippingIndex+1) + '<wbr>' + word.substr(skippingIndex+1));
             }
             return (words[word] = word);

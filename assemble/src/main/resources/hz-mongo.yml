@@ -54,6 +54,8 @@ logging:
         com.hazelcast: INFO
         com.yammer: INFO
         ru.taskurotta: INFO
+        ru.taskurotta.service.hz.storage: DEBUG
+        ru.taskurotta.dropwizard.resources.console.process: DEBUG
     appenders:
     - type: file
       currentLogFilename: "./target/logs/service.log"

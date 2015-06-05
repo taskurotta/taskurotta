@@ -40,6 +40,8 @@
                     ng-options="status.id as status.name for status in ( statuses | filter:'!unknown') ">
                 <option value="">All</option>
             </select>
+            <i icon-info="Filter tasks by *State* condition" model="formParams.status" remove="formParams.status = null"></i>
+
             <button class="btn" ng-click="search()">Search</button>
         </div>
     </div>
@@ -83,6 +85,7 @@
                     </a><br/>
                     <span ng-bind-html="process.startTask.actorId | lineWrap"></span>
                     - <b>{{ process.startTask.method }}</b>
+                    <i icon-info="Show startTask detail" ng-click="showStartTask(process)"></i>
                 </td>
                 <td>
                     {{ process.customId }}
@@ -91,7 +94,7 @@
                    {{ process.startTime | date:dateTimeFormat }}
                 </td>
                 <td>
-                   {{ process.endTime | date:dateTimeFormat }}
+                   {{ process.endTime ? (process.endTime | date:dateTimeFormat) : '' }}
                 </td>
                 <td>
                     <button ng-click="recovery(process)" class="btn btn-small"

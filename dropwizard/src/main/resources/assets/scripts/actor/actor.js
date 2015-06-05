@@ -30,7 +30,7 @@ angular.module('actorModule', ['coreApp'])
                             loadMetrics(params.metrics, $scope.actorsModel.items);
                         }
                     } else {
-                        coreApp.info('Actors not found', value);
+                        coreApp.info('Actors not found');
                     }
                     coreApp.refreshRate(params, loadModel);
                 }, function error(reason) {
@@ -42,9 +42,7 @@ angular.module('actorModule', ['coreApp'])
             $log.info('Load metric data');
             $scope.metricsResource = actorRest.loadMetrics({
                     metrics: coreApp.getKeys(metrics),
-                    actorIds: _.map(actors, function (item) {
-                        return item.id;
-                    })
+                    actorIds: _.map(actors, function (item) { return item.id; })
                 },
                 function success(value) {
                     $log.info('Successfully updated metrics data');
@@ -57,8 +55,7 @@ angular.module('actorModule', ['coreApp'])
 
         //Initialization:
         $scope.formParams = coreApp.copyStateParams();
-        $scope.formParams.metrics = $scope.formParams.metrics ?
-            JSON.parse($scope.formParams.metrics) : {};
+        $scope.formParams.metrics = coreApp.parseObjectParam($scope.formParams.metrics);
 
         $scope.metrics = actorRest.dictionaryMetrics({},
             function success(value) {
@@ -71,15 +68,17 @@ angular.module('actorModule', ['coreApp'])
 
         $scope.changeStateParams = function () {
             var params = coreApp.getStateParams();
-            params.metrics = JSON.stringify($scope.resourceParams.metrics);
+            params.metrics = coreApp.stringifyObjectParam($scope.resourceParams.metrics);
             $log.debug('change $stateParams', params);
         };
 
         //Update command:
         $scope.search = function () {
-            var params = angular.copy($scope.formParams);
-            params.metrics = JSON.stringify(coreApp.clearObject(params.metrics));
-            coreApp.reloadState(params);
+            coreApp.reloadState(angular.extend({},$scope.formParams,{
+                pageNum: undefined,
+                refreshRate: undefined,
+                metrics: coreApp.stringifyObjectParam($scope.formParams.metrics)
+            }));
         };
 
         //Finalization:
@@ -91,8 +90,8 @@ angular.module('actorModule', ['coreApp'])
         $scope.unblock = function (actor) {
             coreApp.openConfirmModal('Actor will be set to unblock.',
                 function confirmed() {
-                    actorRest.unblock(actor.id, function success() {
-                        $log.log('Actor [' + actor.id + '] have been set to unblocked');
+                    actorRest.unblock(actor.id, function success(value) {
+                        $log.log('Actor [' + actor.id + '] have been set to unblocked',value);
                         loadModel($scope.resourceParams);
                     }, function error(reason) {
                         coreApp.error('Error setting unblocked for actor [' + actor.id + ']', reason);
@@ -103,8 +102,8 @@ angular.module('actorModule', ['coreApp'])
         $scope.block = function (actor) {
             coreApp.openConfirmModal('Actor will be set to block.',
                 function confirmed() {
-                    actorRest.block(actor.id, function success() {
-                        $log.log('Actor [' + actor.id + '] have been set to blocked');
+                    actorRest.block(actor.id, function success(value) {
+                        $log.log('Actor [' + actor.id + '] have been set to blocked',value);
                         loadModel($scope.resourceParams);
                     }, function error(reason) {
                         coreApp.error('Error setting blocked for actor [' + actor.id + ']', reason);
