@@ -28,8 +28,7 @@
                 </a>
                 <span ng-hide="node.$children">
                     <small ng-class="{ muted:node.value === 'null' }">
-                          {{ (node.$ends('Time') && node.value > 0) ?
-                            (node.value | date:dateTimeFormat): node.value }}
+                          {{ node.$ends('Time') ? (node.value | dateTime ): node.value }}
                     </small>
                 </span>
             </span>

@@ -61,12 +61,12 @@
                     <div style="width: 100%;" ng-if="queue.lastActivity > 0">
                         <i class="icon-question-sign" popover="Last time an actor tried to poll task from the queue" popover-trigger="mouseenter" ></i>
                         <i class="muted">Last polled: </i>
-                        {{queue.lastActivity | date:dateTimeFormat}}
+                        {{queue.lastActivity | dateTime }}
                     </div>
                     <div style="width: 100%;" ng-if="queue.lastPolledTaskEnqueueTime > 0">
                         <i class="icon-question-sign" popover="Enqueue time for the last successfully polled task for the queue" popover-trigger="mouseenter" ></i>
                         <i class="muted">Effective time:</i>
-                        {{ queue.lastPolledTaskEnqueueTime | date:dateTimeFormat }}
+                        {{ queue.lastPolledTaskEnqueueTime | dateTime }}
                     </div>
                 </td>
                 <td>

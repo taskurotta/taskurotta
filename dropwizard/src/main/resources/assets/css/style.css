@@ -163,6 +163,10 @@ form {
     font-weight: bold;
 }
 
+.input-xsmall {
+    width: 75px;
+}
+
 .inline-label {
     display: inline;
     margin-left: 10px;
@@ -204,13 +208,18 @@ form {
 
 /*Table*/
 .table-items thead th{
-    font-size: 85%;
+    font-size: 90%;
     font-weight: 700;
 }
 
 .table-items tbody td{
     font-size: 85%;
     font-weight: 500;
+}
+
+.table-items tbody th{
+    font-size: 90%;
+    font-weight: 600;
 }
 
 .table-items tbody td td{

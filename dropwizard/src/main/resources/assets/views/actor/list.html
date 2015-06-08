@@ -76,7 +76,7 @@
                                 </tr>
                                 <tr ng-show="nodeItem.lastActivity">
                                     <td><i class="muted">Last activity:</i></td>
-                                    <td> {{nodeItem.lastActivity | date:dateTimeFormat }}</td>
+                                    <td> {{nodeItem.lastActivity | dateTime }}</td>
                                 </tr>
                                 <tr>
                                     <td><i class="muted">Rate({{ resourceParams.metrics[metric] }}):</i></td>
