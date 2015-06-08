@@ -34,7 +34,7 @@ public class OraJobStore implements JobStore {
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
     @Override
-    public long addJob(JobVO task) {
+    public long add(JobVO task) {
         try (Connection connection = dataSource.getConnection();
             CallableStatement cs = connection.prepareCall("BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, MAX_ERRORS, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;")
         ) {
@@ -58,7 +58,7 @@ public class OraJobStore implements JobStore {
     }
 
     @Override
-    public void removeJob(long id) {
+    public void remove(long id) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("DELETE FROM TSK_SCHEDULED WHERE ID = ? ")
         ) {
@@ -71,7 +71,7 @@ public class OraJobStore implements JobStore {
     }
 
     @Override
-    public Collection<Long> getJobIds() {
+    public Collection<Long> getKeys() {
         Collection<Long> result = new ArrayList<>();
         ResultSet rs = null;
         try (Connection connection = dataSource.getConnection();
@@ -91,7 +91,7 @@ public class OraJobStore implements JobStore {
     }
 
     @Override
-    public JobVO getJob(long id) {
+    public JobVO get(long id) {
         ResultSet rs = null;
         JobVO result = null;
         try (Connection connection = dataSource.getConnection();
@@ -135,7 +135,7 @@ public class OraJobStore implements JobStore {
     }
 
     @Override
-    public void updateJob(JobVO jobVO) {
+    public void update(JobVO jobVO, long id) {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement("UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ?, MAX_ERRORS = ? WHERE id = ? ")
         ) {
@@ -146,7 +146,7 @@ public class OraJobStore implements JobStore {
             ps.setTimestamp(5, new Timestamp(new Date().getTime()));
             ps.setInt(6, jobVO.getQueueLimit());
             ps.setInt(7, jobVO.getMaxErrors());
-            ps.setLong(8, jobVO.getId());
+            ps.setLong(8, id);
 
             ps.executeUpdate();
         } catch (SQLException ex) {

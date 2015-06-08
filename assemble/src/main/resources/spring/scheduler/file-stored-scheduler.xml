@@ -7,8 +7,8 @@
             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
             http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 
-    <bean id = "jobStore" class="ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore">
-        <property name="storeLocation" value="${schedule.job.store.dir}" />
+    <bean id = "jobStore" class="ru.taskurotta.service.schedule.storage.SchedulerJsonJobStore">
+        <constructor-arg name="storeLocation" value="${schedule.job.store.dir}" />
     </bean>
 
     <bean id = "jobManager" class="ru.taskurotta.service.schedule.QuartzJobManager" >

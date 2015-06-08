@@ -172,7 +172,7 @@
                 <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
             </bean>
         </property>
-        <property name="queueService" ref="realQueueBackend"/>
+        <property name="queueInfoRetriever" ref="realQueueBackend"/>
     </bean>
 
     <bean id="brokenProcessCountResource" class="ru.taskurotta.dropwizard.resources.monitoring.BrokenProcessCountResource">

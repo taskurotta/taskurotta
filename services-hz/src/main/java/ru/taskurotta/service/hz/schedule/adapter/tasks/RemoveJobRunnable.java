@@ -18,7 +18,7 @@ public class RemoveJobRunnable implements Runnable, Serializable {
 
     @Override
     public void run() {
-        HzJobStoreAdapter.getRealJobStore().removeJob(id);
+        HzJobStoreAdapter.getRealJobStore().remove(id);
     }
 
 }
