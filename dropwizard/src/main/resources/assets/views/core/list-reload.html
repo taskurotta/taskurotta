@@ -1,12 +1,12 @@
-<div style="display: block; height: 50px; vertical-align: baseline">
+<div style="display: block; height: 50px">
     <div style="float:left">
         <div>
             <span ng-hide="refreshRate > 0" class="muted">Auto refreshes </span>
             <span ng-show="refreshRate > 0" class="text-success" style="text-decoration: underline;">Auto refreshes </span>
             <span class="muted">every:</span>
-            <select ng-model="refreshRate" style="height:30px;width:55px;"
-                    ng-options="rr for rr in refreshRates" ng-change="reload()"/>
-            <span class="muted">seconds</span>
+            <select id="refreshRate" ng-model="refreshRate" class="input-xsmall" style="vertical-align: baseline"
+                    ng-options="rate.id as rate.name for rate in ( refreshRates | orderBy:'+id')" ng-change="reload()"></select>
+            <i icon-info="Auto refresh results after a preset time" model="refreshRate" remove="refreshRate = 0; reload()"></i>
         </div>
 
     </div>

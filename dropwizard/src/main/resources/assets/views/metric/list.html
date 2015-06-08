@@ -17,17 +17,17 @@
                         <select id="metric" class="input-medium"
                                 ng-model="formParams.metric"
                                 ng-options="metric.value as metric.value for metric in options.metrics"
-                                ng-change="formParams.dataset = {}">
+                                ng-change="clearForm()">
+                            <option value="" style='display:none;' disabled selected >Select a metric</option>
                         </select>
                         <i icon-info="Specify metrics checkpoint to show. Enable checkbox to enable additional data sets (ex., actor specific) to list."></i>
                     </div>
                 </div>
             </td>
             <td style="border: none;">
-                <div class="control-group">
+                <div class="control-group" ng-if="formParams.metric">
                     <label class="inline-label alert alert-info" for="metric">
-                        {{ formParams.metric ?
-                        (options.metrics | filter:formParams.metric)[0].name : 'Select a metric' }}
+                        {{ (options.metrics | filter:formParams.metric)[0].name }}
                     </label>
                 </div>
             </td>
@@ -129,7 +129,7 @@
     </h4>
     <list-reload model="metricsResource">
 
-        <div style="float: left; margin: 10px 0 0 20px">
+        <div style="float: left; margin: 5px 0 0 20px">
              <span class="muted">Position:</span>
              <span id="metrics-hoverdata"></span>
         </div>

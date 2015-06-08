@@ -31,7 +31,7 @@
             </tr>
             <tr>
                 <td class="form-header">Start time:</td>
-                <td>{{ task.startTime>0 ? (task.startTime | date:dateTimeFormat) : task.startTime }}</td>
+                <td>{{ task.startTime | dateTime }}</td>
             </tr>
             <tr>
                 <td class="form-header">Error attempts:</td>
@@ -68,7 +68,7 @@
             </tr>
             <tr ng-if="taskDecision.restartTime > 0">
                 <td class="form-header">Restart time:</td>
-                <td>{{taskDecision.restartTime | date:dateTimeFormat}}</td>
+                <td>{{taskDecision.restartTime | dateTime }}</td>
             </tr>
             <tr>
                 <td class="form-header">Created tasks:</td>

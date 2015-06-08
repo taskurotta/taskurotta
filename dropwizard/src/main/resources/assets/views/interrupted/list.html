@@ -41,21 +41,26 @@
         <div class="control-group">
             <label class="control-label" for="exception">{{ groups.exception.label }}:</label>
             <div class="controls">
-                <input class="input-large" type="text" id="exception" placeholder="ru.taskurotta.ExampleException"
+                <input class="input-xlarge" type="text" id="exception" placeholder="ru.taskurotta.ExampleException"
                        ng-model="formParams.exception" on-enter="search()"/>
                 <i icon-info="{{ groups.exception.desc }}" model="formParams.exception" remove="formParams.exception = null"></i>
            </div>
         </div>
     </fieldset>
     <div class="control-group">
-        <label class="control-label" for="group">Grouped by:</label>
+        <label class="control-label">Grouped by:</label>
         <div class="controls">
-            <select class="input-mini" id="group" ng-model="formParams.group" style="width: 150px"
-                    ng-options="key as key for (key , group) in (groups | orderBy:'+order')">
+            <!--<select class="input-mini" id="group" ng-model="formParams.group" style="width: 150px"-->
+            <!--ng-options="key as key for (key , group) in (groups | orderBy:'+order')">-->
 
-            </select>
-            <button class="btn" ng-click="search()">Search</button>
+            <!--</select>-->
+            <label class="radio inline" ng-repeat="(key , group) in (groups | orderBy:'+order')">
+                <input type="radio" ng-model="formParams.group" ng-value="key">
+                {{ key }}
+            </label>
+            <button style="margin-left: 10px" class="btn" ng-click="search()">Search</button>
         </div>
+
     </div>
 </div>
 
@@ -89,7 +94,7 @@
                     <span ng-bind-html="task.actorId | lineWrap"></span>
                 </td>
                 <td style="min-width:120px">
-                    {{task.time | date:dateTimeFormat }}
+                    {{task.time | dateTime }}
                 </td>
                 <td style="max-width: 300px;">
                     <div class="muted" ng-bind-html="task.errorClassName | lineWrap"></div>

@@ -52,7 +52,7 @@
                 </td>
                 <td>
                     <div ng-if="schedule.job.status === 1">
-                        {{ schedule.nextExecutionTime | date:dateTimeFormat}}
+                        {{ schedule.nextExecutionTime | dateTime }}
                     </div>
                     <div ng-if="schedule.job.status !== 1">
                         <b>Disabled</b>
@@ -102,7 +102,7 @@
             </td>
             <td style="text-align: right">
                 <span ng-if="serverTime" class="muted">
-                    Server time: <b>{{ serverTime |  date:dateTimeFormat}}</b>
+                    Server time: <b>{{ serverTime | dateTime }}</b>
                 </span>
             </td>
         </tr>

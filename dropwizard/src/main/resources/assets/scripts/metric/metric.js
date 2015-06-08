@@ -31,6 +31,7 @@ angular.module('metricModule', ['coreApp'])
                 });
         }
 
+
         //Initialization:
         $scope.smoothRates = smoothRates;
         $scope.legendPositions = legendPositions;
@@ -40,12 +41,10 @@ angular.module('metricModule', ['coreApp'])
         $scope.$stateParams.showLegend = !!$scope.$stateParams.legend;
         $scope.formParams.dataset = coreApp.parseObjectParam($scope.formParams.dataset);
 
-
-
         $scope.options = metricRest.dictionaryOptions({},
             function success(options) {
                 $log.log('Loaded metric options dictionary', options);
-
+                //function for validate form
                 $scope.isValidForm = function() {
                     var params = $scope.formParams;
                     return params.metric &&
@@ -58,6 +57,29 @@ angular.module('metricModule', ['coreApp'])
                             function(period){ return period.value === params.period; }) &&
                         _.find(params.dataset,
                             function(dataset){ return dataset === true; });
+                };
+
+                //function for clear form
+                $scope.clearForm = function(){
+                    if($scope.formParams.metric) {
+                        $log.debug('clear form');
+                        var scopes = $scope.options.scopes[$scope.formParams.metric];
+                        var dataTypes = $scope.options.dataTypes[$scope.formParams.metric];
+                        var periods = $scope.options.periods[$scope.formParams.metric];
+                        if (!_.find(scopes,function(scope){
+                                return scope.value === $scope.formParams.scope; })) {
+                            $scope.formParams.scope = scopes[0].value;
+                        }
+                        if (! _.find(dataTypes,function(type){
+                                return type.value === $scope.formParams.type; })) {
+                            $scope.formParams.type = dataTypes[0].value;
+                        }
+                        if (! _.find(dataTypes,function(period){
+                                return period.value === $scope.formParams.period; })) {
+                            $scope.formParams.period = periods[0].value;
+                        }
+                        $scope.formParams.dataset = {};
+                    }
                 };
 
                 if(options.metrics.length){
