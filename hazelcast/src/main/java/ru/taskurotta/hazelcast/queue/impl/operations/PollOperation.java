@@ -48,26 +48,15 @@ public final class PollOperation extends QueueOperation
     @Override
     public void run() {
 
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess run start detected");
-        }
-
         item = getOrCreateContainer().poll();
         if (item != null) {
             response = item.getData();
         }
 
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess run end detected");
-        }
     }
 
     @Override
     public void afterRun() throws Exception {
-
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess after run start detected");
-        }
 
         LocalCachedQueueStatsImpl stats = getQueueService().getLocalQueueStatsImpl(name);
         if (response != null) {
@@ -76,17 +65,10 @@ public final class PollOperation extends QueueOperation
             stats.incrementEmptyPolls();
         }
 
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess after run end detected");
-        }
     }
 
     @Override
     public boolean shouldNotify() {
-
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess shouldNotify detected");
-        }
 
         return response != null;
     }
@@ -94,19 +76,11 @@ public final class PollOperation extends QueueOperation
     @Override
     public WaitNotifyKey getNotifiedKey() {
 
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess getNotifiedKey detected");
-        }
-
         return getOrCreateContainer().getOfferWaitNotifyKey();
     }
 
     @Override
     public WaitNotifyKey getWaitKey() {
-
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess getWaitKey detected");
-        }
 
         return getOrCreateContainer().getPollWaitNotifyKey();
     }
@@ -114,22 +88,11 @@ public final class PollOperation extends QueueOperation
     @Override
     public boolean shouldWait() {
 
-        long waitTimeout = getWaitTimeout();
-        int containerSize = getOrCreateContainer().size();
-
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess shouldWait detected waitTimeout = {}, containerSize = {}", waitTimeout, containerSize);
-        }
-
-        return waitTimeout != 0 && containerSize == 0;
+        return getWaitTimeout() != 0 && getOrCreateContainer().size() == 0;
     }
 
     @Override
     public void onWaitExpire() {
-
-        if (name.equals("AbortProcess")) {
-            logger.info("AbortProcess onWaitExpire detected");
-        }
 
         getResponseHandler().sendResponse(null);
     }
