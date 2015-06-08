@@ -62,22 +62,22 @@ angular.module('metricModule', ['coreApp'])
                 //function for clear form
                 $scope.clearForm = function(){
                     if($scope.formParams.metric) {
-                        $log.info('clear form');
-
+                        $log.debug('clear form');
                         var scopes = $scope.options.scopes[$scope.formParams.metric];
                         var dataTypes = $scope.options.dataTypes[$scope.formParams.metric];
                         var periods = $scope.options.periods[$scope.formParams.metric];
-
-                        if (!_.find(scopes,function(scope){ return scope.value === $scope.formParams.scope })) {
+                        if (!_.find(scopes,function(scope){
+                                return scope.value === $scope.formParams.scope; })) {
                             $scope.formParams.scope = scopes[0].value;
                         }
-                        if (! _.find(dataTypes,function(type){ return type.value === $scope.formParams.type })) {
+                        if (! _.find(dataTypes,function(type){
+                                return type.value === $scope.formParams.type; })) {
                             $scope.formParams.type = dataTypes[0].value;
                         }
-                        if (! _.find(dataTypes,function(period){ return period.value === $scope.formParams.period })) {
+                        if (! _.find(dataTypes,function(period){
+                                return period.value === $scope.formParams.period; })) {
                             $scope.formParams.period = periods[0].value;
                         }
-
                         $scope.formParams.dataset = {};
                     }
                 };
