@@ -389,33 +389,41 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     @Override
     public boolean abortProcess(final UUID processId) {
-        boolean result = dependencyService.changeGraph(new GraphDao.Updater() {
-            @Override
-            public UUID getProcessId() {
-                return processId;
-            }
 
-            @Override
-            public boolean apply(Graph graph) {
-                Set<UUID> finishedItems = graph.getFinishedItems();
-                deleteTasksAndDecisions(finishedItems, processId);
+        processService.lock(processId);
 
-                Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
-                deleteTasksAndDecisions(notFinishedItems, processId);
+        try {
+            boolean result = dependencyService.changeGraph(new GraphDao.Updater() {
+                @Override
+                public UUID getProcessId() {
+                    return processId;
+                }
 
-                graphDao.deleteGraph(processId);
+                @Override
+                public boolean apply(Graph graph) {
+                    Set<UUID> finishedItems = graph.getFinishedItems();
+                    deleteTasksAndDecisions(finishedItems, processId);
 
-                return false;
-            }
-        });
+                    Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
+                    deleteTasksAndDecisions(notFinishedItems, processId);
 
-        processService.markProcessAsAborted(processId);
+                    graphDao.deleteGraph(processId);
 
-        garbageCollectorService.collect(processId, timeBeforeManualDeleteProcess);
+                    return false;
+                }
+            });
 
-        logger.info("Abort process [{}]", processId);
+            garbageCollectorService.collect(processId, timeBeforeManualDeleteProcess);
 
-        return result;
+            processService.markProcessAsAborted(processId);
+
+            logger.info("Abort process [{}]", processId);
+
+            return result;
+
+        } finally {
+            processService.unlock(processId);
+        }
     }
 
     @Override
