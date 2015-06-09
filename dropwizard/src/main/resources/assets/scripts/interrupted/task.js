@@ -13,7 +13,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
                 restartGroup: {url: restTaskUrl + 'restart/group', method:'POST', params: {
                     errorClassName:'@exception'
                 }},
-                abortGroup: {url: restTaskUrl + 'restart/group', method:'POST', params: {
+                abortGroup: {url: restTaskUrl + 'abort/group', method:'POST', params: {
                     errorClassName:'@exception'
                 }},
 

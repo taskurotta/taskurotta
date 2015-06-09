@@ -79,14 +79,14 @@
             <td class="form-header">
                 Start time:
             </td>
-            <td>{{ process.startTime>0 ? (process.startTime | date:dateTimeFormat) : process.startTime }}</td>
+            <td>{{ process.startTime | dateTime }}</td>
 
         </tr>
         <tr>
             <td class="form-header">
                 End time:
             </td>
-            <td>{{ process.endTime>0 ? (process.endTime | date:dateTimeFormat) : process.sendTime }}</td>
+            <td>{{ process.endTime | dateTime }}</td>
         </tr>
         <tr>
             <td class="form-header">

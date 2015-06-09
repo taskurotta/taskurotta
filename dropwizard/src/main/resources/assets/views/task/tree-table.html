@@ -13,7 +13,7 @@
                            popover="{{ '(' + node.$num + ')' }}" ></i>
                     </a>
                 </span>
-                <small class="muted">({{ node.$num }})</small>
+                <!--<small class="muted">({{ node.$num }})</small>-->
                 <a ui-sref="task({processId:processTask.processId,taskId:node.id})" class="btn btn-link alert-{{node.state | taskState:'class'}}"
                         title="{{ node.id }}">
                     {{  node.desc ? node.desc : node.id }}

@@ -91,10 +91,10 @@
                     {{ process.customId }}
                 </td>
                 <td>
-                   {{ process.startTime | date:dateTimeFormat }}
+                   {{ process.startTime | dateTime:'-' }}
                 </td>
                 <td>
-                   {{ process.endTime ? (process.endTime | date:dateTimeFormat) : '' }}
+                   {{ process.endTime | dateTime:'-' }}
                 </td>
                 <td>
                     <button ng-click="recovery(process)" class="btn btn-small"

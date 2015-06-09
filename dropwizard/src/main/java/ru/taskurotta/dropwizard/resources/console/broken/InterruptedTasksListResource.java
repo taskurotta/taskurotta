@@ -107,8 +107,8 @@ public class InterruptedTasksListResource {
         int size = 0;
         if (processes!=null && !processes.isEmpty()) {
             for (UUID processId : processes) {
-                recoveryService.abortProcess(processId);
                 long tasks = interruptedTasksService.deleteTasksForProcess(processId);
+                recoveryService.abortProcess(processId);
                 logger.debug("Deleted [{}] interrupted tasks for aborted process [{}]", tasks, processId);
                 size++;
             }

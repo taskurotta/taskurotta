@@ -6,7 +6,6 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
 
         coreAppProvider.setRestUrl('/rest/console/');
         coreAppProvider.setPageSizes([5, 10, 30, 50, 100, 200]);
-        coreAppProvider.setRefreshRates([0, 2, 5, 10, 30, 60, 120]);
 
         //Dialog configs
         coreAppProvider.setDialogConfirmConfig({
@@ -289,11 +288,5 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
         });
 
         $urlRouterProvider.otherwise('/home');
-    })
-
-    .run(function ($rootScope) {
-        $rootScope.dateTimeFormat = 'dd-MM-yyyy HH:mm:ss';
-        $rootScope.timeFormat = 'HH:mm:ss';
-        $rootScope.dateFormat = 'dd-MM-yyyy';
     });
 

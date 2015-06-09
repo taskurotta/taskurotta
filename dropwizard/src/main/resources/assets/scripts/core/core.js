@@ -4,7 +4,11 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
     .provider('coreApp', function () {
         console.log('coreApp.provider');
         var restUrl;
-        var refreshRates = [0,5,10];
+        var refreshRates = [
+            { id:0,name:''}, { id:2,name:'2 sec'}, { id:5,name:'5 sec'},
+            { id:10,name:'10 sec'}, { id:30,name:'30 sec'},
+            { id:60,name:'1 min'}, { id:120,name:'2 min'}, { id:300,name:'5 min'}
+        ];
         var pageSizes = [50,100];
         var argTypes = ['string', 'boolean', 'integer', 'double', 'long', 'null'];
         var dialogConfirmConfig;
@@ -35,7 +39,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
             dialogPropertiesConfig = dialogConfig;
         };
 
-        this.$get = function ($log, $timeout, $modal, $filter, $rootScope, $state, $stateParams) {
+        this.$get = function ($log, $window, $timeout, $modal, $filter, $rootScope, $state, $stateParams) {
             var currentStateParams;
             var refreshRatePromise;
             var rawInterceptor = {
@@ -57,6 +61,12 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     reason: reason
                 });
             }
+
+            //var isFocused = true;
+            //
+            //$window.onfocus = function(){ isFocused = true; };
+            //
+            //$window.onblur = function(){ isFocused = false; };
 
             return {
                 //get Base rest url
@@ -194,7 +204,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 }
             };
         };
-        this.$get.$inject = ['$log', '$timeout', '$modal','$filter','$rootScope','$state','$stateParams'];
+        this.$get.$inject = ['$log', '$window', '$timeout', '$modal','$filter','$rootScope','$state','$stateParams'];
     })
     .factory('coreInterceptor', function ($log,$q) {
        var restUrl = '/rest';
@@ -468,7 +478,6 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                     var params = coreApp.getStateParams();
                     params.refreshRate = $scope.refreshRate;
                     coreApp.reloadState(params);
-
                 };
 
             },
@@ -648,6 +657,13 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
 
 
     //Filters
+    .filter('dateTime', function ($filter) {
+        return function (date, emptyValue) {
+            return date>0 ? $filter('date')(date,'dd-MM-yyyy HH:mm:ss') :
+                ( emptyValue ? emptyValue : date );
+        };
+    })
+
     .filter('prettyStack', function (processRest, coreApp, $log) {
         return function (message) {
             return message.replace(new RegExp('([.,])\\s', 'ig'), '$1' +'<br/>')
