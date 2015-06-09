@@ -3,6 +3,7 @@ package ru.taskurotta.service.notification.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.util.StringUtils;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
@@ -13,6 +14,7 @@ import ru.taskurotta.service.notification.model.NotificationConfig;
 import ru.taskurotta.service.notification.model.StoredState;
 import ru.taskurotta.service.storage.EntityStore;
 import ru.taskurotta.service.storage.InterruptedTasksService;
+import ru.taskurotta.util.NotificationUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,24 +29,131 @@ public class NotificationManagerImpl implements NotificationManager {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationManagerImpl.class);
 
-
     private EmailSender emailSender;
     private EntityStore<NotificationConfig> cfgStore;
+    private EntityStore<StoredState> stateStore;
     private QueueInfoRetriever queueInfoRetriever;
     private InterruptedTasksService interruptedTasksService;
     private long pollTimeout;
     private long interruptedPeriod;
 
     public void execute() {
-        StoredState state = loadState();
-        List<String> newQueues = processVoidQueues(pollTimeout, state.getQueues());
-        state.setQueues(newQueues);
+        StoredState oldState = loadState();
 
-        List<InterruptedTask> newTasks = processInterruptedTasks(interruptedPeriod, state.getTasks());
-        state.setTasks(newTasks);
+        List<String> newQueues = processVoidQueues(pollTimeout, oldState != null ? oldState.getQueues() : null);
+        List<InterruptedTask> newTasks = processInterruptedTasks(interruptedPeriod, oldState!=null? oldState.getTasks() : null);
 
-        state.setDate(new Date());
-        saveState(state);
+        StoredState newState = new StoredState();
+        newState.setQueues(newQueues);
+        newState.setTasks(newTasks);
+        newState.setDate(new Date());
+        if (oldState != null) {
+            stateStore.update(newState, oldState.getId());
+        } else {
+            stateStore.add(newState);
+        }
+    }
+
+    StoredState loadState() {
+        StoredState result = null;
+        Collection<Long> states = stateStore.getKeys();
+        if (states!=null && !states.isEmpty()) {
+            long id = states.iterator().next();
+            result = stateStore.get(id);
+            if (result!=null) {
+                result.setId(id);
+            }
+        }
+        return result;
+    }
+
+    List<String> processVoidQueues(long pollTimeout, List<String> oldValues) {
+        List<String> result = new ArrayList<>();
+        Map<Date, String> queues = queueInfoRetriever.getNotPollingQueues(pollTimeout);
+        if (queues != null) {
+            Collection<String> newValues = NotificationUtils.getFilteredQueueValues(queues.values(), oldValues);
+            if (newValues != null) {
+                result.addAll(newValues);
+                List<Notification> notifications = createVoidQueuesNotifications(newValues);
+                if (notifications != null) {
+                    for (Notification notification : notifications) {
+                        emailSender.send(notification);
+                        logger.debug("Notification[{}] have been successfully send", notification);
+                    }
+                }
+            }
+        }
+
+        return result.isEmpty()? null : result;
+    }
+
+
+    List<InterruptedTask> processInterruptedTasks(long period, List<InterruptedTask> oldValues) {
+        List<InterruptedTask> result = new ArrayList<>();
+        SearchCommand itdCommand = new SearchCommand();
+        long current = System.currentTimeMillis();
+        itdCommand.setEndPeriod(current);
+        itdCommand.setStartPeriod(current-period);
+        Collection<InterruptedTask> itdTasks = interruptedTasksService.find(itdCommand);
+        if (itdTasks != null) {
+            Collection<InterruptedTask> newValues = NotificationUtils.getFilteredTaskValues(itdTasks, oldValues);
+            if (newValues != null) {
+                result.addAll(newValues);
+                List<Notification> notifications = createInterruptedTasksNotifications(newValues);
+                if (notifications != null) {
+                    for (Notification notification : notifications) {
+                        emailSender.send(notification);
+                        logger.debug("Notification[{}] have been successfully send", notification);
+                    }
+                }
+            }
+        }
+
+        return result.isEmpty()? null : result;
+    }
+
+    private List<Notification> createVoidQueuesNotifications(Collection<String> newValues) {
+        List<Notification> result = new ArrayList<>();
+        Collection<Long> keys = cfgStore.getKeys();
+        if (keys!=null) {
+            for (long key : keys) {
+                NotificationConfig cfg = cfgStore.get(key);
+                if (cfg!=null && NotificationUtils.containsValueOfInterest(cfg.getActorIds(), newValues)) {
+                    Notification notification = new Notification();
+                    notification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + newValues);
+                    notification.setIsHtml(false);
+                    notification.setIsMultipart(false);
+                    notification.setSubject("Void queues alert");
+                    notification.setSendFrom("Taskurotta notification service");
+                    notification.setSendTo(StringUtils.collectionToCommaDelimitedString(cfg.getEmails()));
+                    result.add(notification);
+                }
+            }
+
+        }
+        return result;
+    }
+
+    private List<Notification> createInterruptedTasksNotifications(Collection<InterruptedTask> newValues) {
+        List<Notification> result = new ArrayList<>();
+        Collection<Long> keys = cfgStore.getKeys();
+        if (keys!=null) {
+            for (long key : keys) {
+                NotificationConfig cfg = cfgStore.get(key);
+//                if (cfg!=null && NotificationUtils.containsValueOfInterest(cfg.getActorIds(), newValues)) {
+//                    Notification notification = new Notification();
+//                    notification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + newValues);
+//                    notification.setIsHtml(false);
+//                    notification.setIsMultipart(false);
+//                    notification.setSubject("Void queues alert");
+//                    notification.setSendFrom("Taskurotta notification service");
+//                    notification.setSendTo(StringUtils.collectionToCommaDelimitedString(cfg.getEmails()));
+//                    result.add(notification);
+//                }
+            }
+
+        }
+        return result;
     }
 
     @Override
@@ -60,71 +169,6 @@ public class NotificationManagerImpl implements NotificationManager {
     @Override
     public int getStatus() {
         return 0;
-    }
-
-    StoredState loadState() {
-        return null;
-    }
-
-    void saveState(StoredState state) {
-
-    }
-
-    List<String> processVoidQueues(long pollTimeout, List<String> oldValues) {
-        List<String> result = new ArrayList<>();
-        Map<Date, String> queues = queueInfoRetriever.getNotPollingQueues(pollTimeout);
-        if (queues != null) {
-            Collection<String> newValues = getFilteredQueueValues(queues.values(), oldValues);
-            if (newValues != null) {
-                List<Notification> notifications = createNotifications(newValues);
-                if (notifications != null) {
-                    for (Notification notification : notifications) {
-                        emailSender.send(notification);
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private List<Notification> createNotifications(Collection<String> newValues) {
-        return null;
-    }
-
-    Collection<String> getFilteredQueueValues(Collection<String> target, Collection<String> stored) {
-        Collection<String> result = target;
-        if (target!=null && stored!=null) {
-            result = new ArrayList<>();
-            for (String val : target) {
-                if (!stored.contains(val)) {
-                    result.add(val);
-                }
-            }
-        }
-        return result;
-    }
-
-    Collection<InterruptedTask> getFilteredTaskValues(Collection<InterruptedTask> target, Collection<InterruptedTask> stored) {
-        Collection<InterruptedTask> result = target;
-        if (target!=null && stored != null) {
-            result = new ArrayList<InterruptedTask>();
-            for (InterruptedTask task : target) {
-                if (!stored.contains(task)) {
-                    result.add(task);
-                }
-            }
-        }
-        return result;
-    }
-
-    List<InterruptedTask> processInterruptedTasks(long period, List<InterruptedTask> oldValues) {
-        return null;
-    }
-
-    Collection<InterruptedTask> getInterruptedTasks(SearchCommand searchCommand) {
-        Collection<InterruptedTask> tasks = interruptedTasksService.find(searchCommand);
-        return null;
     }
 
     @Override
@@ -175,5 +219,10 @@ public class NotificationManagerImpl implements NotificationManager {
     @Required
     public void setEmailSender(EmailSender emailSender) {
         this.emailSender = emailSender;
+    }
+
+    @Required
+    public void setStateStore(EntityStore<StoredState> stateStore) {
+        this.stateStore = stateStore;
     }
 }

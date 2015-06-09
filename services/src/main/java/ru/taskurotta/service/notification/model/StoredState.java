@@ -10,10 +10,18 @@ import java.util.List;
  * Created on 08.06.2015.
  */
 public class StoredState implements Serializable {
-
+    private long id;
     private List<String> queues;
     private List<InterruptedTask> tasks;
     private Date date;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public List<String> getQueues() {
         return queues;
