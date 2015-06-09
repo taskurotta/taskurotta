@@ -121,6 +121,11 @@ public class HzJobStoreAdapter implements JobStore {
     }
 
     @Override
+    public Collection<JobVO> getAll() {
+        return jobStore.getAll();
+    }
+
+    @Override
     public int getJobStatus(long jobId) {
         return jobStore.getJobStatus(jobId);
     }

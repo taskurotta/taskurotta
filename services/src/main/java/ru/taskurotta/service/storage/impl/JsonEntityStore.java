@@ -119,6 +119,29 @@ public class JsonEntityStore<E> implements EntityStore<E> {
         return result;
     }
 
+    @Override
+    public Collection<E> getAll() {
+        Collection<E> result = null;
+        File[] stores = getStore().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(STORE_FILE_EXTENSION);
+            }
+        });
+        if (stores != null && stores.length>0) {
+            result = new ArrayList<>();
+            for (File file : stores) {
+                try {
+                    result.add(objectMapper.readValue(file, entityClass));
+                } catch (Exception e) {
+                    logger.error("Cannot parse entity file " + file);
+                }
+            }
+        }
+        logger.debug("Entities are [{}]", result);
+        return result;
+    }
+
 
     @Override
     public void update(E entity, long id) {

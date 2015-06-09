@@ -17,4 +17,6 @@ public interface EntityStore<E> {
 
     E get(long id);
 
+    Collection<E> getAll();
+
 }

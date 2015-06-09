@@ -9,12 +9,6 @@ import java.util.List;
  */
 public interface NotificationManager {
 
-    boolean start();
-
-    boolean stop();
-
-    int getStatus();
-
     NotificationConfig getConfig(long id);
 
     long addConfig(NotificationConfig cfg);

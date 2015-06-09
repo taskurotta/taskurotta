@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created on 08.06.2015.
@@ -118,15 +119,18 @@ public class NotificationManagerImpl implements NotificationManager {
         if (keys!=null) {
             for (long key : keys) {
                 NotificationConfig cfg = cfgStore.get(key);
-                if (cfg!=null && NotificationUtils.containsValueOfInterest(cfg.getActorIds(), newValues)) {
-                    Notification notification = new Notification();
-                    notification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + newValues);
-                    notification.setIsHtml(false);
-                    notification.setIsMultipart(false);
-                    notification.setSubject("Void queues alert");
-                    notification.setSendFrom("Taskurotta notification service");
-                    notification.setSendTo(StringUtils.collectionToCommaDelimitedString(cfg.getEmails()));
-                    result.add(notification);
+                if (cfg!=null) {
+                    Set<String> trackedQueues = NotificationUtils.getTrackedValues(cfg.getActorIds(), newValues);
+                    if (trackedQueues!=null) {
+                        Notification notification = new Notification();
+                        notification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + trackedQueues);
+                        notification.setIsHtml(false);
+                        notification.setIsMultipart(false);
+                        notification.setSubject("Void queues alert");
+                        notification.setSendFrom("Taskurotta notification service");
+                        notification.setSendTo(StringUtils.collectionToCommaDelimitedString(cfg.getEmails()));
+                        result.add(notification);
+                    }
                 }
             }
 
@@ -140,35 +144,23 @@ public class NotificationManagerImpl implements NotificationManager {
         if (keys!=null) {
             for (long key : keys) {
                 NotificationConfig cfg = cfgStore.get(key);
-//                if (cfg!=null && NotificationUtils.containsValueOfInterest(cfg.getActorIds(), newValues)) {
-//                    Notification notification = new Notification();
-//                    notification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + newValues);
-//                    notification.setIsHtml(false);
-//                    notification.setIsMultipart(false);
-//                    notification.setSubject("Void queues alert");
-//                    notification.setSendFrom("Taskurotta notification service");
-//                    notification.setSendTo(StringUtils.collectionToCommaDelimitedString(cfg.getEmails()));
-//                    result.add(notification);
-//                }
+                if (cfg!=null) {
+                    Set<String> actorIds = NotificationUtils.asActorIdList(newValues);
+                    Collection trackedActors = NotificationUtils.getTrackedValues(cfg.getActorIds(), actorIds);
+                    if (trackedActors != null) {
+                        Notification notification = new Notification();
+                        notification.setBody("Process(es) failed with error. \n\r Actors are: " + trackedActors);
+                        notification.setIsHtml(false);
+                        notification.setIsMultipart(false);
+                        notification.setSubject("Failed process alert");
+                        notification.setSendFrom("Taskurotta notification service");
+                        notification.setSendTo(StringUtils.collectionToCommaDelimitedString(cfg.getEmails()));
+                        result.add(notification);
+                    }
+                }
             }
-
         }
         return result;
-    }
-
-    @Override
-    public boolean start() {
-        return false;
-    }
-
-    @Override
-    public boolean stop() {
-        return false;
-    }
-
-    @Override
-    public int getStatus() {
-        return 0;
     }
 
     @Override
