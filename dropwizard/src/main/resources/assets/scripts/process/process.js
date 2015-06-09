@@ -16,7 +16,7 @@ angular.module('processModule', ['taskModule', 'coreApp'])
                 clone: {url: restOperationUrl + 'process/clone', method: 'POST', interceptor:rawInterceptor},
                 abort: {url: restOperationUrl + 'process/abort',method: 'POST', interceptor:rawInterceptor},
                 //dictionaries
-                dictionaryState: {url: '/scripts/process/states.json', params: {}, isArray: true}
+                dictionaryState: {url: '/scripts/process/states.json', params: {}, isArray: true, cache: true}
             }
         );
     })

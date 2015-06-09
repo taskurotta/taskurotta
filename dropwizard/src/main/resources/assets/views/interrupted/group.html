@@ -130,7 +130,7 @@
 
                 </th>
                 <th style="width: 100px;">
-                    Total: <a ui-sref="interrupted_list(joinFilterParam({},group.name))" popover="List all tasks in the group" popover-trigger="mouseenter">
+                    Total: <a ui-sref="interrupted_list(joinFilterParam($stateParams,group.name))" popover="List all tasks in the group" popover-trigger="mouseenter">
                     <b>{{group.total}}</b></a>
                 </th>
                 <td style="width: 100px; text-align:center;">
