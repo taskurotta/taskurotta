@@ -21,7 +21,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
                 deactivate: {url: restScheduleUrl + 'action/deactivate/', method: 'POST', params: {}},
                 delete: {url: restScheduleUrl + 'action/delete/', method: 'POST', params: {}},
                 //dictionaries
-                dictionaryState: {url: '/scripts/schedule/states.json', params: {}, isArray: true}
+                dictionaryState: {url: '/scripts/schedule/states.json', params: {}, isArray: true, cache: true}
             }
         );
     })

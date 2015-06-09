@@ -10,7 +10,7 @@ angular.module('taskModule', ['coreApp'])
                 queryList: {url: restTaskUrl, params: {}},
                 queryRepeated: {url: coreApp.getRestUrl() + 'repeatedTasks/', params: {}, isArray: true},
                 //dictionaries
-                dictionaryState: {url: '/scripts/task/states.json', params: {}, isArray: true}
+                dictionaryState: {url: '/scripts/task/states.json', params: {}, isArray: true, cache: true}
 
             }
         );
