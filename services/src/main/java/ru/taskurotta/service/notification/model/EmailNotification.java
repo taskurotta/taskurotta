@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created on 08.06.2015.
  */
-public class Notification implements Serializable {
+public class EmailNotification implements Serializable {
 
     private String sendFrom;
     private String sendTo;

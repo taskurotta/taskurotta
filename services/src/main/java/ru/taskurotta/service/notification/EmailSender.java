@@ -8,7 +8,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import ru.taskurotta.service.notification.model.EmailAttach;
-import ru.taskurotta.service.notification.model.Notification;
+import ru.taskurotta.service.notification.model.EmailNotification;
 
 import javax.mail.internet.MimeMessage;
 import java.io.File;
@@ -23,26 +23,26 @@ public class EmailSender {
 
     private JavaMailSender mailSender;
 
-    public void send(Notification notification) {
+    public void send(EmailNotification emailNotification) {
         try {
-            mailSender.send(toMimeMessage(notification));
-            logger.info("Notification [{}] successfully sent", notification);
+            mailSender.send(toMimeMessage(emailNotification));
+            logger.info("Notification [{}] successfully sent", emailNotification);
         } catch (Exception e) {
-            logger.error("Cannot send email notification ["+notification+"]", e);
+            logger.error("Cannot send email notification ["+ emailNotification +"]", e);
         }
     }
 
-    private MimeMessage toMimeMessage(final Notification notification) throws Exception {
+    private MimeMessage toMimeMessage(final EmailNotification emailNotification) throws Exception {
 
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
             public void prepare(MimeMessage mimeMessage) throws javax.mail.MessagingException {
-                MimeMessageHelper message = new MimeMessageHelper(mimeMessage, notification.isMultipart(), notification.getEncoding());
-                message.setFrom(notification.getSendFrom());
-                message.setTo(notification.getSendTo());
-                message.setSubject(notification.getSubject());
-                message.setText(notification.getBody(), notification.isHtml());
+                MimeMessageHelper message = new MimeMessageHelper(mimeMessage, emailNotification.isMultipart(), emailNotification.getEncoding());
+                message.setFrom(emailNotification.getSendFrom());
+                message.setTo(emailNotification.getSendTo());
+                message.setSubject(emailNotification.getSubject());
+                message.setText(emailNotification.getBody(), emailNotification.isHtml());
 
-                addAttaches(message, notification.getAttaches());
+                addAttaches(message, emailNotification.getAttaches());
             }
         };
 
@@ -63,7 +63,6 @@ public class EmailSender {
             }
         }
     }
-
 
     @Required
     public void setMailSender(JavaMailSender mailSender) {

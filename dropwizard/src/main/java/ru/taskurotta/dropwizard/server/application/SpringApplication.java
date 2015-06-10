@@ -48,11 +48,13 @@ public class SpringApplication extends Application<TaskServerConfig> {
         } else {
             bootstrap.addBundle(new AssetsBundle("/assets", "/", "app.html"));
         }
-
     }
 
     @Override
     public void run(TaskServerConfig configuration, Environment environment) throws Exception {
+//        ObjectMapper customMapper = new ObjectMapper();
+//        customMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//        environment.jersey().register(new JacksonMessageBodyProvider(customMapper, environment.getValidator()));
         environment.jersey().setUrlPattern(configuration.getJerseyUrlPattern());
         registerEnvironmentBeans(configuration, environment);
     }

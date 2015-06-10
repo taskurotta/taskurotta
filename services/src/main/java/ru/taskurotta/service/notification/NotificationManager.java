@@ -1,20 +1,27 @@
 package ru.taskurotta.service.notification;
 
-import ru.taskurotta.service.notification.model.NotificationConfig;
+import ru.taskurotta.service.notification.model.NotificationTrigger;
+import ru.taskurotta.service.notification.model.Subscription;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Created on 08.06.2015.
  */
 public interface NotificationManager {
 
-    NotificationConfig getConfig(long id);
+    void execute();
 
-    long addConfig(NotificationConfig cfg);
+    Subscription getSubscription(long id);
 
-    void updateConfig(NotificationConfig cfg, long id);
+    long addSubscription(Subscription cfg);
 
-    List<NotificationConfig> getConfigs();
+    void updateSubscription(Subscription cfg, long id);
+
+    Collection<Subscription> listSubscriptions();
+
+    Collection<NotificationTrigger> listTriggers();
+
+    Collection<Subscription> listTriggerSubscriptions(NotificationTrigger trigger);
 
 }

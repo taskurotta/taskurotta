@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created on 08.06.2015.
  */
-public class NotificationConfig implements Serializable {
+public class Subscription implements Serializable {
 
     private long id;
 
@@ -14,7 +14,7 @@ public class NotificationConfig implements Serializable {
 
     private List<String> emails;
 
-    private String type;
+    private List<Long> triggersKeys;
 
     public long getId() {
         return id;
@@ -40,21 +40,21 @@ public class NotificationConfig implements Serializable {
         this.emails = emails;
     }
 
-    public String getType() {
-        return type;
+    public List<Long> getTriggersKeys() {
+        return triggersKeys;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTriggersKeys(List<Long> triggersKeys) {
+        this.triggersKeys = triggersKeys;
     }
 
     @Override
     public String toString() {
-        return "NotificationConfig{" +
+        return "Subscription{" +
                 "id=" + id +
                 ", actorIds=" + actorIds +
                 ", emails=" + emails +
-                ", type='" + type + '\'' +
+                ", triggersKeys=" + triggersKeys +
                 '}';
     }
 }
