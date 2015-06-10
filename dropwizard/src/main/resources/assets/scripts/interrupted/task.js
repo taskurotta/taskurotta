@@ -117,6 +117,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             coreApp.openConfirmModal('Tasks of group '+group.name +' will be restarted.',
                 function confirmed() {
                     var params = $scope.joinFilterParam(angular.copy($scope.resourceParams),group.name);
+                    params.refreshRate = undefined;
                     $log.info('restartGroup', params);
                     interruptedRest.restartGroup(params, function success() {
                         $log.log('Tasks of group ' + group.name + ' have been restarted');
@@ -131,6 +132,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             coreApp.openConfirmModal('Tasks of group '+group.name +' will be aborted.',
                 function confirmed() {
                     var params = $scope.joinFilterParam(angular.copy($scope.resourceParams),group.name);
+                    params.refreshRate = undefined;
                     $log.info('abortGroup', params);
                     interruptedRest.abortGroup(params, function success() {
                         $log.log('Tasks of group ' + group.name + ' have been aborted');

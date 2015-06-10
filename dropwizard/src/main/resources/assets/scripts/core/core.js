@@ -506,7 +506,7 @@ angular.module('coreApp', ['ngResource', 'ngSanitize', 'ui.router',
                 $scope.pageSizes = coreApp.getPageSizes();
 
                 $scope.$watch('model', function (value,oldValue) {
-                    if (value, value!=oldValue) {
+                    if (value && value!=oldValue) {
                         $scope.totalCount = $scope.model.totalCount || $scope.model.items.length;
 
                         if($scope.model.pageNumber && $scope.model.pageSize){
