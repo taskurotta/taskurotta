@@ -68,6 +68,7 @@ public class HzTaskDao implements TaskDao {
 
             decision.setState(Decision.STATE_FINISH);
             decision.setDecisionContainer(taskDecision);
+            decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
             return true;
@@ -97,6 +98,7 @@ public class HzTaskDao implements TaskDao {
 
             decision.setState(Decision.STATE_REGISTERED);
             decision.setDecisionContainer(null);
+            decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
             return true;
@@ -167,6 +169,7 @@ public class HzTaskDao implements TaskDao {
 
             decision.setState(Decision.STATE_REGISTERED);
             decision.setDecisionContainer(null);
+            decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
             return true;
