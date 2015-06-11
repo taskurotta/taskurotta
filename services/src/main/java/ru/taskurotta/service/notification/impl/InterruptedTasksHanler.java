@@ -51,9 +51,9 @@ public class InterruptedTasksHanler implements TriggerHandler {
                 List<InterruptedTask> newTasks = failedTasks!=null? new ArrayList<InterruptedTask>(failedTasks): new ArrayList<InterruptedTask>();
                 result = mapper.writeValueAsString(newTasks);
 
-                Collection<InterruptedTask> addedValues = NotificationUtils.getFilteredTaskValues(newTasks, prevTasks);
-                if (addedValues != null) {
-                    List<EmailNotification> emailNotifications = createInterruptedTasksNotifications(addedValues, subscriptions);
+                NotificationUtils.excludeOldTasksValues(newTasks, prevTasks);
+                if (newTasks != null && !newTasks.isEmpty()) {
+                    List<EmailNotification> emailNotifications = createInterruptedTasksNotifications(newTasks, subscriptions);
                     if (emailNotifications != null) {
                         for (EmailNotification emailNotification : emailNotifications) {
                             emailSender.send(emailNotification);

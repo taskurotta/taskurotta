@@ -48,9 +48,9 @@ public class VoidQueuesHandler implements TriggerHandler {
                 List<String> newQueueNames = voidQueues!=null? new ArrayList<String>(voidQueues.values()) : new ArrayList<String>();
                 result = mapper.writeValueAsString(newQueueNames);
 
-                Collection<String> addedValues = NotificationUtils.getFilteredQueueValues(newQueueNames, prevQueueNames);
-                if (addedValues != null) {
-                    List<EmailNotification> emailNotifications = createVoidQueuesNotifications(addedValues, subscriptions);
+                NotificationUtils.excludeOldValues(newQueueNames, prevQueueNames);
+                if (newQueueNames != null && !newQueueNames.isEmpty()) {
+                    List<EmailNotification> emailNotifications = createVoidQueuesNotifications(newQueueNames, subscriptions);
                     if (emailNotifications != null) {
                         for (EmailNotification emailNotification : emailNotifications) {
                             emailSender.send(emailNotification);

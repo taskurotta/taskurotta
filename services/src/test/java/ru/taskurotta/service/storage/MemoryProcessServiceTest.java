@@ -1,9 +1,8 @@
-package ru.taskurotta.service.ru.taskurotta.service.storage;
+package ru.taskurotta.service.storage;
 
 import org.junit.Test;
 import org.testng.Assert;
 import ru.taskurotta.internal.core.TaskType;
-import ru.taskurotta.service.storage.MemoryProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.UUID;

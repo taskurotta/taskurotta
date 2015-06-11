@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.taskurotta.service.console.model.InterruptedTask;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -37,13 +37,13 @@ public class NotificationUtils {
         return result;
     }
 
-    public static Set<String> getTrackedValues(Collection<String> target, Collection<String> valuesOfInterest) {
+    public static Set<String> getTrackedValues(Collection<String> trackedValues, Collection<String> actualValues) {
         Set<String> result = new HashSet<>();
-        if (target!=null && valuesOfInterest!=null) {
-            for (String item : target) {
-                for (String valueOfInterest : valuesOfInterest) {
-                    if (valueOfInterest.toLowerCase().startsWith(item.toLowerCase())) {
-                        result.add(valueOfInterest);
+        if (trackedValues!=null && actualValues!=null) {
+            for (String trackedValue : trackedValues) {
+                for (String actualValue : actualValues) {
+                    if (actualValue.toLowerCase().startsWith(trackedValue.toLowerCase())) {
+                        result.add(actualValue);
                     }
                 }
             }
@@ -51,30 +51,28 @@ public class NotificationUtils {
         return result.isEmpty()? null : result;
     }
 
-    public static Collection<String> getFilteredQueueValues(Collection<String> target, Collection<String> stored) {
-        Collection<String> result = target;
-        if (target!=null && stored!=null) {
-            result = new ArrayList<>();
-            for (String val : target) {
-                if (!stored.contains(val)) {
-                    result.add(val);
+    public static void excludeOldValues(Collection<String> newValues, Collection<String> oldValues) {
+        if (newValues!=null && oldValues!=null) {
+            Iterator<String> iter = newValues.iterator();
+            while (iter.hasNext()) {
+                String val = iter.next();
+                if (oldValues.contains(val)) {
+                    iter.remove();
                 }
             }
         }
-        return result;
     }
 
-    public static Collection<InterruptedTask> getFilteredTaskValues(Collection<InterruptedTask> target, Collection<InterruptedTask> stored) {
-        Collection<InterruptedTask> result = target;
-        if (target!=null && stored != null) {
-            result = new ArrayList<InterruptedTask>();
-            for (InterruptedTask task : target) {
-                if (!stored.contains(task)) {
-                    result.add(task);
+    public static void excludeOldTasksValues(Collection<InterruptedTask> newValues, Collection<InterruptedTask> oldValues) {
+        if (newValues!=null && oldValues!=null) {
+            Iterator<InterruptedTask> iter = newValues.iterator();
+            while (iter.hasNext()) {
+                InterruptedTask val = iter.next();
+                if (oldValues.contains(val)) {
+                    iter.remove();
                 }
             }
         }
-        return result;
     }
 
     public static String listToJson(List<String> target, String defVal) {
@@ -100,8 +98,5 @@ public class NotificationUtils {
         }
         return result;
     }
-
-
-
 
 }
