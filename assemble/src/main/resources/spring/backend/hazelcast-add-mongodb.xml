@@ -64,6 +64,20 @@
         <constructor-arg name="bSerializationService" ref="bSerializationService"/>
     </bean>
 
+    <bean id="incompleteTaskFinder" class="ru.taskurotta.service.hz.recovery.IncompleteTaskFinder">
+        <constructor-arg name="recoveryService" ref="recoveryService"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
+        <constructor-arg name="decisionCollectionName" value="${hz.map.decision.name}"/>
+        <constructor-arg name="incompleteTaskFindTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${recovery.task.find-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="batchSize" value="${recovery.task.batch-size}"/>
+        <constructor-arg name="nodeLock" ref="recoveryTaskNodeLock"/>
+        <constructor-arg name="enabled" value="${recovery.task.enabled}"/>
+    </bean>
+
     <!-- /Services -->
 
     <!-- Executors -->
