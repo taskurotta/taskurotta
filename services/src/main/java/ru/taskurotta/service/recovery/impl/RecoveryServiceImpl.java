@@ -44,6 +44,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
     public static AtomicInteger recoveredInterruptedTasksCounter = new AtomicInteger();
     public static AtomicInteger recoveredProcessDecisionCounter = new AtomicInteger();
+    public static AtomicInteger resurrectedTasks = new AtomicInteger();
 
     private GeneralTaskServer generalTaskServer;
     private QueueService queueService;
@@ -462,6 +463,42 @@ public class RecoveryServiceImpl implements RecoveryService {
             processService.unlock(processId);
         }
 
+    }
+
+    @Override
+    public boolean resurrectTask(UUID taskId, UUID processId) {
+        TaskContainer taskContainer = taskService.getTask(taskId, processId);
+        if (taskContainer == null) {
+            logger.error("{}/{}: not found task container", processId, taskId);
+            return false;
+        }
+
+        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), false)) {
+            String actorId = taskContainer.getActorId();
+            long startTime = taskContainer.getStartTime();
+            String taskList = TransportUtils.getTaskList(taskContainer);
+            if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
+                logger.debug("{}/{}: task container have been enqueued", processId, taskId);
+            } else {
+                logger.warn("{}/{}: can not restart task. Enqueue operation is false", processId, taskId, taskContainer);
+                return false;
+            }
+        } else {
+            // task is finished but still ready in Graph.
+            try {
+                generalTaskServer.processDecision(taskId, processId);
+            } catch (RuntimeException ex) {
+                logger.error("Can not process decision", ex);
+            }
+
+            logger.warn("{}/{}: can not restart task. taskService.restartTask() operation is false", processId, taskId, taskContainer);
+            return false;
+        }
+
+        logger.debug("{}/{}: task container [{}] have been restarted", processId, taskId, taskContainer);
+        resurrectedTasks.incrementAndGet();
+
+        return true;
     }
 
     private boolean hasOtherNotReadyFatalTasks(UUID processId, UUID taskId, Map<UUID, Long> readyItems) {
