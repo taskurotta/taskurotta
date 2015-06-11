@@ -238,12 +238,12 @@ public class ProcessInspector {
             }
 
             @Override
-            public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+            public boolean restartTask(UUID taskId, UUID processId, boolean force) {
                 return true;
             }
 
             @Override
-            public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+            public boolean retryTask(UUID taskId, UUID processId) {
                 return true;
             }
 

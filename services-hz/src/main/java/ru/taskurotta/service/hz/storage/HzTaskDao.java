@@ -79,7 +79,7 @@ public class HzTaskDao implements TaskDao {
 
     // todo: save timeToStart
     @Override
-    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+    public boolean retryTask(UUID taskId, UUID processId) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
@@ -148,7 +148,7 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
