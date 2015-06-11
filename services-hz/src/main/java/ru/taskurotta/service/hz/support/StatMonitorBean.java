@@ -165,7 +165,9 @@ public class StatMonitorBean implements StatInfoRetriever {
                 "  restartedBrokenTasks = " +
                 RecoveryServiceImpl.restartedBrokenTasks.get() +
                 "  recoveredProcessDecisionCounter = " +
-                RecoveryServiceImpl.recoveredProcessDecisionCounter.get());
+                RecoveryServiceImpl.recoveredProcessDecisionCounter.get() +
+                "  resurrectedTasks = " +
+                RecoveryServiceImpl.resurrectedTasks.get());
 
         sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
                 "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
