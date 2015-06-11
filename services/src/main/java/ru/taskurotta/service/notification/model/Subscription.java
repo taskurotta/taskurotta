@@ -1,6 +1,7 @@
 package ru.taskurotta.service.notification.model;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,6 +16,8 @@ public class Subscription implements Serializable {
     private List<String> emails;
 
     private List<Long> triggersKeys;
+
+    private Date changeDate;
 
     public long getId() {
         return id;
@@ -48,6 +51,14 @@ public class Subscription implements Serializable {
         this.triggersKeys = triggersKeys;
     }
 
+    public Date getChangeDate() {
+        return changeDate;
+    }
+
+    public void setChangeDate(Date changeDate) {
+        this.changeDate = changeDate;
+    }
+
     @Override
     public String toString() {
         return "Subscription{" +
@@ -55,6 +66,7 @@ public class Subscription implements Serializable {
                 ", actorIds=" + actorIds +
                 ", emails=" + emails +
                 ", triggersKeys=" + triggersKeys +
+                ", changeDate=" + changeDate +
                 '}';
     }
 }

@@ -1,15 +1,12 @@
 package ru.taskurotta.service.notification.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.service.notification.NotificationManager;
 import ru.taskurotta.service.notification.TriggerHandler;
+import ru.taskurotta.service.notification.dao.NotificationDao;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
 import ru.taskurotta.service.notification.model.Subscription;
-import ru.taskurotta.service.storage.EntityStore;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -18,25 +15,23 @@ import java.util.Date;
  */
 public class NotificationManagerImpl implements NotificationManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(NotificationManagerImpl.class);
+    private NotificationDao notificationDao;
 
-    private EntityStore<Subscription> subscriptionsStore;
-    private EntityStore<NotificationTrigger> triggersStore;
     private Collection<TriggerHandler> handlers;
 
     @Override
     public void execute() {
-        Collection<Long> triggerKeys = triggersStore.getKeys();
+        Collection<Long> triggerKeys = notificationDao.listTriggerKeys();
         if (triggerKeys!=null && triggerKeys.isEmpty()) {
             for (Long tKey : triggerKeys) {
-                NotificationTrigger trigger = triggersStore.get(tKey);
+                NotificationTrigger trigger = notificationDao.getTrigger(tKey);
                 if (trigger != null) {
                     TriggerHandler handler = getHandlerForType(trigger.getType());
                     if (handler != null) {
-                        String newState = handler.handleTrigger(trigger.getStoredState(), listTriggerSubscriptions(trigger), trigger.getCfg());
+                        String newState = handler.handleTrigger(trigger.getStoredState(), notificationDao.listTriggerSubscriptions(trigger), trigger.getCfg());
                         trigger.setStoredState(newState);
                         trigger.setChangeDate(new Date());
-                        triggersStore.update(trigger, tKey);
+                        notificationDao.updateTrigger(trigger, tKey);
                     }
                 }
             }
@@ -58,48 +53,32 @@ public class NotificationManagerImpl implements NotificationManager {
 
     @Override
     public Subscription getSubscription(long id) {
-        return subscriptionsStore.get(id);
+        return notificationDao.getSubscription(id);
     }
 
     @Override
-    public long addSubscription(Subscription cfg) {
-        return subscriptionsStore.add(cfg);
+    public NotificationTrigger getTrigger(long id) {
+        return notificationDao.getTrigger(id);
     }
 
     @Override
-    public void updateSubscription(Subscription cfg, long id) {
-        subscriptionsStore.update(cfg, id);
+    public long addSubscription(Subscription subscription) {
+        return notificationDao.addSubscription(subscription);
+    }
+
+    @Override
+    public void updateSubscription(Subscription subscription, long id) {
+        notificationDao.updateSubscription(subscription, id);
     }
 
     @Override
     public Collection<Subscription> listSubscriptions() {
-        return subscriptionsStore.getAll();
+        return notificationDao.listSubscriptions();
     }
 
     @Override
     public Collection<NotificationTrigger> listTriggers() {
-        return triggersStore.getAll();
-    }
-
-    @Override
-    public Collection<Subscription> listTriggerSubscriptions(NotificationTrigger trigger) {
-        Collection<Subscription> result = new ArrayList<>();
-        Collection<Long> sKeys = subscriptionsStore.getKeys();
-        if (sKeys!=null) {
-            for (Long key : sKeys) {
-                Subscription s = subscriptionsStore.get(key);
-                if (s!=null && s.getTriggersKeys()!=null && s.getTriggersKeys().contains(trigger.getId())) {
-                    result.add(s);
-                }
-            }
-        }
-        return result.isEmpty()? null : result;
-    }
-
-
-    @Required
-    public void setSubscriptionsStore(EntityStore<Subscription> subscriptionsStore) {
-        this.subscriptionsStore = subscriptionsStore;
+        return notificationDao.listTriggers();
     }
 
     @Required
@@ -108,7 +87,7 @@ public class NotificationManagerImpl implements NotificationManager {
     }
 
     @Required
-    public void setTriggersStore(EntityStore<NotificationTrigger> triggersStore) {
-        this.triggersStore = triggersStore;
+    public void setNotificationDao(NotificationDao notificationDao) {
+        this.notificationDao = notificationDao;
     }
 }

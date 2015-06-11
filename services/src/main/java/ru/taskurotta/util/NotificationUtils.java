@@ -1,16 +1,25 @@
 package ru.taskurotta.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.taskurotta.service.console.model.InterruptedTask;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created on 09.06.2015.
  */
 public class NotificationUtils {
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    static {
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     public static Set<String> asActorIdList(Collection<InterruptedTask> tasks) {
         Set<String> result = null;
@@ -67,6 +76,31 @@ public class NotificationUtils {
         }
         return result;
     }
+
+    public static String listToJson(List<String> target, String defVal) {
+        String result = defVal;
+        if (target != null) {
+            try {
+                result = MAPPER.writeValueAsString(target);
+            } catch (Throwable e) {
+                throw new RuntimeException("Cannot parse listToJson["+target+"]", e);
+            }
+        }
+        return result;
+    }
+
+    public static List<String> jsonToList(String json, List<String> defVal) {
+        List<String> result = defVal;
+        if (json != null) {
+            try {
+                result = ((List<String>) MAPPER.readValue(json, new TypeReference<List<String>>(){}));
+            } catch (Exception e) {
+                throw new RuntimeException("Cannot parse jsonToList ["+json+"]", e);
+            }
+        }
+        return result;
+    }
+
 
 
 
