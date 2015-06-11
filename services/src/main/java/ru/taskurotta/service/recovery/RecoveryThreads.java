@@ -7,10 +7,10 @@ package ru.taskurotta.service.recovery;
  */
 public interface RecoveryThreads {
 
-    public void start();
+    void start();
 
-    public void stop();
+    void stop();
 
-    public boolean isStarted();
+    boolean isStarted();
 
 }
