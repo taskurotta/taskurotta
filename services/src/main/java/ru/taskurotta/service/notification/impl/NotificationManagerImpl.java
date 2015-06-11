@@ -67,6 +67,11 @@ public class NotificationManagerImpl implements NotificationManager {
     }
 
     @Override
+    public long addTrigger(NotificationTrigger trigger) {
+        return notificationDao.addTrigger(trigger);
+    }
+
+    @Override
     public void updateSubscription(Subscription subscription, long id) {
         notificationDao.updateSubscription(subscription, id);
     }

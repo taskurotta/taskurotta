@@ -121,6 +121,7 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
         return result;
     }
 
+    @Override
     public long addTrigger(final NotificationTrigger trigger) {
         return getJdbcTemplate().execute(SQL_ADD_TRIGGER, new CallableStatementCallback<Long>() {
             @Override

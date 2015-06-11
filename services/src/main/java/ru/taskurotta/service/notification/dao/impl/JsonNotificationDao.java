@@ -28,17 +28,30 @@ public class JsonNotificationDao implements NotificationDao {
 
     @Override
     public Subscription getSubscription(long id) {
-        return subscriptionsStore.get(id);
+        Subscription res = subscriptionsStore.get(id);
+        if (res!=null) {
+            res.setId(id);
+        }
+        return res;
     }
 
     @Override
     public NotificationTrigger getTrigger(long id) {
-        return triggersStore.get(id);
+        NotificationTrigger res = triggersStore.get(id);
+        if (res!=null) {
+            res.setId(id);
+        }
+        return res;
     }
 
     @Override
     public long addSubscription(Subscription subscription) {
         return subscriptionsStore.add(subscription);
+    }
+
+    @Override
+    public long addTrigger(NotificationTrigger trigger) {
+        return triggersStore.add(trigger);
     }
 
     @Override

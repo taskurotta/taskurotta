@@ -16,6 +16,8 @@ public interface NotificationDao {
 
     long addSubscription(Subscription subscription);
 
+    long addTrigger(NotificationTrigger trigger);
+
     void updateSubscription(Subscription subscription, long id);
 
     void updateTrigger(NotificationTrigger trigger, long id);

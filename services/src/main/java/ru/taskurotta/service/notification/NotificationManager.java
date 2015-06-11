@@ -16,7 +16,9 @@ public interface NotificationManager {
 
     NotificationTrigger getTrigger(long id);
 
-    long addSubscription(Subscription cfg);
+    long addSubscription(Subscription subscription);
+
+    long addTrigger(NotificationTrigger trigger);
 
     void updateSubscription(Subscription cfg, long id);
 
