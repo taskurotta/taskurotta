@@ -9,6 +9,7 @@ import com.mongodb.WriteConcern;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.mongodb.driver.BSerializationService;
 import ru.taskurotta.mongodb.driver.BSerializationServiceFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
@@ -321,6 +322,11 @@ public class ProcessInspector {
             @Override
             public void updateTaskDecision(DecisionContainer taskDecision) {
 
+            }
+
+            @Override
+            public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
+                return null;
             }
         }, 10000);
     }

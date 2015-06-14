@@ -1,5 +1,6 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -47,5 +48,7 @@ public interface TaskDao {
     List<TaskContainer> findTasks(TaskSearchCommand command);
 
     void updateTaskDecision(DecisionContainer taskDecision);
+
+    ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize);
 
 }
