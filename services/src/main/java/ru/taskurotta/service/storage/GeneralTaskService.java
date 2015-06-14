@@ -271,12 +271,12 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+    public boolean retryTask(UUID taskId, UUID processId) {
         return taskDao.retryTask(taskId, processId);
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
         return taskDao.restartTask(taskId, processId, force);
     }
 

@@ -37,9 +37,9 @@ public interface TaskService {
 
     public boolean finishTask(DecisionContainer taskDecision);
 
-    public boolean retryTask(UUID taskId, UUID processId, long timeToStart);
+    public boolean retryTask(UUID taskId, UUID processId);
 
-    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force);
+    public boolean restartTask(UUID taskId, UUID processId, boolean force);
 
     /**
      * Idempotent getter for task decisions

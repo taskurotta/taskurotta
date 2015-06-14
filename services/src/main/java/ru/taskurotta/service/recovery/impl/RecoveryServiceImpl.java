@@ -351,7 +351,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String taskList = TransportUtils.getTaskList(taskContainer);
                     String actorId = taskContainer.getActorId();
 
-                    if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), false)) {
+                    if (taskService.restartTask(taskId, processId, false)) {
 
                         // task ready to enqueue
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
@@ -444,7 +444,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             long touchTime = System.currentTimeMillis();
             graph.setTouchTimeMillis(touchTime);
 
-            if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+            if (taskService.restartTask(taskId, processId, true)) {
                 TaskContainer tc = taskService.getTask(taskId, processId);
                 if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
                     interruptedTasksService.delete(processId, taskId);
@@ -473,7 +473,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             return false;
         }
 
-        if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), false)) {
+        if (taskService.restartTask(taskId, processId, false)) {
             String actorId = taskContainer.getActorId();
             long startTime = taskContainer.getStartTime();
             String taskList = TransportUtils.getTaskList(taskContainer);
@@ -484,13 +484,6 @@ public class RecoveryServiceImpl implements RecoveryService {
                 return false;
             }
         } else {
-            // task is finished but still ready in Graph.
-            try {
-                generalTaskServer.processDecision(taskId, processId);
-            } catch (RuntimeException ex) {
-                logger.error("Can not process decision", ex);
-            }
-
             logger.warn("{}/{}: can not restart task. taskService.restartTask() operation is false", processId, taskId, taskContainer);
             return false;
         }
@@ -607,7 +600,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         // emulate TaskServer.startProcess()
         UUID taskId = startTaskContainer.getTaskId();
-        taskService.restartTask(taskId, processId, System.currentTimeMillis(), true);
+        taskService.restartTask(taskId, processId, true);
 
         dependencyService.startProcess(startTaskContainer);
         taskService.startProcess(startTaskContainer);
