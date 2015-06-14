@@ -92,7 +92,7 @@ public class MongoProcessService extends HzProcessService {
             Collection<UUID> result = new ArrayList<>();
 
             int i = 0;
-            while (i < batchSize && dbCursor.hasNext()) {
+            while (i++ < batchSize && dbCursor.hasNext()) {
                 DBObjectCheat dbObject = (DBObjectCheat) dbCursor.next();
                 Process process = (Process) dbObject.getObject();
                 UUID processId = process.getProcessId();
