@@ -3,6 +3,16 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <!-- Backends -->
+    <bean id="mongoTaskDao" class="ru.taskurotta.service.hz.storage.MongoTaskDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="id2TaskMapName" value="${hz.map.task.name}"/>
+        <constructor-arg name="id2TaskDecisionMapName" value="${hz.map.decision.name}"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
+        <constructor-arg name="bSerializationService" ref="bSerializationService"/>
+        <constructor-arg name="decisionCollectionName" value="${hz.map.decision.name}"/>
+    </bean>
+    <!-- /Backends -->
 
     <!-- Queues persistence support -->
 
@@ -66,8 +76,7 @@
 
     <bean id="incompleteTaskFinder" class="ru.taskurotta.service.hz.recovery.IncompleteTaskFinder">
         <constructor-arg name="recoveryService" ref="recoveryService"/>
-        <constructor-arg name="mongoDB" ref="mongoDB"/>
-        <constructor-arg name="decisionCollectionName" value="${hz.map.decision.name}"/>
+        <constructor-arg name="taskDao" ref="mongoTaskDao"/>
         <constructor-arg name="incompleteTaskFindTimeout">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${recovery.task.find-timeout}"/>

@@ -6,6 +6,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.service.hz.TaskKey;
@@ -125,6 +126,7 @@ public class HzTaskDao implements TaskDao {
             }
 
             UUID pass = UUID.randomUUID();
+            // ToDo: must evaluate from startTime!!!
             long recoveryTime = System.currentTimeMillis() + workerTimeout;
 
             if (decision == null) {
@@ -203,6 +205,10 @@ public class HzTaskDao implements TaskDao {
         }
     }
 
+    @Override
+    public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
+        throw new UnsupportedOperationException("Please, use MongoTaskDao");
+    }
 
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {

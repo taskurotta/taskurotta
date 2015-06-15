@@ -1,19 +1,15 @@
 package ru.taskurotta.service.hz.recovery;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.taskurotta.mongodb.driver.DBObjectCheat;
-import ru.taskurotta.service.hz.serialization.bson.DecisionBSerializer;
+import ru.taskurotta.service.common.ResultSetCursor;
+import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.recovery.RecoveryService;
 import ru.taskurotta.service.recovery.RecoveryThreads;
-import ru.taskurotta.transport.model.Decision;
+import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.util.Shutdown;
 
+import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -32,29 +28,28 @@ public class IncompleteTaskFinder implements RecoveryThreads {
     private static final Logger logger = LoggerFactory.getLogger(IncompleteTaskFinder.class);
 
     private RecoveryService recoveryService;
+    private TaskDao taskDao;
     private long incompleteTaskFindTimeout;
     private int batchSize;
     private Lock nodeLock;
 
     private AtomicBoolean enabled = new AtomicBoolean(false);
     private ScheduledExecutorService executorService;
-    private DBCollection decisionDBCollection;
 
-    private static final String RECOVERY_TIME_NAME = DecisionBSerializer.RECOVERY_TIME.toString();
-
-    public IncompleteTaskFinder(RecoveryService recoveryService, DB mongoDB, String decisionCollectionName,
-                                long incompleteTaskFindTimeout, int batchSize, Lock  nodeLock, boolean enabled) {
+    public IncompleteTaskFinder(RecoveryService recoveryService, TaskDao taskDao, long incompleteTaskFindTimeout,
+                                int batchSize, Lock nodeLock, boolean enabled) {
         this.recoveryService = recoveryService;
+        this.taskDao = taskDao;
         this.incompleteTaskFindTimeout = incompleteTaskFindTimeout;
         this.batchSize = batchSize;
         this.nodeLock = nodeLock;
 
-        this.decisionDBCollection = mongoDB.getCollection(decisionCollectionName);
-
         this.executorService = Executors.newScheduledThreadPool(1, new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
-                return new Thread("IncompleteTaskFinder");
+                Thread thread = new Thread(r, "IncompleteTaskFinder");
+                thread.setDaemon(true);
+                return thread;
             }
         });
         Shutdown.addHook(executorService);
@@ -76,18 +71,30 @@ public class IncompleteTaskFinder implements RecoveryThreads {
         executorService.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                if (nodeLock.tryLock()) {
+                if (Shutdown.isTrue() || !isStarted()) {
+                    logger.debug("System shutdown or service is disabled");
+                    return;
+                }
 
-                    BasicDBObject query = new BasicDBObject(RECOVERY_TIME_NAME, new BasicDBObject("$lte", System.currentTimeMillis()));
-                    try (DBCursor dbCursor = decisionDBCollection.find(query).batchSize(batchSize)) {
-                        while (dbCursor.hasNext()) {
-                            DBObject dbObject = dbCursor.next();
-                            Decision decision = (Decision) ((DBObjectCheat) dbObject).getObject();
+                try {
+                    if (nodeLock.tryLock()) {
+                        try (ResultSetCursor incompleteTasksCursor = taskDao.findIncompleteTasks(System.currentTimeMillis(), batchSize)) {
+                            while (true) {
+                                Collection<TaskKey> incompleteTasks = incompleteTasksCursor.getNext();
 
-                            recoveryService.resurrectTask(decision.getTaskId(), decision.getProcessId());
+                                if (incompleteTasks.isEmpty()) {
+                                    logger.debug("Incomplete tasks not found");
+                                    break;
+                                }
+
+                                for (TaskKey taskKey : incompleteTasks) {
+                                    recoveryService.resurrectTask(taskKey.getTaskId(), taskKey.getProcessId());
+                                }
+                            }
                         }
                     }
-
+                } catch (Throwable e) {
+                    logger.error("IncompleteTaskFinder iteration failed due to error, try to resume in [" + incompleteTaskFindTimeout + "] ms...", e);
                 }
             }
         }, 0l, incompleteTaskFindTimeout, TimeUnit.MILLISECONDS);
