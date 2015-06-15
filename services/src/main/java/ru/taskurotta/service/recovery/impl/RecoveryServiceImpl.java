@@ -44,7 +44,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
     public static AtomicInteger recoveredInterruptedTasksCounter = new AtomicInteger();
     public static AtomicInteger recoveredProcessDecisionCounter = new AtomicInteger();
-    public static AtomicInteger resurrectedTasks = new AtomicInteger();
+    public static AtomicInteger restartedIncompleteTasksCounter = new AtomicInteger();
 
     private GeneralTaskServer generalTaskServer;
     private QueueService queueService;
@@ -489,7 +489,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         }
 
         logger.debug("{}/{}: task container [{}] has been restarted", processId, taskId, taskContainer);
-        resurrectedTasks.incrementAndGet();
+        restartedIncompleteTasksCounter.incrementAndGet();
 
         return true;
     }
