@@ -34,9 +34,12 @@ public class HzJobStoreAdapter implements JobStore {
 
     public HzJobStoreAdapter(JobStore jobStore, HazelcastInstance hzInstance, boolean isSharedStore) {
         this.jobStore = jobStore;
-        this.executorService = hzInstance.getExecutorService(getClass().getName());
         this.isSharedStore = isSharedStore;
-        logger.debug("Using hazelcast cluster adapter for {} jobStore", (isSharedStore? "shared": "separate"));
+        if (!isSharedStore) {
+            this.executorService = hzInstance.getExecutorService(getClass().getName());
+        }
+
+        logger.debug("Using hazelcast cluster adapter for {} scheduler job store", (isSharedStore? "shared": "separate"));
     }
 
     public static JobStore getRealJobStore() {
@@ -44,11 +47,11 @@ public class HzJobStoreAdapter implements JobStore {
     }
 
     @Override
-    public long addJob(final JobVO job) {
+    public long add(final JobVO job) {
         long result = -1l;
 
         if (isSharedStore) {
-            result = jobStore.addJob(job);
+            result = jobStore.add(job);
         } else {
             Map<Member, Future<Long>> nodesResults = executorService.submitToAllMembers(new AddJobCallable(job));
 
@@ -79,9 +82,9 @@ public class HzJobStoreAdapter implements JobStore {
     }
 
     @Override
-    public void removeJob(long id) {
+    public void remove(long id) {
         if (isSharedStore) {
-            jobStore.removeJob(id);
+            jobStore.remove(id);
         } else {
             executorService.executeOnAllMembers(new RemoveJobRunnable(id));
         }
@@ -93,9 +96,9 @@ public class HzJobStoreAdapter implements JobStore {
     }
 
     @Override
-    public void updateJob(final JobVO jobVO) {
+    public void update(final JobVO jobVO, long id) {
         if (isSharedStore) {
-            jobStore.updateJob(jobVO);
+            jobStore.update(jobVO, id);
         } else {
             executorService.executeOnAllMembers(new UpdateJobRunnable(jobVO));
         }
@@ -111,13 +114,18 @@ public class HzJobStoreAdapter implements JobStore {
     }
 
     @Override
-    public Collection<Long> getJobIds() {
-        return jobStore.getJobIds();
+    public Collection<Long> getKeys() {
+        return jobStore.getKeys();
     }
 
     @Override
-    public JobVO getJob(long id) {
-        return jobStore.getJob(id);
+    public JobVO get(long id) {
+        return jobStore.get(id);
+    }
+
+    @Override
+    public Collection<JobVO> getAll() {
+        return jobStore.getAll();
     }
 
     @Override

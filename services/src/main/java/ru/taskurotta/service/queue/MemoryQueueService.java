@@ -16,8 +16,11 @@ import ru.taskurotta.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
@@ -108,6 +111,29 @@ public class MemoryQueueService implements QueueService, QueueInfoRetriever {
     @Override
     public long getQueueStorageCount(String queueName) {
         return 0;//no storages for memory impl
+    }
+
+    @Override
+    public Map<Date, String> getNotPollingQueues(long pollTimeout) {
+        MetricsDataHandler metricsDataHandler = MetricsDataHandler.getInstance();
+        Map<Date, String> result = new TreeMap<>(new Comparator<Date>() {
+            @Override
+            public int compare(Date date1, Date date2) {
+                return date2.compareTo(date1);
+            }
+        });
+
+        Collection<String> queueNames = getQueueNames();
+        long now = System.currentTimeMillis();
+        for (String queueName : queueNames) {
+            Date lastActivity = metricsDataHandler.getLastActivityTime(MetricName.POLL.getValue(), queueName);
+            if (lastActivity == null || (now - lastActivity.getTime()) > pollTimeout) {
+                result.put(lastActivity == null ? new Date(0) : lastActivity, queueName);
+            }
+        }
+
+        return result;
+
     }
 
     private List<String> getTaskQueueNames(String filter) {

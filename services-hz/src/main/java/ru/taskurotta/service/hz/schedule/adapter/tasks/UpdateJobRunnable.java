@@ -19,6 +19,6 @@ public class UpdateJobRunnable implements Runnable, Serializable {
 
     @Override
     public void run() {
-        HzJobStoreAdapter.getRealJobStore().updateJob(jobVO);
+        HzJobStoreAdapter.getRealJobStore().update(jobVO, jobVO.getId());
     }
 }

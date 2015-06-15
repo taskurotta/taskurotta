@@ -20,7 +20,7 @@ public class AddJobCallable implements Callable<Long>, Serializable {
 
     @Override
     public Long call() throws Exception {
-        return HzJobStoreAdapter.getRealJobStore().addJob(jobVO);
+        return HzJobStoreAdapter.getRealJobStore().add(jobVO);
     }
 
 }

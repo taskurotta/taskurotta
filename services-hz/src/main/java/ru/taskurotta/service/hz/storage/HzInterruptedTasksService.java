@@ -31,8 +31,6 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
 
     private static final Logger logger = LoggerFactory.getLogger(HzInterruptedTasksService.class);
 
-    private static final String WILDCARD_SYMBOL = "%";
-
     private IMap<UUID, InterruptedTaskExt> storeIMap;
 
     public HzInterruptedTasksService(HazelcastInstance hazelcastInstance, String storeMapName) {
