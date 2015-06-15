@@ -478,7 +478,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             long startTime = taskContainer.getStartTime();
             String taskList = TransportUtils.getTaskList(taskContainer);
             if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
-                logger.debug("{}/{}: task container have been enqueued", processId, taskId);
+                logger.debug("{}/{}: task container has been enqueued", processId, taskId);
             } else {
                 logger.warn("{}/{}: can not restart task. Enqueue operation is false", processId, taskId, taskContainer);
                 return false;
@@ -488,7 +488,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             return false;
         }
 
-        logger.debug("{}/{}: task container [{}] have been restarted", processId, taskId, taskContainer);
+        logger.debug("{}/{}: task container [{}] has been restarted", processId, taskId, taskContainer);
         resurrectedTasks.incrementAndGet();
 
         return true;
