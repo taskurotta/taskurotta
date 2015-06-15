@@ -1,12 +1,14 @@
 package ru.taskurotta.service.notification.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.notification.NotificationManager;
-import ru.taskurotta.service.notification.handler.TriggerHandler;
 import ru.taskurotta.service.notification.dao.NotificationDao;
+import ru.taskurotta.service.notification.handler.TriggerHandler;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
 import ru.taskurotta.service.notification.model.SearchCommand;
 import ru.taskurotta.service.notification.model.Subscription;
@@ -19,6 +21,8 @@ import java.util.Map;
  * Created on 08.06.2015.
  */
 public class NotificationManagerImpl implements NotificationManager, ApplicationContextAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationManagerImpl.class);
 
     private NotificationDao notificationDao;
 
@@ -43,6 +47,7 @@ public class NotificationManagerImpl implements NotificationManager, Application
                 }
             }
         }
+        logger.info("Notification manager initialized with [{}] handlers", (resultMap!=null? resultMap.size() : 0));
     }
 
     boolean alreadyHasCorrespondingTrigger(String name, Collection<NotificationTrigger> triggers) {
@@ -63,6 +68,7 @@ public class NotificationManagerImpl implements NotificationManager, Application
         if (triggerKeys!=null && triggerKeys.isEmpty()) {
             for (Long tKey : triggerKeys) {
                 NotificationTrigger trigger = notificationDao.getTrigger(tKey);
+                logger.debug("try to execute notifications on trigger [{}]", trigger);
                 if (trigger != null) {
                     TriggerHandler handler = getHandlerForType(trigger.getType());
                     if (handler != null) {

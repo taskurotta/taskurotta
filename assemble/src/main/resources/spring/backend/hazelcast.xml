@@ -212,14 +212,14 @@
     </bean>
 
     <bean id="emailSender" class="ru.taskurotta.service.notification.EmailSender">
-        <property name="mailSender" ref="mailSender" />
         <property name="sendFrom" value="${notifications.mail.from}" />
-    </bean>
-
-    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-        <property name="host" value="${notifications.mail.host}"/>
-        <property name="username" value="${notifications.mail.user}"/>
-        <property name="password" value="${notifications.mail.password}"/>
+        <property name="mailSender">
+            <bean class="org.springframework.mail.javamail.JavaMailSenderImpl">
+                <property name="host" value="${notifications.mail.host}"/>
+                <property name="username" value="${notifications.mail.user}"/>
+                <property name="password" value="${notifications.mail.password}"/>
+            </bean>
+        </property>
     </bean>
 
     <bean id = "voidQueuesHandler" class="ru.taskurotta.service.notification.handler.impl.VoidQueuesHandler">
@@ -229,6 +229,16 @@
     <bean id="interruptedTasksHandler" class="ru.taskurotta.service.notification.handler.impl.InterruptedTasksHanler">
         <property name="emailSender" ref="emailSender" />
         <property name="interruptedTasksService" ref="interruptedTasksService" />
+    </bean>
+
+    <bean id="notificationManagerExecutor" class="ru.taskurotta.service.hz.notification.adapter.HzNotificationManagerExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+        <constructor-arg name="notificationManager" ref="notificationManager" />
+        <constructor-arg name="periodMs">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${notifications.check.period}"/>
+            </bean>
+        </constructor-arg>
     </bean>
     <!-- /Notification service -->
 
