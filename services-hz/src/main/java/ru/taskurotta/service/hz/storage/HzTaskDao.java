@@ -52,7 +52,7 @@ public class HzTaskDao implements TaskDao {
         try {
 
             Decision decision = id2TaskDecisionMap.get(taskKey);
-            if (decision == null || decision.getState() != Decision.STATE_WORK) {
+            if (decision == null || (decision.getState() != Decision.STATE_WORK && decision.getPass() != null)) {
                 logger.warn("{}/{} Can not finish task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
                         decision == null ? "null" : decision.getState());
                 return false;
@@ -78,7 +78,6 @@ public class HzTaskDao implements TaskDao {
         }
     }
 
-    // todo: save timeToStart
     @Override
     public boolean retryTask(UUID taskId, UUID processId) {
 
@@ -126,12 +125,10 @@ public class HzTaskDao implements TaskDao {
             }
 
             UUID pass = UUID.randomUUID();
-            // ToDo: must evaluate from startTime!!!
             long recoveryTime = System.currentTimeMillis() + workerTimeout;
 
             if (decision == null) {
-                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime,
-                        null);
+                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime, null);
             } else {
                 // assume that workerTimeout and failOnWorkerTimeouts values can not be changed
 
