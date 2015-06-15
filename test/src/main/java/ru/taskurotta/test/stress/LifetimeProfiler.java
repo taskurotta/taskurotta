@@ -63,11 +63,21 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private boolean isFirstPoll = true;
     private AtomicInteger nullPoll = new AtomicInteger(0);
 
+    private long releaseTimeout;
+    private int everyNTaskReleaseTimeout;
+
     public LifetimeProfiler() {
     }
 
     public LifetimeProfiler(Class actorClass, Properties properties) {
 
+        if (properties.containsKey("releaseTimeout")) {
+            this.releaseTimeout = Long.valueOf(properties.getProperty("releaseTimeout"));
+        }
+
+        if (properties.containsKey("everyNTaskReleaseTimeout")) {
+            this.everyNTaskReleaseTimeout = Integer.valueOf(properties.getProperty("everyNTaskReleaseTimeout"));
+        }
 
         if (properties.containsKey(TASKS_FOR_STAT)) {
             tasksForStat = Integer.valueOf((String) properties.get(TASKS_FOR_STAT).toString());
@@ -261,6 +271,14 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
 
                 if (dropTaskDecisionEveryNTasks > 0 && taskCount.get() % dropTaskDecisionEveryNTasks == 0) {
                     return;
+                }
+
+                if (taskCount.get() % everyNTaskReleaseTimeout == 0) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(releaseTimeout);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 long startTime = System.currentTimeMillis();
