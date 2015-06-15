@@ -11,6 +11,6 @@ public interface TriggerHandler {
 
     String handleTrigger(String stateJson, Collection<Subscription> subscriptions, String cfgJson);
 
-    String getName();
+    String getTriggerType();
 
 }

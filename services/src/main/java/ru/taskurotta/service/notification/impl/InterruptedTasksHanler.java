@@ -71,7 +71,7 @@ public class InterruptedTasksHanler implements TriggerHandler {
     }
 
     @Override
-    public String getName() {
+    public String getTriggerType() {
         return NotificationTrigger.TYPE_FAILED_TASKS;
     }
 

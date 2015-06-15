@@ -26,4 +26,6 @@ public interface NotificationManager {
 
     Collection<NotificationTrigger> listTriggers();
 
+    Collection<TriggerHandler> listHandlers();
+
 }

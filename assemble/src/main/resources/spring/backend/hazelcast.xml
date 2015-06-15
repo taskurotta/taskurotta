@@ -198,6 +198,15 @@
     </bean>
     <!--/pending queue configurator -->
 
+    <!-- Notification service -->
+    <bean id = "notificationManager" class="ru.taskurotta.service.notification.impl.NotificationManagerImpl" init-method="init">
+        <constructor-arg name="notificationDao" ref="notificationDao" />
+    </bean>
+    <bean id="notificationDao" class="ru.taskurotta.service.notification.dao.impl.JsonNotificationDao">
+        <constructor-arg name="storeLocation" value="${notifications.store.location}" />
+    </bean>
+    <!-- /Notification service -->
+
     <!-- Task server -->
     <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HzTaskServer"
           depends-on="pendingQueueConfigurator">

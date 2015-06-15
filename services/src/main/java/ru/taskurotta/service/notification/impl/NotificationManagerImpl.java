@@ -1,6 +1,8 @@
 package ru.taskurotta.service.notification.impl;
 
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import ru.taskurotta.service.notification.NotificationManager;
 import ru.taskurotta.service.notification.TriggerHandler;
 import ru.taskurotta.service.notification.dao.NotificationDao;
@@ -9,15 +11,49 @@ import ru.taskurotta.service.notification.model.Subscription;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created on 08.06.2015.
  */
-public class NotificationManagerImpl implements NotificationManager {
+public class NotificationManagerImpl implements NotificationManager, ApplicationContextAware {
 
     private NotificationDao notificationDao;
 
     private Collection<TriggerHandler> handlers;
+
+    private ApplicationContext applicationContext;
+
+    public NotificationManagerImpl(NotificationDao notificationDao) {
+        this.notificationDao = notificationDao;
+    }
+
+    public void init() {
+        Map<String, TriggerHandler> resultMap = applicationContext.getBeansOfType(TriggerHandler.class);
+        if (resultMap!=null && !resultMap.isEmpty()) {
+            this.handlers = resultMap.values();
+
+            //append trigger entry if absent (corresponding to a given handler)
+            Collection<NotificationTrigger> triggers = listTriggers();
+            for (TriggerHandler handler : handlers) {
+                if (!alreadyHasCorrespondingTrigger(handler.getTriggerType(), triggers)) {
+                    notificationDao.addTrigger(new NotificationTrigger(handler.getTriggerType()));
+                }
+            }
+        }
+    }
+
+    boolean alreadyHasCorrespondingTrigger(String name, Collection<NotificationTrigger> triggers) {
+        boolean result = false;
+        if (triggers!=null && !triggers.isEmpty()) {
+            for (NotificationTrigger trigger : triggers) {
+                if (name.equalsIgnoreCase(trigger.getType())) {
+                    return true;
+                }
+            }
+        }
+        return result;
+    }
 
     @Override
     public void execute() {
@@ -42,7 +78,7 @@ public class NotificationManagerImpl implements NotificationManager {
         TriggerHandler result = null;
         if (type!=null && handlers!=null) {
             for (TriggerHandler handler : handlers) {
-                if (type.equalsIgnoreCase(handler.getName())) {
+                if (type.equalsIgnoreCase(handler.getTriggerType())) {
                     result = handler;
                     break;
                 }
@@ -86,13 +122,13 @@ public class NotificationManagerImpl implements NotificationManager {
         return notificationDao.listTriggers();
     }
 
-    @Required
-    public void setHandlers(Collection<TriggerHandler> handlers) {
-        this.handlers = handlers;
+    @Override
+    public Collection<TriggerHandler> listHandlers() {
+        return handlers;
     }
 
-    @Required
-    public void setNotificationDao(NotificationDao notificationDao) {
-        this.notificationDao = notificationDao;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }

@@ -68,7 +68,7 @@ public class VoidQueuesHandler implements TriggerHandler {
     }
 
     @Override
-    public String getName() {
+    public String getTriggerType() {
         return NotificationTrigger.TYPE_VOID_QUEUES;
     }
 

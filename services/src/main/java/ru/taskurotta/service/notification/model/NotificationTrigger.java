@@ -17,6 +17,13 @@ public class NotificationTrigger implements Serializable {
     private String storedState;
     private String cfg;
 
+    public NotificationTrigger(){}
+
+    public NotificationTrigger(String type) {
+        this.type = type;
+        this.changeDate = new Date();
+    }
+
     public long getId() {
         return id;
     }
