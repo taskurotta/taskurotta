@@ -22,6 +22,7 @@ public class EmailSender {
     private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
 
     private JavaMailSender mailSender;
+    private String sendFrom;
 
     public void send(EmailNotification emailNotification) {
         try {
@@ -37,7 +38,7 @@ public class EmailSender {
         MimeMessagePreparator preparator = new MimeMessagePreparator() {
             public void prepare(MimeMessage mimeMessage) throws javax.mail.MessagingException {
                 MimeMessageHelper message = new MimeMessageHelper(mimeMessage, emailNotification.isMultipart(), emailNotification.getEncoding());
-                message.setFrom(emailNotification.getSendFrom());
+                message.setFrom(sendFrom);
                 message.setTo(emailNotification.getSendTo());
                 message.setSubject(emailNotification.getSubject());
                 message.setText(emailNotification.getBody(), emailNotification.isHtml());
@@ -67,5 +68,9 @@ public class EmailSender {
     @Required
     public void setMailSender(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+    }
+    @Required
+    public void setSendFrom(String sendFrom) {
+        this.sendFrom = sendFrom;
     }
 }

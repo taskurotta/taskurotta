@@ -202,8 +202,33 @@
     <bean id = "notificationManager" class="ru.taskurotta.service.notification.impl.NotificationManagerImpl" init-method="init">
         <constructor-arg name="notificationDao" ref="notificationDao" />
     </bean>
-    <bean id="notificationDao" class="ru.taskurotta.service.notification.dao.impl.JsonNotificationDao">
+    <bean id="notificationDao" class="ru.taskurotta.service.hz.notification.adapter.HzNotificationDaoAdapter">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="isSharedStore" value="${notifications.store.shared}" />
+        <constructor-arg name="notificationDao" ref="realNotificationDao" />
+    </bean>
+    <bean id="realNotificationDao" class="ru.taskurotta.service.notification.dao.impl.JsonNotificationDao">
         <constructor-arg name="storeLocation" value="${notifications.store.location}" />
+    </bean>
+
+    <bean id="emailSender" class="ru.taskurotta.service.notification.EmailSender">
+        <property name="mailSender" ref="mailSender" />
+        <property name="sendFrom" value="${notifications.mail.from}" />
+    </bean>
+
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${notifications.mail.host}"/>
+        <property name="username" value="${notifications.mail.user}"/>
+        <property name="password" value="${notifications.mail.password}"/>
+    </bean>
+
+    <bean id = "voidQueuesHandler" class="ru.taskurotta.service.notification.handler.impl.VoidQueuesHandler">
+        <property name="emailSender" ref="emailSender" />
+        <property name="queueInfoRetriever" ref="realQueueBackend" />
+    </bean>
+    <bean id="interruptedTasksHandler" class="ru.taskurotta.service.notification.handler.impl.InterruptedTasksHanler">
+        <property name="emailSender" ref="emailSender" />
+        <property name="interruptedTasksService" ref="interruptedTasksService" />
     </bean>
     <!-- /Notification service -->
 

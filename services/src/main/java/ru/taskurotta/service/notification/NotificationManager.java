@@ -1,6 +1,9 @@
 package ru.taskurotta.service.notification;
 
+import ru.taskurotta.service.console.model.GenericPage;
+import ru.taskurotta.service.notification.handler.TriggerHandler;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
+import ru.taskurotta.service.notification.model.SearchCommand;
 import ru.taskurotta.service.notification.model.Subscription;
 
 import java.util.Collection;
@@ -18,6 +21,8 @@ public interface NotificationManager {
 
     long addSubscription(Subscription subscription);
 
+    void removeSubscription(long id);
+
     long addTrigger(NotificationTrigger trigger);
 
     void updateSubscription(Subscription cfg, long id);
@@ -27,5 +32,7 @@ public interface NotificationManager {
     Collection<NotificationTrigger> listTriggers();
 
     Collection<TriggerHandler> listHandlers();
+
+    GenericPage<Subscription> listSubscriptions(SearchCommand command);
 
 }

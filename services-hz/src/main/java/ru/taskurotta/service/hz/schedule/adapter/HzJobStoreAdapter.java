@@ -34,9 +34,12 @@ public class HzJobStoreAdapter implements JobStore {
 
     public HzJobStoreAdapter(JobStore jobStore, HazelcastInstance hzInstance, boolean isSharedStore) {
         this.jobStore = jobStore;
-        this.executorService = hzInstance.getExecutorService(getClass().getName());
         this.isSharedStore = isSharedStore;
-        logger.debug("Using hazelcast cluster adapter for {} jobStore", (isSharedStore? "shared": "separate"));
+        if (!isSharedStore) {
+            this.executorService = hzInstance.getExecutorService(getClass().getName());
+        }
+
+        logger.debug("Using hazelcast cluster adapter for {} scheduler job store", (isSharedStore? "shared": "separate"));
     }
 
     public static JobStore getRealJobStore() {

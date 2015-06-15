@@ -1,6 +1,8 @@
 package ru.taskurotta.service.notification.dao;
 
+import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
+import ru.taskurotta.service.notification.model.SearchCommand;
 import ru.taskurotta.service.notification.model.Subscription;
 
 import java.util.Collection;
@@ -16,6 +18,8 @@ public interface NotificationDao {
 
     long addSubscription(Subscription subscription);
 
+    void removeSubscription(long id);
+
     long addTrigger(NotificationTrigger trigger);
 
     void updateSubscription(Subscription subscription, long id);
@@ -23,6 +27,8 @@ public interface NotificationDao {
     void updateTrigger(NotificationTrigger trigger, long id);
 
     Collection<Subscription> listSubscriptions();
+
+    GenericPage<Subscription> listSubscriptions(SearchCommand command);
 
     Collection<NotificationTrigger> listTriggers();
 

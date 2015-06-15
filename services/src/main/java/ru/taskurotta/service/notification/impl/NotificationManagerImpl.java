@@ -3,10 +3,12 @@ package ru.taskurotta.service.notification.impl;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.notification.NotificationManager;
-import ru.taskurotta.service.notification.TriggerHandler;
+import ru.taskurotta.service.notification.handler.TriggerHandler;
 import ru.taskurotta.service.notification.dao.NotificationDao;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
+import ru.taskurotta.service.notification.model.SearchCommand;
 import ru.taskurotta.service.notification.model.Subscription;
 
 import java.util.Collection;
@@ -103,6 +105,11 @@ public class NotificationManagerImpl implements NotificationManager, Application
     }
 
     @Override
+    public void removeSubscription(long id) {
+        notificationDao.removeSubscription(id);
+    }
+
+    @Override
     public long addTrigger(NotificationTrigger trigger) {
         return notificationDao.addTrigger(trigger);
     }
@@ -125,6 +132,11 @@ public class NotificationManagerImpl implements NotificationManager, Application
     @Override
     public Collection<TriggerHandler> listHandlers() {
         return handlers;
+    }
+
+    @Override
+    public GenericPage<Subscription> listSubscriptions(SearchCommand command) {
+        return notificationDao.listSubscriptions(command);
     }
 
     @Override

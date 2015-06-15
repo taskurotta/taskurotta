@@ -1,4 +1,4 @@
-package ru.taskurotta.service.notification;
+package ru.taskurotta.service.notification.handler;
 
 import ru.taskurotta.service.notification.model.Subscription;
 

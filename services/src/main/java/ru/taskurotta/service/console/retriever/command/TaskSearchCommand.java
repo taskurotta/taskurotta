@@ -4,7 +4,7 @@ package ru.taskurotta.service.console.retriever.command;
  * User: dimadin
  * Date: 10.09.13 17:43
  */
-public class TaskSearchCommand {
+public class TaskSearchCommand extends PageCommand {
 
     private String taskId;
     private String processId;

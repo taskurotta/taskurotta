@@ -1,4 +1,4 @@
-package ru.taskurotta.service.notification.impl;
+package ru.taskurotta.service.notification.handler.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -7,30 +7,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.util.StringUtils;
-import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.model.InterruptedTask;
+import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.notification.EmailSender;
-import ru.taskurotta.service.notification.TriggerHandler;
+import ru.taskurotta.service.notification.handler.TriggerHandler;
 import ru.taskurotta.service.notification.model.EmailNotification;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
 import ru.taskurotta.service.notification.model.Subscription;
+import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.util.NotificationUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Created on 10.06.2015.
  */
-public class VoidQueuesHandler implements TriggerHandler {
+public class InterruptedTasksHanler implements TriggerHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(VoidQueuesHandler.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(InterruptedTasksHanler.class);
     private EmailSender emailSender;
-    private QueueInfoRetriever queueInfoRetriever;
+    private InterruptedTasksService interruptedTasksService;
     private ObjectMapper mapper = new ObjectMapper();
     {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -42,15 +41,19 @@ public class VoidQueuesHandler implements TriggerHandler {
             String result = null;
             if (cfgJson!=null && subscriptions!=null && !subscriptions.isEmpty()) {
                 Configuration cfg = mapper.readValue(cfgJson, Configuration.class);
-                Map<Date, String> voidQueues = queueInfoRetriever.getNotPollingQueues(cfg.pollTimeout);
+                SearchCommand itdCommand = new SearchCommand();
+                long current = System.currentTimeMillis();
+                itdCommand.setEndPeriod(current);
+                itdCommand.setStartPeriod(current-cfg.interruptedPeriod);
+                Collection<InterruptedTask> failedTasks = interruptedTasksService.find(itdCommand);
 
-                List<String> prevQueueNames = stateJson!=null? (List<String>)mapper.readValue(stateJson, new TypeReference<List<String>>() {}): new ArrayList<String>();
-                List<String> newQueueNames = voidQueues!=null? new ArrayList<String>(voidQueues.values()) : new ArrayList<String>();
-                result = mapper.writeValueAsString(newQueueNames);
+                List<InterruptedTask> prevTasks = stateJson!=null? (List<InterruptedTask>) mapper.readValue(stateJson, new TypeReference<List<InterruptedTask>>() {}) : new ArrayList<InterruptedTask>();
+                List<InterruptedTask> newTasks = failedTasks!=null? new ArrayList<InterruptedTask>(failedTasks): new ArrayList<InterruptedTask>();
+                result = mapper.writeValueAsString(newTasks);
 
-                NotificationUtils.excludeOldValues(newQueueNames, prevQueueNames);
-                if (newQueueNames != null && !newQueueNames.isEmpty()) {
-                    List<EmailNotification> emailNotifications = createVoidQueuesNotifications(newQueueNames, subscriptions);
+                NotificationUtils.excludeOldTasksValues(newTasks, prevTasks);
+                if (newTasks != null && !newTasks.isEmpty()) {
+                    List<EmailNotification> emailNotifications = createInterruptedTasksNotifications(newTasks, subscriptions);
                     if (emailNotifications != null) {
                         for (EmailNotification emailNotification : emailNotifications) {
                             emailSender.send(emailNotification);
@@ -69,31 +72,29 @@ public class VoidQueuesHandler implements TriggerHandler {
 
     @Override
     public String getTriggerType() {
-        return NotificationTrigger.TYPE_VOID_QUEUES;
+        return NotificationTrigger.TYPE_FAILED_TASKS;
     }
 
-
-    List<EmailNotification> createVoidQueuesNotifications(Collection<String> queueNames, Collection<Subscription> subscriptions) {
+    List<EmailNotification> createInterruptedTasksNotifications(Collection<InterruptedTask> newValues, Collection<Subscription> subscriptions) {
         List<EmailNotification> result = new ArrayList<>();
         for (Subscription s : subscriptions) {
-            Set<String> trackedQueues = NotificationUtils.getTrackedValues(s.getActorIds(), queueNames);
-            if (trackedQueues != null) {
+            Set<String> actorIds = NotificationUtils.asActorIdList(newValues);
+            Collection trackedActors = NotificationUtils.getTrackedValues(s.getActorIds(), actorIds);
+            if (trackedActors != null) {
                 EmailNotification emailNotification = new EmailNotification();
-                emailNotification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + trackedQueues);
+                emailNotification.setBody("Process(es) failed with error. \n\r Actors are: " + trackedActors);
                 emailNotification.setIsHtml(false);
                 emailNotification.setIsMultipart(false);
-                emailNotification.setSubject("Void queues alert");
-                emailNotification.setSendFrom("Taskurotta notification service");
+                emailNotification.setSubject("Failed process alert");
                 emailNotification.setSendTo(StringUtils.collectionToCommaDelimitedString(s.getEmails()));
                 result.add(emailNotification);
             }
-
         }
         return result;
     }
 
     public static class Configuration {
-        long pollTimeout;
+        long interruptedPeriod;
     }
 
     @Required
@@ -102,7 +103,7 @@ public class VoidQueuesHandler implements TriggerHandler {
     }
 
     @Required
-    public void setQueueInfoRetriever(QueueInfoRetriever queueInfoRetriever) {
-        this.queueInfoRetriever = queueInfoRetriever;
+    public void setInterruptedTasksService(InterruptedTasksService interruptedTasksService) {
+        this.interruptedTasksService = interruptedTasksService;
     }
 }

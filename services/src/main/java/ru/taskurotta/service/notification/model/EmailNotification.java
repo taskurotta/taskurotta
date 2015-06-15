@@ -8,7 +8,6 @@ import java.util.List;
  */
 public class EmailNotification implements Serializable {
 
-    private String sendFrom;
     private String sendTo;
     private String subject;
     private String body;
@@ -16,14 +15,6 @@ public class EmailNotification implements Serializable {
     private boolean isMultipart = true;
     private String encoding = "UTF-8";
     private List<EmailAttach> attaches;
-
-    public String getSendFrom() {
-        return sendFrom;
-    }
-
-    public void setSendFrom(String sendFrom) {
-        this.sendFrom = sendFrom;
-    }
 
     public String getSendTo() {
         return sendTo;
@@ -84,7 +75,6 @@ public class EmailNotification implements Serializable {
     @Override
     public String toString() {
         return "Notification{" +
-                "sendFrom='" + sendFrom + '\'' +
                 ", sendTo='" + sendTo + '\'' +
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +

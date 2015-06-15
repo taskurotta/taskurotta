@@ -7,9 +7,12 @@ import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.jdbc.support.lob.LobHandler;
+import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.notification.dao.NotificationDao;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
+import ru.taskurotta.service.notification.model.SearchCommand;
 import ru.taskurotta.service.notification.model.Subscription;
+import ru.taskurotta.service.ora.OracleQueryUtils;
 import ru.taskurotta.util.NotificationUtils;
 
 import java.sql.CallableStatement;
@@ -39,6 +42,9 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
     private static final String SQL_GET_SUBSCRIPTIONS_BY_TRIGGER_ID = "select * from TSK_NFN_SUBSCRIPTIONS where ID in (select SUBSCRIPTION_ID from TSK_NFN_LINKS where TRIGGER_ID = ?)";
     private static final String SQL_LIST_TRIGGER_KEYS = "select ID from TSK_NFN_TRIGGERS";
     private static final String SQL_LIST_TRIGGER_KEYS_BY_SUBSCRIPTION = "select TRIGGER_ID as id from TSK_NFN_LINKS where SUBSCRIPTION_ID = ? ";
+
+    private static final String SQL_DELETE_SUBSCRIPTION = "delete from TSK_NFN_SUBSCRIPTIONS where ID = ? ";
+    private static final String SQL_DELETE_SUBSCRIPTION_LINKS = "delete from TSK_NFN_LINKS where SUBSCRIPTION_ID = ? ";
 
     private RowMapper<Long> keyMapper = new RowMapper<Long>() {
         @Override
@@ -122,6 +128,12 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
     }
 
     @Override
+    public void removeSubscription(long id) {
+        getJdbcTemplate().update(SQL_DELETE_SUBSCRIPTION_LINKS, id);
+        getJdbcTemplate().update(SQL_DELETE_SUBSCRIPTION, id);
+    }
+
+    @Override
     public long addTrigger(final NotificationTrigger trigger) {
         return getJdbcTemplate().execute(SQL_ADD_TRIGGER, new CallableStatementCallback<Long>() {
             @Override
@@ -155,6 +167,23 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
     @Override
     public Collection<Subscription> listSubscriptions() {
         return getJdbcTemplate().query(SQL_LIST_SUBSCRIPTIONS, subscriptionMapper);
+    }
+
+    @Override
+    public GenericPage<Subscription> listSubscriptions(SearchCommand command) {
+        int startIndex = (command.getPageNum() - 1) * command.getPageSize() + 1;
+        int endIndex = startIndex + command.getPageSize() - 1;
+        final long[] totalCnt = new long[1];//container to provide access to final var
+        totalCnt[0] = 0l;
+        List<Subscription> items = getJdbcTemplate().query(OracleQueryUtils.createPagesQuery(SQL_LIST_SUBSCRIPTIONS), new RowMapper<Subscription>() {
+            @Override
+            public Subscription mapRow(ResultSet rs, int rowNum) throws SQLException {
+                totalCnt[0] = rs.getLong("cnt");
+                return subscriptionMapper.mapRow(rs, rowNum);
+            }
+        }, endIndex, startIndex);
+
+        return new GenericPage<>(items, command.getPageNum(), command.getPageSize(), totalCnt[0]);
     }
 
     @Override

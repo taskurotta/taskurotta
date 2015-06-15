@@ -185,4 +185,8 @@
         <property name="abortProcessOperationExecutor" ref="abortProcessOperationExecutor"/>
     </bean>
 
+    <bean id="subscriptionsResource" class="ru.taskurotta.dropwizard.resources.console.notifications.SubscriptionsResource">
+        <property name="notificationManager" ref="notificationManager" />
+    </bean>
+
 </beans>
