@@ -60,7 +60,7 @@ public class NotificationManagerImpl implements NotificationManager {
     public void execute() {
         if (enabled) {
             Collection<Long> triggerKeys = notificationDao.listTriggerKeys();
-            if (triggerKeys!=null && triggerKeys.isEmpty()) {
+            if (triggerKeys!=null && !triggerKeys.isEmpty()) {
                 for (Long tKey : triggerKeys) {
                     NotificationTrigger trigger = notificationDao.getTrigger(tKey);
                     logger.debug("try to execute notifications on trigger [{}]", trigger);
