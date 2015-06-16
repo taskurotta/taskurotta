@@ -10,6 +10,7 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.service.hz.storage.AbstractHzProcessService;
+import ru.taskurotta.service.ora.OracleQueryUtils;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
@@ -196,7 +197,7 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
         List<Object> params = new ArrayList<>();
         appendFilterConditions(queryBuilder, params, command);
 
-        String query = createPagesQuery(queryBuilder.toString());
+        String query = OracleQueryUtils.createPagesQuery(queryBuilder.toString());
         int startIndex = (command.getPageNum() - 1) * command.getPageSize() + 1;
         int endIndex = startIndex + command.getPageSize() - 1;
         params.add(endIndex);
@@ -407,12 +408,6 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             closeResultSet(resultSet);
         }
         return result;
-    }
-
-    private static String createPagesQuery(String query) {
-        return "SELECT t1.* FROM ( SELECT t.*, ROWNUM rnum FROM ( select a1.*, count(*) over() as cnt FROM ( " +
-                query +
-                " ) a1) t WHERE ROWNUM <= ? ) t1 WHERE t1.rnum >= ?";
     }
 
     private static void closeResultSet(ResultSet rs) {

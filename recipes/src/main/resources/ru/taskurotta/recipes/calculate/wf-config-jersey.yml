@@ -94,7 +94,7 @@ logback:
              \@level: INFO
         - ru.taskurotta.recipes.calculate:
             key: name
-            \@level: WARN
+            \@level: INFO
         - com.hazelcast:
               key: name
               \@level: WARN

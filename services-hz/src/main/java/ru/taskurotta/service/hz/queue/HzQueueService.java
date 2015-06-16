@@ -16,6 +16,8 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.hz.console.HzQueueStatTask;
+import ru.taskurotta.service.metrics.MetricName;
+import ru.taskurotta.service.metrics.handler.MetricsDataHandler;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.transport.utils.TransportUtils;
@@ -25,10 +27,13 @@ import ru.taskurotta.util.StringUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -60,15 +65,10 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
 
     private static final String LAST_POLLED_TASK_ENQUEUE_TIME = "lastPolledTaskEnqueueTimes";
     private static final String SYNCH_LOCK_NAME = HzQueueService.class.getName().concat("#SINCH_LOCK");
-//    private static final String DRAIN_LOCK_NAME = HzQueueService.class.getName().concat("#DRAIN_LOCK");
 
     private ILock synchLock = null;
 
     private Map<String, CachedDelayQueue<TaskQueueItem>> queueMap = new ConcurrentHashMap<>();
-
-//    private ILock drainLock;
-//
-//    private AtomicInteger cnt = new AtomicInteger(0);
 
     public HzQueueService(QueueFactory queueFactory, HazelcastInstance hazelcastInstance, String queueNamePrefix, long mergePeriodMs, long pollDelay) {
         this.queueFactory = queueFactory;
@@ -77,7 +77,6 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
         this.pollDelay = pollDelay;
 
         this.synchLock = hazelcastInstance.getLock(SYNCH_LOCK_NAME);
-//        this.drainLock = hazelcastInstance.getLock(DRAIN_LOCK_NAME);
 
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
@@ -182,6 +181,28 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     public long getQueueStorageCount(String queueName) {
         CachedDelayQueue<TaskQueueItem> queue = queueMap.get(ActorUtils.toPrefixed(queueName, queueNamePrefix));
         return queue != null ? queue.size() : -1;//-1 indicating that there is no such queue cached yet
+    }
+
+    @Override
+    public Map<Date, String> getNotPollingQueues(long pollTimeout) {
+        MetricsDataHandler metricsDataHandler = MetricsDataHandler.getInstance();
+        Map<Date, String> result = new TreeMap<>(new Comparator<Date>() {
+            @Override
+            public int compare(Date date1, Date date2) {
+                return date2.compareTo(date1);
+            }
+        });
+
+        Collection<String> queueNames = getQueueNames();
+        long now = System.currentTimeMillis();
+        for (String queueName : queueNames) {
+            Date lastActivity = metricsDataHandler.getLastActivityTime(MetricName.POLL.getValue(), queueName);
+            if (lastActivity == null || (now - lastActivity.getTime()) > pollTimeout) {
+                result.put(lastActivity == null ? new Date(0) : lastActivity, queueName);
+            }
+        }
+
+        return result;
     }
 
     @Override

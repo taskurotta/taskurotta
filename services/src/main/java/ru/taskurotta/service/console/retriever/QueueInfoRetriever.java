@@ -4,6 +4,9 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
+import java.util.Date;
+import java.util.Map;
+
 /**
  * Task queues information retriever. Provides information such as number
  * of queues, queue names, task count and such
@@ -26,5 +29,7 @@ public interface QueueInfoRetriever {
     void removeQueue(String queueName);
 
     long getQueueStorageCount(String queueName);
+
+    Map<Date, String> getNotPollingQueues(long pollTimeout);
 
 }

@@ -1,5 +1,7 @@
 package ru.taskurotta.service.console.model;
 
+import ru.taskurotta.service.console.retriever.command.PageCommand;
+
 import java.util.UUID;
 
 /**
@@ -7,7 +9,7 @@ import java.util.UUID;
  * Date: 11.10.13
  * Time: 18:25
  */
-public class SearchCommand {
+public class SearchCommand extends PageCommand {
 
     protected UUID processId;
     protected UUID taskId;

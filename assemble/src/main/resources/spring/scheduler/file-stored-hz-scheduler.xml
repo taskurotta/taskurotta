@@ -10,17 +10,17 @@
         <constructor-arg name="taskServer" ref="taskServer" />
     </bean>
 
-    <bean id = "realJobStore" class="ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore">
-        <property name="storeLocation" value="${schedule.job.store.dir}" />
+    <bean id = "realJobStore" class="ru.taskurotta.service.schedule.storage.SchedulerJsonJobStore">
+        <constructor-arg name="storeLocation" value="${schedule.job.store.dir}" />
     </bean>
 
-    <bean id="jobStore" class="ru.taskurotta.service.hz.schedule.adapter.HzJobStoreAdapter">
+    <bean id="jobStore" class="ru.taskurotta.service.hz.adapter.schedule.HzJobStoreAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
         <constructor-arg name="jobStore" ref="realJobStore" />
         <constructor-arg name="isSharedStore" value="${schedule.job.store.shared}" />
     </bean>
 
-    <bean id="jobManager" class="ru.taskurotta.service.hz.schedule.adapter.HzJobManagerAdapter">
+    <bean id="jobManager" class="ru.taskurotta.service.hz.adapter.schedule.HzJobManagerAdapter">
         <constructor-arg name="hzInstance" ref="hzInstance" />
         <constructor-arg name="scheduleTopicName" value = "${hz.schedule.topic-name}" />
         <constructor-arg name="jobManager" ref="realJobManager" />

@@ -3,10 +3,7 @@ package ru.taskurotta.service.console.retriever.command;
 /**
  * Date: 10.09.13 14:12
  */
-public class ProcessSearchCommand {
-
-    private int pageNum;
-    private int pageSize;
+public class ProcessSearchCommand extends PageCommand {
 
     private String customId;
     private String processId;
@@ -16,22 +13,6 @@ public class ProcessSearchCommand {
     private long startedTill;
 
     public ProcessSearchCommand() {}
-
-    public int getPageNum() {
-        return pageNum;
-    }
-
-    public void setPageNum(int pageNum) {
-        this.pageNum = pageNum;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
 
     public String getCustomId() {
         return customId;
