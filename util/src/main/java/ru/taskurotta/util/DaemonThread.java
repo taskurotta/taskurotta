@@ -11,6 +11,7 @@ public abstract class DaemonThread extends Thread {
 
     public DaemonThread(String name, TimeUnit sleepUnit, long sleepValue) {
         super(name);
+        this.setDaemon(true);
 
         this.sleepUnit = sleepUnit;
         this.sleepValue = sleepValue;

@@ -10,9 +10,7 @@ public class FullFeatureStarter implements Starter {
 
     public static FullFeatureDeciderClient deciderClient;
 
-
     public FullFeatureStarter(ClientServiceManager clientServiceManager) {
-
         DeciderClientProvider clientProvider = clientServiceManager.getDeciderClientProvider();
         deciderClient = clientProvider.getDeciderClient(FullFeatureDeciderClient.class);
     }

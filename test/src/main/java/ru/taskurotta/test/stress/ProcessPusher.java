@@ -49,7 +49,7 @@ public class ProcessPusher {
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
                          final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate, final ProcessesCounter fpCounter) {
 
-        final Queue queue = new ConcurrentLinkedQueue();
+        final Queue<Long> queue = new ConcurrentLinkedQueue<>();
 
         final long startTestTime = System.currentTimeMillis();
 
@@ -57,7 +57,6 @@ public class ProcessPusher {
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
 
             int currentSpeedPerSecond = startSpeedPerSecond;
-            //            int currentSpeedPerSecond = 10000;
 
             @Override
             public void daemonJob() {
@@ -100,7 +99,7 @@ public class ProcessPusher {
                     for (int i = 0; i < needToPush; i++) {
                         timeCursor += interval;
 
-                        queue.add((long) (timeCursor));
+                        queue.add((long) timeCursor);
 
                         if (counter.incrementAndGet() == maxProcessQuantity) {
                             taskPerSecondSpeed = (int) (1000.0 * LifetimeProfiler.taskCount
@@ -111,7 +110,6 @@ public class ProcessPusher {
                         }
                     }
 
-                    return;
                 }
 
             }
@@ -173,12 +171,12 @@ public class ProcessPusher {
                 @Override
                 public void daemonJob() {
 
-                    Long timeToStart = (Long) queue.poll();
+                    Long timeToStart = queue.poll();
 
                     if (timeToStart == null) {
                         try {
                             TimeUnit.MILLISECONDS.sleep(100);
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException ignored) {
                         }
 
                         return;
@@ -186,11 +184,11 @@ public class ProcessPusher {
 
                     long currTime = System.currentTimeMillis();
 
-                    if (currTime < timeToStart.longValue()) {
+                    if (currTime < timeToStart) {
 
                         try {
-                            TimeUnit.MILLISECONDS.sleep(timeToStart.longValue() - currTime);
-                        } catch (InterruptedException e) {
+                            TimeUnit.MILLISECONDS.sleep(timeToStart - currTime);
+                        } catch (InterruptedException ignored) {
                         }
                     }
 

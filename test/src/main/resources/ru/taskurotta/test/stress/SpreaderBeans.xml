@@ -15,77 +15,12 @@
         <constructor-arg name="clientServiceManager" ref="clientServiceManager"/>
     </bean>
 
-    <!--<bean id="fpCounter" class="ru.taskurotta.test.stress.mongo.MongoFpCounter">
-        <property name="collectionName" value="{process-counter.mongo.collection-name}"/>
-        <property name="findQuery" value="${process-counter.mongo.find-query}"/>
-        <property name="findField" value="${process-counter.mongo.find-field}"/>
-        <property name="mongoDB" ref="mongoDB"/>
-    </bean>-->
-
     <bean id="fpCounter" class="ru.taskurotta.test.stress.MaxIntegerProcessesCounter"/>
-
-    <bean id="hzClientProvider" class="ru.taskurotta.test.stress.HzClientProvider">
-        <constructor-arg value="${hz.nodes}"/>
-    </bean>
-
-    <!-- Mongo -->
-    <bean id="writeConcern" class="com.mongodb.WriteConcern">
-        <constructor-arg name="w" value="${mongo.options.write-concern.w}"/>
-        <constructor-arg name="wtimeout" value="${mongo.options.write-concern.wtimeout}"/>
-        <constructor-arg name="fsync" value="${mongo.options.write-concern.fsync}"/>
-        <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
-    </bean>
-
-    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder"/>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="minConnectionsPerHost">
-        <constructor-arg value="${mongo.options.min-connections-per-host}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectionsPerHost">
-        <constructor-arg value="${mongo.options.connections-per-host}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="threadsAllowedToBlockForConnectionMultiplier">
-        <constructor-arg value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxWaitTime">
-        <constructor-arg value="${mongo.options.max-wait-time}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionIdleTime">
-        <constructor-arg value="${mongo.options.max-connection-idle-time}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="maxConnectionLifeTime">
-        <constructor-arg value="${mongo.options.max-connection-life-time}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="connectTimeout">
-        <constructor-arg value="${mongo.options.connect-timeout}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketTimeout">
-        <constructor-arg value="${mongo.options.socket-timeout}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="socketKeepAlive">
-        <constructor-arg value="${mongo.options.socket-keep-alive}"/>
-    </bean>
-    <bean factory-bean="mongoClientOptionsBuilder" factory-method="writeConcern">
-        <constructor-arg ref="writeConcern"/>
-    </bean>
-
-    <bean id="mongoClientURI" class="com.mongodb.MongoClientURI">
-        <constructor-arg name="uri" value="${mongo.client-uri}"/>
-        <constructor-arg name="builder" ref="mongoClientOptionsBuilder"/>
-    </bean>
-
-    <bean id="mongo" class="com.mongodb.MongoClient">
-        <constructor-arg name="uri" ref="mongoClientURI"/>
-    </bean>
-
-    <bean id="mongoDB" factory-bean="mongo" factory-method="getDB">
-        <constructor-arg name="dbname" value="${mongo.db.name}" />
-    </bean>
-    <!-- /Mongo -->
 
     <bean id="processPusher" class="ru.taskurotta.test.stress.ProcessPusher">
         <constructor-arg name="starter" ref="processStarter"/>
         <constructor-arg name="hazelcastInstance">
-            <bean factory-bean="hzClientProvider" factory-method="provideClient"/>
+            <null/>
         </constructor-arg>
         <constructor-arg name="maxProcessQuantity" value="${test.ff.maxProcessQuantity}"/>
         <constructor-arg name="startSpeedPerSecond" value="${test.ff.startSpeedPerSecond}"/>
