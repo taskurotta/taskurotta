@@ -143,9 +143,9 @@ public class OraNotificationDao extends JdbcDaoSupport implements NotificationDa
                 cs.setString(3, trigger.getCfg());
                 cs.setTimestamp(4, new Timestamp(trigger.getChangeDate().getTime()));
 
-                cs.registerOutParameter(3, Types.BIGINT);
+                cs.registerOutParameter(5, Types.BIGINT);
                 cs.execute();
-                return cs.getLong(3);
+                return cs.getLong(5);
             }
         });
     }

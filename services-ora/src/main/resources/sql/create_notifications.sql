@@ -1,8 +1,8 @@
 CREATE TABLE TSK_NFN_TRIGGERS (
     ID                NUMBER NOT NULL PRIMARY KEY,
     TYPE              VARCHAR2(200 char) NOT NULL,
-    STATE_JSON        CLOB NOT NULL,
-    CFG_JSON          CLOB NOT NULL,
+    STATE_JSON        CLOB,
+    CFG_JSON          CLOB,
     CHANGE_DATE       TIMESTAMP(6) NOT NULL
 );
 
