@@ -1,1 +1,1 @@
-start java -DassetsMode=dev -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -jar target/assemble-0.9.10.jar server src/main/resources/hz-mongo.yml
+start java -DassetsMode=dev -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -jar target/assemble-0.10.0-SNAPSHOT.jar server src/main/resources/hz-mongo.yml
