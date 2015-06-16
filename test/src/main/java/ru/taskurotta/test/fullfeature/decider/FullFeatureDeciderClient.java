@@ -10,5 +10,5 @@ import ru.taskurotta.annotation.Execute;
 public interface FullFeatureDeciderClient {
 
     @Execute
-    public void start();
+    void start();
 }
