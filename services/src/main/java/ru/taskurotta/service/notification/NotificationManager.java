@@ -13,6 +13,9 @@ import java.util.Collection;
  */
 public interface NotificationManager {
 
+    /**
+     * Runs all checks for registered triggers and send emails id any problem detected
+     */
     void execute();
 
     Subscription getSubscription(long id);

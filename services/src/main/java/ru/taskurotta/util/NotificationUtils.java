@@ -99,4 +99,19 @@ public class NotificationUtils {
         return result;
     }
 
+    public static String toCommaDelimited(List<String> target) {
+        if (target == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : target) {
+            if (sb.length()>0) {
+                sb.append(", ");
+            }
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+
 }

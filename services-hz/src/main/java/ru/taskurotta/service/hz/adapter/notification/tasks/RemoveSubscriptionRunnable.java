@@ -1,6 +1,6 @@
-package ru.taskurotta.service.hz.notification.adapter.tasks;
+package ru.taskurotta.service.hz.adapter.notification.tasks;
 
-import ru.taskurotta.service.hz.notification.adapter.HzNotificationDaoAdapter;
+import ru.taskurotta.service.hz.adapter.notification.HzNotificationDaoAdapter;
 
 import java.io.Serializable;
 

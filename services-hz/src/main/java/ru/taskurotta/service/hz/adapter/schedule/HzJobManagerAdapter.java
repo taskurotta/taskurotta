@@ -1,4 +1,4 @@
-package ru.taskurotta.service.hz.schedule.adapter;
+package ru.taskurotta.service.hz.adapter.schedule;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ILock;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.Action;
 import ru.taskurotta.service.schedule.JobConstants;
 import ru.taskurotta.service.schedule.model.JobVO;
-import ru.taskurotta.service.hz.schedule.adapter.HzJobManagerAdapter.ActionMessage;
+import ru.taskurotta.service.hz.adapter.schedule.HzJobManagerAdapter.ActionMessage;
 import ru.taskurotta.service.schedule.JobManager;
 
 import java.io.Serializable;

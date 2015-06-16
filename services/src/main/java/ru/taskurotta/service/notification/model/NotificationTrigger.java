@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
+ * Result of a handler's check for a problem requiring notification.
+ * Also stores the result of previous handler execution and confoguration in JSON
  * Created on 10.06.2015.
  */
 public class NotificationTrigger implements Serializable {

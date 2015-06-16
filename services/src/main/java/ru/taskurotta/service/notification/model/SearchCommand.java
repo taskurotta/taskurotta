@@ -7,6 +7,6 @@ import ru.taskurotta.service.console.retriever.command.PageCommand;
  */
 public class SearchCommand extends PageCommand {
 
-    //TODO:
+    //TODO: add some filters?
 
 }

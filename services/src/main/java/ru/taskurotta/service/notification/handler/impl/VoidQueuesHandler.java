@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.util.StringUtils;
 import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
 import ru.taskurotta.service.notification.EmailSender;
 import ru.taskurotta.service.notification.handler.TriggerHandler;
@@ -36,12 +34,20 @@ public class VoidQueuesHandler implements TriggerHandler {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    private long defaultPollTimeout;
+
+    public VoidQueuesHandler(EmailSender emailSender, QueueInfoRetriever queueInfoRetriever, long defaultPollTimeout) {
+        this.emailSender = emailSender;
+        this.queueInfoRetriever = queueInfoRetriever;
+        this.defaultPollTimeout = defaultPollTimeout;
+    }
+
     @Override
     public String handleTrigger(String stateJson, Collection<Subscription> subscriptions, String cfgJson) {
         try {
             String result = null;
-            if (cfgJson!=null && subscriptions!=null && !subscriptions.isEmpty()) {
-                Configuration cfg = mapper.readValue(cfgJson, Configuration.class);
+            if (subscriptions!=null && !subscriptions.isEmpty()) {
+                Configuration cfg = cfgJson!=null? mapper.readValue(cfgJson, Configuration.class) : getDefaultCfg();
                 Map<Date, String> voidQueues = queueInfoRetriever.getNotPollingQueues(cfg.pollTimeout);
 
                 List<String> prevQueueNames = stateJson!=null? (List<String>)mapper.readValue(stateJson, new TypeReference<List<String>>() {}): new ArrayList<String>();
@@ -83,7 +89,7 @@ public class VoidQueuesHandler implements TriggerHandler {
                 emailNotification.setIsHtml(false);
                 emailNotification.setIsMultipart(false);
                 emailNotification.setSubject("Void queues alert");
-                emailNotification.setSendTo(StringUtils.collectionToCommaDelimitedString(s.getEmails()));
+                emailNotification.setSendTo(NotificationUtils.toCommaDelimited(s.getEmails()));
                 result.add(emailNotification);
             }
 
@@ -91,17 +97,13 @@ public class VoidQueuesHandler implements TriggerHandler {
         return result;
     }
 
+    public Configuration getDefaultCfg() {
+        Configuration result = new Configuration();
+        result.pollTimeout = defaultPollTimeout;
+        return result;
+    }
+
     public static class Configuration {
         long pollTimeout;
-    }
-
-    @Required
-    public void setEmailSender(EmailSender emailSender) {
-        this.emailSender = emailSender;
-    }
-
-    @Required
-    public void setQueueInfoRetriever(QueueInfoRetriever queueInfoRetriever) {
-        this.queueInfoRetriever = queueInfoRetriever;
     }
 }

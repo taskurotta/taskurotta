@@ -1,4 +1,4 @@
-package ru.taskurotta.service.hz.schedule.adapter;
+package ru.taskurotta.service.hz.adapter.schedule;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -6,11 +6,11 @@ import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.schedule.model.JobVO;
-import ru.taskurotta.service.hz.schedule.adapter.tasks.AddJobCallable;
-import ru.taskurotta.service.hz.schedule.adapter.tasks.RemoveJobRunnable;
-import ru.taskurotta.service.hz.schedule.adapter.tasks.UpdateErrorCountRunnable;
-import ru.taskurotta.service.hz.schedule.adapter.tasks.UpdateJobRunnable;
-import ru.taskurotta.service.hz.schedule.adapter.tasks.UpdateJobStatusRunnable;
+import ru.taskurotta.service.hz.adapter.schedule.tasks.AddJobCallable;
+import ru.taskurotta.service.hz.adapter.schedule.tasks.RemoveJobRunnable;
+import ru.taskurotta.service.hz.adapter.schedule.tasks.UpdateErrorCountRunnable;
+import ru.taskurotta.service.hz.adapter.schedule.tasks.UpdateJobRunnable;
+import ru.taskurotta.service.hz.adapter.schedule.tasks.UpdateJobStatusRunnable;
 import ru.taskurotta.service.schedule.storage.JobStore;
 
 import java.util.Collection;

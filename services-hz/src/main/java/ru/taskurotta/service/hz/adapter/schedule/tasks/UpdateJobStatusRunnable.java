@@ -1,6 +1,6 @@
-package ru.taskurotta.service.hz.schedule.adapter.tasks;
+package ru.taskurotta.service.hz.adapter.schedule.tasks;
 
-import ru.taskurotta.service.hz.schedule.adapter.HzJobStoreAdapter;
+import ru.taskurotta.service.hz.adapter.schedule.HzJobStoreAdapter;
 
 import java.io.Serializable;
 

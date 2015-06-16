@@ -5,6 +5,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * Represents link of the emails to a given actor id. Meaning that this emails are interested in receiving
+ * notifications about problems detected for the given actors.
+ *
+ * Every actorId is actualy a *starts with* prefix
+ *
  * Created on 08.06.2015.
  */
 public class Subscription implements Serializable {

@@ -1,4 +1,4 @@
-package ru.taskurotta.service.hz.notification.adapter;
+package ru.taskurotta.service.hz.adapter.notification;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
@@ -6,11 +6,11 @@ import com.hazelcast.core.Member;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.console.model.GenericPage;
-import ru.taskurotta.service.hz.notification.adapter.tasks.AddSubscriptionCallable;
-import ru.taskurotta.service.hz.notification.adapter.tasks.AddTriggerCallable;
-import ru.taskurotta.service.hz.notification.adapter.tasks.RemoveSubscriptionRunnable;
-import ru.taskurotta.service.hz.notification.adapter.tasks.UpdateSubscriptionRunnable;
-import ru.taskurotta.service.hz.notification.adapter.tasks.UpdateTriggerRunnable;
+import ru.taskurotta.service.hz.adapter.notification.tasks.AddSubscriptionCallable;
+import ru.taskurotta.service.hz.adapter.notification.tasks.AddTriggerCallable;
+import ru.taskurotta.service.hz.adapter.notification.tasks.RemoveSubscriptionRunnable;
+import ru.taskurotta.service.hz.adapter.notification.tasks.UpdateSubscriptionRunnable;
+import ru.taskurotta.service.hz.adapter.notification.tasks.UpdateTriggerRunnable;
 import ru.taskurotta.service.notification.dao.NotificationDao;
 import ru.taskurotta.service.notification.model.NotificationTrigger;
 import ru.taskurotta.service.notification.model.SearchCommand;

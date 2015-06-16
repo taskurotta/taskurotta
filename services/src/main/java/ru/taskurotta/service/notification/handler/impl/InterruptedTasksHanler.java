@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.util.StringUtils;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.notification.EmailSender;
@@ -35,12 +33,20 @@ public class InterruptedTasksHanler implements TriggerHandler {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    private long defaultInterruptedPeriod;
+
+    public InterruptedTasksHanler(EmailSender emailSender, InterruptedTasksService interruptedTasksService, long defaultInterruptedPeriod) {
+        this.emailSender = emailSender;
+        this.interruptedTasksService = interruptedTasksService;
+        this.defaultInterruptedPeriod = defaultInterruptedPeriod;
+    }
+
     @Override
     public String handleTrigger(String stateJson, Collection<Subscription> subscriptions, String cfgJson) {
         try {
             String result = null;
-            if (cfgJson!=null && subscriptions!=null && !subscriptions.isEmpty()) {
-                Configuration cfg = mapper.readValue(cfgJson, Configuration.class);
+            if (subscriptions!=null && !subscriptions.isEmpty()) {
+                Configuration cfg = cfgJson!=null? mapper.readValue(cfgJson, Configuration.class) : getDefaultConfiguration();
                 SearchCommand itdCommand = new SearchCommand();
                 long current = System.currentTimeMillis();
                 itdCommand.setEndPeriod(current);
@@ -86,10 +92,16 @@ public class InterruptedTasksHanler implements TriggerHandler {
                 emailNotification.setIsHtml(false);
                 emailNotification.setIsMultipart(false);
                 emailNotification.setSubject("Failed process alert");
-                emailNotification.setSendTo(StringUtils.collectionToCommaDelimitedString(s.getEmails()));
+                emailNotification.setSendTo(NotificationUtils.toCommaDelimited(s.getEmails()));
                 result.add(emailNotification);
             }
         }
+        return result;
+    }
+
+    private Configuration getDefaultConfiguration() {
+        Configuration result = new Configuration();
+        result.interruptedPeriod = defaultInterruptedPeriod;
         return result;
     }
 
@@ -97,13 +109,4 @@ public class InterruptedTasksHanler implements TriggerHandler {
         long interruptedPeriod;
     }
 
-    @Required
-    public void setEmailSender(EmailSender emailSender) {
-        this.emailSender = emailSender;
-    }
-
-    @Required
-    public void setInterruptedTasksService(InterruptedTasksService interruptedTasksService) {
-        this.interruptedTasksService = interruptedTasksService;
-    }
 }
