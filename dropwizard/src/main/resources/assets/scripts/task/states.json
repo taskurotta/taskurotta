@@ -1,0 +1,34 @@
+[
+  {
+    "id": "0",
+    "name": "Started",
+    "info": "Have not been released yet",
+    "desc": "Task have not been released yet",
+    "icon": "icon-question-sign",
+    "class": "info"
+  },
+  {
+    "id": "1",
+    "name": "Finished",
+    "info": "Successfully released",
+    "desc": "The task was successfully released",
+    "icon": "icon-ok",
+    "class": "success"
+  },
+  {
+    "id": "2",
+    "name": "Failed",
+    "info": "Released with error",
+    "desc": "Task was released with error",
+    "icon": "icon-ban-circle",
+    "class": "error"
+  },
+  {
+    "id": "unknown",
+    "name": "Unknown",
+    "info": "Have not been released yet",
+    "desc": "Task was not been released yet",
+    "icon": "icon-question-sign",
+    "class": "warn"
+  }
+]

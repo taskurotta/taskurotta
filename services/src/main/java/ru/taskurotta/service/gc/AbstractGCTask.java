@@ -41,24 +41,26 @@ public abstract class AbstractGCTask implements Runnable {
         Process process = processService.getProcess(processId);
 
         Graph graph = graphDao.getGraph(processId);
+
+        if (graph != null && !graph.isFinished()) {
+            logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
+            return;
+        }
+
         if (graph == null) {
             logger.warn("Not found graph for process [{}], stop garbage collector for this process", processId);
             if (processService.getStartTask(processId) == null) {
                 logger.warn("And processService has no start task for it [{}]", processId);
             }
-            return;
+        }  else {
+
+            Set<UUID> finishedItems = graph.getFinishedItems();
+            taskDao.deleteDecisions(finishedItems, processId);
+            taskDao.deleteTasks(finishedItems, processId);
+
+            graphDao.deleteGraph(processId);
+
         }
-
-        if (!graph.isFinished()) {
-            logger.error("Graph for process [{}] isn't finished, stop garbage collector for this process", processId);
-            return;
-        }
-
-        Set<UUID> finishedItems = graph.getFinishedItems();
-        taskDao.deleteDecisions(finishedItems, processId);
-        taskDao.deleteTasks(finishedItems, processId);
-
-        graphDao.deleteGraph(processId);
 
         if (process != null) {
             processService.deleteProcess(processId);

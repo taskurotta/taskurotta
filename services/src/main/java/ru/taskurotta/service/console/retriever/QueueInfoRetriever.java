@@ -4,6 +4,7 @@ import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.model.QueueStatVO;
 import ru.taskurotta.service.queue.TaskQueueItem;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -19,8 +20,6 @@ public interface QueueInfoRetriever {
 
     GenericPage<TaskQueueItem> getQueueContent(String queueName, int pageNum, int pageSize);
 
-    Map<String, Integer> getHoveringCount(float periodSize);
-
     GenericPage<QueueStatVO> getQueuesStatsPage(int pageNum, int pageSize, String filter);
 
     long getLastPolledTaskEnqueueTime(String queueName);
@@ -30,5 +29,7 @@ public interface QueueInfoRetriever {
     void removeQueue(String queueName);
 
     long getQueueStorageCount(String queueName);
+
+    Map<Date, String> getNotPollingQueues(long pollTimeout);
 
 }

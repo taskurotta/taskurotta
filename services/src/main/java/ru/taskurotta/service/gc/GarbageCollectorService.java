@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public interface GarbageCollectorService {
 
-    public void collect(UUID processId);
+    void collect(UUID processId, long timeout);
 
-    public int getCurrentSize();
+    int getCurrentSize();
 
 }

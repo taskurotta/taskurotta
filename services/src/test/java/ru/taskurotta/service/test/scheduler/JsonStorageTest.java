@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.schedule.JobConstants;
 import ru.taskurotta.service.schedule.model.JobVO;
-import ru.taskurotta.service.schedule.storage.JsonDirectoryJobStore;
+import ru.taskurotta.service.schedule.storage.SchedulerJsonJobStore;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.internal.core.TaskType;
 
@@ -26,7 +26,7 @@ public class JsonStorageTest {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonStorageTest.class);
 
-    protected JsonDirectoryJobStore store;
+    protected SchedulerJsonJobStore store;
 
     protected ObjectMapper mapper = new ObjectMapper();
 
@@ -35,9 +35,7 @@ public class JsonStorageTest {
 
     @Before
     public void prepareStoreDir() {
-        store = new JsonDirectoryJobStore();
-        store.setStoreLocation(tmpFolder.getRoot().getPath());
-        store.init();
+        store = new SchedulerJsonJobStore(tmpFolder.getRoot().getPath());
     }
 
     @Test
@@ -45,10 +43,10 @@ public class JsonStorageTest {
 
         int countOfTestJobsAtStore = 20;
         for (int i = 0; i<countOfTestJobsAtStore; i++) {
-            store.addJob(getNewJob());
+            store.add(getNewJob());
         }
 
-        Collection<Long> ids = store.getJobIds();
+        Collection<Long> ids = store.getKeys();
         Set<Long> uniqueIds = new HashSet<>(ids);
         Assert.assertTrue(uniqueIds.size() == countOfTestJobsAtStore);
 
@@ -57,20 +55,20 @@ public class JsonStorageTest {
         }
 
         for (Long id: ids) {
-            store.removeJob(id);
+            store.remove(id);
         }
 
-        Collection<Long> newIds = store.getJobIds();
+        Collection<Long> newIds = store.getKeys();
         Assert.assertTrue(newIds==null || newIds.isEmpty());
 
         JobVO aJob = getNewJob();
-        long id = store.addJob(aJob);
+        long id = store.add(aJob);
         logger.debug("New stored job id is [{}]", id);
 
         aJob.setId(id);
         String aJobAsString = mapper.writeValueAsString(aJob);
 
-        JobVO theJob = store.getJob(id);
+        JobVO theJob = store.get(id);
         Assert.assertNotNull(theJob);
         Assert.assertTrue(theJob.getId() == id);
 
@@ -78,8 +76,8 @@ public class JsonStorageTest {
 
         Assert.assertEquals(theJobAsString, aJobAsString);
 
-        store.removeJob(id);
-        theJob = store.getJob(id);
+        store.remove(id);
+        theJob = store.get(id);
         logger.debug("Job after removal is [{}]", theJob);
         Assert.assertNull(theJob);
 
@@ -91,11 +89,11 @@ public class JsonStorageTest {
         aJob.setStatus(JobConstants.STATUS_INACTIVE);
 
         logger.debug("STORED job is [{}]", aJob);
-        long id = store.addJob(aJob);
+        long id = store.add(aJob);
         aJob.setId(id);
 
         store.updateJobStatus(id, JobConstants.STATUS_ACTIVE);
-        JobVO theJob = store.getJob(id);
+        JobVO theJob = store.get(id);
         logger.debug("LOADED job is [{}]", aJob);
         Assert.assertTrue(theJob.getStatus() == JobConstants.STATUS_ACTIVE);
 
@@ -109,8 +107,8 @@ public class JsonStorageTest {
                 task.getArgs(), task.getOptions(), task.isUnsafe(), task.getFailTypes());
         aJob.setTask(newTask);
         aJob.setStatus(JobConstants.STATUS_INACTIVE);
-        store.updateJob(aJob);
-        theJob = store.getJob(id);
+        store.update(aJob, id);
+        theJob = store.get(id);
 
         Assert.assertTrue(theJob.getTask().getMethod().equals(newMethodName));
         Assert.assertTrue(theJob.getStatus() == JobConstants.STATUS_INACTIVE);
@@ -118,7 +116,7 @@ public class JsonStorageTest {
         for (int i = 0; i<5; i++) {
             store.updateErrorCount(id, i, "Error #" + i);
         }
-        theJob = store.getJob(id);
+        theJob = store.get(id);
 
         Assert.assertTrue(theJob.getErrorCount() == 4);
         Assert.assertTrue(theJob.getLastError().equals("Error #" + 4));

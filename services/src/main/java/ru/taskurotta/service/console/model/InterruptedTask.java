@@ -73,6 +73,35 @@ public class InterruptedTask implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        InterruptedTask that = (InterruptedTask) o;
+
+        if (time != that.time) return false;
+        if (processId != null ? !processId.equals(that.processId) : that.processId != null) return false;
+        if (taskId != null ? !taskId.equals(that.taskId) : that.taskId != null) return false;
+        if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
+        if (starterId != null ? !starterId.equals(that.starterId) : that.starterId != null) return false;
+        if (errorMessage != null ? !errorMessage.equals(that.errorMessage) : that.errorMessage != null) return false;
+        return !(errorClassName != null ? !errorClassName.equals(that.errorClassName) : that.errorClassName != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = processId != null ? processId.hashCode() : 0;
+        result = 31 * result + (taskId != null ? taskId.hashCode() : 0);
+        result = 31 * result + (actorId != null ? actorId.hashCode() : 0);
+        result = 31 * result + (starterId != null ? starterId.hashCode() : 0);
+        result = 31 * result + (int) (time ^ (time >>> 32));
+        result = 31 * result + (errorMessage != null ? errorMessage.hashCode() : 0);
+        result = 31 * result + (errorClassName != null ? errorClassName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "InterruptedTask{" +
                 "processId=" + processId +

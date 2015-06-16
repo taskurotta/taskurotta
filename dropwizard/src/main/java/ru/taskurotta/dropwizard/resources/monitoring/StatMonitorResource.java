@@ -20,8 +20,20 @@ public class StatMonitorResource {
     private StatInfoRetriever statInfoRetriever;
 
     @GET
-    public String showStats() {
+    public String showAllStats() {
+        return statInfoRetriever.getHazelcastStats() + statInfoRetriever.getNodeStats();
+    }
+
+    @GET
+    @Path("/node")
+    public String showNodeStats() {
         return statInfoRetriever.getNodeStats();
+    }
+
+    @GET
+    @Path("/hazelcast")
+    public String showHazelcastStats() {
+        return statInfoRetriever.getHazelcastStats();
     }
 
     @Required

@@ -1,0 +1,27 @@
+<div style="display: block; height: 50px">
+    <div style="float:left">
+        <div>
+            <span ng-hide="refreshRate > 0" class="muted">Auto refreshes </span>
+            <span ng-show="refreshRate > 0" class="text-success" style="text-decoration: underline;">Auto refreshes </span>
+            <span class="muted">every:</span>
+            <select id="refreshRate" ng-model="refreshRate" class="input-xsmall" style="vertical-align: baseline"
+                    ng-options="rate.id as rate.name for rate in ( refreshRates | orderBy:'+id')" ng-change="reload()"></select>
+            <i icon-info="Auto refresh results after a preset time" model="refreshRate" remove="refreshRate = 0; reload()"></i>
+        </div>
+
+    </div>
+
+    <ng-transclude></ng-transclude>
+
+    <div style="float: right;">
+        <img id="loading" src="/img/loader-arrows.gif" style="display: none;"/>
+        <a class="btn btn-small" ng-click="reload()"
+           popover="Refresh list" popover-trigger="mouseenter">
+            <i ng-hide="model.$resolved === false" class="icon-refresh"></i>
+            <img ng-show="model.$resolved === false"src="/img/loader-arrows.gif"/>
+            <!--<img ng-show="model.$resolved === false"src="/img/ajax-loader.gif"/>-->
+        </a>
+
+    </div>
+
+</div>

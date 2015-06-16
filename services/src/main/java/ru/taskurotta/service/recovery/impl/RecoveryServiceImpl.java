@@ -57,6 +57,8 @@ public class RecoveryServiceImpl implements RecoveryService {
     // time out between recovery process in milliseconds
     private long recoveryProcessChangeTimeout;
     private long findIncompleteProcessPeriod;
+    private long timeBeforeDeleteFinishedProcess;
+    private long timeBeforeManualDeleteProcess;
 
     public RecoveryServiceImpl() {
     }
@@ -66,7 +68,8 @@ public class RecoveryServiceImpl implements RecoveryService {
                                TaskService taskService, TaskDao taskDao,
                                GraphDao graphDao, InterruptedTasksService interruptedTasksService,
                                GarbageCollectorService garbageCollectorService, long recoveryProcessChangeTimeout,
-                               long findIncompleteProcessPeriod) {
+                               long findIncompleteProcessPeriod, long timeBeforeDeleteFinishedProcess,
+                               long timeBeforeManualDeleteProcess) {
 
         // todo: THIS IS A HUCK. SERVICES STRUCTURE SHOULD BE OPTIMIZED!!!
         this.generalTaskServer = generalTaskServer;
@@ -81,8 +84,9 @@ public class RecoveryServiceImpl implements RecoveryService {
         this.garbageCollectorService = garbageCollectorService;
         this.recoveryProcessChangeTimeout = recoveryProcessChangeTimeout;
         this.findIncompleteProcessPeriod = findIncompleteProcessPeriod;
+        this.timeBeforeDeleteFinishedProcess = timeBeforeDeleteFinishedProcess;
+        this.timeBeforeManualDeleteProcess = timeBeforeManualDeleteProcess;
     }
-
 
     @Override
     public boolean resurrectProcess(final UUID processId) {
@@ -385,33 +389,41 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     @Override
     public boolean abortProcess(final UUID processId) {
-        boolean result = dependencyService.changeGraph(new GraphDao.Updater() {
-            @Override
-            public UUID getProcessId() {
-                return processId;
-            }
 
-            @Override
-            public boolean apply(Graph graph) {
-                Set<UUID> finishedItems = graph.getFinishedItems();
-                deleteTasksAndDecisions(finishedItems, processId);
+        processService.lock(processId);
 
-                Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
-                deleteTasksAndDecisions(notFinishedItems, processId);
+        try {
+            boolean result = dependencyService.changeGraph(new GraphDao.Updater() {
+                @Override
+                public UUID getProcessId() {
+                    return processId;
+                }
 
-                graphDao.deleteGraph(processId);
+                @Override
+                public boolean apply(Graph graph) {
+                    Set<UUID> finishedItems = graph.getFinishedItems();
+                    deleteTasksAndDecisions(finishedItems, processId);
 
-                return false;
-            }
-        });
+                    Set<UUID> notFinishedItems = graph.getNotFinishedItems().keySet();
+                    deleteTasksAndDecisions(notFinishedItems, processId);
 
-        processService.markProcessAsAborted(processId);
+                    graphDao.deleteGraph(processId);
 
-        garbageCollectorService.collect(processId);
+                    return false;
+                }
+            });
 
-        logger.info("Abort process [{}]", processId);
+            garbageCollectorService.collect(processId, timeBeforeManualDeleteProcess);
 
-        return result;
+            processService.markProcessAsAborted(processId);
+
+            logger.info("Abort process [{}]", processId);
+
+            return result;
+
+        } finally {
+            processService.unlock(processId);
+        }
     }
 
     @Override
@@ -596,7 +608,7 @@ public class RecoveryServiceImpl implements RecoveryService {
         logger.debug("#[{}]: finish process. Save result [{}] from [{}] as process result", processId, returnValue, startTaskId);
 
         // send process to GC
-        garbageCollectorService.collect(processId);
+        garbageCollectorService.collect(processId, timeBeforeDeleteFinishedProcess);
     }
 
     private void deleteTasksAndDecisions(Set<UUID> taskIds, UUID processId) {

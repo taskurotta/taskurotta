@@ -384,7 +384,7 @@ public class MockServiceBundle implements ServiceBundle {
     public GarbageCollectorService getGarbageCollectorService() {
         return new GarbageCollectorService() {
             @Override
-            public void collect(UUID processId) {
+            public void collect(UUID processId, long timeout) {
                 // ignore
             }
 

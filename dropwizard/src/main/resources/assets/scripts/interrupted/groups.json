@@ -1,0 +1,29 @@
+[
+  {
+    "id": "starter",
+    "name": "Process types",
+    "label": "Process start task type",
+    "desc": "Actor id of the decider (or the scheduler) task which started the process.",
+    "regroup": "Regroup by process starter type",
+    "param" : "starterId",
+    "order" : 1
+  },
+  {
+    "id": "actor",
+    "name": "Actor ID's",
+    "label": "Failing actor id",
+    "desc": "Actor id of the task which cause the process fail.",
+    "regroup": "Regroup by broken actor type",
+    "param" : "actorId",
+    "order" : 2
+  },
+  {
+    "id": "exception",
+    "name": "Exceptions",
+    "label": "Fail cause exception class",
+    "desc": "Exception class for the error causing process fail.",
+    "regroup": "Regroup by broke cause exception class",
+    "param" : "exception",
+    "order" : 3
+  }
+]

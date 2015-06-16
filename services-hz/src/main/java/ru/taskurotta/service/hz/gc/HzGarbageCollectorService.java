@@ -21,14 +21,13 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
 
     private static final Logger logger = LoggerFactory.getLogger(HzGarbageCollectorService.class);
 
-    private long timeBeforeDelete;
     private boolean enabled;
 
     private CachedDelayQueue<UUID> garbageCollectorQueue;
 
     public HzGarbageCollectorService(final ProcessService processService, final GraphDao graphDao,
                                      final TaskDao taskDao, QueueFactory queueFactory, String garbageCollectorQueueName,
-                                     int poolSize, long timeBeforeDelete, boolean enabled) {
+                                     int poolSize, boolean enabled) {
 
         logger.debug("Garbage Collector initialization. Enabled: {}", enabled);
 
@@ -37,8 +36,6 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
         if (!enabled) {
             return;
         }
-
-        this.timeBeforeDelete = timeBeforeDelete;
 
         this.garbageCollectorQueue = queueFactory.create(garbageCollectorQueueName);
 
@@ -77,12 +74,12 @@ public class HzGarbageCollectorService implements GarbageCollectorService {
     }
 
     @Override
-    public void collect(UUID processId) {
+    public void collect(UUID processId, long timeout) {
         if (!enabled) {
             return;
         }
         try {
-            garbageCollectorQueue.delayOffer(processId, timeBeforeDelete, TimeUnit.MILLISECONDS);
+            garbageCollectorQueue.delayOffer(processId, timeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             throw new IllegalStateException(e);
         }

@@ -151,7 +151,7 @@
     </bean>
 
     <bean id="recoveryService" class="ru.taskurotta.service.recovery.impl.RecoveryServiceImpl">
-        <constructor-arg name="generalTaskServer" ref="realTaskServer" />
+        <constructor-arg name="generalTaskServer" ref="realTaskServer"/>
         <constructor-arg name="dependencyService" ref="dependencyService"/>
         <constructor-arg name="processService" ref="processService"/>
         <constructor-arg name="queueService" ref="queueService"/>
@@ -170,6 +170,16 @@
                 <constructor-arg name="duration" value="${recovery.find-incomplete-process-period}"/>
             </bean>
         </constructor-arg>
+        <constructor-arg name="timeBeforeDeleteFinishedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="timeBeforeManualDeleteProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-manual-delete-process}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="garbageCollectorService" class="ru.taskurotta.service.hz.gc.HzGarbageCollectorService">
@@ -179,11 +189,6 @@
         <constructor-arg name="queueFactory" ref="queueFactoryForGC"/>
         <constructor-arg name="garbageCollectorQueueName" value="${gc.queue-name}"/>
         <constructor-arg name="poolSize" value="${gc.pool-size}"/>
-        <constructor-arg name="timeBeforeDelete">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-delete}"/>
-            </bean>
-        </constructor-arg>
         <constructor-arg name="enabled" value="${gc.enabled}"/>
     </bean>
     <!-- /Backends -->
@@ -192,6 +197,67 @@
     <bean id="pendingQueueConfigurator" class="java.lang.Object">
     </bean>
     <!--/pending queue configurator -->
+
+    <!-- Notification service -->
+    <bean id = "notificationManager" class="ru.taskurotta.service.notification.impl.NotificationManagerImpl" init-method="init">
+        <constructor-arg name="notificationDao" ref="notificationDao" />
+        <constructor-arg name="notificationHandlersProvider">
+            <bean class="ru.taskurotta.service.hz.notification.SpringNotificationHandlersProvider" />
+        </constructor-arg>
+        <constructor-arg name="enabled" value="${notifications.enabled}" />
+    </bean>
+
+    <bean id="notificationDao" class="ru.taskurotta.service.hz.adapter.notification.HzNotificationDaoAdapter">
+        <constructor-arg name="hazelcastInstance" ref="hzInstance" />
+        <constructor-arg name="isSharedStore" value="${notifications.store.shared}" />
+        <constructor-arg name="notificationDao" ref="realNotificationDao" />
+    </bean>
+
+    <bean id="realNotificationDao" class="ru.taskurotta.service.notification.dao.impl.JsonNotificationDao">
+        <constructor-arg name="storeLocation" value="${notifications.store.location}" />
+    </bean>
+
+    <bean id="emailSender" class="ru.taskurotta.service.hz.notification.EmailSenderImpl">
+        <property name="sendFrom" value="${notifications.mail.from}" />
+        <property name="mailSender">
+            <bean class="org.springframework.mail.javamail.JavaMailSenderImpl">
+                <property name="host" value="${notifications.mail.host}"/>
+                <property name="username" value="${notifications.mail.user}"/>
+                <property name="password" value="${notifications.mail.password}"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id = "voidQueuesHandler" class="ru.taskurotta.service.notification.handler.impl.VoidQueuesHandler">
+        <constructor-arg name="emailSender" ref="emailSender" />
+        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
+        <constructor-arg name="defaultPollTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${monitoring.queue.poll-timeout}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+    <bean id="interruptedTasksHandler" class="ru.taskurotta.service.notification.handler.impl.InterruptedTasksHanler">
+        <constructor-arg name="emailSender" ref="emailSender" />
+        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService" />
+        <constructor-arg name="defaultInterruptedPeriod">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${notifications.check.period}"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="notificationManagerExecutor" class="ru.taskurotta.service.hz.adapter.notification.HzNotificationManagerExecutor">
+        <constructor-arg name="hzInstance" ref="hzInstance" />
+        <constructor-arg name="notificationManager" ref="notificationManager" />
+        <constructor-arg name="periodMs">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${notifications.check.period}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="enabled" value="${notifications.enabled}" />
+    </bean>
+    <!-- /Notification service -->
 
     <!-- Task server -->
     <bean id="realTaskServer" class="ru.taskurotta.service.hz.server.HzTaskServer"
@@ -212,6 +278,11 @@
         <constructor-arg name="sleepOnOverloadMls">
             <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
                 <constructor-arg name="duration" value="${hz.executor-service.decisions.sleep-on-overload}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="timeBeforeDeleteFinishedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
             </bean>
         </constructor-arg>
     </bean>

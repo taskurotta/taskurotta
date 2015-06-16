@@ -1,0 +1,11 @@
+<div>
+    <table width="100%" class="well">
+        <tr>
+            <td style="text-align: left; padding:5px 30px 5px 30px;">
+                <h4 ng-if="title">{{ title }}</h4>
+                <ng-transclude></ng-transclude>
+            </td>
+            <td style="text-align: right;"><a class="btn btn-link" ng-click="back()">Back</a></td>
+        </tr>
+    </table>
+</div>

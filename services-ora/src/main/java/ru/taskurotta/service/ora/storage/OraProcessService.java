@@ -10,6 +10,7 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.service.hz.storage.AbstractHzProcessService;
+import ru.taskurotta.service.ora.OracleQueryUtils;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.model.serialization.JsonSerializer;
@@ -44,6 +45,10 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             "SELECT PROCESS_ID FROM TSK_PROCESS WHERE STATE = ? AND START_TIME < ?";
     protected static final String SQL_GET_PROCESS_LIST =
             "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
+    protected static final String SQL_GET_ORDERED_PROCESS_LIST =
+            "SELECT /*+ INDEX_ASC(TSK_PROCESS TSK_PROCESS_START_TIME_IDX) */ PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
+
+    public static final String WILDCARD = "%";
 
     public OraProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
         super(hzInstance);
@@ -182,82 +187,102 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
     }
 
     @Override
-    public GenericPage<Process> listProcesses(int pageNumber, int pageSize, int status, String typeFilter) {
-        StringBuilder stringBuilder = new StringBuilder(SQL_GET_PROCESS_LIST);
-        if (status >= 0 || typeFilter != null) {
-            stringBuilder.append(" WHERE");
-            boolean anotherConditionExists = false;
-            if (status >= 0) {
-                stringBuilder.append(" STATE = ?");
-                anotherConditionExists = true;
-            }
-            if (typeFilter != null) {
-                if (anotherConditionExists) {
-                    stringBuilder.append(" AND");
-                }
-                stringBuilder.append(" ACTOR_ID LIKE ?");
-            }
+    public GenericPage<Process> findProcesses(ProcessSearchCommand command) {
+        StringBuilder queryBuilder = new StringBuilder();
+        if (command.isFilterEmpty()) {
+            queryBuilder.append(SQL_GET_ORDERED_PROCESS_LIST);
+        } else {
+            queryBuilder.append(SQL_GET_PROCESS_LIST);
         }
-        String query = stringBuilder.toString();
+        List<Object> params = new ArrayList<>();
+        appendFilterConditions(queryBuilder, params, command);
 
-        List<Process> result = new ArrayList<>();
-        long totalCount = 0;
+        String query = OracleQueryUtils.createPagesQuery(queryBuilder.toString());
+        int startIndex = (command.getPageNum() - 1) * command.getPageSize() + 1;
+        int endIndex = startIndex + command.getPageSize() - 1;
+        params.add(endIndex);
+        params.add(startIndex);
+
+        logger.debug("Find processes called with command [{}], params[{}] and query [{}]", command, params, query);
+
+        List<Process> items = new ArrayList<>();
+        long totalCnt = 0l;
         ResultSet rs = null;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(createPagesQuery(query))) {
-
-            int argIndex = 1;
-            if (status >= 0) {
-                ps.setInt(argIndex++, status);
-            }
-
-            if (typeFilter != null) {
-                ps.setString(argIndex++, typeFilter + "%");
-            }
-
-            int startIndex = (pageNumber - 1) * pageSize + 1;
-            int endIndex = startIndex + pageSize - 1;
-            ps.setInt(argIndex++, endIndex);
-            ps.setInt(argIndex, startIndex);
-
+             PreparedStatement ps = connection.prepareStatement(query)
+        ) {
+            appendFilterConditions(ps, params);
             rs = ps.executeQuery();
             while (rs.next()) {
-                result.add(createProcessFromResultSet(rs));
-                totalCount = rs.getLong("cnt");
+                items.add(createProcessFromResultSet(rs));
+                totalCnt = rs.getLong("cnt");
             }
         } catch (SQLException ex) {
-            logger.error("DataBase exception: " + ex.getMessage(), ex);
+            logger.error("DataBase exception on query [" + query + "]: " + ex.getMessage(), ex);
             throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(rs);
         }
-
-        logger.debug("Process list got by params: pageNum[{}], pageSize[{}], status[{}] is [{}]", pageNumber, pageSize, status, result);
-
-        return new GenericPage<>(result, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(items, command.getPageNum(), command.getPageSize(), totalCnt);
     }
 
-    @Override
-    public List<Process> findProcesses(ProcessSearchCommand command) {
-        List<Process> result = new ArrayList<>();
-        if (command != null && !command.isEmpty()) {
-            String query = getSearchSql(command);
-            ResultSet rs = null;
-            try (Connection connection = dataSource.getConnection();
-                 PreparedStatement ps = connection.prepareStatement(query)
-            ) {
-                rs = ps.executeQuery();
-                while (rs.next()) {
-                    result.add(createProcessFromResultSet(rs));
+    static void appendFilterConditions(PreparedStatement ps, List<Object> params) throws SQLException {
+        if (params!=null && !params.isEmpty()) {
+            int pos = 1;
+            for (Object param : params) {
+                if (param instanceof String) {
+                    ps.setString(pos, (String) param);
+                } else if (param instanceof Long) {
+                    ps.setLong(pos, (Long) param);
+                } else if (param instanceof Integer) {
+                    ps.setInt(pos, (Integer) param);
+                } else {
+                    ps.setObject(pos, param);
                 }
-            } catch (SQLException ex) {
-                logger.error("DataBase exception on query [" + query + "]: " + ex.getMessage(), ex);
-                throw new ServiceCriticalException("Database error", ex);
-            } finally {
-                closeResultSet(rs);
+                pos++;
             }
         }
-        return result;
+    }
+
+    static void appendFilterConditions(StringBuilder sql, List<Object> params, ProcessSearchCommand command) {
+        boolean first = true;
+        if (command.getActorId() != null) {
+            sql.append(first?" WHERE ":" AND ");
+            sql.append("actor_id like ?");
+            params.add(command.getActorId().trim() + WILDCARD);
+            first = false;
+        }
+        if (command.getProcessId() != null) {
+            sql.append(first?" WHERE ":" AND ");
+            sql.append("process_id like ?");
+            params.add(command.getProcessId().trim() + WILDCARD);
+            first = false;
+        }
+        if (command.getCustomId() != null) {
+            sql.append(first?" WHERE ":" AND ");
+            sql.append("custom_id like ?");
+            params.add(command.getCustomId().trim() + WILDCARD);
+            first = false;
+        }
+        if (command.getState() >= 0) {
+            sql.append(first?" WHERE ":" AND ");
+            sql.append("state = ?");
+            params.add(command.getState());
+            first = false;
+        }
+        if (command.getStartedFrom() > 0) {
+            sql.append(first?" WHERE ":" AND ");
+            sql.append("START_TIME >= ?");
+            params.add(command.getStartedFrom());
+            first = false;
+        }
+        if (command.getStartedTill() > 0) {
+            sql.append(first?" WHERE ":" AND ");
+            sql.append("START_TIME <= ?");
+            params.add(command.getStartedTill());
+            first = false;
+        }
+
     }
 
     @Override
@@ -385,12 +410,6 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
         return result;
     }
 
-    private static String createPagesQuery(String query) {
-        return "SELECT t1.* FROM ( SELECT t.*, ROWNUM rnum FROM ( select a1.*, count(*) over() as cnt FROM ( " +
-                query +
-                " ) a1) t WHERE ROWNUM <= ? ) t1 WHERE t1.rnum >= ?";
-    }
-
     private static void closeResultSet(ResultSet rs) {
         if (rs != null) {
             try {
@@ -401,22 +420,4 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
         }
     }
 
-    private static String getSearchSql(ProcessSearchCommand command) {
-        StringBuilder sb = new StringBuilder("SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, START_JSON, RETURN_VALUE FROM TSK_PROCESS WHERE ");
-        boolean requireAndCdtn = false;
-        if (command.getProcessId() != null && command.getProcessId().trim().length() > 0) {
-            sb.append("PROCESS_ID LIKE '").append(command.getProcessId()).append("%'");
-            requireAndCdtn = true;
-        }
-        if (command.getCustomId() != null && command.getCustomId().trim().length() > 0) {
-            if (requireAndCdtn) {
-                sb.append(" AND ");
-            }
-            sb.append("CUSTOM_ID LIKE '").append(command.getCustomId()).append("%'");
-        }
-
-        sb.append(" AND ROWNUM <= 200");
-
-        return sb.toString();
-    }
 }

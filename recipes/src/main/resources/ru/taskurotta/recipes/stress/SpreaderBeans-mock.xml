@@ -16,6 +16,11 @@
     <!-- Task server -->
     <bean id="mockTaskServer" class="ru.taskurotta.server.GeneralTaskServer">
         <constructor-arg name="serviceBundle" ref="serviceBundle"/>
+        <constructor-arg name="timeBeforeDeleteFinishedProcess">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="serviceBundle" class="ru.taskurotta.recipes.stress.MockServiceBundle">

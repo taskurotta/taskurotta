@@ -20,7 +20,9 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.Data;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import com.hazelcast.spi.BackupAwareOperation;
 import com.hazelcast.spi.Notifier;
+import com.hazelcast.spi.Operation;
 import com.hazelcast.spi.WaitNotifyKey;
 import com.hazelcast.spi.WaitSupport;
 import ru.taskurotta.hazelcast.queue.impl.QueueContainer;
@@ -33,7 +35,7 @@ import java.io.IOException;
  * Contains offer operation for the Queue.
  */
 public final class OfferOperation extends QueueOperation
-        implements WaitSupport, Notifier, IdentifiedDataSerializable {
+        implements WaitSupport, Notifier, IdentifiedDataSerializable, BackupAwareOperation {
 
     private Data data;
     private long itemId;
@@ -108,5 +110,25 @@ public final class OfferOperation extends QueueOperation
     @Override
     public int getId() {
         return QueueDataSerializerHook.OFFER;
+    }
+
+    @Override
+    public boolean shouldBackup() {
+        return false;
+    }
+
+    @Override
+    public int getSyncBackupCount() {
+        return 0;
+    }
+
+    @Override
+    public int getAsyncBackupCount() {
+        return 0;
+    }
+
+    @Override
+    public Operation getBackupOperation() {
+        return null;
     }
 }
