@@ -163,6 +163,12 @@ public class HzTaskDao implements TaskDao {
                 logger.debug("{}/{} Can not restart task. Task is finished now. Decision is {}", taskKey.getTaskId(),
                         taskKey.getProcessId(), decision.getState(), decision);
 
+                // support for oldest version
+                if (decision.getRecoveryTime() != 0l) {
+                    decision.setRecoveryTime(0l);
+                }
+                id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+
                 return false;
             }
 
