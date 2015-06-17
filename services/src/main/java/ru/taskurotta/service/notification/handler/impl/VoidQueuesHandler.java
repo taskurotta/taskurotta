@@ -49,7 +49,7 @@ public class VoidQueuesHandler implements TriggerHandler {
             if (subscriptions!=null && !subscriptions.isEmpty()) {
                 Configuration cfg = cfgJson!=null? mapper.readValue(cfgJson, Configuration.class) : getDefaultCfg();
                 Map<Date, String> voidQueues = queueInfoRetriever.getNotPollingQueues(cfg.pollTimeout);
-
+                logger.debug("Void queues are [{}]", voidQueues);
                 List<String> prevQueueNames = stateJson!=null? (List<String>)mapper.readValue(stateJson, new TypeReference<List<String>>() {}): new ArrayList<String>();
                 List<String> newQueueNames = voidQueues!=null? new ArrayList<String>(voidQueues.values()) : new ArrayList<String>();
                 result = mapper.writeValueAsString(newQueueNames);
@@ -88,7 +88,7 @@ public class VoidQueuesHandler implements TriggerHandler {
                 emailNotification.setBody("Queue(s) have not been polled for too long. Please check if actor(s) still active. \n\r Queues are: " + trackedQueues);
                 emailNotification.setIsHtml(false);
                 emailNotification.setIsMultipart(false);
-                emailNotification.setSubject("Void queues alert");
+                emailNotification.setSubject("TASKUROTTA: Void queues alert");
                 emailNotification.setSendTo(NotificationUtils.toCommaDelimited(s.getEmails()));
                 result.add(emailNotification);
             }

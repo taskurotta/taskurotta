@@ -58,7 +58,9 @@ logging:
         com.hazelcast: INFO
         com.yammer: INFO
         ru.taskurotta: INFO
-        ru.taskurotta.service.ora.storage: DEBUG
+#        ru.taskurotta.dropwizard.resources.console.notifications: DEBUG
+#        ru.taskurotta.service.notification: DEBUG
+#        ru.taskurotta.service.hz.adapter.notification: DEBUG
     appenders:
     - type: file
       currentLogFilename: "./target/logs/service.log"

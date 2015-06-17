@@ -1,5 +1,5 @@
 angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule',
-    'taskModule','processModule','scheduleModule','interruptedModule','metricModule'])
+    'taskModule','processModule','scheduleModule','interruptedModule','metricModule', 'notificationsModule'])
 
     .config(function ($stateProvider, $urlRouterProvider, coreAppProvider) {
         console.log('indexApp.config');
@@ -280,6 +280,42 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
                 '': {
                     templateUrl: '/views/metric/list.html',
                     controller: /*@ngInject*/ 'metricListController'
+                },
+                'footer': {
+                    templateUrl: '/views/footer.html'
+                }
+            }
+        });
+
+
+        //Notifications
+        $stateProvider.state('subscriptions', {
+            url: '/subscriptions?{pageNum:int}&{pageSize:int}&{refreshRate:int}',
+            params: {},
+            views: {
+                'navigation': {
+                    templateUrl: '/views/navigation.html'
+                },
+                '': {
+                    templateUrl: '/views/notifications/subscriptions.html',
+                    controller: /*@ngInject*/ 'subscriptionsListController'
+                },
+                'footer': {
+                    templateUrl: '/views/footer.html'
+                }
+            }
+        });
+
+        $stateProvider.state('subscription_create', {
+            url: '/subscription/create',
+            params: {},
+            views: {
+                'navigation': {
+                    templateUrl: '/views/navigation.html'
+                },
+                '': {
+                    templateUrl: '/views/notifications/subscription.html',
+                    controller: /*@ngInject*/ 'subscriptionCardController'
                 },
                 'footer': {
                     templateUrl: '/views/footer.html'
