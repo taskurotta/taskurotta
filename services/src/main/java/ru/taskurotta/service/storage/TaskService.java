@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public interface TaskService {
 
-    public void startProcess(TaskContainer taskContainer);
+    void startProcess(TaskContainer taskContainer);
 
 
     /**
@@ -23,7 +23,7 @@ public interface TaskService {
      * @param taskId - ID of the task
      * @return TaskContainer with the task
      */
-    public TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate);
+    TaskContainer getTaskToExecute(UUID taskId, UUID processId, boolean simulate);
 
 
     /**
@@ -32,21 +32,21 @@ public interface TaskService {
      * @param taskId - ID of the task
      * @return TaskContainer with the task
      */
-    public TaskContainer getTask(UUID taskId, UUID processId);
+    TaskContainer getTask(UUID taskId, UUID processId);
 
 
-    public boolean finishTask(DecisionContainer taskDecision);
+    boolean finishTask(DecisionContainer taskDecision);
 
-    public boolean retryTask(UUID taskId, UUID processId, long timeToStart);
+    boolean retryTask(UUID taskId, UUID processId);
 
-    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force);
+    boolean restartTask(UUID taskId, UUID processId, boolean force);
 
     /**
      * Idempotent getter for task decisions
      */
-    public DecisionContainer getDecision(UUID taskId, UUID processId);
+    DecisionContainer getDecision(UUID taskId, UUID processId);
 
-    public List<TaskContainer> getAllRunProcesses();
+    List<TaskContainer> getAllRunProcesses();
 
 
     /**
@@ -55,7 +55,7 @@ public interface TaskService {
      * @param processId - ID of the process
      * @return List of DecisionContainer with all decisions for particular process in the right chronological order.
      */
-    public List<DecisionContainer> getAllTaskDecisions(UUID processId);
+    List<DecisionContainer> getAllTaskDecisions(UUID processId);
 
     /**
      * Clean up resources after process.
@@ -64,7 +64,7 @@ public interface TaskService {
      * @param processId - ID of the process
      * @param finishedTaskIds - all task UUIDs of finished process
      */
-    public void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
+    void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
 
-    public void updateTaskDecision(DecisionContainer taskDecision);
+    void updateTaskDecision(DecisionContainer taskDecision);
 }

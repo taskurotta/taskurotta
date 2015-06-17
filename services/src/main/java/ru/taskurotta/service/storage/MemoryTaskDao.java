@@ -4,6 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.transport.model.DecisionContainer;
@@ -42,12 +43,12 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
         return true;
     }
 
     @Override
-    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+    public boolean retryTask(UUID taskId, UUID processId) {
         return true;
     }
 
@@ -168,6 +169,11 @@ public class MemoryTaskDao implements TaskDao {
     @Override
     public void updateTaskDecision(DecisionContainer taskDecision) {
         id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
+    }
+
+    @Override
+    public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
+        throw new UnsupportedOperationException("Please, use MongoTaskDao");
     }
 
 }
