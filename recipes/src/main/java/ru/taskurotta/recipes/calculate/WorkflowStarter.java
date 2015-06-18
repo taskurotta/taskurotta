@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
+import ru.taskurotta.core.TaskConfig;
 import ru.taskurotta.exception.server.ServerException;
 import ru.taskurotta.recipes.calculate.decider.MathActionDeciderClient;
 
@@ -75,7 +76,7 @@ public class WorkflowStarter {
         int started = 0;
         while (started < count) {
             try{
-                decider.performAction();
+                decider.performAction(new TaskConfig().setCustomId("run-"+started));
                 started++;
 
                 if (started % 50 == 0) {

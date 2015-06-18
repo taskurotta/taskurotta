@@ -8,7 +8,7 @@ angular.module('processModule', ['taskModule', 'coreApp'])
         return $resource(restProcessUrl + 'process/:processId', {}, {
                 getTree: {url: '/rest/console/tree/process/:processId/:startTaskId', params: {}},
                 //list
-                query: {url: restProcessUrl + 'search', params: {}, isArray: true},
+                query: {url: restProcessUrl + 'search', params: {}, isArray: false},
                 queryList: {url: restProcessUrl, params: {}},
                 //actions
                 create: {url: restOperationUrl + 'process/create', method: 'PUT', params: {}, interceptor:rawInterceptor},
