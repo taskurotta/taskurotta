@@ -52,7 +52,7 @@ public class HzTaskDao implements TaskDao {
         try {
 
             Decision decision = id2TaskDecisionMap.get(taskKey);
-            if (decision == null || (decision.getState() != Decision.STATE_WORK && decision.getPass() != null)) {
+            if (decision == null || decision.getState() == Decision.STATE_FINISH) {
                 logger.warn("{}/{} Can not finish task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
                         decision == null ? "null" : decision.getState());
                 return false;
