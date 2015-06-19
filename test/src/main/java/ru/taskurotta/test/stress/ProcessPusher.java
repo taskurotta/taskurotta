@@ -295,7 +295,9 @@ public class ProcessPusher {
                         "  restartedBrokenTasks = " +
                         RecoveryServiceImpl.restartedBrokenTasks.get() +
                         "  recoveredProcessDecision = " +
-                        RecoveryServiceImpl.recoveredProcessDecisionCounter.get());
+                        RecoveryServiceImpl.recoveredProcessDecisionCounter.get() +
+                        "  restartedIncompleteTasksCounter = " +
+                        RecoveryServiceImpl.restartedIncompleteTasksCounter.get());
 
                 sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
                         "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()

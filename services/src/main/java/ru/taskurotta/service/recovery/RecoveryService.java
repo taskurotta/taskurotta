@@ -31,4 +31,11 @@ public interface RecoveryService {
      */
     boolean restartTask(UUID processId, UUID taskId);
 
+    /**
+     * @param taskId
+     * @param processId
+     * @return true if task has been successfully resurrected and placed to actor's queue
+     */
+    boolean resurrectTask(UUID taskId, UUID processId);
+
 }

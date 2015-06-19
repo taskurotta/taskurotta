@@ -1,0 +1,64 @@
+runtime:
+  - MainRuntimeConfig:
+      instance:
+        context: ru/taskurotta/test/fullfeature/RuntimeBeans.xml
+
+spreader:
+  - MainTaskSpreaderConfig:
+      instance:
+        context: ru/taskurotta/test/fullfeature/SpreaderBeans-jersey-single.xml
+        properties:          
+          ru.taskurotta.spreader.endpoint: http://localhost:8811
+
+profiler:
+  - MainProfilerConfig:
+      class: ru.taskurotta.bootstrap.config.DefaultProfilerConfig
+      instance:
+        class: ru.taskurotta.test.profiler.TimeoutProfiler
+        properties:
+          releaseTimeout: 120000
+
+actor:
+  - FFDecider:
+      actorInterface: ru.taskurotta.test.fullfeature.decider.FullFeatureDecider
+
+  - FFWorker:
+      actorInterface: ru.taskurotta.test.fullfeature.worker.FullFeatureWorker
+
+logback:
+    appender:
+        - STDOUT:
+             key: name
+             \@class: ch.qos.logback.core.ConsoleAppender
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+        - FILE:
+             key: name
+             \@class: ch.qos.logback.core.FileAppender
+             file: logs/ff-timeout.log
+             append: true
+             encoder:
+                 pattern: \%d \%p [\%t] \%c - \%m\%n
+    logger:
+        - ru.taskurotta:
+             key: name
+             \@level: INFO        
+        - ru.taskurotta.test.fullfeature:
+             key: name
+             \@level: ERROR
+        - ru.taskurotta.internal.GeneralRuntimeProcessor:
+             key: name
+             \@level: !!!str OFF
+        - org:
+             key: name
+             \@level: ERROR
+        - httpclient:
+             key: name
+             \@level: ERROR
+    root:
+        appender-ref:
+            - STDOUT:
+                key: ref
+            - FILE:
+                key: ref
+

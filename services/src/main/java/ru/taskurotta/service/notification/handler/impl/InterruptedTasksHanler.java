@@ -91,7 +91,7 @@ public class InterruptedTasksHanler implements TriggerHandler {
                 emailNotification.setBody("Process(es) failed with error. \n\r Actors are: " + trackedActors);
                 emailNotification.setIsHtml(false);
                 emailNotification.setIsMultipart(false);
-                emailNotification.setSubject("Failed process alert");
+                emailNotification.setSubject("TASKUROTTA: Failed process alert");
                 emailNotification.setSendTo(NotificationUtils.toCommaDelimited(s.getEmails()));
                 result.add(emailNotification);
             }

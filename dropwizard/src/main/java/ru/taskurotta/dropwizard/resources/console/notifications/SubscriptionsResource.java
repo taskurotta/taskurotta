@@ -2,10 +2,13 @@ package ru.taskurotta.dropwizard.resources.console.notifications;
 
 import com.google.common.base.Optional;
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Required;
 import ru.taskurotta.dropwizard.resources.console.Status;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.notification.NotificationManager;
+import ru.taskurotta.service.notification.model.NotificationTrigger;
 import ru.taskurotta.service.notification.model.SearchCommand;
 import ru.taskurotta.service.notification.model.Subscription;
 
@@ -18,6 +21,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created on 15.06.2015.
@@ -26,6 +35,8 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/console/subscriptions")
 public class SubscriptionsResource {
+    private static final Logger logger = LoggerFactory.getLogger(SubscriptionsResource.class);
+
     private static int DEFAULT_PAGE_NUM = 1;
     private static int DEFAULT_PAGE_SIZE = 10;
 
@@ -47,9 +58,43 @@ public class SubscriptionsResource {
     }
 
     @POST
-    public Status addSubscription(Subscription sub) {
-        long result = notificationManager.addSubscription(sub);
-        return new Status(HttpStatus.OK_200, String.valueOf(result));
+    public Status addSubscription(SubscriptionCommand command) {
+        logger.debug("addSubscription triggered with params: command[{}]", command);
+        Subscription subscription = asSubscription(command.actorIds, command.emails);
+        if (subscription!=null) {
+            long result = notificationManager.addSubscription(subscription);
+            return new Status(HttpStatus.CREATED_201, String.valueOf(result));
+        } else {
+            return new Status(HttpStatus.NOT_FOUND_404, "Missing required params: [emails], [actorIds]");
+        }
+    }
+
+    public static class SubscriptionCommand implements Serializable {
+        public String actorIds;
+        public String emails;
+    }
+
+    Subscription asSubscription(String actorIds, String emails) {
+        Subscription result = null;
+        if (actorIds!=null && emails!=null) {
+            result = new Subscription();
+            result.setChangeDate(new Date());
+            result.setTriggersKeys(getAllTriggerKeys());
+            result.setEmails(Arrays.asList(emails.split(",\\s*")));
+            result.setActorIds(Arrays.asList(actorIds.split(",\\s*")));
+        }
+        return result;
+    }
+
+    List<Long> getAllTriggerKeys() {
+        List<Long> result = new ArrayList<>();
+        Collection<NotificationTrigger> triggers = notificationManager.listTriggers();
+        if (triggers!=null && !triggers.isEmpty()) {
+            for (NotificationTrigger t : triggers) {
+                result.add(t.getId());
+            }
+        }
+        return result;
     }
 
     @POST

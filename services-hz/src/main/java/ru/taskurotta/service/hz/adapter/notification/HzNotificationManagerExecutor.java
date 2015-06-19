@@ -21,8 +21,6 @@ public class HzNotificationManagerExecutor {
     private static NotificationManager notificationManager;
     private static ILock nodeLock;
 
-    private boolean enabled = false;
-
     public static NotificationManager getNotificationsManager() {
         return notificationManager;
     }
@@ -52,7 +50,7 @@ public class HzNotificationManagerExecutor {
                                     return result;
                                 }
                             })).scheduleAtFixedRate(new ExecuteNotificationsTask(), 0, periodMs, TimeUnit.MILLISECONDS);
-                            logger.info("Node lock for notification execution aquired");
+                            logger.info("Node lock for notification execution aquired, periodMs[{}]", periodMs);
                         } else {
                             try {
                                 Thread.sleep(periodMs);
@@ -75,9 +73,8 @@ public class HzNotificationManagerExecutor {
 
         @Override
         public void run() {
-            ILock nodeLock = HzNotificationManagerExecutor.getNotificationsLock();
             try {
-                if (nodeLock.isLocked()) {//this node is notification executor
+                if (HzNotificationManagerExecutor.getNotificationsLock().isLocked()) {//this node is notification executor
                     HzNotificationManagerExecutor.getNotificationsManager().execute();
                 } else {
                     logger.warn("Tried to execute notifications on unlocked node: unconsistent notifier state detected");
@@ -86,7 +83,6 @@ public class HzNotificationManagerExecutor {
 
             } catch (Throwable e) {
                 logger.error("Error at notifier execution, skip iteration...", e);
-
             }
         }
     }

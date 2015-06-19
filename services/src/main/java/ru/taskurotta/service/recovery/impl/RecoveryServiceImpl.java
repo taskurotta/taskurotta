@@ -44,6 +44,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     public static AtomicInteger restartedBrokenTasks = new AtomicInteger();
     public static AtomicInteger recoveredInterruptedTasksCounter = new AtomicInteger();
     public static AtomicInteger recoveredProcessDecisionCounter = new AtomicInteger();
+    public static AtomicInteger restartedIncompleteTasksCounter = new AtomicInteger();
 
     private GeneralTaskServer generalTaskServer;
     private QueueService queueService;
@@ -350,7 +351,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String taskList = TransportUtils.getTaskList(taskContainer);
                     String actorId = taskContainer.getActorId();
 
-                    if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), false)) {
+                    if (taskService.restartTask(taskId, processId, false)) {
 
                         // task ready to enqueue
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
@@ -443,7 +444,7 @@ public class RecoveryServiceImpl implements RecoveryService {
             long touchTime = System.currentTimeMillis();
             graph.setTouchTimeMillis(touchTime);
 
-            if (taskService.restartTask(taskId, processId, System.currentTimeMillis(), true)) {
+            if (taskService.restartTask(taskId, processId, true)) {
                 TaskContainer tc = taskService.getTask(taskId, processId);
                 if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
                     interruptedTasksService.delete(processId, taskId);
@@ -462,6 +463,35 @@ public class RecoveryServiceImpl implements RecoveryService {
             processService.unlock(processId);
         }
 
+    }
+
+    @Override
+    public boolean resurrectTask(UUID taskId, UUID processId) {
+        TaskContainer taskContainer = taskService.getTask(taskId, processId);
+        if (taskContainer == null) {
+            logger.error("{}/{}: not found task container", processId, taskId);
+            return false;
+        }
+
+        if (taskService.restartTask(taskId, processId, false)) {
+            String actorId = taskContainer.getActorId();
+            long startTime = taskContainer.getStartTime();
+            String taskList = TransportUtils.getTaskList(taskContainer);
+            if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
+                logger.debug("{}/{}: task container has been enqueued", processId, taskId);
+            } else {
+                logger.warn("{}/{}: can not restart task. Enqueue operation is false", processId, taskId, taskContainer);
+                return false;
+            }
+        } else {
+            logger.warn("{}/{}: can not restart task. taskService.restartTask() operation is false", processId, taskId, taskContainer);
+            return false;
+        }
+
+        logger.debug("{}/{}: task container [{}] has been restarted", processId, taskId, taskContainer);
+        restartedIncompleteTasksCounter.incrementAndGet();
+
+        return true;
     }
 
     private boolean hasOtherNotReadyFatalTasks(UUID processId, UUID taskId, Map<UUID, Long> readyItems) {
@@ -570,7 +600,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         // emulate TaskServer.startProcess()
         UUID taskId = startTaskContainer.getTaskId();
-        taskService.restartTask(taskId, processId, System.currentTimeMillis(), true);
+        taskService.restartTask(taskId, processId, true);
 
         dependencyService.startProcess(startTaskContainer);
         taskService.startProcess(startTaskContainer);
