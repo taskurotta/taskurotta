@@ -232,15 +232,20 @@ public class QuartzJobManager implements JobManager {
     @Override
     public Date getNextExecutionTime(long id) {
         Date result = null;
+        JobVO job = jobStore.get(id);
+        if (job != null) {
+            result = getNextExecutionTime(job.getCron());
+        }
 
+        return result;
+    }
+
+    public Date getNextExecutionTime(String cron) {
+        Date result = null;
         try {
-            JobVO job = jobStore.get(id);
-            if (job != null) {
-                CronExpression expr = new CronExpression(job.getCron());
-                result = expr.getNextValidTimeAfter(new Date());
-            }
+            result = new CronExpression(cron).getNextValidTimeAfter(new Date());
         } catch (ParseException e) {
-            logger.error("Error parsing cron expression[{}] for job id [{}]", id);
+            logger.error("Error parsing cron expression["+cron+"]", e);
         }
 
         return result;

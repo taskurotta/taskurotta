@@ -10,16 +10,16 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         return $resource(restScheduleUrl + 'card', {}, {
                 getNodeCount: {url: restScheduleUrl + 'node_count', interceptor:rawInterceptor },
                 //list
-                query: {url: restScheduleUrl + 'list', params: {}, isArray: true},
+                query: {url: restScheduleUrl + 'list', params: {}, isArray: false},
                 //actions
-                create: {url: restScheduleUrl + 'schedule/create', method: 'PUT', params: {}},
-                update: {url: restScheduleUrl + 'schedule/update?jobId=:id', method: 'PUT', params: {}},
+                create: {url: restScheduleUrl + 'create', method: 'PUT', params: {}},
+                update: {url: restScheduleUrl + 'update', method: 'PUT', params: {}},
 
                 validate: {url: restScheduleUrl + 'validate/cron',
                     transformResponse: stringTransformResponse, interceptor: rawInterceptor},
-                activate: {url: restScheduleUrl + 'action/activate/', method: 'POST', params: {}},
-                deactivate: {url: restScheduleUrl + 'action/deactivate/', method: 'POST', params: {}},
-                delete: {url: restScheduleUrl + 'action/delete/', method: 'POST', params: {}},
+                activate: {url: restScheduleUrl + 'action/activate', method: 'POST', params: {}},
+                deactivate: {url: restScheduleUrl + 'action/deactivate', method: 'POST', params: {}},
+                delete: {url: restScheduleUrl + 'action/delete', method: 'POST', params: {}},
                 //dictionaries
                 dictionaryState: {url: '/scripts/schedule/states.json', params: {}, isArray: true, cache: true}
             }
@@ -89,8 +89,9 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         });
 
         //Actions
-        $scope.activate = function (schedule) {
-            scheduleRest.activate({id: schedule.job.id},
+        $scope.activate = function (id) {
+            $log.log("Activating job with id["+id+"]");
+            scheduleRest.activate(id,
                 function success(value) {
                     $log.log('scheduleListController: schedule activated', value);
                     loadModel($scope.resourceParams);
@@ -99,8 +100,9 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
                 });
         };
 
-        $scope.deactivate = function (schedule) {
-            scheduleRest.deactivate({id: schedule.job.id},
+        $scope.deactivate = function (id) {
+            $log.log("Deactivating job with id["+id+"]");
+            scheduleRest.deactivate(id,
                 function success(value) {
                     $log.log('scheduleListController: schedule deactivated', value);
                     loadModel($scope.resourceParams);
@@ -109,10 +111,11 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
                 });
         };
 
-        $scope.delete = function (schedule) {
+        $scope.delete = function (id) {
+            $log.log("Deleting job with id["+id+"]");
             coreApp.openConfirmModal('Current schedule, will be deleted',
                 function confirmed() {
-                    scheduleRest.delete({id: schedule.job.id},
+                    scheduleRest.delete(id,
                         function success(value) {
                             $log.log('scheduleListController: schedule removed', value);
                             loadModel($scope.resourceParams);
@@ -136,7 +139,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         //Updates schedules  by polling REST resource
         function loadModel() {
             $log.info('Load model', $stateParams.id);
-            $scope.job = scheduleRest.get($stateParams,
+            $scope.command = scheduleRest.get($stateParams,
                     function success(value) {
                         $log.info('scheduleCardController: successfully updated schedule page');
                         $scope.changeCron();
@@ -149,45 +152,52 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         if($stateParams.id){
             loadModel();
         }else{
-            $scope.job = new scheduleRest();
-            $scope.job.task = {};
+            $scope.command = new scheduleRest();
+            // defaults
+            $scope.command["queueLimit"] = 0;
+            $scope.command["maxErrors"] = 0;
+            $scope.command["type"] = "DECIDER_START";
+            $scope.command["id"] = -1;
+            // /defaults
         }
 
-
         $scope.isValidForm = function () {
-            return $scope.job.name && $scope.job.isCronValid &&
-                $scope.job.task.method && $scope.job.task.actorId &&
-                $scope.job.queueLimit >= 0 && $scope.job.maxErrors >= 0;
+            return $scope.command.name && $scope.command.isCronValid &&
+                $scope.command.method && $scope.command.actorId &&
+                $scope.command.queueLimit >= 0 && $scope.command.maxErrors >= 0;
         };
 
         //Actions
         $scope.save = function () {
-            var saveRest = $scope.job.id ? scheduleRest.update : scheduleRest.create;
-            saveRest($scope.job,
-                function success(value) {
-                    $log.log('scheduleCardController: schedule save success', value);
-                    $state.go('schedule', {});
-                }, function error(reason) {
-                    coreApp.error('Schedule save error',reason);
-                });
+            if ($scope.isValidForm()) {
+                var saveRest = $scope.command.id>0 ? scheduleRest.update : scheduleRest.create;
+                $log.log("try to save job, command: ", $scope.command);
+                saveRest($scope.command,
+                    function success(value) {
+                        $log.log('scheduleCardController: schedule save success', value);
+                        $state.go('schedules', {});
+                    }, function error(reason) {
+                        coreApp.error('Schedule save error',reason);
+                    });
+            }
         };
 
         $scope.changeCron = function () {
-            if ($scope.job.cron) {
-                scheduleRest.validate({value: $scope.job.cron},
+            if ($scope.command.cron) {
+                scheduleRest.validate({value: $scope.command.cron},
                     function success(value) {
                         if(value.length === 0) {
                             $log.info('scheduleCardController: successfully cron validate', value);
-                            $scope.job.isCronValid = true;
+                            $scope.command.isCronValid = true;
                         } else {
                             coreApp.warn('Schedule cron validate failed',value);
-                            $scope.job.isCronValid = false;
+                            $scope.command.isCronValid = false;
                         }
                     }, function error(reason) {
                         coreApp.error('Schedule cron validate failed',reason);
                     });
             } else {
-                delete $scope.job.isCronValid;
+                delete $scope.command.isCronValid;
             }
         };
 

@@ -190,6 +190,11 @@ public class HzJobManagerAdapter implements JobManager, MessageListener<ActionMe
     }
 
     @Override
+    public Date getNextExecutionTime(String cron) {
+        return jobManager.getNextExecutionTime(cron);
+    }
+
+    @Override
     public int getJobStatus(long id) {
         return jobManager.getJobStatus(id);
     }

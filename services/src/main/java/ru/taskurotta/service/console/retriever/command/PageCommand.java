@@ -6,8 +6,12 @@ import java.io.Serializable;
  * Created on 15.06.2015.
  */
 public class PageCommand implements Serializable {
-    protected int pageNum;
-    protected int pageSize;
+
+    public static int DEFAULT_PAGE_NUM = 1;
+    public static int DEFAULT_PAGE_SIZE = 10;
+
+    protected int pageNum = DEFAULT_PAGE_NUM;
+    protected int pageSize = DEFAULT_PAGE_SIZE;
 
     public int getPageNum() {
         return pageNum;
