@@ -53,7 +53,7 @@ public class QuartzJobManager implements JobManager {
     public boolean startJob(long id) {
         boolean result = false;
 
-        JobVO job = jobStore.getJob(id);
+        JobVO job = jobStore.get(id);
 
         if (job != null) {
             try {
@@ -128,23 +128,23 @@ public class QuartzJobManager implements JobManager {
 
     @Override
     public long addJob(JobVO job) {
-        return jobStore.addJob(job);
+        return jobStore.add(job);
     }
 
     @Override
     public void removeJob(long id) {
         stopJob(id);
-        jobStore.removeJob(id);
+        jobStore.remove(id);
     }
 
     @Override
     public Collection<Long> getJobIds() {
-        return jobStore.getJobIds();
+        return jobStore.getKeys();
     }
 
     @Override
     public JobVO getJob(long id) {
-        return jobStore.getJob(id);
+        return jobStore.get(id);
     }
 
     @Override
@@ -155,7 +155,7 @@ public class QuartzJobManager implements JobManager {
     @Override
     public void updateJob(JobVO jobVO) {
        stopJob(jobVO.getId());
-       jobStore.updateJob(jobVO);
+       jobStore.update(jobVO, jobVO.getId());
     }
 
     @Override
@@ -200,7 +200,7 @@ public class QuartzJobManager implements JobManager {
     @Override
     public boolean stopJob(long id) {
         boolean result = false;
-        JobVO job = jobStore.getJob(id);
+        JobVO job = jobStore.get(id);
 
         if (job != null) {
             try {
@@ -222,7 +222,7 @@ public class QuartzJobManager implements JobManager {
     @Override
     public int getJobStatus(long id) {
         int result = JobConstants.STATUS_UNDEFINED;
-        JobVO job = jobStore.getJob(id);
+        JobVO job = jobStore.get(id);
         if (job!=null) {
             result = job.getStatus();
         }
@@ -232,15 +232,20 @@ public class QuartzJobManager implements JobManager {
     @Override
     public Date getNextExecutionTime(long id) {
         Date result = null;
+        JobVO job = jobStore.get(id);
+        if (job != null) {
+            result = getNextExecutionTime(job.getCron());
+        }
 
+        return result;
+    }
+
+    public Date getNextExecutionTime(String cron) {
+        Date result = null;
         try {
-            JobVO job = jobStore.getJob(id);
-            if (job != null) {
-                CronExpression expr = new CronExpression(job.getCron());
-                result = expr.getNextValidTimeAfter(new Date());
-            }
+            result = new CronExpression(cron).getNextValidTimeAfter(new Date());
         } catch (ParseException e) {
-            logger.error("Error parsing cron expression[{}] for job id [{}]", id);
+            logger.error("Error parsing cron expression["+cron+"]", e);
         }
 
         return result;
@@ -248,11 +253,11 @@ public class QuartzJobManager implements JobManager {
 
     @Override
     public void synchronizeScheduledTasksWithStore() {
-        Collection<Long> jobIds = jobStore.getJobIds();
+        Collection<Long> jobIds = jobStore.getKeys();
         List<Long> resumedJobs = new ArrayList();
         if (jobIds!=null && !jobIds.isEmpty()) {
             for (Long jobId : jobIds) {
-                JobVO sTask = jobStore.getJob(jobId);
+                JobVO sTask = jobStore.get(jobId);
                 if (sTask!=null && JobConstants.STATUS_ACTIVE == sTask.getStatus()) {
                     startJob(jobId);
                     resumedJobs.add(jobId);

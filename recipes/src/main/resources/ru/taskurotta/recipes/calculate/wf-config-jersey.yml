@@ -5,7 +5,7 @@ runtime:
         context: ru/taskurotta/recipes/calculate/RuntimeBeans.xml
         properties:
           sleep: -1 #-1 = disabled
-          workerFailChance: -1 #-1 = disabled
+          workerFailChance: 0.15 #-1 = disabled
           deciderFailChance: -1 #-1 = disabled
           varyExceptions: true
 
@@ -17,7 +17,7 @@ spreader:
         context: ru/taskurotta/recipes/calculate/SpreaderBeans-jersey.xml
         properties:
           count: 500
-          startTasks: false
+          startTasks: true
           startTasksInBackground: true
           startTaskPeriodSeconds: 2 #-1 = disabled
           endpoint: "http://localhost:8811"
@@ -94,7 +94,7 @@ logback:
              \@level: INFO
         - ru.taskurotta.recipes.calculate:
             key: name
-            \@level: WARN
+            \@level: INFO
         - com.hazelcast:
               key: name
               \@level: WARN

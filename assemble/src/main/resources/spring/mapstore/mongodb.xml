@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <!-- Mongo -->
     <bean id="writeConcern" class="com.mongodb.WriteConcern">
@@ -12,46 +11,22 @@
         <constructor-arg name="j" value="${mongo.options.write-concern.j}"/>
     </bean>
 
-    <bean id="mongoClientOptionsBuilder" class="com.mongodb.MongoClientOptions" factory-method="builder"/>
-
-    <!--<bean id="mongoClientOptionsBuilder1" factory-bean="mongoClientOptionsBuilder"-->
-          <!--factory-method="minConnectionsPerHost">-->
-        <!--<constructor-arg value="${mongo.options.min-connections-per-host}"/>-->
-    <!--</bean>-->
-    <bean id="mongoClientOptionsBuilder1" factory-bean="mongoClientOptionsBuilder" factory-method="connectionsPerHost">
-        <constructor-arg value="${mongo.options.connections-per-host}"/>
+    <bean id="mongoClientOptionsBuilder" class="ru.taskurotta.mongodb.config.CustomMongoClientOptionsBuilder">
+        <constructor-arg name="minConnectionsPerHost" value="${mongo.options.min-connections-per-host}"/>
+        <constructor-arg name="connectionsPerHost" value="${mongo.options.connections-per-host}"/>
+        <constructor-arg name="threadsAllowedToBlockForConnectionMultiplier" value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>
+        <constructor-arg name="maxWaitTime" value="${mongo.options.max-wait-time}"/>
+        <constructor-arg name="maxConnectionIdleTime" value="${mongo.options.max-connection-idle-time}"/>
+        <constructor-arg name="maxConnectionLifeTime" value="${mongo.options.max-connection-life-time}"/>
+        <constructor-arg name="connectTimeout" value="${mongo.options.connect-timeout}"/>
+        <constructor-arg name="socketTimeout" value="${mongo.options.socket-timeout}"/>
+        <constructor-arg name="socketKeepAlive" value="${mongo.options.socket-keep-alive}"/>
+        <constructor-arg name="writeConcern" ref="writeConcern"/>
     </bean>
-    <!--<bean id="mongoClientOptionsBuilder3" factory-bean="mongoClientOptionsBuilder2"-->
-          <!--factory-method="threadsAllowedToBlockForConnectionMultiplier">-->
-        <!--<constructor-arg value="${mongo.options.threads-allowed-to-block-for-connection-multiplier}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder4" factory-bean="mongoClientOptionsBuilder3" factory-method="maxWaitTime">-->
-        <!--<constructor-arg value="${mongo.options.max-wait-time}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder5" factory-bean="mongoClientOptionsBuilder4"-->
-          <!--factory-method="maxConnectionIdleTime">-->
-        <!--<constructor-arg value="${mongo.options.max-connection-idle-time}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder6" factory-bean="mongoClientOptionsBuilder5"-->
-          <!--factory-method="maxConnectionLifeTime">-->
-        <!--<constructor-arg value="${mongo.options.max-connection-life-time}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder7" factory-bean="mongoClientOptionsBuilder6" factory-method="connectTimeout">-->
-        <!--<constructor-arg value="${mongo.options.connect-timeout}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder8" factory-bean="mongoClientOptionsBuilder7" factory-method="socketTimeout">-->
-        <!--<constructor-arg value="${mongo.options.socket-timeout}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder9" factory-bean="mongoClientOptionsBuilder8" factory-method="socketKeepAlive">-->
-        <!--<constructor-arg value="${mongo.options.socket-keep-alive}"/>-->
-    <!--</bean>-->
-    <!--<bean id="mongoClientOptionsBuilder10" factory-bean="mongoClientOptionsBuilder9" factory-method="writeConcern">-->
-        <!--<constructor-arg ref="writeConcern"/>-->
-    <!--</bean>-->
 
     <bean id="mongoClientURI" class="com.mongodb.MongoClientURI">
         <constructor-arg name="uri" value="${mongo.client-uri}"/>
-        <constructor-arg name="builder" ref="mongoClientOptionsBuilder1"/>
+        <constructor-arg name="builder" ref="mongoClientOptionsBuilder"/>
     </bean>
 
     <bean id="mongo" class="com.mongodb.MongoClient">

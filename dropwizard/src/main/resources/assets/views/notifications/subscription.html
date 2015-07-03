@@ -1,0 +1,45 @@
+<div page-header="Create/edit subscription" ng-dblclick="$debug = !$debug">
+    <div ng-if="$debug">
+        <h6>{{ subscription | json }}</h6>
+    </div>
+</div>
+
+<page-message></page-message>
+
+<div class="well">
+    <h5>Subscription properties: </h5>
+    <form class="form-horizontal form-bordered form-small" >
+        <table class="table table-condensed table-noborder">
+            <tr>
+                <td style="vertical-align: top; width: 430px;">
+                    <div class="control-group">
+                        <label class="control-label" for="emails">Emails:</label>
+                        <div class="controls">
+                            <input id="emails" class="input-xlarge" type="text" ng-model="subscription.emails" required />
+                            <i icon-info="Specify the comma separated email list"
+                               model="subscription.emails" remove="subscription.emails = null"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="actor_ids">Actor IDs:</label>
+                        <div class="controls">
+                            <input id="actor_ids" class="input-xlarge" type="text" ng-model="subscription.actorIds" required />
+                            <i icon-info="Specify actor ids prefixes to track"
+                               model="subscription.actorIds" remove="subscription.actorIds = null"></i>
+                        </div>
+                    </div>
+                </td>
+                <td style="vertical-align: top;">
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <a class="btn" ng-click="save()">Save subscription</a>
+                </td>
+                <td>
+                </td>
+            </tr>
+        </table>
+
+</div>

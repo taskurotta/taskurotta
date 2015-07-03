@@ -80,4 +80,6 @@
 
     <hz:lock id="recoveryNodeLock" instance-ref="hzInstance" name="${hz.recovery.lock.name}" />
 
+    <hz:lock id="recoveryTaskNodeLock" instance-ref="hzInstance" name="${hz.recovery.task.lock.name}" />
+
 </beans>

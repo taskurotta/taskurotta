@@ -1,29 +1,18 @@
 package ru.taskurotta.service.schedule.storage;
 
 import ru.taskurotta.service.schedule.model.JobVO;
-
-import java.util.Collection;
+import ru.taskurotta.service.storage.EntityStore;
 
 /**
  * User: dimadin
  * Date: 23.09.13 10:31
  */
-public interface JobStore {
+public interface JobStore extends EntityStore<JobVO> {
 
-    public long addJob(JobVO task);
+    void updateJobStatus(long id, int status);
 
-    public void removeJob(long id);
+    int getJobStatus(long jobId);
 
-    public Collection<Long> getJobIds();
-
-    public JobVO getJob(long id);
-
-    public void updateJobStatus(long id, int status);
-
-    public void updateJob(JobVO jobVO);
-
-    public int getJobStatus(long jobId);
-
-    public void updateErrorCount(long jobId, int count, String message);
+    void updateErrorCount(long jobId, int count, String message);
 
 }

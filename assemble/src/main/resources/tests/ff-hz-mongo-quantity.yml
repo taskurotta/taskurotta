@@ -48,6 +48,8 @@ profiler:
           dropTaskDecisionEveryNTasks: 100
           breakProcessEveryNTasks: 100
           logProfilerSeconds: 10
+          everyNTaskReleaseTimeout: 1000
+          releaseTimeout: 120000
 
 actor:
   - FFDecider:

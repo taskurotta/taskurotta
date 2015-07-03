@@ -6,6 +6,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
 import ru.taskurotta.service.hz.TaskKey;
@@ -51,7 +52,7 @@ public class HzTaskDao implements TaskDao {
         try {
 
             Decision decision = id2TaskDecisionMap.get(taskKey);
-            if (decision == null || decision.getState() != Decision.STATE_WORK) {
+            if (decision == null || decision.getState() == Decision.STATE_FINISH) {
                 logger.warn("{}/{} Can not finish task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
                         decision == null ? "null" : decision.getState());
                 return false;
@@ -68,6 +69,7 @@ public class HzTaskDao implements TaskDao {
 
             decision.setState(Decision.STATE_FINISH);
             decision.setDecisionContainer(taskDecision);
+            decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
             return true;
@@ -76,9 +78,8 @@ public class HzTaskDao implements TaskDao {
         }
     }
 
-    // todo: save timeToStart
     @Override
-    public boolean retryTask(UUID taskId, UUID processId, long timeToStart) {
+    public boolean retryTask(UUID taskId, UUID processId) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
@@ -97,6 +98,7 @@ public class HzTaskDao implements TaskDao {
 
             decision.setState(Decision.STATE_REGISTERED);
             decision.setDecisionContainer(null);
+            decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
             return true;
@@ -126,8 +128,7 @@ public class HzTaskDao implements TaskDao {
             long recoveryTime = System.currentTimeMillis() + workerTimeout;
 
             if (decision == null) {
-                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime,
-                        null);
+                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime, null);
             } else {
                 // assume that workerTimeout and failOnWorkerTimeouts values can not be changed
 
@@ -146,7 +147,7 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, long timeToStart, boolean force) {
+    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
@@ -162,11 +163,18 @@ public class HzTaskDao implements TaskDao {
                 logger.debug("{}/{} Can not restart task. Task is finished now. Decision is {}", taskKey.getTaskId(),
                         taskKey.getProcessId(), decision.getState(), decision);
 
+                // support for oldest version
+                if (decision.getRecoveryTime() != 0l) {
+                    decision.setRecoveryTime(0l);
+                }
+                id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+
                 return false;
             }
 
             decision.setState(Decision.STATE_REGISTERED);
             decision.setDecisionContainer(null);
+            decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
             return true;
@@ -200,6 +208,10 @@ public class HzTaskDao implements TaskDao {
         }
     }
 
+    @Override
+    public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
+        throw new UnsupportedOperationException("Please, use MongoTaskDao");
+    }
 
     @Override
     public TaskContainer getTask(UUID taskId, UUID processId) {
