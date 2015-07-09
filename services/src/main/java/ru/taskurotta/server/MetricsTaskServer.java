@@ -99,7 +99,7 @@ public class MetricsTaskServer implements TaskServer {
 
         TaskContainer taskContainer = taskServer.poll(actorDefinition);
 
-        String queueName = TransportUtils.createQueueName(actorId, TransportUtils.getTaskList(taskContainer));
+        String queueName = TransportUtils.createQueueName(actorId, actorDefinition.getTaskList());
 
         long invocationTime = System.currentTimeMillis() - startTime;
         Metric pollMetric = metricsFactory.getInstance(MetricName.POLL.getValue());
