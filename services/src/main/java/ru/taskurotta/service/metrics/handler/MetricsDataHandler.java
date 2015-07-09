@@ -178,7 +178,7 @@ public class MetricsDataHandler implements DataListener, MetricsMethodDataRetrie
         DataRowVO row = lastHourDataHolder.get(key);
 
         if (row == null) {
-            row = lastDayDataHolder.get(MetricsDataUtils.getKey(metricName, datasetName));
+            row = lastDayDataHolder.get(key);
         }
 
         if (row != null) {
