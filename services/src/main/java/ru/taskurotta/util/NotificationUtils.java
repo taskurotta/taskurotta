@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.taskurotta.service.console.model.InterruptedTask;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,19 +19,20 @@ import java.util.Set;
 public class NotificationUtils {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
     static {
         MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public static Set<String> asActorIdList(Collection<InterruptedTask> tasks) {
         Set<String> result = null;
-        if (tasks!=null && !tasks.isEmpty()) {
+        if (tasks != null && !tasks.isEmpty()) {
             result = new HashSet<>();
             for (InterruptedTask task : tasks) {
-                if (task.getActorId()!=null) {
+                if (task.getActorId() != null) {
                     result.add(task.getActorId());
                 }
-                if (task.getStarterId()!=null) {
+                if (task.getStarterId() != null) {
                     result.add(task.getStarterId());
                 }
             }
@@ -39,7 +42,7 @@ public class NotificationUtils {
 
     public static Set<String> getTrackedValues(Collection<String> trackedValues, Collection<String> actualValues) {
         Set<String> result = new HashSet<>();
-        if (trackedValues!=null && actualValues!=null) {
+        if (trackedValues != null && actualValues != null) {
             for (String trackedValue : trackedValues) {
                 for (String actualValue : actualValues) {
                     if (actualValue.toLowerCase().startsWith(trackedValue.toLowerCase())) {
@@ -48,11 +51,11 @@ public class NotificationUtils {
                 }
             }
         }
-        return result.isEmpty()? null : result;
+        return result.isEmpty() ? null : result;
     }
 
     public static void excludeOldValues(Collection<String> newValues, Collection<String> oldValues) {
-        if (newValues!=null && oldValues!=null) {
+        if (newValues != null && oldValues != null) {
             Iterator<String> iter = newValues.iterator();
             while (iter.hasNext()) {
                 String val = iter.next();
@@ -64,7 +67,7 @@ public class NotificationUtils {
     }
 
     public static void excludeOldTasksValues(Collection<InterruptedTask> newValues, Collection<InterruptedTask> oldValues) {
-        if (newValues!=null && oldValues!=null) {
+        if (newValues != null && oldValues != null) {
             Iterator<InterruptedTask> iter = newValues.iterator();
             while (iter.hasNext()) {
                 InterruptedTask val = iter.next();
@@ -81,7 +84,7 @@ public class NotificationUtils {
             try {
                 result = MAPPER.writeValueAsString(target);
             } catch (Throwable e) {
-                throw new RuntimeException("Cannot parse listToJson["+target+"]", e);
+                throw new RuntimeException("Cannot parse listToJson[" + target + "]", e);
             }
         }
         return result;
@@ -91,9 +94,10 @@ public class NotificationUtils {
         List<String> result = defVal;
         if (json != null) {
             try {
-                result = ((List<String>) MAPPER.readValue(json, new TypeReference<List<String>>(){}));
+                result = MAPPER.readValue(json, new TypeReference<List<String>>() {
+                });
             } catch (Exception e) {
-                throw new RuntimeException("Cannot parse jsonToList ["+json+"]", e);
+                throw new RuntimeException("Cannot parse jsonToList [" + json + "]", e);
             }
         }
         return result;
@@ -105,7 +109,7 @@ public class NotificationUtils {
         }
         StringBuilder sb = new StringBuilder();
         for (String s : target) {
-            if (sb.length()>0) {
+            if (sb.length() > 0) {
                 sb.append(", ");
             }
             sb.append(s);
@@ -113,5 +117,13 @@ public class NotificationUtils {
         return sb.toString();
     }
 
-
+    public static Collection<String> filterTrackedActors(Collection<InterruptedTask> interruptedTasks, String script, ScriptEngine scriptEngine) {
+        try {
+            scriptEngine.eval(script);
+            Invocable invocable = (Invocable) scriptEngine;
+            return (Collection<String>) invocable.invokeFunction("filter", interruptedTasks);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

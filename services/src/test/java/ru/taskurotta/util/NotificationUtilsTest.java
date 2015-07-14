@@ -2,14 +2,20 @@ package ru.taskurotta.util;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.testng.reporters.Files;
 import ru.taskurotta.service.console.model.InterruptedTask;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created on 11.06.2015.
@@ -35,9 +41,9 @@ public class NotificationUtilsTest {
         Set<String> res2 = NotificationUtils.asActorIdList(nullColl);
         Assert.assertNull(res1);
         Set<String> res3 = NotificationUtils.asActorIdList(normalColl);
-        Assert.assertEquals(4, res3.size());
+        assertEquals(4, res3.size());
         Set<String> res4 = NotificationUtils.asActorIdList(duplicatedActorsColl);
-        Assert.assertEquals(1, res4.size());
+        assertEquals(1, res4.size());
 
     }
 
@@ -57,14 +63,14 @@ public class NotificationUtilsTest {
         trackedVals1.add("ru.taskurotta.another");
         trackedVals1.add("ru.taskurotta.someother");
         Set<String> res1 = NotificationUtils.getTrackedValues(trackedVals1, colValuesl);
-        Assert.assertEquals(6, res1.size());
+        assertEquals(6, res1.size());
         Assert.assertTrue(res1.contains("ru.taskurotta.another.test.ZipWorker2#1.0#task4"));
 
         Collection<String> trackedVals2 = new ArrayList<>();
         trackedVals2.add("ru.taskurotta.test.Actor#1.0#task1");
         trackedVals2.add("ru.taskurotta.test.Actor#1.0#task2");
         Set<String> res2 = NotificationUtils.getTrackedValues(trackedVals2, colValuesl);
-        Assert.assertEquals(2, res2.size());
+        assertEquals(2, res2.size());
         Assert.assertTrue(res2.contains("ru.taskurotta.test.Actor#1.0#task1"));
         Assert.assertTrue(res2.contains("ru.taskurotta.test.Actor#1.0#task2"));
 
@@ -94,29 +100,29 @@ public class NotificationUtilsTest {
         colValues4.add("ru.taskurotta.test.ZipWorker#1.0");
         colValues4.add("ru.taskurotta.another.test.ZipWorker#1.0");
 
-        Assert.assertEquals(7, colValues3.size());
-        Assert.assertEquals(2, colValues4.size());
+        assertEquals(7, colValues3.size());
+        assertEquals(2, colValues4.size());
         NotificationUtils.excludeOldValues(colValues3, colValues4);
-        Assert.assertEquals(5, colValues3.size());
-        Assert.assertEquals(2, colValues4.size());
+        assertEquals(5, colValues3.size());
+        assertEquals(2, colValues4.size());
 
         Collection<String> colValues5 = new ArrayList<>();
         Collection<String> colValues6 = createCollection();
         Assert.assertTrue(colValues5.isEmpty());
-        Assert.assertEquals(7, colValues6.size());
+        assertEquals(7, colValues6.size());
         NotificationUtils.excludeOldValues(colValues5, colValues6);
         Assert.assertTrue(colValues5.isEmpty());
-        Assert.assertEquals(7, colValues6.size());
+        assertEquals(7, colValues6.size());
 
         Collection<String> colValues7 = new ArrayList<>();
         Collection<String> colValues8 = createCollection();
         colValues7.add("newVal1");
         colValues7.add("newVal2");
-        Assert.assertEquals(2, colValues7.size());
-        Assert.assertEquals(7, colValues8.size());
+        assertEquals(2, colValues7.size());
+        assertEquals(7, colValues8.size());
         NotificationUtils.excludeOldValues(colValues7, colValues8);
-        Assert.assertEquals(2, colValues7.size());
-        Assert.assertEquals(7, colValues8.size());
+        assertEquals(2, colValues7.size());
+        assertEquals(7, colValues8.size());
     }
 
     @Test
@@ -144,29 +150,29 @@ public class NotificationUtilsTest {
         colValues4.add(createTask("ru.taskurotta.test.ZipWorker#1.0", "ru.taskurotta.test.ZipWorker#1.0", uuid, time));
         colValues4.add(createTask("ru.taskurotta.another.test.ZipWorker#1.0", "ru.taskurotta.another.test.ZipWorker#1.0", uuid, time));
 
-        Assert.assertEquals(7, colValues3.size());
-        Assert.assertEquals(2, colValues4.size());
+        assertEquals(7, colValues3.size());
+        assertEquals(2, colValues4.size());
         NotificationUtils.excludeOldTasksValues(colValues3, colValues4);
-        Assert.assertEquals(5, colValues3.size());
-        Assert.assertEquals(2, colValues4.size());
+        assertEquals(5, colValues3.size());
+        assertEquals(2, colValues4.size());
 
         Collection<InterruptedTask> colValues5 = new ArrayList<>();
         Collection<InterruptedTask> colValues6 = createTaskCollection(uuid, time);;
         Assert.assertTrue(colValues5.isEmpty());
-        Assert.assertEquals(7, colValues6.size());
+        assertEquals(7, colValues6.size());
         NotificationUtils.excludeOldTasksValues(colValues5, colValues6);
         Assert.assertTrue(colValues5.isEmpty());
-        Assert.assertEquals(7, colValues6.size());
+        assertEquals(7, colValues6.size());
 
         Collection<InterruptedTask> colValues7 = new ArrayList<>();
         Collection<InterruptedTask> colValues8 = createTaskCollection(uuid, time);;
         colValues7.add(createTask("newVal1", "newVal1"));
         colValues7.add(createTask("newVal1", "newVal1"));
-        Assert.assertEquals(2, colValues7.size());
-        Assert.assertEquals(7, colValues8.size());
+        assertEquals(2, colValues7.size());
+        assertEquals(7, colValues8.size());
         NotificationUtils.excludeOldTasksValues(colValues7, colValues8);
-        Assert.assertEquals(2, colValues7.size());
-        Assert.assertEquals(7, colValues8.size());
+        assertEquals(2, colValues7.size());
+        assertEquals(7, colValues8.size());
     }
 
     @Test
@@ -175,14 +181,14 @@ public class NotificationUtilsTest {
         String json1 = NotificationUtils.listToJson(list1, "[]");
         List<String> list2 = NotificationUtils.jsonToList(json1, null);
         for (int i = 0; i<list1.size(); i++) {
-            Assert.assertEquals(list1.get(i), list2.get(i));
+            assertEquals(list1.get(i), list2.get(i));
         }
 
         String json2 = NotificationUtils.listToJson(null, "[]");
-        Assert.assertEquals(json2, "[]");
+        assertEquals(json2, "[]");
 
         String json3 = NotificationUtils.listToJson(new ArrayList<String>(), "[]");
-        Assert.assertEquals(json3, "[]");
+        assertEquals(json3, "[]");
 
         List<String> list3 = NotificationUtils.jsonToList(null, new ArrayList<String>());
         Assert.assertTrue(list3.isEmpty());
@@ -197,6 +203,15 @@ public class NotificationUtilsTest {
         NotificationUtils.jsonToList("[[[[[", new ArrayList<String>());
     }
 
+    @Test
+    public void testFilterTrackedActors() throws IOException {
+        Collection<InterruptedTask> interruptedTasks = createTaskCollection(UUID.randomUUID(), System.currentTimeMillis());
+        String script = Files.readFile(this.getClass().getClassLoader().getResourceAsStream("script.js"));
+        ScriptEngine scriptEngine = getScriptEngine();
+        Collection<String> trackedActors = NotificationUtils.filterTrackedActors(interruptedTasks, script, scriptEngine);
+        assertEquals(Collections.singletonList("ru.taskurotta.another.test.ZipWorker2#1.0#task4"), trackedActors);
+    }
+
     private Collection<InterruptedTask> createTaskCollection(UUID uuid, long time) {
         Collection<InterruptedTask> res = new ArrayList<>();
         res.add(createTask("ru.taskurotta.test.Actor#1.0", "ru.taskurotta.test.Actor#1.0", uuid, time));
@@ -206,6 +221,7 @@ public class NotificationUtilsTest {
         res.add(createTask("ru.taskurotta.another.test.ZipWorker#1.0", "ru.taskurotta.another.test.ZipWorker#1.0", uuid, time));
         res.add(createTask("ru.taskurotta.another.test.ZipWorker2#1.0", "ru.taskurotta.another.test.ZipWorker2#1.0", uuid, time));
         res.add(createTask("ru.taskurotta.another.test.ZipWorker2#1.0#task4", "ru.taskurotta.another.test.ZipWorker2#1.0#task4", uuid, time));
+        res.add(createTask("ru.taskurotta.another.test.ZipWorker2#1.0#task4", "ru.taskurotta.another.test.ZipWorker2#1.0#task4", "testError"));
         return res;
     }
 
@@ -220,6 +236,7 @@ public class NotificationUtilsTest {
         res.add("ru.taskurotta.another.test.ZipWorker2#1.0#task4");
         return res;
     }
+
     private InterruptedTask createTask(String actorId, String starterId, UUID uuid, long time) {
         InterruptedTask result = new InterruptedTask();
         result.setActorId(actorId);
@@ -242,6 +259,22 @@ public class NotificationUtilsTest {
         result.setTaskId(UUID.randomUUID());
         result.setTime(System.currentTimeMillis());
         return result;
+    }
+
+    private InterruptedTask createTask(String actorId, String starterId, String errorMessage) {
+        InterruptedTask result = new InterruptedTask();
+        result.setActorId(actorId);
+        result.setErrorClassName(getClass().getName());
+        result.setErrorMessage(errorMessage);
+        result.setProcessId(UUID.randomUUID());
+        result.setStarterId(starterId);
+        result.setTaskId(UUID.randomUUID());
+        result.setTime(System.currentTimeMillis());
+        return result;
+    }
+
+    private ScriptEngine getScriptEngine() {
+        return new ScriptEngineManager().getEngineByName("nashorn");
     }
 
 }

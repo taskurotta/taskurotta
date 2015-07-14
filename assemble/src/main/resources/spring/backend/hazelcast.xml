@@ -237,7 +237,7 @@
             </bean>
         </constructor-arg>
     </bean>
-    <bean id="interruptedTasksHandler" class="ru.taskurotta.service.notification.handler.impl.InterruptedTasksHanler">
+    <bean id="interruptedTasksHandler" class="ru.taskurotta.service.notification.handler.impl.InterruptedTasksHandler">
         <constructor-arg name="emailSender" ref="emailSender" />
         <constructor-arg name="interruptedTasksService" ref="interruptedTasksService" />
         <constructor-arg name="defaultInterruptedPeriod">

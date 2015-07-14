@@ -15,14 +15,11 @@ import java.util.List;
 public class Subscription implements Serializable {
 
     private long id;
-
     private List<String> actorIds;
-
     private List<String> emails;
-
     private List<Long> triggersKeys;
-
     private Date changeDate;
+    private String script;
 
     public long getId() {
         return id;
@@ -64,6 +61,14 @@ public class Subscription implements Serializable {
         this.changeDate = changeDate;
     }
 
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
+    }
+
     @Override
     public String toString() {
         return "Subscription{" +
@@ -72,6 +77,7 @@ public class Subscription implements Serializable {
                 ", emails=" + emails +
                 ", triggersKeys=" + triggersKeys +
                 ", changeDate=" + changeDate +
+                ", script='" + script + '\'' +
                 '}';
     }
 }
