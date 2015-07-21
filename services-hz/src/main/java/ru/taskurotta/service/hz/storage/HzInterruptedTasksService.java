@@ -10,10 +10,12 @@ import org.springframework.util.StringUtils;
 import ru.taskurotta.service.console.model.GroupCommand;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.console.model.InterruptedTaskExt;
+import ru.taskurotta.service.console.model.InterruptedTaskExt.InterruptedTaskType;
 import ru.taskurotta.service.console.model.SearchCommand;
 import ru.taskurotta.service.console.model.TaskIdentifier;
 import ru.taskurotta.service.console.model.TasksGroupVO;
 import ru.taskurotta.service.hz.support.PredicateUtils;
+import ru.taskurotta.service.storage.AbstractInterruptedTasksService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.util.InterruptedTaskSupport;
 
@@ -24,22 +26,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static ru.taskurotta.service.console.model.InterruptedTaskExt.InterruptedTaskType.KNOWN;
+import static ru.taskurotta.service.console.model.InterruptedTaskExt.InterruptedTaskType.UNKNOWN;
+
 /**
  * Created on 19.03.2015.
  */
-public class HzInterruptedTasksService implements InterruptedTasksService {
+public class HzInterruptedTasksService extends AbstractInterruptedTasksService implements InterruptedTasksService {
 
     private static final Logger logger = LoggerFactory.getLogger(HzInterruptedTasksService.class);
 
     private IMap<UUID, InterruptedTaskExt> storeIMap;
 
-    public HzInterruptedTasksService(HazelcastInstance hazelcastInstance, String storeMapName) {
+    public HzInterruptedTasksService(HazelcastInstance hazelcastInstance, String storeMapName, String scriptLocation, long scriptReloadTimeout) {
+        super(scriptLocation, scriptReloadTimeout);
         this.storeIMap = hazelcastInstance.getMap(storeMapName);
     }
 
     @Override
     public void save(InterruptedTask task, String message, String stackTrace) {
-        storeIMap.put(task.getTaskId(), new InterruptedTaskExt(task, message, stackTrace));
+        InterruptedTaskType taskType = isUnknown(task) ? UNKNOWN : KNOWN;
+        storeIMap.put(task.getTaskId(), new InterruptedTaskExt(task, message, stackTrace, taskType));
     }
 
     @Override
@@ -88,21 +95,21 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
             predicates.add(PredicateUtils.getMoreThen("time", searchCommand.getStartPeriod()));
         }
 
-        Collection<InterruptedTask> result = null;
+        Collection<InterruptedTask> result;
         if (predicates.isEmpty()) {
             result = findAll();
         } else {
             Predicate predicate = PredicateUtils.combineWithAndCondition(predicates);
             result = asSimpleTasks(storeIMap.values(predicate));
         }
-        logger.trace("Found [{}] interrupted tasks by command[{}]", result!=null?result.size():null, searchCommand);
+        logger.trace("Found [{}] interrupted tasks by command[{}]", result != null ? result.size() : null, searchCommand);
         return result;
     }
 
     //TODO: try to remove this method invocations
     public Collection<InterruptedTask> asSimpleTasks(Collection<InterruptedTaskExt> tasks) {
         Collection<InterruptedTask> result = null;
-        if (tasks!=null && !tasks.isEmpty()) {
+        if (tasks != null && !tasks.isEmpty()) {
             result = new ArrayList<>();
             for (InterruptedTaskExt tExt : tasks) {
                 tExt.setFullMessage(null);
@@ -127,13 +134,13 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
     @Override
     public String getFullMessage(UUID processId, UUID taskId) {
         InterruptedTaskExt bp = storeIMap.get(taskId);
-        return bp!=null? bp.getFullMessage() : null;
+        return bp != null ? bp.getFullMessage() : null;
     }
 
     @Override
     public String getStackTrace(UUID processId, UUID taskId) {
         InterruptedTaskExt bp = storeIMap.get(taskId);
-        return bp!=null? bp.getStackTrace() : null;
+        return bp != null ? bp.getStackTrace() : null;
     }
 
     @Override
@@ -163,7 +170,7 @@ public class HzInterruptedTasksService implements InterruptedTasksService {
     public long deleteTasksForProcess(UUID processId) {
         long result = 0l;
         Collection<InterruptedTaskExt> tasks = storeIMap.values(new Predicates.EqualPredicate("processId", processId));
-        if (tasks!=null && !tasks.isEmpty()) {//TODO: lock map for the operation
+        if (tasks != null && !tasks.isEmpty()) {//TODO: lock map for the operation
             for (InterruptedTaskExt task : tasks) {
                 if (storeIMap.containsKey(task.getTaskId())) {
                     storeIMap.delete(task.getTaskId());

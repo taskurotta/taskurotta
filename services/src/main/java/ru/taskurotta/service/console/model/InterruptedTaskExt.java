@@ -7,12 +7,35 @@ import java.io.Serializable;
  */
 public class InterruptedTaskExt extends InterruptedTask implements Serializable {
 
-    protected String fullMessage;
-    protected String stackTrace;
+    private String fullMessage;
+    private String stackTrace;
+    private InterruptedTaskType type;
+
+    public enum InterruptedTaskType {
+        NONE(0), KNOWN(1), UNKNOWN(2);
+
+        private int type;
+
+        InterruptedTaskType(int type) {
+            this.type = type;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public void setType(int type) {
+            this.type = type;
+        }
+    }
 
     public InterruptedTaskExt() {}
 
     public InterruptedTaskExt(InterruptedTask task, String fullMessage, String stackTrace) {
+        this(task, fullMessage, stackTrace, InterruptedTaskType.NONE);
+    }
+
+    public InterruptedTaskExt(InterruptedTask task, String fullMessage, String stackTrace, InterruptedTaskType type) {
         this.processId = task.getProcessId();
         this.taskId = task.getTaskId();
         this.actorId = task.getActorId();
@@ -23,6 +46,7 @@ public class InterruptedTaskExt extends InterruptedTask implements Serializable 
 
         this.fullMessage = fullMessage;
         this.stackTrace = stackTrace;
+        this.type = type;
     }
 
     public String getFullMessage() {
@@ -41,11 +65,20 @@ public class InterruptedTaskExt extends InterruptedTask implements Serializable 
         this.stackTrace = stackTrace;
     }
 
+    public InterruptedTaskType getType() {
+        return type;
+    }
+
+    public void setType(InterruptedTaskType type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return "InterruptedTaskExt{" +
                 "fullMessage='" + fullMessage + '\'' +
                 ", stackTrace='" + stackTrace + '\'' +
-                "} " + super.toString();
+                ", type=" + type +
+                '}';
     }
 }

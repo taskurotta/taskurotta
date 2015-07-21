@@ -21,9 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created: 11.10.13 18:28
  */
 @Deprecated
-public class MemoryInterruptedTasksService implements InterruptedTasksService {
+public class MemoryInterruptedTasksService extends AbstractInterruptedTasksService implements InterruptedTasksService {
 
     private ConcurrentHashMap<UUID, InterruptedTaskExt> brokenTasks = new ConcurrentHashMap<>();
+
+    public MemoryInterruptedTasksService(String scriptLocation, long scriptReloadTimeout) {
+        super(scriptLocation, scriptReloadTimeout);
+    }
 
     @Override
     public void save(InterruptedTask itdTask, String message, String stackTrace) {

@@ -21,6 +21,12 @@
     <bean id="interruptedTasksService" class="ru.taskurotta.service.ora.storage.OraInterruptedTasksService">
         <property name="dataSource" ref="originalDataSource"/>
         <property name="lobHandler" ref="lobHandler"/>
+        <constructor-arg name="scriptLocation" value="${interrupted-tasks.script.location}"/>
+        <constructor-arg name="scriptReloadTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration" value="${interrupted-tasks.script.reload-timeout}"/>
+            </bean>
+        </constructor-arg>
     </bean>
 
     <bean id="lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler"/>

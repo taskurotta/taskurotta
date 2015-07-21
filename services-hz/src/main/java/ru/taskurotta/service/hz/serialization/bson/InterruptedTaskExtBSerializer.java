@@ -5,6 +5,7 @@ import ru.taskurotta.mongodb.driver.BDataOutput;
 import ru.taskurotta.mongodb.driver.CString;
 import ru.taskurotta.mongodb.driver.StreamBSerializer;
 import ru.taskurotta.service.console.model.InterruptedTaskExt;
+import ru.taskurotta.service.console.model.InterruptedTaskExt.InterruptedTaskType;
 
 /**
  * Created on 25.05.2015.
@@ -21,6 +22,7 @@ public class InterruptedTaskExtBSerializer implements StreamBSerializer<Interrup
 
     public static final CString FULL_MESSAGE = new CString("fullMessage");
     public static final CString STACK_TRACE = new CString("stackTrace");
+    public static final CString TASK_TYPE = new CString("taskType");
 
     @Override
     public Class<InterruptedTaskExt> getObjectClass() {
@@ -39,6 +41,7 @@ public class InterruptedTaskExtBSerializer implements StreamBSerializer<Interrup
 
         out.writeString(FULL_MESSAGE, object.getFullMessage());
         out.writeString(STACK_TRACE, object.getStackTrace());
+        out.writeInt(TASK_TYPE, object.getType().getType());
     }
 
     @Override
@@ -55,6 +58,18 @@ public class InterruptedTaskExtBSerializer implements StreamBSerializer<Interrup
 
         result.setFullMessage(in.readString(FULL_MESSAGE));
         result.setStackTrace(in.readString(STACK_TRACE));
+
+        int type = in.readInt(TASK_TYPE);
+        InterruptedTaskType interruptedTaskType = InterruptedTaskType.NONE;
+        InterruptedTaskType[] taskTypes = InterruptedTaskType.values();
+        for (InterruptedTaskType taskType : taskTypes) {
+            if (taskType.getType() == type) {
+                interruptedTaskType = taskType;
+                break;
+            }
+        }
+        result.setType(interruptedTaskType);
+
         return result;
     }
 }

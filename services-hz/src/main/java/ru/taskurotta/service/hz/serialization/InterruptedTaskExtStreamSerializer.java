@@ -4,6 +4,7 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import ru.taskurotta.service.console.model.InterruptedTaskExt;
+import ru.taskurotta.service.console.model.InterruptedTaskExt.InterruptedTaskType;
 
 import java.io.IOException;
 
@@ -24,6 +25,7 @@ public class InterruptedTaskExtStreamSerializer implements StreamSerializer<Inte
 
         SerializationTools.writeString(out, itdTask.getFullMessage());
         SerializationTools.writeString(out, itdTask.getStackTrace());
+        out.writeInt(itdTask.getType().getType());
     }
 
     @Override
@@ -40,6 +42,17 @@ public class InterruptedTaskExtStreamSerializer implements StreamSerializer<Inte
 
         result.setFullMessage(SerializationTools.readString(in));
         result.setStackTrace(SerializationTools.readString(in));
+
+        int type = in.readInt();
+        InterruptedTaskType interruptedTaskType = InterruptedTaskType.NONE;
+        InterruptedTaskType[] taskTypes = InterruptedTaskType.values();
+        for (InterruptedTaskType taskType : taskTypes) {
+            if (taskType.getType() == type) {
+                interruptedTaskType = taskType;
+                break;
+            }
+        }
+        result.setType(interruptedTaskType);
 
         return result;
     }

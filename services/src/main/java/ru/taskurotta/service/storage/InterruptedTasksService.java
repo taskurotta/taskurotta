@@ -37,4 +37,6 @@ public interface InterruptedTasksService {
     Set<UUID> getProcessIds(GroupCommand command);
 
     long deleteTasksForProcess(UUID processId);
+
+    boolean isUnknown(InterruptedTask task);
 }
