@@ -135,7 +135,7 @@ public class OraInterruptedTasksService extends AbstractInterruptedTasksService 
 
     @Override
     public void save(final InterruptedTask itdTask, final String message, final String stackTrace) {
-        InterruptedTaskExt.InterruptedTaskType taskType = isUnknown(itdTask) ? UNKNOWN : KNOWN;
+        InterruptedTaskExt.InterruptedTaskType taskType = isKnown(itdTask) ? KNOWN : UNKNOWN;
 
         try {
             Long id = jdbcTemplate.execute(SQL_CREATE_ITD_TASK,

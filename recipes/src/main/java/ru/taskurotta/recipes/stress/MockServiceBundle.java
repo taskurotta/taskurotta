@@ -378,7 +378,7 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public boolean isUnknown(InterruptedTask task) {
+            public boolean isKnown(InterruptedTask task) {
                 return false;
             }
         };

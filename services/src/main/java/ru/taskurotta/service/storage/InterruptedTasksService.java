@@ -38,5 +38,5 @@ public interface InterruptedTasksService {
 
     long deleteTasksForProcess(UUID processId);
 
-    boolean isUnknown(InterruptedTask task);
+    boolean isKnown(InterruptedTask task);
 }

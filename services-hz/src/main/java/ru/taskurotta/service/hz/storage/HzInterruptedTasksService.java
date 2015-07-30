@@ -45,7 +45,7 @@ public class HzInterruptedTasksService extends AbstractInterruptedTasksService i
 
     @Override
     public void save(InterruptedTask task, String message, String stackTrace) {
-        InterruptedTaskType taskType = isUnknown(task) ? UNKNOWN : KNOWN;
+        InterruptedTaskType taskType = isKnown(task) ? KNOWN : UNKNOWN;
         storeIMap.put(task.getTaskId(), new InterruptedTaskExt(task, message, stackTrace, taskType));
     }
 
