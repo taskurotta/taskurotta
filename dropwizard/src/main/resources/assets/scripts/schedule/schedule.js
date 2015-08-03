@@ -154,7 +154,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         }else{
             $scope.command = new scheduleRest();
             // defaults
-            $scope.command["queueLimit"] = 0;
+            $scope.command["limit"] = 0;
             $scope.command["maxErrors"] = 0;
             $scope.command["type"] = "DECIDER_START";
             $scope.command["id"] = -1;
@@ -164,7 +164,7 @@ angular.module('scheduleModule', ['taskModule', 'coreApp'])
         $scope.isValidForm = function () {
             return $scope.command.name && $scope.command.isCronValid &&
                 $scope.command.method && $scope.command.actorId &&
-                $scope.command.queueLimit >= 0 && $scope.command.maxErrors >= 0;
+                $scope.command.limit >= 0 && $scope.command.maxErrors >= 0;
         };
 
         //Actions

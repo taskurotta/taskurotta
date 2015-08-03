@@ -7,7 +7,7 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.schedule.model.JobVO;
 import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.transport.utils.TransportUtils;
@@ -29,17 +29,16 @@ public class EnqueueTaskJob implements Job {
         JobManager jobManager = (JobManager) jdm.get(JobConstants.DATA_KEY_JOB_MANAGER);
         TaskContainer taskContainer = job != null ? job.getTask() : null;
         TaskServer taskServer = (TaskServer) jdm.get(JobConstants.DATA_KEY_TASK_SERVER);
-        QueueInfoRetriever queueInfoRetriever = (QueueInfoRetriever) jdm.get(JobConstants.DATA_KEY_QUEUE_INFO_RETRIEVER);
+        ProcessInfoRetriever processInfoRetriever = (ProcessInfoRetriever) jdm.get(JobConstants.DATA_KEY_PROCESS_INFO_RETRIEVER);
 
         try {
 
-            validateEntities(taskServer, job, queueInfoRetriever, jobManager);
+            validateEntities(taskServer, job, jobManager, processInfoRetriever);
 
-            if (job.getQueueLimit() > 0) {
-                String queueName = TransportUtils.createQueueName(taskContainer.getActorId(), TransportUtils.getTaskList(taskContainer));
-                int size = queueInfoRetriever.getQueueTaskCount(queueName);
-                if (size >= job.getQueueLimit()) {
-                    logger.debug("Queue [{}] contains [{}] elements. Skip task due to limit[{}].", taskContainer.getActorId(), size, job.getQueueLimit());
+            if (job.getLimit() > 0) {
+                int count = processInfoRetriever.getActiveCount(taskContainer.getActorId(), TransportUtils.getTaskList(taskContainer));
+                if (count >= job.getLimit()) {
+                    logger.debug("There are [{}] active processes. Skip task due to limit[{}].", count, job.getLimit());
                     return;
                 }
             }
@@ -79,7 +78,7 @@ public class EnqueueTaskJob implements Job {
     }
 
 
-    public void validateEntities(TaskServer taskServer, JobVO job, QueueInfoRetriever queueInfoRetriever, JobManager jobManager) {
+    public void validateEntities(TaskServer taskServer, JobVO job, JobManager jobManager, ProcessInfoRetriever processInfoRetriever) {
         if (taskServer == null) {
             throw new IllegalArgumentException("Scheduled job have no TaskServer data entity!");
         }
@@ -92,8 +91,8 @@ public class EnqueueTaskJob implements Job {
         if (job.getTask() == null) {
             throw new IllegalArgumentException("Scheduled job have no TaskContainer data entity!");
         }
-        if (job.getQueueLimit() > 0 && queueInfoRetriever == null) {
-            throw new IllegalArgumentException("Scheduled job have no QueueInfoRetriever data entity!");
+        if (job.getLimit() > 0  && processInfoRetriever == null) {
+            throw new IllegalArgumentException("Scheduled job have no ProcessInfoRetriever data entity!");
         }
     }
 

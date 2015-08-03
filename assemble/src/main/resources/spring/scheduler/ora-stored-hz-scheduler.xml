@@ -13,8 +13,8 @@
 
     <bean id = "realJobManager" class="ru.taskurotta.service.schedule.QuartzJobManager" >
         <constructor-arg name="jobStore" ref="jobStore" />
-        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
         <constructor-arg name="taskServer" ref="taskServer" />
+        <constructor-arg name="processInfoRetriever" ref="processService" />
     </bean>
 
     <bean id="jobManager" class="ru.taskurotta.service.hz.adapter.schedule.HzJobManagerAdapter">
