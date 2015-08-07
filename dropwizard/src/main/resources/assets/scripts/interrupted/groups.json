@@ -18,12 +18,12 @@
     "order" : 2
   },
   {
-    "id": "exception",
+    "id": "errorClassName",
     "name": "Exceptions",
     "label": "Fail cause exception class",
     "desc": "Exception class for the error causing process fail.",
     "regroup": "Regroup by broke cause exception class",
-    "param" : "exception",
+    "param" : "errorClassName",
     "order" : 3
   }
 ]
