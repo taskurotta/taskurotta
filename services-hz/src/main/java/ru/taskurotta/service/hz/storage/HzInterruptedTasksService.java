@@ -181,4 +181,8 @@ public class HzInterruptedTasksService extends AbstractInterruptedTasksService i
         return result;
     }
 
+    @Override
+    public int getKnowInterruptedTasksCount() {
+        return storeIMap.values(new Predicates.EqualPredicate("type", InterruptedTaskType.KNOWN)).size();
+    }
 }

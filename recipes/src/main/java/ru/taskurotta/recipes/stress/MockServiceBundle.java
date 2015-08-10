@@ -381,6 +381,11 @@ public class MockServiceBundle implements ServiceBundle {
             public boolean isKnown(InterruptedTask task) {
                 return false;
             }
+
+            @Override
+            public int getKnowInterruptedTasksCount() {
+                return 0;
+            }
         };
     }
 

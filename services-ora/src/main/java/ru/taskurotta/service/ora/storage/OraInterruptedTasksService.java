@@ -71,6 +71,8 @@ public class OraInterruptedTasksService extends AbstractInterruptedTasksService 
 
     protected static final String SQL_DELETE_BY_PROCESS_ID = "DELETE FROM TSK_INTERRUPTED_TASKS WHERE PROCESS_ID = ? ";
 
+    protected static final String SQL_TASKS_COUNT_BY_TYPE = "SELECT COUNT(*) FROM TSK_INTERRUPTED_TASKS WHERE TYPE = ?";
+
     protected LobHandler lobHandler;
 
     public OraInterruptedTasksService(String scriptLocation, long scriptReloadTimeout) {
@@ -389,6 +391,11 @@ public class OraInterruptedTasksService extends AbstractInterruptedTasksService 
             return 0l;
         }
         return jdbcTemplate.update(SQL_DELETE_BY_PROCESS_ID, processId.toString());
+    }
+
+    @Override
+    public int getKnowInterruptedTasksCount() {
+        return jdbcTemplate.queryForObject(SQL_TASKS_COUNT_BY_TYPE, Integer.TYPE, InterruptedTaskExt.InterruptedTaskType.KNOWN);
     }
 
     @Required

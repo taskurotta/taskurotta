@@ -39,4 +39,6 @@ public interface InterruptedTasksService {
     long deleteTasksForProcess(UUID processId);
 
     boolean isKnown(InterruptedTask task);
+
+    int getKnowInterruptedTasksCount();
 }

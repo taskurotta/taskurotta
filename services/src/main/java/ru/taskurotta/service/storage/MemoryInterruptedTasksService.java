@@ -169,4 +169,16 @@ public class MemoryInterruptedTasksService extends AbstractInterruptedTasksServi
         return result;
     }
 
+    @Override
+    public int getKnowInterruptedTasksCount() {
+        int counter = 0;
+
+        for (InterruptedTaskExt interruptedTaskExt : brokenTasks.values()) {
+            if (interruptedTaskExt.getType() == InterruptedTaskExt.InterruptedTaskType.KNOWN) {
+                counter++;
+            }
+        }
+
+        return counter;
+    }
 }
