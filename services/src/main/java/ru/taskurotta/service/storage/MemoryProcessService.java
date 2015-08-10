@@ -8,6 +8,7 @@ import ru.taskurotta.service.console.model.Process;
 import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -184,4 +185,20 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
 
         return count;
     }
+
+    @Override
+    public int getActiveCount(String actorId, String taskList) {
+        int count = 0;
+        if (actorId != null) {
+            Collection<Process> processes = processesStorage.values();
+            for (Process process : processes) {
+                if (process.getState() == Process.START && actorId.equals(process.getStartTask().getActorId()) && (taskList==null || taskList.equals(TransportUtils.getTaskList(process.getStartTask())))) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
 }

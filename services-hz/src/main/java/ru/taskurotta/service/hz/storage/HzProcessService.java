@@ -15,6 +15,7 @@ import ru.taskurotta.service.console.retriever.command.ProcessSearchCommand;
 import ru.taskurotta.service.hz.support.PredicateUtils;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.transport.model.TaskContainer;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -274,4 +275,20 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
 
         return result;
     }
+
+    @Override
+    public int getActiveCount(String actorId, String taskList) {
+        int result = 0;
+        if (actorId != null) {
+            Collection<Process> processes = processIMap.values();
+            for (Process process : processes) {
+                if (process.getState() == Process.START && actorId.equals(process.getStartTask().getActorId()) && (taskList==null || taskList.equals(TransportUtils.getTaskList(process.getStartTask())))) {
+                    result++;
+                }
+            }
+        }
+
+        return result;
+    }
+
 }

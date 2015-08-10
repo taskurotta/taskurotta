@@ -48,6 +48,8 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
     protected static final String SQL_GET_ORDERED_PROCESS_LIST =
             "SELECT /*+ INDEX_ASC(TSK_PROCESS TSK_PROCESS_START_TIME_IDX) */ PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
 
+
+    protected static final String SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID = "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? AND ACTOR_ID = ? ";
     public static final String WILDCARD = "%";
 
     public OraProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
@@ -406,6 +408,33 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             throw new ServiceCriticalException("Database error", ex);
         } finally {
             closeResultSet(resultSet);
+        }
+        return result;
+    }
+
+    @Override
+    public int getActiveCount(String actorId, String taskList) {
+        int result = 0;
+        if (actorId != null) {
+            ResultSet resultSet = null;
+            String sql = taskList!=null? SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID + " AND TASK_LIST = ?" : SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID;
+            try (Connection connection = dataSource.getConnection();
+                 PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, Process.START);
+                ps.setString(2, actorId);
+                if (taskList != null) {
+                    ps.setString(3, taskList);
+                }
+                resultSet = ps.executeQuery();
+                while (resultSet.next()) {
+                    result = resultSet.getInt("cnt");
+                }
+            } catch (SQLException ex) {
+                logger.error("DataBase exception: " + ex.getMessage(), ex);
+                throw new ServiceCriticalException("Database error", ex);
+            } finally {
+                closeResultSet(resultSet);
+            }
         }
         return result;
     }

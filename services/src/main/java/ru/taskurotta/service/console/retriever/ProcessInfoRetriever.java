@@ -19,4 +19,6 @@ public interface ProcessInfoRetriever {
     int getFinishedCount(String customId);
 
     int getBrokenProcessCount();
+
+    int getActiveCount(String actorId, String taskList);
 }

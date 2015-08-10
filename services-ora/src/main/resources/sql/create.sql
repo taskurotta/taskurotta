@@ -26,7 +26,7 @@ CREATE TABLE TSK_SCHEDULED
   STATUS                NUMBER                    NOT NULL,
   JSON                  VARCHAR2(2000 char)       NOT NULL,
   CREATED               TIMESTAMP,
-  QUEUE_LIMIT           NUMBER,
+  LIMIT                 NUMBER,
   MAX_ERRORS            NUMBER,
   ERR_COUNT             NUMBER,
   LAST_ERR_MESSAGE      VARCHAR2(2000 char),
