@@ -189,4 +189,8 @@
         <property name="notificationManager" ref="notificationManager" />
     </bean>
 
+    <bean class="ru.taskurotta.dropwizard.resources.monitoring.KnowInterruptedTasksCountResource">
+        <property name="interruptedTasksService" ref="interruptedTasksService"/>
+    </bean>
+
 </beans>
