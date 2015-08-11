@@ -25,29 +25,35 @@ public abstract class AbstractInterruptedTasksService implements InterruptedTask
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractInterruptedTasksService.class);
 
-    private ScriptEngine scriptEngine;
+    private String scriptLocation;
     private Invocable invocable;
 
     public AbstractInterruptedTasksService(String scriptLocation, long scriptReloadTimeout) {
-        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
-        ScriptEngine testScriptEngine = scriptEngineManager.getEngineByName("nashorn");
+        this.scriptLocation = scriptLocation;
+
+        reloadScript();
 
         new ScheduledThreadPoolExecutor(1).scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                Path scriptPath = Paths.get(scriptLocation);
-                try {
-                    testScriptEngine.eval(new FileReader(scriptPath.toFile()));
-
-                    scriptEngine = testScriptEngine;
-                    invocable = (Invocable) scriptEngine;
-                } catch (ScriptException e) {
-                    logger.error("Catch exception when evaluate script by location [" + scriptPath + "]", e);
-                } catch (FileNotFoundException e) {
-                    logger.error("Script location [" + scriptLocation + "] not exists or not file", e);
-                }
+                reloadScript();
             }
         }, 0l, scriptReloadTimeout, TimeUnit.MILLISECONDS);
+    }
+
+    private void reloadScript() {
+        ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+        ScriptEngine scriptEngine = scriptEngineManager.getEngineByName("nashorn");
+
+        Path scriptPath = Paths.get(scriptLocation);
+        try {
+            scriptEngine.eval(new FileReader(scriptPath.toFile()));
+            invocable = (Invocable) scriptEngine;
+        } catch (ScriptException e) {
+            logger.error("Catch exception when evaluate script by location [" + scriptPath + "]", e);
+        } catch (FileNotFoundException e) {
+            logger.error("Script location [" + scriptLocation + "] not exists or not file", e);
+        }
     }
 
     @Override

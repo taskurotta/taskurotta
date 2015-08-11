@@ -1,0 +1,3 @@
+function isKnown() {
+    return true;
+}

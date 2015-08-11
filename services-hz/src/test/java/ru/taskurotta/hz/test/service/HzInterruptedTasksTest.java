@@ -34,7 +34,7 @@ public class HzInterruptedTasksTest {
     public void setUp() {
         TestHazelcastInstanceFactory factory = new TestHazelcastInstanceFactory(1);
         hzInstance = factory.newHazelcastInstance();
-        target = new HzInterruptedTasksService(hzInstance, targetMapName);
+        target = new HzInterruptedTasksService(hzInstance, targetMapName, "../scripts/known-interrupted-tasks-detector.js", 1l);
     }
 
     @Test

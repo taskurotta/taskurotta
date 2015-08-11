@@ -98,7 +98,7 @@ public class AbstractTestStub {
         memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
         memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
-        interruptedTasksService = new MemoryInterruptedTasksService();
+        interruptedTasksService = new MemoryInterruptedTasksService("../scripts/known-interrupted-tasks-detector.js", 1l);
         graphDao = new MemoryGraphDao();
         garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
                                                                     1);
