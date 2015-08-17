@@ -306,6 +306,23 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
             }
         });
 
+        $stateProvider.state('subscription', {
+            url: '/subscriptions/:id/card',
+            params: {},
+            views: {
+                'navigation': {
+                    templateUrl: '/views/navigation.html'
+                },
+                '': {
+                    templateUrl: '/views/notifications/subscription.html',
+                    controller: /*@ngInject*/ 'subscriptionCardController'
+                },
+                'footer': {
+                    templateUrl: '/views/footer.html'
+                }
+            }
+        });
+
         $stateProvider.state('subscription_create', {
             url: '/subscription/create',
             params: {},

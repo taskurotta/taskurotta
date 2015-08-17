@@ -16,6 +16,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -54,27 +55,49 @@ public class SubscriptionsResource {
     @GET
     @Path("/{id}")
     public Subscription getSubscription(@PathParam("id") Long id) {
-        return notificationManager.getSubscription(id);
+        Subscription result = notificationManager.getSubscription(id);
+        logger.debug("Subscription got by id[{}] is [{}]", id, result);
+        return result;
     }
 
-    @POST
+    @PUT
     public Status addSubscription(SubscriptionCommand command) {
         logger.debug("addSubscription triggered with params: command[{}]", command);
-        Subscription subscription = asSubscription(command.actorIds, command.emails);
+        Subscription subscription = asSubscription(-1l, command.actorIds, command.emails);
         if (subscription!=null) {
             long result = notificationManager.addSubscription(subscription);
             return new Status(HttpStatus.CREATED_201, String.valueOf(result));
         } else {
-            return new Status(HttpStatus.NOT_FOUND_404, "Missing required params: [emails], [actorIds]");
+            return new Status(HttpStatus.BAD_REQUEST_400, "Missing required params: [emails], [actorIds]");
+        }
+    }
+
+    @POST
+    public Status updateSubscription(SubscriptionCommand sub) {
+        if (sub.id>0) {
+            notificationManager.updateSubscription(asSubscription(sub.id, sub.actorIds, sub.emails), sub.id);
+            return new Status(HttpStatus.OK_200, "");
+        } else {
+            return new Status(HttpStatus.BAD_REQUEST_400, "Missing required param: [id]");
         }
     }
 
     public static class SubscriptionCommand implements Serializable {
+        public long id;
         public String actorIds;
         public String emails;
+
+        @Override
+        public String toString() {
+            return "SubscriptionCommand{" +
+                    "id=" + id +
+                    ", actorIds='" + actorIds + '\'' +
+                    ", emails='" + emails + '\'' +
+                    '}';
+        }
     }
 
-    Subscription asSubscription(String actorIds, String emails) {
+    Subscription asSubscription(long id, String actorIds, String emails) {
         Subscription result = null;
         if (actorIds!=null && emails!=null) {
             result = new Subscription();
@@ -82,6 +105,7 @@ public class SubscriptionsResource {
             result.setTriggersKeys(getAllTriggerKeys());
             result.setEmails(Arrays.asList(emails.split(",\\s*")));
             result.setActorIds(Arrays.asList(actorIds.split(",\\s*")));
+            result.setId(id);
         }
         return result;
     }
@@ -95,13 +119,6 @@ public class SubscriptionsResource {
             }
         }
         return result;
-    }
-
-    @POST
-    @Path("/{id}")
-    public Status updateSubscription(@PathParam("id") Long id, Subscription sub) {
-        notificationManager.updateSubscription(sub, id);
-        return new Status(HttpStatus.OK_200, "");
     }
 
     @DELETE

@@ -32,7 +32,7 @@
                 {{ subscriptionsModel.$startIndex + $index }}
             </td>
             <td>
-                {{ subscription.emails | json }}
+                <a ui-sref="subscription({id:subscription.id})" class="btn-link">{{ subscription.emails | json }}</a>
             </td>
             <td>
                 {{ subscription.actorIds | json }}

@@ -7,12 +7,13 @@ angular.module('notificationsModule', ['coreApp'])
         }
 
         return $resource(restSubscriptionsUrl, {}, {
+                get: {url: restSubscriptionsUrl + ':id', method: 'GET', params: {}},
                 //list
                 query: {url: restSubscriptionsUrl, params: {}, isArray: false},
                 //actions
-                create: {url: restSubscriptionsUrl, method: 'POST', params: {}},
-                update: {url: restSubscriptionsUrl + '/:id', method: 'POST', params: {}},
-                delete: {url: restSubscriptionsUrl + '/:id', method: 'DELETE', params: {}}
+                create: {url: restSubscriptionsUrl, method: 'PUT', params: {}},
+                update: {url: restSubscriptionsUrl + ':id', method: 'POST', params: {}},
+                delete: {url: restSubscriptionsUrl + ':id', method: 'DELETE', params: {}}
             }
         );
     })
@@ -81,6 +82,32 @@ angular.module('notificationsModule', ['coreApp'])
 
         $log.info('subscriptionCardController', $stateParams);
 
+        $scope.doUpdate = $stateParams.id && $stateParams.id>0;
+
+        function asCommaSeparatedString(value) {
+            var result = value;
+            if (angular.isArray(value)) {
+                result = "";
+                for (var i = 0; i<value.length ; i++) {
+                    if (i > 0) {
+                        result = result + ",";
+                    }
+                    result = result + value[i];
+                }
+            }
+            return result;
+        }
+
+        function getCommand() {
+            var result = {
+                id: $scope.subscription.id,
+                emails: asCommaSeparatedString($scope.subscription.emails),
+                actorIds: asCommaSeparatedString($scope.subscription.actorIds)
+            };
+
+            return result;
+        };
+
         //Updates schedules  by polling REST resource
         function loadModel() {
             $log.info('Load model', $stateParams.id);
@@ -111,6 +138,18 @@ angular.module('notificationsModule', ['coreApp'])
                     $state.go('subscriptions', {});
                 }, function error(reason) {
                     coreApp.error('Subscription save error',reason);
+                });
+        };
+
+        $scope.update = function () {
+            var command = getCommand();
+            $log.log("Try to update subscription with id["+$scope.subscription.id+"] with command", command);
+            subscriptionsRest.update(command,
+                function success(value) {
+                    $log.log('subscriptionCardController: subscription update success', value);
+                    $state.go('subscriptions', {});
+                }, function error(reason) {
+                    coreApp.error('Subscription update error', reason);
                 });
         };
 
