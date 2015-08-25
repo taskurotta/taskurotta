@@ -189,4 +189,8 @@
         <property name="notificationManager" ref="notificationManager" />
     </bean>
 
+    <bean id="triggersResource" class="ru.taskurotta.dropwizard.resources.console.notifications.TriggersResource">
+        <property name="notificationManager" ref="notificationManager" />
+    </bean>
+
 </beans>
