@@ -99,7 +99,7 @@ public class AbstractTestStub {
         HazelcastInstance hazelcastInstance = ConfigUtil.newInstanceWithoutMulticast();
 
         taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
-        serviceBundle = new HzServiceBundle(0, taskDao);
+        serviceBundle = new HzServiceBundle(0, taskDao, hazelcastInstance);
         queueService = serviceBundle.getQueueService();
         taskService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();

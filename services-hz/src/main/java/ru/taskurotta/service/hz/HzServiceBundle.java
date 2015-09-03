@@ -34,6 +34,7 @@ import ru.taskurotta.service.storage.TaskService;
 public class HzServiceBundle implements ServiceBundle {
 
     private long pollDelay;
+    private TaskDao taskDao;
     private HazelcastInstance hazelcastInstance;
     private QueueFactory queueFactory;
 
@@ -51,7 +52,7 @@ public class HzServiceBundle implements ServiceBundle {
     public HzServiceBundle(long pollDelay) {
         this.pollDelay = pollDelay;
         this.hazelcastInstance = ConfigUtil.newInstanceWithoutMulticast();
-        TaskDao taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
+        this.taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
 
         this.processService = new HzProcessService(hazelcastInstance, "Process");
         this.taskService = new GeneralTaskService(taskDao, workerTimeoutMilliseconds);
@@ -67,12 +68,9 @@ public class HzServiceBundle implements ServiceBundle {
                 "GarbageCollector", 1, true);
     }
 
-    public HzServiceBundle(long pollDelay, TaskDao taskDao) {
-        this(pollDelay, taskDao, ConfigUtil.newInstanceWithoutMulticast());
-    }
-
     public HzServiceBundle(long pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
         this.pollDelay = pollDelay;
+        this.taskDao = taskDao;
         this.hazelcastInstance = hazelcastInstance;
 
         this.processService = new HzProcessService(hazelcastInstance, "Process");
