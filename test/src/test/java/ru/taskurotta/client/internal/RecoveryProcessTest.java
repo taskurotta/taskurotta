@@ -2,11 +2,10 @@ package ru.taskurotta.client.internal;
 
 import org.junit.Test;
 import ru.taskurotta.core.Task;
+import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.service.dependency.GeneralDependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
-import ru.taskurotta.service.dependency.links.MemoryGraphDao;
-import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.util.ActorUtils;
 
 import java.util.HashMap;
@@ -35,8 +34,8 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertTrue(isTaskInQueue(DECIDER_ACTOR_DEF, startTaskId, processId));
 
         // clean tasks and graph
-        memoryQueueService.simulateDataLoss();// = new MemoryQueueService(0);
-        dependencyService = new GeneralDependencyService(new MemoryGraphDao());
+        queueService = serviceBundle.recreateQueueService();
+        dependencyService = new GeneralDependencyService(serviceBundle.getGraphDao());
         recoveryProcessService.setDependencyService(dependencyService);
 
         // check no tasks in queue
@@ -74,7 +73,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertTrue(isTaskPresent(workerTaskId, processId));
 
         // clean tasks from queues
-        memoryQueueService.simulateDataLoss();
+        queueService = serviceBundle.recreateQueueService();
         //memoryQueueService = new MemoryQueueService(0);
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
@@ -87,7 +86,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
 
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
 
-        memoryQueueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
+        queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
         recoveryProcessService.resurrectProcess(processId);
@@ -116,7 +115,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertTrue(isTaskPresent(workerTaskId, processId));
 
         // clean tasks from queues
-        memoryQueueService.simulateDataLoss();
+        queueService = serviceBundle.recreateQueueService();
 
         // check no tasks in queue
         assertFalse(isTaskInQueue(WORKER_ACTOR_DEF, startTaskId, processId));
@@ -136,7 +135,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
             }
         });
 
-        memoryQueueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
+        queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), null);
 
         // recovery process
         recoveryProcessService.resurrectProcess(processId);

@@ -12,6 +12,7 @@ import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
+import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.queue.QueueService;
@@ -106,6 +107,16 @@ public class HzTaskServer extends GeneralTaskServer {
                  @Override
                  public GarbageCollectorService getGarbageCollectorService() {
                      return garbageCollectorService;
+                 }
+
+                 @Override
+                 public GraphDao getGraphDao() {
+                     return null;
+                 }
+
+                 @Override
+                 public QueueService recreateQueueService() {
+                     return null;
                  }
              }, hzInstance, nodeCustomName, decisionProcessingExecutorService, maxPendingWorkers, maxPendingLimit,
                 sleepOnOverloadMls, timeBeforeDeleteFinishedProcess);

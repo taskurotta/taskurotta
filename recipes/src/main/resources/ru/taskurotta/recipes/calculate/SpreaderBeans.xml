@@ -9,7 +9,7 @@
     <context:property-placeholder/>
     <context:annotation-config />
 
-    <bean id="clientServiceManager" class="ru.taskurotta.client.MockClientServiceManagerMemory">
+    <bean id="clientServiceManager" class="ru.taskurotta.client.MockClientServiceManager">
     </bean>
     
     <bean id="taskCreator" class="ru.taskurotta.recipes.calculate.WorkflowStarter" init-method="startWork">

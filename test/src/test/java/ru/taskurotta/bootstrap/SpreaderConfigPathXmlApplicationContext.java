@@ -9,7 +9,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 import ru.taskurotta.bootstrap.config.SpreaderConfig;
 import ru.taskurotta.client.ClientServiceManager;
-import ru.taskurotta.client.MockClientServiceManagerMemory;
+import ru.taskurotta.client.MockClientServiceManager;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.util.ActorDefinition;
@@ -54,7 +54,7 @@ public class SpreaderConfigPathXmlApplicationContext implements SpreaderConfig {
             }
 
             if (taskSpreaderProvider == null) {
-                ClientServiceManager clientServiceManager = new MockClientServiceManagerMemory();
+                ClientServiceManager clientServiceManager = new MockClientServiceManager();
                 taskSpreaderProvider = clientServiceManager.getTaskSpreaderProvider();
             }
         } catch (BeansException e) {

@@ -1,5 +1,6 @@
 package ru.taskurotta.client.internal;
 
+import com.hazelcast.core.HazelcastInstance;
 import org.junit.Before;
 import ru.taskurotta.annotation.Decider;
 import ru.taskurotta.annotation.Worker;
@@ -9,22 +10,24 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
+import ru.taskurotta.hazelcast.util.ConfigUtil;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
-import ru.taskurotta.service.MemoryServiceBundle;
 import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.GraphDao;
-import ru.taskurotta.service.dependency.links.MemoryGraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
-import ru.taskurotta.service.gc.MemoryGarbageCollectorService;
-import ru.taskurotta.service.queue.MemoryQueueService;
+import ru.taskurotta.service.hz.HzServiceBundle;
+import ru.taskurotta.service.hz.storage.HzTaskDao;
+import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
-import ru.taskurotta.service.storage.*;
+import ru.taskurotta.service.storage.GeneralTaskService;
+import ru.taskurotta.service.storage.InterruptedTasksService;
+import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
 import ru.taskurotta.util.ActorUtils;
@@ -45,8 +48,8 @@ public class AbstractTestStub {
 
     private static final UUID PASS = UUID.randomUUID();
 
-    protected MemoryQueueService memoryQueueService;
-    protected GeneralTaskService memoryStorageService;
+    protected QueueService queueService;
+    protected GeneralTaskService taskService;
     protected DependencyService dependencyService;
     protected RecoveryServiceImpl recoveryProcessService;
     protected InterruptedTasksService interruptedTasksService;
@@ -93,18 +96,19 @@ public class AbstractTestStub {
 
     @Before
     public void setUp() throws Exception {
-        taskDao = new MemoryTaskDao();
-        serviceBundle = new MemoryServiceBundle(0, taskDao);
-        memoryQueueService = (MemoryQueueService) serviceBundle.getQueueService();
-        memoryStorageService = (GeneralTaskService) serviceBundle.getTaskService();
+        HazelcastInstance hazelcastInstance = ConfigUtil.newInstanceWithoutMulticast();
+
+        taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
+        serviceBundle = new HzServiceBundle(0, taskDao);
+        queueService = serviceBundle.getQueueService();
+        taskService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
-        interruptedTasksService = new MemoryInterruptedTasksService();
-        graphDao = new MemoryGraphDao();
-        garbageCollectorService = new MemoryGarbageCollectorService(serviceBundle.getProcessService(), graphDao, taskDao,
-                                                                    1);
+        interruptedTasksService = serviceBundle.getInterruptedTasksService();
+        graphDao = serviceBundle.getGraphDao();
+        garbageCollectorService = serviceBundle.getGarbageCollectorService();
         taskServer = new GeneralTaskServer(serviceBundle, 1000l);
 
-        recoveryProcessService = new RecoveryServiceImpl((GeneralTaskServer) taskServer, memoryQueueService, dependencyService,
+        recoveryProcessService = new RecoveryServiceImpl((GeneralTaskServer) taskServer, queueService, dependencyService,
                 serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService, garbageCollectorService,
                 1l, 1000l, 0l, 1000l);
 
@@ -121,16 +125,16 @@ public class AbstractTestStub {
     }
 
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        return memoryStorageService.isTaskReleased(taskId, processId);
+        return taskService.isTaskReleased(taskId, processId);
     }
 
     public boolean isTaskPresent(UUID taskId, UUID processId) {
-        return memoryStorageService.getTask(taskId, processId) != null;
+        return taskService.getTask(taskId, processId) != null;
     }
 
 
     public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        return memoryQueueService.isTaskInQueue(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList(), taskId, processId);
+        return queueService.isTaskInQueue(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList(), taskId, processId);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {

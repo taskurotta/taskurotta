@@ -12,16 +12,16 @@ import java.util.Collection;
  */
 public interface ConfigService {
 
-    public boolean isActorBlocked(String actorId);
+    boolean isActorBlocked(String actorId);
 
-    public void blockActor(String actorId);
+    void blockActor(String actorId);
 
-    public void unblockActor(String actorId);
+    void unblockActor(String actorId);
 
-    public Collection<ActorPreferences> getAllActorPreferences();
+    Collection<ActorPreferences> getAllActorPreferences();
 
-    public Collection<ExpirationPolicyConfig> getAllExpirationPolicies();
+    Collection<ExpirationPolicyConfig> getAllExpirationPolicies();
 
-    public ActorPreferences getActorPreferences(String actorId);
+    ActorPreferences getActorPreferences(String actorId);
 
 }

@@ -6,7 +6,7 @@ import ru.taskurotta.RuntimeProcessor;
 import ru.taskurotta.RuntimeProvider;
 import ru.taskurotta.client.ClientServiceManager;
 import ru.taskurotta.client.DeciderClientProvider;
-import ru.taskurotta.client.MockClientServiceManagerMemory;
+import ru.taskurotta.client.MockClientServiceManager;
 import ru.taskurotta.client.TaskSpreader;
 import ru.taskurotta.client.TaskSpreaderProvider;
 import ru.taskurotta.core.Task;
@@ -64,7 +64,7 @@ public class InspectorTest {
     }
 
     private TaskSpreader getTaskSpreader() {
-        ClientServiceManager clientServiceManager = new MockClientServiceManagerMemory();
+        ClientServiceManager clientServiceManager = new MockClientServiceManager();
         DeciderClientProvider deciderClientProvider = clientServiceManager.getDeciderClientProvider();
         TestDeciderClient testDecider = deciderClientProvider.getDeciderClient(TestDeciderClient.class);
         testDecider.start(1, 2);

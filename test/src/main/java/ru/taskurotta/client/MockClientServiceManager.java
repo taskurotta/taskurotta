@@ -4,24 +4,23 @@ import ru.taskurotta.client.internal.DeciderClientProviderCommon;
 import ru.taskurotta.client.internal.TaskSpreaderProviderCommon;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.service.MemoryServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
+import ru.taskurotta.service.hz.HzServiceBundle;
 import ru.taskurotta.service.queue.QueueService;
-import ru.taskurotta.service.storage.MemoryTaskDao;
 import ru.taskurotta.service.storage.TaskService;
 
-public class MockClientServiceManagerMemory implements ClientServiceManager {
+public class MockClientServiceManager implements ClientServiceManager {
 
     private TaskServer taskServer;
-    private MemoryServiceBundle memoryServiceBundle;
+    private HzServiceBundle serviceBundle;
 
-    public MockClientServiceManagerMemory() {
+    public MockClientServiceManager() {
         this(60);
     }
 
-    public MockClientServiceManagerMemory(int pollDelay) {
-        memoryServiceBundle = new MemoryServiceBundle(pollDelay, new MemoryTaskDao());
-        taskServer = new GeneralTaskServer(memoryServiceBundle, 0l);
+    public MockClientServiceManager(int pollDelay) {
+        serviceBundle = new HzServiceBundle(pollDelay);
+        taskServer = new GeneralTaskServer(serviceBundle, 0l);
     }
 
     @Override
@@ -35,15 +34,15 @@ public class MockClientServiceManagerMemory implements ClientServiceManager {
     }
 
     public QueueService getQueueService() {
-        return memoryServiceBundle.getQueueService();
+        return serviceBundle.getQueueService();
     }
 
     public TaskService getTaskService() {
-        return memoryServiceBundle.getTaskService();
+        return serviceBundle.getTaskService();
     }
 
     public ConfigService getConfigService() {
-        return memoryServiceBundle.getConfigService();
+        return serviceBundle.getConfigService();
     }
 
 }

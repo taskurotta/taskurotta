@@ -2,6 +2,7 @@ package ru.taskurotta.service;
 
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.dependency.DependencyService;
+import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
@@ -15,17 +16,21 @@ import ru.taskurotta.service.storage.TaskService;
  */
 public interface ServiceBundle {
 
-    public ProcessService getProcessService();
+    ProcessService getProcessService();
 
-    public TaskService getTaskService();
+    TaskService getTaskService();
 
-    public QueueService getQueueService();
+    QueueService getQueueService();
 
-    public DependencyService getDependencyService();
+    DependencyService getDependencyService();
 
-    public ConfigService getConfigService();
+    ConfigService getConfigService();
 
-    public InterruptedTasksService getInterruptedTasksService();
+    GraphDao getGraphDao();
 
-    public GarbageCollectorService getGarbageCollectorService();
+    InterruptedTasksService getInterruptedTasksService();
+
+    GarbageCollectorService getGarbageCollectorService();
+
+    QueueService recreateQueueService();
 }
