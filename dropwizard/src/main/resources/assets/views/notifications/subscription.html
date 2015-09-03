@@ -7,40 +7,73 @@
 <page-message></page-message>
 
 <div class="well">
-    <h5>Subscription properties: </h5>
-    <form class="form-horizontal form-bordered form-small" >
-        <table class="table table-condensed table-noborder">
-            <tr>
-                <td style="vertical-align: top; width: 430px;">
-                    <div class="control-group">
-                        <label class="control-label" for="emails">Emails:</label>
-                        <div class="controls">
-                            <input id="emails" class="input-xlarge" type="text" ng-model="subscription.emails" required />
-                            <i icon-info="Specify the comma separated email list"
-                               model="subscription.emails" remove="subscription.emails = null"></i>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="actor_ids">Actor IDs:</label>
-                        <div class="controls">
-                            <input id="actor_ids" class="input-xlarge" type="text" ng-model="subscription.actorIds" required />
-                            <i icon-info="Specify actor ids prefixes to track"
-                               model="subscription.actorIds" remove="subscription.actorIds = null"></i>
-                        </div>
-                    </div>
-                </td>
-                <td style="vertical-align: top;">
-                </td>
-            </tr>
 
-            <tr>
-                <td>
-                    <a ng-if="!doUpdate" class="btn" ng-click="save()">Save subscription</a>
-                    <a ng-if="doUpdate" class="btn" ng-click="update()">Update subscription</a>
-                </td>
-                <td>
-                </td>
-            </tr>
-        </table>
+    <div class="well">
+        <b>Notifiy when:</b>
+        <span ng-if="!(events.length > 0)" class="alert alert-error">
+            No available notification events found
+        </span>
+        <div class="width: 100%;" ng-repeat="event in events">
+            <label><input type="checkbox" ng-model="event.checked" /> {{ event.type | triggerTypeName}} </label>
+        </div>
+    </div>
 
+    <table class="table table-bordered">
+        <tr>
+            <td style="width: 50%">
+                <button class="btn btn-small" ng-click="addEmail()" popover="Add email." popover-trigger="mouseenter">
+                    <i class="icon-plus-sign"></i>
+                </button>
+                <b>Emails:</b>
+                <i class="icon-question-sign" popover="Specify email addresses for notifications" popover-trigger="mouseenter" ></i>
+            </td>
+            <td>
+                <button class="btn btn-small" ng-click="addActorId()" popover="Add actorId prefix." popover-trigger="mouseenter">
+                    <i class="icon-plus-sign"></i>
+                </button>
+                <b>ActorIds:</b>
+                <i class="icon-question-sign" popover="Specify actor ids prefixes to track" popover-trigger="mouseenter"></i>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="control-group">
+                    <span ng-if="!(subscription.emails && subscription.emails.length > 0)" class="alert">
+                        No emails specified
+                        <button class="btn btn-small" ng-click="addEmail()" popover="Add email." popover-trigger="mouseenter">
+                            <i class="icon-plus-sign"></i>
+                        </button>
+                    </span>
+                    <div class="controls" ng-repeat="email in subscription.emails" >
+                        {{ $index + 1 }}
+                        <input class="input-xlarge" type="text" ng-model="email.value" required />
+                        <button class="btn btn-small" ng-click="removeEmail($index)" popover="Remove email" popover-trigger="mouseenter">
+                            <i class="icon-minus-sign"></i>
+                        </button>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="control-group">
+                    <span ng-if="!(subscription.actorIds && subscription.actorIds.length > 0)" class="alert">
+                        No actorId prefixes specified
+                        <button class="btn btn-small" ng-click="addActorId()" popover="Add actorId prefix." popover-trigger="mouseenter">
+                            <i class="icon-plus-sign"></i>
+                        </button>
+                    </span>
+                    <div class="controls" ng-repeat="actorId in subscription.actorIds">
+                        {{ $index + 1 }}
+                        <input class="input-xlarge" type="text" ng-model="actorId.value" required />
+                        <button class="btn btn-small" ng-click="removeActorId($index)" popover="Remove actorId" popover-trigger="mouseenter">
+                            <i class="icon-minus-sign"></i>
+                        </button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="well">
+        <a ng-if="!doUpdate" class="btn" ng-click="save()" ng-disabled="!isValidForm()">Save subscription</a>
+        <a ng-if="doUpdate" class="btn" ng-click="update()" ng-disabled="!isValidForm()">Update subscription</a>
+    </div>
 </div>
