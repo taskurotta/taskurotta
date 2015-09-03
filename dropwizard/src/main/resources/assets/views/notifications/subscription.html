@@ -1,4 +1,4 @@
-<div page-header="Create/edit subscription" ng-dblclick="$debug = !$debug">
+<div page-header="{{ doUpdate? 'Update' : 'Create'}} subscription" ng-dblclick="$debug = !$debug">
     <div ng-if="$debug">
         <h6>{{ subscription | json }}</h6>
     </div>
@@ -35,7 +35,8 @@
 
             <tr>
                 <td>
-                    <a class="btn" ng-click="save()">Save subscription</a>
+                    <a ng-if="!doUpdate" class="btn" ng-click="save()">Save subscription</a>
+                    <a ng-if="doUpdate" class="btn" ng-click="update()">Update subscription</a>
                 </td>
                 <td>
                 </td>

@@ -53,7 +53,7 @@ public class InterruptedTasksListResource {
     @GET
     @Path("/group")
     public Response getProcessesGroup(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
-                                      @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
+                                      @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("errorClassName") Optional<String> exceptionOpt,
                                       @QueryParam("group") Optional<String> groupOpt) {
         long startTime = System.currentTimeMillis();
         GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
@@ -66,7 +66,7 @@ public class InterruptedTasksListResource {
     @GET
     @Path("/list")
     public Response getInterruptedTasksList(@QueryParam("dateFrom") Optional<String> dateFromOpt, @QueryParam("dateTo") Optional<String> dateToOpt,
-                                     @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("exception") Optional<String> exceptionOpt,
+                                     @QueryParam("starterId") Optional<String> starterIdOpt, @QueryParam("actorId") Optional<String> actorIdOpt, @QueryParam("errorClassName") Optional<String> exceptionOpt,
                                      @QueryParam("group") Optional<String> groupOpt) {
         GroupCommand command = convertToCommand(starterIdOpt.or(""), actorIdOpt.or(""), exceptionOpt.or(""), dateFromOpt.or(""), dateToOpt.or(""), groupOpt.or(GroupCommand.GROUP_STARTER));
         Collection<InterruptedTask> tasks = interruptedTasksService.find(command);

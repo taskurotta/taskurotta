@@ -105,7 +105,7 @@ public class SchedulerResource implements JobConstants {
             result.setCron(jobVO.getCron());
             result.setName(jobVO.getName());
             result.setMaxErrors(jobVO.getMaxErrors());
-            result.setQueueLimit(jobVO.getQueueLimit());
+            result.setLimit(jobVO.getLimit());
 
             if (jobVO.getTask() != null) {
                 result.setStatus(jobVO.getStatus());
@@ -183,7 +183,7 @@ public class SchedulerResource implements JobConstants {
         JobVO job = new JobVO();
         job.setId(command.getId());
         job.setCron(command.getCron());
-        job.setQueueLimit(command.getQueueLimit());
+        job.setLimit(command.getLimit());
         job.setMaxErrors(command.getMaxErrors());
         job.setName(command.getName());
         job.setTask(TaskContainerUtils.createTask(command, -1));// for scheduled task start time must be -1

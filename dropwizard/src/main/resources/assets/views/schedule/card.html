@@ -39,13 +39,12 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="job_cron" for="job_queueLimit">Queue limit:</label>
+                        <label class="control-label" for="job_limit">Limit:</label>
                         <div class="controls">
-                            <input id="job_queueLimit" type="number" min="0" class="input-mini"
-                                   ng-model="command.queueLimit" />
-                            <!--<span ng-if="job.queueLimit<=0" class="muted"><small>disabled</small></span>-->
-                            <i icon-info="Max tasks count per actor queue. If queue size exceeds that value on current scheduler iteration, scheduler would just skip until queue is ready. Use negative or zero value to disable this option."
-                                    model="command.queueLimit" remove="command.queueLimit = 0"></i>
+                            <input id="job_limit" type="number" min="-1" class="input-mini"
+                                   ng-model="command.limit" />
+                            <i icon-info="Max active processes started by this task. If active processes count exceeds that value scheduler would just skip iteration. Use negative or zero value to disable this option."
+                               model="command.limit" remove="command.limit = 0"></i>
                         </div>
                     </div>
                     <div class="control-group">
@@ -53,8 +52,6 @@
                         <div class="controls">
                             <input id="job_maxErrors" type="number" min="-1" class="input-mini"
                                    ng-model="command.maxErrors" />
-                            <!--<span ng-if="job.maxErrors<=0" class="muted"><small>disabled</small></span>-->
-
                             <i icon-info="The job would stop after exceeding this number of attempts to create task interrupted due to error. Note that it doesn't concern task execution on actor itself. Use negative or zero value to disable this option."
                                model="command.maxErrors" remove="command.maxErrors = 0"></i>
                         </div>

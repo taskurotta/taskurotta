@@ -13,7 +13,8 @@ public interface JobConstants {
     String DATA_KEY_JOB = "job";
     String DATA_KEY_JOB_MANAGER = "jobManager";
     String DATA_KEY_TASK_SERVER = "taskServer";
-    String DATA_KEY_QUEUE_INFO_RETRIEVER = "queueInfoRetriever";
+//    String DATA_KEY_QUEUE_INFO_RETRIEVER = "queueInfoRetriever";
+    String DATA_KEY_PROCESS_INFO_RETRIEVER = "processInfoRetriever";
 
     int DEFAULT_MAX_CONSEQUENTIAL_ERRORS = 3;
     int DEFAULT_NUMBER_OF_ATTEMPTS = 5;
