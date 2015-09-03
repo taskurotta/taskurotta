@@ -47,25 +47,12 @@ public class HzServiceBundle implements ServiceBundle {
     private InterruptedTasksService interruptedTasksService;
     private GarbageCollectorService garbageCollectorService;
 
-    private long workerTimeoutMilliseconds = 30000l;
-
     public HzServiceBundle(long pollDelay) {
         this.pollDelay = pollDelay;
         this.hazelcastInstance = ConfigUtil.newInstanceWithoutMulticast();
         this.taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
 
-        this.processService = new HzProcessService(hazelcastInstance, "Process");
-        this.taskService = new GeneralTaskService(taskDao, workerTimeoutMilliseconds);
-        StorageFactory storageFactory = new DefaultStorageFactory(hazelcastInstance, "storageName", 100l);
-        this.queueFactory = new DefaultQueueFactory(hazelcastInstance, storageFactory);
-        this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay);
-
-        this.graphDao = new HzGraphDao(hazelcastInstance);
-        this.dependencyService = new GeneralDependencyService(graphDao);
-        this.configService = new HzConfigService(hazelcastInstance, "actorPreferencesMap");
-        this.interruptedTasksService = new HzInterruptedTasksService(hazelcastInstance, "BrokenProcess");
-        this.garbageCollectorService = new HzGarbageCollectorService(processService, graphDao, taskDao, queueFactory,
-                "GarbageCollector", 1, true);
+        init();
     }
 
     public HzServiceBundle(long pollDelay, TaskDao taskDao, HazelcastInstance hazelcastInstance) {
@@ -73,11 +60,15 @@ public class HzServiceBundle implements ServiceBundle {
         this.taskDao = taskDao;
         this.hazelcastInstance = hazelcastInstance;
 
+        init();
+    }
+
+    private void init() {
         this.processService = new HzProcessService(hazelcastInstance, "Process");
-        this.taskService = new GeneralTaskService(taskDao, workerTimeoutMilliseconds);
+        this.taskService = new GeneralTaskService(taskDao, 30000l);
         StorageFactory storageFactory = new DefaultStorageFactory(hazelcastInstance, "storageName", 100l);
         this.queueFactory = new DefaultQueueFactory(hazelcastInstance, storageFactory);
-        this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay);
+        this.queueService = recreateQueueService();
 
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyService = new GeneralDependencyService(graphDao);
