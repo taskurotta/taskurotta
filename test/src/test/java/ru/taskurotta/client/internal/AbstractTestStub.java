@@ -10,7 +10,6 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.service.hz.HzInstanceFactory;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
@@ -21,6 +20,7 @@ import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
+import ru.taskurotta.service.hz.HzInstanceFactory;
 import ru.taskurotta.service.hz.HzServiceBundle;
 import ru.taskurotta.service.hz.storage.HzTaskDao;
 import ru.taskurotta.service.queue.QueueService;
@@ -30,7 +30,6 @@ import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
-import ru.taskurotta.util.ActorUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -64,11 +63,11 @@ public class AbstractTestStub {
     protected ObjectFactory objectFactory;
 
     @Decider(name = "testDecider")
-    protected static interface TestDecider {
+    protected interface TestDecider {
     }
 
     @Worker(name = "testWorker")
-    protected static interface TestWorker {
+    protected interface TestWorker {
     }
 
     protected static final String DECIDER_NAME;
@@ -96,11 +95,11 @@ public class AbstractTestStub {
 
     @Before
     public void setUp() throws Exception {
-        HazelcastInstance hazelcastInstance = HzInstanceFactory.createHzInstanceForTest();;
+        HazelcastInstance hazelcastInstance = HzInstanceFactory.createHzInstanceForTest();
 
         taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
         serviceBundle = new HzServiceBundle(0, taskDao, hazelcastInstance);
-        queueService = serviceBundle.getQueueService();
+        this.queueService = serviceBundle.getQueueService();
         taskService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
         interruptedTasksService = serviceBundle.getInterruptedTasksService();
@@ -109,8 +108,8 @@ public class AbstractTestStub {
         taskServer = new GeneralTaskServer(serviceBundle, 1000l);
 
         recoveryProcessService = new RecoveryServiceImpl((GeneralTaskServer) taskServer, queueService, dependencyService,
-                serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService,
-                garbageCollectorService, 1l, 1000l, 0l, 1000l);
+                serviceBundle.getProcessService(), taskService, taskDao, graphDao, interruptedTasksService,
+                garbageCollectorService, 1l, 60000l, 0l, 1000l);
 
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
         objectFactory = new ObjectFactory();
@@ -132,15 +131,9 @@ public class AbstractTestStub {
         return taskService.getTask(taskId, processId) != null;
     }
 
-
-    public boolean isTaskInQueue(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
-        return queueService.isTaskInQueue(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList(), taskId, processId);
-    }
-
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, startTime, 0, null, null);
-        return task;
+        return TestTasks.newInstance(id, processId, taskTarget, startTime, 0, null, null);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName) {
@@ -149,20 +142,17 @@ public class AbstractTestStub {
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, Object... args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args, null);
-        return task;
+        return TestTasks.newInstance(id, processId, taskTarget, args, null);
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, String[] failTypes, Object[] args, TaskOptions taskOptions) {
         TaskTarget taskTarget = new TaskTargetImpl(type, DECIDER_NAME, DECIDER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args, taskOptions, failTypes);
-        return task;
+        return TestTasks.newInstance(id, processId, taskTarget, args, taskOptions, failTypes);
     }
 
     public static Task workerTask(UUID id, TaskType type, String methodName, Object[] args) {
         TaskTarget taskTarget = new TaskTargetImpl(type, WORKER_NAME, WORKER_VERSION, methodName);
-        Task task = TestTasks.newInstance(id, processId, taskTarget, args);
-        return task;
+        return TestTasks.newInstance(id, processId, taskTarget, args);
     }
 
     public static Promise promise(Task task) {
