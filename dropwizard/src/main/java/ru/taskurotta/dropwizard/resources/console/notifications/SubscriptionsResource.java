@@ -63,7 +63,7 @@ public class SubscriptionsResource {
     @PUT
     public Status addSubscription(SubscriptionCommand command) {
         logger.debug("addSubscription triggered with params: command[{}]", command);
-        Subscription subscription = asSubscription(-1l, command.actorIds, command.emails);
+        Subscription subscription = asSubscription(-1l, command.actorIds, command.emails, command.triggersKeys);
         if (subscription!=null) {
             long result = notificationManager.addSubscription(subscription);
             return new Status(HttpStatus.CREATED_201, String.valueOf(result));
@@ -75,7 +75,7 @@ public class SubscriptionsResource {
     @POST
     public Status updateSubscription(SubscriptionCommand sub) {
         if (sub.id>0) {
-            notificationManager.updateSubscription(asSubscription(sub.id, sub.actorIds, sub.emails), sub.id);
+            notificationManager.updateSubscription(asSubscription(sub.id, sub.actorIds, sub.emails, sub.triggersKeys), sub.id);
             return new Status(HttpStatus.OK_200, "");
         } else {
             return new Status(HttpStatus.BAD_REQUEST_400, "Missing required param: [id]");
@@ -86,6 +86,7 @@ public class SubscriptionsResource {
         public long id;
         public String actorIds;
         public String emails;
+        public List<Long> triggersKeys;
 
         @Override
         public String toString() {
@@ -93,16 +94,17 @@ public class SubscriptionsResource {
                     "id=" + id +
                     ", actorIds='" + actorIds + '\'' +
                     ", emails='" + emails + '\'' +
+                    ", triggersKeys=" + triggersKeys +
                     '}';
         }
     }
 
-    Subscription asSubscription(long id, String actorIds, String emails) {
+    Subscription asSubscription(long id, String actorIds, String emails, List<Long> triggerKeys) {
         Subscription result = null;
         if (actorIds!=null && emails!=null) {
             result = new Subscription();
             result.setChangeDate(new Date());
-            result.setTriggersKeys(getAllTriggerKeys());
+            result.setTriggersKeys(triggerKeys);
             result.setEmails(Arrays.asList(emails.split(",\\s*")));
             result.setActorIds(Arrays.asList(actorIds.split(",\\s*")));
             result.setId(id);
@@ -110,16 +112,16 @@ public class SubscriptionsResource {
         return result;
     }
 
-    List<Long> getAllTriggerKeys() {
-        List<Long> result = new ArrayList<>();
-        Collection<NotificationTrigger> triggers = notificationManager.listTriggers();
-        if (triggers!=null && !triggers.isEmpty()) {
-            for (NotificationTrigger t : triggers) {
-                result.add(t.getId());
-            }
-        }
-        return result;
-    }
+//    List<Long> getAllTriggerKeys() {
+//        List<Long> result = new ArrayList<>();
+//        Collection<NotificationTrigger> triggers = notificationManager.listTriggers();
+//        if (triggers!=null && !triggers.isEmpty()) {
+//            for (NotificationTrigger t : triggers) {
+//                result.add(t.getId());
+//            }
+//        }
+//        return result;
+//    }
 
     @DELETE
     @Path("/{id}")

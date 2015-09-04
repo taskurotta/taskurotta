@@ -343,3 +343,12 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
         $urlRouterProvider.otherwise('/home');
     });
 
+if (!String.prototype.trim) {
+    (function() {
+        // Make sure we trim BOM and NBSP
+        var rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+        String.prototype.trim = function() {
+            return this.replace(rtrim, '');
+        };
+    })();
+}
