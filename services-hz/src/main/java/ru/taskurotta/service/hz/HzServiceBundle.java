@@ -1,6 +1,7 @@
 package ru.taskurotta.service.hz;
 
 import com.hazelcast.core.HazelcastInstance;
+import ru.taskurotta.hazelcast.queue.CachedQueue;
 import ru.taskurotta.hazelcast.queue.delay.DefaultQueueFactory;
 import ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory;
 import ru.taskurotta.hazelcast.queue.delay.QueueFactory;
@@ -24,6 +25,9 @@ import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.service.storage.TaskService;
+import ru.taskurotta.util.ActorUtils;
+
+import java.util.Collection;
 
 /**
  * User: romario
@@ -67,8 +71,7 @@ public class HzServiceBundle implements ServiceBundle {
         this.taskService = new GeneralTaskService(taskDao, 30000l);
         StorageFactory storageFactory = new DefaultStorageFactory(hazelcastInstance, "storageName", 100l);
         this.queueFactory = new DefaultQueueFactory(hazelcastInstance, storageFactory);
-        this.queueService = recreateQueueService();
-
+        this.queueService = newQueueService();
         this.graphDao = new HzGraphDao(hazelcastInstance);
         this.dependencyService = new GeneralDependencyService(graphDao);
         this.configService = new HzConfigService(hazelcastInstance, "actorPreferencesMap");
@@ -118,8 +121,25 @@ public class HzServiceBundle implements ServiceBundle {
     }
 
     @Override
-    public QueueService recreateQueueService() {
-        this.queueService = new HzQueueService(queueFactory, hazelcastInstance, "q:", 5000, pollDelay);
+    public QueueService newQueueService() {
+        String queueNamePrefix = "q:";
+        if (queueService != null) {
+            String cachedQueueClassName = CachedQueue.class.getName();
+            Collection<String> queueNames = queueService.getQueueNames();
+            for (String queueName : queueNames) {
+                String qName = ActorUtils.toPrefixed(queueName, queueNamePrefix);
+                hazelcastInstance.getDistributedObject(cachedQueueClassName, qName).destroy();
+            }
+        }
+
+        this.queueService = new HzQueueService(queueFactory, hazelcastInstance, queueNamePrefix, 5000, pollDelay);
         return queueService;
+    }
+
+    @Override
+    public GraphDao newGraphDao() {
+        hazelcastInstance.getMap(HzGraphDao.DEFAULT_GRAPHS_MAP_NAME).destroy();
+        this.graphDao = new HzGraphDao(hazelcastInstance);
+        return graphDao;
     }
 }
