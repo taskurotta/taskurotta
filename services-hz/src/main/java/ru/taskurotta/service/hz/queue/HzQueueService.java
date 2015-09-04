@@ -269,11 +269,6 @@ public class HzQueueService implements QueueService, QueueInfoRetriever {
     }
 
     @Override
-    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
-        throw new UnsupportedOperationException("Only for all-in-memory backend");
-    }
-
-    @Override
     public String createQueueName(String actorId, String taskList) {
         return TransportUtils.createQueueName(actorId, taskList, queueNamePrefix);
     }

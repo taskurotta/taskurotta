@@ -44,11 +44,6 @@ public class MetricsQueueService implements QueueService {
     }
 
     @Override
-    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
-        return queueService.isTaskInQueue(actorId, taskList, taskId, processId);
-    }
-
-    @Override
     public String createQueueName(String actorId, String taskList) {
         return queueService.createQueueName(actorId, taskList);
     }

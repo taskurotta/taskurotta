@@ -25,11 +25,6 @@ public class ProxyQueueService implements QueueService {
     }
 
     @Override
-    public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
-        return target.isTaskInQueue(actorId, taskList, taskId, processId);
-    }
-
-    @Override
     public String createQueueName(String actorId, String taskList) {
         return target.createQueueName(actorId, taskList);
     }

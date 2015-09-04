@@ -237,11 +237,6 @@ public class MockServiceBundle implements ServiceBundle {
             }
 
             @Override
-            public boolean isTaskInQueue(String actorId, String taskList, UUID taskId, UUID processId) {
-                return false;
-            }
-
-            @Override
             public String createQueueName(String actorId, String taskList) {
                 return TransportUtils.createQueueName(actorId, taskList);
             }
@@ -324,6 +319,11 @@ public class MockServiceBundle implements ServiceBundle {
     }
 
     @Override
+    public GraphDao getGraphDao() {
+        return null;
+    }
+
+    @Override
     public InterruptedTasksService getInterruptedTasksService() {
         return new InterruptedTasksService() {
             @Override
@@ -393,5 +393,15 @@ public class MockServiceBundle implements ServiceBundle {
                 return 0;
             }
         };
+    }
+
+    @Override
+    public QueueService newQueueService() {
+        return null;
+    }
+
+    @Override
+    public GraphDao newGraphDao() {
+        return null;
     }
 }
