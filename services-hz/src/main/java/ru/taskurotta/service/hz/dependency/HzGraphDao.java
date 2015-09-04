@@ -22,12 +22,14 @@ public class HzGraphDao implements GraphDao {
 
     protected IMap<UUID, Graph> graphs;
 
+    public static final String DEFAULT_GRAPHS_MAP_NAME = "graphsMapName";
+
     public HzGraphDao(HazelcastInstance hzInstance, String graphsMapName) {
         this.graphs = hzInstance.getMap(graphsMapName);
     }
 
     public HzGraphDao(HazelcastInstance hzInstance) {
-        this(hzInstance, "graphsMapName");
+        this(hzInstance, DEFAULT_GRAPHS_MAP_NAME);
     }
 
 
