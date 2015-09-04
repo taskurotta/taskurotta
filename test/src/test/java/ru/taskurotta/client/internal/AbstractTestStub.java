@@ -10,7 +10,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.hazelcast.util.ConfigUtil;
+import ru.taskurotta.hazelcast.util.HzInstanceFactory;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
@@ -96,7 +96,7 @@ public class AbstractTestStub {
 
     @Before
     public void setUp() throws Exception {
-        HazelcastInstance hazelcastInstance = ConfigUtil.newInstanceWithoutMulticast();
+        HazelcastInstance hazelcastInstance = HzInstanceFactory.createHzInstanceForTest();;
 
         taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
         serviceBundle = new HzServiceBundle(0, taskDao, hazelcastInstance);
