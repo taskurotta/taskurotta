@@ -10,7 +10,7 @@ import ru.taskurotta.core.Task;
 import ru.taskurotta.core.TaskDecision;
 import ru.taskurotta.core.TaskOptions;
 import ru.taskurotta.core.TaskTarget;
-import ru.taskurotta.hazelcast.util.HzInstanceFactory;
+import ru.taskurotta.service.hz.HzInstanceFactory;
 import ru.taskurotta.internal.core.TaskDecisionImpl;
 import ru.taskurotta.internal.core.TaskTargetImpl;
 import ru.taskurotta.internal.core.TaskType;
@@ -109,8 +109,8 @@ public class AbstractTestStub {
         taskServer = new GeneralTaskServer(serviceBundle, 1000l);
 
         recoveryProcessService = new RecoveryServiceImpl((GeneralTaskServer) taskServer, queueService, dependencyService,
-                serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService, garbageCollectorService,
-                1l, 1000l, 0l, 1000l);
+                serviceBundle.getProcessService(), serviceBundle.getTaskService(), taskDao, graphDao, interruptedTasksService,
+                garbageCollectorService, 1l, 1000l, 0l, 1000l);
 
         taskSpreaderProvider = new TaskSpreaderProviderCommon(taskServer);
         objectFactory = new ObjectFactory();

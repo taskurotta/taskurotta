@@ -43,7 +43,8 @@ public class DelayedTaskTest extends AbstractTestStub {
 
         // create B
         UUID taskBId = UUID.randomUUID();
-        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_START, "startB", System.currentTimeMillis() + 3000L);
+        long timeout = 3000l;
+        Task deciderTaskB = deciderTask(taskBId, TaskType.DECIDER_START, "startB", System.currentTimeMillis() + timeout);
 
         assertTrue(deciderTaskB.getStartTime() != 0L);
 
@@ -53,7 +54,7 @@ public class DelayedTaskTest extends AbstractTestStub {
         Task taskBFromQueue = deciderTaskSpreader.poll();
         assertNull(taskBFromQueue);
 
-        Thread.sleep(3000L);
+        Thread.sleep((long) (timeout * 1.5));
 
         taskBFromQueue = deciderTaskSpreader.poll();
 
