@@ -660,4 +660,8 @@ public class RecoveryServiceImpl implements RecoveryService {
     public void setInterruptedTasksService(InterruptedTasksService interruptedTasksService) {
         this.interruptedTasksService = interruptedTasksService;
     }
+
+    public void setQueueService(QueueService queueService) {
+        this.queueService = queueService;
+    }
 }
