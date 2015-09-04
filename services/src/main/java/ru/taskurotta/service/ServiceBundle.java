@@ -32,5 +32,7 @@ public interface ServiceBundle {
 
     GarbageCollectorService getGarbageCollectorService();
 
-    QueueService recreateQueueService();
+    QueueService newQueueService();
+
+    GraphDao newGraphDao();
 }
