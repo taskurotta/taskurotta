@@ -1,12 +1,13 @@
 package ru.taskurotta.service.hz;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.SerializationConfig;
-import com.hazelcast.config.SerializerConfig;
+import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.instance.HazelcastInstanceFactory;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
-import ru.taskurotta.hazelcast.util.ConfigUtil;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * User: stukushin
@@ -17,14 +18,14 @@ import ru.taskurotta.hazelcast.util.ConfigUtil;
 public class HzInstanceFactory {
 
     public static HazelcastInstance createHzInstanceForTest() {
-        Config config = ConfigUtil.createConfigAndDisableMulticast();
+        Config config;
+        try (InputStream inputStream = HzInstanceFactory.class.getClassLoader().getResourceAsStream("spring/hz-test.xml")) {
+            config = new XmlConfigBuilder(inputStream).build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         config.setInstanceName("testInstance");
         CachedQueueServiceConfig.registerServiceConfig(config);
-
-        SerializationConfig serializationConfig = new SerializationConfig();
-        SerializerConfig serializerConfig = new SerializerConfig();
-        serializerConfig.setTypeClass(TaskKey.class)
-        serializationConfig.setSerializerConfigs()
 
         return HazelcastInstanceFactory.getOrCreateHazelcastInstance(config);
     }
