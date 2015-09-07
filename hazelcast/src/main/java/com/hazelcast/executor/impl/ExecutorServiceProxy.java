@@ -205,7 +205,9 @@ public class ExecutorServiceProxy
 
         CallableTaskOperation op = new CallableTaskOperation(name, uuid, callableData);
         ICompletableFuture future = invoke(partitionId, op);
+        // patch
         boolean sync = false; //checkSync();
+        // /patch
         if (sync) {
             try {
                 future.get();
@@ -260,9 +262,11 @@ public class ExecutorServiceProxy
      * be removed.
      */
     private boolean checkSync() {
+        // patch
         if (true) {
             return false;
         }
+        // /patch
         boolean sync = false;
         long last = lastSubmitTime;
         long now = Clock.currentTimeMillis();
@@ -305,7 +309,9 @@ public class ExecutorServiceProxy
         String uuid = buildRandomUuidString();
         Address target = ((MemberImpl) member).getAddress();
 
+        // patch
         boolean sync = false; //checkSync();
+        // /patch
         MemberCallableTaskOperation op = new MemberCallableTaskOperation(name, uuid, taskData);
         InternalCompletableFuture future = nodeEngine.getOperationService()
                 .invokeOnTarget(DistributedExecutorService.SERVICE_NAME, op, target);
