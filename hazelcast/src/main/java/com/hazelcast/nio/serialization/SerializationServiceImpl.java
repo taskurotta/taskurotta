@@ -487,6 +487,7 @@ public class SerializationServiceImpl implements SerializationService {
         return s;
     }
 
+    // patch
     protected static final Logger logger = LoggerFactory.getLogger(SerializationServiceImpl.class);
     private ConcurrentHashMap<Class, SerializerAdapter> serializersCache = new ConcurrentHashMap<>();
 
@@ -509,6 +510,7 @@ public class SerializationServiceImpl implements SerializationService {
     }
 
     public SerializerAdapter serializerForInternal(final Class type) {
+    // /patch
         if (DataSerializable.class.isAssignableFrom(type)) {
             return dataSerializerAdapter;
         } else if (Portable.class.isAssignableFrom(type)) {
@@ -526,7 +528,9 @@ public class SerializationServiceImpl implements SerializationService {
     protected final SerializerAdapter lookupSerializer(Class type) {
         SerializerAdapter serializer = typeMap.get(type);
         if (serializer == null) {
+            // patch
             logger.error("Can't find serializer for [{}]", type);
+            // /patch
 
             // look for super classes
             Class typeSuperclass = type.getSuperclass();
