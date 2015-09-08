@@ -395,13 +395,4 @@ public class MockServiceBundle implements ServiceBundle {
         };
     }
 
-    @Override
-    public QueueService newQueueService() {
-        return null;
-    }
-
-    @Override
-    public GraphDao newGraphDao() {
-        return null;
-    }
 }

@@ -3,7 +3,6 @@ package ru.taskurotta.client.internal;
 import org.junit.Test;
 import ru.taskurotta.core.Task;
 import ru.taskurotta.internal.core.TaskType;
-import ru.taskurotta.service.dependency.GeneralDependencyService;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.util.ActorUtils;
@@ -35,8 +34,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
 
         // clean tasks and graph
         queueService = serviceBundle.newQueueService();
-        dependencyService = new GeneralDependencyService(serviceBundle.newGraphDao());
-        recoveryProcessService.setDependencyService(dependencyService);
+        graphDao.deleteGraph(processId);
 
         // check no tasks in queue
         assertNull(queueService.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), DECIDER_ACTOR_DEF.getTaskList()));

@@ -120,7 +120,6 @@ public class HzServiceBundle implements ServiceBundle {
         return garbageCollectorService;
     }
 
-    @Override
     public QueueService newQueueService() {
         String queueNamePrefix = "q:";
         if (queueService != null) {
@@ -136,10 +135,4 @@ public class HzServiceBundle implements ServiceBundle {
         return queueService;
     }
 
-    @Override
-    public GraphDao newGraphDao() {
-        hazelcastInstance.getMap(HzGraphDao.DEFAULT_GRAPHS_MAP_NAME).destroy();
-        this.graphDao = new HzGraphDao(hazelcastInstance);
-        return graphDao;
-    }
 }

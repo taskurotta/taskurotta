@@ -16,7 +16,6 @@ import ru.taskurotta.internal.core.TaskType;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.server.TaskServer;
 import ru.taskurotta.server.json.ObjectFactory;
-import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.dependency.DependencyService;
 import ru.taskurotta.service.dependency.links.GraphDao;
 import ru.taskurotta.service.gc.GarbageCollectorService;
@@ -52,7 +51,7 @@ public class AbstractTestStub {
     protected DependencyService dependencyService;
     protected RecoveryServiceImpl recoveryProcessService;
     protected InterruptedTasksService interruptedTasksService;
-    protected ServiceBundle serviceBundle;
+    protected HzServiceBundle serviceBundle;
     protected GarbageCollectorService garbageCollectorService;
     protected GraphDao graphDao;
 
@@ -99,7 +98,7 @@ public class AbstractTestStub {
 
         taskDao = new HzTaskDao(hazelcastInstance, "Task", "TaskDecision");
         serviceBundle = new HzServiceBundle(0, taskDao, hazelcastInstance);
-        this.queueService = serviceBundle.getQueueService();
+        queueService = serviceBundle.getQueueService();
         taskService = (GeneralTaskService) serviceBundle.getTaskService();
         dependencyService = serviceBundle.getDependencyService();
         interruptedTasksService = serviceBundle.getInterruptedTasksService();

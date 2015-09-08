@@ -114,15 +114,6 @@ public class HzTaskServer extends GeneralTaskServer {
                      return null;
                  }
 
-                 @Override
-                 public QueueService newQueueService() {
-                     return null;
-                 }
-
-                 @Override
-                 public GraphDao newGraphDao() {
-                     return null;
-                 }
              }, hzInstance, nodeCustomName, decisionProcessingExecutorService, maxPendingWorkers, maxPendingLimit,
                 sleepOnOverloadMls, timeBeforeDeleteFinishedProcess);
     }
