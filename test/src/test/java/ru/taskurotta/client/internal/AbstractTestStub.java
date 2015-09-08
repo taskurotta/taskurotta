@@ -23,12 +23,14 @@ import ru.taskurotta.service.hz.HzInstanceFactory;
 import ru.taskurotta.service.hz.HzServiceBundle;
 import ru.taskurotta.service.hz.storage.HzTaskDao;
 import ru.taskurotta.service.queue.QueueService;
+import ru.taskurotta.service.queue.TaskQueueItem;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.storage.GeneralTaskService;
 import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.test.TestTasks;
 import ru.taskurotta.util.ActorDefinition;
+import ru.taskurotta.util.ActorUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -128,6 +130,11 @@ public class AbstractTestStub {
 
     public boolean isTaskPresent(UUID taskId, UUID processId) {
         return taskService.getTask(taskId, processId) != null;
+    }
+
+    public boolean isTaskInQueueHead(ActorDefinition actorDefinition, UUID taskId, UUID processId) {
+        TaskQueueItem taskQueueItem = queueService.poll(ActorUtils.getActorId(actorDefinition), actorDefinition.getTaskList());
+        return taskQueueItem != null && processId.equals(taskQueueItem.getProcessId()) && taskId.equals(taskQueueItem.getTaskId());
     }
 
     public static Task deciderTask(UUID id, TaskType type, String methodName, long startTime) {

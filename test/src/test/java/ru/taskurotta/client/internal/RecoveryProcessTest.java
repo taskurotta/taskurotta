@@ -30,14 +30,14 @@ public class RecoveryProcessTest extends AbstractTestStub {
         startProcess(deciderTask(startTaskId, TaskType.DECIDER_START, "A"));
 
         // check start task in queue
-        assertNotNull(queueService.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), DECIDER_ACTOR_DEF.getTaskList()));
+        assertTrue(isTaskInQueueHead(DECIDER_ACTOR_DEF, startTaskId, processId));
 
         // clean tasks and graph
         queueService = serviceBundle.newQueueService();
         graphDao.deleteGraph(processId);
 
         // check no tasks in queue
-        assertNull(queueService.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), DECIDER_ACTOR_DEF.getTaskList()));
+        assertFalse(isTaskInQueueHead(DECIDER_ACTOR_DEF, startTaskId, processId));
 
         // check no graph for process
         assertNull(dependencyService.getGraph(processId));
@@ -49,7 +49,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         assertNotNull(dependencyService.getGraph(processId));
 
         // check start task in queue
-        assertNotNull(queueService.poll(ActorUtils.getActorId(DECIDER_ACTOR_DEF), DECIDER_ACTOR_DEF.getTaskList()));
+        assertTrue(isTaskInQueueHead(DECIDER_ACTOR_DEF, startTaskId, processId));
     }
 
     @Test
@@ -76,7 +76,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         recoveryProcessService.setQueueService(queueService);
 
         // check no tasks in queue
-        assertNull(queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), WORKER_ACTOR_DEF.getTaskList()));
+        assertFalse(isTaskInQueueHead(WORKER_ACTOR_DEF, workerTaskId, processId));
 
         // check not finished items in graph
         assertFalse(dependencyService.getGraph(processId).getNotFinishedItems().isEmpty());
@@ -88,7 +88,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         recoveryProcessService.resurrectProcess(processId);
 
         // check tasks in queue
-        assertNotNull(queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), WORKER_ACTOR_DEF.getTaskList()));
+        assertTrue(isTaskInQueueHead(WORKER_ACTOR_DEF, workerTaskId, processId));
     }
 
     @Test
@@ -114,7 +114,7 @@ public class RecoveryProcessTest extends AbstractTestStub {
         queueService = serviceBundle.newQueueService();
 
         // check no tasks in queue
-        assertNull(queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), WORKER_ACTOR_DEF.getTaskList()));
+        assertFalse(isTaskInQueueHead(WORKER_ACTOR_DEF, workerTaskId, processId));
 
         // reset not finished items
         dependencyService.changeGraph(new GraphDao.Updater() {
@@ -131,12 +131,13 @@ public class RecoveryProcessTest extends AbstractTestStub {
             }
         });
 
+        // update lastEnqueueTime for recovery
         queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), WORKER_ACTOR_DEF.getTaskList());
 
         // recovery process
         recoveryProcessService.resurrectProcess(processId);
 
-        // check tasks in queue
-        assertNull(queueService.poll(ActorUtils.getActorId(WORKER_ACTOR_DEF), WORKER_ACTOR_DEF.getTaskList()));
+        // check no tasks in queue
+        assertFalse(isTaskInQueueHead(WORKER_ACTOR_DEF, workerTaskId, processId));
     }
 }
