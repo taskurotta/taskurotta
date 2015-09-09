@@ -8,7 +8,7 @@ public class GroupCommand extends SearchCommand {
 
     public static final String GROUP_STARTER = "starter";
     public static final String GROUP_ACTOR = "actor";
-    public static final String GROUP_EXCEPTION = "exception";
+    public static final String GROUP_EXCEPTION = "errorClassName";
 
     private String group;
 

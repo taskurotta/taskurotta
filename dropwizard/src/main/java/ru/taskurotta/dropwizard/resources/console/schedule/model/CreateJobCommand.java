@@ -1,19 +1,30 @@
 package ru.taskurotta.dropwizard.resources.console.schedule.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import ru.taskurotta.service.schedule.JobConstants;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Created on 17.07.2014.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateJobCommand extends TaskCommand implements Serializable {
 
+    private long id = -1l;
     private String name;
     private String cron;
-    private int queueLimit = -1;
     private int maxErrors = JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS;
+    private int status = JobConstants.STATUS_UNDEFINED;
+    private int limit;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -31,14 +42,6 @@ public class CreateJobCommand extends TaskCommand implements Serializable {
         this.cron = cron;
     }
 
-    public int getQueueLimit() {
-        return queueLimit;
-    }
-
-    public void setQueueLimit(int queueLimit) {
-        this.queueLimit = queueLimit;
-    }
-
     public int getMaxErrors() {
         return maxErrors;
     }
@@ -47,53 +50,32 @@ public class CreateJobCommand extends TaskCommand implements Serializable {
         this.maxErrors = maxErrors;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        CreateJobCommand that = (CreateJobCommand) o;
-
-        if (maxErrors != that.maxErrors) return false;
-        if (queueLimit != that.queueLimit) return false;
-        if (actorId != null ? !actorId.equals(that.actorId) : that.actorId != null) return false;
-        if (!Arrays.equals(args, that.args)) return false;
-        if (cron != null ? !cron.equals(that.cron) : that.cron != null) return false;
-        if (method != null ? !method.equals(that.method) : that.method != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (taskList != null ? !taskList.equals(that.taskList) : that.taskList != null) return false;
-        if (taskType != that.taskType) return false;
-
-        return true;
+    public int getStatus() {
+        return status;
     }
 
-    @Override
-    public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (cron != null ? cron.hashCode() : 0);
-        result = 31 * result + queueLimit;
-        result = 31 * result + maxErrors;
-        result = 31 * result + (actorId != null ? actorId.hashCode() : 0);
-        result = 31 * result + (method != null ? method.hashCode() : 0);
-        result = 31 * result + (taskType != null ? taskType.hashCode() : 0);
-        result = 31 * result + (args != null ? Arrays.hashCode(args) : 0);
-        result = 31 * result + (taskList != null ? taskList.hashCode() : 0);
-        return result;
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     @Override
     public String toString() {
         return "CreateJobCommand{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", cron='" + cron + '\'' +
-                ", queueLimit=" + queueLimit +
                 ", maxErrors=" + maxErrors +
-                ", actorId='" + actorId + '\'' +
-                ", method='" + method + '\'' +
-                ", taskType=" + taskType +
-                ", args=" + Arrays.toString(args) +
-                ", taskList='" + taskList + '\'' +
-                '}';
+                ", status=" + status +
+                ", limit=" + limit +
+                "} " + super.toString();
     }
 
 }

@@ -27,13 +27,13 @@ public class OraJobStore extends JdbcDaoSupport implements JobStore {
 
     private JsonSerializer<TaskContainer> taskSerializer = new JsonSerializer<>(TaskContainer.class);
 
-    private static final String SQL_ADD_JOB = "BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, QUEUE_LIMIT, MAX_ERRORS, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;";
+    private static final String SQL_ADD_JOB = "BEGIN INSERT INTO TSK_SCHEDULED (NAME, CRON, STATUS, JSON, CREATED, LIMIT, MAX_ERRORS, ERR_COUNT) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING ID INTO ?; END;";
     private static final String SQL_DELETE_JOB = "DELETE FROM TSK_SCHEDULED WHERE ID = ? ";
     private static final String SQL_GET_KEYS = "SELECT ID FROM TSK_SCHEDULED";
     private static final String SQL_GET_JOB_BY_ID = "SELECT * FROM TSK_SCHEDULED WHERE id = ? ";
     private static final String SQL_LIST_JOBS = "SELECT * FROM TSK_SCHEDULED";
     private static final String SQL_UPDATE_JOB_STATUS = "UPDATE TSK_SCHEDULED SET STATUS = ? WHERE id = ? ";
-    private static final String SQL_UPDATE_JOB = "UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, QUEUE_LIMIT = ?, MAX_ERRORS = ? WHERE id = ? ";
+    private static final String SQL_UPDATE_JOB = "UPDATE TSK_SCHEDULED SET NAME = ?, CRON = ?, STATUS = ?, JSON = ?, CREATED = ?, LIMIT = ?, MAX_ERRORS = ? WHERE id = ? ";
     private static final String SQL_GET_JOB_STATUS = "SELECT status FROM TSK_SCHEDULED WHERE id = ? ";
     private static final String SQL_UPDATE_ERROR_COUNT = "UPDATE TSK_SCHEDULED SET ERR_COUNT = ?, LAST_ERR_MESSAGE = ? WHERE id = ? ";
 
@@ -59,7 +59,7 @@ public class OraJobStore extends JdbcDaoSupport implements JobStore {
             result.setName(rs.getString("NAME"));
             result.setCron(rs.getString("CRON"));
             result.setStatus(rs.getInt("STATUS"));
-            result.setQueueLimit(rs.getInt("QUEUE_LIMIT"));
+            result.setLimit(rs.getInt("LIMIT"));
             result.setMaxErrors(rs.getInt("MAX_ERRORS"));
             result.setErrorCount(rs.getInt("ERR_COUNT"));
             result.setLastError(rs.getString("LAST_ERR_MESSAGE"));
@@ -80,7 +80,7 @@ public class OraJobStore extends JdbcDaoSupport implements JobStore {
                 cs.setInt(3, task.getStatus());
                 cs.setString(4, (String) taskSerializer.serialize(task.getTask()));
                 cs.setTimestamp(5, new Timestamp(new Date().getTime()));
-                cs.setInt(6, task.getQueueLimit());
+                cs.setInt(6, task.getLimit());
                 cs.setInt(7, task.getMaxErrors());
                 cs.setInt(8, task.getErrorCount());
 
@@ -123,7 +123,7 @@ public class OraJobStore extends JdbcDaoSupport implements JobStore {
 
     @Override
     public void update(JobVO jobVO, long id) {
-        getJdbcTemplate().update(SQL_UPDATE_JOB, jobVO.getName(), jobVO.getCron(), jobVO.getStatus(), (String) taskSerializer.serialize(jobVO.getTask()), new Date(), jobVO.getQueueLimit(), jobVO.getMaxErrors(), id);
+        getJdbcTemplate().update(SQL_UPDATE_JOB, jobVO.getName(), jobVO.getCron(), jobVO.getStatus(), (String) taskSerializer.serialize(jobVO.getTask()), new Date(), jobVO.getLimit(), jobVO.getMaxErrors(), id);
     }
 
     @Override

@@ -38,6 +38,7 @@ public class ProcessResource extends BaseResource {
             command.setPageSize(pageSize.or(DEFAULT_PAGE_SIZE));
             command.setProcessId(processId.orNull());
             command.setCustomId(customId.orNull());
+            command.setState(-1);
             GenericPage<Process> processes = consoleManager.findProcesses(command);
             logger.debug("Processes found are [{}]", processes);
             return processes;

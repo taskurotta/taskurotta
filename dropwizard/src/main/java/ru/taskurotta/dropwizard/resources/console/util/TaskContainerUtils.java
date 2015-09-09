@@ -24,6 +24,8 @@ public class TaskContainerUtils {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
+    private static final String DATA_TYPE_PACKAGE = "java.lang.";
+
     public static TaskContainer createTask(TaskCommand command, long startTime) {
         validateCommand(command);
         UUID guid = UUID.randomUUID();
@@ -75,11 +77,48 @@ public class TaskContainerUtils {
         return result;
     }
 
+    public static ArgVO[] asUiArguments(ArgContainer[] taskArgs) {
+        ArgVO[] result = null;
+        if (taskArgs!=null && taskArgs.length>0) {
+            int size = taskArgs.length;
+            result = new ArgVO[size];
+            for (int i = 0; i<size; i++) {
+                result[i] = asUiArgument(taskArgs[i]);
+            }
+        }
+        return result;
+    }
+
+    public static ArgVO asUiArgument(ArgContainer ac) {
+        ArgVO result = null;
+        if (ac != null) {
+            result = new ArgVO();
+            try {
+                if (ac.getDataType() != null && ac.getDataType().startsWith(DATA_TYPE_PACKAGE)) {
+                    Class valueClass = Thread.currentThread().getContextClassLoader().loadClass(ac.getDataType());
+                    result.setType(ac.getDataType().substring(DATA_TYPE_PACKAGE.length()).toLowerCase());
+                    result.setValue(mapper.readValue(ac.getJSONValue(), valueClass).toString());
+                } else if (ac.getDataType() == null) {
+                    result.setType(null);
+                    result.setValue(null);
+                } else {
+                    throw new IllegalArgumentException("Cannot convert argument["+ac+"]: unsupported data type");
+                }
+            } catch (Exception e) {
+                String message = "Cannot convert argument["+ac+"] to UI representation";
+                logger.error(message, e);
+                throw new IllegalArgumentException(message, e);
+            }
+
+        }
+        return result;
+    }
+
     public static void populateArgContainerValue(ArgContainer ac, String valueType, String value) {
         Class valueClass = null;
         try {
-            if (StringUtils.hasText(valueType)) {
-                valueClass = Thread.currentThread().getContextClassLoader().loadClass("java.lang." + capFirst(valueType.trim().toLowerCase()));
+            if (StringUtils.hasText(valueType) && !"null".equalsIgnoreCase(valueType)) {
+                valueClass = Thread.currentThread().getContextClassLoader().loadClass(DATA_TYPE_PACKAGE + capFirst(valueType.trim().toLowerCase()));
             }
 
             if (valueClass != null) {
@@ -91,10 +130,10 @@ public class TaskContainerUtils {
                 ac.setJSONValue(null);
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             String message = "Cannot populate argument["+ac+"] value["+value+"] with type ["+valueType+"]";
             logger.error(message, e);
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException(message, e);
         }
 
     }

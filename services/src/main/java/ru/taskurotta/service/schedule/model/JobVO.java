@@ -16,11 +16,11 @@ public class JobVO implements Serializable {
     protected String name;
     protected String cron;
     protected TaskContainer task;
-    protected int queueLimit = -1;
     protected int status = JobConstants.STATUS_UNDEFINED;
     protected int errorCount = 0;
     protected String lastError;
     protected int maxErrors = JobConstants.DEFAULT_MAX_CONSEQUENTIAL_ERRORS;
+    protected int limit = -1;
 
     public long getId() {
         return id;
@@ -62,14 +62,6 @@ public class JobVO implements Serializable {
         this.status = status;
     }
 
-    public int getQueueLimit() {
-        return queueLimit;
-    }
-
-    public void setQueueLimit(int queueLimit) {
-        this.queueLimit = queueLimit;
-    }
-
     public int getErrorCount() {
         return errorCount;
     }
@@ -94,6 +86,14 @@ public class JobVO implements Serializable {
         this.maxErrors = maxErrors;
     }
 
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
     @Override
     public String toString() {
         return "JobVO{" +
@@ -101,12 +101,12 @@ public class JobVO implements Serializable {
                 ", name='" + name + '\'' +
                 ", cron='" + cron + '\'' +
                 ", task=" + task +
-                ", queueLimit=" + queueLimit +
                 ", status=" + status +
                 ", errorCount=" + errorCount +
-                ", maxErrors=" + maxErrors +
                 ", lastError='" + lastError + '\'' +
-                "} ";
+                ", maxErrors=" + maxErrors +
+                ", limit=" + limit +
+                '}';
     }
 
 }

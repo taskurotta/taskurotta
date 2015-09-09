@@ -306,6 +306,23 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
             }
         });
 
+        $stateProvider.state('subscription', {
+            url: '/subscriptions/:id/card',
+            params: {},
+            views: {
+                'navigation': {
+                    templateUrl: '/views/navigation.html'
+                },
+                '': {
+                    templateUrl: '/views/notifications/subscription.html',
+                    controller: /*@ngInject*/ 'subscriptionCardController'
+                },
+                'footer': {
+                    templateUrl: '/views/footer.html'
+                }
+            }
+        });
+
         $stateProvider.state('subscription_create', {
             url: '/subscription/create',
             params: {},
@@ -326,3 +343,12 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
         $urlRouterProvider.otherwise('/home');
     });
 
+if (!String.prototype.trim) {
+    (function() {
+        // Make sure we trim BOM and NBSP
+        var rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+        String.prototype.trim = function() {
+            return this.replace(rtrim, '');
+        };
+    })();
+}

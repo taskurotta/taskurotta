@@ -15,7 +15,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.taskurotta.server.TaskServer;
-import ru.taskurotta.service.console.retriever.QueueInfoRetriever;
+import ru.taskurotta.service.console.retriever.ProcessInfoRetriever;
 import ru.taskurotta.service.schedule.model.JobVO;
 import ru.taskurotta.service.schedule.storage.JobStore;
 
@@ -28,7 +28,6 @@ import java.util.Set;
 
 /**
  * Default implementation of scheduled task manager with Quartz
- * User: dimadin
  * Date: 24.09.13 10:17
  */
 public class QuartzJobManager implements JobManager {
@@ -37,13 +36,13 @@ public class QuartzJobManager implements JobManager {
 
     private JobStore jobStore;
     private Scheduler scheduler;
-    private QueueInfoRetriever queueInfoRetriever;
+    private ProcessInfoRetriever processInfoRetriever;
     private TaskServer taskServer;
 
-    public QuartzJobManager(TaskServer taskServer, JobStore jobStore, QueueInfoRetriever queueInfoRetriever) throws SchedulerException {
+    public QuartzJobManager(TaskServer taskServer, JobStore jobStore, ProcessInfoRetriever processInfoRetriever) throws SchedulerException {
         this.jobStore = jobStore;
         this.taskServer = taskServer;
-        this.queueInfoRetriever = queueInfoRetriever;
+        this.processInfoRetriever = processInfoRetriever;
 
         this.scheduler = new StdSchedulerFactory().getScheduler();
         scheduler.start();
@@ -166,7 +165,7 @@ public class QuartzJobManager implements JobManager {
     private void runJob(JobVO job) throws SchedulerException {
         JobDataMap jdm = new JobDataMap();
         jdm.put(JobConstants.DATA_KEY_JOB, job);
-        jdm.put(JobConstants.DATA_KEY_QUEUE_INFO_RETRIEVER, queueInfoRetriever);
+        jdm.put(JobConstants.DATA_KEY_PROCESS_INFO_RETRIEVER, processInfoRetriever);
         jdm.put(JobConstants.DATA_KEY_TASK_SERVER, taskServer);
         jdm.put(JobConstants.DATA_KEY_JOB_MANAGER, this);
 
@@ -232,15 +231,20 @@ public class QuartzJobManager implements JobManager {
     @Override
     public Date getNextExecutionTime(long id) {
         Date result = null;
+        JobVO job = jobStore.get(id);
+        if (job != null) {
+            result = getNextExecutionTime(job.getCron());
+        }
 
+        return result;
+    }
+
+    public Date getNextExecutionTime(String cron) {
+        Date result = null;
         try {
-            JobVO job = jobStore.get(id);
-            if (job != null) {
-                CronExpression expr = new CronExpression(job.getCron());
-                result = expr.getNextValidTimeAfter(new Date());
-            }
+            result = new CronExpression(cron).getNextValidTimeAfter(new Date());
         } catch (ParseException e) {
-            logger.error("Error parsing cron expression[{}] for job id [{}]", id);
+            logger.error("Error parsing cron expression["+cron+"]", e);
         }
 
         return result;

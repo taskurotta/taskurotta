@@ -10,12 +10,8 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
                 query: {url: restTaskUrl + 'list', params: {}, isArray: true},
                 //actions
                 restart: {url: restTaskUrl + 'restart/task', method:'POST', params: {}},
-                restartGroup: {url: restTaskUrl + 'restart/group', method:'POST', params: {
-                    errorClassName:'@exception'
-                }},
-                abortGroup: {url: restTaskUrl + 'abort/group', method:'POST', params: {
-                    errorClassName:'@exception'
-                }},
+                restartGroup: {url: restTaskUrl + 'restart/group', method:'POST', params: {}},
+                abortGroup: {url: restTaskUrl + 'abort/group', method:'POST', params: {}},
 
                 //dictionaries
                 dictionaryGroup: {url: '/scripts/interrupted/groups.json', params: {}, isArray: true, cache: true}
@@ -57,7 +53,7 @@ angular.module('interruptedModule', ['taskModule', 'coreApp'])
             $scope.groups = coreApp.toObject(groups);
             $scope.groups.starter.selected = $stateParams.starterId || $stateParams.group === 'starter';
             $scope.groups.actor.selected = $stateParams.actorId || $stateParams.group === 'actor';
-            $scope.groups.exception.selected = $stateParams.exception || $stateParams.group === 'exception';
+            $scope.groups.errorClassName.selected = $stateParams.errorClassName || $stateParams.group === 'errorClassName';
 
             function getRestDateFormat(date, withTime) {
                 return (angular.isDate(date) ? moment(date) : moment(date, moment.ISO_8601))

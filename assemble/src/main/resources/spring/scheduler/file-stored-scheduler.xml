@@ -13,8 +13,8 @@
 
     <bean id = "jobManager" class="ru.taskurotta.service.schedule.QuartzJobManager" >
         <constructor-arg name="jobStore" ref="jobStore" />
-        <constructor-arg name="queueInfoRetriever" ref="realQueueBackend" />
         <constructor-arg name="taskServer" ref="taskServer" />
+        <constructor-arg name="processInfoRetriever" ref="processService" />
     </bean>
 
     <bean id = "consoleScheduleResource" class="ru.taskurotta.dropwizard.resources.console.schedule.SchedulerResource">

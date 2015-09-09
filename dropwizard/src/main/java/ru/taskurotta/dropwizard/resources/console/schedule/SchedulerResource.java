@@ -9,9 +9,12 @@ import org.springframework.util.StringUtils;
 import ru.taskurotta.dropwizard.resources.console.schedule.model.CreateJobCommand;
 import ru.taskurotta.dropwizard.resources.console.util.TaskContainerUtils;
 import ru.taskurotta.service.console.Action;
+import ru.taskurotta.service.console.model.GenericPage;
+import ru.taskurotta.service.console.retriever.command.PageCommand;
 import ru.taskurotta.service.schedule.JobConstants;
 import ru.taskurotta.service.schedule.JobManager;
 import ru.taskurotta.service.schedule.model.JobVO;
+import ru.taskurotta.transport.utils.TransportUtils;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -25,9 +28,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -46,26 +49,35 @@ public class SchedulerResource implements JobConstants {
 
     @GET
     @Path("/list")
-    public List<JobUI> getScheduledJobs() {
-        List<JobUI> result = null;
+    public GenericPage<JobUI> listScheduleJobs(@QueryParam("pageNum") Optional<Integer> pageNumOpt,
+                                        @QueryParam("pageSize") Optional<Integer> pageSizeOpt) {
+        List<JobUI> items = null;
+        int pageNum = pageNumOpt.or(PageCommand.DEFAULT_PAGE_NUM);
+        int pageSize = pageSizeOpt.or(PageCommand.DEFAULT_PAGE_SIZE);
 
         Collection<Long> taskIds = jobManager.getJobIds();
+        int total = taskIds!=null? taskIds.size() : 0;
         if (taskIds!=null && !taskIds.isEmpty()) {
-            result = new ArrayList<>();
-            for (Long id: taskIds) {
-                JobVO jobVO = jobManager.getJob(id);
+            List<Long> keysSorted = new ArrayList<>(taskIds);
+            Collections.sort(keysSorted);
+            int pageStart = (pageNum - 1) * pageSize;
+            int pageEnd = Math.min(pageSize * pageNum, total);
+            items = new ArrayList<>(pageEnd-pageStart);
+            logger.debug("Try to paginate keys list[{}] with pageStart[{}], pageEnd[{}]", keysSorted, pageStart, pageEnd);
+            for (int i = pageStart; i < pageEnd; i++) {
+                JobVO jobVO = jobManager.getJob(keysSorted.get(i));
                 if (jobVO != null) {
                     JobUI jobUI = new JobUI(jobVO);
                     if (jobVO.getStatus() == STATUS_ACTIVE) {
-                        jobUI.nextExecutionTime = getNextExecutionTime(jobVO.getCron());
+                        jobUI.nextExecutionTime = jobManager.getNextExecutionTime(jobVO.getCron());
                         jobUI.local = jobManager.isActive(jobVO);
                     }
-                    result.add(jobUI);
+                    items.add(jobUI);
                 }
             }
         }
-
-        return result;
+        logger.debug("Items are [{}], pageNum[{}], pageSize[{}], total[{}]", items, pageNum, pageSize, total);
+        return new GenericPage<>(items, pageNum, pageSize, total);
     }
 
     @GET
@@ -78,11 +90,33 @@ public class SchedulerResource implements JobConstants {
 
     @GET
     @Path("/card")
-    public JobVO getJob(@QueryParam("id") Optional<Long> idOpt) {
+    public CreateJobCommand getJob(@QueryParam("id") Optional<Long> idOpt) {
         long id = idOpt.or(-1l);
-        JobVO jobVO = jobManager.getJob(id);
-        logger.debug("JobVO getted by id[{}] is [{}]", id, jobVO);
-        return jobVO;
+        CreateJobCommand result = asCommand(jobManager.getJob(id));
+        logger.debug("JobVO got by id[{}] is [{}]", id, result);
+        return result;
+    }
+
+    private CreateJobCommand asCommand(JobVO jobVO) {
+        CreateJobCommand result = null;
+        if (jobVO != null) {
+            result = new CreateJobCommand();
+            result.setId(jobVO.getId());
+            result.setCron(jobVO.getCron());
+            result.setName(jobVO.getName());
+            result.setMaxErrors(jobVO.getMaxErrors());
+            result.setLimit(jobVO.getLimit());
+
+            if (jobVO.getTask() != null) {
+                result.setStatus(jobVO.getStatus());
+                result.setActorId(jobVO.getTask().getActorId());
+                result.setArgs(TaskContainerUtils.asUiArguments(jobVO.getTask().getArgs()));
+                result.setMethod(jobVO.getTask().getMethod());
+                result.setTaskType(jobVO.getTask().getType());
+                result.setTaskList(TransportUtils.getTaskList(jobVO.getTask()));
+            }
+        }
+        return result;
     }
 
     /**
@@ -112,17 +146,17 @@ public class SchedulerResource implements JobConstants {
 
     @PUT
     @Path("/create")
-    public Long createSchedulerJob(@QueryParam("jobId")Optional<Long> jobIdOpt, CreateJobCommand command) {
+    public Long createSchedulerJob(CreateJobCommand command) {
         JobVO job = null;
         try {
-            job = getValidJob(jobIdOpt, command);
-            logger.debug("Creating scheduled task for jobIdOpt [{}], command[{}]", jobIdOpt, command);
+            job = getValidJob(command);
+            logger.debug("Creating scheduled task for command[{}]", command);
             long id = jobManager.addJob(job);
             logger.debug("Scheduled task for command[{}] added with id[{}]", command, id);
             return id;
 
         } catch (Exception e) {
-            logger.error("Unexpected error at create for job["+job+"]", e);
+            logger.error("Unexpected error at create for command["+command+"]", e);
             throw new WebApplicationException(e);
         }
 
@@ -130,27 +164,26 @@ public class SchedulerResource implements JobConstants {
 
     @PUT
     @Path("/update")
-    public void updateScheduledTask(@QueryParam("jobId")Optional<Long> jobIdOpt, CreateJobCommand command) {
+    public void updateSchedulerJob(CreateJobCommand command) {
         JobVO job = null;
         try {
-            job = getValidJob(jobIdOpt, command);
+            job = getValidJob(command);
             jobManager.updateJob(job);
             logger.debug("Scheduled task with id[{}], name[{}] updated", job.getId(), job.getName());
 
         } catch (Exception e) {
-            logger.error("Unexpected error at update for job["+job+"]", e);
+            logger.error("Unexpected error at update for command["+command+"]", e);
             throw new WebApplicationException(e);
         }
 
     }
 
-    protected JobVO getValidJob (Optional<Long> jobIdOpt, CreateJobCommand command) {
-        long jobId = jobIdOpt.or(-1l);
+    protected JobVO getValidJob (CreateJobCommand command) {
 
         JobVO job = new JobVO();
-        job.setId(jobId);
+        job.setId(command.getId());
         job.setCron(command.getCron());
-        job.setQueueLimit(command.getQueueLimit());
+        job.setLimit(command.getLimit());
         job.setMaxErrors(command.getMaxErrors());
         job.setName(command.getName());
         job.setTask(TaskContainerUtils.createTask(command, -1));// for scheduled task start time must be -1
@@ -193,33 +226,22 @@ public class SchedulerResource implements JobConstants {
 
     @POST
     @Path("/action/{action}")
-    public void processTask(@PathParam("action")String action, @QueryParam("id") Long id) {
+    public void processTask(@PathParam("action")String action, Long id) {
         logger.debug("Sending schedule message for id [{}]", id);
 
-        if(Action.ACTIVATE.getValue().equals(action)) {
+        if (id!=null && Action.ACTIVATE.getValue().equals(action)) {
             jobManager.startJob(id);
 
-        } else if (Action.DEACTIVATE.getValue().equals(action)) {
+        } else if (id!=null && Action.DEACTIVATE.getValue().equals(action)) {
             jobManager.stopJob(id);
 
-        } else if (Action.DELETE.getValue().equals(action)) {
+        } else if (id!=null && Action.DELETE.getValue().equals(action)) {
             jobManager.removeJob(id);
 
         } else {
-            logger.error("Unsupported combination of method[POST] and action[" + action + "].");
+            logger.error("Unsupported combination of method[POST] and action[" + action + "] for id["+id+"].");
             throw new WebApplicationException(Status.NOT_ACCEPTABLE);
         }
-    }
-
-    public Date getNextExecutionTime(String cron) {
-        Date result = null;
-        try {
-            result = new CronExpression(cron).getNextValidTimeAfter(new Date());
-        } catch (ParseException e) {
-            logger.error("Cannot parse cron " + cron, e);
-        }
-
-        return result;
     }
 
     @Required
