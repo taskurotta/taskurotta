@@ -11,8 +11,8 @@
     </parent>
 
     <name>Taskurotta :: Documentation</name>
-    <artifactId>taskurotta-documentation</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>documentation</artifactId>
+    <packaging>jar</packaging>
 
     <scm>
         <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
@@ -34,28 +34,46 @@
 
     <build>
         <plugins>
-    		<plugin>
-			  <artifactId>exec-maven-plugin</artifactId>
-			  <groupId>org.codehaus.mojo</groupId>
-			  <version>1.2.1</version>
-			  <executions>
-			  <execution>
-			    <id>GenerateDocumentation</id>
-			    <phase>compile</phase>
-			    <goals>
-			      <goal>exec</goal>
-			    </goals>
-			    <configuration>
-			      <executable>./build.sh</executable>
-			      <arguments>
-			         <argument>${project.version}</argument>
-			      </arguments>
-			      <workingDirectory>${env.PROJECT_HOME}</workingDirectory>            
-			    </configuration>
-			  </execution>
-			  </executions>
-			
-			</plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>ru.taskurotta.documentation.Converter</mainClass>
+                    <arguments>
+                        <argument>${basedir}/src/main/resources/documentation.index</argument>
+                        <argument>${basedir}/target/classes/result/content.md</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.ruleoftech</groupId>
+                <artifactId>markdown-page-generator-plugin</artifactId>
+                <version>0.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <inputDirectory>${basedir}/target/classes/result</inputDirectory>
+                    <outputDirectory>${basedir}/target/classes/html</outputDirectory>
+                    <inputEncoding>UTF-8</inputEncoding>
+                    <outputEncoding>UTF-8</outputEncoding>
+                </configuration>
+            </plugin>
 		</plugins>
     </build>
 </project>

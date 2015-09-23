@@ -75,6 +75,7 @@
         <module>hazelcast</module>
         <module>util</module>
         <module>mongodb</module>
+        <module>documentation</module>
     </modules>
 
     <profiles>
