@@ -59,36 +59,37 @@ class Generator {
         List<MenuItem> menuItems = new ArrayList<>();
 
         for (Path path : paths) {
-            BufferedReader bufferedReader = Files.newBufferedReader(path);
-            do {
-                String line = bufferedReader.readLine();
-                if (line == null) {
-                    break;
-                }
-                line = line.trim();
-
-                if (line.startsWith("#")) {
-                    int level = 0;
-                    String caption = null;
-
-                    char[] chars = line.toCharArray();
-                    int length = chars.length;
-                    for (int i = 0; i < length; i++) {
-                        char ch = chars[i];
-
-                        if (ch == '#') {
-                            level++;
-                        } else {
-                            caption = new String(Arrays.copyOfRange(chars, i, length)).trim();
-                            break;
-                        }
+            try (BufferedReader bufferedReader = Files.newBufferedReader(path)) {
+                do {
+                    String line = bufferedReader.readLine();
+                    if (line == null) {
+                        break;
                     }
+                    line = line.trim();
 
-                    String anchor = getAnchor(path);
-                    menuItems.add(new MenuItem(level, anchor, caption));
-                    break;
-                }
-            } while (true);
+                    if (line.startsWith("#")) {
+                        int level = 0;
+                        String caption = null;
+
+                        char[] chars = line.toCharArray();
+                        int length = chars.length;
+                        for (int i = 0; i < length; i++) {
+                            char ch = chars[i];
+
+                            if (ch == '#') {
+                                level++;
+                            } else {
+                                caption = new String(Arrays.copyOfRange(chars, i, length)).trim();
+                                break;
+                            }
+                        }
+
+                        String anchor = getAnchor(path);
+                        menuItems.add(new MenuItem(level, anchor, caption));
+                        break;
+                    }
+                } while (true);
+            }
         }
 
         MenuItem root = createMenuTree(new MenuItem(0, null, null), menuItems);
