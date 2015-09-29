@@ -151,7 +151,6 @@ class Generator {
         String htmlContent = pegDownProcessor.markdownToHtml(markdownContent);
 
         Map<String, Object> model = new HashMap<>();
-        model.put("menuItems", menuItems);
         model.put("content", htmlContent);
 
         String singleHtml;
