@@ -131,8 +131,7 @@ class Generator {
             stringBuilder.append(newLine);
 
             // add content
-            List<String> strings = Files.readAllLines(path);
-            strings.forEach(stringBuilder::append);
+            stringBuilder.append(new String(Files.readAllBytes(path)));
             stringBuilder.append(newLine);
             stringBuilder.append(newLine);
         }
