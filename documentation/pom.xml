@@ -2,35 +2,40 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>ru.taskurotta</groupId>
         <artifactId>ru.taskurotta</artifactId>
-        <version>0.9.6</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>0.10.5-SNAPSHOT</version>
     </parent>
 
     <name>Taskurotta :: Documentation</name>
     <artifactId>documentation</artifactId>
     <packaging>jar</packaging>
 
-    <scm>
-        <connection>scm:git:git://github.com/taskurotta/taskurotta.git</connection>
-        <developerConnection>scm:git:git@github.com:taskurotta/taskurotta.git</developerConnection>
-        <url>http://taskurotta.org</url>
-    </scm>
+    <dependencies>
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.23</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
-        </license>
-    </licenses>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
-    <properties>
-        <maven.build.timestamp.format>dd MMMMM yyyy</maven.build.timestamp.format>
-        <timestamp>${maven.build.timestamp}</timestamp>
-    </properties>
+        <dependency>
+            <groupId>org.pegdown</groupId>
+            <artifactId>pegdown</artifactId>
+            <version>1.5.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -47,33 +52,16 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>ru.taskurotta.documentation.Converter</mainClass>
+                    <mainClass>ru.taskurotta.documentation.Generator</mainClass>
                     <arguments>
+                        <argument>${basedir}</argument>
                         <argument>${basedir}/src/main/resources/documentation.index</argument>
-                        <argument>${basedir}/target/classes/result/content.md</argument>
+                        <argument>${basedir}/target/classes/assets/documentation.html</argument>
+                        <argument>single-html.ftl</argument>
+                        <argument>${basedir}/target/classes/assets/menu.json</argument>
                     </arguments>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>com.ruleoftech</groupId>
-                <artifactId>markdown-page-generator-plugin</artifactId>
-                <version>0.8</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <inputDirectory>${basedir}/target/classes/result</inputDirectory>
-                    <outputDirectory>${basedir}/target/classes/html</outputDirectory>
-                    <inputEncoding>UTF-8</inputEncoding>
-                    <outputEncoding>UTF-8</outputEncoding>
-                </configuration>
-            </plugin>
-		</plugins>
+        </plugins>
     </build>
 </project>
