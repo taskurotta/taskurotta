@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -66,7 +65,7 @@ public class FailingMapStore implements MapStore, MapLoaderLifecycleSupport {
     }
 
     @Override
-    public Set loadAllKeys() {
+    public Iterable loadAllKeys() {
         return mapStore.loadAllKeys();
     }
 

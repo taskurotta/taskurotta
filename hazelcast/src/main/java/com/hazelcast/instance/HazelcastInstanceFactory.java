@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2013, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@ import com.hazelcast.core.Member;
 import com.hazelcast.jmx.ManagementService;
 import com.hazelcast.spi.annotation.PrivateApi;
 import com.hazelcast.util.ExceptionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.taskurotta.hazelcast.queue.config.CachedQueueServiceConfig;
-import ru.taskurotta.hazelcast.queue.delay.DefaultStorageFactory;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,13 +41,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.hazelcast.core.LifecycleEvent.LifecycleState.STARTED;
-import static com.hazelcast.util.ValidationUtil.hasText;
+import static com.hazelcast.util.Preconditions.checkHasText;
+import static com.hazelcast.util.Preconditions.checkNotNull;
 
 @SuppressWarnings("SynchronizationOnStaticField")
 @PrivateApi
 public final class HazelcastInstanceFactory {
-
-    private static final Logger logger = LoggerFactory.getLogger(DefaultStorageFactory.class);
 
     private static final ConcurrentMap<String, InstanceFuture> INSTANCE_MAP
             = new ConcurrentHashMap<String, InstanceFuture>(5);
@@ -83,12 +79,10 @@ public final class HazelcastInstanceFactory {
     }
 
     public static HazelcastInstance getOrCreateHazelcastInstance(Config config) {
-        if (config == null) {
-            throw new NullPointerException("config can't be null");
-        }
+        checkNotNull(config, "config can't be null");
 
         String name = config.getInstanceName();
-        hasText(name, "instanceName");
+        checkHasText(name, "instanceName must contain text");
 
         InstanceFuture future = INSTANCE_MAP.get(name);
         if (future != null) {
@@ -102,10 +96,6 @@ public final class HazelcastInstanceFactory {
         }
 
         try {
-            // patch
-            CachedQueueServiceConfig.registerServiceConfig(config);
-            // /patch
-
             return constructHazelcastInstance(config, name, new DefaultNodeContext(), future);
         } catch (Throwable t) {
             INSTANCE_MAP.remove(name, future);
@@ -143,13 +133,6 @@ public final class HazelcastInstanceFactory {
         }
 
         try {
-
-            // patch
-            // spring config has no support of custom distributed service implementation
-            // this is config registration of CachedQueueService
-            CachedQueueServiceConfig.registerServiceConfig(config);
-            // /patch
-
             return constructHazelcastInstance(config, name, nodeContext, future);
         } catch (Throwable t) {
             INSTANCE_MAP.remove(name, future);
@@ -160,6 +143,12 @@ public final class HazelcastInstanceFactory {
 
     private static HazelcastInstanceProxy constructHazelcastInstance(Config config, String instanceName,
                                                                      NodeContext nodeContext, InstanceFuture future) {
+        // patch
+        // spring config has no support of custom distributed service implementation
+        // this is config registration of CachedQueueService
+        CachedQueueServiceConfig.registerServiceConfig(config);
+        // /patch
+
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         HazelcastInstanceProxy proxy;
