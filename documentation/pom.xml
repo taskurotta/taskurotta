@@ -17,13 +17,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.23</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <scope>compile</scope>
@@ -57,7 +50,6 @@
                         <argument>${basedir}</argument>
                         <argument>${basedir}/src/main/resources/documentation.index</argument>
                         <argument>${basedir}/target/classes/assets/documentation.html</argument>
-                        <argument>single-html.ftl</argument>
                         <argument>${basedir}/target/classes/assets/menu.json</argument>
                     </arguments>
                 </configuration>

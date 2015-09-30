@@ -1,24 +1,18 @@
 package ru.taskurotta.documentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import org.pegdown.PegDownProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * User: stukushin
@@ -28,73 +22,84 @@ import java.util.Map;
 
 class Generator {
 
-    private static final String anchor = "<a href=\"#%s\"></a>%n";
+    private static final String anchor = "<a href=\"#%s\"></a>";
     private static final String newLine = System.getProperty("line.separator");
+    private static final char tabChar = (char) 9;
+    private static final char whiteSpaceChar = (char) 32;
 
-    public static void main(String[] args) throws IOException, URISyntaxException, TemplateException {
+    public static void main(String[] args) throws IOException, URISyntaxException {
         Path basePath = Paths.get(args[0]);
         Path documentIndexPath = Paths.get(args[1]);
         Path targetPath = Paths.get(args[2]);
-        String templateName = args[3];
-        Path jsonMenuPath = Paths.get(args[4]);
+        Path jsonMenuPath = Paths.get(args[3]);
 
-        final List<Path> paths = new ArrayList<>();
-        try (BufferedReader bufferedReader = Files.newBufferedReader(documentIndexPath)) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                paths.add(basePath.resolve(line.trim()));
-            }
-        }
+        List<String> strings = Files.readAllLines(documentIndexPath);
+        List<Path> paths = getPaths(strings, basePath);
 
-        List<MenuItem> menuItems = createMenu(paths);
+        List<MenuItem> menuItems = createMenu(strings, basePath);
         String markdownContent = createMarkdownContent(paths);
 
-        String singleHtml = createSingleHtml(menuItems, markdownContent, templateName);
+        String singleHtml = createSingleHtml(markdownContent);
         saveSingleHtml(targetPath, singleHtml);
 
         saveMenuJson(jsonMenuPath, menuItems);
     }
 
-    private static List<MenuItem> createMenu(List<Path> paths) throws IOException {
+    private static List<MenuItem> createMenu(List<String> strings, Path basePath) throws IOException {
         List<MenuItem> menuItems = new ArrayList<>();
 
-        for (Path path : paths) {
-            try (BufferedReader bufferedReader = Files.newBufferedReader(path)) {
-                do {
-                    String line = bufferedReader.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    line = line.trim();
+        for (String s : strings) {
+            int level = getLevel(s);
+            String location = s.trim();
+            Path path = basePath.resolve(location);
+            String caption = getCaption(path);
+            String anchor = getAnchor(path);
 
-                    if (line.startsWith("#")) {
-                        int level = 0;
-                        String caption = null;
-
-                        char[] chars = line.toCharArray();
-                        int length = chars.length;
-                        for (int i = 0; i < length; i++) {
-                            char ch = chars[i];
-
-                            if (ch == '#') {
-                                level++;
-                            } else {
-                                caption = new String(Arrays.copyOfRange(chars, i, length)).trim();
-                                break;
-                            }
-                        }
-
-                        String anchor = getAnchor(path);
-                        menuItems.add(new MenuItem(level, anchor, caption));
-                        break;
-                    }
-                } while (true);
-            }
+            menuItems.add(new MenuItem(level, anchor, caption));
         }
 
         MenuItem root = createMenuTree(new MenuItem(0, null, null), menuItems);
 
         return root.getChildren();
+    }
+
+    private static int getLevel(final String s) {
+        String preparedString = s.replace(tabChar, whiteSpaceChar);
+        int bias = 0;
+        int length = preparedString.length();
+        for (int i = 0; i < length; i++) {
+            char c = preparedString.charAt(i);
+            if (c == whiteSpaceChar) {
+                bias++;
+            }
+        }
+        return bias;
+    }
+
+    private static String getCaption(Path path) throws IOException {
+        String caption = null;
+
+        try (BufferedReader bufferedReader = Files.newBufferedReader(path)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+
+                if (line.startsWith("#")) {
+                    int length = line.length();
+                    for (int i = 0; i < length; i++) {
+                        if (line.charAt(i) == '#') {
+                            continue;
+                        }
+
+                        caption = line.substring(i, length).trim();
+                        break;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return caption;
     }
 
     private static String getAnchor(Path path) {
@@ -123,13 +128,16 @@ class Generator {
         return root;
     }
 
+    private static List<Path> getPaths(List<String> strings, Path basePath) {
+        return strings.stream().map(s -> basePath.resolve(s.trim())).collect(Collectors.toList());
+    }
+
     private static String createMarkdownContent(List<Path> paths) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Path path : paths) {
             // add anchor
             stringBuilder.append(String.format(anchor, getAnchor(path)));
-            stringBuilder.append(newLine);
 
             // add content
             stringBuilder.append(new String(Files.readAllBytes(path)));
@@ -140,26 +148,9 @@ class Generator {
         return stringBuilder.toString();
     }
 
-    private static String createSingleHtml(List<MenuItem> menuItems, String markdownContent, String templateName) throws IOException, TemplateException {
-        Configuration configuration = new Configuration(Configuration.VERSION_2_3_22);
-        configuration.setClassForTemplateLoading(Generator.class, "/templates");
-        configuration.setDefaultEncoding("UTF-8");
-
-        Template template = configuration.getTemplate(templateName);
-
+    private static String createSingleHtml(String markdownContent) throws IOException {
         PegDownProcessor pegDownProcessor = new PegDownProcessor();
-        String htmlContent = pegDownProcessor.markdownToHtml(markdownContent);
-
-        Map<String, Object> model = new HashMap<>();
-        model.put("content", htmlContent);
-
-        String singleHtml;
-        try (StringWriter stringWriter = new StringWriter()) {
-            template.process(model, stringWriter);
-            singleHtml = stringWriter.toString();
-        }
-
-        return singleHtml;
+        return pegDownProcessor.markdownToHtml(markdownContent);
     }
 
     private static void saveSingleHtml(Path targetPath, String singleHtml) throws IOException {
