@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 class Generator {
 
-    private static final String anchor = "<a href=\"#%s\"></a>";
+    private static final String anchor = "<a name=\"#%s\"></a>";
     private static final String newLine = System.getProperty("line.separator");
     private static final char tabChar = (char) 9;
     private static final char whiteSpaceChar = (char) 32;
@@ -138,6 +138,7 @@ class Generator {
         for (Path path : paths) {
             // add anchor
             stringBuilder.append(String.format(anchor, getAnchor(path)));
+            stringBuilder.append(newLine);
 
             // add content
             stringBuilder.append(new String(Files.readAllBytes(path)));
@@ -149,8 +150,7 @@ class Generator {
     }
 
     private static String createSingleHtml(String markdownContent) throws IOException {
-        PegDownProcessor pegDownProcessor = new PegDownProcessor();
-        return pegDownProcessor.markdownToHtml(markdownContent);
+        return new PegDownProcessor().markdownToHtml(markdownContent);
     }
 
     private static void saveSingleHtml(Path targetPath, String singleHtml) throws IOException {
