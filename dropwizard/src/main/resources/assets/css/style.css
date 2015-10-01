@@ -326,3 +326,22 @@ span.header-mini {
     font-weight: bold;
     margin-left: 3px;
 }
+
+/* documentation */
+#sidebar {
+    border-right: 1px solid #cccccc;
+    display: inline-block;
+    float: left;
+    height: 95%;
+    padding: 27px 30px 15px;
+    width: 300px;
+}
+
+#content {
+    border-left: 1px solid #cccccc;
+    display: inline-block;
+    float: left;
+    margin-left: -1px;
+    padding: 10px 40px 80px 30px;
+}
+/* /documentation */

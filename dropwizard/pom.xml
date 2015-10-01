@@ -39,6 +39,11 @@
             <artifactId>util</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>ru.taskurotta</groupId>
+            <artifactId>documentation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>io.dropwizard</groupId>
