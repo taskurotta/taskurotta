@@ -1,0 +1,10 @@
+<script type="text/ng-template" id="menu-tree">
+    <a href="{{documentationUrl}}#{{item.anchor}}">{{item.caption}}</a>
+    <ol ng-if="item.children">
+        <li ng-repeat="item in item.children" ng-include="'menu-tree'"></li>
+    </ol>
+</script>
+
+<ol>
+    <li ng-repeat="item in menuItems" ng-include="'menu-tree'"></li>
+</ol>

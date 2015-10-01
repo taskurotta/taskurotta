@@ -1,5 +1,6 @@
 angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule',
-    'taskModule','processModule','scheduleModule','interruptedModule','metricModule', 'notificationsModule'])
+    'taskModule','processModule','scheduleModule','interruptedModule','metricModule', 'notificationsModule',
+    'documentationModule'])
 
     .config(function ($stateProvider, $urlRouterProvider, coreAppProvider) {
         console.log('indexApp.config');
@@ -333,6 +334,23 @@ angular.module('indexApp', ['coreApp','homeModule', 'queueModule', 'actorModule'
                 '': {
                     templateUrl: '/views/notifications/subscription.html',
                     controller: /*@ngInject*/ 'subscriptionCardController'
+                },
+                'footer': {
+                    templateUrl: '/views/footer.html'
+                }
+            }
+        });
+
+        $stateProvider.state('documentation', {
+            url: '/documentation',
+            params: {},
+            views: {
+                'navigation': {
+                    templateUrl: '/views/navigation.html'
+                },
+                '': {
+                    templateUrl: '/views/documentation/documentation.html',
+                    controller: /*@ngInject*/ 'documentationController'
                 },
                 'footer': {
                     templateUrl: '/views/footer.html'
