@@ -47,9 +47,11 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
             "SELECT PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
     protected static final String SQL_GET_ORDERED_PROCESS_LIST =
             "SELECT /*+ INDEX_ASC(TSK_PROCESS TSK_PROCESS_START_TIME_IDX) */ PROCESS_ID, START_TASK_ID, CUSTOM_ID, START_TIME, END_TIME, STATE, RETURN_VALUE, START_JSON FROM TSK_PROCESS";
+    protected static final String SQL_FIND_LOST_PROCESSES =
+            "SELECT PROCESS_ID FROM TSK_PROCESS WHERE (STATE = ? AND START_TIME < ?) OR (STATE = ? AND END_TIME < ?)";
+    protected static final String SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID =
+            "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? AND ACTOR_ID = ? ";
 
-
-    protected static final String SQL_GET_PROCESS_CNT_BY_STATE_AND_STARTER_ID = "SELECT COUNT(PROCESS_ID) AS cnt FROM TSK_PROCESS WHERE STATE = ? AND ACTOR_ID = ? ";
     public static final String WILDCARD = "%";
 
     public OraProcessService(HazelcastInstance hzInstance, DataSource dataSource) {
@@ -364,6 +366,70 @@ public class OraProcessService extends AbstractHzProcessService implements Proce
                 } catch (SQLException e) {
                     logger.error("Catch exception when finding incomplete processes before time[" + recoveryTime + "] processes limit[" + limit + "]", e);
                     throw new ServiceCriticalException("Incomplete processes search before time[" + recoveryTime + "] failed", e);
+                }
+
+                return result;
+            }
+
+            @Override
+            public void close() throws IOException {
+                closeResultSet(resultSet);
+
+                if (preparedStatement != null) {
+                    try {
+                        preparedStatement.close();
+                    } catch (SQLException e) {
+                        throw new ServiceCriticalException("Error on closing PreparedStatement", e);
+                    }
+                }
+
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        throw new ServiceCriticalException("Error on closing Connection", e);
+                    }
+                }
+            }
+        };
+    }
+
+    @Override
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+        return new ResultSetCursor<UUID>() {
+
+            private Connection connection;
+            private PreparedStatement preparedStatement;
+            private ResultSet resultSet;
+
+            private void init() throws SQLException {
+                connection = dataSource.getConnection();
+                preparedStatement = connection.prepareStatement(SQL_FIND_LOST_PROCESSES);
+
+                preparedStatement.setInt(1, Process.ABORTED);
+                preparedStatement.setLong(2, lastFinishedProcessDeleteTime);
+                preparedStatement.setInt(3, Process.FINISH);
+                preparedStatement.setLong(4, lastFinishedProcessDeleteTime);
+                preparedStatement.setFetchSize(batchSize);
+
+                resultSet = preparedStatement.executeQuery();
+            }
+
+            @Override
+            public Collection<UUID> getNext() {
+                Collection<UUID> result = new ArrayList<>(batchSize);
+                try {
+                    if (resultSet == null) {
+                        init();
+                    }
+
+                    int i = 0;
+                    while (i++ < batchSize && resultSet.next()) {
+                        result.add(UUID.fromString(resultSet.getString("process_id")));
+                    }
+                } catch (SQLException e) {
+                    logger.error("Catch exception when finding lost processes before time[" + lastFinishedProcessDeleteTime + "] processes batchSize[" + batchSize + "]", e);
+                    throw new ServiceCriticalException("Lost processes search before time[" + lastFinishedProcessDeleteTime + "] failed", e);
                 }
 
                 return result;

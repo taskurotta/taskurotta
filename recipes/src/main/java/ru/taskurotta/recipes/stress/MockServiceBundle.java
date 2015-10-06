@@ -134,6 +134,21 @@ public class MockServiceBundle implements ServiceBundle {
             public void unlock(UUID processId) {
 
             }
+
+            @Override
+            public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+                return new ResultSetCursor<UUID>() {
+                    @Override
+                    public Collection<UUID> getNext() {
+                        return Collections.EMPTY_LIST;
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+
+                    }
+                };
+            }
         };
     }
 

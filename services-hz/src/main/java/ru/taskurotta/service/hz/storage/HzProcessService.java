@@ -4,6 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.query.PagingPredicate;
 import com.hazelcast.query.Predicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
     private static final Logger logger = LoggerFactory.getLogger(HzProcessService.class);
 
     private static final String START_TIME_INDEX_NAME = "startTime";
+    private static final String END_TIME_INDEX_NAME = "endTime";
     private static final String STATE_INDEX_NAME = "state";
 
     protected String processesStorageMapName;
@@ -49,6 +51,7 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
         // prevent index creation in MongoProcessService
         if (this.getClass().equals(HzProcessService.class)) {
             this.processIMap.addIndex(START_TIME_INDEX_NAME, true);
+            this.processIMap.addIndex(END_TIME_INDEX_NAME, true);
             this.processIMap.addIndex(STATE_INDEX_NAME, false);
         }
     }
@@ -96,6 +99,35 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
         };
     }
 
+    @Override
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+        PagingPredicate pagingPredicate = new PagingPredicate(
+                Predicates.or(
+                    Predicates.and(
+                        Predicates.between(START_TIME_INDEX_NAME, 0l, lastAbortedProcessDeleteTime),
+                        Predicates.equal(STATE_INDEX_NAME, Process.ABORTED)),
+                    Predicates.and(
+                        Predicates.between(END_TIME_INDEX_NAME, 0l, lastFinishedProcessDeleteTime),
+                        Predicates.equal(STATE_INDEX_NAME, Process.FINISH))
+                ), batchSize);
+
+        Collection<UUID> result = new ArrayList<>(processIMap.keySet(pagingPredicate));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found [{}] lost processes for last gc time [{]]", result.size(), lastFinishedProcessDeleteTime);
+        }
+
+        return new ResultSetCursor<UUID>() {
+            @Override
+            public Collection<UUID> getNext() {
+                return result;
+            }
+
+            @Override
+            public void close() throws IOException {
+
+            }
+        };
+    }
 
     @Override
     public void startProcess(TaskContainer task) {

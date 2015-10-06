@@ -26,6 +26,7 @@ public class MongoProcessService extends HzProcessService {
     private static final Logger logger = LoggerFactory.getLogger(MongoProcessService.class);
 
     private static final String START_TIME_INDEX_NAME = ProcessBSerializer.START_TIME.toString();
+    private static final String END_TIME_INDEX_NAME = ProcessBSerializer.END_TIME.toString();
     private static final String STATE_INDEX_NAME = ProcessBSerializer.STATE.toString();
 
     private final DBCollection dbCollection;
@@ -58,8 +59,24 @@ public class MongoProcessService extends HzProcessService {
         return new MongoResultSetCursor(dbCollection, query, batchSize);
     }
 
+    @Override
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+        BasicDBObject queryFinishedProcess = new BasicDBObject();
+        queryFinishedProcess.append(END_TIME_INDEX_NAME, new BasicDBObject("$lte", lastFinishedProcessDeleteTime));
+        queryFinishedProcess.append(STATE_INDEX_NAME, Process.FINISH);
 
-    private class MongoResultSetCursor implements ResultSetCursor {
+        BasicDBObject queryAbortedProcess = new BasicDBObject();
+        queryAbortedProcess.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", lastAbortedProcessDeleteTime));
+        queryAbortedProcess.append(STATE_INDEX_NAME, Process.ABORTED);
+
+        queryFinishedProcess.append("$or", queryAbortedProcess);
+
+        logger.debug("Mongo query is " + queryFinishedProcess);
+
+        return new MongoResultSetCursor(dbCollection, queryFinishedProcess, batchSize);
+    }
+
+    private class MongoResultSetCursor implements ResultSetCursor<UUID> {
 
         DBCollection dbCollection;
         BasicDBObject query;

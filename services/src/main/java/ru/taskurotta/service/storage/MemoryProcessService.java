@@ -67,6 +67,20 @@ public class MemoryProcessService implements ProcessService, ProcessInfoRetrieve
     }
 
     @Override
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+        return new ResultSetCursor<UUID>() {
+            @Override
+            public Collection<UUID> getNext() {
+                return new ArrayList<>();
+            }
+
+            @Override
+            public void close() throws IOException {
+            }
+        };
+    }
+
+    @Override
     public void lock(UUID processId) {
 
     }
