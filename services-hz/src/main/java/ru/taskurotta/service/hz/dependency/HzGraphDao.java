@@ -4,6 +4,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.links.GraphDao;
 
@@ -116,6 +117,11 @@ public class HzGraphDao implements GraphDao {
         }
 
         return false;
+    }
+
+    @Override
+    public ResultSetCursor<UUID> findLostGraphs(long lastGraphChangeTime, int batchSize) {
+        throw new UnsupportedOperationException("Please, use MongoGraphDao");
     }
 
 }
