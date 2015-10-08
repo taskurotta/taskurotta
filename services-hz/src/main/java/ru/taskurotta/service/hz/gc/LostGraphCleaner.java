@@ -38,7 +38,7 @@ public class LostGraphCleaner implements GarbageCollectorThread {
     private ScheduledExecutorService scheduledExecutorService;
 
     public LostGraphCleaner(GraphDao graphDao, ProcessService processService, GarbageCollectorService garbageCollectorService,
-                            long lostGraphFindTimeout, int batchSize, long incompleteProcessTimeout, boolean enabled) {
+                            long lostGraphFindTimeout, int batchSize, long incompleteProcessTimeout, boolean enabled, boolean gcEnabled) {
         this.graphDao = graphDao;
         this.processService = processService;
         this.garbageCollectorService = garbageCollectorService;
@@ -54,10 +54,10 @@ public class LostGraphCleaner implements GarbageCollectorThread {
         });
         Shutdown.addHook(scheduledExecutorService);
 
-        if (enabled) {
+        if (enabled && gcEnabled) {
             start();
         } else {
-            logger.warn("Lost graph cleaner is disabled");
+            logger.warn("Lost graph cleaner is disabled or garbage collector is disabled.");
         }
     }
 

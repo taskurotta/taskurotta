@@ -12,6 +12,13 @@
         <constructor-arg name="bSerializationService" ref="bSerializationService"/>
         <constructor-arg name="decisionCollectionName" value="${hz.map.decision.name}"/>
     </bean>
+
+    <bean id="mongoGraphDao" class="ru.taskurotta.service.hz.dependency.MongoGraphDao">
+        <constructor-arg name="hzInstance" ref="hzInstance"/>
+        <constructor-arg name="graphsMapName" value="${hz.map.graph.name}"/>
+        <constructor-arg name="mongoDB" ref="mongoDB"/>
+        <constructor-arg name="bSerializationService" ref="bSerializationService"/>
+    </bean>
     <!-- /Backends -->
 
     <!-- Queues persistence support -->

@@ -215,6 +215,24 @@
         <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
     </bean>
 
+    <bean id="lostGraphCleaner" class="ru.taskurotta.service.hz.gc.LostGraphCleaner">
+        <constructor-arg name="graphDao" ref="graphDao"/>
+        <constructor-arg name="processService" ref="processService"/>
+        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
+        <constructor-arg name="lostGraphFindTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration"  value="${gc.lost-graph.find-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="batchSize" value="${gc.lost-graph.batch-size}"/>
+        <constructor-arg name="incompleteProcessTimeout">
+            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
+                <constructor-arg name="duration"  value="${recovery.process.incomplete-timeout}"/>
+            </bean>
+        </constructor-arg>
+        <constructor-arg name="enabled" value="${gc.lost-graph.enabled}"/>
+        <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
+    </bean>
     <!-- /Backends -->
 
     <!-- Mock pending queue configurator for hazelcast without stores -->
