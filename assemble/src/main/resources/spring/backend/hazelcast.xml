@@ -191,48 +191,6 @@
         <constructor-arg name="poolSize" value="${gc.pool-size}"/>
         <constructor-arg name="enabled" value="${gc.enabled}"/>
     </bean>
-
-    <bean id="lostProcessCleaner" class="ru.taskurotta.service.hz.gc.LostProcessCleaner">
-        <constructor-arg name="processService" ref="processService"/>
-        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
-        <constructor-arg name="lostProcessFindTimeout">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.lost-process.find-timeout}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="batchSize" value="${gc.lost-process.batch-size}"/>
-        <constructor-arg name="timeBeforeDeleteFinishedProcess">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-delete-finished-process}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="timeBeforeDeleteAbortedProcess">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration" value="${gc.time-before-manual-delete-process}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="enabled" value="${gc.lost-process.enabled}"/>
-        <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
-    </bean>
-
-    <bean id="lostGraphCleaner" class="ru.taskurotta.service.hz.gc.LostGraphCleaner">
-        <constructor-arg name="graphDao" ref="graphDao"/>
-        <constructor-arg name="processService" ref="processService"/>
-        <constructor-arg name="garbageCollectorService" ref="garbageCollectorService"/>
-        <constructor-arg name="lostGraphFindTimeout">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration"  value="${gc.lost-graph.find-timeout}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="batchSize" value="${gc.lost-graph.batch-size}"/>
-        <constructor-arg name="incompleteProcessTimeout">
-            <bean class="ru.taskurotta.util.DurationParser" factory-method="toMillis">
-                <constructor-arg name="duration"  value="${recovery.process.incomplete-timeout}"/>
-            </bean>
-        </constructor-arg>
-        <constructor-arg name="enabled" value="${gc.lost-graph.enabled}"/>
-        <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
-    </bean>
     <!-- /Backends -->
 
     <!-- Mock pending queue configurator for hazelcast without stores -->
