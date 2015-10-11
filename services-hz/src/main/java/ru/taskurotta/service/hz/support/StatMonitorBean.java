@@ -195,5 +195,13 @@ public class StatMonitorBean implements StatInfoRetriever {
         return sb.toString();
     }
 
+    @Override
+    public int getFinishedProcessesCounter() {
+
+//        hazelcastInstance.get
+
+        return GeneralTaskServer.finishedProcessesCounter.get();
+    }
+
 
 }

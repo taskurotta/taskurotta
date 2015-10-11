@@ -36,6 +36,14 @@ public class StatMonitorResource {
         return statInfoRetriever.getHazelcastStats();
     }
 
+    @GET
+    @Path("/finished_processes")
+    public String showFinishedProcessCounter() {
+        int finishedProcesses = statInfoRetriever.getFinishedProcessesCounter();
+
+        return Integer.toString(finishedProcesses);
+    }
+
     @Required
     public void setStatInfoRetriever(StatInfoRetriever statInfoRetriever) {
         this.statInfoRetriever = statInfoRetriever;
