@@ -42,7 +42,7 @@ public class ProcessPusher {
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
                          final int startSpeedPerSecond, final int threadCount, final int minQueuesSize,
                          final int maxQueuesSize, final int waitAfterDoneSeconds, final boolean fixedPushRate) {
-        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize, maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new DefaultFpCounter());
+        this(starter, hazelcastInstance, maxProcessQuantity, startSpeedPerSecond, threadCount, minQueuesSize, maxQueuesSize, waitAfterDoneSeconds, fixedPushRate, new DefaultFinishedProcessCounter());
     }
 
     public ProcessPusher(final Starter starter, final HazelcastInstance hazelcastInstance, final int maxProcessQuantity,
@@ -91,8 +91,9 @@ public class ProcessPusher {
 
                     int needToPush = actualSpeed - currSize;
 
-                    logger.info("Speed pps: planned {}, actual {}. start new {}", actualSpeed,
-                            (int) (1D * counter.get() / ((System.currentTimeMillis() - startTestTime) / 1000)), needToPush);
+                    logger.info("process pusher: counter {}, planned {}, actual {}. start new {}", counter.get(),
+                            actualSpeed, (int) (1D * counter.get() / ((System.currentTimeMillis() - startTestTime) /
+                                    1000)), needToPush);
 
                     double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
@@ -245,86 +246,88 @@ public class ProcessPusher {
                     }
 
                     sb.append("\n\nTOTAL Heap Cost = " + bytesToMb(totalHeapCost));
+
+
+                    sb.append("\nMongo Maps statistics (rate per second at last one minute):");
+                    sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
+                                    .deleteTimer.max()));
+                    sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate(), MongoMapStore
+                                    .loadTimer.max()));
+                    sb.append(String.format("\nloadS  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate(),
+                            MongoMapStore.loadSuccessTimer.max()));
+                    sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate(), MongoMapStore
+                                    .storeTimer.max()));
+
+                    sb.append("\nMongo Queues statistics:");
+                    sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate(),
+                            MongoCachedQueueStore.deleteTimer.max()));
+                    sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate(),
+                            MongoCachedQueueStore.loadTimer.max()));
+                    sb.append(String.format("\nloadA  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()
+                            , MongoCachedQueueStore.loadAllTimer.max()));
+                    sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
+                            MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
+                            MongoCachedQueueStore.storeTimer.max()));
+
+                    int pushedCount = ProcessPusher.counter.get();
+                    int startedCount = GeneralTaskServer.startedProcessesCounter.get();
+
+                    sb.append("\n Processes: pushed = " + pushedCount +
+                            "  started = " + startedCount +
+                            "  delta = " + (pushedCount - startedCount) +
+                            "  finished = " +
+                            fpCounter.getCount() +
+                            "  broken tasks = " +
+                            GeneralTaskServer.brokenProcessesCounter.get());
+
+                    sb.append("\n processesOnTimeout = " +
+                            RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
+                            "  recoveredProcesses = " +
+                            RecoveryServiceImpl.recoveredProcessesCounter.get() +
+                            "  recoveredTasks = " +
+                            RecoveryServiceImpl.recoveredTasksCounter.get() +
+                            "  recoveredInterruptedTasks = " +
+                            RecoveryServiceImpl.recoveredInterruptedTasksCounter.get() +
+                            "  restartedBrokenTasks = " +
+                            RecoveryServiceImpl.restartedBrokenTasks.get() +
+                            "  recoveredProcessDecision = " +
+                            RecoveryServiceImpl.recoveredProcessDecisionCounter.get() +
+                            "  restartedIncompleteTasksCounter = " +
+                            RecoveryServiceImpl.restartedIncompleteTasksCounter.get());
+
+                    sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
+                            "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
+                            - GeneralTaskServer.processedDecisionsCounter.get()));
+
+                    sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
+                            "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
+                            ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
+                            MongoStorageFactory.bakedTasks.get());
+
+                    {
+                        double release = HzTaskServerMetrics.statRelease.mean();
+                        double statPdAll = HzTaskServerMetrics.statPdAll.mean();
+                        double statPdLock = HzTaskServerMetrics.statPdLock.mean();
+                        double statPdWork = HzTaskServerMetrics.statPdWork.mean();
+
+                        sb.append(String.format("\n decision: release = %8.3f process: rate = %8.3f sum = %8.3f lock = " +
+                                        "%8.3f work = %8.3f unlock = %8.3f maxR = %8.3f  maxD = %8.3f",
+                                release, HzTaskServerMetrics.statPdAll.oneMinuteRate(), statPdAll, statPdLock, statPdWork,
+                                (statPdAll - statPdLock - statPdWork), HzTaskServerMetrics.statRelease.max(),
+                                HzTaskServerMetrics.statPdAll.max()));
+
+                    }
+
+                    logger.info(sb.toString());
+
                 }
-
-                sb.append("\nMongo Maps statistics (rate per second at last one minute):");
-                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.deleteTimer.mean(), MongoMapStore.deleteTimer.oneMinuteRate(), MongoMapStore
-                                .deleteTimer.max()));
-                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.loadTimer.mean(), MongoMapStore.loadTimer.oneMinuteRate(), MongoMapStore
-                                .loadTimer.max()));
-                sb.append(String.format("\nloadS  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.loadSuccessTimer.mean(), MongoMapStore.loadSuccessTimer.oneMinuteRate(),
-                        MongoMapStore.loadSuccessTimer.max()));
-                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoMapStore.storeTimer.mean(), MongoMapStore.storeTimer.oneMinuteRate(), MongoMapStore
-                                .storeTimer.max()));
-
-                sb.append("\nMongo Queues statistics:");
-                sb.append(String.format("\ndelete mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.deleteTimer.mean(), MongoCachedQueueStore.deleteTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.deleteTimer.max()));
-                sb.append(String.format("\nload   mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.loadTimer.mean(), MongoCachedQueueStore.loadTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.loadTimer.max()));
-                sb.append(String.format("\nloadA  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.loadAllTimer.mean(), MongoCachedQueueStore.loadAllTimer.oneMinuteRate()
-                        , MongoCachedQueueStore.loadAllTimer.max()));
-                sb.append(String.format("\nstore  mean: %8.3f rate: %8.3f max: %8.3f",
-                        MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
-                        MongoCachedQueueStore.storeTimer.max()));
-
-                int pushedCount = ProcessPusher.counter.get();
-                int startedCount = GeneralTaskServer.startedProcessesCounter.get();
-
-                sb.append("\n Processes: pushed = " + pushedCount +
-                        "  started = " + startedCount +
-                        "  delta = " + (pushedCount - startedCount) +
-                        "  finished = " +
-                        fpCounter.getCount() +
-                        "  broken tasks = " +
-                        GeneralTaskServer.brokenProcessesCounter.get());
-
-                sb.append("\n processesOnTimeout = " +
-                        RecoveryThreadsImpl.processesOnTimeoutFoundedCounter.get() +
-                        "  recoveredProcesses = " +
-                        RecoveryServiceImpl.recoveredProcessesCounter.get() +
-                        "  recoveredTasks = " +
-                        RecoveryServiceImpl.recoveredTasksCounter.get() +
-                        "  recoveredInterruptedTasks = " +
-                        RecoveryServiceImpl.recoveredInterruptedTasksCounter.get() +
-                        "  restartedBrokenTasks = " +
-                        RecoveryServiceImpl.restartedBrokenTasks.get() +
-                        "  recoveredProcessDecision = " +
-                        RecoveryServiceImpl.recoveredProcessDecisionCounter.get() +
-                        "  restartedIncompleteTasksCounter = " +
-                        RecoveryServiceImpl.restartedIncompleteTasksCounter.get());
-
-                sb.append("\n decisions = " + GeneralTaskServer.receivedDecisionsCounter.get() +
-                        "  pending = " + (GeneralTaskServer.receivedDecisionsCounter.get()
-                        - GeneralTaskServer.processedDecisionsCounter.get()));
-
-                sb.append("\n pushed to queue = " + HzQueueService.pushedTaskToQueue.get() +
-                        "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
-                        ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
-                        MongoStorageFactory.bakedTasks.get());
-
-                {
-                    double release = HzTaskServerMetrics.statRelease.mean();
-                    double statPdAll = HzTaskServerMetrics.statPdAll.mean();
-                    double statPdLock = HzTaskServerMetrics.statPdLock.mean();
-                    double statPdWork = HzTaskServerMetrics.statPdWork.mean();
-
-                    sb.append(String.format("\n decision: release = %8.3f process: rate = %8.3f sum = %8.3f lock = " +
-                                    "%8.3f work = %8.3f unlock = %8.3f maxR = %8.3f  maxD = %8.3f",
-                            release, HzTaskServerMetrics.statPdAll.oneMinuteRate(), statPdAll, statPdLock, statPdWork,
-                            (statPdAll - statPdLock - statPdWork), HzTaskServerMetrics.statRelease.max(),
-                            HzTaskServerMetrics.statPdAll.max()));
-
-                }
-
-                logger.info(sb.toString());
 
 
             }

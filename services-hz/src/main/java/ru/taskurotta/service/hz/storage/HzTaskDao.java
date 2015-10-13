@@ -119,8 +119,9 @@ public class HzTaskDao implements TaskDao {
         try {
             Decision decision = id2TaskDecisionMap.get(taskKey);
             if (decision != null && decision.getState() != Decision.STATE_REGISTERED) {
-                logger.warn("{}/{} Can not start task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
-                        decision.getState());
+                logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
+                        taskKey.getTaskId(), taskKey.getProcessId(), decision.getState());
+
                 return null;
             }
 

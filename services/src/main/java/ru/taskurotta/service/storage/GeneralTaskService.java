@@ -114,7 +114,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             UUID pass = taskDao.startTask(taskId, processId, workerTimeoutMilliseconds, false);
 
             if (pass == null) {
-                logger.error("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+                logger.debug("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+
                 return null;
             }
 

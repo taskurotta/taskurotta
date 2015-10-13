@@ -151,8 +151,10 @@ public class GeneralTaskServer implements TaskServer {
 
             TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId(), false);
             if (result == null) {
-                logger.warn("Failed to get task for queue item [" + item + "] from store");
+                logger.debug("Failed to get task for queue item [{}] from store", item);
+
                 // todo: server response can be very slowly in this case with huge amount of broken tasks
+                // todo: set time limit of poll() invocations. should be less then 90 seconds
                 continue;
             }
 
