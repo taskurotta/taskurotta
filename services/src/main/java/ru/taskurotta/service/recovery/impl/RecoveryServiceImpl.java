@@ -484,7 +484,8 @@ public class RecoveryServiceImpl implements RecoveryService {
                 return false;
             }
         } else {
-            logger.warn("{}/{}: can not restart task. taskService.restartTask() operation is false", processId, taskId, taskContainer);
+            logger.debug("{}/{}: can not restart task. taskService.restartTask() operation is false", processId,
+                    taskId, taskContainer);
             return false;
         }
 
