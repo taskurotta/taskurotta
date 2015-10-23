@@ -117,7 +117,7 @@ public class MongoProcessService extends HzProcessService {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("Found [{}] incomplete processes", result.size());
+                logger.debug("Found [{}] processes by query [{}]", result.size(), query);
             }
 
             return result;
