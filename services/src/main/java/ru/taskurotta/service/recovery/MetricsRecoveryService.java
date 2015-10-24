@@ -49,12 +49,12 @@ public class MetricsRecoveryService implements RecoveryService {
     }
 
     @Override
-    public boolean restartTask(UUID processId, UUID taskId) {
-        return recoveryService.restartTask(processId, taskId);
+    public boolean restartInterruptedTask(UUID processId, UUID taskId) {
+        return recoveryService.restartInterruptedTask(processId, taskId);
     }
 
     @Override
-    public boolean resurrectTask(UUID taskId, UUID processId) {
-        return recoveryService.resurrectTask(taskId, processId);
+    public boolean reenqueueTask(UUID taskId, UUID processId) {
+        return recoveryService.reenqueueTask(taskId, processId);
     }
 }

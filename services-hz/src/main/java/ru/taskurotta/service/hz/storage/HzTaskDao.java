@@ -13,6 +13,7 @@ import ru.taskurotta.service.hz.TaskKey;
 import ru.taskurotta.service.storage.TaskDao;
 import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
@@ -34,6 +35,29 @@ public class HzTaskDao implements TaskDao {
     private IMap<TaskKey, TaskContainer> id2TaskMap;
     private IMap<TaskKey, Decision> id2TaskDecisionMap;
 
+//    private ConcurrentHashMap<TaskKey, String> checkpoint = new ConcurrentHashMap<>(10000, 0.8f, 100);
+
+    private void lock(TaskKey taskKey) {
+
+        id2TaskDecisionMap.lock(taskKey);
+
+//        if (checkpoint.putIfAbsent(taskKey, "") != null) {
+//            logger.error("\n\n\n\n\n\n\n==========================\n===================\nUMBAAAAAAAAAAAAAAAAAAAAAA!");
+//        }
+    }
+
+    private void unlock(TaskKey taskKey) {
+
+//        if (checkpoint.remove(taskKey) == null) {
+//            logger.error("\n\n\n\n\n\n\n==========================\n" +
+//                    "===================\nUMBAAAAAAAAAAAAAAAAAAAAAA2222" +
+//                    "!");
+//        }
+
+        id2TaskDecisionMap.unlock(taskKey);
+
+    }
+
     public HzTaskDao(HazelcastInstance hzInstance, String id2TaskMapName, String id2TaskDecisionMapName) {
 
         id2TaskMap = hzInstance.getMap(id2TaskMapName);
@@ -47,11 +71,14 @@ public class HzTaskDao implements TaskDao {
 
         TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId());
 
-        id2TaskDecisionMap.lock(taskKey);
+        lock(taskKey);
 
         try {
 
             Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "finish task. Decision is " + decision);
+
             if (decision == null || decision.getState() == Decision.STATE_FINISH) {
                 logger.warn("{}/{} Can not finish task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
                         decision == null ? "null" : decision.getState());
@@ -72,9 +99,10 @@ public class HzTaskDao implements TaskDao {
             decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+
             return true;
         } finally {
-            id2TaskDecisionMap.unlock(taskKey);
+            unlock(taskKey);
         }
     }
 
@@ -83,16 +111,18 @@ public class HzTaskDao implements TaskDao {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
-        id2TaskDecisionMap.lock(taskKey);
+        lock(taskKey);
 
         try {
+
             Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "retry task. Decision is " + decision);
+
             if (decision == null || decision.getState() != Decision.STATE_FINISH) {
                 logger.warn("{}/{} Can not retry task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
                         decision == null ? "null" : decision.getState());
 
-//                UN.print(taskKey.getTaskId());
-//logger.error("{}/{} Current stack trace",  taskKey.getTaskId(), taskKey.getProcessId(), new Throwable("" + System.currentTimeMillis()));
                 return false;
             }
 
@@ -101,10 +131,11 @@ public class HzTaskDao implements TaskDao {
             decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+
             return true;
 
         } finally {
-            id2TaskDecisionMap.unlock(taskKey);
+            unlock(taskKey);
         }
     }
 
@@ -113,11 +144,15 @@ public class HzTaskDao implements TaskDao {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
-        id2TaskDecisionMap.lock(taskKey);
-//        UN.put(taskKey.getTaskId());
+        lock(taskKey);
 
         try {
+
             Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "start task. Decision is " + decision);
+
+
             if (decision != null && decision.getState() != Decision.STATE_REGISTERED) {
                 logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
                         taskKey.getTaskId(), taskKey.getProcessId(), decision.getState());
@@ -143,34 +178,53 @@ public class HzTaskDao implements TaskDao {
 
             return pass;
         } finally {
-            id2TaskDecisionMap.unlock(taskKey);
+            unlock(taskKey);
         }
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
+    public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
-        id2TaskDecisionMap.lock(taskKey);
+        lock(taskKey);
 
         try {
             Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "restart task isForce = " + force + ". Decision is " + decision);
+
             if (decision == null) {
                 return true;
             }
 
-            if (!force && decision.getState() == Decision.STATE_FINISH) {
-                logger.debug("{}/{} Can not restart task. Task is finished now. Decision is {}", taskKey.getTaskId(),
-                        taskKey.getProcessId(), decision.getState(), decision);
+            if (!force) {
+                boolean skip = false;
 
-                // support for oldest version
-                if (decision.getRecoveryTime() != 0l) {
-                    decision.setRecoveryTime(0l);
+                if ((!ifFatalError && decision.getState() == Decision.STATE_FINISH)) {
+                    skip = true;
                 }
-                id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
 
-                return false;
+                if (ifFatalError && decision.getState() == Decision.STATE_FINISH) {
+                    ErrorContainer errorContainer = decision.getDecisionContainer().getErrorContainer();
+
+                    if (errorContainer == null || !errorContainer.isFatalError()) {
+                        skip = true;
+                    }
+                }
+
+                if (skip) {
+                    logger.debug("{}/{} Can not restart task. Task is finished now. Decision is {}", taskKey.getTaskId(),
+                            taskKey.getProcessId(), decision.getState(), decision);
+
+                    // support for oldest version
+//                    if (decision.getRecoveryTime() != 0l) {
+//                        decision.setRecoveryTime(0l);
+//                    }
+//                    id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
+
+                    return false;
+                }
             }
 
             decision.setState(Decision.STATE_REGISTERED);
@@ -178,10 +232,10 @@ public class HzTaskDao implements TaskDao {
             decision.setRecoveryTime(0l);
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
-            return true;
 
+            return true;
         } finally {
-            id2TaskDecisionMap.unlock(taskKey);
+            unlock(taskKey);
         }
 
     }
@@ -191,10 +245,14 @@ public class HzTaskDao implements TaskDao {
 
         TaskKey taskKey = new TaskKey(taskDecision.getTaskId(), taskDecision.getProcessId());
 
-        id2TaskDecisionMap.lock(taskKey);
+        lock(taskKey);
+
         try {
 
             Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "update task decision. Decision is " + decision);
+
             if (decision == null) {
                 logger.warn("{}/{} Can update task decision. Task decision nut found", taskKey.getTaskId(), taskKey
                         .getProcessId());
@@ -205,7 +263,7 @@ public class HzTaskDao implements TaskDao {
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
 
         } finally {
-            id2TaskDecisionMap.unlock(taskKey);
+            unlock(taskKey);
         }
     }
 
@@ -227,25 +285,49 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        Decision decision = id2TaskDecisionMap.get(new TaskKey(taskId, processId));
-        if (decision == null) {
-            return null;
+
+        TaskKey taskKey = new TaskKey(taskId, processId);
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "getDecision(). Decision is " + decision);
+
+            if (decision == null) {
+
+                return null;
+            }
+
+            DecisionContainer result = decision.getDecisionContainer();
+
+            logger.debug("Getting decision [{}]", result);
+            return result;
+
+        } finally {
+            unlock(taskKey);
         }
-
-        DecisionContainer result = decision.getDecisionContainer();
-
-        logger.debug("Getting decision [{}]", result);
-        return result;
     }
 
     @Override
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        Decision decision = id2TaskDecisionMap.get(new TaskKey(taskId, processId));
-        if (decision == null) {
-            return false;
-        }
 
-        return decision.getState() == Decision.STATE_FINISH;
+        TaskKey taskKey = new TaskKey(taskId, processId);
+
+        lock(taskKey);
+
+        try {
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+            if (decision == null) {
+                return false;
+            }
+
+            return decision.getState() == Decision.STATE_FINISH;
+        } finally {
+            unlock(taskKey);
+        }
     }
 
     @Override
@@ -282,9 +364,22 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public void deleteDecisions(Set<UUID> decisionsIds, UUID processId) {
-        for (UUID decisionId : decisionsIds) {
-            id2TaskDecisionMap.delete(new TaskKey(decisionId, processId));
+    public void deleteDecisions(Set<UUID> taskIds, UUID processId) {
+
+
+        for (UUID taskId : taskIds) {
+
+            TaskKey taskKey = new TaskKey(taskId, processId);
+
+            lock(taskKey);
+
+            try {
+//                UN.put(taskKey.getTaskId(), "delete decision");
+
+                id2TaskDecisionMap.delete(taskKey);
+            } finally {
+                unlock(taskKey);
+            }
         }
     }
 

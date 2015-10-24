@@ -88,7 +88,7 @@ public class IncompleteTaskFinder implements RecoveryThreads {
                                 }
 
                                 for (TaskKey taskKey : incompleteTasks) {
-                                    recoveryService.resurrectTask(taskKey.getTaskId(), taskKey.getProcessId());
+                                    recoveryService.reenqueueTask(taskKey.getTaskId(), taskKey.getProcessId());
                                 }
                             }
                         }

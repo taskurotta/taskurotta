@@ -8,7 +8,7 @@
     <bean id="processResurrectionThread" class="ru.taskurotta.test.stress.AutoResurrectService">
         <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
         <constructor-arg name="operationExecutor" ref="taskRecoveryOperationExecutor"/>
-        <!--<constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>-->
+        <constructor-arg name="hazelcastInstance" ref="hzInstance"/>
     </bean>
 
 </beans>

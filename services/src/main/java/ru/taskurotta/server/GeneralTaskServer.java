@@ -184,28 +184,17 @@ public class GeneralTaskServer implements TaskServer {
 
     public void processDecision(UUID taskId, UUID processId) {
 
-        for (int i = 0; i < 10; i++) {
-            DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
+        DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
 
-            if (taskDecision == null) {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException ignore) {
-                }
-                continue;
-            }
-
-            if (i > 0) {
-                logger.error("\nSHIT !!!");
-            }
-
-            processDecision(taskDecision);
-            return;
+        if (taskDecision == null) {
+            throw new IllegalStateException("Task decision not found. taskId = " + taskId + " processId = " +
+                    processId);
         }
 
-        throw new IllegalStateException("Task decision not found. taskId = " + taskId + " processId = " +
-                processId);
+
+        processDecision(taskDecision);
     }
+
 
     public void processDecision(DecisionContainer taskDecision) {
 

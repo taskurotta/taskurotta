@@ -64,10 +64,11 @@ public class ProcessPusher {
 
                 if (!fixedPushRate) {
 
-                    int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
+//                    int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
+                    int sumQueuesSize = fpCounter.getCount();
 
                     // should be waiting to prevent overload
-                    if (sumQueuesSize > maxQueuesSize) {
+                    if ((counter.get() - sumQueuesSize) > maxQueuesSize) {
 
                         // go slowly
                         currentSpeedPerSecond--;
