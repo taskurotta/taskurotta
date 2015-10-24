@@ -9,4 +9,6 @@ public interface StatInfoRetriever {
 
     String getNodeStats();
 
+    int getFinishedProcessesCounter();
+
 }

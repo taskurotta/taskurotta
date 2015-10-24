@@ -15,9 +15,9 @@ import java.util.concurrent.*;
 /**
  * Created on 16.02.2015.
  */
-public class JmxFpCounter implements ProcessesCounter {
+public class JmxFinishedProcessCounter implements ProcessesCounter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JmxFpCounter.class);
+    private static final Logger logger = LoggerFactory.getLogger(JmxFinishedProcessCounter.class);
 
     private List<String> jmxServiceUrls;
 
@@ -34,10 +34,10 @@ public class JmxFpCounter implements ProcessesCounter {
     }
 
     @Override
-    public long getCount() {
+    public int getCount() {
         logger.info("Try to get data via JMX");
         try {
-            long result = 0;
+            int result = 0;
             List<Future<Long>> futures = new ArrayList<>();
             for (MBeanServerConnection mbsc : connections) {
                 futures.add(es.submit(new GetCountCallable(mbsc)));

@@ -12,10 +12,13 @@ import javax.ws.rs.core.MediaType;
 /**
  * Created on 15.05.2015.
  */
-@Path("/monitoring/stats")
+@Path(StatMonitorResource.PATH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.TEXT_PLAIN)
 public class StatMonitorResource {
+
+    public static final String PATH = "/monitoring/stats";
+    public static final String METHOD_FINISHED_PROCESS_COUNTER = "/finished_process";
 
     private StatInfoRetriever statInfoRetriever;
 
@@ -34,6 +37,14 @@ public class StatMonitorResource {
     @Path("/hazelcast")
     public String showHazelcastStats() {
         return statInfoRetriever.getHazelcastStats();
+    }
+
+    @GET
+    @Path(METHOD_FINISHED_PROCESS_COUNTER)
+    public String showFinishedProcessCounter() {
+        int finishedProcesses = statInfoRetriever.getFinishedProcessesCounter();
+
+        return Integer.toString(finishedProcesses);
     }
 
     @Required

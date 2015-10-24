@@ -39,7 +39,14 @@ public interface TaskService {
 
     boolean retryTask(UUID taskId, UUID processId);
 
-    boolean restartTask(UUID taskId, UUID processId, boolean force);
+    /**
+     * @param taskId
+     * @param processId
+     * @param force     restart task anyway
+     * @param ifFatalError restart only if decision container has fatal error
+     * @return
+     */
+    boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError);
 
     /**
      * Idempotent getter for task decisions
@@ -61,7 +68,7 @@ public interface TaskService {
      * Clean up resources after process.
      * Service should avoid synchronous removing artifacts due to performance issues.
      *
-     * @param processId - ID of the process
+     * @param processId       - ID of the process
      * @param finishedTaskIds - all task UUIDs of finished process
      */
     void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);

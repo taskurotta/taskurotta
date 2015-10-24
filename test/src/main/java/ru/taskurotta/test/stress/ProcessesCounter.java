@@ -5,6 +5,6 @@ package ru.taskurotta.test.stress;
  */
 public interface ProcessesCounter {
 
-    public long getCount();
+    public int getCount();
 
 }

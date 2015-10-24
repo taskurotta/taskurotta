@@ -351,7 +351,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                     String taskList = TransportUtils.getTaskList(taskContainer);
                     String actorId = taskContainer.getActorId();
 
-                    if (taskService.restartTask(taskId, processId, false)) {
+                    if (taskService.restartTask(taskId, processId, false, false)) {
 
                         // task ready to enqueue
                         if (queueService.enqueueItem(actorId, taskId, processId, startTime, taskList)) {
@@ -428,7 +428,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     @Override
-    public boolean restartTask(final UUID processId, final UUID taskId) {
+    public boolean restartInterruptedTask(final UUID processId, final UUID taskId) {
         processService.lock(processId);
 
         try {
@@ -444,19 +444,25 @@ public class RecoveryServiceImpl implements RecoveryService {
             long touchTime = System.currentTimeMillis();
             graph.setTouchTimeMillis(touchTime);
 
-            if (taskService.restartTask(taskId, processId, true)) {
+            if (taskService.restartTask(taskId, processId, false, true)) {
                 TaskContainer tc = taskService.getTask(taskId, processId);
                 if (tc != null && queueService.enqueueItem(tc.getActorId(), tc.getTaskId(), tc.getProcessId(), System.currentTimeMillis(), TransportUtils.getTaskList(tc))) {
                     interruptedTasksService.delete(processId, taskId);
                     restartedBrokenTasks.incrementAndGet();
                 }
+
+                // --process state change part--
+                if (!hasOtherNotReadyFatalTasks(processId, taskId, graph.getAllReadyItems())) {
+                    processService.markProcessAsStarted(processId);
+                }
+                // --/process state change part--
+
+            } else {
+                logger.debug("restartInterruptedTask(): Can not restart interrupted task. taskId = {} processId= {}",
+                        taskId, processId);
             }
 
-            // --process state change part--
-            if (!hasOtherNotReadyFatalTasks(processId, taskId, graph.getAllReadyItems())) {
-                processService.markProcessAsStarted(processId);
-            }
-            // --/process state change part--
+
 
             return true;
         } finally {
@@ -466,14 +472,14 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
     @Override
-    public boolean resurrectTask(UUID taskId, UUID processId) {
+    public boolean reenqueueTask(UUID taskId, UUID processId) {
         TaskContainer taskContainer = taskService.getTask(taskId, processId);
         if (taskContainer == null) {
             logger.error("{}/{}: not found task container", processId, taskId);
             return false;
         }
 
-        if (taskService.restartTask(taskId, processId, false)) {
+        if (taskService.restartTask(taskId, processId, false, false)) {
             String actorId = taskContainer.getActorId();
             long startTime = taskContainer.getStartTime();
             String taskList = TransportUtils.getTaskList(taskContainer);
@@ -484,7 +490,8 @@ public class RecoveryServiceImpl implements RecoveryService {
                 return false;
             }
         } else {
-            logger.warn("{}/{}: can not restart task. taskService.restartTask() operation is false", processId, taskId, taskContainer);
+            logger.debug("{}/{}: can not restart task. taskService.restartInterruptedTask() operation is false", processId,
+                    taskId, taskContainer);
             return false;
         }
 
@@ -600,7 +607,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
         // emulate TaskServer.startProcess()
         UUID taskId = startTaskContainer.getTaskId();
-        taskService.restartTask(taskId, processId, true);
+        taskService.restartTask(taskId, processId, true, false);
 
         dependencyService.startProcess(startTaskContainer);
         taskService.startProcess(startTaskContainer);

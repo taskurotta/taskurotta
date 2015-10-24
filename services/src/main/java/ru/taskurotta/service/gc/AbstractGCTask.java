@@ -58,6 +58,8 @@ public abstract class AbstractGCTask implements Runnable {
             taskDao.deleteDecisions(finishedItems, processId);
             taskDao.deleteTasks(finishedItems, processId);
 
+            // todo: remove unfinished and interrupted tasks
+
             graphDao.deleteGraph(processId);
 
         }

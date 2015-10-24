@@ -50,7 +50,7 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
         // due guarantees for its immutability.
 
         if (task == null) {
-            logger.error("Inconsistent state, taskId[{}] does not present at task service", taskId);
+            logger.warn("Inconsistent state, taskId[{}] does not present at task service", taskId);
             return null;
         }
 
@@ -114,7 +114,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
             UUID pass = taskDao.startTask(taskId, processId, workerTimeoutMilliseconds, false);
 
             if (pass == null) {
-                logger.error("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+                logger.debug("{}/{} Task can not be executed. It is already started or finished", taskId, processId);
+
                 return null;
             }
 
@@ -276,8 +277,8 @@ public class GeneralTaskService implements TaskService, TaskInfoRetriever {
     }
 
     @Override
-    public boolean restartTask(UUID taskId, UUID processId, boolean force) {
-        return taskDao.restartTask(taskId, processId, force);
+    public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
+        return taskDao.restartTask(taskId, processId, force, ifFatalError);
     }
 
     @Override

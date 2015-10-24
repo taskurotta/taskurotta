@@ -32,12 +32,12 @@ public class ProxyRecoveryService implements RecoveryService {
     }
 
     @Override
-    public boolean restartTask(UUID processId, UUID taskId) {
-        return target.restartTask(processId, taskId);
+    public boolean restartInterruptedTask(UUID processId, UUID taskId) {
+        return target.restartInterruptedTask(processId, taskId);
     }
 
     @Override
-    public boolean resurrectTask(UUID taskId, UUID processId) {
-        return target.resurrectTask(taskId, processId);
+    public boolean reenqueueTask(UUID taskId, UUID processId) {
+        return target.reenqueueTask(taskId, processId);
     }
 }

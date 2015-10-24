@@ -13,7 +13,7 @@ public class PredicateUtils {
     private static final String WILDCARD_SYMBOL = "%";
 
     public static Predicate getStartsWith(String field, String value) {
-        if (field == null || value==null) {
+        if (field == null || value == null) {
             return null;
         }
         return new Predicates.LikePredicate(field, value.trim() + WILDCARD_SYMBOL);
@@ -27,14 +27,14 @@ public class PredicateUtils {
     }
 
     public static Predicate getLessThen(String field, long positiveValue) {
-        if (field == null || positiveValue<0) {
+        if (field == null || positiveValue < 0) {
             return null;
         }
         return new Predicates.BetweenPredicate(field, 0l, positiveValue);
     }
 
     public static Predicate getMoreThen(String field, long positiveValue) {
-        if (field == null || positiveValue<0) {
+        if (field == null || positiveValue < 0) {
             return null;
         }
         return new Predicates.BetweenPredicate(field, positiveValue, Long.MAX_VALUE);

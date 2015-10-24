@@ -32,9 +32,9 @@ public class RestartTaskOperation implements Operation<RecoveryService> {
     @Override
     public void run () {
         try {
-            taskRecoveryService.restartTask(processId, taskId);
+            taskRecoveryService.restartInterruptedTask(processId, taskId);
         } catch (Throwable e) {
-            logger.error("Cannot recover task: processId[{}], taskId[{}]", processId, taskId);
+            logger.error("Cannot recover task: processId[{}], taskId[{}]", processId, taskId, e);
         }
     }
 
