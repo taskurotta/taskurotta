@@ -69,11 +69,16 @@ public class MongoProcessService extends HzProcessService {
         queryAbortedProcess.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", lastAbortedProcessDeleteTime));
         queryAbortedProcess.append(STATE_INDEX_NAME, Process.ABORTED);
 
-        queryFinishedProcess.append("$or", queryAbortedProcess);
+        BasicDBList orStates = new BasicDBList();
+        orStates.add(queryAbortedProcess);
+        orStates.add(queryFinishedProcess);
 
-        logger.debug("Mongo query is " + queryFinishedProcess);
+        BasicDBObject query = new BasicDBObject();
+        query.append("$or", orStates);
 
-        return new MongoResultSetCursor(dbCollection, queryFinishedProcess, batchSize);
+        logger.debug("Mongo query is " + query);
+
+        return new MongoResultSetCursor(dbCollection, query, batchSize);
     }
 
     private class MongoResultSetCursor implements ResultSetCursor<UUID> {
