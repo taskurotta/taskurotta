@@ -48,11 +48,6 @@ public class MongoProcessServiceTest {
     }
 
     @Test
-    public void testFindIncompleteProcesses() throws Exception {
-
-    }
-
-    @Test
     public void testFindLostProcesses() throws Exception {
         UUID finishedProcessId = UUID.randomUUID();
         UUID abortedProcessId = UUID.randomUUID();
