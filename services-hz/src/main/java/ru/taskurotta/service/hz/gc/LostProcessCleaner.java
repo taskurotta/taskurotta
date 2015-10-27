@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 
 /**
  * User: stukushin
@@ -32,12 +33,13 @@ public class LostProcessCleaner implements GarbageCollectorThread {
     private long timeBeforeDeleteFinishedProcess;
     private long timeBeforeDeleteAbortedProcess;
     private AtomicBoolean enabled = new AtomicBoolean(false);
+    private Lock nodeLock;
 
     private ScheduledExecutorService scheduledExecutorService;
 
     public LostProcessCleaner(ProcessService processService, GarbageCollectorService garbageCollectorService,
                               long lostProcessFindTimeout, int batchSize, long timeBeforeDeleteFinishedProcess,
-                              long timeBeforeDeleteAbortedProcess, boolean enabled, boolean gcEnabled) {
+                              long timeBeforeDeleteAbortedProcess, boolean enabled, boolean gcEnabled, Lock nodeLock) {
         this.processService = processService;
         this.garbageCollectorService = garbageCollectorService;
         this.lostProcessFindTimeout = lostProcessFindTimeout;
@@ -45,6 +47,7 @@ public class LostProcessCleaner implements GarbageCollectorThread {
         this.timeBeforeDeleteFinishedProcess = timeBeforeDeleteFinishedProcess;
         this.timeBeforeDeleteAbortedProcess = timeBeforeDeleteAbortedProcess;
         this.enabled.set(enabled);
+        this.nodeLock = nodeLock;
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread thread = new Thread(r);
@@ -68,22 +71,28 @@ public class LostProcessCleaner implements GarbageCollectorThread {
                 return;
             }
 
-            long now = System.currentTimeMillis();
-            long lastFinishedProcessDeleteTime = now - timeBeforeDeleteFinishedProcess;
-            long lastAbortedProcessDeleteTime = now - timeBeforeDeleteAbortedProcess;
-            try (ResultSetCursor<UUID> cursor = processService.findLostProcesses(
-                    lastFinishedProcessDeleteTime, lastAbortedProcessDeleteTime, batchSize)) {
-                Collection<UUID> processIds;
-                while (!(processIds = cursor.getNext()).isEmpty()) {
-                    logger.debug("Found [{}] lost processes", processIds.size());
+            try {
+                if (nodeLock.tryLock()) {
+                    long now = System.currentTimeMillis();
+                    long lastFinishedProcessDeleteTime = now - timeBeforeDeleteFinishedProcess;
+                    long lastAbortedProcessDeleteTime = now - timeBeforeDeleteAbortedProcess;
+                    try (ResultSetCursor<UUID> cursor = processService.findLostProcesses(
+                            lastFinishedProcessDeleteTime, lastAbortedProcessDeleteTime, batchSize)) {
+                        Collection<UUID> processIds;
+                        while (!(processIds = cursor.getNext()).isEmpty()) {
+                            logger.debug("Found [{}] lost processes", processIds.size());
 
-                    for (UUID processId : processIds) {
-                        // delete immediately
-                        garbageCollectorService.collect(processId, 0L);
+                            for (UUID processId : processIds) {
+                                // delete immediately
+                                garbageCollectorService.collect(processId, 0L);
+                            }
+                        }
                     }
                 }
             } catch (Throwable e) {
                 logger.error("LostProcessCleaner iteration failed due to error, try to resume in [" + lostProcessFindTimeout + "] ms...", e);
+            } finally {
+                nodeLock.unlock();
             }
         }, 0L, lostProcessFindTimeout, TimeUnit.MILLISECONDS);
     }

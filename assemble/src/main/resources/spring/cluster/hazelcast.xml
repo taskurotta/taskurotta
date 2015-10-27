@@ -82,4 +82,8 @@
 
     <hz:lock id="recoveryTaskNodeLock" instance-ref="hzInstance" name="${hz.recovery.task.lock.name}" />
 
+    <hz:lock id="gcLostProcessNodeLock" instance-ref="hzInstance" name="${gc.lost-process.lock.name}"/>
+
+    <hz:lock id="gcLostGraphNodeLock" instance-ref="hzInstance" name="${gc.lost-graph.lock.name}"/>
+
 </beans>

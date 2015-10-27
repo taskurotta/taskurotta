@@ -115,6 +115,7 @@
         </constructor-arg>
         <constructor-arg name="enabled" value="${gc.lost-process.enabled}"/>
         <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
+        <constructor-arg name="nodeLock" ref="gcLostProcessNodeLock"/>
     </bean>
 
     <bean id="lostGraphCleaner" class="ru.taskurotta.service.hz.gc.LostGraphCleaner">
@@ -134,6 +135,7 @@
         </constructor-arg>
         <constructor-arg name="enabled" value="${gc.lost-graph.enabled}"/>
         <constructor-arg name="gcEnabled" value="${gc.enabled}"/>
+        <constructor-arg name="nodeLock" ref="gcLostGraphNodeLock"/>
     </bean>
     <!-- /Services -->
 

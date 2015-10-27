@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 
 /**
  * User: stukushin
@@ -34,11 +35,13 @@ public class LostGraphCleaner implements GarbageCollectorThread {
     private int batchSize;
     private long incompleteProcessTimeout;
     private AtomicBoolean enabled = new AtomicBoolean(false);
+    private Lock nodeLock;
 
     private ScheduledExecutorService scheduledExecutorService;
 
-    public LostGraphCleaner(GraphDao graphDao, ProcessService processService, GarbageCollectorService garbageCollectorService,
-                            long lostGraphFindTimeout, int batchSize, long incompleteProcessTimeout, boolean enabled, boolean gcEnabled) {
+    public LostGraphCleaner(GraphDao graphDao, ProcessService processService,
+                            GarbageCollectorService garbageCollectorService, long lostGraphFindTimeout, int batchSize,
+                            long incompleteProcessTimeout, boolean enabled, boolean gcEnabled, Lock nodeLock) {
         this.graphDao = graphDao;
         this.processService = processService;
         this.garbageCollectorService = garbageCollectorService;
@@ -46,10 +49,11 @@ public class LostGraphCleaner implements GarbageCollectorThread {
         this.batchSize = batchSize;
         this.incompleteProcessTimeout = incompleteProcessTimeout;
         this.enabled.set(enabled);
+        this.nodeLock = nodeLock;
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread thread = new Thread(r);
-            thread.setName("LostPGraphCleaner");
+            thread.setName("LostGraphCleaner");
             return thread;
         });
         Shutdown.addHook(scheduledExecutorService);
@@ -69,22 +73,28 @@ public class LostGraphCleaner implements GarbageCollectorThread {
                 return;
             }
 
-            long lastGraphChangeTime = System.currentTimeMillis() - incompleteProcessTimeout;
-            try (ResultSetCursor<UUID> cursor = graphDao.findLostGraphs(lastGraphChangeTime, batchSize)) {
-                Collection<UUID> graphIds;
-                while (!(graphIds = cursor.getNext()).isEmpty()) {
-                    logger.debug("Found [{}] lost graphs", graphIds.size());
+            try {
+                if (nodeLock.tryLock()) {
+                    long lastGraphChangeTime = System.currentTimeMillis() - incompleteProcessTimeout;
+                    try (ResultSetCursor<UUID> cursor = graphDao.findLostGraphs(lastGraphChangeTime, batchSize)) {
+                        Collection<UUID> graphIds;
+                        while (!(graphIds = cursor.getNext()).isEmpty()) {
+                            logger.debug("Found [{}] lost graphs", graphIds.size());
 
-                    for (UUID graphId : graphIds) {
-                        Process process = processService.getProcess(graphId);
-                        if (process == null) {
-                            // delete immediately
-                            garbageCollectorService.collect(graphId, 0L);
+                            for (UUID graphId : graphIds) {
+                                Process process = processService.getProcess(graphId);
+                                if (process == null) {
+                                    // delete immediately
+                                    garbageCollectorService.collect(graphId, 0L);
+                                }
+                            }
                         }
                     }
                 }
             } catch (Throwable e) {
                 logger.error("LostGraphCleaner iteration failed due to error, try to resume in [" + lostGraphFindTimeout + "] ms...", e);
+            } finally {
+                nodeLock.unlock();
             }
         }, 0L, lostGraphFindTimeout, TimeUnit.MILLISECONDS);
     }
