@@ -1,7 +1,7 @@
 package ru.taskurotta.service.hz.storage;
 
-import com.mongodb.Mongo;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
  * Time: 16:24
  */
 
+@Ignore // only for manual test
 public class MongoProcessServiceTest {
 
     private MongoProcessService mongoProcessService;
@@ -40,9 +41,6 @@ public class MongoProcessServiceTest {
         applicationContext.getEnvironment().getPropertySources().addLast(
                 new PropertiesPropertySource("customProperties", properties));
         applicationContext.refresh();
-
-        Mongo mongo = applicationContext.getBean("mongo", Mongo.class);
-        mongo.dropDatabase(taskurottaTestMongoDBName);
 
         mongoProcessService = applicationContext.getBean("processService", MongoProcessService.class);
     }
