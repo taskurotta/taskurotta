@@ -239,7 +239,7 @@ public class ProcessInspector {
             }
 
             @Override
-            public boolean restartTask(UUID taskId, UUID processId, boolean force) {
+            public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
                 return true;
             }
 

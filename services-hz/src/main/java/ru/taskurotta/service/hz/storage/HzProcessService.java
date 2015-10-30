@@ -253,11 +253,11 @@ public class HzProcessService extends AbstractHzProcessService implements Proces
     static com.hazelcast.query.Predicate<UUID, Process> constructPredicate(ProcessSearchCommand command) {
         List<com.hazelcast.query.Predicate> pList = new ArrayList<>();
         if (command.getProcessId() != null) {
-            pList.add(PredicateUtils.getStartsWith("processId", command.getProcessId()));
+            pList.add(PredicateUtils.getEqual("processId", UUID.fromString(command.getProcessId())));
         }
-//        if (command.getActorId() != null) {
-//            pList.add(PredicateUtils.getStartsWith("actorId", command.getActorId()));
-//        }
+        if (command.getActorId() != null) {
+            pList.add(PredicateUtils.getEqual("actorId", UUID.fromString(command.getActorId())));
+        }
         if (command.getCustomId() != null) {
             pList.add(PredicateUtils.getStartsWith("customId", command.getCustomId()));
         }

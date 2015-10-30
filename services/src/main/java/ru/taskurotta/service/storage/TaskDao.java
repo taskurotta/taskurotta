@@ -19,7 +19,14 @@ public interface TaskDao {
 
     UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout);
 
-    boolean restartTask(UUID taskId, UUID processId, boolean force);
+    /**
+     * @param taskId
+     * @param processId
+     * @param force restart task anyway
+     * @param ifFatalError restart only if decision container has fatal error
+     * @return
+     */
+    boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError);
 
     boolean retryTask(UUID taskId, UUID processId);
 

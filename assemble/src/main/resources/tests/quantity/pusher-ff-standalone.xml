@@ -41,7 +41,7 @@
         <constructor-arg name="taskServer" ref="taskServer"/>
     </bean>
 
-    <bean id="fpCounter" class="ru.taskurotta.test.stress.mongo.MongoFpCounter" init-method="init">
+    <bean id="fpCounter" class="ru.taskurotta.test.stress.mongo.MongoFinishedProcessCounter" init-method="init">
         <property name="collectionName" value="Process"/>
         <property name="mongoDB" ref="mongoDB"/>
     </bean>

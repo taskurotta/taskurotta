@@ -9,6 +9,9 @@
     <context:property-placeholder/>
     <context:annotation-config/>
 
+    <!-- base config -->
+    <import resource="resurrect-broken-process.xml"/>
+
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">
         <constructor-arg name="taskServer" ref="taskServer"/>
@@ -29,13 +32,6 @@
         <constructor-arg name="maxQueuesSize" value="${test.ff.maxQueuesSize}"/>
         <constructor-arg name="waitAfterDoneSeconds" value="${test.ff.waitAfterDoneSeconds}"/>
         <constructor-arg name="fixedPushRate" value="${test.ff.fixedPushRate}" />
-    </bean>
-
-
-    <bean id="processResurrectionThread" class="ru.taskurotta.test.stress.AutoResurrectService">
-        <constructor-arg name="interruptedTasksService" ref="interruptedTasksService"/>
-        <constructor-arg name="operationExecutor" ref="taskRecoveryOperationExecutor"/>
-        <!--<constructor-arg name="operationExecutor" ref="recoveryOperationExecutor"/>-->
     </bean>
 
 </beans>
