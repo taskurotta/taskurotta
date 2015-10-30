@@ -79,7 +79,7 @@ public class MongoProcessService extends HzProcessService {
         BasicDBObject query = new BasicDBObject();
         query.append("$or", orStates);
 
-        logger.debug("Mongo query is " + query);
+        logger.debug("Mongo query is [{}]", query);
 
         return new MongoResultSetCursor(dbCollection, query, batchSize);
     }
