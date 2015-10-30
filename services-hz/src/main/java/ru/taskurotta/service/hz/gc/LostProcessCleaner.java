@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -36,6 +37,8 @@ public class LostProcessCleaner implements GarbageCollectorThread {
     private Lock nodeLock;
 
     private ScheduledExecutorService scheduledExecutorService;
+
+    public static AtomicInteger cleanedProcessesCounter = new AtomicInteger();
 
     public LostProcessCleaner(ProcessService processService, GarbageCollectorService garbageCollectorService,
                               long lostProcessFindTimeout, int batchSize, long timeBeforeDeleteFinishedProcess,
@@ -86,6 +89,8 @@ public class LostProcessCleaner implements GarbageCollectorThread {
                                 // delete immediately
                                 garbageCollectorService.collect(processId, 0L);
                             }
+
+                            cleanedProcessesCounter.addAndGet(processIds.size());
                         }
                     }
                 }

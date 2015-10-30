@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -38,6 +39,8 @@ public class LostGraphCleaner implements GarbageCollectorThread {
     private Lock nodeLock;
 
     private ScheduledExecutorService scheduledExecutorService;
+
+    public static AtomicInteger cleanedGraphsCounter = new AtomicInteger();
 
     public LostGraphCleaner(GraphDao graphDao, ProcessService processService,
                             GarbageCollectorService garbageCollectorService, long lostGraphFindTimeout, int batchSize,
@@ -88,6 +91,8 @@ public class LostGraphCleaner implements GarbageCollectorThread {
                                     garbageCollectorService.collect(graphId, 0L);
                                 }
                             }
+
+                            cleanedGraphsCounter.addAndGet(graphIds.size());
                         }
                     }
                 }

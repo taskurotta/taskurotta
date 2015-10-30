@@ -16,6 +16,8 @@ import ru.taskurotta.hazelcast.queue.store.mongodb.MongoCachedQueueStore;
 import ru.taskurotta.hazelcast.store.MongoMapStore;
 import ru.taskurotta.server.GeneralTaskServer;
 import ru.taskurotta.service.console.retriever.StatInfoRetriever;
+import ru.taskurotta.service.hz.gc.LostGraphCleaner;
+import ru.taskurotta.service.hz.gc.LostProcessCleaner;
 import ru.taskurotta.service.hz.queue.HzQueueService;
 import ru.taskurotta.service.recovery.impl.RecoveryServiceImpl;
 import ru.taskurotta.service.recovery.impl.RecoveryThreadsImpl;
@@ -177,6 +179,9 @@ public class StatMonitorBean implements StatInfoRetriever {
                 "  pending = " + (HzQueueService.pushedTaskToQueue.get() - QueueContainer.addedTaskToQueue.get
                 ()) + " with delay = " + HzQueueService.pushedTaskToQueueWithDelay.get() + " backed " +
                 MongoStorageFactory.bakedTasks.get());
+
+        sb.append("\n cleaned lost processes = " + LostProcessCleaner.cleanedProcessesCounter.get() +
+                    " cleaned lost graphs = " + LostGraphCleaner.cleanedGraphsCounter.get());
 
         {
             double release = HzTaskServerMetrics.statRelease.mean();
