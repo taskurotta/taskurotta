@@ -25,8 +25,9 @@ public class MongoProcessService extends HzProcessService {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoProcessService.class);
 
-    private static final String START_TIME_INDEX_NAME = ProcessBSerializer.START_TIME.toString();
-    private static final String STATE_INDEX_NAME = ProcessBSerializer.STATE.toString();
+    private static final String START_TIME_FIELD_NAME = ProcessBSerializer.START_TIME.toString();
+    private static final String END_TIME_FIELD_NAME = ProcessBSerializer.END_TIME.toString();
+    private static final String STATE_FIELD_NAME = ProcessBSerializer.STATE.toString();
 
     private final DBCollection dbCollection;
 
@@ -35,9 +36,12 @@ public class MongoProcessService extends HzProcessService {
         super(hzInstance, processesStorageMapName);
 
         this.dbCollection = mongoDB.getCollection(processesStorageMapName);
-        this.dbCollection.setDBDecoderFactory(bSerializationService.getDecoderFactory(ru.taskurotta.service.console.model.Process.class));
+        this.dbCollection.setDBDecoderFactory(bSerializationService.getDecoderFactory(Process.class));
 
-        this.dbCollection.createIndex(new BasicDBObject(START_TIME_INDEX_NAME, 1).append(STATE_INDEX_NAME, 2));
+        // index for aborted processes
+        this.dbCollection.createIndex(new BasicDBObject(START_TIME_FIELD_NAME, 1).append(STATE_FIELD_NAME, 1));
+        // index for finished processes
+        this.dbCollection.createIndex(new BasicDBObject(END_TIME_FIELD_NAME, 1).append(STATE_FIELD_NAME, 1));
     }
 
     @Override
@@ -45,11 +49,11 @@ public class MongoProcessService extends HzProcessService {
 
         // { "startTime" : { "$lte" : 1423988513856} , "$or" : [ {"state": 0}, {"state": null} ]}
         BasicDBObject query = new BasicDBObject();
-        query.append(START_TIME_INDEX_NAME, new BasicDBObject("$lte", recoveryTime));
+        query.append(START_TIME_FIELD_NAME, new BasicDBObject("$lte", recoveryTime));
 
         BasicDBList orStates = new BasicDBList();
-        orStates.add(new BasicDBObject(STATE_INDEX_NAME, null));
-        orStates.add(new BasicDBObject(STATE_INDEX_NAME, ru.taskurotta.service.console.model.Process.START));
+        orStates.add(new BasicDBObject(STATE_FIELD_NAME, null));
+        orStates.add(new BasicDBObject(STATE_FIELD_NAME, Process.START));
 
         query.append("$or", orStates);
 
@@ -58,8 +62,29 @@ public class MongoProcessService extends HzProcessService {
         return new MongoResultSetCursor(dbCollection, query, batchSize);
     }
 
+    @Override
+    public ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize) {
+        BasicDBObject queryFinishedProcess =
+                new BasicDBObject(END_TIME_FIELD_NAME, new BasicDBObject("$lte", lastFinishedProcessDeleteTime));
+        queryFinishedProcess.append(STATE_FIELD_NAME, Process.FINISH);
 
-    private class MongoResultSetCursor implements ResultSetCursor {
+        BasicDBObject queryAbortedProcess =
+                new BasicDBObject(START_TIME_FIELD_NAME, new BasicDBObject("$lte", lastAbortedProcessDeleteTime));
+        queryAbortedProcess.append(STATE_FIELD_NAME, Process.ABORTED);
+
+        BasicDBList orStates = new BasicDBList();
+        orStates.add(queryAbortedProcess);
+        orStates.add(queryFinishedProcess);
+
+        BasicDBObject query = new BasicDBObject();
+        query.append("$or", orStates);
+
+        logger.debug("Mongo query is [{}]", query);
+
+        return new MongoResultSetCursor(dbCollection, query, batchSize);
+    }
+
+    private class MongoResultSetCursor implements ResultSetCursor<UUID> {
 
         DBCollection dbCollection;
         BasicDBObject query;
@@ -100,7 +125,7 @@ public class MongoProcessService extends HzProcessService {
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("Found [{}] incomplete processes", result.size());
+                logger.debug("Found [{}] processes by query [{}]", result.size(), query);
             }
 
             return result;

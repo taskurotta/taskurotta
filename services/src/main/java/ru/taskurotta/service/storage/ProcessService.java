@@ -29,4 +29,6 @@ public interface ProcessService {
     void lock(UUID processId);
 
     void unlock(UUID processId);
+
+    ResultSetCursor<UUID> findLostProcesses(long lastFinishedProcessDeleteTime, long lastAbortedProcessDeleteTime, int batchSize);
 }
