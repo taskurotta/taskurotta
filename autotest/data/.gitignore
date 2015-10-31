@@ -1,7 +1,0 @@
-# autotest files
-actor/**
-mongo/**
-nginx/**
-node1/**
-node2/**
-pusher/**

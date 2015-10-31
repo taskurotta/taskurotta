@@ -1,0 +1,63 @@
+tsk_mongodb:
+  container_name: tsk_mongodb
+  image: mongo:2.6.9
+  volumes:
+    - ./data/mongo:/data/db
+    - ./etc/mongo:/etc/mongo
+  command: -f /etc/mongo/mongodb.conf
+
+tsk_node1: &tsk_node
+  container_name: tsk_node1
+  links:
+     - tsk_mongodb
+  image: java:openjdk-8u66-jdk
+  volumes: 
+    - ./data/node1:/tmp/javadumps
+    - ./data/node1:/var/log/taskurotta
+    - ./data/jar:/opt/taskurotta
+    - ./etc/node:/etc/taskurotta/server
+  command: java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar server /etc/taskurotta/server/config.yml
+
+tsk_node2:
+  <<: *tsk_node
+  container_name: tsk_node2
+  volumes:
+    - ./data/node2:/tmp/javadumps
+    - ./data/node2:/var/log/taskurotta
+    - ./data/jar:/opt/taskurotta
+    - ./etc/node:/etc/taskurotta/server
+
+tsk_nginx:
+  container_name: tsk_nginx
+  links:
+    - tsk_node1
+    - tsk_node2
+  image: nginx:1.9.5
+  volumes:
+    - ./etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+    - ./data/nginx:/var/log/nginx
+
+tsk_actor:
+  container_name: tsk_actor
+  links:
+    - tsk_nginx
+  image: java:openjdk-8u66-jdk
+  volumes:
+    - ./data/actors:/tmp/javadumps
+    - ./data/actors:/var/log/taskurotta/actors
+    - ./etc/actors:/etc/taskurotta/actors/
+    - ./data/jar:/opt/taskurotta
+  command: java -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps -cp /opt/taskurotta/taskurotta.jar ru.taskurotta.bootstrap.Main -f /etc/taskurotta/actors/config.yml
+
+tsk_pusher:
+  container_name: tsk_pusher
+  links:
+    - tsk_actor
+    - tsk_nginx
+  image: java:openjdk-8u66-jdk
+  volumes:
+    - ./data/pusher:/tmp/javadumps
+    - ./data/pusher:/var/log/taskurotta/pusher
+    - ./data/jar:/opt/taskurotta
+    - ./etc/pusher:/etc/taskurotta/pusher
+  command: java -Xmx64m -Xms64m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps -Dlogback.configurationFile=/etc/taskurotta/pusher/logback.xml -Dtsk.endpoint=http://tsk_nginx:80 -Dtest.ff.fixedPushRate=false -Dtest.ff.minQueuesSize=1000 -Dtest.ff.maxQueuesSize=2000 -cp /opt/taskurotta/taskurotta.jar ru.taskurotta.test.stress.ProcessPusher file:/etc/taskurotta/pusher/config.xml
