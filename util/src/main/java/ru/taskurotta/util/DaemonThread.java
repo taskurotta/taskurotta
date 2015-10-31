@@ -1,10 +1,15 @@
 package ru.taskurotta.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.TimeUnit;
 
 /**
  */
 public abstract class DaemonThread extends Thread {
+
+    private static final Logger logger = LoggerFactory.getLogger(DaemonThread.class);
 
     TimeUnit sleepUnit;
     long sleepValue;
@@ -33,6 +38,8 @@ public abstract class DaemonThread extends Thread {
                 daemonJob();
             } catch (StopSignal signal) {
                 return;
+            } catch (Throwable ignore) {
+                logger.error("Error while doing daemon job", ignore);
             }
 
             if (sleepUnit != null) {
