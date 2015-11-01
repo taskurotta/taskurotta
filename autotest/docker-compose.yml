@@ -37,8 +37,8 @@ tsk_nginx:
     - ./etc/nginx/nginx.conf:/etc/nginx/nginx.conf
     - ./data/nginx:/var/log/nginx
 
-tsk_actor:
-  container_name: tsk_actor
+tsk_actors:
+  container_name: tsk_actors
   links:
     - tsk_nginx
   image: java:openjdk-8u66-jdk
@@ -52,7 +52,7 @@ tsk_actor:
 tsk_pusher:
   container_name: tsk_pusher
   links:
-    - tsk_actor
+    - tsk_actors
     - tsk_nginx
   image: java:openjdk-8u66-jdk
   volumes:
