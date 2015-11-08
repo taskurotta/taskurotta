@@ -1,0 +1,22 @@
+[mongodb]
+tsk_mongodb       ansible_connection=local
+
+[taskurotta]
+tsk_node1         ansible_connection=local
+tsk_node2         ansible_connection=local
+
+[nginx]
+tsk_nginx         ansible_connection=local
+
+[ff_actors]
+tsk_ff_actors     ansible_connection=local
+
+[ff_pusher]
+tsk_ff_pusher     ansible_connection=local
+
+[local:children]
+mongodb
+taskurotta
+nginx
+ff_actors
+ff_pusher

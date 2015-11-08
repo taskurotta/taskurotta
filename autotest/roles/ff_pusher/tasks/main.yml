@@ -1,0 +1,48 @@
+---
+- name: 'Create pusher data directory'
+  tags:
+  - start
+  file: path={{ my_ff_pusher_path }} state=directory
+
+- name: 'Start pusher container'
+  tags:
+  - start
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: java:openjdk-8u66-jdk
+    state: reloaded
+    net: bridge
+    volumes:
+    - "{{ my_ff_pusher_path }}:/var/log/taskurotta/pusher"
+    - "{{ my_ff_pusher_path_javadumps }}:/tmp/javadumps"
+    - "{{ my_taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
+    - "{{ my_ff_pusher_config }}:/etc/taskurotta/pusher/config.xml"
+    - "{{ my_ff_pusher_config_logback }}:/etc/taskurotta/pusher/logback.xml"
+    command:
+      java -Xmx64m -Xms64m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
+      -Dlogback.configurationFile=/etc/taskurotta/pusher/logback.xml -Dtsk.endpoint=http://tsk_nginx:80
+      -Dtest.ff.fixedPushRate=false -Dtest.ff.minQueuesSize=1000 -Dtest.ff.maxQueuesSize=2000
+      -cp /opt/taskurotta/taskurotta.jar ru.taskurotta.test.stress.ProcessPusher
+      file:/etc/taskurotta/pusher/config.xml
+
+- name: 'Stop pusher container'
+  tags:
+  - stop
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: java:openjdk-8u66-jdk
+    state: stopped
+
+- name: 'Remove pusher container'
+  tags:
+  - clean
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: java:openjdk-8u66-jdk
+    state: absent
+
+- name: 'Remove pusher files'
+  tags:
+  - clean
+  shell: "sudo rm -rf {{ my_ff_pusher_path }} removes={{ my_ff_pusher_path }}"
+#  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

@@ -1,0 +1,45 @@
+---
+- name: 'Create ff_actors data directory'
+  tags:
+  - start
+  file: path={{ my_ff_actors_path }} state=directory
+
+- name: 'Start ff_actors container'
+  tags:
+  - start
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: java:openjdk-8u66-jdk
+    state: reloaded
+    net: bridge
+    volumes:
+    - "{{ my_ff_actors_path }}:/var/log/taskurotta/actors"
+    - "{{ my_ff_actors_path_javadumps }}:/tmp/javadumps"
+    - "{{ my_taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
+    - "{{ my_ff_actors_config }}:/etc/taskurotta/actors/config.yml"
+    command:
+      java -Xmx128m -Xms128m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
+      -cp /opt/taskurotta/taskurotta.jar ru.taskurotta.bootstrap.Main -f /etc/taskurotta/actors/config.yml
+
+
+- name: 'Stop ff_actors container'
+  tags:
+  - stop
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: java:openjdk-8u66-jdk
+    state: stopped
+
+- name: 'Remove ff_actors container'
+  tags:
+  - clean
+  docker:
+    name: "{{ inventory_hostname }}"
+    image: java:openjdk-8u66-jdk
+    state: absent
+
+- name: 'Remove ff_actors files'
+  tags:
+  - clean
+  shell: "sudo rm -rf {{ my_ff_actors_path }} removes={{ my_ff_actors_path }}"
+#  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

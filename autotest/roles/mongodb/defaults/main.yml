@@ -1,0 +1,2 @@
+my_mongodb_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
+my_mongodb_config: "{{ lookup('pipe', 'find $(pwd) -name mongodb.conf') }}"

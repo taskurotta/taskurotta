@@ -16,9 +16,9 @@ http {
      ## Custom
 
         upstream tsk_nginx {
-                server tsk_node1:8811;
-                server tsk_node2:8811;
-                #server tsk_node3:8811;
+        {% for host in groups['taskurotta'] %}
+                server {{ host }}:8811;
+        {% endfor %}
 
                 # maintain a maximum of 32 idle connections to each upstream server
                 keepalive 32;
