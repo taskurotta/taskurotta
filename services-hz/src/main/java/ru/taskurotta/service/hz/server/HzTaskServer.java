@@ -121,7 +121,7 @@ public class HzTaskServer extends GeneralTaskServer {
         long startTime = clock.tick();
 
         // save it firstly
-        if (!taskService.finishTask(taskDecision)) {
+        if (taskService.finishTask(taskDecision) == null) {
             logger.warn("{}/{} Task decision can not be saved", taskDecision.getTaskId(), taskDecision.getProcessId());
             return;
         }
@@ -150,10 +150,6 @@ public class HzTaskServer extends GeneralTaskServer {
 
         ProcessDecisionUnitOfWork call = new ProcessDecisionUnitOfWork(taskKey);
         distributedExeService.submit(call);
-    }
-
-    protected DecisionContainer getDecision(UUID taskId, UUID processId) {
-        return taskService.getDecision(taskId, processId);
     }
 
 

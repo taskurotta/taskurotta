@@ -30,6 +30,7 @@ public class DecisionStreamSerializer implements StreamSerializer<Decision> {
         }
 
         out.writeLong(object.getRecoveryTime());
+        out.writeInt(object.getErrorAttempts());
 
         decisionContainerStreamSerializer.write(out, object.getDecisionContainer());
     }
@@ -48,8 +49,10 @@ public class DecisionStreamSerializer implements StreamSerializer<Decision> {
         }
 
         long recoveryTime = in.readLong();
+        int errorAttempts = in.readInt();
 
-        return new Decision(taskId, processId, state, pass, recoveryTime, decisionContainerStreamSerializer.read(in));
+        return new Decision(taskId, processId, state, pass, recoveryTime, errorAttempts,
+                decisionContainerStreamSerializer.read(in));
     }
 
     @Override

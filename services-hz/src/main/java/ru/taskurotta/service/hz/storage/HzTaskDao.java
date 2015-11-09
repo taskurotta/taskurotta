@@ -65,7 +65,7 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public boolean finishTask(DecisionContainer taskDecision) {
+    public Decision finishTask(DecisionContainer taskDecision) {
 
         logger.debug("Storing decision [{}]", taskDecision);
 
@@ -82,7 +82,7 @@ public class HzTaskDao implements TaskDao {
             if (decision == null || decision.getState() == Decision.STATE_FINISH) {
                 logger.warn("{}/{} Can not finish task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
                         decision == null ? "null" : decision.getState());
-                return false;
+                return null;
             }
 
             if (decision.getPass() != null && (taskDecision.getPass() == null || !(taskDecision.getPass().equals
@@ -91,7 +91,12 @@ public class HzTaskDao implements TaskDao {
                 logger.warn("{}/{} Can not finish task. decision pass {} not equal to reference pass {}. Decision has" +
                                 " been rejected", taskKey.getTaskId(), taskKey.getProcessId(), taskDecision.getPass(),
                         decision.getPass());
-                return false;
+                return null;
+            }
+
+            // increment number of attempts for error tasks with retry policy
+            if (taskDecision.containsError()) {
+                decision.incrementErrorAttempts();
             }
 
             decision.setState(Decision.STATE_FINISH);
@@ -100,7 +105,7 @@ public class HzTaskDao implements TaskDao {
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
 
-            return true;
+            return decision;
         } finally {
             unlock(taskKey);
         }
@@ -120,7 +125,7 @@ public class HzTaskDao implements TaskDao {
 //            UN.put(taskKey.getTaskId(), "retry task. Decision is " + decision);
 
             if (decision == null || decision.getState() != Decision.STATE_FINISH) {
-                logger.warn("{}/{} Can not retry task. Task has {} state", taskKey.getTaskId(), taskKey.getProcessId(),
+                logger.warn("{}/{} Can not retry task. Task has {} state", taskId, processId,
                         decision == null ? "null" : decision.getState());
 
                 return false;
@@ -140,7 +145,7 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
+    public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
@@ -155,16 +160,16 @@ public class HzTaskDao implements TaskDao {
 
             if (decision != null && decision.getState() != Decision.STATE_REGISTERED) {
                 logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
-                        taskKey.getTaskId(), taskKey.getProcessId(), decision.getState());
+                        taskId, processId, decision.getState());
 
                 return null;
             }
 
-            UUID pass = UUID.randomUUID();
+//            UUID pass = UUID.randomUUID();
             long recoveryTime = System.currentTimeMillis() + workerTimeout;
 
             if (decision == null) {
-                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime, null);
+                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime, 0, null);
             } else {
                 // assume that workerTimeout and failOnWorkerTimeouts values can not be changed
 
@@ -176,7 +181,7 @@ public class HzTaskDao implements TaskDao {
 
             id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
 
-            return pass;
+            return decision;
         } finally {
             unlock(taskKey);
         }
@@ -199,32 +204,32 @@ public class HzTaskDao implements TaskDao {
             }
 
             if (!force) {
-                boolean skip = false;
 
-                if ((!ifFatalError && decision.getState() == Decision.STATE_FINISH)) {
-                    skip = true;
-                }
+                if (ifFatalError) {
+                    if (decision.getState() == Decision.STATE_FINISH) {
+                        ErrorContainer errorContainer = decision.getDecisionContainer().getErrorContainer();
 
-                if (ifFatalError && decision.getState() == Decision.STATE_FINISH) {
-                    ErrorContainer errorContainer = decision.getDecisionContainer().getErrorContainer();
+                        if (errorContainer == null || !errorContainer.isFatalError()) {
 
-                    if (errorContainer == null || !errorContainer.isFatalError()) {
-                        skip = true;
+                            logger.debug("{}/{} Can not restart task. Task is finished now and has not fatal error. " +
+                                            "Decision is {}", taskId, processId, decision
+                                            .getState(), decision);
+                            return false;
+                        }
                     }
-                }
+                } else if ((decision.getState() == Decision.STATE_FINISH)) {
 
-                if (skip) {
-                    logger.debug("{}/{} Can not restart task. Task is finished now. Decision is {}", taskKey.getTaskId(),
-                            taskKey.getProcessId(), decision.getState(), decision);
-
-                    // support for oldest version
-//                    if (decision.getRecoveryTime() != 0l) {
-//                        decision.setRecoveryTime(0l);
-//                    }
-//                    id2TaskDecisionMap.set(taskKey, decision, 0l, TimeUnit.NANOSECONDS);
-
+                    logger.debug("{}/{} Can not restart task. Task is finished now. " +
+                            "Decision is {}", taskId, processId, decision
+                            .getState(), decision);
                     return false;
                 }
+
+            }
+
+            // reset error counter for interrupted tasks
+            if (ifFatalError) {
+                decision.setErrorAttempts(0);
             }
 
             decision.setState(Decision.STATE_REGISTERED);
@@ -284,7 +289,7 @@ public class HzTaskDao implements TaskDao {
     }
 
     @Override
-    public DecisionContainer getDecision(UUID taskId, UUID processId) {
+    public Decision getDecision(UUID taskId, UUID processId) {
 
         TaskKey taskKey = new TaskKey(taskId, processId);
 
@@ -294,22 +299,28 @@ public class HzTaskDao implements TaskDao {
 
             Decision decision = id2TaskDecisionMap.get(taskKey);
 
+            logger.debug("Getting decision [{}]", decision);
+
 //            UN.put(taskKey.getTaskId(), "getDecision(). Decision is " + decision);
 
-            if (decision == null) {
-
-                return null;
-            }
-
-            DecisionContainer result = decision.getDecisionContainer();
-
-            logger.debug("Getting decision [{}]", result);
-            return result;
+            return decision;
 
         } finally {
             unlock(taskKey);
         }
     }
+
+    @Override
+    public DecisionContainer getDecisionContainer(UUID taskId, UUID processId) {
+        Decision decision = getDecision(taskId, processId);
+
+        if (decision != null) {
+            return decision.getDecisionContainer();
+        }
+
+        return null;
+    }
+
 
     @Override
     public boolean isTaskReleased(UUID taskId, UUID processId) {
@@ -342,13 +353,8 @@ public class HzTaskDao implements TaskDao {
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        return new ArrayList<>(
-                Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
-                    @Override
-                    public boolean apply(TaskContainer taskContainer) {
-                        return taskContainer.getErrorAttempts() >= iterationCount;
-                    }
-                }));
+        // @todo: implement method
+        throw new IllegalStateException("Not implemented yet");
     }
 
     @Override

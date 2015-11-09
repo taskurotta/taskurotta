@@ -63,8 +63,8 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     private boolean isFirstPoll = true;
     private AtomicInteger nullPoll = new AtomicInteger(0);
 
-    private long releaseTimeout;
-    private int everyNTaskReleaseTimeout;
+    private long releaseTimeout = 0;
+    private int everyNTaskReleaseTimeout = 0;
 
     public LifetimeProfiler() {
     }
@@ -273,7 +273,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     return;
                 }
 
-                if (taskCount.get() % everyNTaskReleaseTimeout == 0) {
+                if (everyNTaskReleaseTimeout > 0 && taskCount.get() % everyNTaskReleaseTimeout == 0) {
                     try {
                         TimeUnit.MILLISECONDS.sleep(releaseTimeout);
                     } catch (InterruptedException e) {

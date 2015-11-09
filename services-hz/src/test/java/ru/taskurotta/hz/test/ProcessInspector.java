@@ -234,7 +234,7 @@ public class ProcessInspector {
 
         return new GeneralTaskService(new TaskDao() {
             @Override
-            public UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
+            public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
                 return null;
             }
 
@@ -249,8 +249,8 @@ public class ProcessInspector {
             }
 
             @Override
-            public boolean finishTask(DecisionContainer taskDecision) {
-                return true;
+            public Decision finishTask(DecisionContainer taskDecision) {
+                return null;
             }
 
             @Override
@@ -271,10 +271,20 @@ public class ProcessInspector {
             }
 
             @Override
-            public DecisionContainer getDecision(UUID taskId, UUID processId) {
-
+            public Decision getDecision(UUID taskId, UUID processId) {
                 TaskKey taskKey = new TaskKey(taskId, processId);
-                return ((Decision) taskDecisionStore.load(taskKey)).getDecisionContainer();
+                return (Decision) taskDecisionStore.load(taskKey);
+            }
+
+            @Override
+            public DecisionContainer getDecisionContainer(UUID taskId, UUID processId) {
+
+                Decision decision = getDecision(taskId, processId);
+                if (decision == null) {
+                    return null;
+                }
+
+                return decision.getDecisionContainer();
             }
 
             @Override

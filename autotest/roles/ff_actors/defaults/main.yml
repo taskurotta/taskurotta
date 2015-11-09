@@ -1,4 +1,5 @@
 my_ff_actors_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
 my_ff_actors_config: "{{ lookup('pipe', 'find $(pwd) -name config.yml') }}"
+#my_ff_actors_config: "{{ lookup('pipe', 'find $(pwd) -name config-speed.yml') }}"
 my_ff_actors_path_javadumps: "{{ playbook_dir }}/data/{{ inventory_hostname }}/javadumps"
 my_taskurotta_jar: "undefined"

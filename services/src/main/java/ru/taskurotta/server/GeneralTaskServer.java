@@ -10,6 +10,7 @@ import ru.taskurotta.service.ServiceBundle;
 import ru.taskurotta.service.config.ConfigService;
 import ru.taskurotta.service.console.model.InterruptedTask;
 import ru.taskurotta.service.dependency.DependencyService;
+import ru.taskurotta.service.dependency.links.Graph;
 import ru.taskurotta.service.dependency.model.DependencyDecision;
 import ru.taskurotta.service.gc.GarbageCollectorService;
 import ru.taskurotta.service.queue.QueueService;
@@ -18,6 +19,7 @@ import ru.taskurotta.service.storage.InterruptedTasksService;
 import ru.taskurotta.service.storage.ProcessService;
 import ru.taskurotta.service.storage.TaskService;
 import ru.taskurotta.transport.model.ArgContainer;
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.RetryPolicyConfigContainer;
@@ -149,59 +151,84 @@ public class GeneralTaskServer implements TaskServer {
                 return null;
             }
 
-            TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId(), false);
-            if (result == null) {
-                logger.debug("Failed to get task for queue item [{}] from store", item);
+            try {
+                TaskContainer result = taskService.getTaskToExecute(item.getTaskId(), item.getProcessId(), false);
+                if (result == null) {
+                    logger.debug("Failed to get task for queue item [{}] from store", item);
 
-                // todo: server response can be very slowly in this case with huge amount of broken tasks
-                // todo: set time limit of poll() invocations. should be less then 90 seconds
-                continue;
+                    // todo: server response can be very slowly in this case with huge amount of broken tasks
+                    // todo: set time limit of poll() invocations. should be less then 90 seconds
+                    continue;
+                }
+
+                return result;
+
+            } catch (IllegalStateException ex) {
+                Graph graph = dependencyService.getGraph(item.getProcessId());
+
+                if (graph == null || graph.isFinished()) {
+                    // ignore this error
+                    // this is happen in case when GC starts to remove tasks and decisions
+                    continue;
+                }
+
+                throw ex;
             }
-
-            return result;
         }
     }
 
     @Override
     public void release(DecisionContainer taskDecision) {
 
-        // todo: should we block release of task? Or it should be another kind of block?
-        // todo: in general situation it is not good idea to drop release of task
-//        if (configService.isActorBlocked(taskDecision.getActorId())) {
-//            logger.warn("Rejected  blocked actor [{}] release request", taskDecision.getActorId());
-//            return;
-//        }
-
         // save it firstly
-        if (!taskService.finishTask(taskDecision)) {
+
+        Decision decision = taskService.finishTask(taskDecision);
+        if (decision == null) {
             logger.warn("{}/{} Task decision can not be saved", taskDecision.getTaskId(), taskDecision.getProcessId());
             return;
         }
 
-        processDecision(taskDecision);
+        processDecision(decision);
     }
 
 
-    public void processDecision(UUID taskId, UUID processId) {
+    /**
+     * @param taskId
+     * @param processId
+     * @return true if process data has consistence state and decision is applied successfully
+     */
+    public boolean processDecision(UUID taskId, UUID processId) {
 
-        DecisionContainer taskDecision = taskService.getDecision(taskId, processId);
+        Decision taskDecision = taskService.getDecision(taskId, processId);
 
         if (taskDecision == null) {
-            throw new IllegalStateException("Task decision not found. taskId = " + taskId + " processId = " +
+            throw new IllegalStateException("Decision not found. taskId = " + taskId + " processId = " +
                     processId);
         }
 
 
-        processDecision(taskDecision);
+        return processDecision(taskDecision);
     }
 
 
-    public void processDecision(DecisionContainer taskDecision) {
+    /**
+     * @param decision
+     * @return true if process data has consistence state and decision is applied successfully
+     */
+    public boolean processDecision(Decision decision) {
+
+        DecisionContainer taskDecision = decision.getDecisionContainer();
+
+        if (taskDecision == null) {
+            throw new IllegalStateException("Task decision not found. " + decision);
+        }
 
         UUID taskId = taskDecision.getTaskId();
         UUID processId = taskDecision.getProcessId();
 
         logger.trace("#[{}]/[{}]: start processing taskDecision = [{}]", processId, taskId, taskDecision);
+
+        taskService.addNewTasks(taskDecision);
 
         if (taskDecision.containsError()) {
 
@@ -223,7 +250,7 @@ public class GeneralTaskServer implements TaskServer {
             if (deciderRetryPolicyConfig != null) {
                 if (isErrorMatch(deciderRetryPolicyConfig, taskDecision.getErrorContainer())) {
 
-                    restartTime = getRestartTime(task, deciderRetryPolicyConfig);
+                    restartTime = getRestartTime(task, deciderRetryPolicyConfig, decision.getErrorAttempts());
                 }
             } else {
                 restartTime = taskDecision.getRestartTime();
@@ -241,14 +268,14 @@ public class GeneralTaskServer implements TaskServer {
                             "false.", processId, taskId);
                 }
 
-                return;
+                return true;
             }
 
             if (!(task.isUnsafe() && isErrorMatch(task, taskDecision.getErrorContainer()))) {
                 markProcessAsBroken(taskDecision);
 
                 logger.debug("Process [{}] marked as broken: taskDecision = [{}], task = [{}]", processId, taskDecision, task);
-                return;
+                return true;
             }
 
 
@@ -261,7 +288,7 @@ public class GeneralTaskServer implements TaskServer {
                 taskDecision.setErrorContainer(errorContainer);
 
                 markProcessAsBroken(taskDecision);
-                return;
+                return true;
             }
 
         }
@@ -273,15 +300,31 @@ public class GeneralTaskServer implements TaskServer {
         if (dependencyDecision.isFail()) {
 
             logger.debug("#[{}]/[{}]: failed dependencyDecision = [{}]", processId, taskId, dependencyDecision);
-            return;
+            return false;
         }
+
+        boolean result = true;
 
         Set<UUID> readyTasks = dependencyDecision.getReadyTasks();
         if (readyTasks != null) {
             for (UUID readyTaskId : readyTasks) {
-                // WARNING: This is not optimal code. We are getting whole task only for name and version values.
+                // WARNING: This is not optimal code. We are getting whole task only for actorId value.
                 TaskContainer task = taskService.getTask(readyTaskId, processId);
                 if (task == null) {
+
+                    // try to sleep 1 second
+                    // @todo: remove on next release
+//                    try {
+//                        TimeUnit.SECONDS.sleep(1);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    task = taskService.getTask(readyTaskId, processId);
+//
+//                    if (task != null) {
+//                        logger.error("task was null but after waiting now is not!");
+//                    }
 
                     if (task == null) {
                         logger.error("#[{}]/[{}]: failed to enqueue task. ready task not found in the taskService" +
@@ -290,6 +333,8 @@ public class GeneralTaskServer implements TaskServer {
 
                         // wait recovery for this process
                         // todo: throw exception?
+
+                        result = false;
                         continue;
                     }
                 }
@@ -307,6 +352,8 @@ public class GeneralTaskServer implements TaskServer {
         }
 
         logger.debug("#[{}]/[{}]: finish processing taskDecision = [{}]", processId, taskId, taskDecision);
+
+        return result;
 
     }
 
@@ -349,14 +396,14 @@ public class GeneralTaskServer implements TaskServer {
         processService.markProcessAsBroken(processId);
     }
 
-    private long getRestartTime(TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig) {
+    private long getRestartTime(TaskContainer task, RetryPolicyConfigContainer retryPolicyConfig, int errorAttempts) {
         if (retryPolicyConfig == null) {
             return PolicyConstants.NONE;
         }
 
         long recordedFailure = System.currentTimeMillis();
         TimeRetryPolicyBase timeRetryPolicyBase = RetryPolicyConfigUtil.buildTimeRetryPolicy(retryPolicyConfig);
-        long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, task.getErrorAttempts());
+        long customRestartTime = timeRetryPolicyBase.nextRetryDelaySeconds(task.getStartTime(), recordedFailure, errorAttempts);
         if (customRestartTime == PolicyConstants.NONE) {
             return PolicyConstants.NONE;
         }

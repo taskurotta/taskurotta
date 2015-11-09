@@ -21,7 +21,7 @@
     command:
       java -Xmx64m -Xms64m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
       -Dlogback.configurationFile=/etc/taskurotta/pusher/logback.xml -Dtsk.endpoint=http://tsk_nginx:80
-      -Dtest.ff.fixedPushRate=false -Dtest.ff.minQueuesSize=1000 -Dtest.ff.maxQueuesSize=2000
+      -Dtest.ff.fixedPushRate=false -Dtest.ff.minQueuesSize=500 -Dtest.ff.maxQueuesSize=1000
       -cp /opt/taskurotta/taskurotta.jar ru.taskurotta.test.stress.ProcessPusher
       file:/etc/taskurotta/pusher/config.xml
 

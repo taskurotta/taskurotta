@@ -66,7 +66,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         if (taskInfo == null) {
             return null;
         }
-        return taskInfo.getDecision(taskId, processId);
+        return taskInfo.getDecisionContainer(taskId, processId);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class ConsoleManagerImpl implements ConsoleManager {
         if (task != null) {
             result.setDesc(task.getActorId() + " - " + task.getMethod());
         }
-        DecisionContainer decision = taskInfo.getDecision(taskId, processId);
+        DecisionContainer decision = taskInfo.getDecisionContainer(taskId, processId);
         result.setState(getTaskTreeStatus(decision));
         if (decision != null && decision.getTasks() != null && decision.getTasks().length != 0) {
             TaskTreeVO[] childs = new TaskTreeVO[decision.getTasks().length];

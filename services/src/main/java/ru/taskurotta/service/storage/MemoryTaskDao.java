@@ -7,10 +7,13 @@ import org.slf4j.LoggerFactory;
 import ru.taskurotta.service.common.ResultSetCursor;
 import ru.taskurotta.service.console.model.GenericPage;
 import ru.taskurotta.service.console.retriever.command.TaskSearchCommand;
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
+import ru.taskurotta.transport.model.ErrorContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +22,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * TODO: remove dirty synchronization!
  * User: moroz
  * Date: 09.04.13
  */
@@ -29,27 +31,225 @@ public class MemoryTaskDao implements TaskDao {
     private static final UUID PASS = UUID.randomUUID();
 
     private Map<UUID, TaskContainer> id2TaskMap = new ConcurrentHashMap<>();
-    private Map<UUID, DecisionContainer> id2TaskDecisionMap = new ConcurrentHashMap<>();
+    private Map<UUID, Decision> id2TaskDecisionMap = new ConcurrentHashMap<>();
 
-    @Override
-    public boolean finishTask(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
-        return true;
+    private void lock(Object taskKey) {
+    }
+
+    private void unlock(Object taskKey) {
     }
 
     @Override
-    public UUID startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
-        return PASS;
-    }
+    public Decision finishTask(DecisionContainer taskDecision) {
 
-    @Override
-    public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
-        return true;
+        logger.debug("Storing decision [{}]", taskDecision);
+
+        UUID taskKey = taskDecision.getTaskId();
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "finish task. Decision is " + decision);
+
+            if (decision == null || decision.getState() == Decision.STATE_FINISH) {
+                logger.warn("{}/{} Can not finish task. Task has {} state", taskDecision.getTaskId(), taskDecision.getProcessId(),
+                        decision == null ? "null" : decision.getState());
+                return null;
+            }
+
+            if (decision.getPass() != null && (taskDecision.getPass() == null || !(taskDecision.getPass().equals
+                    (decision.getPass())))) {
+
+                logger.warn("{}/{} Can not finish task. decision pass {} not equal to reference pass {}. Decision has" +
+                                " been rejected", taskDecision.getTaskId(), taskDecision.getProcessId(), taskDecision.getPass(),
+                        decision.getPass());
+                return null;
+            }
+
+            // increment number of attempts for error tasks with retry policy
+            if (taskDecision.containsError()) {
+                decision.incrementErrorAttempts();
+            }
+
+            decision.setState(Decision.STATE_FINISH);
+            decision.setDecisionContainer(taskDecision);
+            decision.setRecoveryTime(0l);
+
+            id2TaskDecisionMap.put(taskKey, decision);
+
+            return decision;
+        } finally {
+            unlock(taskKey);
+        }
     }
 
     @Override
     public boolean retryTask(UUID taskId, UUID processId) {
-        return true;
+
+        UUID taskKey = taskId;
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "retry task. Decision is " + decision);
+
+            if (decision == null || decision.getState() != Decision.STATE_FINISH) {
+                logger.warn("{}/{} Can not retry task. Task has {} state", taskId, processId,
+                        decision == null ? "null" : decision.getState());
+
+                return false;
+            }
+
+            decision.setState(Decision.STATE_REGISTERED);
+            decision.setDecisionContainer(null);
+            decision.setRecoveryTime(0l);
+
+            id2TaskDecisionMap.put(taskKey, decision);
+
+            return true;
+
+        } finally {
+            unlock(taskKey);
+        }
+    }
+
+    @Override
+    public Decision startTask(UUID taskId, UUID processId, long workerTimeout, boolean failOnWorkerTimeout) {
+
+        UUID taskKey = taskId;
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "start task. Decision is " + decision);
+
+
+            if (decision != null && decision.getState() != Decision.STATE_REGISTERED) {
+                logger.debug("{}/{} Can not start task. Task has {} state (not in registered state)",
+                        taskId, processId, decision.getState());
+
+                return null;
+            }
+
+//            UUID pass = UUID.randomUUID();
+            long recoveryTime = System.currentTimeMillis() + workerTimeout;
+
+            if (decision == null) {
+                decision = new Decision(taskId, processId, Decision.STATE_WORK, null, recoveryTime, 0, null);
+            } else {
+                // assume that workerTimeout and failOnWorkerTimeouts values can not be changed
+
+//                decision.setPass(pass);
+                decision.setState(Decision.STATE_WORK);
+                decision.setRecoveryTime(recoveryTime);
+                decision.setDecisionContainer(null);
+            }
+
+            id2TaskDecisionMap.put(taskKey, decision);
+
+            return decision;
+        } finally {
+            unlock(taskKey);
+        }
+    }
+
+    @Override
+    public boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError) {
+
+        UUID taskKey = taskId;
+
+        lock(taskKey);
+
+        try {
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "restart task isForce = " + force + ". Decision is " + decision);
+
+            if (decision == null) {
+                return true;
+            }
+
+            if (!force) {
+
+                if (ifFatalError) {
+                    if (decision.getState() == Decision.STATE_FINISH) {
+                        ErrorContainer errorContainer = decision.getDecisionContainer().getErrorContainer();
+
+                        if (errorContainer == null || !errorContainer.isFatalError()) {
+
+                            logger.debug("{}/{} Can not restart task. Task is finished now and has not fatal error. " +
+                                    "Decision is {}", taskId, processId, decision
+                                    .getState(), decision);
+                            return false;
+                        }
+                    }
+                } else if ((decision.getState() == Decision.STATE_FINISH)) {
+
+                    logger.debug("{}/{} Can not restart task. Task is finished now. " +
+                            "Decision is {}", taskId, processId, decision
+                            .getState(), decision);
+                    return false;
+                }
+
+            }
+
+            // reset error counter for interrupted tasks
+            if (ifFatalError) {
+                decision.setErrorAttempts(0);
+            }
+
+            decision.setState(Decision.STATE_REGISTERED);
+            decision.setDecisionContainer(null);
+            decision.setRecoveryTime(0l);
+
+            id2TaskDecisionMap.put(taskKey, decision);
+
+            return true;
+        } finally {
+            unlock(taskKey);
+        }
+
+    }
+
+    @Override
+    public void updateTaskDecision(DecisionContainer taskDecision) {
+
+        UUID taskKey = taskDecision.getTaskId();
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+//            UN.put(taskKey.getTaskId(), "update task decision. Decision is " + decision);
+
+            if (decision == null) {
+                logger.warn("{}/{} Can update task decision. Task decision nut found", taskKey, taskDecision
+                        .getProcessId());
+                return;
+            }
+
+            decision.setDecisionContainer(taskDecision);
+            id2TaskDecisionMap.put(taskKey, decision);
+
+        } finally {
+            unlock(taskKey);
+        }
+    }
+
+    @Override
+    public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
+        throw new UnsupportedOperationException("Please, use MongoTaskDao");
     }
 
     @Override
@@ -63,55 +263,77 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public DecisionContainer getDecision(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.get(taskId);
+    public Decision getDecision(UUID taskId, UUID processId) {
+
+        UUID taskKey = taskId;
+
+        lock(taskKey);
+
+        try {
+
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+
+            logger.debug("Getting decision [{}]", decision);
+
+//            UN.put(taskKey.getTaskId(), "getDecision(). Decision is " + decision);
+
+            return decision;
+
+        } finally {
+            unlock(taskKey);
+        }
     }
 
-    /**
-     * @param taskId
-     * @param processId
-     * @return
-     * @todo Graph should be used for this purpose.
-     */
+    @Override
+    public DecisionContainer getDecisionContainer(UUID taskId, UUID processId) {
+        Decision decision = getDecision(taskId, processId);
+
+        if (decision != null) {
+            return decision.getDecisionContainer();
+        }
+
+        return null;
+    }
+
+
     @Override
     public boolean isTaskReleased(UUID taskId, UUID processId) {
-        return id2TaskDecisionMap.containsKey(taskId);
+
+        UUID taskKey = taskId;
+
+        lock(taskKey);
+
+        try {
+            Decision decision = id2TaskDecisionMap.get(taskKey);
+            if (decision == null) {
+                return false;
+            }
+
+            return decision.getState() == Decision.STATE_FINISH;
+        } finally {
+            unlock(taskKey);
+        }
     }
 
     @Override
     public GenericPage<TaskContainer> listTasks(int pageNumber, int pageSize) {
-        logger.trace("listTasks called");
-        List<TaskContainer> tmpResult = new ArrayList<>();
-        int startIndex = (pageNumber - 1) * pageSize + 1;
-        int endIndex = startIndex + pageSize - 1;
-        long totalCount = 0;
-        int index = 0;
-        for (TaskContainer tc : id2TaskMap.values()) {
-            if (index > endIndex) {
-                totalCount = id2TaskMap.values().size();
-                break;
-            } else if (index >= startIndex && index <= endIndex) {
-                tmpResult.add(tc);
-            }
-            index++;
-        }
+        Collection<TaskContainer> tasks = id2TaskMap.values();
+        int pageEnd = pageSize * pageNumber >= tasks.size() ? tasks.size() : pageSize * pageNumber;
+        int pageStart = (pageNumber - 1) * pageSize;
+        List<TaskContainer> resultList = Arrays.asList(tasks.toArray(new TaskContainer[tasks.size()])).subList(pageStart, pageEnd);
 
-        return new GenericPage<>(tmpResult, pageNumber, pageSize, totalCount);
+        return new GenericPage<>(resultList, pageNumber, pageSize, id2TaskMap.size());
     }
 
     @Override
     public List<TaskContainer> getRepeatedTasks(final int iterationCount) {
-        return (List<TaskContainer>) Collections2.filter(id2TaskMap.values(), new Predicate<TaskContainer>() {
-            @Override
-            public boolean apply(TaskContainer taskContainer) {
-                return taskContainer.getErrorAttempts() >= iterationCount;
-            }
-        });
+        // @todo: implement method
+        throw new IllegalStateException("Not implemented yet");
     }
 
     @Override
     public void updateTask(TaskContainer taskContainer) {
-        //No need to implement it for in-memory storage case
+        id2TaskMap.put(taskContainer.getTaskId(), taskContainer);
     }
 
     @Override
@@ -122,17 +344,28 @@ public class MemoryTaskDao implements TaskDao {
     }
 
     @Override
-    public void deleteDecisions(Set<UUID> decisionsIds, UUID processId) {
-        for (UUID decisionId : decisionsIds) {
-            id2TaskDecisionMap.remove(decisionId);
+    public void deleteDecisions(Set<UUID> taskIds, UUID processId) {
+
+
+        for (UUID taskId : taskIds) {
+
+            UUID taskKey = taskId;
+
+            lock(taskKey);
+
+            try {
+//                UN.put(taskKey.getTaskId(), "delete decision");
+
+                id2TaskDecisionMap.remove(taskKey);
+            } finally {
+                unlock(taskKey);
+            }
         }
     }
 
     @Override
     public void archiveProcessData(UUID processId, Collection<UUID> finishedTaskIds) {
-        for (UUID finishedTaskId : finishedTaskIds) {
-            id2TaskMap.remove(finishedTaskId);
-        }
+        // do nothing
     }
 
     @Override
@@ -165,15 +398,4 @@ public class MemoryTaskDao implements TaskDao {
         }
         return result;
     }
-
-    @Override
-    public void updateTaskDecision(DecisionContainer taskDecision) {
-        id2TaskDecisionMap.put(taskDecision.getTaskId(), taskDecision);
-    }
-
-    @Override
-    public ResultSetCursor findIncompleteTasks(long lastRecoveryTime, int batchSize) {
-        throw new UnsupportedOperationException("Please, use MongoTaskDao");
-    }
-
 }

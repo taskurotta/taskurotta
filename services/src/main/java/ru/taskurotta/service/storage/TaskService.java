@@ -1,5 +1,6 @@
 package ru.taskurotta.service.storage;
 
+import ru.taskurotta.transport.model.Decision;
 import ru.taskurotta.transport.model.DecisionContainer;
 import ru.taskurotta.transport.model.TaskContainer;
 
@@ -35,7 +36,7 @@ public interface TaskService {
     TaskContainer getTask(UUID taskId, UUID processId);
 
 
-    boolean finishTask(DecisionContainer taskDecision);
+    Decision finishTask(DecisionContainer taskDecision);
 
     boolean retryTask(UUID taskId, UUID processId);
 
@@ -48,10 +49,9 @@ public interface TaskService {
      */
     boolean restartTask(UUID taskId, UUID processId, boolean force, boolean ifFatalError);
 
-    /**
-     * Idempotent getter for task decisions
-     */
-    DecisionContainer getDecision(UUID taskId, UUID processId);
+    Decision getDecision(UUID taskId, UUID processId);
+
+    DecisionContainer getDecisionContainer(UUID taskId, UUID processId);
 
     List<TaskContainer> getAllRunProcesses();
 
@@ -74,4 +74,6 @@ public interface TaskService {
     void finishProcess(UUID processId, Collection<UUID> finishedTaskIds);
 
     void updateTaskDecision(DecisionContainer taskDecision);
+
+    void addNewTasks(DecisionContainer taskDecision);
 }

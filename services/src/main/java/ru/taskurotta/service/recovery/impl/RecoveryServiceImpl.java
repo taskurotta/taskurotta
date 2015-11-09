@@ -152,26 +152,35 @@ public class RecoveryServiceImpl implements RecoveryService {
                 logger.debug("#[{}]: found [{}] not finished taskIds", processId, allReadyTaskIds.size());
             }
 
-            // check broken process
+            // apply decisions for not finished tasks
 
-            for (UUID taskId : allReadyTaskIds.keySet()) {
-                DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
+            for (Iterator<Map.Entry<UUID, Long>> iterator = allReadyTaskIds.entrySet().iterator(); iterator.hasNext(); ) {
+                UUID taskId = iterator.next().getKey();
+
+                DecisionContainer decisionContainer = taskService.getDecisionContainer(taskId, processId);
                 if (decisionContainer != null) {
-                    ErrorContainer errorContainer = decisionContainer.getErrorContainer();
-                    if (errorContainer != null && errorContainer.isFatalError()) {
 
-                        // process is broken now.
-                        markProcessAsBroken(decisionContainer);
-                        recoveredInterruptedTasksCounter.incrementAndGet();
-
-                        result = true;
+                    // task is finished but still ready in Graph.
+                    try {
+                        if (generalTaskServer.processDecision(taskId, processId)) {
+                            iterator.remove();
+                            recoveredProcessDecisionCounter.incrementAndGet();
+                            result = true;
+                        }
+                    } catch (RuntimeException ex) {
+                        logger.error("Can not process decision", ex);
                     }
                 }
             }
 
+            if (allReadyTaskIds.isEmpty()) {
+                return result;
+            }
+
             // require restart => try to find process's tasks for restart
 
-            final Collection<TaskContainer> taskContainers = findIncompleteTaskContainers(allReadyTaskIds, processId);
+            Collection<TaskContainer> taskContainers = getIncompleteTaskContainers(allReadyTaskIds, processId);
+            // taskContainers == null if TaskContainer not found in store for least one taskId
             if (taskContainers == null) {
                 // there is a problem in task store => restart process
 
@@ -299,7 +308,7 @@ public class RecoveryServiceImpl implements RecoveryService {
                 String taskList = TransportUtils.getTaskList(taskContainer);
                 String actorId = taskContainer.getActorId();
 
-                DecisionContainer decisionContainer = taskService.getDecision(taskId, processId);
+                DecisionContainer decisionContainer = taskService.getDecisionContainer(taskId, processId);
                 if (decisionContainer != null) {
                     ErrorContainer errorContainer = decisionContainer.getErrorContainer();
                     if (errorContainer != null && errorContainer.isFatalError()) {
@@ -475,7 +484,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     public boolean reenqueueTask(UUID taskId, UUID processId) {
         TaskContainer taskContainer = taskService.getTask(taskId, processId);
         if (taskContainer == null) {
-            logger.error("{}/{}: not found task container", processId, taskId);
+            logger.warn("{}/{}: not found task container", processId, taskId);
             return false;
         }
 
@@ -505,7 +514,8 @@ public class RecoveryServiceImpl implements RecoveryService {
         boolean result = false;
         if (readyItems != null) {
             for (UUID readyTaskId : readyItems.keySet()) {
-                if (!taskId.equals(readyTaskId) && TransportUtils.hasFatalError(taskService.getDecision(readyTaskId, processId))) {
+                if (!taskId.equals(readyTaskId) && TransportUtils.hasFatalError(taskService.getDecisionContainer(readyTaskId,
+                        processId))) {
                     result = true;
                     break;
                 }
@@ -572,7 +582,7 @@ public class RecoveryServiceImpl implements RecoveryService {
     }
 
 
-    private Collection<TaskContainer> findIncompleteTaskContainers(Map<UUID, Long> allReadyTaskIds, UUID processId) {
+    private Collection<TaskContainer> getIncompleteTaskContainers(Map<UUID, Long> allReadyTaskIds, UUID processId) {
 
         Collection<TaskContainer> taskContainers = new ArrayList<>(allReadyTaskIds.size());
 
@@ -627,7 +637,7 @@ public class RecoveryServiceImpl implements RecoveryService {
 
     private void finishProcess(UUID processId, UUID startTaskId, Collection<UUID> finishedTaskIds) {
         // save result to process storage
-        DecisionContainer decisionContainer = taskService.getDecision(startTaskId, processId);
+        DecisionContainer decisionContainer = taskService.getDecisionContainer(startTaskId, processId);
 
         if (decisionContainer == null) {
             logger.error("#[{}]/[{}]: decision container for start task is null, stop finishing process");

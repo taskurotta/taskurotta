@@ -63,7 +63,7 @@ do_prepare()
 
 
 case "$1" in
-    build)
+    prepare)
         do_prepare
     ;;
     start)

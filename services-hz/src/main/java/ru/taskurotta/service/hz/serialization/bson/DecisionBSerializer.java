@@ -20,6 +20,7 @@ public class DecisionBSerializer implements StreamBSerializer<Decision> {
     public static final CString STATE = new CString("state");
     public static final CString PASS = new CString("pass");
     public static final CString RECOVERY_TIME = new CString("rTime");
+    private static final CString ERROR_ATTEMPTS = new CString("errors");
     public static final CString DECISION_CONTAINER = new CString("c");
 
     private DecisionContainerBSerializer decisionContainerBSerializer = new DecisionContainerBSerializer();
@@ -41,6 +42,8 @@ public class DecisionBSerializer implements StreamBSerializer<Decision> {
         out.writeUUID(PASS, object.getPass());
 
         out.writeLong(RECOVERY_TIME, object.getRecoveryTime(), 0);
+        out.writeInt(ERROR_ATTEMPTS, object.getErrorAttempts(), 0);
+
 
         writeObjectIfNotNull(DECISION_CONTAINER, object.getDecisionContainer(), decisionContainerBSerializer, out);
     }
@@ -57,7 +60,9 @@ public class DecisionBSerializer implements StreamBSerializer<Decision> {
         UUID pass = in.readUUID(PASS);
 
         long recoveryTime = in.readLong(RECOVERY_TIME);
+        int errorAttempts = in.readInt(ERROR_ATTEMPTS, 0);
 
-        return new Decision(taskId, processId, state, pass, recoveryTime, readObject(DECISION_CONTAINER, decisionContainerBSerializer, in));
+        return new Decision(taskId, processId, state, pass, recoveryTime, errorAttempts,
+                readObject(DECISION_CONTAINER, decisionContainerBSerializer, in));
     }
 }
