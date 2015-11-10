@@ -1,18 +1,18 @@
 ---
 #- debug:
-#    var={{ my_taskurotta_jar }}
+#    var={{ taskurotta_jar }}
 #  tags:
 #  - start
 
 - name: 'Create taskurotta data directory'
   tags:
   - start
-  file: path={{ my_taskurotta_path }} state=directory
+  file: path={{ taskurotta_path }} state=directory
 
 - name: 'Generate taskurotta config file'
   tags:
   - start
-  template: src=config.yml.j2 dest={{ my_taskurotta_path }}/config.yml
+  template: src=config.yml.j2 dest={{ taskurotta_path }}/config.yml
 
 - name: 'Start taskurotta container'
   tags:
@@ -23,10 +23,10 @@
     state: reloaded
     net: bridge
     volumes:
-    - "{{ my_taskurotta_path }}:/var/log/taskurotta"
-    - "{{ my_taskurotta_path_javadumps }}:/tmp/javadumps"
-    - "{{ my_taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
-    - "{{ my_taskurotta_config }}:/etc/taskurotta/server/config.yml"
+    - "{{ taskurotta_path }}:/var/log/taskurotta"
+    - "{{ taskurotta_path_javadumps }}:/tmp/javadumps"
+    - "{{ taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
+    - "{{ taskurotta_config }}:/etc/taskurotta/server/config.yml"
     command:
       java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
       -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar
@@ -37,7 +37,7 @@
   - start
   shell: >
     {{ lookup('pipe', 'find $(pwd) -name wait_cluster.sh') }}
-    {{ my_taskurotta_path}}/service.log {{ groups['taskurotta']|length }}
+    {{ taskurotta_path}}/service.log {{ groups['taskurotta']|length }}
   changed_when: False
 
 - name: 'Stop taskurotta container'
@@ -59,4 +59,4 @@
 - name: 'Remove taskurotta files'
   tags:
   - clean
-  shell: "sudo rm -rf {{ my_taskurotta_path }} removes={{ my_taskurotta_path }}"
+  shell: "sudo rm -rf {{ taskurotta_path }} removes={{ taskurotta_path }}"

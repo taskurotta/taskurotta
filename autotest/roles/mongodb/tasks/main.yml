@@ -2,7 +2,7 @@
 - name: 'Create mongodb data directory'
   tags:
   - start
-  file: path={{ my_mongodb_path }} state=directory
+  file: path={{ mongodb_path }} state=directory
 
 - name: 'Start mongodb container'
   tags:
@@ -14,8 +14,8 @@
     net: bridge
     command: -f /etc/mongo/mongodb.conf
     volumes:
-    - "{{ my_mongodb_path }}:/data/db"
-    - "{{ my_mongodb_config }}:/etc/mongo/mongodb.conf"
+    - "{{ mongodb_path }}:/data/db"
+    - "{{ mongodb_config }}:/etc/mongo/mongodb.conf"
 
 
 - name: 'Stop mongodb container'
@@ -37,5 +37,5 @@
 - name: 'Remove mongodb files'
   tags:
   - clean
-  shell: "sudo rm -rf {{ my_mongodb_path }} removes={{ my_mongodb_path }}"
+  shell: "sudo rm -rf {{ mongodb_path }} removes={{ mongodb_path }}"
 #  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

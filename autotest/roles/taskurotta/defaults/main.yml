@@ -1,4 +1,4 @@
-my_taskurotta_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
-my_taskurotta_path_javadumps: "{{ playbook_dir }}/data/{{ inventory_hostname }}/javadumps"
-my_taskurotta_jar: "undefined"
-my_taskurotta_config: "{{ my_taskurotta_path }}/config.yml"
+taskurotta_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
+taskurotta_path_javadumps: "{{ playbook_dir }}/data/{{ inventory_hostname }}/javadumps"
+taskurotta_jar: "undefined"
+taskurotta_config: "{{ taskurotta_path }}/config.yml"

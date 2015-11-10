@@ -2,7 +2,7 @@
 - name: 'Create pusher data directory'
   tags:
   - start
-  file: path={{ my_ff_pusher_path }} state=directory
+  file: path={{ ff_pusher_path }} state=directory
 
 - name: 'Start pusher container'
   tags:
@@ -13,11 +13,11 @@
     state: reloaded
     net: bridge
     volumes:
-    - "{{ my_ff_pusher_path }}:/var/log/taskurotta/pusher"
-    - "{{ my_ff_pusher_path_javadumps }}:/tmp/javadumps"
-    - "{{ my_taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
-    - "{{ my_ff_pusher_config }}:/etc/taskurotta/pusher/config.xml"
-    - "{{ my_ff_pusher_config_logback }}:/etc/taskurotta/pusher/logback.xml"
+    - "{{ ff_pusher_path }}:/var/log/taskurotta/pusher"
+    - "{{ ff_pusher_path_javadumps }}:/tmp/javadumps"
+    - "{{ taskurotta_jar }}:/opt/taskurotta/taskurotta.jar"
+    - "{{ ff_pusher_config }}:/etc/taskurotta/pusher/config.xml"
+    - "{{ ff_pusher_config_logback }}:/etc/taskurotta/pusher/logback.xml"
     command:
       java -Xmx64m -Xms64m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
       -Dlogback.configurationFile=/etc/taskurotta/pusher/logback.xml -Dtsk.endpoint=http://tsk_nginx:80
@@ -44,5 +44,5 @@
 - name: 'Remove pusher files'
   tags:
   - clean
-  shell: "sudo rm -rf {{ my_ff_pusher_path }} removes={{ my_ff_pusher_path }}"
+  shell: "sudo rm -rf {{ ff_pusher_path }} removes={{ ff_pusher_path }}"
 #  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

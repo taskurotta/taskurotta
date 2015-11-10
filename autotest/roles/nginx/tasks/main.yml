@@ -2,12 +2,12 @@
 - name: 'Create nginx log directory'
   tags:
   - start
-  file: path={{ my_nginx_path }} state=directory
+  file: path={{ nginx_path }} state=directory
 
 - name: 'Generate nginx config file'
   tags:
   - start
-  template: src=nginx.conf.j2 dest={{ my_nginx_config }}
+  template: src=nginx.conf.j2 dest={{ nginx_config }}
 
 - name: 'Start nginx container'
   tags:
@@ -18,8 +18,8 @@
     state: reloaded
     net: bridge
     volumes:
-    - "{{ my_nginx_path }}:/var/log/nginx"
-    - "{{ my_nginx_config }}:/etc/nginx/nginx.conf"
+    - "{{ nginx_path }}:/var/log/nginx"
+    - "{{ nginx_config }}:/etc/nginx/nginx.conf"
 
 - name: 'Stop nginx container'
   tags:
@@ -40,5 +40,5 @@
 - name: 'Remove nginx files'
   tags:
   - clean
-  shell: "sudo rm -rf {{ my_nginx_path }} removes={{ my_nginx_path }}"
+  shell: "sudo rm -rf {{ nginx_path }} removes={{ nginx_path }}"
 #  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

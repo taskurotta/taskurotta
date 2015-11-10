@@ -1,2 +1,2 @@
-my_nginx_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
-my_nginx_config: "{{ my_nginx_path }}/nginx.conf"
+nginx_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
+nginx_config: "{{ nginx_path }}/nginx.conf"

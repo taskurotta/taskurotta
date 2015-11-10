@@ -15,13 +15,10 @@ f_play_order_reverse()
 f_play()
 {
     ansible-playbook  -i inventories/local_servers \
-        -e my_taskurotta_jar=$(pwd)/$(ls ../assemble/target/assemble-*.jar| grep -v javadoc| grep -v sources) \
+        -e taskurotta_jar=$(pwd)/$(ls ../assemble/target/assemble-*.jar| grep -v javadoc| grep -v sources) \
+        --extra-vars "@extra_vars.json" \
         --tags $1 <(echo "$2")
-
-#                -e my_mongodb_path=/tmp/tsk_mongodb \
-
 }
-
 
 do_start()
 {
