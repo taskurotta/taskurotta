@@ -1,5 +1,0 @@
-{
-  "mongodb_path": "/tmp/tsk_mongodb",
-  "ff_actors_config": "{{ lookup('pipe', 'find $(pwd) -name config-speed.yml') }}"
-}
-
