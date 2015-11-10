@@ -33,8 +33,9 @@
     <bean id = "taskServer" class="ru.taskurotta.client.jersey.JerseyHttpTaskServerProxy" >
         <property name="connectTimeout" value="3000" />
         <property name="readTimeout" value = "0" />
-        <property name="threadPoolSize" value = "10" />
+        <property name="threadPoolSize" value = "${test.ff.threadCount}" />
         <property name="endpoint" value = "${tsk.endpoint}" />
+        <property name="maxConnectionsPerHost" value="${test.ff.threadCount}" />
     </bean>
 
     <bean id="clientServiceManager" class="ru.taskurotta.client.internal.CommonClientServiceManager">

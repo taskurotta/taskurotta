@@ -20,6 +20,8 @@
     volumes:
     - "{{ nginx_path }}:/var/log/nginx"
     - "{{ nginx_config }}:/etc/nginx/nginx.conf"
+    ports:
+    - "80:80"
 
 - name: 'Stop nginx container'
   tags:

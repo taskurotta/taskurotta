@@ -4,6 +4,8 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.ApacheHttpClientHandler;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.taskurotta.server.TaskServerResource;
 import ru.taskurotta.transport.utils.TransportUtils;
 
@@ -13,6 +15,8 @@ import javax.annotation.PostConstruct;
  * TaskServer implementation as a jersey client proxy. Uses embedded apache HTTP client for connection pooling
  */
 public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
+
+    private static final Logger logger = LoggerFactory.getLogger(JerseyHttpTaskServerProxy.class);
 
     private int maxConnectionsPerHost;
 
