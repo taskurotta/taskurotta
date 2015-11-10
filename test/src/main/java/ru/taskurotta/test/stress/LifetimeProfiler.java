@@ -3,7 +3,6 @@ package ru.taskurotta.test.stress;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Clock;
 import com.yammer.metrics.core.MetricName;
 import com.yammer.metrics.core.Timer;
 import org.slf4j.Logger;
@@ -36,13 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class LifetimeProfiler extends SimpleProfiler implements ApplicationContextAware {
 
     private final static Logger logger = LoggerFactory.getLogger(LifetimeProfiler.class);
-    private static final Clock clock = Clock.defaultClock();
-
-
-    private final static String DROP_TASK_DECISION_EVERY_N_TASKS = "dropTaskDecisionEveryNTasks";
-    private final static String BREAK_PROCESS_EVERY_N_TASKS = "breakProcessEveryNTasks";
-    private final static String TASKS_FOR_STAT = "tasksForStat";
-    private final static String LOG_PROFILER_SECONDS = "logProfilerSeconds";
 
     private static ConcurrentMap<TaskTarget, Timer> executeTimers = new ConcurrentHashMap<TaskTarget, Timer>();
     private static ConcurrentMap<TaskTarget, Timer> pollTimers = new ConcurrentHashMap<TaskTarget, Timer>();
@@ -51,20 +43,23 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
     public static AtomicBoolean isLogProfilerStarted = new AtomicBoolean(false);
 
     public static AtomicLong taskCount = new AtomicLong(0);
-    public static AtomicLong startTestTime = new AtomicLong(0);
     public static AtomicLong lastTime = new AtomicLong(0);
     public static ThreadLocal<TaskTarget> currentTaskTarget = new ThreadLocal<>();
 
     private int tasksForStat = 1000;
-    private int dropTaskDecisionEveryNTasks = 0;
-    private int breakProcessEveryNTasks = 0;
     private int logProfilerSeconds = 0;
+    private int skipInRateFirstTasksCount = 0;
 
-    private boolean isFirstPoll = true;
+    private AtomicBoolean isFirstPoll = new AtomicBoolean(true);
     private AtomicInteger nullPoll = new AtomicInteger(0);
 
-    private long releaseTimeout = 0;
+    private AtomicBoolean isRateStarted = new AtomicBoolean(false);
+    public static AtomicLong startRateTime = new AtomicLong(0);
+
+    private int dropTaskDecisionEveryNTasks = 0;
+    private int breakProcessEveryNTasks = 0;
     private int everyNTaskReleaseTimeout = 0;
+    private long releaseTimeout = 0;
 
     public LifetimeProfiler() {
     }
@@ -79,22 +74,27 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
             this.everyNTaskReleaseTimeout = Integer.valueOf(properties.getProperty("everyNTaskReleaseTimeout"));
         }
 
-        if (properties.containsKey(TASKS_FOR_STAT)) {
-            tasksForStat = Integer.valueOf((String) properties.get(TASKS_FOR_STAT).toString());
+        if (properties.containsKey("tasksForStat")) {
+            tasksForStat = Integer.valueOf((String) properties.get("tasksForStat").toString());
         }
 
-        if (properties.containsKey(DROP_TASK_DECISION_EVERY_N_TASKS)) {
+        if (properties.containsKey("dropTaskDecisionEveryNTasks")) {
             dropTaskDecisionEveryNTasks = Integer.valueOf((String) properties.get
-                    (DROP_TASK_DECISION_EVERY_N_TASKS).toString());
+                    ("dropTaskDecisionEveryNTasks").toString());
         }
 
-        if (properties.containsKey(BREAK_PROCESS_EVERY_N_TASKS)) {
-            breakProcessEveryNTasks = Integer.valueOf((String) properties.get(BREAK_PROCESS_EVERY_N_TASKS).toString());
+        if (properties.containsKey("breakProcessEveryNTasks")) {
+            breakProcessEveryNTasks = Integer.valueOf((String) properties.get("breakProcessEveryNTasks").toString());
         }
 
-        if (properties.containsKey(LOG_PROFILER_SECONDS)) {
-            logProfilerSeconds = Integer.valueOf((String) properties.get(LOG_PROFILER_SECONDS).toString());
+        if (properties.containsKey("logProfilerSeconds")) {
+            logProfilerSeconds = Integer.valueOf((String) properties.get("logProfilerSeconds").toString());
         }
+
+        if (properties.containsKey("skipInRateFirstTasksCount")) {
+            skipInRateFirstTasksCount = Integer.valueOf((String) properties.get("skipInRateFirstTasksCount").toString());
+        }
+
 
         if (logProfilerSeconds > 0 && isLogProfilerStarted.compareAndSet(false, true)) {
 
@@ -125,7 +125,7 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     } else {
 
                         TreeMap<String, TaskTarget> orderedTaskTargets = new TreeMap<>();
-                        for (TaskTarget taskTarget: timers.keySet()) {
+                        for (TaskTarget taskTarget : timers.keySet()) {
                             orderedTaskTargets.put(taskTarget.toString(), taskTarget);
                         }
 
@@ -244,18 +244,27 @@ public class LifetimeProfiler extends SimpleProfiler implements ApplicationConte
                     RuntimeExceptionHolder.exceptionToThrow.set(new BrokenProcessException("Bad day...."));
                 }
 
-                if (isFirstPoll) {
-                    long current = System.currentTimeMillis();
-                    lastTime.set(current);
-                    startTestTime.set(current);
-                    isFirstPoll = false;
+                if (isFirstPoll.get() && isFirstPoll.compareAndSet(true, false)) {
+                    lastTime.set(System.currentTimeMillis());
+                }
+
+                if (skipInRateFirstTasksCount < count && !isRateStarted.get()
+                        && isRateStarted.compareAndSet(false, true)) {
+                    startRateTime.set(System.currentTimeMillis());
                 }
 
                 long curTime = System.currentTimeMillis();
                 if (count % tasksForStat == 0) {
                     double time = 0.001 * (curTime - lastTime.get());
                     double rate = 1000.0D * tasksForStat / (curTime - lastTime.get());
-                    double totalRate = 1000.0 * count / (double) (curTime - LifetimeProfiler.startTestTime.get());
+
+                    double totalRate = -1;
+
+                    if (skipInRateFirstTasksCount < count) {
+                        totalRate = 1000.0 * (count - skipInRateFirstTasksCount) / (double) (curTime -
+                                startRateTime.get());
+                    }
+
                     lastTime.set(curTime);
 
                     logger.info(String.format("       tasks: %6d; time: %6.3f s; rate: %8.3f tps; " +

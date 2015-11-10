@@ -107,7 +107,7 @@ public class ProcessPusher {
                         if (counter.incrementAndGet() == maxProcessQuantity) {
                             taskPerSecondSpeed = (int) (1000.0 * LifetimeProfiler.taskCount
                                     .incrementAndGet() / (double) (System.currentTimeMillis() - LifetimeProfiler
-                                    .startTestTime.get()));
+                                    .startRateTime.get()));
 
                             throw new StopSignal();
                         }

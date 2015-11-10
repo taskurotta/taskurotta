@@ -24,6 +24,7 @@ profiler:
         properties:
           tasksForStat: 1000
           logProfilerSeconds: 10
+          skipInRateFirstTasksCount: 50000
 
 #          dropTaskDecisionEveryNTasks: 100
 #          breakProcessEveryNTasks: 100
