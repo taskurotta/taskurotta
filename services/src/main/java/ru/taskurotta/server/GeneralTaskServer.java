@@ -40,9 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * User: romario
- * Date: 4/1/13
- * Time: 12:04 PM
  */
 public class GeneralTaskServer implements TaskServer {
 
