@@ -19,9 +19,10 @@ import java.util.UUID;
 @Path(TaskServerResource.START)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TaskStarterResource {
+public class TaskStarterResource extends TaskServerAbstractResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskStarterResource.class);
+
     private TaskServer taskServer;
 
     @POST
@@ -35,7 +36,7 @@ public class TaskStarterResource {
             logger.debug("Successfully started process task[{}]", taskContainer);
         } catch (Throwable e) {
             GeneralTaskServer.errorsCounter.incrementAndGet();
-            logger.error("Starting of process by task failed! TaskContainer = [" + taskContainer + "] ", e);
+            logError("Starting of process by task failed! TaskContainer = [" + taskContainer + "] ", e);
             return Response.serverError().build();
         }
 

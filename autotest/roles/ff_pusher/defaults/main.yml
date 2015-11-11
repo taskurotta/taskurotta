@@ -3,3 +3,5 @@ ff_pusher_config: "{{ lookup('pipe', 'find $(pwd) -name config.xml') }}"
 ff_pusher_config_logback: "{{ lookup('pipe', 'find $(pwd) -name logback.xml') }}"
 ff_pusher_path_javadumps: "{{ playbook_dir }}/data/{{ inventory_hostname }}/javadumps"
 taskurotta_jar: "undefined"
+
+tsk_ff_pusher_test_ff_maxProcessQuantity: "50000"

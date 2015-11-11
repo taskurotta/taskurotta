@@ -41,6 +41,7 @@ public class QuorumTaskServerProxy implements TaskServer {
     public void release(DecisionContainer taskResult) {
         if (clusterQuorum.isPresent()) {
             original.release(taskResult);
+            return;
         }
 
         throwOutOfQuorumException();

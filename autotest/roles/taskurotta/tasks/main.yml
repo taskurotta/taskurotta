@@ -31,6 +31,8 @@
       java -Xmx512m -Xms512m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/javadumps
       -Dhazelcast.health.monitoring.level=OFF -server -jar /opt/taskurotta/taskurotta.jar
       server /etc/taskurotta/server/config.yml
+    expose:
+    - "8811"
 
 - name: 'Wait cluster synchronization'
   tags:

@@ -17,9 +17,10 @@ import javax.ws.rs.core.Response;
 @Path(TaskServerResource.RELEASE)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TaskReleaserResource {
+public class TaskReleaserResource extends TaskServerAbstractResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskReleaserResource.class);
+
     private TaskServer taskServer;
 
     @POST
@@ -31,7 +32,7 @@ public class TaskReleaserResource {
             logger.debug("Task successfully released, [{}]", decisionContainer);
         } catch(Throwable e) {
             GeneralTaskServer.errorsCounter.incrementAndGet();
-            logger.error("Releasing of task failed! DecisionContainer = [" + decisionContainer + "] ", e);
+            logError("Releasing of task failed! DecisionContainer = [" + decisionContainer + "] ", e);
 
             return Response.serverError().build();
         }

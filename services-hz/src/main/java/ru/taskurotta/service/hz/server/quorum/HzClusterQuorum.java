@@ -20,7 +20,7 @@ public class HzClusterQuorum implements MembershipListener, ClusterQuorum {
     private Cluster cluster;
     private byte quorumSize;
 
-    public final void ClusterMembershipListener(Cluster cluster, byte quorumSize) {
+    public HzClusterQuorum(Cluster cluster, byte quorumSize) {
         this.cluster = cluster;
         this.quorumSize = quorumSize;
 
@@ -31,7 +31,9 @@ public class HzClusterQuorum implements MembershipListener, ClusterQuorum {
     private void setMembershipRef() {
         membership.set(cluster.getMembers().size());
 
-        logger.error("Membership changed to " + membership.get());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Membership changed to {}", membership.get());
+        }
     }
 
     public boolean isPresent() {

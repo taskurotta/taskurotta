@@ -35,7 +35,6 @@ public class ProcessPusher {
 
     private final static Logger logger = LoggerFactory.getLogger(ProcessPusher.class);
 
-    public static AtomicInteger counter = new AtomicInteger(0);
     public static int taskPerSecondSpeed = 0;
 
     //with default finished processes counter, only per node
@@ -53,11 +52,13 @@ public class ProcessPusher {
 
         final long startTestTime = System.currentTimeMillis();
 
+        final AtomicInteger plannedTaskCounter = new AtomicInteger(0);
+        final AtomicInteger startedTaskCounter = new AtomicInteger(0);
+        final AtomicInteger finishedTaskCounter = new AtomicInteger(0);
+        final AtomicInteger currentSpeedPerSecond = new AtomicInteger(startSpeedPerSecond);
+
         // start planner thread
         new DaemonThread("process planner", TimeUnit.SECONDS, 1) {
-
-            int currentSpeedPerSecond = startSpeedPerSecond;
-            //            int currentSpeedPerSecond = 10000;
 
             @Override
             public void daemonJob() {
@@ -65,13 +66,14 @@ public class ProcessPusher {
                 if (!fixedPushRate) {
 
 //                    int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
-                    int sumQueuesSize = fpCounter.getCount();
+                    finishedTaskCounter.set(fpCounter.getCount());
+                    int sumQueuesSize = finishedTaskCounter.get();
 
                     // should be waiting to prevent overload
-                    if ((counter.get() - sumQueuesSize) > maxQueuesSize) {
+                    if ((plannedTaskCounter.get() - sumQueuesSize) > maxQueuesSize) {
 
                         // go slowly
-                        currentSpeedPerSecond--;
+                        currentSpeedPerSecond.decrementAndGet();
                         return;
                     }
 
@@ -79,22 +81,22 @@ public class ProcessPusher {
                     if (sumQueuesSize < minQueuesSize) {
 
                         // go faster
-                        currentSpeedPerSecond++;
+                        currentSpeedPerSecond.incrementAndGet();
                     }
                 }
 
 
                 int currSize = queue.size();
 
-                if (currSize < currentSpeedPerSecond) {
+                if (currSize < currentSpeedPerSecond.get()) {
 
-                    int actualSpeed = currentSpeedPerSecond;
+                    int actualSpeed = currentSpeedPerSecond.get();
 
                     int needToPush = actualSpeed - currSize;
 
-                    logger.info("process pusher: counter {}, planned {}, actual {}. start new {}", counter.get(),
-                            actualSpeed, (int) (1D * counter.get() / ((System.currentTimeMillis() - startTestTime) /
-                                    1000)), needToPush);
+//                    logger.info("process pusher: counter {}, planned {}, actual {}. start new {}", plannedTaskCounter.get(),
+//                            actualSpeed, (int) (1D * plannedTaskCounter.get() / ((System.currentTimeMillis() - startTestTime) /
+//                                    1000)), needToPush);
 
                     double interval = 1000l / actualSpeed;
                     double timeCursor = System.currentTimeMillis();
@@ -104,7 +106,7 @@ public class ProcessPusher {
 
                         queue.add((long) (timeCursor));
 
-                        if (counter.incrementAndGet() == maxProcessQuantity) {
+                        if (plannedTaskCounter.incrementAndGet() == maxProcessQuantity) {
                             taskPerSecondSpeed = (int) (1000.0 * LifetimeProfiler.taskCount
                                     .incrementAndGet() / (double) (System.currentTimeMillis() - LifetimeProfiler
                                     .startRateTime.get()));
@@ -118,22 +120,16 @@ public class ProcessPusher {
 
             }
 
-            private int getSumQueuesSize(HazelcastInstance hazelcastInstance) {
+        }.start();
 
-                if (hazelcastInstance == null) {
-                    return 0;
-                }
 
-                int sum = 0;
+        // start info thread
+        new DaemonThread("info", TimeUnit.SECONDS, 5) {
 
-                for (DistributedObject distributedObject : hazelcastInstance.getDistributedObjects()) {
-                    if (distributedObject instanceof CachedQueue) {
-                        Queue queue = (CachedQueue) distributedObject;
-                        sum += queue.size();
-                    }
-                }
-
-                return sum;
+            @Override
+            public void daemonJob() {
+                logger.info("process pusher: startedTasks {}, finishedTasks {}, plannedTasks {}. queue.size {}",
+                        startedTaskCounter.get(), finishedTaskCounter.get(), plannedTaskCounter.get(), queue.size());
             }
 
         }.start();
@@ -145,7 +141,7 @@ public class ProcessPusher {
             @Override
             public void daemonJob() {
 
-                if (counter.get() >= maxProcessQuantity &&
+                if (plannedTaskCounter.get() >= maxProcessQuantity &&
                         fpCounter.getCount() >= maxProcessQuantity) {
                     // stop JVM
 
@@ -188,15 +184,21 @@ public class ProcessPusher {
 
                     long currTime = System.currentTimeMillis();
 
-                    if (currTime < timeToStart.longValue()) {
+                    if (currTime < timeToStart) {
 
                         try {
-                            TimeUnit.MILLISECONDS.sleep(timeToStart.longValue() - currTime);
+                            TimeUnit.MILLISECONDS.sleep(timeToStart - currTime);
                         } catch (InterruptedException e) {
                         }
                     }
 
-                    starter.start();
+                    try {
+                        starter.start();
+                        startedTaskCounter.incrementAndGet();
+                    } catch (Throwable ex) {
+                        logger.error("Cannot start process. Try it later", ex);
+                        queue.offer(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(3));
+                    }
                 }
             }.start();
 
@@ -277,7 +279,7 @@ public class ProcessPusher {
                             MongoCachedQueueStore.storeTimer.mean(), MongoCachedQueueStore.storeTimer.oneMinuteRate(),
                             MongoCachedQueueStore.storeTimer.max()));
 
-                    int pushedCount = ProcessPusher.counter.get();
+                    int pushedCount = plannedTaskCounter.get();
                     int startedCount = GeneralTaskServer.startedProcessesCounter.get();
 
                     sb.append("\n Processes: pushed = " + pushedCount +

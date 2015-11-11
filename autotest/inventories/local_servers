@@ -4,6 +4,7 @@ tsk_mongodb       ansible_connection=local
 [taskurotta]
 tsk_node1         ansible_connection=local
 tsk_node2         ansible_connection=local
+tsk_node3         ansible_connection=local
 
 [nginx]
 tsk_nginx         ansible_connection=local

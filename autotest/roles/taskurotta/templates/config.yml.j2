@@ -19,6 +19,7 @@ properties:
   hz.jmx.detailed: true
   hz.jmx: true
   hz.port: 7777
+  hz.quorum: 2
   hz.nodes: {% for host in groups['taskurotta'] %}{{ host }}:7777,{% endfor %}
 
   mongo.client-uri: mongodb://tsk_mongodb:27017  

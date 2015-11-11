@@ -53,7 +53,7 @@ do_prepare()
 {
     echo "Pulling docker images. It can take several minutes"
     docker pull java:openjdk-8u66-jdk
-    docker pull nginx:1.9.5
+    docker pull nginx:1.9.6
     docker pull mongo:2.6.9
     echo ">> done"
 }

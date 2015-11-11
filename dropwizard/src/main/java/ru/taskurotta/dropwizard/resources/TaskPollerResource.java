@@ -18,8 +18,10 @@ import javax.ws.rs.core.Response;
 @Path(TaskServerResource.POLL)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class TaskPollerResource {
+public class TaskPollerResource extends TaskServerAbstractResource {
+
     private static final Logger logger = LoggerFactory.getLogger(TaskPollerResource.class);
+
     private TaskServer taskServer;
 
     @POST
@@ -33,7 +35,7 @@ public class TaskPollerResource {
             logger.debug("Task polled for[{}] is[{}]", actorDefinition.getName(), result);
         } catch (Throwable e) {
             GeneralTaskServer.errorsCounter.incrementAndGet();
-            logger.error("Poll task failed! ActorDefinition = [" + actorDefinition + "] ", e);
+            logError("Poll task failed! ActorDefinition = [" + actorDefinition + "] ", e);
 
             return Response.serverError().build();
         }
