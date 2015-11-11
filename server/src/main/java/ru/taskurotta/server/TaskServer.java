@@ -6,9 +6,6 @@ import ru.taskurotta.transport.model.TaskContainer;
 import ru.taskurotta.util.ActorDefinition;
 
 /**
- * User: romario
- * Date: 2/25/13
- * Time: 11:49 AM
  */
 public interface TaskServer {
 

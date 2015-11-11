@@ -31,7 +31,6 @@ import static ru.taskurotta.util.metrics.HzTaskServerMetrics.statRelease;
 /**
  * Task server with async decision processing.
  * Behaves exactly like GeneralTaskServer except for overridden release() method
- * Created by void 18.06.13 18:39
  */
 public class HzTaskServer extends GeneralTaskServer {
 
