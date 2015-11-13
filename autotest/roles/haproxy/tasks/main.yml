@@ -1,0 +1,48 @@
+---
+- name: 'Create haproxy log directory'
+  tags:
+  - start
+  file: path={{ haproxy_path }} state=directory
+
+- name: 'Generate haproxy config file'
+  tags:
+  - start
+  template: src=haproxy.conf.j2 dest={{ haproxy_config }}
+
+- name: 'Start haproxy container'
+  tags:
+  - start
+  docker:
+    name: tsk_http
+    image: haproxy:1.6.2
+    state: reloaded
+    net: bridge
+    volumes:
+    - "{{ haproxy_path }}:/var/log/nginx"
+    - "{{ haproxy_config }}:/usr/local/etc/haproxy/haproxy.cfg"
+    expose:
+    - "80"
+    ports:
+    - "80:80"
+
+- name: 'Stop haproxy container'
+  tags:
+  - stop
+  docker:
+    name: tsk_http
+    image: haproxy:1.6.2
+    state: stopped
+
+- name: 'Remove haproxy container'
+  tags:
+  - clean
+  docker:
+    name: tsk_http
+    image: haproxy:1.6.2
+    state: absent
+
+- name: 'Remove haproxy files'
+  tags:
+  - clean
+  shell: "sudo rm -rf {{ haproxy_path }} removes={{ haproxy_path }}"
+#  command: mv /path/to/foo /path/to/bar creates=/path/to/bar removes=/path/to/foo

@@ -3,4 +3,4 @@
   any_errors_fatal: True
   gather_facts: False
   roles:
-      - { role: nginx }
+      - { role: haproxy }

@@ -13,8 +13,8 @@
   tags:
   - start
   docker:
-    name: tsk_nginx
-    image: nginx:1.9.6
+    name: tsk_http
+    image: nginx:1.9.5
     state: reloaded
     net: bridge
     volumes:
@@ -27,16 +27,16 @@
   tags:
   - stop
   docker:
-    name: tsk_nginx
-    image: nginx:1.9.6
+    name: tsk_http
+    image: nginx:1.9.5
     state: stopped
 
 - name: 'Remove nginx container'
   tags:
   - clean
   docker:
-    name: tsk_nginx
-    image: nginx:1.9.6
+    name: tsk_http
+    image: nginx:1.9.5
     state: absent
 
 - name: 'Remove nginx files'

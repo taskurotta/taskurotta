@@ -13,7 +13,7 @@ spreader:
           connectTimeout: 5000
           readTimeout: 0
           threadPoolSize: 50
-          endpoint: "http://tsk_nginx:80"
+          endpoint: "http://tsk_http:80"
 
 
 profiler:

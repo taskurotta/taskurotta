@@ -1,0 +1,2 @@
+haproxy_path: "{{ playbook_dir }}/data/{{ inventory_hostname }}"
+haproxy_config: "{{ haproxy_path }}/haproxy.conf"

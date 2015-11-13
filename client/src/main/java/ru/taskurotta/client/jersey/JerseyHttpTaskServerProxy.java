@@ -37,7 +37,9 @@ public class JerseyHttpTaskServerProxy extends BaseTaskProxy {
             connectionManager.getParams().setDefaultMaxConnectionsPerHost(maxConnectionsPerHost);
         }
 
+
         HttpClient httpClient = new HttpClient(connectionManager);
+
         ApacheHttpClientHandler httpClientHandler = new ApacheHttpClientHandler(httpClient);
         ApacheHttpClient contentServerClient = new ApacheHttpClient(httpClientHandler);
         contentServerClient.setConnectTimeout((int) connectTimeout);

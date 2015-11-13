@@ -65,12 +65,12 @@ public class ProcessPusher {
 
                 if (!fixedPushRate) {
 
-//                    int sumQueuesSize = getSumQueuesSize(hazelcastInstance);
-                    finishedTaskCounter.set(fpCounter.getCount());
-                    int sumQueuesSize = finishedTaskCounter.get();
+                    int finishedTaskSize = fpCounter.getCount();
+                    finishedTaskCounter.set(finishedTaskSize);
 
                     // should be waiting to prevent overload
-                    if ((plannedTaskCounter.get() - sumQueuesSize) > maxQueuesSize) {
+                    int processInWorkSize = (plannedTaskCounter.get() - finishedTaskSize);
+                    if (processInWorkSize > maxQueuesSize) {
 
                         // go slowly
                         currentSpeedPerSecond.decrementAndGet();
@@ -78,7 +78,7 @@ public class ProcessPusher {
                     }
 
 
-                    if (sumQueuesSize < minQueuesSize) {
+                    if (processInWorkSize < minQueuesSize) {
 
                         // go faster
                         currentSpeedPerSecond.incrementAndGet();
@@ -141,8 +141,14 @@ public class ProcessPusher {
             @Override
             public void daemonJob() {
 
-                if (plannedTaskCounter.get() >= maxProcessQuantity &&
-                        fpCounter.getCount() >= maxProcessQuantity) {
+                if (plannedTaskCounter.get() < maxProcessQuantity) {
+                    return;
+                }
+
+                int finishedTaskSize = fpCounter.getCount();
+                finishedTaskCounter.set(finishedTaskSize);
+
+                if (fpCounter.getCount() >= maxProcessQuantity) {
                     // stop JVM
 
                     logger.info("Done... Total process speed is {} pps. Task speed at the all process pushed " +

@@ -49,6 +49,14 @@ do_tail()
     grep --line-buffered "totalRate:" <(tail -f -n 10000 data/tsk_ff_actors/actors.log)) | tee /tmp/output
 }
 
+do_errors()
+{
+    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_ff_pusher/pusher.log; fi
+    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_node1/service.log; fi
+    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_node2/service.log; fi
+    if [ -f data/tsk_ff_pusher/pusher.log ]; then grep "ERROR" data/tsk_ff_actors/actors.log; fi
+}
+
 do_prepare()
 {
     echo "Pulling docker images. It can take several minutes"
@@ -75,8 +83,11 @@ case "$1" in
     clean)
         do_clean
     ;;
+    errors)
+        do_errors
+    ;;
     *)
-        echo "Usage: test {prepare | start | stop | clean}" >&2
+        echo "Usage: test {prepare | start | stop | clean | errors}" >&2
         exit 3
     ;;
 
