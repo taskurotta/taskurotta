@@ -9,7 +9,7 @@
   - start
   docker:
     name: tsk_mongodb
-    image: mongo:2.6.9
+    image: mongo:{{ mongodb_version }}
     state: reloaded
     net: bridge
     command: -f /etc/mongo/mongodb.conf
@@ -23,7 +23,7 @@
   - stop
   docker:
     name: tsk_mongodb
-    image: mongo:2.6.9
+    image: mongo:{{ mongodb_version }}
     state: stopped
 
 - name: 'Remove mongodb container'
@@ -31,7 +31,7 @@
   - clean
   docker:
     name: tsk_mongodb
-    image: mongo:2.6.9
+    image: mongo:{{ mongodb_version }}
     state: absent
 
 - name: 'Remove mongodb files'
